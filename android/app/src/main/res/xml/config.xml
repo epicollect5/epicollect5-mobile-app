@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+  <access origin="*" />
+  
+  <feature name="CheckHuaweiServices">
+    <param name="android-package" value="com.checkhuaweiservices.CheckHuaweiServices"/>
+  </feature>
+
+  <feature name="File">
+    <param name="android-package" value="org.apache.cordova.file.FileUtils"/>
+    <param name="onload" value="true"/>
+  </feature>
+
+  <feature name="FileTransfer">
+    <param name="android-package" value="org.apache.cordova.filetransfer.FileTransfer"/>
+  </feature>
+
+  <feature name="ForegroundPlugin">
+    <param name="android-package" value="com.davidbriglio.foreground.ForegroundPlugin"/>
+  </feature>
+
+  <feature name="Geolocation">
+    <param name="android-package" value="org.apache.cordova.geolocation.Geolocation"/>
+  </feature>
+
+  <feature name="Globalization">
+    <param name="android-package" value="org.apache.cordova.globalization.Globalization"/>
+  </feature>
+
+  <feature name="GooglePlus">
+    <param name="android-package" value="nl.xservices.plugins.GooglePlus"/>
+    <param name="onload" value="true"/>
+  </feature>
+
+  <feature name="Media">
+    <param name="android-package" value="org.apache.cordova.media.AudioHandler"/>
+  </feature>
+
+  <feature name="Capture">
+    <param name="android-package" value="org.apache.cordova.mediacapture.Capture"/>
+  </feature>
+
+  <feature name="Whitelist">
+    <param name="android-package" value="org.apache.cordova.whitelist.WhitelistPlugin"/>
+    <param name="onload" value="true"/>
+  </feature>
+
+  <feature name="SQLitePlugin">
+    <param name="android-package" value="io.sqlc.SQLitePlugin"/>
+  </feature>
+
+  <feature name="SelectorCordovaPlugin">
+    <param name="android-package" value="com.wellseek.cordova.SelectorCordovaPlugin"/>
+    <param name="onload" value="true"/>
+  </feature>
+
+  <feature name="Diagnostic">
+    <param name="android-package" value="cordova.plugins.Diagnostic"/>
+    <param name="onload" value="true"/>
+  </feature>
+
+  <feature name="Diagnostic_Location">
+    <param name="android-package" value="cordova.plugins.Diagnostic_Location"/>
+    <param name="onload" value="true"/>
+  </feature>
+
+  <feature name="Diagnostic_Wifi">
+    <param name="android-package" value="cordova.plugins.Diagnostic_Wifi"/>
+    <param name="onload" value="true"/>
+  </feature>
+
+  <feature name="Diagnostic_Camera">
+    <param name="android-package" value="cordova.plugins.Diagnostic_Camera"/>
+    <param name="onload" value="true"/>
+  </feature>
+
+  <feature name="Diagnostic_Notifications">
+    <param name="android-package" value="cordova.plugins.Diagnostic_Notifications"/>
+    <param name="onload" value="true"/>
+  </feature>
+
+  <feature name="Diagnostic_External_Storage">
+    <param name="android-package" value="cordova.plugins.Diagnostic_External_Storage"/>
+    <param name="onload" value="true"/>
+  </feature>
+
+  <feature name="BarcodeScanner">
+    <param name="android-package" value="com.phonegap.plugins.barcodescanner.BarcodeScanner"/>
+  </feature>
+
+  
+  <preference name="webviewbounce" value="false" />
+  <preference name="DisallowOverscroll" value="true" />
+  <preference name="android-minSdkVersion" value="21" />
+  <preference name="android-targetSdkVersion" value="30" />
+  <preference name="BackupWebStorage" value="none" />
+  <preference name="ShowSplashScreenSpinner" value="false" />
+  <preference name="AutoHideSplashScreen" value="false" />
+  <preference name="FadeSplashScreen" value="false" />
+  <preference name="FadeSplashScreenDuration" value="10" />
+  <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+  <preference name="cordova.plugins.diagnostic.modules" value="LOCATION WIFI CAMERA NOTIFICATIONS MICROPHONE EXTERNAL_STORAGE" />
+</widget>

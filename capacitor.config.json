@@ -1,0 +1,31 @@
+{
+  "appId": "uk.ac.imperial.epicollect.five.beta",
+  "appName": "Epicollect5 Beta",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "androidScaleType": "CENTER_CROP",
+      "launchAutoHide": false,
+      "splashFullScreen": true,
+      "splashImmersive": false,
+      "backgroundColor": "#ffffff"
+    }
+  },
+  "cordova": {
+    "preferences": {
+      "webviewbounce": "false",
+      "DisallowOverscroll": "true",
+      "android-minSdkVersion": "21",
+      "android-targetSdkVersion": "30",
+      "BackupWebStorage": "none",
+      "ShowSplashScreenSpinner": "false",
+      "AutoHideSplashScreen": "false",
+      "FadeSplashScreen": "false",
+      "FadeSplashScreenDuration": "10",
+      "AndroidPersistentFileLocation": "Compatibility",
+      "cordova.plugins.diagnostic.modules": "LOCATION WIFI CAMERA NOTIFICATIONS MICROPHONE EXTERNAL_STORAGE"
+    }
+  }
+}

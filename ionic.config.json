@@ -1,0 +1,7 @@
+{
+  "name": "uk.ac.imperial.epicollect.five.beta",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}

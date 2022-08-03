@@ -1,0 +1,118 @@
+{
+    "explorer.decorations.colors": false,
+    "editor.fontWeight": "500",
+    "git.enabled": false,
+    "scm.inputFontFamily": "default",
+    "editor.fontFamily": "'JetBrains Mono NL'",
+    "editor.fontSize": 14,
+    "editor.autoClosingQuotes": "never",
+    "workbench.colorCustomizations": {
+        "titleBar.activeBackground": "#0c8ae4",
+        "titleBar.activeForeground": "#f4f4f4",
+        "[Idea intellij light theme]": {
+            "editor.background": "#f4f4f4",
+            // "editor.background": "#fff",
+            "editor.lineHighlightBackground": "#ddd",
+            "sideBar.background": "#f4f4f4",
+            "list.hoverBackground": "#ddd",
+            "editorSuggestWidget.focusHighlightForeground": "#ffffff"
+        }
+    },
+    "typescript.suggest.autoImports": false,
+    "javascript.suggest.autoImports": false,
+    "[bat]": {},
+    "workbench.preferredLightColorTheme": "Idea intellij light theme",
+    "workbench.preferredDarkColorTheme": "Monokai",
+    "search.exclude": {
+        "jshintrc": true,
+        ".jshintrc:": true,
+        "**/vendor": true,
+        "**/node_modules": true,
+        "**/platforms": true,
+        "**/dist": true,
+        ".history": true
+    },
+    "todohighlight.include": [
+        "**/*.js",
+        "**/*.jsx",
+        "**/*.html",
+        "**/*.php",
+        "**/*.css",
+        "**/*.scss"
+    ],
+    "todohighlight.exclude": [
+        "node_modules/",
+        "vendor/",
+        "storage/",
+        "wiki/"
+    ],
+    "editor.linkedEditing": true,
+    "jshint.enable": false,
+    "terminal.integrated.fontSize": 15,
+    "errorLens.messageEnabled": false,
+    "errorLens.gutterIconsEnabled": true,
+    "vetur.format.defaultFormatter.html": "js-beautify-html",
+    "vetur.format.defaultFormatterOptions": {
+        "prettier": {
+            "printWidth": 100, // No line exceeds 260 characters
+        },
+        "prettyhtml": {
+            "printWidth": 50, // No line exceeds 260 characters
+        },
+        "js-beautify-html": {
+            "printWidth": 50, // No line exceeds 260 characters
+        }
+    },
+    //html attributes
+    "html.format.wrapAttributes": "force-aligned",
+    //to remove annoying search sidebar when using keyboard shorcuts
+    "workbench.list.automaticKeyboardNavigation": false,
+    "workbench.list.keyboardNavigation": "simple",
+    //make vetur formatting follow prettier-eslint rules
+    //otherwise it make wrong changes
+    "vetur.format.defaultFormatter.js": "prettier-eslint",
+    // "vetur.format.enable": false,
+    "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
+    "eslint.format.enable": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    },
+    "typescript.suggest.paths": false,
+    "path-intellisense.mappings": {
+        "/": "${workspaceFolder}",
+        "@": "${workspaceFolder}/src"
+    },
+    "cssVariables.lookupFiles": [
+        "src/theme/variables.css"
+    ],
+    "explorer.compactFolders": false,
+    //need this to rmove slots deprecation linting, ionic slots !== vue slots
+    "vetur.validation.template": false,
+    "xmlTools.splitAttributesOnFormat": true,
+    "editor.autoClosingBrackets": "never",
+    "editor.renderWhitespace": "none",
+    "editor.selectionHighlight": false,
+    "editor.occurrencesHighlight": false,
+    "local-history.daysLimit": 1,
+    //"javascript.preferences.quoteStyle": "single",
+    "todohighlight.keywords": [
+        {
+            "text": "HACK:",
+            "color": "#ffffff",
+            "backgroundColor": "Orange",
+            "isWholeLine": true
+        },
+        {
+            "text": "IMP:",
+            "color": "#ffffff",
+            "backgroundColor": "#A386BD",
+            "isWholeLine": true
+        },
+        {
+            "text": "TODO:",
+            "color": "#ffffff",
+            "isWholeLine": true,
+            "backgroundColor": "#00B2ED"
+        }
+    ],
+}

@@ -1,0 +1,10 @@
+> 1%
+last 2 versions
+not dead
+# Adding old browser below to force transpiling of optional chaining in iOS 12
+# Without this, it would fail on iPad with iOS 12.5 with:
+# Uncaught SyntaxError: Unexpected token '.'
+# see https://github.com/vuejs/vue-cli/issues/6449
+safari 13.0
+Samsung 12.0.0
+iOS 12

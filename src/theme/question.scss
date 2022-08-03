@@ -1,0 +1,370 @@
+.question-card {
+    margin-top: 16px;
+    ion-card-content {
+        padding: 16px;
+        &.question-checkbox-card-content {
+            padding: 0 !important;
+        }
+    }
+}
+.question-label {
+    background-color: var(--ion-color-primary-tint);
+    ion-card-title {
+        font-size: 18px;
+        color: #fff;
+        // text-transform: capitalize;
+    }
+    ion-card-subtitle {
+        font-size: 14px;
+        color: #fff;
+    }
+    .has-popover {
+        span {
+            width: 80%;
+        }
+        .question-popover-button {
+            vertical-align: middle;
+        }
+    }
+    .question-label-button {
+        font-size: 20px;
+        overflow: hidden;
+        .question-label-button-ripple {
+            height: 36px !important;
+        }
+    }
+    .question-label-grid {
+        //this padding matches the non-action question label
+        padding: 10px 8px 10px 13px;
+    }
+}
+.question-required {
+    //color: var(--ion-color-danger);
+    //margin: 10px 0;
+    font-style: italic;
+    text-align: left;
+}
+.question-input {
+    padding: 10px;
+    width: 100%;
+    color: #333;
+    outline-color: var(--ion-color-primary) !important;
+    &:focus {
+        outline-color: var(--ion-color-primary) !important;
+    }
+    &:focus-visible {
+        outline-color: var(--ion-color-primary) !important;
+    }
+    &.has-error {
+        &:focus {
+            outline-color: var(--ion-color-danger) !important;
+        }
+        &:focus-visible {
+            outline-color: var(--ion-color-danger) !important;
+        }
+    }
+}
+.question-error {
+    color: var(--ion-color-danger);
+    margin-top: 10px;
+    text-align: center;
+}
+ion-list.has-error,
+input.has-error,
+ion-item.has-error,
+ion-chip.has-error {
+    border: 2px solid var(--ion-color-danger);
+}
+.question-photo-thumbnail {
+    //text-align: center;
+    img {
+        width: 200px;
+        height: 200px;
+        padding: 10px;
+        border: 1px solid var(--ion-color-light-shade);
+        background-color: #ffffff;
+        object-fit: cover;
+    }
+}
+.question-datetimepicker {
+    //min-width: 200px;
+    background: none;
+    outline: none;
+    border: none;
+    pointer-events: auto;
+}
+.question-datetimepicker-native,
+.question-datetimepicker-html {
+    text-align: center !important;
+}
+.question-numeric {
+    ion-card-content {
+        padding: 8px;
+    }
+    .chip-numeric {
+        .chip-numeric--icon-left {
+            margin-right: 16px;
+        }
+        .chip-numeric--icon-right {
+            margin-left: 16px;
+        }
+        input {
+            padding: 12px;
+            &.has-error {
+                padding: 10px !important;
+            }
+        }
+    }
+}
+.question-action-button {
+    font-size: 16px;
+}
+.question-popover-button {
+    font-size: 24px;
+}
+.question-video-player {
+    width: 100%;
+    margin: 16px 0;
+    max-height: 200px;
+}
+textarea {
+    //resize: none;
+}
+
+//render smaller date & time pickers in GROUP(s)
+.question-group {
+    .chip-datetimepicker {
+        .datetime-value {
+            width: 170px;
+            input[type="date"],
+            input[type="time"] {
+                font-size: 14px;
+            }
+        }
+    }
+}
+
+.chip-datetimepicker {
+    padding: 20px 10px 20px 0px;
+    &.entries-filters {
+        padding-right: 0px !important;
+        .datetime-value {
+            background-color: #ffffff !important;
+            input[type="date"],
+            input[type="time"] {
+                padding: 6px 6px 6px 40px;
+            }
+        }
+    }
+    &.device-picker {
+        input[type="time"] {
+            padding-left: 80px !important;
+        }
+    }
+
+    .datetime-value {
+        position: relative;
+        width: 200px;
+        background-color: var(--ion-color-secondary);
+        //  border-radius: 8px;
+        padding: 10px 0;
+        ion-datetime {
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.2;
+        }
+        input[type="date"],
+        input[type="time"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            font-size: 14px;
+            font-weight: 400;
+            z-index: 1;
+            &::-webkit-inner-spin-button,
+            &::-webkit-calendar-picker-indicator {
+                opacity: 0;
+            }
+        }
+        input[type="time"] {
+            padding: 10px 10px 10px 60px;
+            font-size: 16px !important;
+        }
+        input[type="date"] {
+            padding: 10px 10px 10px 40px;
+        }
+
+        .time-icon,
+        .date-icon-left {
+            position: absolute;
+            left: 16px;
+            z-index: 0;
+            pointer-events: none;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .date-icon-right {
+            position: absolute;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 16px;
+            z-index: 0;
+            pointer-events: none;
+        }
+    }
+    //show native date and time picker buttons on the web
+    //to be replaced by  https://vue3datepicker.com/
+    &.web-picker {
+        .datetime-value {
+            input[type="date"],
+            input[type="time"] {
+                padding: 10px 10px 10px 20px;
+                &::-webkit-inner-spin-button,
+                &::-webkit-calendar-picker-indicator {
+                    opacity: 1;
+                }
+            }
+        }
+    }
+}
+.md .question-dropdown-action-sheet {
+    .action-sheet-wrapper {
+        height: 90%;
+        width: 90%;
+        top: 0;
+        border-radius: 5px;
+    }
+    .action-sheet-selected {
+        background-color: var(--ion-color-secondary-tint);
+    }
+    .action-sheet-button {
+        border-bottom: 1px solid var(--ion-color-medium-tint);
+    }
+    .action-sheet-cancel {
+        color: var(--ion-color-primary);
+        font-weight: 700;
+        border-top: 1px solid var(--ion-color-medium-tint);
+        .action-sheet-button-inner.sc-ion-action-sheet-md {
+            justify-content: right;
+        }
+    }
+}
+.question-checkbox-item {
+    // --ripple-color: transparent;
+    // --background-hover: transparent;
+}
+.question-group,
+.question-branch {
+    padding: 0 !important;
+    ion-card-content {
+        padding: 0 !important;
+    }
+}
+.possible-answers-list,
+.saved-answers-list {
+    .possible-answer-item,
+    .saved-answer-item {
+        user-select: none;
+        position: relative;
+        display: block;
+        border-bottom: 1px solid var(--ion-color-light-shade);
+        &.checkbox-checked {
+            background-color: #eee;
+        }
+        &.radio-checked {
+            background-color: #eee;
+        }
+        .possible-answer-label,
+        .saved-answer-label {
+            white-space: normal;
+            font-size: 16px;
+            color: #222;
+        }
+        .possible-answer-radio-button {
+            // to make the radio de-selectable programmatically
+            //without this, the click event conflicts with the @click on parent
+            // pointer-events: none;
+        }
+        .possible-answer-radio,
+        .saved-answer-checkbox {
+            width: 1em;
+            height: 1em;
+            background-color: white;
+            border-radius: 50%;
+            vertical-align: middle;
+            border: 1px solid #ddd;
+            appearance: none;
+            -webkit-appearance: none;
+            outline: none;
+            cursor: pointer;
+            &:checked {
+                background-color: var(--ion-color-secondary);
+                border: 1px solid #333;
+            }
+            margin-top: 0 !important;
+            padding: 5px;
+            // clip-path: circle(50% at 50% 50%); /* Set the clip path of circle*/
+        }
+        .possible-answer-checkbox,
+        .possible-answer-radio,
+        .saved-answer-checkbox {
+            margin-top: 6px;
+            accent-color: var(--ion-color-secondary) !important;
+            transform: scale(1.6);
+            // position: absolute;
+            // top: 4px;
+            // right: 10px;
+        }
+    }
+    .question-dropdown-item {
+        --min-height: 36px;
+        --border-radius: 5px;
+        --inner-padding-top: 0;
+        --inner-padding-bottom: 0;
+        //box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+        ion-icon,
+        ion-label {
+            padding: 0;
+            margin: 0;
+            font-weight: 500;
+            //letter-spacing: 0.06em;
+            // text-transform: uppercase;
+        }
+    }
+}
+ion-item-divider.possible-answers-serchbar-wrapper,
+ion-item-divider.saved-answers-serchbar-wrapper {
+    --inner-padding-start: 0;
+    --inner-padding-end: 0;
+    --padding-start: 0;
+    --padding-end: 0;
+}
+
+// .possible-answer-item {
+//     border-bottom: 1px solid var(--ion-color-light-shade);
+//     display: block;
+//     .radio-selected,
+//     &.checkbox-checked {
+//         background-color: #eee;
+//     }
+//     .possible-answer-label {
+//         white-space: normal;
+//         font-size: 16px;
+//         color: #222;
+//     }
+// }
+.question-search-remove-pick {
+    font-size: 24px;
+    margin-top: 5px;
+}
+.question-readme-content {
+    .readme-padding {
+        padding: 16px !important;
+    }
+    p {
+        color: #333;
+        font-size: 16px;
+    }
+}

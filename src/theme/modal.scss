@@ -1,0 +1,86 @@
+.modal-audio-record,
+.modal-audio-play {
+    &::part(content) {
+        position: absolute;
+        width: 75%;
+        height: 50%;
+        position: fixed;
+        transform: translate(-50%, -50%);
+        margin: auto !important;
+        border-radius: 10px !important;
+    }
+    .audio-mic,
+    .audio-note {
+        font-size: 64px !important;
+    }
+}
+.modal-search {
+    .spinner-search-possible-answers,
+    .spinner-search-saved-answers {
+        left: 50%;
+        position: fixed;
+        transform: translate(-50%, -50%);
+        margin-top: 50px;
+    }
+
+    &::part(content) {
+        .item-radio-checked,
+        .item-checkbox-checked {
+            --background: var(--ion-color-secondary-tint);
+        }
+    }
+}
+
+.modal-progress-transfer {
+    --border-radius: 5px;
+    --max-height: 200px;
+    @media only screen and (max-width: 480px) {
+        --max-width: 75%;
+    }
+    @media only screen and (min-width: 481px) and (max-width: 576px) {
+        --max-width: 60%;
+    }
+    @media only screen and (min-width: 577px) and (max-width: 768px) {
+        --max-width: 50%;
+    }
+    @media only screen and (min-width: 769px) {
+        --max-width: 33%;
+    }
+    .spinner-transfer {
+        left: 50%;
+        top: 50%;
+        position: fixed;
+        transform: translate(-50%, -50%);
+        margin-top: -16px;
+    }
+    .progress-transfer {
+        bottom: 0;
+        position: absolute;
+        width: 100%;
+        ion-progress-bar {
+            height: 10px;
+        }
+    }
+}
+.modal-login {
+    .email-login-btn {
+        --padding-top: 8px;
+        --padding-bottom: 8px;
+        height: 50px;
+        --border-radius: 0;
+    }
+}
+
+.modal-passwordless-send {
+    ion-item.passwordless-send-item {
+        --inner-padding-end: 0;
+        --padding-end: 0;
+    }
+}
+.modal-confirm-password {
+    .center-item-content-wrapper {
+        ion-label {
+            font-size: 16px;
+        }
+    }
+}
