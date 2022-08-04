@@ -179,45 +179,51 @@ export default {
 				state.answer.answer = services.utilsService.getSanitisedAnswer(value);
 			},
 			async scan() {
-				//fade out UI as it goes haywire when opening barcode scanner
-				//todo: $rootStore.barcode.style = PARAMETERS.BARCODE_VIEW_STYLE + PARAMETERS.ANIMATION_FADEOUT;
-
-				//show spinner
+				//show spinner and hide it immediately
 				await services.notificationService.showProgressDialog(
 					STRINGS[language].labels.preparing_scanner,
 					STRINGS[language].labels.wait
 				);
 				services.notificationService.hideProgressDialog();
 
+				services.notificationService.startForegroundService();
+
 				//request camera permission
 				if (rootStore.device.platform === PARAMETERS.ANDROID) {
 					cordova.plugins.diagnostic.requestRuntimePermission(
-						function(status) {
+						function (status) {
 							if (cordova.plugins.diagnostic.runtimePermissionStatus.GRANTED === status) {
 								console.log('Permission granted');
 
-								services.utilsService.triggerBarcode().then(
-									function(result) {
-										//do not override value if the scan action is cancelled by the user
-										if (!result.cancelled) {
-											state.answer.answer = services.utilsService.getSanitisedAnswer(result.text);
+								services.utilsService
+									.triggerBarcode()
+									.then(
+										function (result) {
+											//do not override value if the scan action is cancelled by the user
+											if (!result.cancelled) {
+												state.answer.answer = services.utilsService.getSanitisedAnswer(result.text);
+											}
+										},
+										function (error) {
+											services.notificationService.showAlert(
+												STRINGS[language].labels.failed_because + error
+											);
 										}
-									},
-									function(error) {
-										services.notificationService.showAlert(
-											STRINGS[language].labels.failed_because + error
-										);
-									}
-								);
+									)
+									.finally(() => {
+										services.notificationService.stopForegroundService();
+									});
 							} else {
 								//warn user the permission is required
 								services.notificationService.showAlert(
 									STRINGS[language].labels.missing_permission,
 									STRINGS[language].labels.warning
 								);
+								services.notificationService.stopForegroundService();
 							}
 						},
-						function(error) {
+						function (error) {
+							services.notificationService.stopForegroundService();
 							console.error(error);
 						},
 						cordova.plugins.diagnostic.runtimePermission.CAMERA
@@ -225,16 +231,16 @@ export default {
 				} else {
 					//ios
 					cordova.plugins.diagnostic.isCameraAuthorized(
-						function(response) {
+						function (response) {
 							if (response) {
 								services.utilsService.triggerBarcode().then(
-									function(result) {
+									function (result) {
 										//do not override value if the scan action is cancelled by the user
 										if (!result.cancelled) {
 											state.answer.answer = services.utilsService.getSanitisedAnswer(result.text);
 										}
 									},
-									function(error) {
+									function (error) {
 										services.notificationService.showAlert(
 											STRINGS[language].labels.failed_because + error
 										);
@@ -243,13 +249,13 @@ export default {
 							} else {
 								//request permission
 								cordova.plugins.diagnostic.requestCameraAuthorization(
-									function(permission) {
+									function (permission) {
 										console.log(permission);
 										//on iOS permission is true or false only
 										if (permission) {
 											//scan
 											services.utilsService.triggerBarcode().then(
-												function(result) {
+												function (result) {
 													//do not override value if the scan action is cancelled by the user
 													if (!result.cancelled) {
 														state.answer.answer = services.utilsService.getSanitisedAnswer(
@@ -257,7 +263,7 @@ export default {
 														);
 													}
 												},
-												function(error) {
+												function (error) {
 													services.notificationService.showAlert(
 														STRINGS[language].labels.failed_because + error
 													);
@@ -270,7 +276,7 @@ export default {
 											);
 										}
 									},
-									function(error) {
+									function (error) {
 										services.notificationService.showAlert(
 											STRINGS[language].labels.missing_permission,
 											STRINGS[language].labels.warning
@@ -279,7 +285,7 @@ export default {
 								);
 							}
 						},
-						function(error) {
+						function (error) {
 							console.error(error);
 						}
 					);

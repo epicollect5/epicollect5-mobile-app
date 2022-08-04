@@ -149,7 +149,6 @@ export default {
 		let filename = '';
 
 		const project_ref = entriesAddScope.entryService.entry.projectRef;
-
 		const media = entriesAddScope.entryService.entry.media;
 
 		// Check whether we want to index the media object using the main entry uuid, or branch entry uuid

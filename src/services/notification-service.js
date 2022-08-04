@@ -168,5 +168,35 @@ export const notificationService = {
                 await rootStore.ec5LoadingDialog.dismiss();
             }
         }, set_delay);
+    },
+    //start a foreground service (with notification)
+    //to avoid Android killing the app
+    startForegroundService () {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const labels = STRINGS[language].labels;
+        if (rootStore.device.platform === PARAMETERS.ANDROID) {
+            //only for api >= 28 (Android 9)
+            //app might crash on Android 8
+            if (parseInt(rootStore.device.osVersion) >= 9) {
+                cordova.plugins.foregroundService.start(
+                    PARAMETERS.APP_NAME,
+                    labels.working_in_background,
+                    'ic_launcher.png',
+                    1,
+                    10
+                );
+            }
+        }
+    },
+    stopForegroundService () {
+        const rootStore = useRootStore();
+        if (rootStore.device.platform === PARAMETERS.ANDROID) {
+            //only for api >= 28 (Android 9)
+            //app might crash on Android 8
+            if (parseInt(rootStore.device.osVersion) >= 9) {
+                cordova.plugins.foregroundService.stop();
+            }
+        }
     }
 };

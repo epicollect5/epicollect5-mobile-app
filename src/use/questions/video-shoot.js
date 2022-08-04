@@ -17,13 +17,7 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
         console.log(media_object[0]);
         console.log(video_URI);
 
-        if (rootStore.device.platform === PARAMETERS.ANDROID) {
-            //only for api >= 28 (Android 9)
-            //app might crash on Android 8
-            if (parseInt(rootStore.device.osVersion) >= 9) {
-                cordova.plugins.foregroundService.stop();
-            }
-        }
+        services.notificationService.stopForegroundService();
 
         //rename video file (by moving it)
         services.moveFileService.moveToAppTemporaryDir(video_URI, filename).then(
@@ -44,23 +38,18 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
     }
 
     function _onCaptureVideoError (error) {
-        if (rootStore.device.platform === PARAMETERS.ANDROID) {
-            //only for api >= 28 (Android 9)
-            //app might crash on Android 8
-            if (parseInt(rootStore.device.osVersion) >= 9) {
-                cordova.plugins.foregroundService.stop();
-            }
-        }
-
         console.log(error);
-        //reset media object to avoid saving a file that does not exist...
-        media[entryUuid][state.inputDetails.ref].cached = '';
-        // Reset answer
-        state.answer.answer = '';
+        services.notificationService.stopForegroundService();
+        //if not canceled by the user, reset media object
+        if (error.code !== 3) {
+            //reset media object to avoid saving a file that does not exist...
+            media[entryUuid][state.inputDetails.ref].cached = '';
+            // Reset answer
+            state.answer.answer = '';
+        }
         services.notificationService.showToast(error.message);
         services.notificationService.hideProgressDialog();
     }
-
 
     if (rootStore.device.platform !== PARAMETERS.WEB) {
         await services.notificationService.showProgressDialog(labels.wait);
@@ -104,19 +93,7 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
                                 if (status === cordova.plugins.diagnostic.runtimePermissionStatus.GRANTED) {
                                     console.log('Permission granted');
 
-                                    if (rootStore.device.platform === PARAMETERS.ANDROID) {
-                                        //only for api >= 28 (Android 9)
-                                        //app might crash on Android 8
-                                        if (parseInt(rootStore.device.osVersion) >= 9) {
-                                            cordova.plugins.foregroundService.start(
-                                                PARAMETERS.APP_NAME,
-                                                labels.working_in_background,
-                                                'ic_launcher.png',
-                                                1,
-                                                10
-                                            );
-                                        }
-                                    }
+                                    services.notificationService.startForegroundService();
 
                                     window.navigator.device.capture.captureVideo(
                                         _onCaptureVideoSuccess,

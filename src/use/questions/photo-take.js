@@ -27,29 +27,11 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
     await services.notificationService.showProgressDialog(labels.wait);
 
     async function _openCamera () {
-        if (rootStore.device.platform === PARAMETERS.ANDROID) {
-            //only for api >= 28 (Android 9)
-            //app might crash on Android 8
-            if (parseInt(rootStore.device.osVersion) >= 9) {
-                cordova.plugins.foregroundService.start(
-                    PARAMETERS.APP_NAME,
-                    labels.working_in_background,
-                    'ic_launcher.png',
-                    1,
-                    10
-                );
-            }
-        }
+        services.notificationService.startForegroundService();
         try {
             const imageURI = await Camera.getPhoto(cameraOptions);
 
-            if (rootStore.device.platform === PARAMETERS.ANDROID) {
-                //only for api >= 28 (Android 9)
-                //app might crash on Android 8
-                if (parseInt(rootStore.device.osVersion) >= 9) {
-                    cordova.plugins.foregroundService.stop();
-                }
-            }
+            services.notificationService.stopForegroundService();
 
             //if we do not have taken any photo yet, generate a new file name
             if (media[entryUuid][state.inputDetails.ref].cached === '') {
@@ -82,22 +64,7 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
             console.log(imageURI.path);
         } catch (error) {
             console.log(error);
-            // if (rootStore.device.platform === PARAMETERS.IOS) {
-            // 	StatusBar.setOverlaysWebView({
-            // 		overlay: true
-            // 	});
-            // 	StatusBar.setOverlaysWebView({
-            // 		overlay: false
-            // 	});
-            // }
-            //Disable background mode Android
-            if (rootStore.device.platform === PARAMETERS.ANDROID) {
-                //only for api >= 28 (Android 9)
-                //app might crash on Android 8
-                if (parseInt(rootStore.device.osVersion) >= 9) {
-                    cordova.plugins.foregroundService.stop();
-                }
-            }
+            services.notificationService.stopForegroundService();
             services.notificationService.hideProgressDialog();
             services.notificationService.showToast(error);
         }
