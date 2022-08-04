@@ -84,6 +84,7 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
         // start video capture
         //request camera permission (Android)
         if (rootStore.device.platform === PARAMETERS.ANDROID) {
+            services.notificationService.startForegroundService();
             cordova.plugins.diagnostic.requestRuntimePermission(
                 function (status) {
                     if (status === cordova.plugins.diagnostic.runtimePermissionStatus.GRANTED) {
@@ -93,7 +94,7 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
                                 if (status === cordova.plugins.diagnostic.runtimePermissionStatus.GRANTED) {
                                     console.log('Permission granted');
 
-                                    services.notificationService.startForegroundService();
+
 
                                     window.navigator.device.capture.captureVideo(
                                         _onCaptureVideoSuccess,
@@ -117,11 +118,13 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
                         services.notificationService.showAlert(
                             STRINGS[language].labels.permission_denied
                         );
+                        services.notificationService.stopForegroundService();
                         services.notificationService.hideProgressDialog();
                     }
                 },
                 function (error) {
                     console.error('The following error occurred: ' + error);
+                    services.notificationService.stopForegroundService();
                     services.notificationService.hideProgressDialog();
                 },
                 cordova.plugins.diagnostic.runtimePermission.CAMERA
@@ -129,7 +132,7 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
         } else {
             //ios permission
             window.cordova.plugins.diagnostic.isCameraAuthorized(
-                function (authorised) {
+                function () {
                     window.navigator.device.capture.captureVideo(
                         _onCaptureVideoSuccess,
                         _onCaptureVideoError,

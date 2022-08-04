@@ -195,24 +195,21 @@ export default {
 							if (cordova.plugins.diagnostic.runtimePermissionStatus.GRANTED === status) {
 								console.log('Permission granted');
 
-								services.utilsService
-									.triggerBarcode()
-									.then(
-										function (result) {
-											//do not override value if the scan action is cancelled by the user
-											if (!result.cancelled) {
-												state.answer.answer = services.utilsService.getSanitisedAnswer(result.text);
-											}
-										},
-										function (error) {
-											services.notificationService.showAlert(
-												STRINGS[language].labels.failed_because + error
-											);
-										}
-									)
-									.finally(() => {
+								services.utilsService.triggerBarcode().then(
+									function (result) {
 										services.notificationService.stopForegroundService();
-									});
+										//do not override value if the scan action is cancelled by the user
+										if (!result.cancelled) {
+											state.answer.answer = services.utilsService.getSanitisedAnswer(result.text);
+										}
+									},
+									function (error) {
+										services.notificationService.stopForegroundService();
+										services.notificationService.showAlert(
+											STRINGS[language].labels.failed_because + error
+										);
+									}
+								);
 							} else {
 								//warn user the permission is required
 								services.notificationService.showAlert(
