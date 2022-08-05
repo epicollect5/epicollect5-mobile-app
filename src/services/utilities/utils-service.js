@@ -759,6 +759,9 @@ export const utilsService = {
                     if (!result.cancelled) {
                         resolve(result);
                     }
+                    else {
+                        reject(null);
+                    }
                 }, function (error) {
                     reject(error);
                 });

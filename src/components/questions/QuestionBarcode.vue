@@ -205,9 +205,11 @@ export default {
 									},
 									function (error) {
 										services.notificationService.stopForegroundService();
-										services.notificationService.showAlert(
-											STRINGS[language].labels.failed_because + error
-										);
+										if (error !== null) {
+											services.notificationService.showAlert(
+												STRINGS[language].labels.failed_because + error
+											);
+										}
 									}
 								);
 							} else {
