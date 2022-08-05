@@ -424,7 +424,7 @@ export default {
 					hierarchyNavigation.pop();
 					rootStore.hierarchyNavigation = [...hierarchyNavigation];
 
-					const routeParams = { ...routeParams };
+					const routeParams = { ...rootStore.routeParams };
 					routeParams.formRef = state.parentFormRef;
 
 					//reset formRef if we are at the top level

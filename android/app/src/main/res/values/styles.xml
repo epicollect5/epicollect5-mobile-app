@@ -19,10 +19,7 @@
 
     <style name="AppTheme.NoActionBarLaunch"
         parent="Theme.SplashScreen">
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowTranslucentNavigation">true</item>
-        <item name="android:background">#ffffff</item>
-        <item name="android:statusBarColor">#331e48</item>
+        <item name="android:background">@drawable/splash</item>
+        <item name="android:windowSplashScreenBackground">@color/white</item>
     </style>
 </resources>

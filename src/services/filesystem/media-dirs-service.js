@@ -6,53 +6,54 @@ import * as services from '@/services';
 
 export const mediaDirsService = {
 
-    //uses Capacitor Filesystem
+    //Cannot use Capacitor Filesystem for backward compatibility
+    //This method is here only for reference
     //imp: this works on Android but it might break app updates
     //imp: on iOS it creates the folders under Documents instead of Library/NoClouds
-    createDirs () {
+    // createDirs () {
 
-        const rootStore = useRootStore();
-        const device = rootStore.device;
-        const dirs = [
-            PARAMETERS.PHOTO_DIR,
-            PARAMETERS.AUDIO_DIR,
-            PARAMETERS.VIDEO_DIR,
-            PARAMETERS.LOGOS_DIR
-        ];
+    //     const rootStore = useRootStore();
+    //     const device = rootStore.device;
+    //     const dirs = [
+    //         PARAMETERS.PHOTO_DIR,
+    //         PARAMETERS.AUDIO_DIR,
+    //         PARAMETERS.VIDEO_DIR,
+    //         PARAMETERS.LOGOS_DIR
+    //     ];
 
-        if (device.platform === PARAMETERS.WEB) {
-            //todo: for now on the web we just return
-            return true;
-        }
+    //     if (device.platform === PARAMETERS.WEB) {
+    //         //todo: for now on the web we just return
+    //         return true;
+    //     }
 
-        async function _createMediaDirectory (dir) {
-            try {
-                await Filesystem.mkdir({
-                    path: dir,
-                    directory: Directory.Data,
-                    recursive: false // like mkdir -p
-                });
-            } catch (e) {
-                console.log('Unable to make directory', e);
-                return false;
-            }
-        }
+    //     async function _createMediaDirectory (dir) {
+    //         try {
+    //             await Filesystem.mkdir({
+    //                 path: dir,
+    //                 directory: Directory.Data,
+    //                 recursive: false // like mkdir -p
+    //             });
+    //         } catch (e) {
+    //             console.log('Unable to make directory', e);
+    //             return false;
+    //         }
+    //     }
 
-        //if folders are already created, resolve immediately
-        if (window.localStorage.is_app_already_installed) {
-            console.log('---App already installed -> skip media dir creation');
-            return true;
-        }
+    //     //if folders are already created, resolve immediately
+    //     if (window.localStorage.is_app_already_installed) {
+    //         console.log('---App already installed -> skip media dir creation');
+    //         return true;
+    //     }
 
-        //get handle of 'data/data/<package_name>/files/' on Android, or Library folder on iOS
-        console.log('Persistent Storage -> ' + Directory.Data);
+    //     //get handle of 'data/data/<package_name>/files/' on Android, or Library folder on iOS
+    //     console.log('Persistent Storage -> ' + Directory.Data);
 
-        dirs.forEach((dir) => {
-            _createMediaDirectory(dir);
-        });
+    //     dirs.forEach((dir) => {
+    //         _createMediaDirectory(dir);
+    //     });
 
-        return true;
-    },
+    //     return true;
+    // },
 
     //uses Cordova filesystem plugin
     createDirsLegacy () {
