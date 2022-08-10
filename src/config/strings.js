@@ -259,7 +259,7 @@ export const STRINGS = {
             project_info: 'Informazioni Progetto',
             version: 'Versione',
             advanced_settings: 'Impostazioni avanzate',
-            ok: 'Si',
+            ok: 'Ok',
             download_remote_entries: 'Scarica voci remote',
             remote_entry: 'Voce remota',
             download_warning: 'Questa azione rimuove tutte le voci remote esistenti sul dispositivo per questo progetto. Continuare?',
