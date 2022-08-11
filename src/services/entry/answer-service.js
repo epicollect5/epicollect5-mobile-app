@@ -179,7 +179,7 @@ export const answerService = {
                 answer = answer ? utilsService.getUserFormattedTime(answer, inputDetails.datetime_format) : ' ';
                 break;
             case PARAMETERS.QUESTION_TYPES.DATE:
-                answer = answer ? utilsService.getUserFormattedDateFromISOString(answer, inputDetails.datetime_format) : ' ';
+                answer = answer ? utilsService.getUserFormattedDate(answer, inputDetails.datetime_format) : ' ';
                 break;
             case PARAMETERS.QUESTION_TYPES.BRANCH:
                 if (answer[inputDetails.ref]) {

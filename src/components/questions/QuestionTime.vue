@@ -183,18 +183,18 @@ export default {
 			state.userFormattedTime = '';
 		} else {
 			//Get time regardless of timezone and daylight saving
-			state.userFormattedTime = services.utilsService.getUserFormattedTimeFixed(
+			state.userFormattedTime = services.utilsService.getUserFormattedTime(
 				state.answer.answer,
 				state.inputDetails.datetime_format
 			);
 
 			//show a "static" time in the time picker, i.e. no timezone parsing, no daylight
-			state.inputFormattedTime = services.utilsService.getInputFormattedTimeStatic(
+			state.inputFormattedTime = services.utilsService.getInputFormattedTime(
 				state.answer.answer,
 				state.inputDetails.datetime_format
 			);
 
-			state.pickerFormattedTime = services.utilsService.getPickerFormattedTimeStatic(
+			state.pickerFormattedTime = services.utilsService.getPickerFormattedTime(
 				state.answer.answer,
 				state.inputDetails.datetime_format
 			);
@@ -207,17 +207,17 @@ export default {
 		if (state.inputDetails.set_to_current_datetime && state.answer.answer === '') {
 			today = new Date();
 			//get time locale to display to user
-			state.inputFormattedTime = services.utilsService.getInputFormattedTimeLocale(
-				today,
+			state.inputFormattedTime = services.utilsService.getInputFormattedTime(
+				today.toISOString(),
 				state.inputDetails.datetime_format
 			);
-			state.pickerFormattedTime = services.utilsService.getPickerFormattedTimeLocale(
-				today,
+			state.pickerFormattedTime = services.utilsService.getPickerFormattedTime(
+				today.toISOString(),
 				state.inputDetails.datetime_format
 			);
 			//parse today's date to remove timezone -> we save the time locale without the timezone
 			state.answer.answer = services.utilsService.getISOTime(
-				today,
+				today.toISOString(),
 				state.inputDetails.datetime_format
 			);
 			//strip milliseconds for time picker display
@@ -345,7 +345,7 @@ export default {
 						const currentDate = new Date();
 						currentDate.setHours(currentHours, currentMinutes, currentSeconds);
 						state.answer.answer = services.utilsService.getISOTime(
-							currentDate,
+							currentDate.toISOString(),
 							state.inputDetails.datetime_format
 						);
 
@@ -391,13 +391,11 @@ export default {
 				// Set hours, minutes and seconds
 				today.setHours(hrs, minutes, seconds);
 				state.answer.answer = services.utilsService.getISOTime(
-					today,
+					today.toISOString(),
 					state.inputDetails.datetime_format
 				);
 				//set format for input
-				state.inputFormattedTime = services.utilsService.getInputFormattedTimeStatic(
-					state.answer.answer
-				);
+				state.inputFormattedTime = services.utilsService.getInputFormattedTime(state.answer.answer);
 				// set format for user
 				state.userFormattedTime = services.utilsService.getUserFormattedTime(
 					state.answer.answer,

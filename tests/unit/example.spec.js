@@ -1,12 +1,13 @@
-import { shallowMount } from '@vue/test-utils';
-import HelloWorld from '@/components/HelloWorld.vue';
+const user = {
+  name: 'John Doe',
+  age: 22
+};
 
-describe('HelloWorld.vue', () => {
-  it('renders props.msg when passed', () => {
-    const msg = 'new message';
-    const wrapper = shallowMount(HelloWorld, {
-      props: { msg }
-    });
-    expect(wrapper.text()).toMatch(msg);
-  });
+test('test example', () => {
+  expect(user.name).toBe('John Doe');
+  expect(user.age).toBe(22);
+});
+
+test('should work as expected', () => {
+  expect(Math.sqrt(4)).toBe(2);
 });

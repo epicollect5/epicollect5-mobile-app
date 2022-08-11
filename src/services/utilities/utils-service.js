@@ -33,41 +33,15 @@ export const utilsService = {
         return (offset < 0 ? '+' : '-') + ('00' + Math.floor(o / 60)).slice(-2) + ':' + ('00' + (o % 60)).slice(-2);
     },
 
-    /**
-     * Input type="date" wants the value to be set to YYYY-MM-DD
-     *
-     * @param input_date
-     * @returns {string}
-     */
-    getInputFormattedDate (input_date) {
-
-        const date = new Date(input_date);
-
-        const day = ('0' + date.getUTCDate()).slice(-2);
-        const month = ('0' + (date.getUTCMonth() + 1)).slice(-2);
-        const year = date.getUTCFullYear();
+    getInputFormattedDate (date) {
+        const year = date.slice(0, 4);
+        const month = date.slice(5, 7);
+        const day = date.slice(8, 10);
 
         return year + '-' + month + '-' + day;
     },
 
-    /**
-     * Input type="time" wants the value to be set to HH:mm
-     *
-     * @param input_date
-     * @returns {string}
-     */
-    //get time based on UTC
-    getInputFormattedTimeUTC (input_date) {
-
-        const date = new Date(input_date);
-        const hours = ('0' + date.getUTCHours()).slice(-2);
-        const minutes = ('0' + date.getUTCMinutes()).slice(-2);
-        const seconds = ('0' + date.getUTCSeconds()).slice(-2);
-
-        return hours + ':' + minutes + ':' + seconds;
-    },
-
-    getInputFormattedTimeStatic (input_date, format) {
+    getInputFormattedTime (input_date, format) {
 
         //"1970-01-01T01:03:00.000"
         const timepart = input_date.split('T')[1];
@@ -94,7 +68,8 @@ export const utilsService = {
         return formattedTime;
     },
 
-    getPickerFormattedTimeStatic (input_date, format) {
+    //picker is shown on device when time format has seconds
+    getPickerFormattedTime (input_date, format) {
 
         //"1970-01-01T01:03:00.000"
         const timepart = input_date.split('T')[1];
@@ -104,30 +79,22 @@ export const utilsService = {
 
         let formattedTime;
 
-        //remove seconds if not needed
         switch (format) {
-            case PARAMETERS.TIME_FORMAT_1:
-                //HH:mm:ss (24 hrs format)
-                formattedTime = hours + ':' + minutes + ':' + seconds;
-                break;
-            case PARAMETERS.TIME_FORMAT_2:
-                //hh:mm:ss (12 hrs format)
-                formattedTime = hours + ':' + minutes + ':' + seconds;
-                break;
             case PARAMETERS.TIME_FORMAT_5:
                 //mm:ss
                 formattedTime = minutes + ':' + seconds;
                 break;
             default:
+                //HH::mm::ss (24 hr) OR hh:mm:ss (12 hr) 
                 formattedTime = hours + ':' + minutes + ':' + seconds;
         }
 
         return formattedTime;
     },
 
-    getUserFormattedTimeFixed (input_date, format) {
+    getUserFormattedTime (dateISO, format) {
 
-        const timepart = input_date.split('T')[1];
+        const timepart = dateISO.split('T')[1];
         const hours24 = timepart.slice(0, 2);
         const minutes = timepart.slice(3, 5);
         const seconds = timepart.slice(6, 8);
@@ -169,156 +136,12 @@ export const utilsService = {
         return formatted_time;
     },
 
-    //get time based on user locale
-    getInputFormattedTimeLocale (inputDate, format) {
+    getUserFormattedDate (dateISO, format) {
 
-        const date = new Date(inputDate);
-        const hours = ('0' + date.getHours()).slice(-2);
-        const minutes = ('0' + date.getMinutes()).slice(-2);
-        const seconds = ('0' + date.getSeconds()).slice(-2);
-        let formattedTime;
+        const year = dateISO.slice(0, 4);
+        const month = dateISO.slice(5, 7);
+        const day = dateISO.slice(8, 10);
 
-        //remove seconds if not needed
-        switch (format) {
-            case PARAMETERS.TIME_FORMAT_3:
-                //HH:mm (24hrs format)
-                formattedTime = hours + ':' + minutes;
-                break;
-            case PARAMETERS.TIME_FORMAT_4:
-                //hh:mm (12 hrs format)
-                formattedTime = hours + ':' + minutes;
-                break;
-            default:
-                formattedTime = hours + ':' + minutes + ':' + seconds;
-        }
-
-        return formattedTime;
-    },
-
-    getPickerFormattedTimeLocale (inputDate, format) {
-
-        const date = new Date(inputDate);
-        const hours = ('0' + date.getHours()).slice(-2);
-        const minutes = ('0' + date.getMinutes()).slice(-2);
-        const seconds = ('0' + date.getSeconds()).slice(-2);
-        let formattedTime;
-
-        //remove seconds if not needed
-        switch (format) {
-            case PARAMETERS.TIME_FORMAT_3:
-                //HH:mm (24hrs format)
-                formattedTime = hours + ':' + minutes;
-                break;
-            case PARAMETERS.TIME_FORMAT_4:
-                //hh:mm (12 hrs format)
-                formattedTime = hours + ':' + minutes;
-                break;
-            case PARAMETERS.TIME_FORMAT_5:
-                //mm:ss
-                formattedTime = minutes + ':' + seconds;
-                break;
-            default:
-                formattedTime = hours + ':' + minutes + ':' + seconds;
-        }
-
-        return formattedTime;
-    },
-
-    getUserFormattedTimeUTC (input_date, format) {
-
-        const date = new Date(input_date);
-        const hours24 = ('0' + date.getUTCHours()).slice(-2);
-        const minutes = ('0' + date.getUTCMinutes()).slice(-2);
-        const seconds = ('0' + date.getUTCSeconds()).slice(-2);
-        let hours12;
-        let formatted_time;
-
-        //convert 24 format to 12 format
-        if (parseInt(hours24, 10) > 12) {
-            hours12 = ((parseInt(hours24, 10) + 11) % 12) + 1;
-            //prepend zero when needed
-            hours12 = hours12 < 10 ? '0' + hours12.toString() : hours12;
-        } else {
-            hours12 = hours24;
-        }
-
-        switch (format) {
-            case PARAMETERS.TIME_FORMAT_1:
-                //HH:mm:ss (24 hrs format)
-                formatted_time = hours24 + ':' + minutes + ':' + seconds;
-                break;
-            case PARAMETERS.TIME_FORMAT_2:
-                //hh:mm:ss (12 hrs format)
-                formatted_time = hours12 + ':' + minutes + ':' + seconds;
-                break;
-            case PARAMETERS.TIME_FORMAT_3:
-                //HH:mm (24hrs format)
-                formatted_time = hours24 + ':' + minutes;
-                break;
-            case PARAMETERS.TIME_FORMAT_4:
-                //hh:mm (12 hrs format)
-                formatted_time = hours12 + ':' + minutes;
-                break;
-            case PARAMETERS.TIME_FORMAT_5:
-                //mm:ss
-                formatted_time = minutes + ':' + seconds;
-                break;
-        }
-        return formatted_time;
-    },
-
-    /**
-     *
-     * @param input_date
-     * @param the_format
-     * @returns {string}
-     */
-    getUserFormattedDate (input_date, the_format) {
-
-        const date = new Date(input_date);
-        const format = the_format;
-        const day = ('0' + date.getDate()).slice(-2);
-        const month = ('0' + (date.getMonth() + 1)).slice(-2);
-        const year = date.getFullYear();
-        let formatted_date = '';
-
-        switch (format) {
-            case PARAMETERS.DATE_FORMAT_1:
-                //'dd/MM/YYYY',
-                formatted_date = day + '/' + month + '/' + year;
-                break;
-            case PARAMETERS.DATE_FORMAT_2:
-                //'MM/dd/YYYY',
-                formatted_date = month + '/' + day + '/' + year;
-                break;
-            case PARAMETERS.DATE_FORMAT_3:
-                formatted_date = year + '/' + month + '/' + day;
-                //'YYYY/MM/dd',
-                break;
-            case PARAMETERS.DATE_FORMAT_4:
-                //'MM/YYYY',
-                formatted_date = month + '/' + year;
-                break;
-            case PARAMETERS.DATE_FORMAT_5:
-                //'dd/MM',
-                formatted_date = day + '/' + month;
-                break;
-        }
-
-        return formatted_date;
-    },
-
-    getUserFormattedDateFromISOString (input_date, the_format) {
-        if (input_date === '') {
-            return '';
-        }
-
-        const date = input_date.split('T');
-        const dateParts = date[0].split('-');
-        const format = the_format;
-        const day = dateParts[2];
-        const month = dateParts[1];
-        const year = dateParts[0];
         let formattedDate = '';
 
         switch (format) {
@@ -343,63 +166,8 @@ export const utilsService = {
                 formattedDate = day + '/' + month;
                 break;
         }
+
         return formattedDate;
-    },
-
-    /**
-     *
-     * @param input_date
-     * @param format
-     * @returns {string}
-     */
-    getUserFormattedTime (input_date, format) {
-
-        if (input_date === '' || format === '') {
-            return '';
-        }
-
-        const date = input_date.split('T');
-        const timeParts = date[1].split(':');
-        const hours24 = timeParts[0];
-        const ampm = hours24 >= 12 ? 'PM' : 'AM';
-
-        let hours12;
-        const minutes = timeParts[1];
-        const seconds = timeParts[2].slice(0, 2);
-        let formatted_time;
-
-        //convert 24 format to 12 format
-        if (parseInt(hours24, 10) > 12) {
-            hours12 = ((parseInt(hours24, 10) + 11) % 12) + 1;
-            //prepend zero when needed
-            hours12 = hours12 < 10 ? '0' + hours12.toString() : hours12;
-        } else {
-            hours12 = hours24;
-        }
-
-        switch (format) {
-            case PARAMETERS.TIME_FORMAT_1:
-                //HH:mm:ss (24 hrs format)
-                formatted_time = hours24 + ':' + minutes + ':' + seconds;
-                break;
-            case PARAMETERS.TIME_FORMAT_2:
-                //hh:mm:ss (12 hrs format)
-                formatted_time = hours12 + ':' + minutes + ':' + seconds + ' ' + ampm;
-                break;
-            case PARAMETERS.TIME_FORMAT_3:
-                //HH:mm (24hrs format)
-                formatted_time = hours24 + ':' + minutes;
-                break;
-            case PARAMETERS.TIME_FORMAT_4:
-                //hh:mm (12 hrs format)
-                formatted_time = hours12 + ':' + minutes + ' ' + ampm;
-                break;
-            case PARAMETERS.TIME_FORMAT_5:
-                //mm:ss
-                formatted_time = minutes + ':' + seconds;
-                break;
-        }
-        return formatted_time;
     },
 
     /*
@@ -432,21 +200,12 @@ export const utilsService = {
         return uuid + '_' + this.generateTimestamp() + ext;
     },
 
-    /**
-     * Generate a timestamp in ms
-     *
-     * @returns {number}
-     */
     generateTimestamp () {
         return Math.floor(Date.now() / 1000);
     },
 
-    /** Get ISO8601 representation in UTC, removing timezone
-     *
-     * @param date
-     * @returns {string}
-     */
-    getIsoDateTime (date) {
+    //Get ISO8601 representation in UTC, removing timezone
+    getISODateTime (date) {
 
         const self = this;
 
@@ -463,18 +222,13 @@ export const utilsService = {
     },
 
     //get ISO date with time set to 00:00:00.000
-    getISODateOnly (date) {
+    getISODateOnly (dateISO) {
 
-        let current_date = date.getDate();
-        let current_month = date.getMonth() + 1;
-        const current_year = date.getFullYear();
-
-        // Add 0 before date, month if they are less than 0
-        current_date = current_date < 10 ? '0' + current_date : current_date;
-        current_month = current_month < 10 ? '0' + current_month : current_month;
-
-        // String such as 2016-07-16T00:00:00
-        return current_year + '-' + current_month + '-' + current_date + 'T00:00:00.000';
+        const year = dateISO.slice(0, 4);
+        const month = dateISO.slice(5, 7);
+        const day = dateISO.slice(8, 10);
+        // String such as 2016-07-16T00:00:00.000
+        return year + '-' + month + '-' + day + 'T00:00:00.000';
     },
 
 
@@ -515,36 +269,22 @@ export const utilsService = {
     //get time in ISO format with milliseconds set to .000
     getISOTime (dt) {
 
-        let current_date = dt.getDate();
-        let current_month = dt.getMonth() + 1;
-        const current_year = dt.getFullYear();
-        let current_hrs = dt.getHours();
-        let current_mins = dt.getMinutes();
-        let current_secs = dt.getSeconds();
-        let current_millisecs = dt.getMilliseconds();
+        let date = dt.getDate();
+        let month = dt.getMonth() + 1;
+        const year = dt.getFullYear();
+        let hrs = dt.getHours();
+        let mins = dt.getMinutes();
+        let secs = dt.getSeconds();
 
         // Add 0 before date, month, hrs, mins or secs if they are less than 0
-        current_date = current_date < 10 ? '0' + current_date : current_date;
-        current_month = current_month < 10 ? '0' + current_month : current_month;
-        current_hrs = current_hrs < 10 ? '0' + current_hrs : current_hrs;
-        current_mins = current_mins < 10 ? '0' + current_mins : current_mins;
-        current_secs = current_secs < 10 ? '0' + current_secs : current_secs;
-
-        //add leading 0 or 00 to milliseconds
-        if (current_millisecs < 100) {
-            if (current_millisecs < 10) {
-                current_millisecs = '00' + current_millisecs;
-            }
-            else {
-                current_millisecs = '0' + current_millisecs;
-            }
-        }
+        date = date < 10 ? '0' + date : date;
+        month = month < 10 ? '0' + month : month;
+        hrs = hrs < 10 ? '0' + hrs : hrs;
+        mins = mins < 10 ? '0' + mins : mins;
+        secs = secs < 10 ? '0' + secs : secs;
 
         // Current datetime
-        // String such as 2016-07-16T19:20:30.000
-        const current_datetime = current_year + '-' + current_month + '-' + current_date + 'T' + current_hrs + ':' + current_mins + ':' + current_secs + '.000';
-
-        return current_datetime;
+        return year + '-' + month + '-' + date + 'T' + hrs + ':' + mins + ':' + secs + '.000';
     },
 
     //convert a local date to UTC date, so real date without the timezone offset added in
@@ -583,15 +323,9 @@ export const utilsService = {
             date.getDate()
         );
 
-        console.log('timezone offset ->', compDate.getTimezoneOffset() * 60 * 1000);
         //remove timezone
         compDate.setTime(compDate.getTime() + compDate.getTimezoneOffset() * 60 * 1000);
         return compDate;
-    },
-
-    //strip milliseconds from Date() for display on time picker
-    stripMillisecondsfromDate (date) {
-        return new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
     },
 
     /**

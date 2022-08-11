@@ -81,8 +81,8 @@ export const databaseInsertService = {
             '',//synced_error
             entry.canEdit,//can_edit
             entry.isRemote ? entry.isRemote : 0,//is_remote
-            (entry.createdAt ? entry.createdAt : utilsService.getIsoDateTime()),//created_at
-            entry.updatedAt ? entry.updatedAt : utilsService.getIsoDateTime(),//updated_at
+            (entry.createdAt ? entry.createdAt : utilsService.getISODateTime()),//created_at
+            entry.updatedAt ? entry.updatedAt : utilsService.getISODateTime(),//updated_at
             (entry.title !== '' ? entry.title.trim() : entry.entryUuid)
         ];
 
@@ -261,8 +261,8 @@ export const databaseInsertService = {
             '',
             1,
             0,
-            (branchEntry.createdAt ? branchEntry.createdAt : utilsService.getIsoDateTime()),
-            utilsService.getIsoDateTime(),
+            (branchEntry.createdAt ? branchEntry.createdAt : utilsService.getISODateTime()),
+            utilsService.getISODateTime(),
             (branchEntry.title !== '' ? branchEntry.title.trim() : branchEntry.entryUuid)
         ];
 

@@ -144,7 +144,7 @@ export default {
 		if (state.answer.answer === '') {
 			state.userFormattedDate = '';
 		} else {
-			state.userFormattedDate = services.utilsService.getUserFormattedDateFromISOString(
+			state.userFormattedDate = services.utilsService.getUserFormattedDate(
 				state.answer.answer,
 				state.inputDetails.datetime_format
 			);
@@ -155,9 +155,9 @@ export default {
 			//console.log(state.answer.answer + services.utilsService.getTimeZone());
 
 			//see this answer for Safari issues https://goo.gl/guXxh7
-			// state.date.answer =
-			// 	state.answer.answer + services.utilsService.getTimeZone();
-
+			//debugger;
+			//state.date.answer = state.answer.answer + services.utilsService.getTimeZone();
+			//imp: timezone not needed for a input type date, YYYY-MM-DD, ??
 			state.date.answer = state.answer.answer.substring(0, 10);
 		}
 
@@ -165,15 +165,15 @@ export default {
 		if (state.inputDetails.set_to_current_datetime && state.answer.answer === '') {
 			//Important: we need to hack it a bit to get the absolute date, without timezone offset
 			today = new Date();
-			state.inputFormattedDate = services.utilsService.getInputFormattedDate(today);
+			state.inputFormattedDate = services.utilsService.getInputFormattedDate(today.toISOString());
 			state.answer.answer = services.utilsService.getISODateOnly(
-				today,
+				today.toISOString(),
 				state.inputDetails.datetime_format
 			); //no timezone!
 			//show today's date in input type "date" on first run
 			state.date.answer = state.inputFormattedDate;
 			state.userFormattedDate = services.utilsService.getUserFormattedDate(
-				today.toString(),
+				today.toISOString(),
 				state.inputDetails.datetime_format
 			);
 		}
@@ -233,7 +233,7 @@ export default {
 				} else {
 					// Set model
 					state.answer.answer = services.utilsService.getISODateOnly(
-						new Date(state.date.answer),
+						state.date.answer,
 						state.inputDetails.datetime_format
 					); //no timezone!
 					state.inputFormattedDate = services.utilsService.getInputFormattedDate(
