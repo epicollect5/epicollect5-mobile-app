@@ -1,4 +1,3 @@
-
 import { useRootStore } from '@/stores/root-store';
 import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
@@ -364,7 +363,7 @@ export const JSONTransformerService = {
                         });
                         break;
                     case PARAMETERS.QUESTION_TYPES.CHECKBOX:
-                    case PARAMETERS.QUESTION_TYPES.SEARCHSINGLE:
+                    case PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE:
                     case PARAMETERS.QUESTION_TYPES.SEARCHMULTIPLE: {
                         //map multiple possible answers (answer is array)
                         const rawAnswers = [];

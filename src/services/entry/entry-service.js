@@ -179,8 +179,8 @@ export const entryService = {
         // This is to make sure the user reaches the end of the entry
         // before saving, so the jumps and answers retain their integrity
         if (this.actionState === PARAMETERS.ENTRY_EDIT &&
-            params.main_input_details.jumps.length > 0 &&
-            (typeof this.entry.answers[params.main_input_details.ref] !== 'undefined' && params.current_answer !== this.entry.answers[params.main_input_details.ref].answer)) {
+            params.mainInputDetails.jumps.length > 0 &&
+            (typeof this.entry.answers[params.mainInputDetails.ref] !== 'undefined' && params.current_answer !== this.entry.answers[params.mainInputDetails.ref].answer)) {
             this.allowSave = false;
         }
 

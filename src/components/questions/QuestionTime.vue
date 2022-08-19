@@ -217,7 +217,7 @@ export default {
 			);
 			//parse today's date to remove timezone -> we save the time locale without the timezone
 			state.answer.answer = services.utilsService.getISOTime(
-				today.toISOString(),
+				today,
 				state.inputDetails.datetime_format
 			);
 			//strip milliseconds for time picker display
@@ -345,7 +345,7 @@ export default {
 						const currentDate = new Date();
 						currentDate.setHours(currentHours, currentMinutes, currentSeconds);
 						state.answer.answer = services.utilsService.getISOTime(
-							currentDate.toISOString(),
+							currentDate,
 							state.inputDetails.datetime_format
 						);
 
@@ -391,7 +391,7 @@ export default {
 				// Set hours, minutes and seconds
 				today.setHours(hrs, minutes, seconds);
 				state.answer.answer = services.utilsService.getISOTime(
-					today.toISOString(),
+					today,
 					state.inputDetails.datetime_format
 				);
 				//set format for input

@@ -29,7 +29,7 @@ export async function handleNext (state, scope) {
             // And all verified answers
             confirmAnswer: state.confirmAnswer,
             // Send in the main input details
-            main_input_details: state.inputDetails,
+            mainInputDetails: state.inputDetails,
             // And the current error object
             error: state.error
         });

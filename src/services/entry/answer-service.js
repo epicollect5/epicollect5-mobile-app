@@ -17,7 +17,6 @@ export const answerService = {
         return new Promise((resolve, reject) => {
             this.validateAndRetrieveAnswer(entry, params).then(function (response) {
                 // Reset errors for the input refs handed back in the response
-
                 errorsService.resetEntryErrors(params.error, response.inputRefs);
                 resolve();
             }, function (error) {
@@ -32,12 +31,11 @@ export const answerService = {
      */
     validateAndRetrieveAnswer (entry, params) {
 
-
         const rootStore = useRootStore();
         const language = rootStore.language;
         const answers = params.answers;
         const confirmAnswer = params.confirmAnswer;
-        const mainInput = params.main_input_details;
+        const mainInput = params.mainInputDetails;
         let i;
         const promises = [];
         const inputsExtra = projectModel.getExtraInputs();
@@ -183,9 +181,8 @@ export const answerService = {
                 break;
             case PARAMETERS.QUESTION_TYPES.BRANCH:
                 if (answer[inputDetails.ref]) {
-                    answer = answer[inputDetails.ref] + ' ' + (answer[inputDetails.ref] > 1 ? 'entries' : 'entry');
+                    answer = answer[inputDetails.ref] + ' ' + (answer[inputDetails.ref] > 1 ? STRINGS[language].labels.entries : STRINGS[language].labels.entry);
                 } else {
-                    answer = '0 entries';
                     answer = '0 ' + STRINGS[language].labels.entries;
                 }
                 break;
@@ -194,7 +191,6 @@ export const answerService = {
     },
     // Generate a default answer
     generateAnswer (entry, inputRef) {
-
 
         const inputsExtra = projectModel.getExtraInputs();
         const inputDetails = inputsExtra[inputRef].data;
@@ -209,7 +205,6 @@ export const answerService = {
                 const groupInputDetails = inputsExtra[group[inputDetails.ref][j]].data;
                 // Add answer
                 entry.answers[groupInputDetails.ref] = this.createDefaultAnswer(groupInputDetails);
-
             }
         }
     },

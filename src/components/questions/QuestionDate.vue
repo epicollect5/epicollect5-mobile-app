@@ -155,7 +155,7 @@ export default {
 			//console.log(state.answer.answer + services.utilsService.getTimeZone());
 
 			//see this answer for Safari issues https://goo.gl/guXxh7
-			//debugger;
+			//;
 			//state.date.answer = state.answer.answer + services.utilsService.getTimeZone();
 			//imp: timezone not needed for a input type date, YYYY-MM-DD, ??
 			state.date.answer = state.answer.answer.substring(0, 10);

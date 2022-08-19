@@ -9,15 +9,11 @@ export const commonValidate = {
      * set in the app config file
      */
     answerTooLong (answer, type) {
-        const typeString = type.toUpperCase();
-
-        if (answer !== null &&
-            typeof answer !== 'undefined' &&
-            typeof PARAMETERS.QUESTION_ANSWER_MAX_LENGTHS[typeString] !== 'undefined') {
-
-            return (answer.toString().length > PARAMETERS.QUESTION_ANSWER_MAX_LENGTHS[typeString]);
+        const maxLength = PARAMETERS.QUESTION_ANSWER_MAX_LENGTHS[type.toUpperCase()];
+        if (!maxLength || !answer) {
+            return false;
         }
-        return false;
+        return (answer.toString().length > maxLength);
     },
     // Check that the answer matches one of the possible answers
     possibleAnswerNotMatched (answer, inputDetails) {
@@ -61,6 +57,8 @@ export const commonValidate = {
 
         // Retrieve validator based on input type
         const validator = this.validators[params.input_details.type];
+
+
 
         // If we have a validator for this input type, run checks
         if (validator) {
