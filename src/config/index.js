@@ -3,7 +3,7 @@ export const PARAMETERS = {
     USER_GUIDE_URL: 'https://docs.epicollect.net',
     COMMUNITY_SUPPORT_URL: 'https://community.epicollect.net',
 
-    DEBUG: false,
+    DEBUG: process.env.VUE_APP_DEBUG,
     // url production
     DEFAULT_SERVER_URL: 'https://five.epicollect.net',
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',
@@ -148,22 +148,23 @@ export const PARAMETERS = {
     },
 
     QUESTION_ANSWER_MAX_LENGTHS: {
-        TEXT_TYPE: 255,
-        TEXTAREA_TYPE: 1000,
-        INTEGER_TYPE: 255,
-        DECIMAL_TYPE: 255,
-        DATE_TYPE: 25,
-        TIME_TYPE: 25,
-        RADIO_TYPE: 13,
+        TEXT: 255,
+        PHONE: 255,
+        TEXTAREA: 1000,
+        INTEGER: 255,
+        DECIMAL: 255,
+        DATE: 25,
+        TIME: 25,
+        RADIO: 13,
         //CHECKBOX: '',
-        DROPDOWN_TYPE: 13,
-        BARCODE_TYPE: 255,
+        DROPDOWN: 13,
+        BARCODE: 255,
         //LOCATION: '',
-        AUDIO_TYPE: 51,
-        VIDEO_TYPE: 51,
-        PHOTO_TYPE: 51,
-        BRANCH_TYPE: 0,
-        GROUP_TYPE: 0
+        AUDIO: 51,
+        VIDEO: 51,
+        PHOTO: 51,
+        BRANCH: 0,
+        GROUP: 0
     },
 
     //date formats
