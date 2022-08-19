@@ -778,5 +778,69 @@ export const utilsService = {
     },
     getSecondsColumnPicker () {
         return this.getMinutesColumnPicker();
+    },
+    //generate PHP type uniqid to be appended to form, inputs, branch and groups
+    generateUniqID (prefix, more_entropy) {
+        if (typeof prefix === 'undefined') {
+            prefix = '';
+        }
+
+        let retId;
+        const formatSeed = function (seed, reqWidth) {
+            seed = parseInt(seed, 10)
+                .toString(16); // to hex str
+            if (reqWidth < seed.length) {
+                // so long we split
+                return seed.slice(seed.length - reqWidth);
+            }
+            if (reqWidth > seed.length) {
+                // so short we pad
+                return Array(1 + (reqWidth - seed.length))
+                    .join('0') + seed;
+            }
+            return seed;
+        };
+
+        // BEGIN REDUNDANT
+        if (!this.php_js) {
+            this.php_js = {};
+        }
+        // END REDUNDANT
+        if (!this.php_js.uniqidSeed) {
+            // init seed with big random int
+            this.php_js.uniqidSeed = Math.floor(Math.random() * 0x75bcd15);
+        }
+        this.php_js.uniqidSeed++;
+
+        // start with prefix, add current milliseconds hex string
+        retId = prefix;
+        retId += formatSeed(parseInt(new Date()
+            .getTime() / 1000, 10), 8);
+        // add seed hex string
+        retId += formatSeed(this.php_js.uniqidSeed, 5);
+        if (more_entropy) {
+            // for more entropy we add a float lower to 10
+            retId += (Math.random() * 10)
+                .toFixed(8)
+                .toString();
+        }
+
+        return retId;
+    },
+    getRandomInRange (from, to, fixed) {
+        return (Math.random() * (to - from) + from).toFixed(fixed) * 1;
+        // .toFixed() returns string, so ' * 1' is a trick to convert to number
+    },
+    getRandomLocation (centerlon, centerlat) {
+
+        function normish (mean, range) {
+            const num_out = ((Math.random() + Math.random() + Math.random() + Math.random() - 2) / 2) * range + mean;
+            return num_out;
+        }
+
+        const x = normish(0, 0.01);
+        const y = normish(0, 0.01);
+        return { longitude: (((x * 0.1) + centerlon)).toFixed(6), latitude: (((y * 0.1) + centerlat)).toFixed(6), accuracy: this.getRandomInRange(3, 100, 0) };
+
     }
 };

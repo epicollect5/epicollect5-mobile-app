@@ -7,6 +7,12 @@ import { radioValidate } from '@/services/validation/radio-validate';
 import { dateValidate } from '@/services/validation/date-validate';
 import { timeValidate } from '@/services/validation/time-validate';
 import { textareaValidate } from '@/services/validation/textarea-validate';
+import { phoneValidate } from '@/services/validation/phone-validate';
+import { checkboxValidate } from '@/services/validation/checkbox-validate';
+import { barcodeValidate } from '@/services/validation/barcode-validate';
+import { locationValidate } from '@/services/validation/location-validate';
+import { searchsingleValidate } from '@/services/validation/searchsingle-validate';
+import { searchmultipleValidate } from '@/services/validation/searchmultiple-validate';
 import { commonValidate } from '@/services/validation/common-validate';
 
 import { PARAMETERS } from '@/config';
@@ -30,23 +36,29 @@ export const answerValidateService = {
         // Set up the validators to use
         commonValidate.setValidators({
             text: textValidate,
+            phone: phoneValidate,
             integer: integerValidate,
             decimal: decimalValidate,
             radio: radioValidate,
             dropdown: dropdownValidate,
             date: dateValidate,
             time: timeValidate,
-            textarea: textareaValidate
+            textarea: textareaValidate,
+            checkbox: checkboxValidate,
+            barcode: barcodeValidate,
+            searchsingle: searchsingleValidate,
+            searchmultiple: searchmultipleValidate,
+            location: locationValidate
         });
 
         // Reset errors object
         this.resetErrors();
+
         const answer = params.answer.answer;
         //is there a confirmAnswer set?
         const confirmAnswer = params.confirmAnswer?.answer;
 
         return new Promise((resolve, reject) => {
-
             self.isUnique(entry, params.input_details, answer).then(function (response) {
 
                 self.inputRef = params.input_details.ref;
@@ -90,6 +102,7 @@ export const answerValidateService = {
                 }
 
                 // Checks this answer against the input type
+
                 if (!commonValidate.answerChecks(params)) {
                     // Assign errors from the answer validator helper
                     self.errors = commonValidate.getErrors();
@@ -133,6 +146,7 @@ export const answerValidateService = {
         switch (inputDetails.type) {
             //Also lowercase() open-text answers for comparison
             case PARAMETERS.QUESTION_TYPES.TEXT:
+            case PARAMETERS.QUESTION_TYPES.BARCODE:
             case PARAMETERS.QUESTION_TYPES.PHONE:
             case PARAMETERS.QUESTION_TYPES.TEXTAREA:
                 answer = answer.toLowerCase();
@@ -152,7 +166,6 @@ export const answerValidateService = {
             if (checkUnique && inputDetails.uniqueness !== 'none' && answer !== '') {
 
                 databaseSelectService.isUnique(entry, inputDetails, answer).then(function (res) {
-
                     // If there exists an entry in the db with this answer, resolve false
                     if (res.rows.length > 0) {
                         resolve(false);

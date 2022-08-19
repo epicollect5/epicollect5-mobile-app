@@ -18,7 +18,8 @@
     "all-build": "ionic cap copy",
     "all-copy": "ionic cap copy --no-build",
     "vitest": "vitest",
-    "vitest-ui": "vitest --ui"
+    "vitest-ui": "vitest --ui",
+    "prod": "vitest run  && ionic cap copy"
   },
   "dependencies": {
     "@awesome-cordova-plugins/wheel-selector": "^5.44.0",
@@ -91,7 +92,7 @@
     "@vue/cli-plugin-unit-jest": "^5.0.6",
     "@vue/cli-service": "^5.0.6",
     "@vue/compiler-sfc": "^3.0.0-0",
-    "@vue/test-utils": "^2.0.0-rc.18",
+    "@vue/test-utils": "^2.0.2",
     "an-array-of-english-words": "^2.0.0",
     "an-array-of-german-words": "^1.2.0",
     "an-array-of-spanish-words": "^2.0.0",

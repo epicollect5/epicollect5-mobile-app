@@ -4,7 +4,6 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
 import { vi } from 'vitest';
 
-
 describe('UUID', () => {
     it('should be valid UUID v4', () => {
         const uuid = utilsService.uuid();
