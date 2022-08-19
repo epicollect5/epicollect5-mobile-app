@@ -35,23 +35,6 @@ export const fakeAnswerService = {
                 return d.toISOString();
             }
 
-            function normish (mean, range) {
-                const num_out = ((Math.random() + Math.random() + Math.random() + Math.random() - 2) / 2) * range + mean;
-                return num_out;
-            }
-
-            function getRandomLocation (centerlon, centerlat) {
-                const x = normish(0, 0.01);
-                const y = normish(0, 0.01);
-                return { longitude: (((x * 0.1) + centerlon)).toFixed(6), latitude: (((y * 0.1) + centerlat)).toFixed(6), accuracy: getRandomInRange(3, 100, 0) };
-
-            }
-
-            function getRandomInRange (from, to, fixed) {
-                return (Math.random() * (to - from) + from).toFixed(fixed) * 1;
-                // .toFixed() returns string, so ' * 1' is a trick to convert to number
-            }
-
             function randomIntegerInRange (min, max) {
                 return Math.floor(Math.random() * (max - min + 1)) + min;
             }
@@ -154,13 +137,15 @@ export const fakeAnswerService = {
                     resolve(answer);
                     break;
 
-                case 'location':
+                case 'location': {
                     //Mirko Locations (whole world range are -170 + 170 for lat, -80 +80 for long, considering a bit of padding)
                     //please amend accordingly
-                    answer.answer = getRandomLocation(getRandomInRange(-160, 160, 5), getRandomInRange(-80, 80, 5));
+                    const lat = services.utilsService.getRandomInRange(-160, 160, 5);
+                    const lng = services.utilsService.getRandomInRange(-80, 80, 5);
+                    answer.answer = services.utilsService.getRandomLocation(lat, lng);
                     resolve(answer);
                     break;
-
+                }
                 case 'date':
                     answer.answer = randomDate(365);
                     resolve(answer);
