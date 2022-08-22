@@ -221,11 +221,11 @@ export default {
 					// We need to load the owner entry
 					services.databaseSelectService
 						.selectEntry(entry.owner_entry_uuid, null)
-						.then(function(res) {
+						.then(function (res) {
 							// Set up the owner entry
 							const ownerEntry = entryModel;
 							ownerEntry.initialise(res.rows.item(0));
-							services.entryService.setUpExisting(ownerEntry).then(function() {
+							services.entryService.setUpExisting(ownerEntry).then(function () {
 								// Go to the branch owner question
 								rootStore.routeParams = {
 									formRef: entry.form_ref,
@@ -248,7 +248,7 @@ export default {
 
 		function mapRefNames() {
 			let branchRef;
-			const inputs = projectModel.getInputsExtra();
+			const inputs = projectModel.getExtraInputs();
 			let branches;
 
 			for (const key in state.forms) {

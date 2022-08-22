@@ -2,7 +2,6 @@ import { utilsService } from '@/services/utilities/utils-service';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { setActivePinia, createPinia } from 'pinia';
-//import { errorsService } from '@/services/errors-service';
 import { answerService } from '@/services/entry/answer-service';
 import { useRootStore } from '@/stores/root-store';
 import { vi } from 'vitest';

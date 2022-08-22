@@ -64,9 +64,6 @@ export const projectModel = {
     getInputs (formRef) {
         return (this.project_extra.forms[formRef].inputs) ? this.project_extra.forms[formRef].inputs : {};
     },
-    getInputsExtra () {
-        return (this.project_extra.inputs) ? this.project_extra.inputs : {};
-    },
     getExtraStructure () {
         return (this.project_extra) ? this.project_extra : {};
     },
