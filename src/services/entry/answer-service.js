@@ -311,7 +311,7 @@ export const answerService = {
         const getTitles = function (input) {
 
             switch (input.type) {
-                case 'group': {
+                case PARAMETERS.QUESTION_TYPES.GROUP: {
                     // Loop group inputs
                     for (groupIndex = 0; groupIndex < group[input.ref].length; groupIndex++) {
                         groupInputRef = group[input.ref][groupIndex];
@@ -322,10 +322,12 @@ export const answerService = {
                     }
                 }
                     break;
-                case 'readme':
+                case PARAMETERS.QUESTION_TYPES.README:
                     // readme types have no answer
                     break;
-                case 'checkbox':
+                case PARAMETERS.QUESTION_TYPES.CHECKBOX:
+                case PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE:
+                case PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE:
                     // checkbox types are arrays
                     if (entry.answers[input.ref]) {
                         answer = entry.answers[input.ref].answer;
@@ -337,7 +339,7 @@ export const answerService = {
                     }
                     break;
                 default: {
-                    // Default i.e. any other input
+                    // Default i.e. any other question
                     // Check we have an answer
                     if (entry.answers[input.ref]) {
                         answer = entry.answers[input.ref].answer;
