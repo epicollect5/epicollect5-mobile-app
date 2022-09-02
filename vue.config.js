@@ -57,5 +57,10 @@ module.exports = {
             .type('javascript/auto')
             .include.add(/node_modules/)
             .end();
+    },
+    pwa: {
+        assetsVersion: '5.0.5',
+        themeColor: '#673C90',
+        msTileColor: '#FFFFFF'
     }
 };
