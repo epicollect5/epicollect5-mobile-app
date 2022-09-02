@@ -593,57 +593,42 @@ export const utilsService = {
         return mime_type;
     },
 
-    getProjectNameMarkup () {
+    getProjectNameMarkup (hideName) {
 
-        let appStorePath = '';
+        let appStoragePath = '';
         let markup = '';
-
         const rootStore = useRootStore();
 
-        if (rootStore.device.platform === PARAMETERS.WEB) {
-            markup = projectModel.getProjectName();
+        //PWA + WEB debug
+        if (!Capacitor.isNativePlatform()) {
+            //PWA (or WEB debug) gets project logo from server
+            console.log(rootStore.serverUrl);
+            const projectSlug = projectModel.getSlug();
+            const apiEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.MEDIA;
+            const logoURL = rootStore.serverUrl + apiEndpoint + projectSlug + PARAMETERS.API.PARAMS.PROJECT_LOGO_QUERY_STRING;
+
+            markup = '<img class="project-logo" width="32" height="32" src="' + logoURL + '"/>';
+            markup += hideName ? '' : '<span>&nbsp;' + projectModel.getProjectName().toUpperCase() + '</span>';
         }
 
-        if (projectModel.getProjectRef() === DEMO_PROJECT.PROJECT_REF) {
-            //Hack for iOS
-            appStorePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectModel.getProjectRef() + '/mobile-logo.jpg?' + new Date().getTime();
-            markup = '<img class="project-logo" width="32" height="32" src="' + appStorePath + '" onError="this.src = \'assets/images/ec5-demo-project-logo.jpg\'"/><span>&nbsp;' + projectModel.getProjectName().toUpperCase() + '</span>';
-        }
-        else {
-            appStorePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectModel.getProjectRef() + '/mobile-logo.jpg?' + new Date().getTime();
-
-            //fix for WKWebView
-            appStorePath = Capacitor.convertFileSrc(appStorePath);
-
-            markup = '<img class="project-logo" width="32" height="32" src="' + appStorePath + '" onError="this.src = \'assets/images/ec5-placeholder-100x100.jpg\'"/><span >&nbsp;' + projectModel.getProjectName().toUpperCase() + '</span>';
+        //Android & iOS
+        if (Capacitor.isNativePlatform()) {
+            if (projectModel.getProjectRef() === DEMO_PROJECT.PROJECT_REF) {
+                appStoragePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectModel.getProjectRef() + '/mobile-logo.jpg?' + new Date().getTime();
+                markup = '<img class="project-logo" width="32" height="32" src="' + appStoragePath + '" onError="this.src = \'assets/images/ec5-demo-project-logo.jpg\'"/>';
+                markup += hideName ? '' : '<span>&nbsp;' + projectModel.getProjectName().toUpperCase() + '</span>';
+            }
+            else {
+                appStoragePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectModel.getProjectRef() + '/mobile-logo.jpg?' + new Date().getTime();
+                //fix for WKWebView
+                appStoragePath = Capacitor.convertFileSrc(appStoragePath);
+                markup = '<img class="project-logo" width="32" height="32" src="' + appStoragePath + '" onError="this.src = \'assets/images/ec5-placeholder-100x100.jpg\'"/>';
+                markup += hideName ? '' : '<span >&nbsp;' + projectModel.getProjectName().toUpperCase() + '</span>';
+            }
         }
 
         return markup;
     },
-    getProjectLogoMarkup () {
-
-        let appStorePath = '';
-        let markup = '';
-
-        const rootStore = useRootStore();
-
-        if (projectModel.getProjectRef() === DEMO_PROJECT.PROJECT_REF) {
-            //Hack for iOS
-            appStorePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectModel.getProjectRef() + '/mobile-logo.jpg?' + new Date().getTime();
-            markup = '<img class="project-logo" width="32" height="32" src="' + appStorePath + '" onError="this.src = \'assets/images/ec5-demo-project-logo.jpg\'"/>';
-        }
-        else {
-            appStorePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectModel.getProjectRef() + '/mobile-logo.jpg?' + new Date().getTime();
-
-            //fix for WKWebView
-            appStorePath = Capacitor.convertFileSrc(appStorePath);
-
-            markup = '<img class="project-logo" width="32" height="32" src="' + appStorePath + '" onError="this.src = \'assets/images/ec5-placeholder-100x100.jpg\'"/>';
-        }
-
-        return markup;
-    },
-    //truncate a string based on desired length
     trunc (str, desiredLength) {
         return (str.length > desiredLength) ? str.substr(0, desiredLength) + '...' : str;
     },
