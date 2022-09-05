@@ -16,5 +16,6 @@ export default defineConfig({
             '@ionic/vue': fileURLToPath(new URL('./node_modules/@ionic/vue/dist/index.esm', import.meta.url))
         }
     },
+    clearScreen: true,
     plugins: [vue(), viteCommonjs()]
 });

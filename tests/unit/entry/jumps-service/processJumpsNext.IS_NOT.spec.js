@@ -45,7 +45,7 @@ const jsonExtra = {
                         jumps: [
                             {
                                 to: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c78f39a',
-                                when: 'IS',
+                                when: 'IS_NOT',
                                 answer_ref: '6311cc468f3a0'
                             }
                         ],
@@ -128,7 +128,7 @@ const jsonExtra = {
                 jumps: [
                     {
                         to: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c78f39a',
-                        when: 'IS',
+                        when: 'IS_NOT',
                         answer_ref: '6311cc468f3a0'
                     }
                 ],
@@ -257,7 +257,7 @@ const inputDetails = {
     jumps: [
         {
             to: inputRefDestination,
-            when: 'IS',
+            when: 'IS_NOT',
             answer_ref: '6311cc468f3a0'
         }
     ],
@@ -282,21 +282,306 @@ const answer = { was_jumped: false, answer: ['6311cc468f3a0'] };
 const nextInputIndex = 1;
 const nextInputRef = '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399';
 
-describe('processJumpsNext (jump when answer IS 1)', () => {
+describe('processJumpsNext (jump when answer IS NOT 1)', () => {
 
     beforeEach(() => {
         projectModel.initialise(projectData);
         inputDetails.jumps = [
             {
                 to: inputRefDestination,
-                when: 'IS',
+                when: 'IS_NOT',
                 answer_ref: '6311cc468f3a0'
             }
         ];
     });
 
     //todo: add multiple choice questions
-    it(PARAMETERS.QUESTION_TYPES.RADIO + ' ' + PARAMETERS.JUMPS.IS, () => {
+    it(PARAMETERS.QUESTION_TYPES.RADIO + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
+
+        inputDetails.type = PARAMETERS.QUESTION_TYPES.RADIO;
+        inputDetails.possible_answers = [
+            {
+                answer: '1',
+                answer_ref: '6311cc468f3a0'
+            },
+            {
+                answer: '2',
+                answer_ref: '6311cc508f3a1'
+            },
+            {
+                answer: '3',
+                answer_ref: '6311cc538f3a2'
+            }
+        ];
+
+        //1 (not jumping)
+        answer.answer = '6311cc468f3a0';
+        let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2 (jumping)
+        answer.answer = '6311cc508f3a1';
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //3 (jumping)
+        answer.answer = '6311cc538f3a2';
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+
+        //2 (jumping to end)
+        answer.answer = '6311cc508f3a1';
+        inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: null,
+            next_input_index: endOfFormIndex
+        });
+    });
+    it(PARAMETERS.QUESTION_TYPES.DROPDOWN + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
+
+        inputDetails.type = PARAMETERS.QUESTION_TYPES.DROPDOWN;
+        inputDetails.possible_answers = [
+            {
+                answer: '1',
+                answer_ref: '6311cc468f3a0'
+            },
+            {
+                answer: '2',
+                answer_ref: '6311cc508f3a1'
+            },
+            {
+                answer: '3',
+                answer_ref: '6311cc538f3a2'
+            }
+        ];
+
+        //1 (not jumping)
+        answer.answer = '6311cc468f3a0';
+        let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2 (jumping)
+        answer.answer = '6311cc508f3a1';
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //3 (jumping)
+        answer.answer = '6311cc538f3a2';
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //2 (jumping to end)
+        answer.answer = '6311cc508f3a1';
+        inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: null,
+            next_input_index: endOfFormIndex
+        });
+    });
+    it(PARAMETERS.QUESTION_TYPES.CHECKBOX + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
+
+        inputDetails.type = PARAMETERS.QUESTION_TYPES.CHECKBOX;
+        entry.answers = {
+            [inputRef]: {
+                was_jumped: false,
+                answer: ['6311cc468f3a0']
+            }
+        };
+
+        //1 (not jumping)
+        answer.answer = ['6311cc468f3a0'];
+        let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2,1 not jumping
+        answer.answer = ['6311cc508f3a1', '6311cc468f3a0'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2,3,1 (not jumping)
+        answer.answer = ['6311cc508f3a1', '6311cc538f3a2', '6311cc468f3a0'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2,3 ( jumping)
+        answer.answer = ['6311cc508f3a1', '6311cc538f3a2'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //2 (jumping)
+        answer.answer = ['6311cc508f3a1'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //3 (jumping)
+        answer.answer = ['6311cc538f3a2'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //2 (jumping to end)
+        answer.answer = '6311cc508f3a1';
+        inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: null,
+            next_input_index: endOfFormIndex
+        });
+    });
+    it(PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
+
+        inputDetails.type = PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE;
+        entry.answers = {
+            [inputRef]: {
+                was_jumped: false,
+                answer: ['6311cc468f3a0']
+            }
+        };
+
+        //1 (not jumping)
+        answer.answer = ['6311cc468f3a0'];
+        let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+
+        //2 ( jumping)
+        answer.answer = ['6311cc508f3a1'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //3 ( jumping)
+        answer.answer = ['6311cc538f3a2'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //2 (jumping to end)
+        answer.answer = ['6311cc508f3a1'];
+        inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: null,
+            next_input_index: endOfFormIndex
+        });
+    });
+    it(PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
+
+        inputDetails.type = PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE;
+        entry.answers = {
+            [inputRef]: {
+                was_jumped: false,
+                answer: ['6311cc468f3a0']
+            }
+        };
+
+        //1 (not jumping)
+        answer.answer = ['6311cc468f3a0'];
+        let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2,1  (not jumping)
+        answer.answer = ['6311cc508f3a1', '6311cc468f3a0'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2,3,1  (not jumping)
+        answer.answer = ['6311cc508f3a1', '6311cc538f3a2', '6311cc468f3a0'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2,3  (jumping)
+        answer.answer = ['6311cc508f3a1', '6311cc538f3a2'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //2 (jumping)
+        answer.answer = ['6311cc508f3a1'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //3 (jumping)
+        answer.answer = ['6311cc538f3a2'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //2 (jumping to end)
+        answer.answer = ['6311cc508f3a1'];
+        inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: null,
+            next_input_index: endOfFormIndex
+        });
+    });
+});
+
+describe('processJumpsNext (jump when answer IS NOT 2)', () => {
+
+    beforeEach(() => {
+        jsonExtra.forms['548d97a8ec0d4bdfac131834f331a65d_6310b618055cf']
+            .details.inputs[0].jumps = [
+                {
+                    to: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c78f39a',
+                    when: 'IS_NOT',
+                    answer_ref: '6311cc508f3a1'
+                }
+            ];
+        projectData.json_extra = JSON.stringify(jsonExtra);
+        projectModel.initialise(projectData);
+        inputDetails.jumps = [
+            {
+                to: inputRefDestination,
+                when: 'IS_NOT',
+                answer_ref: '6311cc508f3a1'
+            }
+        ];
+    });
+
+    //todo: add multiple choice questions
+    it(PARAMETERS.QUESTION_TYPES.RADIO + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
 
         inputDetails.type = PARAMETERS.QUESTION_TYPES.RADIO;
         inputDetails.possible_answers = [
@@ -321,33 +606,30 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             next_input_ref: inputRefDestination,
             next_input_index: 2
         });
-        //2 (not jumping)
+        //2 ( not jumping)
         answer.answer = '6311cc508f3a1';
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
             next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
             next_input_index: 1
         });
-        //3 (not jumping)
+        //3 (jumping)
         answer.answer = '6311cc538f3a2';
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
-
-        //1 jump to end
-        answer.answer = '6311cc468f3a0';
+        //3 (jumping to end)
+        answer.answer = '6311cc538f3a2';
         inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
             next_input_ref: null,
             next_input_index: endOfFormIndex
         });
-
-
     });
-    it(PARAMETERS.QUESTION_TYPES.DROPDOWN + ' ' + PARAMETERS.JUMPS.IS, () => {
+    it(PARAMETERS.QUESTION_TYPES.DROPDOWN + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
 
         inputDetails.type = PARAMETERS.QUESTION_TYPES.DROPDOWN;
         inputDetails.possible_answers = [
@@ -365,7 +647,7 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             }
         ];
 
-        //1
+        //1 (jumping)
         answer.answer = '6311cc468f3a0';
         let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
@@ -379,15 +661,15 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
             next_input_index: 1
         });
-        //3 (not jumping)
+        //3 (jumping)
         answer.answer = '6311cc538f3a2';
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
-        //1 jump to end
-        answer.answer = '6311cc468f3a0';
+        //3 (jumping to end)
+        answer.answer = '6311cc538f3a2';
         inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
@@ -395,7 +677,7 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             next_input_index: endOfFormIndex
         });
     });
-    it(PARAMETERS.QUESTION_TYPES.CHECKBOX + ' ' + PARAMETERS.JUMPS.IS, () => {
+    it(PARAMETERS.QUESTION_TYPES.CHECKBOX + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
 
         inputDetails.type = PARAMETERS.QUESTION_TYPES.CHECKBOX;
         entry.answers = {
@@ -405,22 +687,29 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             }
         };
 
-        //1
+        //1 (jumping)
         answer.answer = ['6311cc468f3a0'];
         let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
             next_input_ref: inputRefDestination,
             next_input_index: 2
         });
-        //2,1
+        //2,1 not jumpoing
         answer.answer = ['6311cc508f3a1', '6311cc468f3a0'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
         });
-        //2,3,1
+        //2,3,1 not jumping
         answer.answer = ['6311cc508f3a1', '6311cc538f3a2', '6311cc468f3a0'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //1,3 jumping
+        answer.answer = ['6311cc538f3a2', '6311cc468f3a0'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
             next_input_ref: inputRefDestination,
@@ -433,15 +722,15 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
             next_input_index: 1
         });
-        //3 (not jumping)
+        //3 (jumping)
         answer.answer = ['6311cc538f3a2'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
-        //1 jump to end
-        answer.answer = ['6311cc468f3a0'];
+        //3 (jumping to end)
+        answer.answer = ['6311cc538f3a2'];
         inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
@@ -449,7 +738,7 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             next_input_index: endOfFormIndex
         });
     });
-    it(PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE + ' ' + PARAMETERS.JUMPS.IS, () => {
+    it(PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
 
         inputDetails.type = PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE;
         entry.answers = {
@@ -459,7 +748,7 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             }
         };
 
-        //1
+        //1 jumping
         answer.answer = ['6311cc468f3a0'];
         let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
@@ -474,15 +763,15 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
             next_input_index: 1
         });
-        //3 (not jumping)
+        //3 ( jumping)
         answer.answer = ['6311cc538f3a2'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
-        //1 jump to end
-        answer.answer = ['6311cc468f3a0'];
+        //3 (jumping to end)
+        answer.answer = ['6311cc538f3a2'];
         inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
@@ -490,7 +779,7 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             next_input_index: endOfFormIndex
         });
     });
-    it(PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE + ' ' + PARAMETERS.JUMPS.IS, () => {
+    it(PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
 
         inputDetails.type = PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE;
         entry.answers = {
@@ -500,26 +789,26 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             }
         };
 
-        //1
+        //1  jumping
         answer.answer = ['6311cc468f3a0'];
         let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
             next_input_ref: inputRefDestination,
             next_input_index: 2
         });
-        //2,1
+        //2,1 not jumping
         answer.answer = ['6311cc508f3a1', '6311cc468f3a0'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
         });
-        //2,3,1
+        //2,3,1 not jumping
         answer.answer = ['6311cc508f3a1', '6311cc538f3a2', '6311cc468f3a0'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
         });
         //2 (not jumping)
         answer.answer = ['6311cc508f3a1'];
@@ -528,16 +817,15 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
             next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
             next_input_index: 1
         });
-        //3 (not jumping)
+        //3 (jumping)
         answer.answer = ['6311cc538f3a2'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
-
-        //1 jump to end
-        answer.answer = ['6311cc468f3a0'];
+        //3 (jumping to end)
+        answer.answer = ['6311cc538f3a2'];
         inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
@@ -547,286 +835,14 @@ describe('processJumpsNext (jump when answer IS 1)', () => {
     });
 });
 
-describe('processJumpsNext (jump when answer IS 2)', () => {
+describe('processJumpsNext (jump when answer IS NOT 3)', () => {
 
     beforeEach(() => {
         jsonExtra.forms['548d97a8ec0d4bdfac131834f331a65d_6310b618055cf']
             .details.inputs[0].jumps = [
                 {
                     to: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c78f39a',
-                    when: 'IS',
-                    answer_ref: '6311cc508f3a1'
-                }
-            ];
-        projectData.json_extra = JSON.stringify(jsonExtra);
-        projectModel.initialise(projectData);
-        inputDetails.jumps = [
-            {
-                to: inputRefDestination,
-                when: 'IS',
-                answer_ref: '6311cc508f3a1'
-            }
-        ];
-    });
-
-    //todo: add multiple choice questions
-    it(PARAMETERS.QUESTION_TYPES.RADIO + ' ' + PARAMETERS.JUMPS.IS, () => {
-
-        inputDetails.type = PARAMETERS.QUESTION_TYPES.RADIO;
-        inputDetails.possible_answers = [
-            {
-                answer: '1',
-                answer_ref: '6311cc468f3a0'
-            },
-            {
-                answer: '2',
-                answer_ref: '6311cc508f3a1'
-            },
-            {
-                answer: '3',
-                answer_ref: '6311cc538f3a2'
-            }
-        ];
-
-        //1 should not jump
-        answer.answer = '6311cc468f3a0';
-        let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-        //2 (jumping)
-        answer.answer = '6311cc508f3a1';
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
-        });
-        //3 (not jumping)
-        answer.answer = '6311cc538f3a2';
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-
-        //2 (jumping to end)
-        answer.answer = '6311cc508f3a1';
-        inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: null,
-            next_input_index: endOfFormIndex
-        });
-
-    });
-    it(PARAMETERS.QUESTION_TYPES.DROPDOWN + ' ' + PARAMETERS.JUMPS.IS, () => {
-
-        inputDetails.type = PARAMETERS.QUESTION_TYPES.DROPDOWN;
-        inputDetails.possible_answers = [
-            {
-                answer: '1',
-                answer_ref: '6311cc468f3a0'
-            },
-            {
-                answer: '2',
-                answer_ref: '6311cc508f3a1'
-            },
-            {
-                answer: '3',
-                answer_ref: '6311cc538f3a2'
-            }
-        ];
-
-        //1 (not jumping)
-        answer.answer = '6311cc468f3a0';
-        let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-        //2 (jumping)
-        answer.answer = '6311cc508f3a1';
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
-        });
-        //3 (not jumping)
-        answer.answer = '6311cc538f3a2';
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-        //2 (jumping to end)
-        answer.answer = '6311cc508f3a1';
-        inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: null,
-            next_input_index: endOfFormIndex
-        });
-    });
-    it(PARAMETERS.QUESTION_TYPES.CHECKBOX + ' ' + PARAMETERS.JUMPS.IS, () => {
-
-        inputDetails.type = PARAMETERS.QUESTION_TYPES.CHECKBOX;
-        entry.answers = {
-            [inputRef]: {
-                was_jumped: false,
-                answer: ['6311cc468f3a0']
-            }
-        };
-
-        //1 (not jumping)
-        answer.answer = ['6311cc468f3a0'];
-        let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-        //2,1 jumps
-        answer.answer = ['6311cc508f3a1', '6311cc468f3a0'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
-        });
-        //2,3,1 jumps
-        answer.answer = ['6311cc508f3a1', '6311cc538f3a2', '6311cc468f3a0'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
-        });
-        //2 (jumping)
-        answer.answer = ['6311cc508f3a1'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
-        });
-        //3 (not jumping)
-        answer.answer = ['6311cc538f3a2'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-        //2 (jumping to end)
-        answer.answer = ['6311cc508f3a1'];
-        inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: null,
-            next_input_index: endOfFormIndex
-        });
-    });
-    it(PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE + ' ' + PARAMETERS.JUMPS.IS, () => {
-
-        inputDetails.type = PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE;
-        entry.answers = {
-            [inputRef]: {
-                was_jumped: false,
-                answer: ['6311cc468f3a0']
-            }
-        };
-
-        //1 not jumping
-        answer.answer = ['6311cc468f3a0'];
-        let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-
-        //2 (jumping)
-        answer.answer = ['6311cc508f3a1'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
-        });
-        //3 (not jumping)
-        answer.answer = ['6311cc538f3a2'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-        //2 (jumping to end)
-        answer.answer = ['6311cc508f3a1'];
-        inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: null,
-            next_input_index: endOfFormIndex
-        });
-    });
-    it(PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE + ' ' + PARAMETERS.JUMPS.IS, () => {
-
-        inputDetails.type = PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE;
-        entry.answers = {
-            [inputRef]: {
-                was_jumped: false,
-                answer: ['6311cc468f3a0']
-            }
-        };
-
-        //1 not jumping
-        answer.answer = ['6311cc468f3a0'];
-        let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-        //2,1 jumps
-        answer.answer = ['6311cc508f3a1', '6311cc468f3a0'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
-        });
-        //2,3,1 jumps
-        answer.answer = ['6311cc508f3a1', '6311cc538f3a2', '6311cc468f3a0'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
-        });
-        //2 (jumps)
-        answer.answer = ['6311cc508f3a1'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
-        });
-        //3 (not jumping)
-        answer.answer = ['6311cc538f3a2'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-        //2 (jumping to end)
-        answer.answer = ['6311cc508f3a1'];
-        inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: null,
-            next_input_index: endOfFormIndex
-        });
-    });
-});
-
-describe('processJumpsNext (jump when answer IS 3)', () => {
-
-    beforeEach(() => {
-        jsonExtra.forms['548d97a8ec0d4bdfac131834f331a65d_6310b618055cf']
-            .details.inputs[0].jumps = [
-                {
-                    to: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c78f39a',
-                    when: 'IS',
+                    when: 'IS_NOT',
                     answer_ref: '6311cc538f3a2'
                 }
             ];
@@ -835,14 +851,14 @@ describe('processJumpsNext (jump when answer IS 3)', () => {
         inputDetails.jumps = [
             {
                 to: inputRefDestination,
-                when: 'IS',
+                when: 'IS_NOT',
                 answer_ref: '6311cc538f3a2'
             }
         ];
     });
 
     //todo: add multiple choice questions
-    it(PARAMETERS.QUESTION_TYPES.RADIO + ' ' + PARAMETERS.JUMPS.IS, () => {
+    it(PARAMETERS.QUESTION_TYPES.RADIO + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
 
         inputDetails.type = PARAMETERS.QUESTION_TYPES.RADIO;
         inputDetails.possible_answers = [
@@ -860,30 +876,29 @@ describe('processJumpsNext (jump when answer IS 3)', () => {
             }
         ];
 
-        //1 should not jump
+        //1 jump
         answer.answer = '6311cc468f3a0';
         let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
-        //2 (not jumping)
+        //2 (jumping)
         answer.answer = '6311cc508f3a1';
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-        //3 ( jumping)
-        answer.answer = '6311cc538f3a2';
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
             next_input_ref: inputRefDestination,
             next_input_index: 2
         });
-
-        //3 (jumping to end)
+        //3 (not jumping)
         answer.answer = '6311cc538f3a2';
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2 (jumping to end)
+        answer.answer = '6311cc508f3a1';
         inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
@@ -891,7 +906,7 @@ describe('processJumpsNext (jump when answer IS 3)', () => {
             next_input_index: endOfFormIndex
         });
     });
-    it(PARAMETERS.QUESTION_TYPES.DROPDOWN + ' ' + PARAMETERS.JUMPS.IS, () => {
+    it(PARAMETERS.QUESTION_TYPES.DROPDOWN + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
 
         inputDetails.type = PARAMETERS.QUESTION_TYPES.DROPDOWN;
         inputDetails.possible_answers = [
@@ -909,29 +924,29 @@ describe('processJumpsNext (jump when answer IS 3)', () => {
             }
         ];
 
-        //1 (not jumping)
+        //1 ( jumping)
         answer.answer = '6311cc468f3a0';
         let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
-        //2 (not jumping)
+        //2 ( jumping)
         answer.answer = '6311cc508f3a1';
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-        //3 (jumping)
-        answer.answer = '6311cc538f3a2';
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
             next_input_ref: inputRefDestination,
             next_input_index: 2
         });
-        //3 (jumping to end)
+        //3 (not jumping)
         answer.answer = '6311cc538f3a2';
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2 (jumping to end)
+        answer.answer = '6311cc508f3a1';
         inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
@@ -939,7 +954,7 @@ describe('processJumpsNext (jump when answer IS 3)', () => {
             next_input_index: endOfFormIndex
         });
     });
-    it(PARAMETERS.QUESTION_TYPES.CHECKBOX + ' ' + PARAMETERS.JUMPS.IS, () => {
+    it(PARAMETERS.QUESTION_TYPES.CHECKBOX + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
 
         inputDetails.type = PARAMETERS.QUESTION_TYPES.CHECKBOX;
         entry.answers = {
@@ -949,43 +964,50 @@ describe('processJumpsNext (jump when answer IS 3)', () => {
             }
         };
 
-        //1 (not jumping)
+        //1 (jumping)
         answer.answer = ['6311cc468f3a0'];
         let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
-        //2,1 not jumping
+        //2,1  jumping
         answer.answer = ['6311cc508f3a1', '6311cc468f3a0'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
-        //2,3,1 jumps
+        //2,3,1 not jumping
         answer.answer = ['6311cc508f3a1', '6311cc538f3a2', '6311cc468f3a0'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2,1 jumping
+        answer.answer = ['6311cc508f3a1', '6311cc468f3a0'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
             next_input_ref: inputRefDestination,
             next_input_index: 2
         });
-        //2 (not jumping)
+        //2 ( jumping)
         answer.answer = ['6311cc508f3a1'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
+        });
+        //3 (not jumping)
+        answer.answer = ['6311cc538f3a2'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
             next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
             next_input_index: 1
         });
-        //3 (jumping)
-        answer.answer = ['6311cc538f3a2'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
-        });
-        //3 (jumping to end)
-        answer.answer = ['6311cc538f3a2'];
+        //2 (jumping to end)
+        answer.answer = ['6311cc508f3a1'];
         inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
@@ -993,7 +1015,7 @@ describe('processJumpsNext (jump when answer IS 3)', () => {
             next_input_index: endOfFormIndex
         });
     });
-    it(PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE + ' ' + PARAMETERS.JUMPS.IS, () => {
+    it(PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
 
         inputDetails.type = PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE;
         entry.answers = {
@@ -1003,30 +1025,30 @@ describe('processJumpsNext (jump when answer IS 3)', () => {
             }
         };
 
-        //1 not jumping
+        //1  jumping
         answer.answer = ['6311cc468f3a0'];
         let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
 
-        //2 (not jumping)
+        //2 ( jumping)
         answer.answer = ['6311cc508f3a1'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
-        });
-        //3 (jumping)
-        answer.answer = ['6311cc538f3a2'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
             next_input_ref: inputRefDestination,
             next_input_index: 2
         });
-        //3 (jumping to end)
+        //3 (not jumping)
         answer.answer = ['6311cc538f3a2'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2 (jumping to end)
+        answer.answer = ['6311cc508f3a1'];
         inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
@@ -1034,7 +1056,7 @@ describe('processJumpsNext (jump when answer IS 3)', () => {
             next_input_index: endOfFormIndex
         });
     });
-    it(PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE + ' ' + PARAMETERS.JUMPS.IS, () => {
+    it(PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE + ' ' + PARAMETERS.JUMPS.IS_NOT, () => {
 
         inputDetails.type = PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE;
         entry.answers = {
@@ -1044,43 +1066,43 @@ describe('processJumpsNext (jump when answer IS 3)', () => {
             }
         };
 
-        //1 not jumping
+        //1  jumping
         answer.answer = ['6311cc468f3a0'];
         let result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
-        //2,1 not jumping
+        //2,1  jumping
         answer.answer = ['6311cc508f3a1', '6311cc468f3a0'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
-            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
-            next_input_index: 1
+            next_input_ref: inputRefDestination,
+            next_input_index: 2
         });
-        //2,3,1 jumps
+        //2,3,1 not jumping
         answer.answer = ['6311cc508f3a1', '6311cc538f3a2', '6311cc468f3a0'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
+            next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
+            next_input_index: 1
+        });
+        //2 ( jumping)
+        answer.answer = ['6311cc508f3a1'];
+        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
+        expect(result).toMatchObject({
             next_input_ref: inputRefDestination,
             next_input_index: 2
         });
-        //2 (not jumping)
-        answer.answer = ['6311cc508f3a1'];
+        //3 (not jumping)
+        answer.answer = ['6311cc538f3a2'];
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
             next_input_ref: '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f399',
             next_input_index: 1
         });
-        //3 (jumping)
-        answer.answer = ['6311cc538f3a2'];
-        result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
-        expect(result).toMatchObject({
-            next_input_ref: inputRefDestination,
-            next_input_index: 2
-        });
-        //3 (jumping to end)
-        answer.answer = ['6311cc538f3a2'];
+        //2 (jumping to end)
+        answer.answer = ['6311cc508f3a1'];
         inputDetails.jumps[0].to = PARAMETERS.JUMPS.END_OF_FORM;
         result = jumpsService.processJumpsNext(entry, answer, inputDetails, nextInputIndex, nextInputRef);
         expect(result).toMatchObject({
