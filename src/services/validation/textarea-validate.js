@@ -5,7 +5,6 @@ export const textareaValidate = {
 
         const inputDetails = params.input_details;
         const answer = params.answer.answer;
-        console.log('Checking length textarea');
         // Check the answer isn't too long
         if (commonValidate.answerTooLong(answer, inputDetails.type)) {
             this.errors[inputDetails.ref] = ['ec5_214'];

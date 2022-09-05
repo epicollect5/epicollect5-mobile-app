@@ -16,12 +16,19 @@ export const initService = {
         const deviceInfo = await Device.getInfo();
         const deviceId = await Device.getId();
 
+        //switch to PWA mode based on environment
+        if (deviceInfo.platform === PARAMETERS.WEB) {
+            if (process.env.VUE_APP_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
+                deviceInfo.platform = PARAMETERS.PWA;
+            }
+        }
+
         return { ...deviceInfo, ...deviceId };
     },
 
     async getAppInfo () {
         const rootStore = useRootStore();
-        if (rootStore.device.platform === PARAMETERS.WEB) {
+        if ([PARAMETERS.WEB, PARAMETERS.PWA].includes(rootStore.device.platform)) {
             return {
                 name: 'Epicollect5 Beta',
                 version: 'n/a'

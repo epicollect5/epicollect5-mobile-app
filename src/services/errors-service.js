@@ -9,7 +9,7 @@ import { useRootStore } from '@/stores/root-store';
 
 export const errorsService = {
 
-    getEc5Errors (errors) {
+    getEC5Errors (errors) {
         // Check we were given an array of errors
         if (errors && errors.constructor === Array && errors.length > 0) {
             // Show all errors
@@ -42,7 +42,7 @@ export const errorsService = {
             Object.prototype.hasOwnProperty.call(response, 'status');
             if (Object.prototype.hasOwnProperty.call(response, 'data') && response.data !== null) {
                 if (Object.prototype.hasOwnProperty.call(response.data, 'errors')) {
-                    return this.getEc5Errors(response.data.errors);
+                    return this.getEC5Errors(response.data.errors);
                 }
             } else if (Object.prototype.hasOwnProperty.call(response, 'status')) {
                 // If no ec5  error found, check if we have a status error

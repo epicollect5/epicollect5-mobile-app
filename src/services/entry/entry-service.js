@@ -3,6 +3,7 @@ import { projectModel } from '@/models/project-model.js';
 import { formModel } from '@/models/form-model.js';
 import { entryModel } from '@/models/entry-model';
 import { useRootStore } from '@/stores/root-store';
+import { Capacitor } from '@capacitor/core';
 import * as services from '@/services';
 
 export const entryService = {
@@ -42,7 +43,7 @@ export const entryService = {
 
         // Watch device position only if the form has got a location input
         if (projectModel.hasLocation(formRef)) {
-            if (rootStore.device.platform !== PARAMETERS.WEB) {
+            if (Capacitor.isNativePlatform()) {
                 // Start watching location
                 rootStore.deviceGeolocation = {
                     ...rootStore.deviceGeolocation,
@@ -114,7 +115,7 @@ export const entryService = {
         return new Promise((resolve, reject) => {
             // If this is an entry we can actually edit, i.e. not a remote entry
             if (self.entry.canEdit === 1) {
-                // Set the entry title title
+                // Set the entry title 
                 services.entryCommonService.setEntryTitle(projectModel.getExtraForm(
                     self.entry.formRef),
                     projectModel.getExtraInputs(),
@@ -161,6 +162,59 @@ export const entryService = {
                         }, _onError);
                     }, _onError);
                 }, _onError);
+            });
+        });
+    },
+
+    saveEntryPWA () {
+
+        const rootStore = useRootStore();
+        const self = this;
+        self.form = formModel;
+        self.entry = entryModel;
+        const projectSlug = projectModel.getSlug();
+
+        return new Promise((resolve, reject) => {
+
+            // Set the entry title 
+            services.entryCommonService.setEntryTitle(projectModel.getExtraForm(
+                self.entry.formRef),
+                projectModel.getExtraInputs(),
+                self.entry,
+                false
+            );
+
+            console.log(JSON.stringify(self.entry));
+
+            //convert self.entry to an object identical to the one we save to the DB, 
+            //so we can re-use all the functions
+            const parsedEntry = {
+                entry_uuid: self.entry.entryUuid,
+                parent_entry_uuid: self.entry.parentEntryUuid,
+                answers: JSON.stringify(self.entry.answers),
+                form_ref: self.entry.formRef,
+                parent_form_ref: self.entry.parentFormRef,
+                created_at: services.utilsService.getISODateTime(),
+                title: self.entry.title,
+                synced: 0,
+                can_edit: 1,
+                is_remote: 0,
+                last_updated: projectModel.getLastUpdated(),//<-- the project version
+                device_id: '',
+                platform: PARAMETERS.WEB,
+                entry_type: PARAMETERS.ENTRY
+            };
+
+            console.log(JSON.stringify(parsedEntry));
+
+            //upload entry to server
+            const uploadableEntry = services.JSONTransformerService.makeJsonEntry(PARAMETERS.ENTRY, parsedEntry);
+            services.webService.uploadEntryPWA(projectSlug, uploadableEntry).then((response) => {
+                console.log(response);
+                resolve(response);
+            }, (error) => {
+                console.log(error);
+                reject(error);
             });
         });
     },

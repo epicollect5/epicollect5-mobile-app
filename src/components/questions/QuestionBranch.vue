@@ -69,7 +69,7 @@
 					</ion-col>
 				</ion-row>
 
-				<ion-row>
+				<ion-row v-if="!isPWA">
 					<ion-col>
 						<ion-spinner
 							v-if="state.isFetching"
@@ -136,7 +136,7 @@
 
 					</ion-col>
 				</ion-row>
-				<ion-row v-if="!state.isFetching && state.branchEntries.length === 0">
+				<ion-row v-if="!isPWA && !state.isFetching && state.branchEntries.length === 0">
 					<ion-col
 						size-xs="10"
 						offset-xs="1"
@@ -166,7 +166,6 @@
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
-
 import { useRootStore } from '@/stores/root-store';
 import * as icons from 'ionicons/icons';
 import * as services from '@/services';
@@ -317,7 +316,10 @@ export default {
 				return entriesAddScope.entryService.entry.isRemote;
 			}),
 			parentEntryName: props.parentEntryName,
-			currentFormName: props.currentFormName
+			currentFormName: props.currentFormName,
+			isPWA: computed(() => {
+				return rootStore.device.platform === PARAMETERS.PWA;
+			})
 		};
 
 		const methods = {
@@ -473,56 +475,58 @@ export default {
 			}
 		};
 
-		_updateEntriesFilterBranchByDates().then(() => {
-			const { entriesOffset, filters } = state;
-			const uuid = entriesAddScope.entryService.entry.entryUuid;
-			const fetchParams = {
-				inputRef,
-				uuid,
-				entriesOffset,
-				filters
-			};
-			//get the first branch entries chuck for this branch question
-			fetchBranchEntries(fetchParams).then((result) => {
-				state.branchEntries = result.branchEntries;
-				state.hasUnsavedBranches = result.hasUnsavedBranches;
-				state.isFetching = false;
-				// hide loader (progress dialog) with a bit of delay for UX
-				services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
+		if (rootStore.device.platform !== PARAMETERS.PWA) {
+			_updateEntriesFilterBranchByDates().then(() => {
+				const { entriesOffset, filters } = state;
+				const uuid = entriesAddScope.entryService.entry.entryUuid;
+				const fetchParams = {
+					inputRef,
+					uuid,
+					entriesOffset,
+					filters
+				};
+				//get the first branch entries chuck for this branch question
+				fetchBranchEntries(fetchParams).then((result) => {
+					state.branchEntries = result.branchEntries;
+					state.hasUnsavedBranches = result.hasUnsavedBranches;
+					state.isFetching = false;
+					// hide loader (progress dialog) with a bit of delay for UX
+					services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
+				});
 			});
-		});
 
-		//re-fetch branch entries list when needed (after add or delete)
-		watch(
-			() => [
-				{
-					refreshBranchEntries: route.params.refreshBranchEntries,
-					timestamp: route.params.timestamp
+			//re-fetch branch entries list when needed (after add or delete)
+			watch(
+				() => [
+					{
+						refreshBranchEntries: route.params.refreshBranchEntries,
+						timestamp: route.params.timestamp
+					}
+				],
+				(changes) => {
+					if (changes[0].refreshBranchEntries === 'true') {
+						state.isFetching = true;
+						window.setTimeout(async function () {
+							const { entriesOffset, filters } = state;
+							const uuid = entriesAddScope.entryService.entry.entryUuid;
+							const fetchParams = {
+								inputRef,
+								uuid,
+								entriesOffset,
+								filters
+							};
+							fetchBranchEntries(fetchParams).then((result) => {
+								state.branchEntries = result.branchEntries;
+								state.hasUnsavedBranches = result.hasUnsavedBranches;
+								state.isFetching = false;
+								// hide loader (progress dialog) with a bit of delay for UX
+								services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
+							});
+						}, PARAMETERS.DELAY_LONG);
+					}
 				}
-			],
-			(changes) => {
-				if (changes[0].refreshBranchEntries === 'true') {
-					state.isFetching = true;
-					window.setTimeout(async function () {
-						const { entriesOffset, filters } = state;
-						const uuid = entriesAddScope.entryService.entry.entryUuid;
-						const fetchParams = {
-							inputRef,
-							uuid,
-							entriesOffset,
-							filters
-						};
-						fetchBranchEntries(fetchParams).then((result) => {
-							state.branchEntries = result.branchEntries;
-							state.hasUnsavedBranches = result.hasUnsavedBranches;
-							state.isFetching = false;
-							// hide loader (progress dialog) with a bit of delay for UX
-							services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
-						});
-					}, PARAMETERS.DELAY_LONG);
-				}
-			}
-		);
+			);
+		}
 
 		return {
 			labels,

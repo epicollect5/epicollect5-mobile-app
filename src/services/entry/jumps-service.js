@@ -45,7 +45,6 @@ export const jumpsService = {
         let group;
         let groupInput;
 
-
         // Loop through each input in between
         for (firstInputIndex; firstInputIndex < secondInputIndex; firstInputIndex++) {
 
@@ -137,37 +136,27 @@ export const jumpsService = {
                 switch (currentJump.when) {
 
                     case PARAMETERS.JUMPS.IS:
-                        // If the answer matches the jumped answer
-                        for (const index in answer) {
-                            if (Object.prototype.hasOwnProperty.call(answer, 'index')) {
-                                if (answer[index]) {
-                                    if (answer[index] === currentJump.answer_ref) {
-                                        return true;
-                                    }
-                                }
+                        // If any answer matches the jumped answer
+                        for (const value of answer) {
+                            if (value === currentJump.answer_ref) {
+                                return true;
                             }
                         }
                         break;
                     case PARAMETERS.JUMPS.IS_NOT:
                         // If the answer doesn't match the jumped answer
-                        for (const index in answer) {
-                            if (Object.prototype.hasOwnProperty.call(answer, 'index')) {
-                                if (answer[index]) {
-                                    if (answer[index] === currentJump.answer_ref) {
-                                        return false;
-                                    }
-                                }
+                        for (const value of answer) {
+                            if (value === currentJump.answer_ref) {
+                                return false;
                             }
                         }
                         // No answers match jump answer
                         return true;
                     case PARAMETERS.JUMPS.NO_ANSWER_GIVEN:
                         // If no answer
-                        for (const index in answer) {
-                            if (Object.prototype.hasOwnProperty.call(answer, 'index')) {
-                                if (answer[index]) {
-                                    return false;
-                                }
+                        for (const value of answer) {
+                            if (value) {
+                                return false;
                             }
                         }
                         // No answers given

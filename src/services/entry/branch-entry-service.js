@@ -52,10 +52,6 @@ export const branchEntryService = {
     //Initial function to set up the entry from an existing stored entry
     setUpExisting (entry) {
         const rootStore = useRootStore();
-
-
-
-
         const self = this;
         self.form = formModel;
         self.entry = branchEntryModel;
@@ -89,11 +85,7 @@ export const branchEntryService = {
     // Save a branch entry
     saveEntry (syncType) {
 
-
         const self = this;
-
-
-
         self.form = formModel;
         self.entry = branchEntryModel;
 
@@ -135,7 +127,6 @@ export const branchEntryService = {
     validateAnswer (params) {
         return entryCommonService.validateAnswer(this.entry, params);
     },
-
 
     getAnswers (inputRef) {
         return entryCommonService.getAnswers(this.entry, inputRef);

@@ -16,7 +16,7 @@
 			</ion-buttons>
 			<ion-title
 				class="project-header ion-text-center"
-				v-html="getProjectLogoMarkup()"
+				v-html="getProjectNameMarkup()"
 			></ion-title>
 			<ion-buttons slot="end">
 				<ion-button
@@ -105,8 +105,8 @@ export default {
 			dismiss() {
 				modalController.dismiss();
 			},
-			getProjectLogoMarkup() {
-				return services.utilsService.getProjectLogoMarkup();
+			getProjectNameMarkup() {
+				return services.utilsService.getProjectNameMarkup(true);
 			},
 			async goToProjectHomePage() {
 				const slug = projectModel.getSlug();

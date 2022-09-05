@@ -7,6 +7,7 @@ import { useRootStore } from '@/stores/root-store';
 
 export const webService = {
 
+    //jwt auth
     getProject (slug) {
 
         const self = this;
@@ -25,6 +26,43 @@ export const webService = {
                 }, function (error) {
                     reject(error.response);
                 });
+            });
+        });
+    },
+    //session auth (private projects only within laravel, checking cookie)
+    getProjectPWA (slug) {
+
+        const rootStore = useRootStore();
+
+        return new Promise((resolve, reject) => {
+            const url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
+            axios({
+                method: 'GET',
+                url,
+                timeout: 30000
+            }).then(function (response) {
+                //last updated is not needed on pWA, set it to current moment
+                let lastUpdated = (new Date()).toISOString().replace('T', ' ');
+                lastUpdated = lastUpdated.split('.')[0];
+                console.log(lastUpdated);
+                const data = {
+                    id: 0,
+                    name: response.data.data.project.name,
+                    slug,
+                    logo_thumb: null,
+                    project_ref: response.data.data.project.ref,
+                    server_url: rootStore.serverUrl,
+                    json_extra: response.data.meta.project_extra,
+                    mapping: response.data.meta.project_mapping,
+                    last_updated: lastUpdated
+                };
+
+
+                console.log(JSON.stringify(data));
+
+                resolve(data);
+            }, function (error) {
+                reject(error.response);
             });
         });
     },
@@ -89,6 +127,40 @@ export const webService = {
 
                     reject(error.response);
                 });
+            });
+        });
+    },
+
+    uploadEntryPWA (slug, data) {
+
+        const self = this;
+        const rootStore = useRootStore();
+
+        return new Promise((resolve, reject) => {
+            // Attempt to retrieve the jwt token
+
+            if (rootStore.device.platform === PARAMETERS.PWA && PARAMETERS.MOBILE_DEBUG === 1) {
+                console.log(JSON.stringify(
+                    {
+                        method: 'POST',
+                        url: self.getServerUrl() + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.UPLOAD + slug,
+                        data: { data: data }
+                    }
+                ));
+
+                //do not remove, useful for debugging in the browser
+
+            }
+
+            axios({
+                method: 'POST',
+                url: self.getServerUrl() + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.UPLOAD + slug,
+                data: { data: data }
+            }).then(function (response) {
+                resolve(response);
+            }, function (error) {
+                console.log(error);
+                reject(error.response);
             });
         });
     },
@@ -310,7 +382,6 @@ export const webService = {
      * @returns {*}
      */
     getServerUrl () {
-
         const rootStore = useRootStore();
         return projectModel.getServerUrl() ? projectModel.getServerUrl() : rootStore.serverUrl;
     },
@@ -319,7 +390,7 @@ export const webService = {
      * Get the mobile project image
      */
     getProjectImageUrl (slug) {
-        return this.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.MEDIA + slug + PARAMETERS.API.PARAMS.MEDIA;
+        return this.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.MEDIA + slug + PARAMETERS.API.PARAMS.PROJECT_LOGO_QUERY_STRING;
     },
 
     passwordlessLogin (credentials) {

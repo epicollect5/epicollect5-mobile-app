@@ -118,7 +118,7 @@ export default {
 				};
 				//go to entries page
 				router.replace({
-					name: 'entries'
+					name: PARAMETERS.ROUTES.ENTRIES
 				});
 			}
 		};
@@ -169,7 +169,7 @@ export default {
 			(changes) => {
 				if (changes[0].refresh) {
 					state.isFetching = true;
-					window.setTimeout(function() {
+					window.setTimeout(function () {
 						//get local projects async
 						fetchLocalProjects().then((projects) => {
 							state.projects = projects;

@@ -11,6 +11,7 @@ export const projectModel = {
         server_url: ''
     },
 
+    //data coming from DB
     initialise (data) {
 
         this.data = data;
@@ -21,6 +22,18 @@ export const projectModel = {
             this.project_extra = JSON.parse(this.data.json_extra);
             this.mapping = JSON.parse(this.data.mapping);
         } catch (e) {
+            console.log(e);
+            // Failed
+        }
+    },
+    //data coming from server
+    initialisePWA (data) {
+        this.data = data;
+        try {
+            this.project_extra = this.data.json_extra;
+            this.mapping = this.data.mapping;
+        } catch (e) {
+            console.log(e);
             // Failed
         }
     },
@@ -140,7 +153,7 @@ export const projectModel = {
                 return i;
             }
         }
-        // Otherwise return the end of the form index
+        // Otherwise return the end-of-the-form index
         return this.project_extra.forms[formRef].inputs.length;
     },
     getBranchInputIndexFromRef (formRef, ownerInputRef, inputRef) {

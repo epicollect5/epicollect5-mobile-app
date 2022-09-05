@@ -4,6 +4,7 @@ export const PARAMETERS = {
     COMMUNITY_SUPPORT_URL: 'https://community.epicollect.net',
 
     DEBUG: process.env.VUE_APP_DEBUG,
+    IS_LOCALHOST: process.env.NODE_ENV === 'production' ? 0 : 1, //for debugging outside of Laravel(production), it is set to 1
     // url production
     DEFAULT_SERVER_URL: 'https://five.epicollect.net',
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',
@@ -21,6 +22,7 @@ export const PARAMETERS = {
     WEB: 'web',
     ANDROID: 'android',
     IOS: 'ios',
+    PWA: 'pwa',
 
     //providers
     PROVIDERS: {
@@ -44,6 +46,7 @@ export const PARAMETERS = {
             PROJECT: '/project/',
             PROJECTS: '/projects/',
             UPLOAD: '/upload/',
+            UPLOAD_PWA: '/pwa-upload/',//for debugging
             MEDIA: '/media/',
             PROJECT_VERSION: '/project-version/',
             GET_LOGIN: '/login',
@@ -58,10 +61,18 @@ export const PARAMETERS = {
             VERIFY: {
                 GOOGLE: '/login/verify-google',
                 APPLE: '/login/verify-apple'
+            },
+            PWA: {
+                ROOT: '/api/internal',
+                //api/internal/project/{project_slug}
+                PROJECT: '/project/',
+                MEDIA: '/media/',
+                UPLOAD: '/web-upload/'
+
             }
         },
         PARAMS: {
-            MEDIA: '?type=photo&name=logo.jpg&format=project_mobile_logo',
+            PROJECT_LOGO_QUERY_STRING: '?type=photo&name=logo.jpg&format=project_mobile_logo',
             GOOGLE_CODE: 'code'
         }
     },
@@ -206,10 +217,6 @@ export const PARAMETERS = {
         INCOMPLETE: 'INCOMPLETE',
         ERROR: 'ERROR'
     },
-    //platforms
-    //WEB: 'web',
-    //ANDROID: 'Android',
-    //IOS: 'iOS',
     ANDROID_ASSETS_ABS_PATH: 'file:///android_asset/www/',
     IOS_ASSETS_ABS_PATH: '',//set at run time
     USER_AGENT: '',
@@ -235,7 +242,6 @@ export const PARAMETERS = {
 
     ROUTES: {
         APP: 'app',
-        APP_LOADING: 'app.loading',
         PROJECTS: 'projects',
         PROJECTS_ADD: 'projects-add',
         ENTRIES: 'entries',
@@ -247,7 +253,7 @@ export const PARAMETERS = {
         ENTRIES_ERRORS: 'entries-errors',
         ENTRIES_DOWNLOAD: 'entries-download',
         SETTINGS: 'settings',
-        ERROR_ENTRIES: 'app.error-entries'
+        NOT_FOUND: 'not-found'
     },
 
     ENTRIES_REMOTE_PER_PAGE: 50,//this for the remote entries download

@@ -372,10 +372,28 @@ export default {
 		};
 
 		const methods = {
-			// Save the entry
 			async saveEntry(syncType) {
-				// Determine the syncType
+				if (rootStore.device.platform === PARAMETERS.PWA) {
+					//todo:
+					await services.notificationService.showProgressDialog(labels.wait, labels.saving);
 
+					rootStore.entriesAddScope.entryService.saveEntryPWA().then(
+						() => {
+							//todo: show success screen
+							services.notificationService.hideProgressDialog();
+						},
+						(error) => {
+							services.errorsService.handleWebError(error);
+							services.notificationService.hideProgressDialog();
+						}
+					);
+				} else {
+					methods.saveEntryToDatabase(syncType);
+				}
+			},
+			// Save the entry to the local database
+			async saveEntryToDatabase(syncType) {
+				// Determine the syncType
 				syncType = syncType ? syncType : PARAMETERS.SYNCED_CODES.UNSYNCED;
 
 				await services.notificationService.showProgressDialog(labels.wait, labels.saving);
@@ -484,22 +502,14 @@ export default {
 								methods.saveEntry(syncType);
 							} catch (error) {
 								// An error occurred
-
 								services.errorsService.handleEntryErrors(error.error, state.error, error.inputRefs);
 							}
 						}
 						break;
-
 					default:
 						//user dismissed the alert
 						return false;
 				}
-
-				// //go back to entries list
-				// router.replace({
-				// 	name: PARAMETERS.ROUTES.ENTRIES,
-				// 	params: { refresh: true }
-				// });
 			},
 			prev() {
 				//if the user is on the first question, ask whether to quit the current entry
