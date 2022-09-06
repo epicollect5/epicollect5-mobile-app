@@ -209,7 +209,7 @@ export default {
 						() => {
 							showModalLogin();
 						},
-						async function() {
+						async function () {
 							services.notificationService.hideProgressDialog();
 							services.notificationService.showToast(STRINGS[language].status_codes.ec5_267);
 						}
@@ -236,15 +236,15 @@ export default {
 				}
 				return new Promise((resolve) => {
 					// Delete the current token
-					services.databaseDeleteService.deleteToken().then(function() {
+					services.databaseDeleteService.deleteToken().then(function () {
 						if (rootStore.device.platform !== PARAMETERS.WEB) {
 							// Attempt to logout google user
 							window.plugins.googleplus.logout(
-								function() {
+								async function () {
 									_afterLogout();
 									resolve();
 								},
-								function() {
+								function (error) {
 									// If it failed, they weren't logged in to google, so just call afterLogout and resolve
 									_afterLogout();
 									resolve();

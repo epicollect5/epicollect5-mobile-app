@@ -71,7 +71,6 @@ export const authPasswordlessService = {
                             resolve(response);
                         },
                         (response) => {
-
                             services.notificationService.hideProgressDialog();
                             const errorCode = services.errorsService.getWebErrorCode(response);
                             reject(errorCode);

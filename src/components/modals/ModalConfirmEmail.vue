@@ -106,7 +106,7 @@ export default {
 			dismiss() {
 				modalController.dismiss();
 			},
-			performUserVerification() {
+			async performUserVerification() {
 				const credentials = {
 					email: account.email,
 					code: state.code,
@@ -114,7 +114,37 @@ export default {
 					provider: account.provider
 				};
 
-				services.authVerificationService.verifyUser(credentials);
+				try {
+					const response = await services.authVerificationService.verifyUser(credentials);
+					//auth success, login user
+					await services.authLoginService.loginUser(response);
+
+					//dismiss all modals
+					services.modalsHandlerService.dismissAll();
+
+					//any extra action to perform? (like addProject()...)
+					if (rootStore.afterUserIsLoggedIn.callback !== null) {
+						const callback = rootStore.afterUserIsLoggedIn.callback;
+						const params = rootStore.afterUserIsLoggedIn.params;
+						if (params) {
+							//async addProject()
+							await callback(...params);
+						} else {
+							//async updateLocalProject()
+							await callback();
+						}
+						//reset callback
+						rootStore.afterUserIsLoggedIn = { callback: null, params: null };
+					} else {
+						services.notificationService.hideProgressDialog();
+					}
+					//show notification
+					services.notificationService.showToast(STRINGS[language].status_codes.ec5_115);
+				} catch (errorCode) {
+					//show error to user
+					services.notificationService.hideProgressDialog();
+					services.notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
+				}
 			}
 		};
 		return {

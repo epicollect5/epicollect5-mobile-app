@@ -35,7 +35,7 @@ export const authGoogleService = {
                 },
                 function (error) {
                     console.log(error);
-                    reject();
+                    reject(error);
                 }
             );
         });
@@ -156,9 +156,11 @@ export const authGoogleService = {
                             }
 
                         });
-                }, function () {
-                    // If we got no response, it was probably a cordova inappbrowser loaderror
-                    services.notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
+                }, function (error) {
+                    //t.ly/wlpO => SIGN IN CANCELLED gets code 12501
+                    if (error != '12501') {
+                        services.notificationService.showAlert(error);
+                    }
                     services.notificationService.hideProgressDialog();
                 });
         }
