@@ -5,8 +5,6 @@ export const locationValidate = {
         const inputDetails = params.input_details;
         const answer = params.answer.answer;
 
-        debugger;
-
         function isLatitude (lat) {
 
             if (!lat.includes('.')) {

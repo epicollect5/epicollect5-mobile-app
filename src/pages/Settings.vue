@@ -111,25 +111,6 @@
 				</ion-card-content>
 			</ion-card>
 
-			<!-- <ion-card>
-				<ion-card-header class="settings-label">
-					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{labels.filters}}&nbsp;<sup>BETA</sup>
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-center ion-no-padding">
-					<ion-item lines="none">
-						<ion-label>{{labels.show_filters}}</ion-label>
-						<ion-toggle
-							@ionChange="onFiltersToggleChange($event)"
-							:checked="state.filtersToggle"
-							color="secondary"
-						>
-						</ion-toggle>
-					</ion-item>
-				</ion-card-content>
-			</ion-card> -->
-
 			<ion-card v-if="isDebug">
 				<ion-card-header class="settings-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
@@ -157,7 +138,7 @@
 
 <script>
 import * as icons from 'ionicons/icons';
-import { reactive } from '@vue/reactivity';
+import { reactive, computed } from '@vue/reactivity';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
@@ -181,8 +162,12 @@ export default {
 		});
 
 		const computedScope = {
-			appVersion: rootStore.app.name + ' v ' + rootStore.app.version,
-			isDebug: PARAMETERS.DEBUG
+			appVersion: computed(() => {
+				return rootStore.app.name + ' v ' + rootStore.app.version;
+			}),
+			isDebug: computed(() => {
+				return PARAMETERS.DEBUG;
+			})
 		};
 
 		const methods = {
