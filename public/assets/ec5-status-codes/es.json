@@ -188,7 +188,7 @@
   "ec5_252": "El sitio web se encuentra en proceso de mantenimiento. Por favor, inténtelo de nuevo más tarde.",
   "ec5_253": "Credenciales de cliente no válidas.",
   "ec5_254": "No se pudo generar el token de acceso. Póngase en contacto con el administrador del servidor.",
-  "ec5_255": "Demasiadas solicitudes se han hecho. Por favor, inténtelo de nuevo en 1 minuto.",
+  "ec5_255": "Demasiadas solicitudes se han hecho. Por favor, inténtelo de nuevo en 30 minutos.",
   "ec5_256": "Acceso denegado.",
   "ec5_257": "Acceso de cliente no autorizado.",
   "ec5_258": "Ya has creado una aplicación para este proyecto.",

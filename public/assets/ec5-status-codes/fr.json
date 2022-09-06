@@ -188,7 +188,7 @@
   "ec5_252": "Le site est en cours de maintenance. Veuillez réessayer plus tard.",
   "ec5_253": "Certificat client invalide.",
   "ec5_254": "Impossible de générer un token d'accès. Merci de contacter l'administrateur du serveur.",
-  "ec5_255": "Trop de demandes ont été faites. Réessayez dans 1 minute.",
+  "ec5_255": "Trop de demandes ont été faites. Réessayez dans 30 minutes.",
   "ec5_256": "Accès refusé.",
   "ec5_257": "Accès client non autorisé.",
   "ec5_258": "Vous avez déjà créé une application pour ce projet.",
