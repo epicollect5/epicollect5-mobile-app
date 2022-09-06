@@ -16,11 +16,11 @@
     "dev-build": "ionic build -- --mode development --source-maps",
     "ios": "ionic cap copy ios && ionic cap open ios",
     "ios-build": "ionic cap copy ios",
-    "prod": "vitest run  && ionic cap copy",
+    "prod": "export VUE_APP_DEBUG= && ionic cap copy",
     "vitest": "vitest",
     "vitest-ui": "vitest --ui",
-    "web": "VUE_APP_MODE=WEB&& ionic serve --no-open",
-    "pwa": "VUE_APP_MODE=PWA&& ionic serve --no-open -p 1234"
+    "web": "export VUE_APP_MODE=WEB && ionic serve --no-open",
+    "pwa": "export VUE_APP_MODE=PWA && ionic serve --no-open -p 1234"
   },
   "dependencies": {
     "@awesome-cordova-plugins/wheel-selector": "^5.44.0",
