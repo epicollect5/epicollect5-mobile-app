@@ -241,13 +241,11 @@ export default {
 							// Attempt to logout google user
 							window.plugins.googleplus.logout(
 								async function (response) {
-									services.notificationService.showAlert(response);
 									_afterLogout();
 									resolve();
 								},
 								function (error) {
-									services.notificationService.showAlert(error);
-									// If it failed, they weren't logged in to google, so just call afterLogout and resolve
+									// If it failed, they weren't logged in to Google, so just call afterLogout and resolve
 									_afterLogout();
 									resolve();
 								}
