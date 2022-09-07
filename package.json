@@ -53,7 +53,7 @@
     "cordova-plugin-foreground-service": "git+https://mirko77@bitbucket.org/epicollect/cordova-foreground-plugin.git",
     "cordova-plugin-geolocation": "^4.1.0",
     "cordova-plugin-globalization": "^1.11.0",
-    "cordova-plugin-googleplus": "^8.5.2",
+    "cordova-plugin-googleplus": "git+https://github.com/epicollect5/cordova-plugin-googleplus.git",
     "cordova-plugin-media": "git+https://mirko77@bitbucket.org/epicollect/cordova-plugin-media-android-11.git",
     "cordova-plugin-media-capture": "git+https://github.com/chriskhongqarma/cordova-plugin-media-capture.git",
     "cordova-plugin-sign-in-with-apple": "^0.1.2",
