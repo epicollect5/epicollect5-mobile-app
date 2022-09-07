@@ -16,6 +16,7 @@
     "dev-build": "ionic build -- --mode development --source-maps",
     "ios": "ionic cap copy ios && ionic cap open ios",
     "ios-build": "ionic cap copy ios",
+    "preprod": "vitest --run --silent",
     "prod": "export VUE_APP_DEBUG= && ionic cap copy",
     "vitest": "vitest",
     "vitest-ui": "vitest --ui",
