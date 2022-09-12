@@ -103,7 +103,8 @@ export const app = createApp(App)
       rootStore.serverUrl = window.location.href.replace(window.location.pathname, '');
     }
     else {
-      rootStore.serverUrl = process.env.VUE_APP_PWA_DEVELOPMENT_SERVER;
+      const serverUrl = services.utilsService.stripTrailingSlash(process.env.VUE_APP_PWA_DEVELOPMENT_SERVER);
+      rootStore.serverUrl = serverUrl;
     }
     console.log('Server URL -> ', rootStore.serverUrl);
     const projectSlug = window.location.pathname.split('/').splice(-2, 1)[0];
