@@ -1,6 +1,8 @@
 import { PARAMETERS } from '@/config';
 import { databaseSelectService } from '@/services/database/database-select-service';
-import { projectModel } from '@/models/project-model.js';
+import { projectModel } from '@/models/project-model';
+import * as services from '@/services';
+
 import axios from 'axios';
 
 import { useRootStore } from '@/stores/root-store';
@@ -41,10 +43,6 @@ export const webService = {
                 url,
                 timeout: 30000
             }).then(function (response) {
-                //last updated is not needed on pWA, set it to current moment
-                let lastUpdated = (new Date()).toISOString().replace('T', ' ');
-                lastUpdated = lastUpdated.split('.')[0];
-                console.log(lastUpdated);
                 const data = {
                     id: 0,
                     name: response.data.data.project.name,
@@ -54,9 +52,8 @@ export const webService = {
                     server_url: rootStore.serverUrl,
                     json_extra: response.data.meta.project_extra,
                     mapping: response.data.meta.project_mapping,
-                    last_updated: lastUpdated
+                    last_updated: response.data.meta.project_stats.structure_last_updated
                 };
-
 
                 console.log(JSON.stringify(data));
 
@@ -120,11 +117,9 @@ export const webService = {
                     headers: headers,
                     data: { data: data }
                 }).then(function (response) {
-
                     resolve(response);
                 }, function (error) {
                     console.log(error);
-
                     reject(error.response);
                 });
             });
@@ -134,27 +129,53 @@ export const webService = {
     uploadEntryPWA (slug, data) {
 
         const self = this;
-        const rootStore = useRootStore();
 
         return new Promise((resolve, reject) => {
-            // Attempt to retrieve the jwt token
 
-            if (rootStore.device.platform === PARAMETERS.PWA && PARAMETERS.MOBILE_DEBUG === 1) {
-                console.log(JSON.stringify(
-                    {
-                        method: 'POST',
-                        url: self.getServerUrl() + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.UPLOAD + slug,
-                        data: { data: data }
-                    }
-                ));
+            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
+            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
+            let postURL = self.getServerUrl();
 
-                //do not remove, useful for debugging in the browser
-
+            if (PARAMETERS.DEBUG) {
+                //use debug endpoint (no csrf)
+                postURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_DEBUG + slug;
+                console.log('post data', JSON.stringify(data));
+            } else {
+                postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD + slug;
             }
 
             axios({
                 method: 'POST',
-                url: self.getServerUrl() + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.UPLOAD + slug,
+                url: postURL,
+                data: { data: data }
+            }).then(function (response) {
+                resolve(response);
+            }, function (error) {
+                console.log(error);
+
+                reject(error.response);
+            });
+        });
+    },
+
+    checkUniquenessPWA (slug, data) {
+        const self = this;
+
+        return new Promise((resolve, reject) => {
+
+            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
+            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
+            let postURL = self.getServerUrl();
+            if (PARAMETERS.DEBUG) {
+                //use debug endpoint (no csrf)
+                postURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.UNIQUE_ANSWER_DEBUG + slug;
+                console.log('post data', JSON.stringify(data));
+            } else {
+                postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.UNIQUE_ANSWER + slug;
+            }
+            axios({
+                method: 'POST',
+                url: postURL,
                 data: { data: data }
             }).then(function (response) {
                 resolve(response);

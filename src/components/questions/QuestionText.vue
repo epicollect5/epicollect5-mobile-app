@@ -128,7 +128,8 @@ export default {
 			}),
 			hasError: computed(() => {
 				//any error for this question?
-				return services.utilsService.questionHasError(readonly(state));
+
+				return services.utilsService.questionHasError(state);
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -181,7 +182,6 @@ export default {
 			onInputValueChange(event) {
 				const value = event.target.value;
 				state.answer.answer = services.utilsService.getSanitisedAnswer(value);
-				console.log('state.answer.answer', state.answer.answer);
 			},
 			onInputValueChangeConfirm(event) {
 				const value = event.target.value;

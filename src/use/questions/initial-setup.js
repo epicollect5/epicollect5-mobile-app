@@ -59,8 +59,8 @@ export async function initialSetup (state, scope) {
         (state.questionParams.currentInputIndex / state.inputs.length) * 100
     );
     // If we are at the end of the entry, show save button
-    state.hideSave = state.questionParams.currentInputRef === null;
-    if (state.hideSave) {
+    state.showSave = state.questionParams.currentInputRef === null;
+    if (state.showSave) {
         state.isFetching = false;
     }
     // Set delay for showing next/previous buttons, to deal with double clicks, for example

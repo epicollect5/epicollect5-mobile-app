@@ -46,7 +46,7 @@ export const PARAMETERS = {
             PROJECT: '/project/',
             PROJECTS: '/projects/',
             UPLOAD: '/upload/',
-            UPLOAD_PWA: '/pwa-upload/',//for debugging
+
             MEDIA: '/media/',
             PROJECT_VERSION: '/project-version/',
             GET_LOGIN: '/login',
@@ -64,11 +64,14 @@ export const PARAMETERS = {
             },
             PWA: {
                 ROOT: '/api/internal',
+                ROOT_DEBUG: '/api',
                 //api/internal/project/{project_slug}
                 PROJECT: '/project/',
                 MEDIA: '/media/',
-                UPLOAD: '/web-upload/'
-
+                UPLOAD: '/web-upload/', //same as bulk upload
+                UPLOAD_DEBUG: '/pwa-upload/',//for debugging
+                UNIQUE_ANSWER: '/unique-answer/',
+                UNIQUE_ANSWER_DEBUG: '/pwa-unique-answer/'//for debugging
             }
         },
         PARAMS: {

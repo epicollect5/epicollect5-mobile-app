@@ -104,7 +104,7 @@
 							offset-xl="3"
 						>
 
-							<div v-if="!state.hideSave">
+							<div v-if="!state.showSave">
 								<question-text
 									:type="state.questionParams.type"
 									:inputRef="state.questionParams.currentInputRef"
@@ -249,13 +249,25 @@
 
 							</div>
 
-							<div v-if="state.hideSave && !state.isFetching">
+							<div v-if="state.showSave && !state.isFetching">
 								<question-save
 									type="save"
 									@question-mounted="onQuestionMounted"
 									@question-save="saveEntry()"
 								>
 								</question-save>
+							</div>
+
+							<div v-if="state.showSaved && !state.isFetching">
+								<question-saved
+									type="saved"
+									:saved="state.entrySavedPWA"
+									:failed="state.entryFailedPWA"
+									@question-mounted="onQuestionMounted"
+									@add-entry-pwa="addEntryPWA()"
+									@go-back-pwa="prev()"
+								>
+								</question-saved>
 							</div>
 
 						</ion-col>
@@ -297,6 +309,7 @@ import questionTextarea from '@/components/questions/QuestionTextarea';
 import questionTime from '@/components/questions/QuestionTime';
 import questionVideo from '@/components/questions/QuestionVideo';
 import questionSave from '@/components/questions/QuestionSave';
+import questionSaved from '@/components/questions/QuestionSaved';
 import { provide } from 'vue';
 import { initialSetup } from '@/use/questions/initial-setup';
 import { handleNext } from '@/use/questions/handle-next';
@@ -324,7 +337,8 @@ export default {
 		questionTextarea,
 		questionTime,
 		questionVideo,
-		questionSave
+		questionSave,
+		questionSaved
 	},
 	setup(props) {
 		const rootStore = useRootStore();
@@ -350,7 +364,10 @@ export default {
 				errors: {}
 			},
 			// Allow saving by default (via quit button)
-			allowSave: services.entryService.allowSave
+			allowSave: services.entryService.allowSave,
+			entrySavedPWA: false,
+			entryFailedPWA: false,
+			showSaved: false
 		});
 
 		const lastNavIndex = rootStore.hierarchyNavigation.length - 1;
@@ -379,11 +396,41 @@ export default {
 
 					rootStore.entriesAddScope.entryService.saveEntryPWA().then(
 						() => {
-							//todo: show success screen
+							//show success screen for PWA entry saved
+							state.entrySavedPWA = true;
+							state.entryFailedPWA = false;
+							state.showSave = false;
+							state.showSaved = true;
+							state.disablePrevious = true;
+							state.disableNext = true;
 							services.notificationService.hideProgressDialog();
 						},
-						(error) => {
-							services.errorsService.handleWebError(error);
+						(errorResponse) => {
+							//we need to map the server erros to match the question errors object
+							const mappedErrors = {};
+							for (const error of errorResponse.data.errors) {
+								mappedErrors[error.source] = {
+									message: error.title,
+									code: error.code
+								};
+							}
+
+							rootStore.routeParams = {
+								error: { errors: mappedErrors }
+							};
+							state.error = {
+								hasError: true,
+								errors: mappedErrors
+							};
+							state.entrySavedPWA = false;
+							state.entryFailedPWA = true;
+							state.showSave = false;
+							state.showSaved = true;
+							state.disablePrevious = false;
+							state.disableNext = true;
+
+							//handle error, user can go back to check for errors
+							services.errorsService.handleWebError(errorResponse);
 							services.notificationService.hideProgressDialog();
 						}
 					);
@@ -423,6 +470,45 @@ export default {
 						}
 					}
 				);
+			},
+			async addEntryPWA() {
+				// Show loader
+				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
+				// Set up a new entry
+				const formRef = projectModel.getFirstFormRef();
+				//get first form question input ref
+				const firstInputRef = projectModel.getInputs(formRef)[0];
+
+				rootStore.routeParams = {
+					formRef,
+					inputRef: null,
+					inputIndex: 0,
+					isBranch: false,
+					error: {}
+				};
+
+				// Set up a new entry
+				//imp: formRef, state.parentEntryUuid, state.parentFormRef must be taken from url?
+				//imp: check old data editor
+				//services.entryService.setUpNew(formRef, state.parentEntryUuid, state.parentFormRef);
+				services.entryService.setUpNew(formRef, '', '');
+
+				//fake answer (to re-use prev() method)
+				state.questionParams.currentInputIndex = 1;
+				services.entryService.entry.answers[firstInputRef] = {
+					answer: '',
+					was_jumped: false
+				};
+
+				//reset UI
+				state.entrySavedPWA = false;
+				state.entryFailedPWA = false;
+				state.showSave = false;
+				state.disablePrevious = true;
+				state.disableNext = false;
+
+				//restart from first question
+				methods.prev();
 			},
 			async quitEntry() {
 				//do quitting things
@@ -512,6 +598,7 @@ export default {
 				}
 			},
 			prev() {
+				state.showSaved = false;
 				//if the user is on the first question, ask whether to quit the current entry
 				//if the user is on any other question, go back by one question
 				const currentQuestionIndex = state.questionParams.currentInputIndex;

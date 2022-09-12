@@ -14,6 +14,10 @@ import { locationValidate } from '@/services/validation/location-validate';
 import { searchsingleValidate } from '@/services/validation/searchsingle-validate';
 import { searchmultipleValidate } from '@/services/validation/searchmultiple-validate';
 import { commonValidate } from '@/services/validation/common-validate';
+import { useRootStore } from '@/stores/root-store';
+import * as services from '@/services';
+import { projectModel } from '@/models/project-model.js';
+
 
 import { PARAMETERS } from '@/config';
 
@@ -50,7 +54,6 @@ export const answerValidateService = {
             searchmultiple: searchmultipleValidate,
             location: locationValidate
         });
-
         // Reset errors object
         this.resetErrors();
 
@@ -59,6 +62,7 @@ export const answerValidateService = {
         const confirmAnswer = params.confirmAnswer?.answer;
 
         return new Promise((resolve, reject) => {
+
             self.isUnique(entry, params.input_details, answer).then(function (response) {
 
                 self.inputRef = params.input_details.ref;
@@ -140,6 +144,7 @@ export const answerValidateService = {
      */
     isUnique (entry, inputDetails, answer) {
 
+        const rootStore = useRootStore();
         let checkUnique = true;
 
         //Here we activate the uniqueness check only on compatible questions
@@ -161,21 +166,53 @@ export const answerValidateService = {
         }
 
         return new Promise(function (resolve, reject) {
-
             // If this input has uniqueness set
             if (checkUnique && inputDetails.uniqueness !== 'none' && answer !== '') {
+                if (rootStore.device.platform === PARAMETERS.PWA) {
+                    const formRef = rootStore.routeParams.formRef;
+                    const inputRef = inputDetails.ref;
+                    const projectVersion = projectModel.getLastUpdated();
+                    const projectSlug = projectModel.getSlug();
+                    const payload = services.JSONTransformerService.makeUniqueEntry(formRef, entry, inputRef, answer, projectVersion);
 
-                databaseSelectService.isUnique(entry, inputDetails, answer).then(function (res) {
-                    // If there exists an entry in the db with this answer, resolve false
-                    if (res.rows.length > 0) {
-                        resolve(false);
-                    } else {
-                        resolve(true);
-                    }
-                }, function (error) {
-                    // If we hit here, probably had db access issues
-                    reject(error);
-                });
+
+                    //for debugging
+                    resolve(true);
+                    //todo: remove the above
+
+                    // //check uniqueness against the entries saved on the server
+                    // services.webService.checkUniquenessPWA(projectSlug, payload).then((response) => {
+                    //     //ec5_249 answer unique
+                    //     if (response.data.data.code === 'ec5_249') {
+                    //         resolve(true);
+                    //     }
+                    //     else {
+                    //         resolve(false);
+                    //     }
+                    // }, (error) => {
+                    //     //ec5_22 answer NOT unique
+                    //     if (error.data?.errors[0]?.code === 'ec5_22') {
+                    //         resolve(false);
+                    //     }
+                    //     else {
+                    //         console.log(error);
+                    //         reject(error);
+                    //     }
+                    // });
+                }
+                else {
+                    databaseSelectService.isUnique(entry, inputDetails, answer).then(function (res) {
+                        // If there exists an entry in the db with this answer, resolve false
+                        if (res.rows.length > 0) {
+                            resolve(false);
+                        } else {
+                            resolve(true);
+                        }
+                    }, function (error) {
+                        // If we hit here, probably had db access issues
+                        reject(error);
+                    });
+                }
             } else {
                 resolve(true);
             }

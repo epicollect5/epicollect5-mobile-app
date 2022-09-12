@@ -37,9 +37,9 @@ export const errorsService = {
     },
 
     getWebErrorCode (response) {
+
         if (response) {
             // Check for an ec5 error
-            Object.prototype.hasOwnProperty.call(response, 'status');
             if (Object.prototype.hasOwnProperty.call(response, 'data') && response.data !== null) {
                 if (Object.prototype.hasOwnProperty.call(response.data, 'errors')) {
                     return this.getEC5Errors(response.data.errors);

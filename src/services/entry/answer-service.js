@@ -112,13 +112,20 @@ export const answerService = {
 
     // Validate an answer
     validate (entry, params) {
+
         // Validate answer against the input
         return new Promise((resolve, reject) => {
 
             answerValidateService.validate(entry, params).then(function () {
                 // Resolve with the particular input details of the input supplied
                 resolve(params);
-            }, function () {
+            }, function (error) {
+                if (error) {
+                    //here we probably got a database error
+                    console.log(error);
+                    const inputRef = params.input_details.ref;
+                    answerValidateService.errors[inputRef] = ['ec5_104'];
+                }
 
                 // Check whether answer is valid
                 const errors = answerValidateService.getErrors();

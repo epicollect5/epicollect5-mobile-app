@@ -581,6 +581,51 @@ export const JSONTransformerService = {
             easting,
             zone: zone + letter
         };
+    },
+    //Create a json object used in the api uniqueness check
+    makeUniqueEntry (formRef, entry, inputRef, answer, projectVersion) {
+        const relationships = {
+            parent: {},
+            branch: {}
+        };
+
+        // If this entry has a parent
+        if (entry.parent_entry_uuid) {
+            relationships.parent = {
+                data: {
+                    parent_form_ref: entry.parent_form_ref,
+                    parent_entry_uuid: entry.parent_entry_uuid
+                }
+            };
+        }
+
+        if (entry.owner_entry_uuid) {
+            relationships.branch = {
+                data: {
+                    owner_input_ref: entry.owner_input_ref,
+                    owner_entry_uuid: entry.owner_entry_uuid
+                }
+            };
+        }
+
+
+        return {
+            id: entry.entryUuid,
+            type: 'entry',
+            attributes: {
+                form: {
+                    ref: formRef,
+                    type: 'hierarchy'
+                }
+            },
+            relationships,
+            entry: {
+                entry_uuid: entry.entryUuid,
+                input_ref: inputRef,
+                answer,
+                project_version: projectVersion
+            }
+        };
     }
 };
 
