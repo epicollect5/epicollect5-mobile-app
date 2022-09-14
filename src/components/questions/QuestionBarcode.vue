@@ -33,7 +33,10 @@
 			>
 				{{errorMessage}}
 			</div>
-			<ion-grid class="ion-no-padding">
+			<ion-grid
+				v-if="!isPWA"
+				class="ion-no-padding"
+			>
 				<ion-row>
 					<ion-col
 						size-xs="8"
@@ -46,6 +49,7 @@
 						offset-lg="4"
 						class="ion-align-self-center"
 					>
+
 						<ion-button
 							class="question-action-button"
 							color="secondary"
@@ -61,7 +65,10 @@
 					</ion-col>
 				</ion-row>
 			</ion-grid>
-			<ion-grid class="ion-no-padding">
+			<ion-grid
+				class="ion-no-padding"
+				:class="{'pwa-margin-fix' : isPWA}"
+			>
 				<ion-row>
 					<ion-col
 						size-xs="12"
@@ -100,12 +107,13 @@
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
-
 import { useRootStore } from '@/stores/root-store';
 import * as icons from 'ionicons/icons';
 import * as services from '@/services';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
+import { modalController } from '@ionic/vue';
+import ModalBarcode from '@/components/modals/ModalBarcode';
 
 export default {
 	props: {
@@ -145,7 +153,8 @@ export default {
 				verify: false,
 				answer: ''
 			},
-			fileSource: ''
+			fileSource: '',
+			isScanningBarcode: false
 		});
 
 		//set up question
@@ -170,6 +179,9 @@ export default {
 				} else {
 					return '';
 				}
+			}),
+			isPWA: computed(() => {
+				return rootStore.device.platform === PARAMETERS.PWA;
 			})
 		};
 
@@ -178,14 +190,36 @@ export default {
 				const value = event.target.value;
 				state.answer.answer = services.utilsService.getSanitisedAnswer(value);
 			},
+
+			async scanPWA() {
+				//open barcode modal
+				const modal = await modalController.create({
+					component: ModalBarcode,
+					componentProps: {}
+				});
+
+				//rab barcode value on modal dismiss
+				modal.onWillDismiss().then((response) => {
+					state.answer.answer = services.utilsService.getSanitisedAnswer(response);
+				});
+
+				return modal.present();
+			},
 			async scan() {
 				//show spinner and hide it immediately
 				await services.notificationService.showProgressDialog(
 					STRINGS[language].labels.preparing_scanner,
 					STRINGS[language].labels.wait
 				);
+
+				if (rootStore.device.platform === PARAMETERS.PWA) {
+					methods.scanPWA();
+					return false;
+				}
+
 				services.notificationService.hideProgressDialog();
 
+				//foreground service helps the app to not be killed
 				services.notificationService.startForegroundService();
 
 				//request camera permission
@@ -305,10 +339,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.question-location-grid {
-	font-size: 18px;
-	ion-row.border-bottom {
-		border-bottom: 1px solid var(--ion-color-light-shade);
-	}
+.pwa-margin-fix {
+	margin-top: -15px !important;
 }
 </style>

@@ -37,7 +37,16 @@ export const webService = {
         const rootStore = useRootStore();
 
         return new Promise((resolve, reject) => {
-            const url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
+
+            let url = '';
+            if (process.env.NODE_ENV === 'production') {
+                url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
+            }
+            else {
+                //in development mode use open endpoint
+                url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
+            }
+
             axios({
                 method: 'GET',
                 url,

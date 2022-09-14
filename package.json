@@ -74,6 +74,7 @@
     "slugify": "^1.6.5",
     "uuid": "^8.3.2",
     "vue": "^3.2.37",
+    "vue-barcode-reader": "^1.0.2",
     "vue-datepicker-next": "^1.0.2",
     "vue-router": "^4.0.16",
     "vue-scroll-picker": "^1.1.1",
