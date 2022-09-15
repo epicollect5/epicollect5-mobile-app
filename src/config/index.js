@@ -70,6 +70,8 @@ export const PARAMETERS = {
                 MEDIA: '/media/',
                 UPLOAD: '/web-upload/', //same as bulk upload
                 UPLOAD_DEBUG: '/pwa-upload/',//for debugging
+                UPLOAD_FILE: '/web-upload-file/',
+                UPLOAD_FILE_DEBUG: '/pwa-upload-file/',//for debugging 
                 UNIQUE_ANSWER: '/unique-answer/',
                 UNIQUE_ANSWER_DEBUG: '/pwa-unique-answer/'//for debugging
             }
@@ -297,6 +299,22 @@ export const PARAMETERS = {
         SERVER_URL: 'server_url',
         SELECTED_TEXT_SIZE: 'selected_text_size',
         FILTERS_TOGGLE: 'filters_toggle'
+    },
+    PWA_MIMETYPES: {
+        PHOTO: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'],
+        AUDIO: ['audio/mp4', 'audio/wav', 'video/mp4'],
+        VIDEO: ['video/mp4']
+    },
+    //bytes
+    PWA_UPLOAD_MAX_SIZE: {
+        PHOTO: 10000000, // 10MB
+        AUDIO: 100000000,// 100MB,
+        VIDEO: 500000000 //500MB
+    },
+    PWA_FILE_ACCEPTED_FORMATS: {
+        PHOTO: 'jpg or png only, max file size 10 MB, max resolution 4096 x 4096px',
+        AUDIO: 'mp4 or wav only, max file size 100 MB',
+        VIDEO: 'mp4 only, max file size 500 MB'
     },
     //bookmark title alphanumeric and - _
     REGEX_BOOKMARK_TITLE: /^[\w\-\s]+$/

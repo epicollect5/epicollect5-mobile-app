@@ -37,14 +37,14 @@
 
 						<ion-chip
 							class="chip-datetimepicker"
-							:class="{'has-error' : hasError, 'web-picker': isWEB}"
+							:class="{'has-error' : hasError, 'web-picker': isPWA}"
 							outline
 							mode="ios"
 						>
 
 							<div class="datetime-value">
 								<ion-icon
-									v-if="!isWEB"
+									v-if="!isPWA"
 									class="date-icon-left"
 									size="small"
 									:icon="calendarClearOutline"
@@ -189,8 +189,8 @@ export default {
 					return '';
 				}
 			}),
-			isWEB: computed(() => {
-				return rootStore.device.platform === PARAMETERS.WEB;
+			isPWA: computed(() => {
+				return rootStore.device.platform === PARAMETERS.PWA;
 			})
 		};
 

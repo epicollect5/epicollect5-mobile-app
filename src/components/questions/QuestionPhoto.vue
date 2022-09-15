@@ -19,7 +19,14 @@
 			:class="{'ion-margin' : isGroupInput}"
 		>
 
-			<grid-question-narrow>
+			<dropzone
+				v-if="isPWA"
+				:type="state.inputDetails.type"
+				:inputRef="state.inputDetails.ref"
+				:uuid="entryUuid"
+			></dropzone>
+
+			<grid-question-narrow v-if="!isPWA">
 				<template #content>
 					<ion-button
 						class="question-action-button"
@@ -36,7 +43,7 @@
 				</template>
 			</grid-question-narrow>
 
-			<grid-question-narrow>
+			<grid-question-narrow v-if="!isPWA">
 				<template #content>
 					<ion-button
 						class="question-action-button"
@@ -85,11 +92,13 @@ import ModalPhoto from '@/components/modals/ModalPhoto';
 import { photoTake } from '@/use/questions/photo-take';
 import GridQuestionNarrow from '@/components/GridQuestionNarrow';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
+import Dropzone from '@/components/Dropzone';
 
 export default {
 	components: {
 		GridQuestionNarrow,
-		QuestionLabelAction
+		QuestionLabelAction,
+		Dropzone
 	},
 	props: {
 		inputRef: {
@@ -135,7 +144,6 @@ export default {
 		});
 
 		//set up question
-
 		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		onMounted(async () => {
@@ -232,12 +240,16 @@ export default {
 			isFileAvailable: computed(() => {
 				const mediaFile = media[entryUuid][state.inputDetails.ref];
 				return mediaFile.cached !== '' || mediaFile.stored !== '';
+			}),
+			isPWA: computed(() => {
+				return rootStore.device.platform === PARAMETERS.PWA;
 			})
 		};
 
 		return {
 			labels,
 			state,
+			entryUuid,
 			...icons,
 			...methods,
 			...props,
@@ -248,10 +260,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.question-location-grid {
-	font-size: 18px;
-	ion-row.border-bottom {
-		border-bottom: 1px solid var(--ion-color-light-shade);
-	}
-}
 </style>

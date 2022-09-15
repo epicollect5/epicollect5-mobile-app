@@ -9,6 +9,20 @@ import { useRootStore } from '@/stores/root-store';
 
 export const webService = {
 
+    // Get XSRF token from cookie
+    getXsrfToken () {
+
+        const cookies = document.cookie.split(';');
+        let token = '';
+
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].split('=');
+            if (cookie[0].trim() === 'XSRF-TOKEN') {
+                token = decodeURIComponent(cookie[1]);
+            }
+        }
+        return token;
+    },
     //jwt auth
     getProject (slug) {
 
@@ -166,6 +180,39 @@ export const webService = {
             });
         });
     },
+
+    uploadFilePWA (slug, formData) {
+
+        const self = this;
+
+        return new Promise((resolve, reject) => {
+
+            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
+            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
+            let postURL = self.getServerUrl();
+
+            if (PARAMETERS.DEBUG) {
+                //use debug endpoint (no csrf)
+                postURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_FILE_DEBUG + slug;
+                console.log('post data', JSON.stringify(formData));
+            } else {
+                postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_FILE + slug;
+            }
+
+            //todo: check -> data: formData 
+            axios({
+                method: 'POST',
+                url: postURL,
+                data: formData
+            }).then(function (response) {
+                resolve(response);
+            }, function (error) {
+                console.log(error);
+                reject(error.response);
+            });
+        });
+    },
+
 
     checkUniquenessPWA (slug, data) {
         const self = this;

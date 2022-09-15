@@ -78,6 +78,7 @@
     "vue-datepicker-next": "^1.0.2",
     "vue-router": "^4.0.16",
     "vue-scroll-picker": "^1.1.1",
+    "vue3-dropzone": "^2.0.1",
     "vue3-scroll-picker": "^0.1.15",
     "vuex": "^4.0.0"
   },

@@ -24,15 +24,15 @@
 			<!-- Show the WEB chip in browsers and in devices when seconds are not needed -->
 			<!-- todo: on PWA use https://vue3datepicker.com/ -->
 			<ion-chip
-				v-if="isWEB || ((isANDROID || isIOS) && !hasSeconds)"
+				v-if="isPWA || ((isANDROID || isIOS) && !hasSeconds)"
 				class="chip-datetimepicker web-datetime"
-				:class="{'has-error' : hasError, 'web-picker': isWEB, 'device-picker': !isWEB}"
+				:class="{'has-error' : hasError, 'web-picker': isPWA, 'device-picker': !isPWA}"
 				outline
 				mode="ios"
 			>
 				<div class="datetime-value">
 					<ion-icon
-						v-if="!isWEB"
+						v-if="!isPWA"
 						class="time-icon"
 						size="small"
 						:icon="timeOutline"
@@ -262,8 +262,8 @@ export default {
 			isIOS: computed(() => {
 				return rootStore.device.platform === PARAMETERS.IOS;
 			}),
-			isWEB: computed(() => {
-				return rootStore.device.platform === PARAMETERS.WEB;
+			isPWA: computed(() => {
+				return rootStore.device.platform === PARAMETERS.PWA;
 			})
 		};
 
