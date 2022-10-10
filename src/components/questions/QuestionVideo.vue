@@ -18,7 +18,17 @@
 			class="ion-text-center"
 			:class="{'ion-margin' : isGroupInput}"
 		>
-			<grid-question-narrow>
+			<dropzone
+				:filename="state.answer.answer"
+				:key="state.answer.answer"
+				v-if="isPWA"
+				:type="state.inputDetails.type"
+				:inputRef="state.inputDetails.ref"
+				:uuid="entryUuid"
+				@file-uploaded="onFileUploadedPWA"
+			></dropzone>
+
+			<grid-question-narrow v-if="!isPWA">
 				<template #content>
 					<ion-button
 						class="question-action-button"
@@ -36,7 +46,7 @@
 			</grid-question-narrow>
 
 			<!-- Video Preview -->
-			<grid-question-narrow>
+			<grid-question-narrow v-if="!isPWA">
 				<template #content>
 					<video
 						v-show="state.fileSource !== ''"
@@ -66,11 +76,13 @@ import { videoShoot } from '@/use/questions/video-shoot';
 import { popoverMediaHandler } from '@/use/questions/popover-media-handler';
 import GridQuestionNarrow from '@/components/GridQuestionNarrow';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
+import Dropzone from '@/components/Dropzone';
 
 export default {
 	components: {
 		GridQuestionNarrow,
-		QuestionLabelAction
+		QuestionLabelAction,
+		Dropzone
 	},
 	props: {
 		inputRef: {
@@ -143,17 +155,27 @@ export default {
 			media[entryUuid][state.inputDetails.ref].cached = '';
 			media[entryUuid][state.inputDetails.ref].stored = '';
 			media[entryUuid][state.inputDetails.ref].type = state.inputDetails.type;
+
+			if (rootStore.device.platform === PARAMETERS.PWA) {
+				media[entryUuid][state.inputDetails.ref].filenamePWA = '';
+			}
 		} else {
-			//show cached or stored image if any, Cached image will win over stored one
-			if (media[entryUuid][state.inputDetails.ref].cached !== '') {
-				filename = media[entryUuid][state.inputDetails.ref].cached;
-				source = tempDir + filename;
-				state.fileSource = Capacitor.convertFileSrc(source);
+			if (rootStore.device.platform === PARAMETERS.PWA) {
+				//load preview in dropzone
+
+				filename = media[entryUuid][state.inputDetails.ref].filenamePWA;
 			} else {
-				if (media[entryUuid][state.inputDetails.ref].stored !== '') {
-					filename = media[entryUuid][state.inputDetails.ref].stored;
-					source = persistentDir + PARAMETERS.VIDEO_DIR + projectRef + '/' + filename;
+				//show cached or stored image if any, Cached image will win over stored one
+				if (media[entryUuid][state.inputDetails.ref].cached !== '') {
+					filename = media[entryUuid][state.inputDetails.ref].cached;
+					source = tempDir + filename;
 					state.fileSource = Capacitor.convertFileSrc(source);
+				} else {
+					if (media[entryUuid][state.inputDetails.ref].stored !== '') {
+						filename = media[entryUuid][state.inputDetails.ref].stored;
+						source = persistentDir + PARAMETERS.VIDEO_DIR + projectRef + '/' + filename;
+						state.fileSource = Capacitor.convertFileSrc(source);
+					}
 				}
 			}
 		}
@@ -163,8 +185,14 @@ export default {
 		const methods = {
 			async openPopover(e) {
 				const mediaFile = media[entryUuid][state.inputDetails.ref];
-				if (mediaFile.cached === '' && mediaFile.stored === '') {
-					return false;
+				if (rootStore.device.platform === PARAMETERS.PWA) {
+					if (mediaFile.filenamePWA === '') {
+						return false;
+					}
+				} else {
+					if (mediaFile.cached === '' && mediaFile.stored === '') {
+						return false;
+					}
 				}
 				popoverMediaHandler({
 					media,
@@ -178,19 +206,27 @@ export default {
 				if (rootStore.device.platform !== PARAMETERS.WEB) {
 					videoShoot({ media, entryUuid, state, filename });
 				}
+			},
+			onFileUploadedPWA(filename) {
+				state.answer.answer = filename;
+				media[entryUuid][state.inputDetails.ref].filenamePWA = filename;
 			}
 		};
 
 		const computedScope = {
 			isFileAvailable: computed(() => {
 				const mediaFile = media[entryUuid][state.inputDetails.ref];
-				return mediaFile.cached !== '' || mediaFile.stored !== '';
+				return mediaFile.cached !== '' || mediaFile.stored !== '' || mediaFile.filenamePWA !== '';
+			}),
+			isPWA: computed(() => {
+				return rootStore.device.platform === PARAMETERS.PWA;
 			})
 		};
 
 		return {
 			labels,
 			state,
+			entryUuid,
 			...icons,
 			...methods,
 			...props,

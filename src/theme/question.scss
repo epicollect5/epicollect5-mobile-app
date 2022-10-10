@@ -379,3 +379,10 @@ ion-item-divider.saved-answers-serchbar-wrapper {
     border: 2px solid var(--ion-color-primary);
     background-color: #eee;
 }
+.dropzone-preview {
+    height: 200px;
+
+    ion-avatar {
+        --border-radius: 0;
+    }
+}

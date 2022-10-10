@@ -18,7 +18,18 @@
 			class="ion-text-center"
 			:class="{'ion-margin' : isGroupInput}"
 		>
-			<grid-question-narrow>
+
+			<dropzone
+				:filename="state.answer.answer"
+				:key="state.answer.answer"
+				v-if="isPWA"
+				:type="state.inputDetails.type"
+				:inputRef="state.inputDetails.ref"
+				:uuid="entryUuid"
+				@file-uploaded="onFileUploadedPWA"
+			></dropzone>
+
+			<grid-question-narrow v-if="!isPWA">
 				<template #content>
 					<ion-button
 						class="question-action-button"
@@ -35,7 +46,7 @@
 				</template>
 			</grid-question-narrow>
 
-			<grid-question-narrow>
+			<grid-question-narrow v-if="!isPWA">
 				<template #content>
 					<ion-button
 						:disabled="!isFileAvailable"
@@ -71,11 +82,13 @@ import ModalAudioRecord from '@/components/modals/ModalAudioRecord';
 import GridQuestionNarrow from '@/components/GridQuestionNarrow';
 import { popoverMediaHandler } from '@/use/questions/popover-media-handler';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
+import Dropzone from '@/components/Dropzone';
 
 export default {
 	components: {
 		GridQuestionNarrow,
-		QuestionLabelAction
+		QuestionLabelAction,
+		Dropzone
 	},
 	props: {
 		inputRef: {
@@ -136,7 +149,10 @@ export default {
 			}),
 			isFileAvailable: computed(() => {
 				const mediaFile = media[entryUuid][state.inputDetails.ref];
-				return mediaFile.cached !== '' || mediaFile.stored !== '';
+				return mediaFile.cached !== '' || mediaFile.stored !== '' || mediaFile.filenamePWA !== '';
+			}),
+			isPWA: computed(() => {
+				return rootStore.device.platform === PARAMETERS.PWA;
 			})
 		};
 
@@ -166,13 +182,23 @@ export default {
 			media[entryUuid][state.inputDetails.ref].cached = '';
 			media[entryUuid][state.inputDetails.ref].stored = '';
 			media[entryUuid][state.inputDetails.ref].type = state.inputDetails.type;
+
+			if (rootStore.device.platform === PARAMETERS.PWA) {
+				media[entryUuid][state.inputDetails.ref].filenamePWA = '';
+			}
 		}
 
 		const methods = {
 			async openPopover(e) {
 				const mediaFile = media[entryUuid][state.inputDetails.ref];
-				if (mediaFile.cached === '' && mediaFile.stored === '') {
-					return false;
+				if (rootStore.device.platform === PARAMETERS.PWA) {
+					if (mediaFile.filenamePWA === '') {
+						return false;
+					}
+				} else {
+					if (mediaFile.cached === '' && mediaFile.stored === '') {
+						return false;
+					}
 				}
 				popoverMediaHandler({
 					media,
@@ -248,6 +274,10 @@ export default {
 
 				rootStore.isAudioModalActive = true;
 				return scope.ModalAudioPlay.present();
+			},
+			onFileUploadedPWA(filename) {
+				state.answer.answer = filename;
+				media[entryUuid][state.inputDetails.ref].filenamePWA = filename;
 			}
 		};
 
@@ -278,6 +308,7 @@ export default {
 		return {
 			labels,
 			state,
+			entryUuid,
 			...icons,
 			...computedScope,
 			...methods,

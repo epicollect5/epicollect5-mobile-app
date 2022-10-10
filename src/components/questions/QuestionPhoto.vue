@@ -20,10 +20,13 @@
 		>
 
 			<dropzone
+				:filename="state.answer.answer"
+				:key="state.answer.answer"
 				v-if="isPWA"
 				:type="state.inputDetails.type"
 				:inputRef="state.inputDetails.ref"
 				:uuid="entryUuid"
+				@file-uploaded="onFileUploadedPWA"
 			></dropzone>
 
 			<grid-question-narrow v-if="!isPWA">
@@ -172,15 +175,25 @@ export default {
 			media[entryUuid][state.inputDetails.ref].cached = '';
 			media[entryUuid][state.inputDetails.ref].stored = '';
 			media[entryUuid][state.inputDetails.ref].type = state.inputDetails.type;
+
+			if (rootStore.device.platform === PARAMETERS.PWA) {
+				media[entryUuid][state.inputDetails.ref].filenamePWA = '';
+			}
 		} else {
-			//show cached or stored image if any, Cached image will win over stored one
-			if (media[entryUuid][state.inputDetails.ref].cached !== '') {
-				filename = media[entryUuid][state.inputDetails.ref].cached;
-				_loadImageOnView(tempDir + filename);
+			if (rootStore.device.platform === PARAMETERS.PWA) {
+				//load preview in dropzone
+
+				filename = media[entryUuid][state.inputDetails.ref].filenamePWA;
 			} else {
-				if (media[entryUuid][state.inputDetails.ref].stored !== '') {
-					filename = media[entryUuid][state.inputDetails.ref].stored;
-					_loadImageOnView(persistentDir + PARAMETERS.PHOTO_DIR + project_ref + '/' + filename);
+				//show cached or stored image if any, Cached image will win over stored one
+				if (media[entryUuid][state.inputDetails.ref].cached !== '') {
+					filename = media[entryUuid][state.inputDetails.ref].cached;
+					_loadImageOnView(tempDir + filename);
+				} else {
+					if (media[entryUuid][state.inputDetails.ref].stored !== '') {
+						filename = media[entryUuid][state.inputDetails.ref].stored;
+						_loadImageOnView(persistentDir + PARAMETERS.PHOTO_DIR + project_ref + '/' + filename);
+					}
 				}
 			}
 		}
@@ -199,8 +212,15 @@ export default {
 		const methods = {
 			async openPopover(e) {
 				const mediaFile = media[entryUuid][state.inputDetails.ref];
-				if (mediaFile.cached === '' && mediaFile.stored === '') {
-					return false;
+
+				if (rootStore.device.platform === PARAMETERS.PWA) {
+					if (mediaFile.filenamePWA === '') {
+						return false;
+					}
+				} else {
+					if (mediaFile.cached === '' && mediaFile.stored === '') {
+						return false;
+					}
 				}
 				popoverMediaHandler({
 					media,
@@ -233,13 +253,17 @@ export default {
 				console.log(error);
 				console.log('Image failed!');
 				services.notificationService.hideProgressDialog();
+			},
+			onFileUploadedPWA(filename) {
+				state.answer.answer = filename;
+				media[entryUuid][state.inputDetails.ref].filenamePWA = filename;
 			}
 		};
 
 		const computedScope = {
 			isFileAvailable: computed(() => {
 				const mediaFile = media[entryUuid][state.inputDetails.ref];
-				return mediaFile.cached !== '' || mediaFile.stored !== '';
+				return mediaFile.cached !== '' || mediaFile.stored !== '' || mediaFile.filenamePWA !== '';
 			}),
 			isPWA: computed(() => {
 				return rootStore.device.platform === PARAMETERS.PWA;

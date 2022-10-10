@@ -40,7 +40,6 @@ export const modalsHandlerService = {
     //dismiss all modals
     dismissAll () {
         Object.values(this.modals).forEach((modal) => {
-
             if (modal) {
                 modal.dismiss();
             }

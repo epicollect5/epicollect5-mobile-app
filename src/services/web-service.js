@@ -213,6 +213,48 @@ export const webService = {
         });
     },
 
+    deleteTempMediaFile (projectSlug, entryUuid, mediaType, filename) {
+        return new Promise((resolve, reject) => {
+            const payload = {
+                data: {
+                    type: 'delete',
+                    id: entryUuid,
+                    delete: {
+                        filetype: mediaType,
+                        filename
+                    }
+                }
+            };
+
+            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
+            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
+            let postURL = projectModel.getServerUrl();
+            if (PARAMETERS.DEBUG) {
+                //use debug endpoint (no csrf)
+                postURL +=
+                    apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA_DELETE_DEBUG + projectSlug;
+                console.log('post data', JSON.stringify(payload));
+            } else {
+                postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA_DELETE + projectSlug;
+            }
+
+            //post request to remove temp file from server
+            axios({
+                method: 'POST',
+                url: postURL,
+                data: payload
+            })
+                .then(
+                    function (response) {
+                        resolve(response);
+                    },
+                    function (error) {
+                        reject(error);
+                        console.log(error);
+                    }
+                );
+        });
+    },
 
     checkUniquenessPWA (slug, data) {
         const self = this;

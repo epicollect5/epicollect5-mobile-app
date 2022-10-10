@@ -9,6 +9,44 @@
 			<p><strong>{{state.acceptedFormats}}</strong></p>
 		</div>
 	</div>
+	<div
+		v-if="state.filesource !== ''"
+		class="dropzone-preview ion-text-center"
+	>
+		<div
+			slot="start"
+			class="question-photo-thumbnail animate__animated animate__fadeIn ion-margin-top"
+		>
+			<ion-spinner
+				class="spinner"
+				v-show="!state.previewLoaded"
+				name="crescent"
+			></ion-spinner>
+			<img
+				v-if="state.type === PARAMETERS.QUESTION_TYPES.PHOTO"
+				v-show="state.previewLoaded"
+				class="animate__animated animate__fadeIn"
+				:src="state.filesource"
+				@load="onImageLoaded()"
+			>
+			<audio
+				v-if="state.type === PARAMETERS.QUESTION_TYPES.AUDIO"
+				v-show="state.previewLoaded"
+				controls
+				class="animate__animated animate__fadeIn full-width"
+				:src="state.filesource"
+				@loadeddata="onAudioLoaded()"
+			></audio>
+			<video
+				v-if="state.type === PARAMETERS.QUESTION_TYPES.VIDEO"
+				v-show="state.previewLoaded"
+				controls
+				class="animate__animated animate__fadeIn full-width"
+				:src="state.filesource"
+				@loadeddata="onVideoLoaded()"
+			></video>
+		</div>
+	</div>
 </template>
 
 <script>
@@ -16,13 +54,16 @@ import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import * as services from '@/services';
-import { reactive, computed } from '@vue/reactivity';
+import { reactive, computed, toRaw } from '@vue/reactivity';
 import { useDropzone } from 'vue3-dropzone';
 import { projectModel } from '@/models/project-model';
-import axios from 'axios';
 
 export default {
 	props: {
+		filename: {
+			type: String,
+			required: true
+		},
 		inputRef: {
 			type: String,
 			required: true
@@ -36,17 +77,26 @@ export default {
 			required: true
 		}
 	},
-	setup(props) {
+	emits: ['file-uploaded'],
+	setup(props, context) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
+		const formRef = projectModel.getFirstFormRef();
+		const projectSlug = projectModel.getSlug();
+		let filename = toRaw(props.filename);
 
 		const state = reactive({
 			type: props.type,
 			isDraggingOver: false,
 			dropMessage: '',
+			filesource: '',
+			previewLoaded: false,
 			acceptedFormats: PARAMETERS.PWA_FILE_ACCEPTED_FORMATS[props.type.toUpperCase()]
 		});
+
+		state.filesource = props.filename === '' ? '' : getMediaURL(props.filename, props.type);
+		filename = props.filename === '' ? '' : props.filename;
 
 		const dropzoneOptions = {
 			onDrop: async function (acceptFiles, rejectReasons) {
@@ -59,7 +109,7 @@ export default {
 					state.isDraggingOver = false;
 					return false;
 				} else {
-					await services.notificationService.showProgressDialog(labels.wait, labels.saving);
+					await services.notificationService.showProgressDialog(labels.wait, labels.uploading);
 
 					//upload file
 					const file = acceptFiles[0];
@@ -70,21 +120,19 @@ export default {
 						ext = 'jpg';
 					}
 
-					// let answer = props.answer;
-					// // If empty, create a new answer (file name)
-					// if (props.answer === '') {
-					// 	answer = generateMediaFilenameWeb(props.uuid, ext);
-					// }
-					//todo:
 					//todo: we need to get it from the query string for hierarchy forms
-					const formRef = projectModel.getFirstFormRef();
-					const projectSlug = projectModel.getSlug();
-					const answer = services.utilsService.generateMediaFilename(props.uuid, state.type);
+
+					//get existing filename or generate new one
+					if (props.filename === '') {
+						filename = services.utilsService.generateMediaFilename(props.uuid, state.type);
+					} else {
+						filename = props.filename;
+					}
 					const payload = new FormData();
 					const uploadData = services.JSONTransformerService.makeJsonFileEntry({
 						entry_uuid: props.uuid,
 						form_ref: formRef,
-						file_name: answer,
+						file_name: filename,
 						file_type: props.type,
 						input_ref: props.inputRef,
 						structure_last_updated: projectModel.getLastUpdated(),
@@ -101,9 +149,13 @@ export default {
 					services.webService
 						.uploadFilePWA(projectSlug, payload)
 						.then(
-							(filename) => {
+							(response) => {
+								console.log(response);
+								//show preview
+								services.notificationService.showToast(labels.file_uploaded);
 								console.log(filename);
-								//todo: show preview
+
+								state.filesource = getMediaURL(filename, props.type);
 							},
 							(error) => {
 								//todo: handle error
@@ -114,11 +166,6 @@ export default {
 							services.notificationService.hideProgressDialog();
 							state.isDraggingOver = false;
 						});
-
-					//axios.post('/path/to/api', uploadData, {});
-
-					//show file preview (img, audio, video tag)
-					//todo:
 				}
 			},
 			onDragEnter: function () {
@@ -128,18 +175,54 @@ export default {
 				state.isDraggingOver = false;
 			},
 			multiple: false,
-			accept: PARAMETERS.PWA_MIMETYPES.PHOTO,
-			maxSize: PARAMETERS.PWA_UPLOAD_MAX_SIZE.PHOTO,
+			accept: PARAMETERS.PWA_MIMETYPES[props.type.toUpperCase()],
+			maxSize: PARAMETERS.PWA_UPLOAD_MAX_SIZE[props.type.toUpperCase()],
 			maxFiles: 1
 		};
 
 		const { getRootProps, getInputProps } = useDropzone(dropzoneOptions);
 
+		const methods = {
+			onImageLoaded() {
+				state.previewLoaded = true;
+				context.emit('file-uploaded', filename);
+			},
+			onAudioLoaded() {
+				state.previewLoaded = true;
+				context.emit('file-uploaded', filename);
+			},
+			onVideoLoaded() {
+				state.previewLoaded = true;
+				context.emit('file-uploaded', filename);
+			}
+		};
+
+		function getMediaURL(filename, type) {
+			const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
+			const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
+			let mediaURL = rootStore.serverUrl;
+			if (PARAMETERS.DEBUG) {
+				//use debug endpoint (no csrf)
+				mediaURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
+			} else {
+				mediaURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
+			}
+
+			mediaURL += '?format=entry_original';
+			mediaURL += '&name=' + filename;
+			mediaURL += '&type=' + type;
+			mediaURL += '&timestamp=' + new Date().getTime();
+
+			return mediaURL;
+		}
+
 		return {
 			getRootProps,
 			getInputProps,
 			labels,
-			state
+			state,
+			PARAMETERS,
+			...methods
 		};
 	}
 };

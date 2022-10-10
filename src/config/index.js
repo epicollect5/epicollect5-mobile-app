@@ -72,6 +72,9 @@ export const PARAMETERS = {
                 UPLOAD_DEBUG: '/pwa-upload/',//for debugging
                 UPLOAD_FILE: '/web-upload-file/',
                 UPLOAD_FILE_DEBUG: '/pwa-upload-file/',//for debugging 
+                TEMP_MEDIA: '/temp-media/',
+                TEMP_MEDIA_DELETE: '/temp-media-delete/',
+                TEMP_MEDIA_DELETE_DEBUG: '/pwa-temp-media-delete/',
                 UNIQUE_ANSWER: '/unique-answer/',
                 UNIQUE_ANSWER_DEBUG: '/pwa-unique-answer/'//for debugging
             }
