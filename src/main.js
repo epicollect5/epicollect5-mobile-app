@@ -7,6 +7,7 @@ import { Capacitor } from '@capacitor/core';
 import { IonicVue } from '@ionic/vue';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { projectModel } from '@/models/project-model.js';
+import { setupPWAEntry } from '@/use/setup-pwa-entry';
 import * as services from '@/services';
 
 /* Core CSS required for Ionic components to work properly */
@@ -93,6 +94,14 @@ export const app = createApp(App)
 
   if (rootStore.device.platform === PARAMETERS.PWA) {
 
+    const searchParams = new URLSearchParams(window.location.search);
+    rootStore.searchParams = searchParams;
+    // Display the key/value pairs
+    for (const [key, value] of searchParams.entries()) {
+      console.log(`${key}, ${value}`);
+    }
+    // console.log(window.location.search);
+
     //set en as language (PWA can get translated by browser tools)
     rootStore.language = PARAMETERS.DEFAULT_LANGUAGE;
     //load language files
@@ -113,9 +122,11 @@ export const app = createApp(App)
       const response = await services.webService.getProjectPWA(projectSlug);
       projectModel.initialisePWA((response));
       console.log(response);
-      //todo: we need to get it from the query string for hierarchy forms
-      const formRef = projectModel.getFirstFormRef();
 
+      // Set up a new entry
+      const formRef = setupPWAEntry();
+
+      //update route params
       rootStore.routeParams = {
         formRef,
         inputRef: null,
@@ -123,12 +134,6 @@ export const app = createApp(App)
         isBranch: false,
         error: {}
       };
-
-      // Set up a new entry
-      //imp: formRef, state.parentEntryUuid, state.parentFormRef must be taken from url?
-      //imp: check old data editor
-      //services.entryService.setUpNew(formRef, state.parentEntryUuid, state.parentFormRef);
-      services.entryService.setUpNew(formRef, '', '');
     }
     catch (error) {
       console.log(error);
@@ -139,12 +144,6 @@ export const app = createApp(App)
     //start mobile app
     const dbStore = useDBStore();
     const bookmarkStore = useBookmarkStore();
-    // //get device info
-    // const deviceInfo = await initService.getDeviceInfo();
-    // console.log('Platform: => ', deviceInfo.platform.toLocaleUpperCase());
-    // //make deviceInfo global
-    // rootStore.device = deviceInfo;
-
     const appInfo = await initService.getAppInfo();
     //make appInfo global
     rootStore.app = appInfo;

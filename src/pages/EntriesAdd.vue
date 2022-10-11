@@ -315,6 +315,7 @@ import { initialSetup } from '@/use/questions/initial-setup';
 import { handleNext } from '@/use/questions/handle-next';
 import { handlePrev } from '@/use/questions/handle-prev';
 import { useBackButton } from '@ionic/vue';
+import { setupPWAEntry } from '@/use/setup-pwa-entry';
 
 export default {
 	components: {
@@ -474,8 +475,8 @@ export default {
 			async addEntryPWA() {
 				// Show loader
 				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
-				// Set up a new entry
-				const formRef = projectModel.getFirstFormRef();
+				// Set up a new entry based on URL params
+				const formRef = setupPWAEntry();
 				//get first form question input ref
 				const firstInputRef = projectModel.getInputs(formRef)[0];
 
@@ -486,12 +487,6 @@ export default {
 					isBranch: false,
 					error: {}
 				};
-
-				// Set up a new entry
-				//imp: formRef, state.parentEntryUuid, state.parentFormRef must be taken from url?
-				//imp: check old data editor
-				//services.entryService.setUpNew(formRef, state.parentEntryUuid, state.parentFormRef);
-				services.entryService.setUpNew(formRef, '', '');
 
 				//fake answer (to re-use prev() method)
 				state.questionParams.currentInputIndex = 1;

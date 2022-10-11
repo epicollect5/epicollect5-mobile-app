@@ -46,7 +46,8 @@ export const useRootStore = defineStore('RootStore', {
             ec5LoadingDialog: null,
             hasGoogleServices: true,
             entriesAddScope: {},
-            queueFilesToDelete: []
+            queueFilesToDelete: [],
+            searchParams: null
         };
     },
     getters: {},

@@ -78,8 +78,6 @@ export const webService = {
                     last_updated: response.data.meta.project_stats.structure_last_updated
                 };
 
-                console.log(JSON.stringify(data));
-
                 resolve(data);
             }, function (error) {
                 reject(error.response);

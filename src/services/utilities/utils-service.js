@@ -826,6 +826,5 @@ export const utilsService = {
         const x = normish(0, 0.01);
         const y = normish(0, 0.01);
         return { longitude: (((x * 0.1) + centerlon)).toFixed(6), latitude: (((y * 0.1) + centerlat)).toFixed(6), accuracy: this.getRandomInRange(3, 100, 0) };
-
     }
 };
