@@ -18,10 +18,13 @@ if (process.env.VUE_APP_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
       name: PARAMETERS.ROUTES.ENTRIES_ADD
     },
     {
+      path: '/project/:project_slug/add-entry/branch',
+      component: () => import('@/pages/EntriesAdd.vue'),
+      name: PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
+    },
+    {
       path: '/:pathMatch(.*)*',
-      redirect: {
-        name: PARAMETERS.ROUTES.NOT_FOUND
-      }
+      redirect: { name: PARAMETERS.ROUTES.NOT_FOUND }
     }
   ];
 }

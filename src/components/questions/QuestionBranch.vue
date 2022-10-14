@@ -32,7 +32,7 @@
 		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title>
 				<question-label-action
-					:disabled="false"
+					:disabled="isPWA"
 					action="filter"
 					:questionText="state.question"
 					answer=" "
@@ -66,6 +66,74 @@
 							></ion-icon>
 							{{labels.add_branch}}
 						</ion-button>
+					</ion-col>
+				</ion-row>
+
+				<ion-row v-if="isPWA">
+					<ion-col
+						size-xs="10"
+						offset-xs="1"
+						size-sm="8"
+						offset-sm="2"
+						size-md="6"
+						offset-md="3"
+						size-lg="6"
+						offset-lg="3"
+						class="ion-align-self-center"
+					>
+						<ion-spinner
+							v-if="state.isFetching"
+							class="ion-margin"
+							name="crescent"
+						></ion-spinner>
+						<div
+							v-if="!state.isFetching && state.branchEntries.length > 0"
+							class="list-entries-branch"
+						>
+							<ion-list
+								class="animate__animated animate__fadeIn"
+								lines="none"
+								mode="md"
+							>
+								<ion-item
+									lines="full"
+									class="list-entries-item"
+									v-for="entry in state.branchEntries"
+									:key="entry.id"
+								>
+									<ion-icon
+										class="icon-primary"
+										:icon="create"
+										slot="start"
+										@click="editBranchPWA()"
+									></ion-icon>
+									<ion-label>
+										{{ entry.branch_entry.title }}
+									</ion-label>
+									<ion-icon
+										class="icon-danger"
+										:icon="trash"
+										slot="end"
+										@click="removeBranchPWA(entry.id)"
+									></ion-icon>
+								</ion-item>
+							</ion-list>
+
+							<ion-infinite-scroll
+								:disabled="state.branchEntries.length <= PARAMETERS.ENTRIES_PER_PAGE"
+								v-show="state.branchEntries.length >0"
+								@ionInfinite="loadEntriesChunk($event)"
+								threshold="100px"
+								class="ion-padding-top"
+							>
+								<ion-infinite-scroll-content
+									loading-spinner="crescent"
+									:loading-text="labels.loading"
+								>
+								</ion-infinite-scroll-content>
+							</ion-infinite-scroll>
+						</div>
+
 					</ion-col>
 				</ion-row>
 
@@ -169,7 +237,7 @@ import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import * as icons from 'ionicons/icons';
 import * as services from '@/services';
-import { reactive, computed, readonly, toRefs } from '@vue/reactivity';
+import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject, watch } from 'vue';
 import { modalController } from '@ionic/vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -450,7 +518,6 @@ export default {
 						};
 
 						fetchBranchEntries(fetchParams).then((result) => {
-							//todo:
 							if (result.branchEntries.length > 0) {
 								state.branchEntries.push(...result.branchEntries);
 							} else {
@@ -472,61 +539,87 @@ export default {
 						ev.target.disabled = true;
 					}
 				}, PARAMETERS.DELAY_MEDIUM);
-			}
+			},
+			async removeBranchPWA(id) {
+				//ask delete confirmation
+				const confirmed = await services.notificationService.confirmSingle(
+					labels.are_you_sure,
+					labels.delete
+				);
+
+				if (confirmed) {
+					//remove branch from store
+					//const result = words.filter(word => word.length > 6);
+					state.branchEntries = state.branchEntries.filter((entry) => {
+						return entry.id !== id;
+					});
+					rootStore.queueTempBranchEntriesPWA[props.inputRef] = state.branchEntries;
+				}
+			},
+			editBranchPWA() {}
 		};
 
-		if (rootStore.device.platform !== PARAMETERS.PWA) {
-			_updateEntriesFilterBranchByDates().then(() => {
-				const { entriesOffset, filters } = state;
-				const uuid = entriesAddScope.entryService.entry.entryUuid;
-				const fetchParams = {
-					inputRef,
-					uuid,
-					entriesOffset,
-					filters
-				};
-				//get the first branch entries chuck for this branch question
-				fetchBranchEntries(fetchParams).then((result) => {
-					state.branchEntries = result.branchEntries;
-					state.hasUnsavedBranches = result.hasUnsavedBranches;
-					state.isFetching = false;
-					// hide loader (progress dialog) with a bit of delay for UX
-					services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
-				});
+		function getBranchEntries() {
+			const { entriesOffset, filters } = state;
+			const uuid = entriesAddScope.entryService.entry.entryUuid;
+			const fetchParams = {
+				inputRef,
+				uuid,
+				entriesOffset,
+				filters
+			};
+			//get the first branch entries chuck for this branch question
+			fetchBranchEntries(fetchParams).then((result) => {
+				state.branchEntries = result.branchEntries;
+				console.log(JSON.stringify(state.branchEntries));
+				state.hasUnsavedBranches = result.hasUnsavedBranches;
+				state.isFetching = false;
+				// hide loader (progress dialog) with a bit of delay for UX
+				services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
 			});
-
-			//re-fetch branch entries list when needed (after add or delete)
-			watch(
-				() => [
-					{
-						refreshBranchEntries: route.params.refreshBranchEntries,
-						timestamp: route.params.timestamp
-					}
-				],
-				(changes) => {
-					if (changes[0].refreshBranchEntries === 'true') {
-						state.isFetching = true;
-						window.setTimeout(async function () {
-							const { entriesOffset, filters } = state;
-							const uuid = entriesAddScope.entryService.entry.entryUuid;
-							const fetchParams = {
-								inputRef,
-								uuid,
-								entriesOffset,
-								filters
-							};
-							fetchBranchEntries(fetchParams).then((result) => {
-								state.branchEntries = result.branchEntries;
-								state.hasUnsavedBranches = result.hasUnsavedBranches;
-								state.isFetching = false;
-								// hide loader (progress dialog) with a bit of delay for UX
-								services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
-							});
-						}, PARAMETERS.DELAY_LONG);
-					}
-				}
-			);
 		}
+
+		if (rootStore.device.platform !== PARAMETERS.PWA) {
+			//use filters on native apps
+			_updateEntriesFilterBranchByDates().then(() => {
+				getBranchEntries();
+			});
+		} else {
+			//ignore filters on PWA
+			getBranchEntries();
+		}
+
+		//re-fetch branch entries list when needed (after add or delete)
+		watch(
+			() => [
+				{
+					refreshBranchEntries: route.params.refreshBranchEntries,
+					timestamp: route.params.timestamp
+				}
+			],
+			(changes) => {
+				if (changes[0].refreshBranchEntries === 'true') {
+					state.isFetching = true;
+					window.setTimeout(async function () {
+						const { entriesOffset, filters } = state;
+						const uuid = entriesAddScope.entryService.entry.entryUuid;
+						const fetchParams = {
+							inputRef,
+							uuid,
+							entriesOffset,
+							filters
+						};
+						fetchBranchEntries(fetchParams).then((result) => {
+							state.branchEntries = result.branchEntries;
+							state.hasUnsavedBranches = result.hasUnsavedBranches;
+							state.isFetching = false;
+							// hide loader (progress dialog) with a bit of delay for UX
+							services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
+						});
+					}, PARAMETERS.DELAY_LONG);
+				}
+			}
+		);
 
 		return {
 			labels,

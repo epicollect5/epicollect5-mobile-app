@@ -7,7 +7,7 @@ export const useRootStore = defineStore('RootStore', {
             serverUrl: '',
             device: {},
             app: {},
-            language: 'en',
+            language: PARAMETERS.DEFAULT_LANGUAGE,
             tempDir: '',
             persistentDir: '',
             hierarchyNavigation: [],
@@ -47,7 +47,9 @@ export const useRootStore = defineStore('RootStore', {
             hasGoogleServices: true,
             entriesAddScope: {},
             queueFilesToDelete: [],
-            searchParams: null
+            searchParams: null,
+            notFound: false,
+            queueTempBranchEntriesPWA: {}
         };
     },
     getters: {},

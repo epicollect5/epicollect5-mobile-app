@@ -7,6 +7,7 @@ import { Capacitor } from '@capacitor/core';
 import * as services from '@/services';
 
 export const entryService = {
+    type: PARAMETERS.ENTRY,
     form: {},
     entry: {},
     //Initial function to set up the entry
@@ -109,8 +110,6 @@ export const entryService = {
 
         const rootStore = useRootStore();
         const self = this;
-        self.form = formModel;
-        self.entry = entryModel;
 
         return new Promise((resolve, reject) => {
             // If this is an entry we can actually edit, i.e. not a remote entry
@@ -313,25 +312,34 @@ export const entryService = {
     removeTempBranches () {
 
         const self = this;
+        const rootStore = useRootStore();
+
         return new Promise((resolve) => {
 
-            // Select all temp branch entries uuids
-            services.databaseSelectService.selectTempBranches(self.entry.entryUuid).then(function (res) {
+            //on PWA, just remove branches from store
+            if (rootStore.device.platform === PARAMETERS.PWA) {
+                rootStore.queueTempBranchEntriesPWA = {};
+                resolve();
+            }
+            else {
+                // Select all temp branch entries uuids
+                services.databaseSelectService.selectTempBranches(self.entry.entryUuid).then(function (res) {
 
-                // Remove unique_answers, if any, for each temp branch
-                if (res.rows.length > 0) {
-                    services.databaseDeleteService.removeUniqueAnswers(res).then(function () {
-                        // Then delete all temp branch entries
-                        services.databaseDeleteService.deleteTempBranchEntries().then(function () {
-                            // Finished, resolve
-                            resolve();
+                    // Remove unique_answers, if any, for each temp branch
+                    if (res.rows.length > 0) {
+                        services.databaseDeleteService.removeUniqueAnswers(res).then(function () {
+                            // Then delete all temp branch entries
+                            services.databaseDeleteService.deleteTempBranchEntries().then(function () {
+                                // Finished, resolve
+                                resolve();
+                            });
                         });
-                    });
-                } else {
-                    // No temp branches, resolve
-                    resolve();
-                }
-            });
+                    } else {
+                        // No temp branches, resolve
+                        resolve();
+                    }
+                });
+            }
         });
     }
 };

@@ -1,3 +1,20 @@
+.question-progress-bar {
+    border: solid 2px white;
+    border-radius: 6px;
+    padding: 6px;
+    width: 80%;
+    margin: 0 auto;
+    height: 80%;
+}
+
+.question-progress-bar > div {
+    display: block;
+    height: 1em;
+    border-radius: 3px;
+    background-color: white;
+    position: relative;
+    overflow: hidden;
+}
 .question-card {
     margin-top: 16px;
     ion-card-content {
@@ -114,6 +131,21 @@ ion-chip.has-error {
             &.has-error {
                 padding: 10px !important;
             }
+        }
+    }
+}
+.question-branch {
+    .list-entries-branch-pwa {
+        margin-bottom: 16px;
+    }
+    .chip-branch {
+        width: 100%;
+        //margin: 16px 8px 0px 8px;
+        .chip-branch--icon-left {
+            margin-right: 16px;
+        }
+        .chip-branch--icon-right {
+            margin-left: 16px;
         }
     }
 }
@@ -356,7 +388,9 @@ ion-item-divider.saved-answers-serchbar-wrapper {
 //         color: #222;
 //     }
 // }
-.question-search-remove-pick {
+.question-search-remove-pick,
+.question-branch-edit,
+.question-branch-remove {
     font-size: 24px;
     margin-top: 5px;
 }

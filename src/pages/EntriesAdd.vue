@@ -1,5 +1,7 @@
 <template>
+	<not-found v-if="notFound"></not-found>
 	<base-layout
+		v-else
 		:title="projectName"
 		:id="pageId"
 	>
@@ -316,6 +318,7 @@ import { handleNext } from '@/use/questions/handle-next';
 import { handlePrev } from '@/use/questions/handle-prev';
 import { useBackButton } from '@ionic/vue';
 import { setupPWAEntry } from '@/use/setup-pwa-entry';
+import NotFound from '@/pages/NotFound';
 
 export default {
 	components: {
@@ -339,13 +342,22 @@ export default {
 		questionTime,
 		questionVideo,
 		questionSave,
-		questionSaved
+		questionSaved,
+		NotFound
 	},
 	setup(props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
 		const router = useRouter();
+
+		//if a wrong URL for the PWA is provided in the broswer, bail out
+		if (rootStore.notFound && rootStore.device.platform === PARAMETERS.PWA) {
+			return {
+				notFound: true
+			};
+		}
+
 		const projectName = services.utilsService.getProjectNameMarkup();
 
 		const state = reactive({
@@ -392,19 +404,28 @@ export default {
 		const methods = {
 			async saveEntry(syncType) {
 				if (rootStore.device.platform === PARAMETERS.PWA) {
-					//todo:
 					await services.notificationService.showProgressDialog(labels.wait, labels.saving);
 
 					rootStore.entriesAddScope.entryService.saveEntryPWA().then(
 						() => {
-							//show success screen for PWA entry saved
-							state.entrySavedPWA = true;
-							state.entryFailedPWA = false;
-							state.showSave = false;
-							state.showSaved = true;
-							state.disablePrevious = true;
-							state.disableNext = true;
-							services.notificationService.hideProgressDialog();
+							//if branch, go back to branch question and update branches list
+							if (rootStore.entriesAddScope.entryService.type === PARAMETERS.BRANCH_ENTRY) {
+								quit(
+									services.questionCommonService.getNavigationParams(
+										rootStore.entriesAddScope.entryService
+									)
+								);
+							} else {
+								//this is a hierarchy entry:
+								//show success screen for PWA entry saved
+								state.entrySavedPWA = true;
+								state.entryFailedPWA = false;
+								state.showSave = false;
+								state.showSaved = true;
+								state.disablePrevious = true;
+								state.disableNext = true;
+								services.notificationService.hideProgressDialog();
+							}
 						},
 						(errorResponse) => {
 							//we need to map the server erros to match the question errors object
@@ -523,8 +544,8 @@ export default {
 						await services.notificationService.showProgressDialog(labels.wait, labels.quitting);
 						// Remove any temp answers/entries
 						try {
-							// Quit with navigation params
 							await rootStore.entriesAddScope.entryService.removeTempBranches();
+							// Quit with navigation params
 							quit(
 								services.questionCommonService.getNavigationParams(
 									rootStore.entriesAddScope.entryService
@@ -622,11 +643,14 @@ export default {
 			const refreshEntries = response.routeName === PARAMETERS.ROUTES.ENTRIES;
 			const ownerInputRef = isBranch ? response.routeParams.ownerInputRef : null;
 
-			// Stop watching position if the form has any location BUT NOT IF IT IS A BRANCH ENTRY!!!!!
-			// If we stop watching it would be impossible to add another location in a branch, as the watchPosition would not work
-			if (projectModel.hasLocation(formRef) && !isBranch) {
-				console.log('Stopped watching position ------------------------>');
-				services.locationService.stopWatching();
+			//on the PWA we do not track user location, we get it from the browser
+			if (rootStore.device.platform !== PARAMETERS.PWA) {
+				// Stop watching position if the form has any location BUT NOT IF IT IS A BRANCH ENTRY!!!!!
+				// If we stop watching it would be impossible to add another location in a branch, as the watchPosition would not work
+				if (projectModel.hasLocation(formRef) && !isBranch) {
+					console.log('Stopped watching position ------------------------>');
+					services.locationService.stopWatching();
+				}
 			}
 
 			setTimeout(function () {
@@ -726,33 +750,17 @@ export default {
 		});
 
 		return {
-			labels: STRINGS[rootStore.language].labels,
+			labels,
 			state,
 			...icons,
 			...methods,
 			...computedScope,
-			projectName
+			projectName,
+			notFound: false
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-.question-progress-bar {
-	border: solid 2px white;
-	border-radius: 6px;
-	padding: 6px;
-	width: 80%;
-	margin: 0 auto;
-	height: 80%;
-}
-
-.question-progress-bar > div {
-	display: block;
-	height: 1em;
-	border-radius: 3px;
-	background-color: white;
-	position: relative;
-	overflow: hidden;
-}
 </style>

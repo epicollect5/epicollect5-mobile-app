@@ -81,6 +81,35 @@ export const notificationService = {
         const mode = platform === 'ios' ? 'ios' : 'md';
 
         return new Promise((resolve) => {
+
+
+            const buttons = [
+                {
+                    text: STRINGS[rootStore.language].labels.dismiss,
+                    role: 'cancel',
+                    handler: () => {
+                        resolve(false);
+                    }
+                },
+                {
+                    text: noButton,
+                    handler: () => {
+                        resolve(PARAMETERS.ACTIONS.ENTRY_QUIT);
+                    }
+                },
+                {
+                    text: yesButton,
+                    handler: () => {
+                        resolve(PARAMETERS.ACTIONS.ENTRY_SAVE);
+                    }
+                }
+            ];
+
+            //on the PWA, do not show save options when quitting
+            if (rootStore.device.platform === PARAMETERS.PWA) {
+                buttons.pop();
+            }
+
             (async () => {
                 const alert = await alertController
                     .create({
@@ -88,27 +117,7 @@ export const notificationService = {
                         cssClass: 'alert-confirm-multiple-' + platform,
                         header: title,
                         message,
-                        buttons: [
-                            {
-                                text: STRINGS[rootStore.language].labels.dismiss,
-                                role: 'cancel',
-                                handler: () => {
-                                    resolve(false);
-                                }
-                            },
-                            {
-                                text: noButton,
-                                handler: () => {
-                                    resolve(PARAMETERS.ACTIONS.ENTRY_QUIT);
-                                }
-                            },
-                            {
-                                text: yesButton,
-                                handler: () => {
-                                    resolve(PARAMETERS.ACTIONS.ENTRY_SAVE);
-                                }
-                            }
-                        ]
+                        buttons
                     });
                 return alert.present();
             })();

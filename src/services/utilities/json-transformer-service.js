@@ -111,7 +111,16 @@ export const JSONTransformerService = {
         const rootStore = useRootStore();
         // Add extra properties needed by the json formatter
         entry.last_updated = projectModel.getLastUpdated();
-        entry.device_id = rootStore.device.uuid;
+
+        //device id not needed for PWA (always logged in so user ID is used instead)
+        if (rootStore.device.platform === PARAMETERS.PWA) {
+            entry.device_id = '';
+        }
+        else {
+            //on native platforms use unique device identifier
+            entry.device_id = rootStore.device.uuid;
+        }
+
         entry.platform = rootStore.device.platform;
         entry.entry_type = entryType;
 

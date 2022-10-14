@@ -319,6 +319,7 @@ export const PARAMETERS = {
         AUDIO: 'mp4 or wav only, max file size 100 MB',
         VIDEO: 'mp4 only, max file size 500 MB'
     },
+    PWA_ADD_ENTRY: 'add-entry',
     //bookmark title alphanumeric and - _
     REGEX_BOOKMARK_TITLE: /^[\w\-\s]+$/
 };

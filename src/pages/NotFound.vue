@@ -33,14 +33,9 @@
 
 <script>
 import * as icons from 'ionicons/icons';
-import { reactive } from '@vue/reactivity';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
-import { useRouter } from 'vue-router';
-import { PARAMETERS } from '@/config';
-import * as services from '@/services';
-import { useBackButton } from '@ionic/vue';
 
 export default {
 	components: {},

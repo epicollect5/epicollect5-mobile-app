@@ -9,7 +9,7 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { projectModel } from '@/models/project-model.js';
 import { setupPWAEntry } from '@/use/setup-pwa-entry';
 import * as services from '@/services';
-
+import { STRINGS } from '@/config/strings';
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
 
@@ -116,27 +116,59 @@ export const app = createApp(App)
       rootStore.serverUrl = serverUrl;
     }
     console.log('Server URL -> ', rootStore.serverUrl);
-    const projectSlug = window.location.pathname.split('/').splice(-2, 1)[0];
-
-    try {
-      const response = await services.webService.getProjectPWA(projectSlug);
-      projectModel.initialisePWA((response));
-      console.log(response);
-
-      // Set up a new entry
-      const formRef = setupPWAEntry();
-
-      //update route params
-      rootStore.routeParams = {
-        formRef,
-        inputRef: null,
-        inputIndex: 0,
-        isBranch: false,
-        error: {}
-      };
+    //check if PWA URL is correct
+    const urlSegments = window.location.pathname.split('/');
+    if (urlSegments.pop() !== PARAMETERS.PWA_ADD_ENTRY) {
+      rootStore.notFound = true;
     }
-    catch (error) {
-      console.log(error);
+    if (!rootStore.notFound) {
+      const projectSlug = window.location.pathname.split('/').splice(-2, 1)[0];
+
+      try {
+        //get requeste project and init PWA
+        const response = await services.webService.getProjectPWA(projectSlug);
+        projectModel.initialisePWA((response));
+        console.log(response);
+
+        // Set up a new entry
+        const formRef = setupPWAEntry();
+
+
+
+        //update route params BRANCH
+        if (rootStore.searchParams.has('branch_ref') && rootStore.searchParams.has('branch_owner_uuid')) {
+          //todo: 
+          rootStore.routeParams = {
+            formRef,
+            inputRef: null,
+            inputIndex: 0,
+            isBranch: true,
+            error: {}
+          };
+        }
+        else {
+          //update route params HIERARCHY
+          rootStore.routeParams = {
+            formRef,
+            inputRef: null,
+            inputIndex: 0,
+            isBranch: false,
+            error: {}
+          };
+        }
+      }
+      catch (error) {
+        console.log(error);
+        if (error) {
+          services.notificationService
+            .showAlert(error.statusText, error.status);
+        }
+        else {
+          services.notificationService
+            .showAlert(STRINGS[rootStore.language].labels.unknown_error);
+        }
+        rootStore.notFound = true;
+      }
     }
   }
   else {

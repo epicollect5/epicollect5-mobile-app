@@ -9,9 +9,11 @@ import { entryCommonService } from '@/services/entry/entry-common-service';
 import { databaseSelectService } from '../database/database-select-service';
 import { databaseDeleteService } from '../database/database-delete-service';
 import { branchEntryModel } from '@/models/branch-entry-model.js';
+import * as services from '@/services';
 
 
 export const branchEntryService = {
+    type: PARAMETERS.BRANCH_ENTRY,
     form: {},
     entry: {},
     branchInputs: {},
@@ -123,6 +125,58 @@ export const branchEntryService = {
 
     },
 
+    saveEntryPWA () {
+
+        //save branch entry in memory, it will be uploaded the owner entry is uploaded
+        const rootStore = useRootStore();
+        const self = this;
+
+        return new Promise((resolve) => {
+
+            // Set the entry title 
+            services.entryCommonService.setEntryTitle(
+                projectModel.getExtraForm(self.entry.formRef),
+                projectModel.getExtraInputs(),
+                self.entry,
+                true
+            );
+
+            //convert self.entry to an object identical to the one we save to the DB, 
+            //so we can re-use all the functions
+            const parsedBranchEntry = {
+                entry_uuid: self.entry.entryUuid,
+                parent_entry_uuid: self.entry.parentEntryUuid,
+                answers: JSON.stringify(self.entry.answers),
+                form_ref: self.entry.formRef,
+                parent_form_ref: self.entry.parentFormRef,
+                created_at: services.utilsService.getISODateTime(),
+                title: self.entry.title,
+                synced: 0,
+                can_edit: 1,
+                is_remote: 0,
+                last_updated: projectModel.getLastUpdated(),//<-- the project version
+                device_id: '',
+                platform: PARAMETERS.WEB,
+                entry_type: PARAMETERS.BRANCH_ENTRY,
+                owner_input_ref: self.entry.ownerInputRef,
+                owner_entry_uuid: self.entry.ownerEntryUuid
+            };
+
+            console.log(JSON.stringify(parsedBranchEntry));
+
+            //conver entry to upload format
+            const uploadableBranchEntry = services.JSONTransformerService.makeJsonEntry(PARAMETERS.BRANCH_ENTRY, parsedBranchEntry);
+
+            //store branch entry in memory
+
+            if (!Object.prototype.hasOwnProperty.call(rootStore.queueTempBranchEntriesPWA, self.entry.ownerInputRef)) {
+                rootStore.queueTempBranchEntriesPWA[self.entry.ownerInputRef] = [];
+            }
+            rootStore.queueTempBranchEntriesPWA[self.entry.ownerInputRef].push(uploadableBranchEntry);
+            resolve();
+        });
+    },
+
     //Validate and append answer/title to entry object
     validateAnswer (params) {
         return entryCommonService.validateAnswer(this.entry, params);
@@ -152,26 +206,36 @@ export const branchEntryService = {
     removeTempBranches () {
 
         const self = this;
+        const rootStore = useRootStore();
 
         return new Promise((resolve) => {
 
-            // Select all temp branch entries uuids
-            databaseSelectService.selectTempBranches(self.entry.entryUuid).then(function (res) {
+            //on PWA, just remove branches from store
 
-                // Remove unique_answers, if any, for each temp branch
-                if (res.rows.length > 0) {
-                    databaseDeleteService.removeUniqueAnswers(res).then(function () {
-                        // Then delete all temp branch entries
-                        databaseDeleteService.deleteTempBranchEntries().then(function () {
-                            // Finished, resolve
-                            resolve();
+            if (rootStore.device.platform === PARAMETERS.PWA) {
+                rootStore.queueTempBranchEntriesPWA = [];
+                resolve();
+            }
+            else {
+                //on native app, delete them from database
+                // Select all temp branch entries uuids
+                databaseSelectService.selectTempBranches(self.entry.entryUuid).then(function (res) {
+
+                    // Remove unique_answers, if any, for each temp branch
+                    if (res.rows.length > 0) {
+                        databaseDeleteService.removeUniqueAnswers(res).then(function () {
+                            // Then delete all temp branch entries
+                            databaseDeleteService.deleteTempBranchEntries().then(function () {
+                                // Finished, resolve
+                                resolve();
+                            });
                         });
-                    });
-                } else {
-                    // No temp branches, resolve
-                    resolve();
-                }
-            });
+                    } else {
+                        // No temp branches, resolve
+                        resolve();
+                    }
+                });
+            }
         });
     }
 };
