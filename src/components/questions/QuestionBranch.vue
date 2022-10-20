@@ -42,6 +42,13 @@
 		</ion-card-header>
 		<ion-card-content class="ion-text-center question-branch">
 			<ion-grid class="ion-no-padding">
+				<ion-row v-if="isPWA && isPWAEntryEdit">
+					<ion-col>
+						<ion-item color="warning">
+							<ion-label class="item-divider-label-centered">{{pwaEntryEditWarning}}</ion-label>
+						</ion-item>
+					</ion-col>
+				</ion-row>
 				<ion-row class="ion-padding-top ion-padding-bottom">
 					<ion-col
 						size-xs="10"
@@ -105,7 +112,7 @@
 										class="icon-primary"
 										:icon="create"
 										slot="start"
-										@click="editBranchPWA()"
+										@click="editBranchPWA(entry.id)"
 									></ion-icon>
 									<ion-label>
 										{{ entry.branch_entry.title }}
@@ -383,10 +390,16 @@ export default {
 			isOwnerEntryRemote: computed(() => {
 				return entriesAddScope.entryService.entry.isRemote;
 			}),
+			isPWAEntryEdit: computed(() => {
+				return entriesAddScope.entryService.entry.actionState === PARAMETERS.ENTRY_EDIT;
+			}),
 			parentEntryName: props.parentEntryName,
 			currentFormName: props.currentFormName,
 			isPWA: computed(() => {
 				return rootStore.device.platform === PARAMETERS.PWA;
+			}),
+			pwaEntryEditWarning: computed(() => {
+				return STRINGS[language].labels.editing_branches_pwa;
 			})
 		};
 
@@ -556,7 +569,45 @@ export default {
 					rootStore.queueTempBranchEntriesPWA[props.inputRef] = state.branchEntries;
 				}
 			},
-			editBranchPWA() {}
+			async editBranchPWA(id) {
+				const formRef = entriesAddScope.entryService.entry.formRef;
+				const entry = state.branchEntries.find((entry) => {
+					return entry.id === id;
+				});
+				const branchEntry = {
+					entryUuid: entry.id,
+					ownerEntryUuid: entry.relationships.branch.data.owner_entry_uuid,
+					ownerInputRef: entry.relationships.branch.data.owner_input_ref,
+					isRemote: 0,
+					synced: 0,
+					canEdit: 1,
+					createdAt: entry.branch_entry.created_at,
+					title: entry.branch_entry.title,
+					formRef,
+					projectRef,
+					media: {},
+					uniqueAnswers: {},
+					syncedError: '',
+					isBranch: true,
+					answers: entry.branch_entry.answers
+				};
+				// Show loader
+				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
+
+				//edit on PWA onlways start from first question
+				await services.branchEntryService.setUpExisting(branchEntry);
+				rootStore.routeParams = {
+					formRef,
+					inputRef: '',
+					inputIndex: 0,
+					error: {}, //todo: build error object
+					isBranch: true
+				};
+
+				router.replace({
+					name: PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
+				});
+			}
 		};
 
 		function getBranchEntries() {

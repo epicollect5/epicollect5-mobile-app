@@ -5,6 +5,7 @@ import { entryModel } from '@/models/entry-model';
 import { useRootStore } from '@/stores/root-store';
 import { Capacitor } from '@capacitor/core';
 import * as services from '@/services';
+import { toRaw } from 'vue';
 
 export const entryService = {
     type: PARAMETERS.ENTRY,
@@ -208,9 +209,33 @@ export const entryService = {
 
             //upload entry to server
             const uploadableEntry = services.JSONTransformerService.makeJsonEntry(PARAMETERS.ENTRY, parsedEntry);
+
             services.webService.uploadEntryPWA(projectSlug, uploadableEntry).then((response) => {
-                console.log(response);
-                resolve(response);
+                //any branches to upload for this entry?
+                const allBranchEntries = toRaw(rootStore.queueTempBranchEntriesPWA);
+                if (Object.keys(allBranchEntries).length > 0) {
+                    const uploadBranchEntryPromises = [];
+                    Object.values(allBranchEntries).forEach((questionBranchEntries) => {
+                        questionBranchEntries.forEach(async (branchEntry) => {
+                            uploadBranchEntryPromises.push(services.webService.uploadEntryPWA(projectSlug, branchEntry));
+                        });
+                    });
+
+                    Promise.all(uploadBranchEntryPromises).then((response) => {
+                        console.log(response);
+                        resolve(response);
+                        rootStore.queueTempBranchEntriesPWA = {};
+                    }).catch((error) => {
+                        //remove only branches already uploaded
+                        //todo: how do we do it?
+                        console.log(error);
+                        reject(error);
+                    });
+                }
+                else {
+                    console.log(response);
+                    resolve(response);
+                }
             }, (error) => {
                 console.log(error);
                 reject(error);

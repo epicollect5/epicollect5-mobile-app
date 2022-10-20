@@ -46,7 +46,6 @@ export const PARAMETERS = {
             PROJECT: '/project/',
             PROJECTS: '/projects/',
             UPLOAD: '/upload/',
-
             MEDIA: '/media/',
             PROJECT_VERSION: '/project-version/',
             GET_LOGIN: '/login',
@@ -76,12 +75,14 @@ export const PARAMETERS = {
                 TEMP_MEDIA_DELETE: '/temp-media-delete/',
                 TEMP_MEDIA_DELETE_DEBUG: '/pwa-temp-media-delete/',
                 UNIQUE_ANSWER: '/unique-answer/',
-                UNIQUE_ANSWER_DEBUG: '/pwa-unique-answer/'//for debugging
+                UNIQUE_ANSWER_DEBUG: '/pwa-unique-answer/',//for debugging
+                DATA_VIEWER: '/data'
             }
         },
         PARAMS: {
             PROJECT_LOGO_QUERY_STRING: '?type=photo&name=logo.jpg&format=project_mobile_logo',
-            GOOGLE_CODE: 'code'
+            GOOGLE_CODE: 'code',
+            DATA_VIEWER_RESTORE_QUERY_STRING: '?restore=1'
         }
     },
 
@@ -249,7 +250,7 @@ export const PARAMETERS = {
     LOGOS_DIR: 'logos/',
 
     ROUTES: {
-        APP: 'app',
+        PWA_QUIT: 'pwa-quit',
         PROJECTS: 'projects',
         PROJECTS_ADD: 'projects-add',
         ENTRIES: 'entries',

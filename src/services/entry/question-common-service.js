@@ -1,6 +1,7 @@
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
 import { toRaw } from '@vue/reactivity';
+import { useRootStore } from '@/stores/root-store';
 
 export const questionCommonService = {
     //Add common params to the input state
@@ -35,21 +36,72 @@ export const questionCommonService = {
         state.confirmAnswer = toRaw(entriesAddState.confirmAnswer[inputRef]);
     },
 
-    // Returns the navigation route and navigation params
-    getNavigationParams (entryService) {
+    getNavigationParamsPWA (entryService) {
 
-        let routeName;
+
+
+        let routeName = '';
         const routeParams = {
             projectRef: projectModel.getProjectRef(),
             formRef: entryService.entry.formRef
         };
 
+        switch (entryService.actionState) {
+            case PARAMETERS.ENTRY_EDIT:
+                routeParams.entryUuid = entryService.entry.entryUuid;
+                if (!entryService.entry.isBranch) {
+                    routeName = PARAMETERS.ROUTES.PWA_QUIT;
+                } else {
+                    routeName = PARAMETERS.ROUTES.ENTRIES_ADD;
+                    routeParams.entryUuid = entryService.entry.entryUuid;
+                    routeParams.ownerEntryUuid = entryService.entry.ownerEntryUuid;
+                    routeParams.ownerInputRef = entryService.entry.ownerInputRef;
+                }
+                break;
+            case PARAMETERS.ENTRY_ADD:
+                // If add, back to relevant starting page
+                if (!entryService.entry.isBranch) {
+
+                    routeName = PARAMETERS.ROUTES.PWA_QUIT;
+                } else {
+                    routeName = PARAMETERS.ROUTES.ENTRIES_ADD;
+                    routeParams.inputRef = entryService.entry.ownerInputRef;
+                    routeParams.inputIndex = projectModel.getInputIndexFromRef(entryService.form.formRef, entryService.entry.ownerInputRef);
+                    routeParams.isBranch = false;
+                }
+                break;
+            default:
+            //
+        }
+
+
+        return {
+            routeName,
+            routeParams
+        };
+
+    },
+
+    // Returns the navigation route and navigation params
+    getNavigationParams (entryService) {
+
+        const rootStore = useRootStore();
+        const self = this;
+        let routeName = '';
+        const routeParams = {
+            projectRef: projectModel.getProjectRef(),
+            formRef: entryService.entry.formRef
+        };
+
+        if (rootStore.device.platform === PARAMETERS.PWA) {
+            return self.getNavigationParamsPWA(entryService);
+        }
+
         // Add or edit
         switch (entryService.actionState) {
             case PARAMETERS.ENTRY_EDIT:
-                // If edit, we will send user back to view/edit page
                 routeParams.entryUuid = entryService.entry.entryUuid;
-
+                // If edit and native app, we will send user back to view/edit page
                 if (!entryService.entry.isBranch) {
                     routeName = PARAMETERS.ROUTES.ENTRIES_VIEW;
                     routeParams.parentEntryUuid = entryService.entry.parentEntryUuid;
@@ -60,13 +112,10 @@ export const questionCommonService = {
                     routeParams.ownerInputRef = entryService.entry.ownerInputRef;
                 }
                 break;
-
             case PARAMETERS.ENTRY_UPLOAD:
                 // If upload, send user to upload screen
                 routeName = PARAMETERS.ROUTES.ENTRIES_UPLOAD;
-
                 break;
-
             default:
                 // If add, back to relevant starting page
                 if (!entryService.entry.isBranch) {

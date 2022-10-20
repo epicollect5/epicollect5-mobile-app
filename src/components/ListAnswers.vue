@@ -158,7 +158,7 @@ export default {
 				// Show loader
 				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
 				// Set up an existing entry
-				services.entryService.setUpExisting(props.entry).then(function() {
+				services.entryService.setUpExisting(props.entry).then(function () {
 					//go to EntriesAdd page
 					rootStore.routeParams = {
 						formRef: props.formRef,
@@ -179,8 +179,8 @@ export default {
 				// Show loader
 				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
+				//init the edit
 				await services.branchEntryService.setUpExisting(entry);
-
 				rootStore.routeParams = {
 					formRef: entry.formRef,
 					inputRef: inputRef,

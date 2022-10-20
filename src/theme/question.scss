@@ -414,7 +414,7 @@ ion-item-divider.saved-answers-serchbar-wrapper {
     background-color: #eee;
 }
 .dropzone-preview {
-    height: 200px;
+    min-height: 200px;
 
     ion-avatar {
         --border-radius: 0;

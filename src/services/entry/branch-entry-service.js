@@ -10,7 +10,7 @@ import { databaseSelectService } from '../database/database-select-service';
 import { databaseDeleteService } from '../database/database-delete-service';
 import { branchEntryModel } from '@/models/branch-entry-model.js';
 import * as services from '@/services';
-
+import { Capacitor } from '@capacitor/core';
 
 export const branchEntryService = {
     type: PARAMETERS.BRANCH_ENTRY,
@@ -44,7 +44,7 @@ export const branchEntryService = {
         });
 
         this.branchInputs = projectModel.getBranches(this.entry.formRef, this.entry.ownerInputRef);
-        this.numInputsThisBranch = this.branchInputs.length;
+
 
         // Get inputs extra details
         const inputsExtra = projectModel.getExtraInputs();
@@ -65,19 +65,20 @@ export const branchEntryService = {
             this.entry = entry;
 
             this.branchInputs = projectModel.getBranches(this.entry.formRef, this.entry.ownerInputRef);
-            this.numInputsThisBranch = this.branchInputs.length;
+
 
             // Get inputs extra details
             const inputsExtra = projectModel.getExtraInputs();
             this.branchInput = inputsExtra[this.entry.ownerInputRef].data;
 
-            if (rootStore.device.platform !== PARAMETERS.WEB) {
+            if (Capacitor.isNativePlatform()) {
                 // This is a promise to be resolved BEFORE any directive is called
                 mediaService.getEntryStoredMedia(self.entry.entryUuid).then(function (response) {
                     self.entry.media = response;
                     resolve();
                 });
             } else {
+                //todo: handle PWA
                 self.entry.media = {};
                 resolve();
             }
@@ -143,6 +144,9 @@ export const branchEntryService = {
 
             //convert self.entry to an object identical to the one we save to the DB, 
             //so we can re-use all the functions
+
+            console.log(JSON.stringify(self.entry.answers));
+            //self.entry.answers['d0e78fbfec83499c955271d9c2a2b5c9_631898d10c582_63467a7adc3fa_63467a86dc3fb'].answer = '';
             const parsedBranchEntry = {
                 entry_uuid: self.entry.entryUuid,
                 parent_entry_uuid: self.entry.parentEntryUuid,
@@ -168,9 +172,9 @@ export const branchEntryService = {
             const uploadableBranchEntry = services.JSONTransformerService.makeJsonEntry(PARAMETERS.BRANCH_ENTRY, parsedBranchEntry);
 
             //store branch entry in memory
-
             if (!Object.prototype.hasOwnProperty.call(rootStore.queueTempBranchEntriesPWA, self.entry.ownerInputRef)) {
                 rootStore.queueTempBranchEntriesPWA[self.entry.ownerInputRef] = [];
+
             }
             rootStore.queueTempBranchEntriesPWA[self.entry.ownerInputRef].push(uploadableBranchEntry);
             resolve();
@@ -203,6 +207,7 @@ export const branchEntryService = {
         return entryCommonService.processJumpsPrevious(this.entry, currentInputIndex, this.branchInputs);
     },
 
+    //remove temp branch entries when quitting hierachy entry 
     removeTempBranches () {
 
         const self = this;
@@ -210,17 +215,28 @@ export const branchEntryService = {
 
         return new Promise((resolve) => {
 
-            //on PWA, just remove branches from store
+            //if editing existing entry and quitting, just bail out
+            //as no changes need to be made
+            if (self.actionState === PARAMETERS.ENTRY_EDIT) {
+                resolve();
+                return false;
+            }
 
+            //on PWA, just remove branches from store
             if (rootStore.device.platform === PARAMETERS.PWA) {
-                rootStore.queueTempBranchEntriesPWA = [];
+                rootStore.queueTempBranchEntriesPWA = {};
                 resolve();
             }
             else {
                 //on native app, delete them from database
+
+                //when quitting a branch entry, there are not temp branches to remove
+                if (self.type === PARAMETERS.BRANCH_ENTRY) {
+                    resolve();
+                    return false;
+                }
                 // Select all temp branch entries uuids
                 databaseSelectService.selectTempBranches(self.entry.entryUuid).then(function (res) {
-
                     // Remove unique_answers, if any, for each temp branch
                     if (res.rows.length > 0) {
                         databaseDeleteService.removeUniqueAnswers(res).then(function () {

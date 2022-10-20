@@ -428,6 +428,14 @@ export default {
 							}
 						},
 						(errorResponse) => {
+							//random server errors bail out
+							if (!errorResponse.data?.errors) {
+								console.log(errorResponse);
+								services.notificationService.hideProgressDialog();
+								services.errorsService.handleWebError(errorResponse);
+								return false;
+							}
+
 							//we need to map the server erros to match the question errors object
 							const mappedErrors = {};
 							for (const error of errorResponse.data.errors) {
@@ -642,6 +650,7 @@ export default {
 			const refreshEntriesViewBranch = response.routeName === PARAMETERS.ROUTES.ENTRIES_VIEW_BRANCH;
 			const refreshEntries = response.routeName === PARAMETERS.ROUTES.ENTRIES;
 			const ownerInputRef = isBranch ? response.routeParams.ownerInputRef : null;
+			const projectSlug = projectModel.getSlug();
 
 			//on the PWA we do not track user location, we get it from the browser
 			if (rootStore.device.platform !== PARAMETERS.PWA) {
@@ -669,6 +678,21 @@ export default {
 					entryUuid: response.routeParams.entryUuid,
 					parentEntryUuid: response.routeParams.parentEntryUuid
 				};
+
+				//lets check if we are quitting from the PWA
+				if (rootStore.device.platform === PARAMETERS.PWA) {
+					if (response.routeName === PARAMETERS.ROUTES.PWA_QUIT) {
+						if (process.env.NODE_ENV === 'production') {
+							//redirect to dataviewer URL ()
+							console.log(services.utilsService.getDataViewerURL(projectSlug));
+							window.location.href = services.utilsService.getDataViewerURL(projectSlug);
+						} else {
+							services.notificationService.showAlert('Should go back to dataviewer :)');
+							services.notificationService.hideProgressDialog();
+						}
+						return false;
+					}
+				}
 
 				//todo: fix this for all the use cases or just refresh all ha ha ha
 				router.replace({
