@@ -20,6 +20,7 @@
 		>
 
 			<dropzone
+				:filestate="state.pwaFileState"
 				:filename="state.answer.answer"
 				:key="state.answer.answer"
 				v-if="isPWA"
@@ -130,7 +131,8 @@ export default {
 				answer: ''
 			},
 			filename: '',
-			ongoingAction: ''
+			ongoingAction: '',
+			pwaFileState: PARAMETERS.PWA_FILE_STATE.CACHED
 		});
 
 		//set up question
@@ -152,7 +154,7 @@ export default {
 				return mediaFile.cached !== '' || mediaFile.stored !== '' || mediaFile.filenamePWA !== '';
 			}),
 			isPWA: computed(() => {
-				return rootStore.device.platform === PARAMETERS.PWA;
+				return rootStore.isPWA;
 			})
 		};
 
@@ -183,16 +185,32 @@ export default {
 			media[entryUuid][state.inputDetails.ref].stored = '';
 			media[entryUuid][state.inputDetails.ref].type = state.inputDetails.type;
 
-			if (rootStore.device.platform === PARAMETERS.PWA) {
-				media[entryUuid][state.inputDetails.ref].filenamePWA = '';
+			if (rootStore.isPWA) {
+				media[entryUuid][state.inputDetails.ref].filenamePWA = {};
+				media[entryUuid][state.inputDetails.ref].filenamePWA.cached = '';
+				media[entryUuid][state.inputDetails.ref].filenamePWA.stored = '';
+			}
+		} else {
+			if (rootStore.isPWA) {
+				//load preview in dropzone
+				//show cached or stored image if any, Cached image will win over stored one
+				if (media[entryUuid][state.inputDetails.ref].filenamePWA.cached !== '') {
+					state.answer.answer = media[entryUuid][state.inputDetails.ref].filenamePWA.cached;
+					state.pwaFileState = PARAMETERS.PWA_FILE_STATE.CACHED;
+				} else {
+					if (media[entryUuid][state.inputDetails.ref].filenamePWA.stored !== '') {
+						state.answer.answer = media[entryUuid][state.inputDetails.ref].filenamePWA.stored;
+						state.pwaFileState = PARAMETERS.PWA_FILE_STATE.STORED;
+					}
+				}
 			}
 		}
 
 		const methods = {
 			async openPopover(e) {
 				const mediaFile = media[entryUuid][state.inputDetails.ref];
-				if (rootStore.device.platform === PARAMETERS.PWA) {
-					if (mediaFile.filenamePWA === '') {
+				if (rootStore.isPWA) {
+					if (mediaFile.filenamePWA.cached === '' && mediaFile.filenamePWA.stored === '') {
 						return false;
 					}
 				} else {
@@ -277,7 +295,7 @@ export default {
 			},
 			onFileUploadedPWA(filename) {
 				state.answer.answer = filename;
-				media[entryUuid][state.inputDetails.ref].filenamePWA = filename;
+				media[entryUuid][state.inputDetails.ref].filenamePWA.cached = filename;
 			}
 		};
 

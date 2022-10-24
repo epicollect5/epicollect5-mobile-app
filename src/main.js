@@ -10,6 +10,7 @@ import { projectModel } from '@/models/project-model.js';
 import { setupPWAEntry } from '@/use/setup-pwa-entry';
 import * as services from '@/services';
 import { STRINGS } from '@/config/strings';
+import { commonValidate } from '@/services/validation/common-validate';
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
 
@@ -91,8 +92,10 @@ export const app = createApp(App)
   console.log('Platform: => ', deviceInfo.platform.toLocaleUpperCase());
   //make deviceInfo global
   rootStore.device = deviceInfo;
+  //detect if we are running a PWA or not
+  rootStore.isPWA = (rootStore.device.platform === PARAMETERS.PWA);
 
-  if (rootStore.device.platform === PARAMETERS.PWA) {
+  if (rootStore.isPWA) {
 
     const searchParams = new URLSearchParams(window.location.search);
     rootStore.searchParams = searchParams;
@@ -118,26 +121,52 @@ export const app = createApp(App)
     console.log('Server URL -> ', rootStore.serverUrl);
     //check if PWA URL is correct
     const urlSegments = window.location.pathname.split('/');
-    if (urlSegments.pop() !== PARAMETERS.PWA_ADD_ENTRY) {
+    const acceptedSegments = [PARAMETERS.PWA_ADD_ENTRY, PARAMETERS.PWA_EDIT_ENTRY];
+    const providedSegment = urlSegments.pop();
+    if (!acceptedSegments.includes(providedSegment)) {
       rootStore.notFound = true;
     }
     if (!rootStore.notFound) {
       const projectSlug = window.location.pathname.split('/').splice(-2, 1)[0];
 
       try {
-        //get requeste project and init PWA
+        //get requested project and init PWA
         const response = await services.webService.getProjectPWA(projectSlug);
         projectModel.initialisePWA((response));
         console.log(response);
 
-        // Set up a new entry
-        const formRef = setupPWAEntry();
+        // Set up a new entry or edit existing one
+        let formRef = '';
+        if (providedSegment === PARAMETERS.PWA_ADD_ENTRY) {
+          try {
+            formRef = await setupPWAEntry(PARAMETERS.PWA_ADD_ENTRY);
+          }
+          catch (error) {
+            console.log(error);
+            return false;
+          }
+        }
+        else {
+          //fetch existing entry (uuid must be provided)
+          if (!rootStore.searchParams.has('uuid')) {
+            rootStore.notFound = true;
+          }
+          const entryUuid = rootStore.searchParams.get('uuid');
+          if (!commonValidate.isValidUuid(entryUuid)) {
+            rootStore.notFound = true;
+          }
 
-
+          try {
+            formRef = await setupPWAEntry(PARAMETERS.PWA_EDIT_ENTRY);
+          }
+          catch (error) {
+            console.log(error);
+            return false;
+          }
+        }
 
         //update route params BRANCH
         if (rootStore.searchParams.has('branch_ref') && rootStore.searchParams.has('branch_owner_uuid')) {
-          //todo: 
           rootStore.routeParams = {
             formRef,
             inputRef: null,

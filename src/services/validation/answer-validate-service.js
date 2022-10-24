@@ -168,7 +168,7 @@ export const answerValidateService = {
         return new Promise(function (resolve, reject) {
             // If this input has uniqueness set
             if (checkUnique && inputDetails.uniqueness !== 'none' && answer !== '') {
-                if (rootStore.device.platform === PARAMETERS.PWA) {
+                if (rootStore.isPWA) {
                     const formRef = rootStore.routeParams.formRef;
                     const inputRef = inputDetails.ref;
                     const projectVersion = projectModel.getLastUpdated();

@@ -190,7 +190,7 @@ export default {
 				}
 			}),
 			isPWA: computed(() => {
-				return rootStore.device.platform === PARAMETERS.PWA;
+				return rootStore.isPWA;
 			})
 		};
 

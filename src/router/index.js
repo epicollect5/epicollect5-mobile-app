@@ -18,6 +18,11 @@ if (process.env.VUE_APP_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
       name: PARAMETERS.ROUTES.ENTRIES_ADD
     },
     {
+      path: '/project/:project_slug/edit-entry',
+      component: () => import('@/pages/EntriesAdd.vue'),
+      name: PARAMETERS.ROUTES.ENTRIES_EDIT
+    },
+    {
       path: '/project/:project_slug/add-entry/branch',
       component: () => import('@/pages/EntriesAdd.vue'),
       name: PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD

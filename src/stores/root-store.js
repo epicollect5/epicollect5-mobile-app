@@ -6,6 +6,7 @@ export const useRootStore = defineStore('RootStore', {
         return {
             serverUrl: '',
             device: {},
+            isPWA: false,
             app: {},
             language: PARAMETERS.DEFAULT_LANGUAGE,
             tempDir: '',

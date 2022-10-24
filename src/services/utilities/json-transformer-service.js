@@ -3,6 +3,7 @@ import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import * as services from '@/services';
 import proj4 from 'proj4';
+import { Capacitor } from '@capacitor/core';
 
 /**
 * Make the json entry object
@@ -113,7 +114,7 @@ export const JSONTransformerService = {
         entry.last_updated = projectModel.getLastUpdated();
 
         //device id not needed for PWA (always logged in so user ID is used instead)
-        if (rootStore.device.platform === PARAMETERS.PWA) {
+        if (rootStore.isPWA) {
             entry.device_id = '';
         }
         else {
@@ -121,7 +122,25 @@ export const JSONTransformerService = {
             entry.device_id = rootStore.device.uuid;
         }
 
-        entry.platform = rootStore.device.platform;
+        //upload as WEB when using the PWA, otherwise ANDROID or IOS
+        entry.platform = Capacitor.isNativePlatform()
+            ? entry.platform = rootStore.device.platform
+            : entry.platform = PARAMETERS.WEB;
+
+        // hack: tweak platform casing for legacy reasons 
+        //(match existing config on epicollect servers)
+        switch (entry.platform) {
+            case PARAMETERS.ANDROID:
+                entry.platform = PARAMETERS.LEGACY_ANDROID;
+                break;
+            case PARAMETERS.IOS:
+                entry.platform = PARAMETERS.LEGACY_IOS;
+                break;
+            default:
+                entry.platform = PARAMETERS.LEGACY_WEB;
+        }
+
+
         entry.entry_type = entryType;
 
         return _makeJsonEntry(entry);
@@ -139,7 +158,24 @@ export const JSONTransformerService = {
         // Add extra properties needed by the json formatter
         file.structure_last_updated = projectModel.getLastUpdated();
         file.device_id = rootStore.device.uuid;
-        file.platform = rootStore.device.platform;
+
+        //upload as WEB when using the PWA, otherwise ANDROID or IOS
+        file.platform = Capacitor.isNativePlatform()
+            ? rootStore.device.platform
+            : file.platform = PARAMETERS.WEB;
+
+        // hack: tweak platform casing for legacy reasons 
+        //(match existing config on epicollect servers)    
+        switch (file.platform) {
+            case PARAMETERS.ANDROID:
+                file.platform = PARAMETERS.LEGACY_ANDROID;
+                break;
+            case PARAMETERS.IOS:
+                file.platform = PARAMETERS.LEGACY_IOS;
+                break;
+            default:
+                file.platform = PARAMETERS.LEGACY_WEB;
+        }
 
         return _makeJsonFileEntry(file);
 

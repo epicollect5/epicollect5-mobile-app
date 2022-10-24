@@ -106,7 +106,7 @@ export const notificationService = {
             ];
 
             //on the PWA, do not show save options when quitting
-            if (rootStore.device.platform === PARAMETERS.PWA) {
+            if (rootStore.isPWA) {
                 buttons.pop();
             }
 

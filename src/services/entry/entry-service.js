@@ -64,6 +64,9 @@ export const entryService = {
     // Initial function to set up the entry from an existing stored entry
     setUpExisting (entry) {
 
+        console.log(JSON.stringify(entry));
+
+
         const self = this;
         const rootStore = useRootStore();
         self.form = formModel;
@@ -84,24 +87,36 @@ export const entryService = {
 
             // Watch device position only if the form has got a location input
             if (projectModel.hasLocation(self.entry.formRef)) {
-                if (rootStore.device.platform !== PARAMETERS.WEB) {
-                    rootStore.deviceGeolocation = {
-                        error: null,
-                        position: null,
-                        watchId: 0
-                    };
+                if (Capacitor.isNativePlatform()) {
+                    if (rootStore.device.platform !== PARAMETERS.WEB) {
+                        rootStore.deviceGeolocation = {
+                            error: null,
+                            position: null,
+                            watchId: 0
+                        };
 
-                    services.locationService.requestLocationPermission();
+                        services.locationService.requestLocationPermission();
+                    }
                 }
             }
-            if (rootStore.device.platform !== PARAMETERS.WEB) {
+            if (Capacitor.isNativePlatform()) {
                 // This is a promise to be resolved BEFORE any directive is called
                 services.mediaService.getEntryStoredMedia(self.entry.entryUuid).then(function (response) {
                     self.entry.media = response;
                     resolve();
                 });
             } else {
-                self.entry.media = {};
+                if (rootStore.isPWA) {
+                    // This is a promise to be resolved BEFORE any directive is called
+                    services.mediaService.getEntryStoredMediaPWA(self.entry.entryUuid).then(function (response) {
+                        self.entry.media = response;
+                        resolve();
+                    });
+                }
+                else {
+                    //on web debug media files are not available
+                    self.entry.media = {};
+                }
                 resolve();
             }
         });
@@ -170,13 +185,16 @@ export const entryService = {
 
         const rootStore = useRootStore();
         const self = this;
-        self.form = formModel;
-        self.entry = entryModel;
+
+        //todo: check this, if we leave it we override changes when editing
+        // self.form = formModel;
+        // self.entry = entryModel;
         const projectSlug = projectModel.getSlug();
 
         return new Promise((resolve, reject) => {
 
             // Set the entry title 
+
             services.entryCommonService.setEntryTitle(projectModel.getExtraForm(
                 self.entry.formRef),
                 projectModel.getExtraInputs(),
@@ -342,7 +360,7 @@ export const entryService = {
         return new Promise((resolve) => {
 
             //on PWA, just remove branches from store
-            if (rootStore.device.platform === PARAMETERS.PWA) {
+            if (rootStore.isPWA) {
                 rootStore.queueTempBranchEntriesPWA = {};
                 resolve();
             }

@@ -273,7 +273,7 @@ export default {
 					// Get an array of all the child entries related to this entry (if any)
 					services.databaseSelectService
 						.getHierarchyEntries(state.entryUuid)
-						.then(function(relatedEntries) {
+						.then(function (relatedEntries) {
 							//get all media files names for this entry, child entries and branch entries
 							allEntries = relatedEntries.entries
 								.concat(relatedEntries.branchEntries)
@@ -281,10 +281,10 @@ export default {
 
 							// Now grab the media entries if any
 							Promise.all(
-								allEntries.map(function(uuid) {
+								allEntries.map(function (uuid) {
 									return services.databaseSelectService.selectEntryMedia(projectRef, uuid);
 								})
-							).then(function(mediaRows) {
+							).then(function (mediaRows) {
 								//mediaRows is an array of arrays, flat it to a single array of uuids
 								//also a flat array of file objects for deletion
 								mediaRows.forEach((rows) => {
@@ -300,13 +300,13 @@ export default {
 
 								//if any, delete all media files for this entry, child entries and branch entries
 								if (files.length > 0) {
-									services.deleteFileService.removeFiles(files).then(function() {
+									services.deleteFileService.removeFiles(files).then(function () {
 										//then delete media entries in media table
 										Promise.all(
-											uuids.map(function(uuid) {
+											uuids.map(function (uuid) {
 												return services.databaseDeleteService.deleteEntryMedia(uuid);
 											})
-										).then(function() {
+										).then(function () {
 											// Now delete all the entries
 											_deleteAllEntries(allEntries);
 										});
@@ -338,7 +338,7 @@ export default {
 			Promise.all([
 				services.databaseSelectService.selectEntry(state.entryUuid, state.parentEntryUuid),
 				services.databaseSelectService.selectEntryMediaErrors([state.entryUuid])
-			]).then(function(response) {
+			]).then(function (response) {
 				const res = response[0];
 				const mediaRes = response[1];
 				let mediaErrors = [];
@@ -358,6 +358,9 @@ export default {
 					if (res.rows.length > 0) {
 						// Initialise the entry model
 						data = res.rows.item(0);
+
+						console.log(JSON.stringify(data));
+
 						state.entry.initialise(data);
 						state.title = state.entry.title;
 						state.synced = state.entry.synced;
@@ -374,7 +377,7 @@ export default {
 				}
 
 				// Retrieve branch entries
-				services.databaseSelectService.selectBranches([state.entry.entryUuid]).then(function(res) {
+				services.databaseSelectService.selectBranches([state.entry.entryUuid]).then(function (res) {
 					//reset branches counts
 					state.branches = {};
 					// Loop round branches, counting
@@ -496,7 +499,7 @@ export default {
 					//any media errors on branches?
 					services.databaseSelectService
 						.countCurrentBranchMediaErrors(inputDetails.ref)
-						.then(function(response) {
+						.then(function (response) {
 							//set up generic branch error
 							const branch_synced_error = {
 								errors: [

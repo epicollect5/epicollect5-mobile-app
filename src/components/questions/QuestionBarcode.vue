@@ -181,7 +181,7 @@ export default {
 				}
 			}),
 			isPWA: computed(() => {
-				return rootStore.device.platform === PARAMETERS.PWA;
+				return rootStore.isPWA;
 			})
 		};
 
@@ -212,7 +212,7 @@ export default {
 					STRINGS[language].labels.wait
 				);
 
-				if (rootStore.device.platform === PARAMETERS.PWA) {
+				if (rootStore.isPWA) {
 					methods.scanPWA();
 					return false;
 				}

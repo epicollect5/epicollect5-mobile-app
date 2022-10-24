@@ -55,8 +55,9 @@ export const branchEntryService = {
     setUpExisting (entry) {
         const rootStore = useRootStore();
         const self = this;
-        self.form = formModel;
-        self.entry = branchEntryModel;
+
+        //self.form = formModel;
+        //  self.entry = branchEntryModel;
         return new Promise((resolve, reject) => {
 
             this.actionState = PARAMETERS.ENTRY_EDIT;
@@ -223,7 +224,7 @@ export const branchEntryService = {
             }
 
             //on PWA, just remove branches from store
-            if (rootStore.device.platform === PARAMETERS.PWA) {
+            if (rootStore.isPWA) {
                 rootStore.queueTempBranchEntriesPWA = {};
                 resolve();
             }

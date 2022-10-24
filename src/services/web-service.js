@@ -179,6 +179,37 @@ export const webService = {
         });
     },
 
+    downloadEntryPWA (slug, formRef, entryUuid) {
+
+        const self = this;
+
+        return new Promise((resolve, reject) => {
+
+            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
+            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
+            let getURL = self.getServerUrl();
+
+            if (PARAMETERS.DEBUG) {
+                //use debug endpoint (no csrf)
+                getURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.ENTRIES_DEBUG + slug;
+            } else {
+                getURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.ENTRIES + slug;
+            }
+
+            getURL += '?form_ref=' + formRef + '&uuid=' + entryUuid;
+
+            axios({
+                method: 'GET',
+                url: getURL
+            }).then(function (response) {
+                resolve(response);
+            }, function (error) {
+                console.log(error);
+                reject(error.response);
+            });
+        });
+    },
+
     uploadFilePWA (slug, formData) {
 
         const self = this;

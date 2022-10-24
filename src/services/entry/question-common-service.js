@@ -93,7 +93,7 @@ export const questionCommonService = {
             formRef: entryService.entry.formRef
         };
 
-        if (rootStore.device.platform === PARAMETERS.PWA) {
+        if (rootStore.isPWA) {
             return self.getNavigationParamsPWA(entryService);
         }
 

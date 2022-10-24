@@ -396,7 +396,7 @@ export default {
 			parentEntryName: props.parentEntryName,
 			currentFormName: props.currentFormName,
 			isPWA: computed(() => {
-				return rootStore.device.platform === PARAMETERS.PWA;
+				return rootStore.isPWA;
 			}),
 			pwaEntryEditWarning: computed(() => {
 				return STRINGS[language].labels.editing_branches_pwa;

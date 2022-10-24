@@ -352,7 +352,7 @@ export default {
 		const router = useRouter();
 
 		//if a wrong URL for the PWA is provided in the broswer, bail out
-		if (rootStore.notFound && rootStore.device.platform === PARAMETERS.PWA) {
+		if (rootStore.notFound && rootStore.isPWA) {
 			return {
 				notFound: true
 			};
@@ -403,7 +403,7 @@ export default {
 
 		const methods = {
 			async saveEntry(syncType) {
-				if (rootStore.device.platform === PARAMETERS.PWA) {
+				if (rootStore.isPWA) {
 					await services.notificationService.showProgressDialog(labels.wait, labels.saving);
 
 					rootStore.entriesAddScope.entryService.saveEntryPWA().then(
@@ -680,13 +680,14 @@ export default {
 				};
 
 				//lets check if we are quitting from the PWA
-				if (rootStore.device.platform === PARAMETERS.PWA) {
+				if (rootStore.isPWA) {
 					if (response.routeName === PARAMETERS.ROUTES.PWA_QUIT) {
 						if (process.env.NODE_ENV === 'production') {
 							//redirect to dataviewer URL ()
 							console.log(services.utilsService.getDataViewerURL(projectSlug));
 							window.location.href = services.utilsService.getDataViewerURL(projectSlug);
 						} else {
+							console.log(services.utilsService.getDataViewerURL(projectSlug));
 							services.notificationService.showAlert('Should go back to dataviewer :)');
 							services.notificationService.hideProgressDialog();
 						}

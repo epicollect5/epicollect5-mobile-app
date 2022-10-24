@@ -106,7 +106,7 @@ export const mediaService = {
     },
 
     //Get media stored for a single entry and return media object
-    getEntryStoredMedia (entry_UUID) {
+    getEntryStoredMedia (uuid) {
 
         return new Promise((resolve, reject) => {
             const media = {};
@@ -118,7 +118,7 @@ export const mediaService = {
                 reject(error);
             }
 
-            services.databaseSelectService.selectEntryMedia(projectRef, entry_UUID).then(function (response) {
+            services.databaseSelectService.selectEntryMedia(projectRef, uuid).then(function (response) {
                 console.log(response);
                 // Parse response and build media object
                 response.forEach((value) => {
@@ -134,13 +134,38 @@ export const mediaService = {
                     media[entryUuid][value.input_ref].cached = '';
                     media[entryUuid][value.input_ref].stored = value.file_name;
                     media[entryUuid][value.input_ref].type = value.file_type;
+                });
+                resolve(media);
+            }, _onError);
+        });
+    },
 
-                    console.log(media);
+    getEntryStoredMediaPWA (uuid) {
+
+        return new Promise((resolve, reject) => {
+            const mediaTypes = [
+                PARAMETERS.QUESTION_TYPES.PHOTO,
+                PARAMETERS.QUESTION_TYPES.AUDIO,
+                PARAMETERS.QUESTION_TYPES.VIDEO
+            ];
+            const media = {};
+            const mediaInputs = Object.values(projectModel.getExtraInputs())
+                .filter((input) => {
+                    return mediaTypes.includes(input.data.type);
                 });
 
-                resolve(media);
-
-            }, _onError);
+            mediaInputs.forEach((mediaInput) => {
+                const inputRef = mediaInput.data.ref;
+                const answers = services.entryService.entry.answers;
+                const answer = answers[inputRef].answer;
+                media[uuid] = media[uuid] || {};
+                media[uuid][mediaInput.data.ref] = {};
+                media[uuid][mediaInput.data.ref].filenamePWA = {};
+                media[uuid][mediaInput.data.ref].filenamePWA.cached = '';
+                //get existing answer
+                media[uuid][mediaInput.data.ref].filenamePWA.stored = answer;
+            });
+            resolve(media);
         });
     },
 

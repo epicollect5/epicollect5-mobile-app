@@ -10,7 +10,7 @@
 		</div>
 	</div>
 	<div
-		v-if="state.filesource !== ''"
+		v-if="state.filesource !== '' && !state.loadingError"
 		class="dropzone-preview ion-text-center"
 	>
 		<div
@@ -28,6 +28,7 @@
 				class="animate__animated animate__fadeIn"
 				:src="state.filesource"
 				@load="onImageLoaded()"
+				@error="onError"
 			>
 			<audio
 				v-if="state.type === PARAMETERS.QUESTION_TYPES.AUDIO"
@@ -36,6 +37,7 @@
 				class="animate__animated animate__fadeIn full-width"
 				:src="state.filesource"
 				@loadeddata="onAudioLoaded()"
+				@error="onError"
 			></audio>
 			<video
 				v-if="state.type === PARAMETERS.QUESTION_TYPES.VIDEO"
@@ -44,8 +46,17 @@
 				class="animate__animated animate__fadeIn full-width"
 				:src="state.filesource"
 				@loadeddata="onVideoLoaded()"
+				@error="onError"
 			></video>
 		</div>
+	</div>
+	<div v-if="state.loadingError">
+		<ion-item
+			lines="none"
+			class="ion-text-center"
+		>
+			<ion-label color="danger">{{labels.unknown_error}}</ion-label>
+		</ion-item>
 	</div>
 </template>
 
@@ -61,6 +72,10 @@ import { projectModel } from '@/models/project-model';
 export default {
 	props: {
 		filename: {
+			type: String,
+			required: true
+		},
+		filestate: {
 			type: String,
 			required: true
 		},
@@ -92,10 +107,12 @@ export default {
 			dropMessage: '',
 			filesource: '',
 			previewLoaded: false,
+			loadingError: false,
 			acceptedFormats: PARAMETERS.PWA_FILE_ACCEPTED_FORMATS[props.type.toUpperCase()]
 		});
 
-		state.filesource = props.filename === '' ? '' : getMediaURL(props.filename, props.type);
+		state.filesource =
+			props.filename === '' ? '' : getMediaURL(props.filename, props.type, props.filestate);
 		filename = props.filename === '' ? '' : props.filename;
 
 		const dropzoneOptions = {
@@ -187,6 +204,12 @@ export default {
 				state.previewLoaded = true;
 				context.emit('file-uploaded', filename);
 			},
+			onError(error) {
+				state.previewLoaded = true;
+				state.loadingError = true;
+				console.log(error);
+				//context.emit('file-uploaded', filename);
+			},
 			onAudioLoaded() {
 				state.previewLoaded = true;
 				context.emit('file-uploaded', filename);
@@ -197,18 +220,41 @@ export default {
 			}
 		};
 
-		function getMediaURL(filename, type) {
+		function getMediaURL(filename, type, filestate) {
 			const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
 			const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
 			let mediaURL = rootStore.serverUrl;
 			if (PARAMETERS.DEBUG) {
 				//use debug endpoint (no csrf)
-				mediaURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
+				if (filestate === PARAMETERS.PWA_FILE_STATE.CACHED) {
+					mediaURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
+				} else {
+					//todo: get stored file
+					mediaURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.MEDIA + projectSlug;
+				}
 			} else {
-				mediaURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
+				if (filestate === PARAMETERS.PWA_FILE_STATE.CACHED) {
+					mediaURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
+				} else {
+					//todo: get stored file
+					mediaURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.MEDIA + projectSlug;
+				}
 			}
 
-			mediaURL += '?format=entry_original';
+			switch (type) {
+				case PARAMETERS.QUESTION_TYPES.AUDIO:
+					mediaURL += '?format=audio';
+					break;
+				case PARAMETERS.QUESTION_TYPES.PHOTO:
+					mediaURL += '?format=entry_original';
+					break;
+				case PARAMETERS.QUESTION_TYPES.VIDEO:
+					mediaURL += '?format=video';
+					break;
+				default:
+				//
+			}
+
 			mediaURL += '&name=' + filename;
 			mediaURL += '&type=' + type;
 			mediaURL += '&timestamp=' + new Date().getTime();

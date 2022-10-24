@@ -24,6 +24,11 @@ export const PARAMETERS = {
     IOS: 'ios',
     PWA: 'pwa',
 
+    //legacy platforms
+    LEGACY_ANDROID: 'Android',
+    LEGACY_IOS: 'iOS',
+    LEGACY_WEB: 'WEB',
+
     //providers
     PROVIDERS: {
         APPLE: 'apple',
@@ -66,6 +71,8 @@ export const PARAMETERS = {
                 ROOT_DEBUG: '/api',
                 //api/internal/project/{project_slug}
                 PROJECT: '/project/',
+                ENTRIES: '/entries/',
+                ENTRIES_DEBUG: '/pwa-entries/',
                 MEDIA: '/media/',
                 UPLOAD: '/web-upload/', //same as bulk upload
                 UPLOAD_DEBUG: '/pwa-upload/',//for debugging
@@ -255,6 +262,7 @@ export const PARAMETERS = {
         PROJECTS_ADD: 'projects-add',
         ENTRIES: 'entries',
         ENTRIES_ADD: 'entries-add',
+        ENTRIES_EDIT: 'entries-edit',
         ENTRIES_BRANCH_ADD: 'entries-branch-add',
         ENTRIES_VIEW: 'entries-view',
         ENTRIES_VIEW_BRANCH: 'entries-view-branch',
@@ -321,6 +329,12 @@ export const PARAMETERS = {
         VIDEO: 'mp4 only, max file size 500 MB'
     },
     PWA_ADD_ENTRY: 'add-entry',
+    PWA_EDIT_ENTRY: 'edit-entry',
+    PWA_FILE_STATE: {
+        CACHED: 'cached',
+        STORED: 'stored'
+    },
+
     //bookmark title alphanumeric and - _
     REGEX_BOOKMARK_TITLE: /^[\w\-\s]+$/
 };

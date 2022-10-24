@@ -55,8 +55,9 @@ export async function popoverMediaHandler ({ media, entryUuid, state, e, mediaTy
             //imp: in the answers array (entriesAdd)
             media[entryUuid][inputRef].cached = '';
             media[entryUuid][inputRef].stored = '';
-            if (rootStore.device.platform === PARAMETERS.PWA) {
-                media[entryUuid][inputRef].filenamePWA = '';
+            if (rootStore.isPWA) {
+                media[entryUuid][inputRef].filenamePWA.cached = '';
+                media[entryUuid][inputRef].filenamePWA.stored = '';
             }
         }
         //reset answer to empty only when file gets deleted (cached files only)

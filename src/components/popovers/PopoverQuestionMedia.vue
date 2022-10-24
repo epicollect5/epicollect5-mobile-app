@@ -189,7 +189,7 @@ export default {
 				);
 
 				if (confirmed) {
-					if (rootStore.device.platform === PARAMETERS.PWA) {
+					if (rootStore.isPWA) {
 						methods.removePWA();
 					} else {
 						methods.removeNative();
@@ -200,7 +200,7 @@ export default {
 
 		const computedScope = {
 			isPWA: computed(() => {
-				return rootStore.device.platform === PARAMETERS.PWA;
+				return rootStore.isPWA;
 			})
 		};
 

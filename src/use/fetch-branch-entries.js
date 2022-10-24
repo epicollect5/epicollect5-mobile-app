@@ -12,7 +12,7 @@ export async function fetchBranchEntries (params) {
 
 
     //if PWA, get branch entries from store, simulating offset and limit
-    if (rootStore.device.platform === PARAMETERS.PWA) {
+    if (rootStore.isPWA) {
 
         let branchEntriesPWA = [];
         if (Object.prototype.hasOwnProperty.call(rootStore.queueTempBranchEntriesPWA, inputRef)) {

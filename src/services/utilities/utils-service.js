@@ -832,6 +832,7 @@ export const utilsService = {
 
         return rootStore.serverUrl
             + PARAMETERS.API.ROUTES.PROJECT
+            + projectSlug + '/'
             + PARAMETERS.API.ROUTES.PWA.DATA_VIEWER
             + PARAMETERS.API.PARAMS.DATA_VIEWER_RESTORE_QUERY_STRING;
     }
