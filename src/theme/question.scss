@@ -408,6 +408,9 @@ ion-item-divider.saved-answers-serchbar-wrapper {
     border: 2px dashed var(--ion-color-medium);
     border-radius: 5px;
     font-size: 16px;
+    &:hover {
+        cursor: pointer;
+    }
 }
 .dropzone-active {
     border: 2px solid var(--ion-color-primary);
@@ -418,5 +421,8 @@ ion-item-divider.saved-answers-serchbar-wrapper {
 
     ion-avatar {
         --border-radius: 0;
+    }
+    .pwa-video {
+        max-height: 150px;
     }
 }

@@ -133,7 +133,6 @@ export const app = createApp(App)
         //get requested project and init PWA
         const response = await services.webService.getProjectPWA(projectSlug);
         projectModel.initialisePWA((response));
-        console.log(response);
 
         // Set up a new entry or edit existing one
         let formRef = '';
@@ -161,7 +160,7 @@ export const app = createApp(App)
           }
           catch (error) {
             console.log(error);
-            return false;
+            rootStore.notFound = true;
           }
         }
 

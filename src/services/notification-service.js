@@ -82,7 +82,6 @@ export const notificationService = {
 
         return new Promise((resolve) => {
 
-
             const buttons = [
                 {
                     text: STRINGS[rootStore.language].labels.dismiss,

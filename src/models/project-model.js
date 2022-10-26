@@ -15,7 +15,6 @@ export const projectModel = {
     initialise (data) {
 
         this.data = data;
-
         // Attempt to load in the extra structure
         console.log(JSON.parse(this.data.json_extra));
         try {

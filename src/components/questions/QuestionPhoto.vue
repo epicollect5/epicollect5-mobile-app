@@ -27,7 +27,8 @@
 				:type="state.inputDetails.type"
 				:inputRef="state.inputDetails.ref"
 				:uuid="entryUuid"
-				@file-uploaded="onFileUploadedPWA"
+				@file-loaded="onFileLoadedPWA"
+				@file-dropped="onFileDroppedPWA"
 			></dropzone>
 
 			<grid-question-narrow v-if="!isPWA">
@@ -226,7 +227,7 @@ export default {
 				const mediaFile = media[entryUuid][state.inputDetails.ref];
 
 				if (rootStore.isPWA) {
-					if (mediaFile.filenamePWA === '') {
+					if (mediaFile.filenamePWA.cached === '' && mediaFile.filenamePWA.stored === '') {
 						return false;
 					}
 				} else {
@@ -266,9 +267,15 @@ export default {
 				console.log('Image failed!');
 				services.notificationService.hideProgressDialog();
 			},
-			onFileUploadedPWA(filename) {
+			onFileLoadedPWA(filename) {
 				state.answer.answer = filename;
+			},
+			onFileDroppedPWA(filename) {
+				//if a file is dropped, we have a cached file to show
+				//(cached takes priority on stored, if any)
 				media[entryUuid][state.inputDetails.ref].filenamePWA.cached = filename;
+				state.pwaFileState = PARAMETERS.PWA_FILE_STATE.CACHED;
+				state.answer.answer = filename;
 			}
 		};
 

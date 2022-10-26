@@ -23,7 +23,8 @@
 					<slot name="actions-start"></slot>
 				</ion-buttons>
 				<ion-title
-					class="project-header ion-text-center"
+					class="project-header"
+					:class="isPWA ? 'pwa' : 'ion-text-center'"
 					v-html="title"
 				></ion-title>
 				<ion-buttons slot="end">
@@ -101,6 +102,9 @@ export default {
 				if (rootStore.device.platform === PARAMETERS.IOS) {
 					return rootStore.app.id.includes('beta');
 				}
+			}),
+			isPWA: computed(() => {
+				return rootStore.isPWA;
 			})
 		};
 

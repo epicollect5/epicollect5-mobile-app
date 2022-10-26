@@ -4,7 +4,10 @@
 			<ion-card-title v-if="state.saved">{{labels.entry_completed}}</ion-card-title>
 			<ion-card-title v-if="state.failed">{{labels.has_errors}}</ion-card-title>
 		</ion-card-header>
-		<ion-card-content class="ion-text-center">
+		<ion-card-content
+			v-if="showAddEntryButton || state.failed"
+			class="ion-text-center"
+		>
 			<ion-grid class="ion-no-padding">
 				<ion-row>
 					<ion-col
@@ -59,8 +62,9 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
 import * as icons from 'ionicons/icons';
-import { reactive } from '@vue/reactivity';
+import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
+import { PARAMETERS } from '@/config';
 
 export default {
 	props: {
@@ -75,6 +79,10 @@ export default {
 		failed: {
 			type: Boolean,
 			required: true
+		},
+		action: {
+			type: String,
+			required: true
 		}
 	},
 	emits: ['question-mounted', 'add-entry-pwa', 'go-back-pwa'],
@@ -85,7 +93,8 @@ export default {
 		const entriesAddState = inject('entriesAddState');
 		const state = reactive({
 			saved: props.saved,
-			failed: props.failed
+			failed: props.failed,
+			action: props.action
 		});
 
 		onMounted(async () => {
@@ -103,10 +112,17 @@ export default {
 			}
 		};
 
+		const computedScope = {
+			showAddEntryButton: computed(() => {
+				return rootStore.entriesAddScope.entryService.actionState === PARAMETERS.ENTRY_ADD;
+			})
+		};
+
 		return {
 			labels,
 			entriesAddState,
 			state,
+			...computedScope,
 			...icons,
 			...methods
 		};

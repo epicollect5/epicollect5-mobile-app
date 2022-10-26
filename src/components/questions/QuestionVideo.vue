@@ -20,12 +20,14 @@
 		>
 			<dropzone
 				:filename="state.answer.answer"
+				:filestate="state.pwaFileState"
 				:key="state.answer.answer"
 				v-if="isPWA"
 				:type="state.inputDetails.type"
 				:inputRef="state.inputDetails.ref"
 				:uuid="entryUuid"
-				@file-uploaded="onFileUploadedPWA"
+				@file-loaded="onFileLoadedPWA"
+				@file-dropped="onFileDroppedPWA"
 			></dropzone>
 
 			<grid-question-narrow v-if="!isPWA">
@@ -218,9 +220,16 @@ export default {
 					videoShoot({ media, entryUuid, state, filename });
 				}
 			},
-			onFileUploadedPWA(filename) {
+			//file uploaded to server or stored file loaded
+			onFileLoadedPWA(filename) {
 				state.answer.answer = filename;
+			},
+			onFileDroppedPWA(filename) {
+				//if a file is dropped, we have a cached file to show
+				//(cached takes priority on stored, if any)
 				media[entryUuid][state.inputDetails.ref].filenamePWA.cached = filename;
+				state.pwaFileState = PARAMETERS.PWA_FILE_STATE.CACHED;
+				state.answer.answer = filename;
 			}
 		};
 

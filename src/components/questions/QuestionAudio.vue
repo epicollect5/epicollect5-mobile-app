@@ -18,7 +18,6 @@
 			class="ion-text-center"
 			:class="{'ion-margin' : isGroupInput}"
 		>
-
 			<dropzone
 				:filestate="state.pwaFileState"
 				:filename="state.answer.answer"
@@ -27,7 +26,8 @@
 				:type="state.inputDetails.type"
 				:inputRef="state.inputDetails.ref"
 				:uuid="entryUuid"
-				@file-uploaded="onFileUploadedPWA"
+				@file-loaded="onFileLoadedPWA"
+				@file-dropped="onFileDroppedPWA"
 			></dropzone>
 
 			<grid-question-narrow v-if="!isPWA">
@@ -293,9 +293,15 @@ export default {
 				rootStore.isAudioModalActive = true;
 				return scope.ModalAudioPlay.present();
 			},
-			onFileUploadedPWA(filename) {
+			onFileLoadedPWA(filename) {
 				state.answer.answer = filename;
+			},
+			onFileDroppedPWA(filename) {
+				//if a file is dropped, we have a cached file to show
+				//(cached takes priority on stored, if any)
 				media[entryUuid][state.inputDetails.ref].filenamePWA.cached = filename;
+				state.pwaFileState = PARAMETERS.PWA_FILE_STATE.CACHED;
+				state.answer.answer = filename;
 			}
 		};
 

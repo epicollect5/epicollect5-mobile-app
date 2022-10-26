@@ -78,7 +78,9 @@ export default {
 		let fileURI = '';
 		const filenameCached = readonly(props.media[entryUuid][inputRef].cached);
 		const filenameStored = readonly(props.media[entryUuid][inputRef].stored);
-		const filenamePWA = readonly(props.media[entryUuid][inputRef].filenamePWA);
+
+		const filenameCachedPWA = readonly(props.media[entryUuid][inputRef].filenamePWA.cached);
+		const filenameStoredPWA = readonly(props.media[entryUuid][inputRef].filenamePWA.stored);
 		//share cached audio if any (and this wins over a stored audio file)
 		if (filenameCached !== '') {
 			fileURI = tempDir + filenameCached;
@@ -101,18 +103,22 @@ export default {
 				popoverController.dismiss();
 			},
 			async removePWA() {
+				//we only delete the temp files directly (cached)
+				//if stored, we delete the filename reference, and the file is deleted
+				//from the server when the entry is saved
+				//todo: check if stored files are deleted
 				await services.notificationService.showProgressDialog(labels.wait);
 
 				const projectSlug = projectModel.getSlug();
 
-				if (filenamePWA !== '') {
+				if (filenameCachedPWA !== '') {
 					//delete temp file from server
 					try {
 						await services.webService.deleteTempMediaFile(
 							projectSlug,
 							entryUuid,
 							props.mediaType,
-							filenamePWA
+							filenameCachedPWA
 						);
 						services.notificationService.showToast(labels.file_deleted);
 						popoverController.dismiss(PARAMETERS.ACTIONS.FILE_DELETED);
@@ -124,8 +130,20 @@ export default {
 						services.notificationService.hideProgressDialog();
 					}
 				} else {
-					services.notificationService.hideProgressDialog();
-					return false;
+					if (filenameStoredPWA !== '') {
+						//keep track of stored files deleted
+						rootStore.queueRemoteFilesToDeletePWA.push({
+							type: props.mediaType,
+							filename: filenameStoredPWA
+						});
+
+						services.notificationService.showToast(labels.file_deleted);
+						popoverController.dismiss(PARAMETERS.ACTIONS.FILE_DELETED);
+						services.notificationService.hideProgressDialog();
+					} else {
+						services.notificationService.hideProgressDialog();
+						return false;
+					}
 				}
 			},
 			async removeNative() {

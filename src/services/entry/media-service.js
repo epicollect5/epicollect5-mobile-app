@@ -165,6 +165,7 @@ export const mediaService = {
                 //get existing answer
                 media[uuid][mediaInput.data.ref].filenamePWA.stored = answer;
             });
+
             resolve(media);
         });
     },

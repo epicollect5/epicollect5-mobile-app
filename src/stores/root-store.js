@@ -50,7 +50,8 @@ export const useRootStore = defineStore('RootStore', {
             queueFilesToDelete: [],
             searchParams: null,
             notFound: false,
-            queueTempBranchEntriesPWA: {}
+            queueTempBranchEntriesPWA: {},
+            queueRemoteFilesToDeletePWA: []
         };
     },
     getters: {},

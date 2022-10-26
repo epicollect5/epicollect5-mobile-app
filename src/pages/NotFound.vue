@@ -22,7 +22,7 @@
 						lines="none"
 						class="ion-text-center"
 					>
-						<ion-label>{{labels.no_projects_found}}</ion-label>
+						<ion-label>{{labels.no_hits_found}}</ion-label>
 					</ion-item>
 				</ion-card-content>
 			</ion-card>

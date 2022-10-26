@@ -93,6 +93,10 @@ ion-toolbar.toolbar-title {
     }
 }
 .project-header {
+    //fix for PWA
+    &.pwa {
+        padding-left: 10px !important;
+    }
     .project-logo {
         vertical-align: middle;
         border-radius: 50%;

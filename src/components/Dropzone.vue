@@ -18,7 +18,7 @@
 			class="question-photo-thumbnail animate__animated animate__fadeIn ion-margin-top"
 		>
 			<ion-spinner
-				class="spinner"
+				class="spinner ion-margin-top"
 				v-show="!state.previewLoaded"
 				name="crescent"
 			></ion-spinner>
@@ -43,7 +43,7 @@
 				v-if="state.type === PARAMETERS.QUESTION_TYPES.VIDEO"
 				v-show="state.previewLoaded"
 				controls
-				class="animate__animated animate__fadeIn full-width"
+				class="pwa-video animate__animated animate__fadeIn full-width"
 				:src="state.filesource"
 				@loadeddata="onVideoLoaded()"
 				@error="onError"
@@ -92,7 +92,7 @@ export default {
 			required: true
 		}
 	},
-	emits: ['file-uploaded'],
+	emits: ['file-dropped', 'file-loaded'],
 	setup(props, context) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
@@ -114,6 +114,7 @@ export default {
 		state.filesource =
 			props.filename === '' ? '' : getMediaURL(props.filename, props.type, props.filestate);
 		filename = props.filename === '' ? '' : props.filename;
+		console.log(state.filesource);
 
 		const dropzoneOptions = {
 			onDrop: async function (acceptFiles, rejectReasons) {
@@ -173,6 +174,7 @@ export default {
 								console.log(filename);
 
 								state.filesource = getMediaURL(filename, props.type);
+								console.log(state.filesource);
 							},
 							(error) => {
 								//todo: handle error
@@ -182,6 +184,7 @@ export default {
 						.finally(() => {
 							services.notificationService.hideProgressDialog();
 							state.isDraggingOver = false;
+							context.emit('file-dropped', filename);
 						});
 				}
 			},
@@ -202,25 +205,27 @@ export default {
 		const methods = {
 			onImageLoaded() {
 				state.previewLoaded = true;
-				context.emit('file-uploaded', filename);
+				context.emit('file-loaded', filename);
 			},
 			onError(error) {
 				state.previewLoaded = true;
 				state.loadingError = true;
 				console.log(error);
-				//context.emit('file-uploaded', filename);
+				//context.emit('file-loaded', filename);
 			},
 			onAudioLoaded() {
 				state.previewLoaded = true;
-				context.emit('file-uploaded', filename);
+				context.emit('file-loaded', filename);
 			},
 			onVideoLoaded() {
+				console.log(filename);
 				state.previewLoaded = true;
-				context.emit('file-uploaded', filename);
+				context.emit('file-loaded', filename);
 			}
 		};
 
 		function getMediaURL(filename, type, filestate) {
+			const timestamp = services.utilsService.generateTimestamp();
 			const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
 			const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
 			let mediaURL = rootStore.serverUrl;
@@ -257,7 +262,7 @@ export default {
 
 			mediaURL += '&name=' + filename;
 			mediaURL += '&type=' + type;
-			mediaURL += '&timestamp=' + new Date().getTime();
+			mediaURL += '&timestamp=' + timestamp;
 
 			return mediaURL;
 		}

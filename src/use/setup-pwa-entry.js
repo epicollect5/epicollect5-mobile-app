@@ -28,9 +28,9 @@ export async function setupPWAEntry (action) {
         if (action === PARAMETERS.PWA_ADD_ENTRY) {
             services.entryService.setUpNew(formRef, parentEntryUuid, parentFormRef);
             resolve(formRef);
+            return false;
         }
         else {
-
             (async function () {
                 //get entry from server
                 const projectSlug = projectModel.getSlug();
@@ -40,7 +40,13 @@ export async function setupPWAEntry (action) {
                 try {
                     const response = await services.webService.downloadEntryPWA(projectSlug, formRef, entryUuid);
                     console.log(JSON.stringify(response.data.data.entries[0]));
-                    webEntry = response.data.data.entries[0];
+                    if (response.data.data.entries.length > 0) {
+                        webEntry = response.data.data.entries[0];
+                    }
+                    else {
+                        reject();
+                        return false;
+                    }
                 }
                 catch (errorResponse) {
                     services.errorsService.handleWebError(errorResponse);

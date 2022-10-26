@@ -7,6 +7,7 @@
 	>
 		<template #actions-start>
 			<ion-button
+				v-if="!isPWA"
 				class="button-quit"
 				@click="quitEntry()"
 			>
@@ -19,14 +20,34 @@
 			</ion-button>
 		</template>
 		<template #actions-end>
-			<ion-button disabled>
+			<ion-button
+				v-if="isPWA"
+				class="button-quit"
+				@click="quitEntry()"
+			>
+				<ion-icon
+					slot="start"
+					:icon="power"
+				>
+				</ion-icon>
+				{{labels.quit}}
+			</ion-button>
+			<!-- spacers for native app, just to fix UI centering -->
+			<ion-button
+				v-if="!isPWA"
+				disabled
+			>
 				<ion-icon slot="icon-only">
 				</ion-icon>
 			</ion-button>
-			<ion-button disabled>
+			<ion-button
+				v-if="!isPWA"
+				disabled
+			>
 				<ion-icon slot="icon-only">
 				</ion-icon>
 			</ion-button>
+			<!-- end spacers -->
 		</template>
 
 		<template #subheader>
@@ -265,6 +286,7 @@
 									type="saved"
 									:saved="state.entrySavedPWA"
 									:failed="state.entryFailedPWA"
+									:action="state.action"
 									@question-mounted="onQuestionMounted"
 									@add-entry-pwa="addEntryPWA()"
 									@go-back-pwa="prev()"
@@ -378,6 +400,7 @@ export default {
 			},
 			// Allow saving by default (via quit button)
 			allowSave: services.entryService.allowSave,
+			action: services.entryService.actionState,
 			entrySavedPWA: false,
 			entryFailedPWA: false,
 			showSaved: false
@@ -398,6 +421,9 @@ export default {
 			}),
 			pageId: computed(() => {
 				return state.questionParams.isBranch ? 'entries-branch-add' : 'entries-add';
+			}),
+			isPWA: computed(() => {
+				return rootStore.isPWA;
 			})
 		};
 
@@ -505,7 +531,7 @@ export default {
 				// Show loader
 				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
 				// Set up a new entry based on URL params
-				const formRef = setupPWAEntry();
+				const formRef = await setupPWAEntry(PARAMETERS.PWA_ADD_ENTRY);
 				//get first form question input ref
 				const firstInputRef = projectModel.getInputs(formRef)[0];
 
@@ -537,11 +563,16 @@ export default {
 			async quitEntry() {
 				//do quitting things
 				console.log('> Quit entry was called *************************************');
-				// By default, mark saved entries unsynced
+				// By default, mark saved entries unsynced (native app only)
 				let syncType = PARAMETERS.SYNCED_CODES.UNSYNCED;
+				let quitMessage = STRINGS[language].status_codes.ec5_100;
+
+				if (rootStore.isPWA) {
+					quitMessage = labels.are_you_sure;
+				}
 
 				const action = await services.notificationService.confirmMultiple(
-					STRINGS[language].status_codes.ec5_100,
+					quitMessage,
 					labels.quit,
 					labels.save,
 					labels.quit
