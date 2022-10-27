@@ -56,6 +56,8 @@ import { PARAMETERS } from '@/config';
 import * as IonComponents from '@ionic/vue';
 import '@/registerServiceWorker';
 
+import 'leaflet/dist/leaflet.css';
+
 const pinia = createPinia();
 pinia.use(PiniaLogger({
   expanded: true,

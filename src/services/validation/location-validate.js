@@ -1,3 +1,5 @@
+import * as services from '@/services';
+
 export const locationValidate = {
 
     errors: {},
@@ -5,40 +7,7 @@ export const locationValidate = {
         const inputDetails = params.input_details;
         const answer = params.answer.answer;
 
-        function isLatitude (lat) {
 
-            if (!lat.includes('.')) {
-                return false;
-            }
-
-            if (lat.split('.')[1].length !== 6) {
-                return false;
-            }
-
-            return isFinite(lat) && Math.abs(lat) <= 90;
-        }
-
-        function isLongitude (lng) {
-            if (!lng.includes('.')) {
-                return false;
-            }
-
-            if (lng.split('.')[1].length !== 6) {
-                return false;
-            }
-            return isFinite(lng) && Math.abs(lng) <= 180;
-        }
-
-        //accuracy must be a positive integer
-        function isAccuracy (accuracy) {
-            const num = Number(accuracy);
-
-            if (Number.isInteger(num) && num > 0) {
-                return true;
-            }
-
-            return false;
-        }
         //"ec5_30": "Location data not valid.",
         if (!Object.prototype.hasOwnProperty.call(answer, 'latitude')) {
             this.errors[inputDetails.ref] = ['ec5_30'];
@@ -54,19 +23,19 @@ export const locationValidate = {
         }
 
         if (answer.latitude !== '') {
-            if (!isLatitude(answer.latitude)) {
+            if (!services.utilsService.isValidLatitude(answer.latitude)) {
                 this.errors[inputDetails.ref] = ['ec5_30'];
                 return false;
             }
         }
         if (answer.longitude !== '') {
-            if (!isLongitude(answer.longitude)) {
+            if (!services.utilsService.isValidLongitude(answer.longitude)) {
                 this.errors[inputDetails.ref] = ['ec5_30'];
                 return false;
             }
         }
         if (answer.accuracy !== '') {
-            if (!isAccuracy(answer.accuracy)) {
+            if (!services.utilsService.isValidAccuracy(answer.accuracy)) {
                 this.errors[inputDetails.ref] = ['ec5_30'];
                 return false;
             }

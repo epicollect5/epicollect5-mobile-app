@@ -835,5 +835,32 @@ export const utilsService = {
             + projectSlug + '/'
             + PARAMETERS.API.ROUTES.PWA.DATA_VIEWER
             + PARAMETERS.API.PARAMS.DATA_VIEWER_RESTORE_QUERY_STRING;
+    },
+    isValidLatitude (lat) {
+        if (!lat) {
+            return false;
+        }
+        if (lat.includes('.')) {
+            if (lat.split('.')[1].length !== 6) {
+                return false;
+            }
+        }
+        return isFinite(lat) && Math.abs(lat) <= 90;
+    },
+    isValidLongitude (lng) {
+        if (!lng) {
+            return false;
+        }
+        if (lng.includes('.')) {
+            if (lng.split('.')[1].length !== 6) {
+                return false;
+            }
+        }
+        return isFinite(lng) && Math.abs(lng) <= 180;
+    },
+    //accuracy must be a positive integer
+    isValidAccuracy (accuracy) {
+        const num = Number(accuracy);
+        return Number.isInteger(num) && num > 0;
     }
 };

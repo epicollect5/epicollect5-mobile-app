@@ -12,7 +12,16 @@
 			class="ion-text-center"
 			:class="{'ion-margin' : isGroupInput}"
 		>
-			<grid-question-wide>
+			<location-pwa
+				v-if="isPWA"
+				:inputRef="inputRef"
+				:latitude="state.answer.answer.latitude"
+				:longitude="state.answer.answer.longitude"
+				:accuracy="state.answer.answer.accuracy || 0"
+				@on-pwa-location-update="onPWALocationUpdate"
+			></location-pwa>
+
+			<grid-question-wide v-if=!isPWA>
 				<template #content>
 					<ion-button
 						class="question-action-button"
@@ -29,7 +38,10 @@
 				</template>
 			</grid-question-wide>
 
-			<ion-grid class="question-location-grid">
+			<ion-grid
+				v-if="!isPWA"
+				class="question-location-grid"
+			>
 				<ion-row class="ion-align-items-center border-bottom">
 					<ion-col>
 						<div class="ion-text-end">
@@ -88,14 +100,16 @@ import * as services from '@/services';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import GridQuestionWide from '@/components/GridQuestionWide';
+import LocationPwa from '@/components/LocationPwa';
 
 /**
  * imp: we use Cordova implementation (basically Geolocatiom API https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API)
- * imp: since using Capacitor, it nver times out when it is not able to get a lock
+ * imp: since using Capacitor, it never times out when it is not able to get a lock
  */
 export default {
 	components: {
-		GridQuestionWide
+		GridQuestionWide,
+		LocationPwa
 	},
 	props: {
 		inputRef: {
@@ -180,6 +194,9 @@ export default {
 					}
 				}
 				return labels.not_located_yet;
+			}),
+			isPWA: computed(() => {
+				return rootStore.isPWA;
 			})
 		};
 
@@ -190,7 +207,7 @@ export default {
 		});
 
 		function _getCoords() {
-			const interval_ID = setInterval(function() {
+			const interval_ID = setInterval(function () {
 				// did we timeout/errors??
 				if (rootStore.deviceGeolocation.error) {
 					//deal with error
@@ -198,7 +215,7 @@ export default {
 
 					//try a getCurrentPosition
 					navigator.geolocation.getCurrentPosition(
-						function(position) {
+						function (position) {
 							rootStore.deviceGeolocation = {
 								...rootStore.deviceGeolocation,
 								...{ position: position.coords }
@@ -206,7 +223,7 @@ export default {
 							services.notificationService.hideProgressDialog();
 							rootStore.isLocationModalActive = false;
 						},
-						function(error) {
+						function (error) {
 							//timeout
 
 							console.log(error);
@@ -228,9 +245,8 @@ export default {
 					if (rootStore.deviceGeolocation.position) {
 						//toFixed(6) rounds the co-ords to 6 digits, which is cm accuracy
 						state.answer.answer.latitude = rootStore.deviceGeolocation.position.latitude.toFixed(6);
-						state.answer.answer.longitude = rootStore.deviceGeolocation.position.longitude.toFixed(
-							6
-						);
+						state.answer.answer.longitude =
+							rootStore.deviceGeolocation.position.longitude.toFixed(6);
 						state.answer.answer.accuracy = Math.round(
 							rootStore.deviceGeolocation.position.accuracy
 						);
@@ -244,6 +260,11 @@ export default {
 		}
 
 		const methods = {
+			onPWALocationUpdate(coords) {
+				state.answer.answer.latitude = coords.latitude;
+				state.answer.answer.longitude = coords.longitude;
+				state.answer.answer.accuracy = coords.accuracy;
+			},
 			async updateLocation() {
 				rootStore.deviceGeolocation = {
 					...rootStore.deviceGeolocation,
@@ -270,7 +291,7 @@ export default {
 
 					//check if location is enabled (edge case when the user disable location and then go back to the app)
 					cordova.plugins.diagnostic.isLocationAvailable(
-						async function(isAvailable) {
+						async function (isAvailable) {
 							if (isAvailable) {
 								//running function until we get a position, then refresh UI
 								await services.notificationService.showProgressDialog(
@@ -287,7 +308,7 @@ export default {
 								);
 							}
 						},
-						function(error) {
+						function (error) {
 							console.log(error);
 							services.notificationService.showAlert(
 								STRINGS[language].labels.location_fail,
@@ -299,7 +320,7 @@ export default {
 					if (rootStore.device.platform !== PARAMETERS.WEB) {
 						//check if location is enabled
 						cordova.plugins.diagnostic.isLocationAvailable(
-							function(isAvailable) {
+							function (isAvailable) {
 								if (isAvailable) {
 									rootStore.deviceGeolocation = {
 										...rootStore.deviceGeolocation,
@@ -320,7 +341,7 @@ export default {
 									);
 								}
 							},
-							function(error) {
+							function (error) {
 								console.log(error);
 								services.notificationService.showAlert(
 									STRINGS[language].labels.location_fail,

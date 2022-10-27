@@ -30,7 +30,7 @@
 					:icon="power"
 				>
 				</ion-icon>
-				{{labels.quit}}
+				{{labels.exit}}
 			</ion-button>
 			<!-- spacers for native app, just to fix UI centering -->
 			<ion-button

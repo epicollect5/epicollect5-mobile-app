@@ -1,6 +1,7 @@
 export const STRINGS = {
     en: {
         labels: {
+            exit: 'Exit',
             editing_branches_pwa: 'Please note: to view existing branch entries you can use the Epicollect5 Data Viewer.',
             format: 'Format',
             clear_filters: 'Clear Filters',
@@ -223,6 +224,7 @@ export const STRINGS = {
     },
     it: {
         labels: {
+            exit: 'Exit',
             editing_branches_pwa: 'Nota: per visualizzare le voci BRANCH esistenti è possibile utilizzare Epicollect5 Data Viewer.',
             format: 'Formato',
             clear_filters: 'Ripristina Filtri',
@@ -445,6 +447,7 @@ export const STRINGS = {
     },
     es: {
         labels: {
+            exit: 'Exit',
             editing_branches_pwa: 'Tenga en cuenta: para ver las entradas BRANCH existentes, puede usar Epicollect5 Data Viewer.',
             format: 'Formato',
             clear_filters: 'Reiniciar Filtros',
@@ -667,6 +670,7 @@ export const STRINGS = {
     },
     fr: {
         labels: {
+            exit: 'Exit',
             editing_branches_pwa: 'Remarque: pour afficher les entrées BRANCH existantes, vous pouvez utiliser Epicollect5 Data Viewer.',
             format: 'Format',
             clear_filters: 'Effacer filtres',
@@ -888,6 +892,7 @@ export const STRINGS = {
     },
     pl: {
         labels: {
+            exit: 'Exit',
             editing_branches_pwa: 'Uwaga: aby wyświetlić istniejące wpisy oddziałów, można użyć przeglądarki danych Epicollect5.',
             format: 'Format',
             clear_filters: 'Wyczyść filtry',

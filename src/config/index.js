@@ -334,6 +334,33 @@ export const PARAMETERS = {
         CACHED: 'cached',
         STORED: 'stored'
     },
+    PWA_MAX_LATLONG_LENGTH: 10,
+
+
+
+    //ESRI satellite -> https://wiki.openstreetmap.org/wiki/Esri#Legal_permissions
+    ESRI_TILES_PROVIDER_SATELLITE: 'https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=' + process.env.VUE_APP_ESRI_API_TOKEN,
+    //https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9
+    ESRI_TILES_PROVIDER_ATTRIBUTION: 'Powered by Esri | Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+
+    //Mapbox  imagery https://docs.mapbox.com/api/maps/styles/
+    MAPBOX_TILES_PROVIDER_OUTDOOR: 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/{z}/{x}/{y}?access_token=' + process.env.VUE_APP_MAPBOX_API_TOKEN,
+    //https://docs.mapbox.com/help/getting-started/attribution/
+    MAPBOX_TILES_ATTRIBUTION: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
+
+
+    //high contrast maps http://maps.stamen.com
+    STAMEN_HIGH_CONTRAST_TILES_PROVIDER: 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.png',
+    STAMEN_TILES_ATTRIBUTION: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.',
+
+    //carto https://carto.com/basemaps/
+    CARTO_LIGHT_TILES_PROVIDER: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
+    CARTO_TILES_ATTRIBUTION: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>',
+
+    //OSM tiles
+    OSM_TILES_PROVIDER: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    OSM_TILES_ATTRIBUTION: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+
 
     //bookmark title alphanumeric and - _
     REGEX_BOOKMARK_TITLE: /^[\w\-\s]+$/
