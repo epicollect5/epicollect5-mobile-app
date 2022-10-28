@@ -3,8 +3,19 @@
 		class="question-card"
 		:class="{'animate__animated animate__fadeIn' : !isGroupInput}"
 	>
-		<ion-card-header class="question-label">
-			<ion-card-title>
+		<ion-card-header
+			class="question-label"
+			:class="isPWA ? 'force-no-padding' : ''"
+		>
+			<ion-card-title v-if="isPWA">
+				<question-label-action
+					:disabled="false"
+					action="help"
+					:questionText="state.question"
+					@on-label-button-click="openModalLocationHelp"
+				></question-label-action>
+			</ion-card-title>
+			<ion-card-title v-else>
 				{{state.question}}
 			</ion-card-title>
 		</ion-card-header>
@@ -15,8 +26,8 @@
 			<location-pwa
 				v-if="isPWA"
 				:inputRef="inputRef"
-				:latitude="state.answer.answer.latitude"
-				:longitude="state.answer.answer.longitude"
+				:latitude="String(state.answer.answer.latitude)"
+				:longitude="String(state.answer.answer.longitude)"
 				:accuracy="state.answer.answer.accuracy || 0"
 				@on-pwa-location-update="onPWALocationUpdate"
 			></location-pwa>
@@ -91,6 +102,7 @@
 </template>
 
 <script>
+import { modalController } from '@ionic/vue';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
@@ -101,6 +113,8 @@ import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import GridQuestionWide from '@/components/GridQuestionWide';
 import LocationPwa from '@/components/LocationPwa';
+import QuestionLabelAction from '@/components/QuestionLabelAction';
+import ModalLocationHelp from '@/components/modals/ModalLocationHelp.vue';
 
 /**
  * imp: we use Cordova implementation (basically Geolocatiom API https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API)
@@ -109,6 +123,7 @@ import LocationPwa from '@/components/LocationPwa';
 export default {
 	components: {
 		GridQuestionWide,
+		QuestionLabelAction,
 		LocationPwa
 	},
 	props: {
@@ -150,6 +165,8 @@ export default {
 				answer: ''
 			}
 		});
+
+		const scope = {};
 
 		//set up question
 		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
@@ -260,6 +277,18 @@ export default {
 		}
 
 		const methods = {
+			async openModalLocationHelp() {
+				scope.ModalLocationHelp = await modalController.create({
+					cssClass: 'modal-location-help',
+					component: ModalLocationHelp,
+					showBackdrop: true,
+					backdropDismiss: true,
+					componentProps: {}
+				});
+
+				return scope.ModalLocationHelp.present();
+			},
+
 			onPWALocationUpdate(coords) {
 				state.answer.answer.latitude = coords.latitude;
 				state.answer.answer.longitude = coords.longitude;

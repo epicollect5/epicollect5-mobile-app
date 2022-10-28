@@ -84,3 +84,12 @@
         }
     }
 }
+.modal-location-help {
+    &::part(content) {
+        border-radius: 10px !important;
+        @media only screen and (min-width: 768px) and (min-height: 600px) {
+            width: 75%;
+            height: 80%;
+        }
+    }
+}

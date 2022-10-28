@@ -83,7 +83,9 @@ export const PARAMETERS = {
                 TEMP_MEDIA_DELETE_DEBUG: '/pwa-temp-media-delete/',
                 UNIQUE_ANSWER: '/unique-answer/',
                 UNIQUE_ANSWER_DEBUG: '/pwa-unique-answer/',//for debugging
-                DATA_VIEWER: '/data'
+                DATA_VIEWER: '/data',
+                OPENCAGE: '/proxies/opencage/',
+                OPENCAGE_DEBUG: '/proxies/pwa-opencage/'
             }
         },
         PARAMS: {
@@ -240,6 +242,7 @@ export const PARAMETERS = {
     COMPONENTS_PATH: 'js/components/',
 
     GEOLOCATION_TIMEOUT: 30000,
+    GEOLOCATION_DEFAULT_ACCURACY: 4,
 
     DELAY_FAST: 250,
     DELAY_MEDIUM: 500,

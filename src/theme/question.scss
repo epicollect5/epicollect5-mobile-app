@@ -426,3 +426,54 @@ ion-item-divider.saved-answers-serchbar-wrapper {
         max-height: 150px;
     }
 }
+//PWA Location (Leaflet) *************************************
+.leaflet-map-wrapper {
+    height: 200px;
+    outline: none;
+    &::focus {
+        outline: none;
+    }
+}
+.lat-long-controls,
+.address-controls {
+    --padding-start: 0;
+    --inner-padding-start: 0;
+    --inner-padding-end: 0;
+}
+//imp: removed "scoped" otherwise it does not load the background image
+//imp: also, loading from assets does not work so leaflet images are in
+//imp: src/leaflet
+//imp: I guess it is due to the jsconfig.json mapping @ to src
+.leaflet-control-locate-me {
+    width: 34px;
+    height: 34px;
+    //margin-left: 12px !important;
+    background: #ffffff url(@/leaflet/images/locate-me@2x.png) no-repeat center;
+}
+.leaflet-control-locate-me:hover {
+    cursor: pointer;
+    background-color: #eeeeee;
+}
+.leaflet-control-layers-list {
+    text-align: left;
+}
+.leaflet-touch .leaflet-control-layers-toggle {
+    width: 30px;
+    height: 30px;
+}
+.leaflet-retina .leaflet-control-layers-toggle {
+    background-image: url(@/leaflet/images/layers@2x.png) !important;
+    background-size: 26px 26px !important;
+    width: 30px !important;
+    height: 30px !important;
+}
+.leaflet-control-layers-base {
+    label {
+        font-size: 16px;
+    }
+}
+input.leaflet-control-layers-selector {
+    margin: 5px;
+    accent-color: var(--ion-color-primary) !important;
+}
+//*********************************************************

@@ -7,6 +7,8 @@
 				inputmode="decimal"
 				placeholder="###.######"
 				:maxlength="PWA_MAX_LATLONG_LENGTH"
+				:value="state.latitude"
+				@keyup="onLatValueChange($event)"
 			></ion-input>
 			<ion-label position="stacked">Long:</ion-label>
 			<ion-input
@@ -14,8 +16,11 @@
 				inputmode="decimal"
 				placeholder="###.######"
 				:maxlength="PWA_MAX_LATLONG_LENGTH"
+				:value="state.longitude"
+				@keyup="onLongValueChange($event)"
 			></ion-input>
 			<ion-button
+				size="default"
 				color="secondary"
 				slot="end"
 			>
@@ -47,19 +52,35 @@
 				@click="updateLocation(true)"
 			>
 				<ion-icon :icon="locate"></ion-icon>
+				&nbsp;
 				{{labels.update_location}}
 			</ion-button>
 		</ion-item>
 		<ion-item class="address-controls">
 			<ion-label>Address</ion-label>
-			<ion-input :placeholder="labels.type_hint + '...'"></ion-input>
+			<ion-input
+				v-model="state.address"
+				placeholder="i.e. London"
+			></ion-input>
 
 			<ion-button
+				class="ion-hide-sm-down"
 				color="secondary"
 				slot="end"
+				@click="geocodeAddress"
 			>
 				<ion-icon :icon="search"></ion-icon>
-				<span class="ion-hide-sm-down">{{labels.search}}</span>
+				&nbsp;
+				<span>{{labels.search}}</span>
+			</ion-button>
+			<ion-button
+				class="ion-hide-sm-up"
+				color="secondary"
+				slot="end"
+				size="default"
+				@click="geocodeAddress"
+			>
+				<ion-icon :icon="search"></ion-icon>
 			</ion-button>
 		</ion-item>
 	</div>
@@ -77,8 +98,7 @@ import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import * as services from '@/services';
 import * as icons from 'ionicons/icons';
-import { reactive, computed, toRaw } from '@vue/reactivity';
-import { projectModel } from '@/models/project-model';
+import { reactive } from '@vue/reactivity';
 import L from 'leaflet';
 import markerIcon from '@/leaflet/images/marker-icon@2x.png';
 import markerShadow from '@/leaflet/images/marker-shadow.png';
@@ -111,19 +131,51 @@ export default {
 		const closeUpZoom = 10;
 		//wider zoom
 		const zoom = 1;
-		const errorZoom = 5;
 		let map = null;
 		let marker = null;
 
 		const state = reactive({
 			latitude: props.latitude,
 			longitude: props.longitude,
-			accuracy: props.accuracy
+			accuracy: props.accuracy,
+			address: ''
 		});
 
 		const methods = {
+			async geocodeAddress() {
+				if (state.address === '') {
+					services.notificationService.showAlert(labels.no_hits_found);
+					return;
+				}
+				services.notificationService.showProgressDialog(
+					STRINGS[language].labels.acquiring_position,
+					STRINGS[language].labels.wait
+				);
+
+				try {
+					const coords = await services.webService.geocodeAddressPWA(state.address);
+
+					state.latitude = coords.latitude;
+					state.longitude = coords.longitude;
+					state.accuracy = coords.accuracy;
+
+					updateMarker(false);
+				} catch (error) {
+					//handle error
+					services.notificationService.showAlert(labels.location_fail);
+				} finally {
+					services.notificationService.hideProgressDialog();
+				}
+			},
 			updateLocation(showAlert) {
 				console.log({ lat: state.latitude, long: state.longitude });
+
+				//if no location is set, just provide user location
+				if (state.latitude === '' && state.longitude === '') {
+					locateUser();
+					return;
+				}
+
 				if (services.utilsService.isValidLatitude(state.latitude)) {
 					if (services.utilsService.isValidLongitude(state.longitude)) {
 						//update marker position
@@ -345,7 +397,9 @@ export default {
 
 			setTimeout(() => {
 				map.invalidateSize();
-				methods.updateLocation(false);
+				if (state.latitude !== '' && state.longitude !== '') {
+					methods.updateLocation(false);
+				}
 			}, 100);
 		});
 
@@ -368,51 +422,4 @@ export default {
 </script>
 
 <style lang="scss">
-.leaflet-map-wrapper {
-	height: 200px;
-	outline: none;
-	&::focus {
-		outline: none;
-	}
-}
-.lat-long-controls,
-.address-controls {
-	--padding-start: 0;
-	--inner-padding-start: 0;
-	--inner-padding-end: 0;
-}
-//imp: removed "scoped" otherwise it does not load the background image
-//imp: also, loading from assets does not work so leaflet images are in
-//imp: src/leaflet
-//imp: I guess it is due to the jsconfig.json mapping @ to src
-.leaflet-control-locate-me {
-	width: 30px;
-	height: 30px;
-	margin-left: 12px !important;
-	background: #ffffff url(@/leaflet/images/locate-me@2x.png) no-repeat center;
-}
-.leaflet-control-locate-me:hover {
-	cursor: pointer;
-	background-color: #eeeeee;
-}
-.leaflet-control-layers-list {
-	text-align: left;
-}
-.leaflet-touch .leaflet-control-layers-toggle {
-	width: 30px;
-	height: 30px;
-}
-.leaflet-retina .leaflet-control-layers-toggle {
-	background-image: url(@/leaflet/images/layers@2x.png);
-	background-size: 26px 26px;
-}
-.leaflet-control-layers-base {
-	label {
-		font-size: 16px;
-	}
-}
-input.leaflet-control-layers-selector {
-	margin: 5px;
-	accent-color: var(--ion-color-primary) !important;
-}
 </style>

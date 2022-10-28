@@ -50,10 +50,6 @@ export default {
 			type: String,
 			required: true
 		},
-		answer: {
-			type: String,
-			required: true
-		},
 		action: {
 			type: String,
 			required: true
@@ -81,6 +77,8 @@ export default {
 						return icons.search;
 					case 'filter':
 						return icons.filter;
+					case 'help':
+						return icons.helpCircle;
 					default:
 						return icons.filter;
 				}

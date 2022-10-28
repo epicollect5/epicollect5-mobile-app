@@ -841,10 +841,11 @@ export const utilsService = {
             return false;
         }
         if (lat.includes('.')) {
-            if (lat.split('.')[1].length !== 6) {
+            if (lat.split('.')[1].length > 6) {
                 return false;
             }
         }
+
         return isFinite(lat) && Math.abs(lat) <= 90;
     },
     isValidLongitude (lng) {
@@ -852,7 +853,7 @@ export const utilsService = {
             return false;
         }
         if (lng.includes('.')) {
-            if (lng.split('.')[1].length !== 6) {
+            if (lng.split('.')[1].length > 6) {
                 return false;
             }
         }
