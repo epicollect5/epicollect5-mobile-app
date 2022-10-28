@@ -57,7 +57,7 @@
 			</ion-button>
 		</ion-item>
 		<ion-item class="address-controls">
-			<ion-label>Address</ion-label>
+			<ion-label>{{labels.address}}</ion-label>
 			<ion-input
 				v-model="state.address"
 				placeholder="i.e. London"
