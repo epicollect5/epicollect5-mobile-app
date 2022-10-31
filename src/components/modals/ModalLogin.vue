@@ -25,7 +25,7 @@ import { menuController, modalController } from '@ionic/vue';
 import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import ModalPasswordlessSend from '@/components/modals/ModalPasswordlessSend';
-import HeaderModal from '@/components/HeaderModal';
+import HeaderModal from '@/components/HeaderModal.vue';
 import CardLoginLocal from '@/components/CardLoginLocal';
 import CardLoginLdap from '@/components/CardLoginLdap.vue';
 import CardLoginDefault from '@/components/CardLoginDefault.vue';

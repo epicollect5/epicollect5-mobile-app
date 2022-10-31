@@ -66,7 +66,7 @@ import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import ListSavedAnswers from '@/components/ListSavedAnswers';
-import HeaderModal from '@/components/HeaderModal';
+import HeaderModal from '@/components/HeaderModal.vue';
 import * as services from '@/services';
 
 export default {
@@ -137,7 +137,7 @@ export default {
 
 				//search the db for matching answers
 				//one row at a time to keep memory low
-				request_timeout = setTimeout(function() {
+				request_timeout = setTimeout(function () {
 					state.hits = [];
 
 					let offset = -1;

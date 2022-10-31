@@ -99,6 +99,7 @@ import { useRootStore } from '@/stores/root-store';
 import * as services from '@/services';
 import * as icons from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
+import 'leaflet.fullscreen';
 import L from 'leaflet';
 import markerIcon from '@/leaflet/images/marker-icon@2x.png';
 import markerShadow from '@/leaflet/images/marker-shadow.png';
@@ -326,7 +327,7 @@ export default {
 		}
 
 		onMounted(async () => {
-			map = L.map(props.inputRef).setView([46.05, 11.05], zoom);
+			map = L.map(props.inputRef).setView([0, 0], zoom);
 
 			const carto = L.tileLayer(PARAMETERS.CARTO_LIGHT_TILES_PROVIDER, {
 				attribution: PARAMETERS.CARTO_TILES_ATTRIBUTION,
@@ -368,6 +369,9 @@ export default {
 
 			//add layers control
 			L.control.layers(baseMaps).addTo(map);
+
+			//add full screen control
+			L.control.fullscreen({ position: 'topleft' }).addTo(map);
 
 			//build locate user control
 			L.Control.Locate = L.Control.extend({

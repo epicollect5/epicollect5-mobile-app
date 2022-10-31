@@ -1,5 +1,7 @@
 import { answerValidateService } from '@/services/validation/answer-validate-service';
 import { vi } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
+
 import { utilsService } from '@/services/utilities/utils-service';
 
 const inputRef = '70dcdb0b606843989674d3851c544f23_62fa24c5161be_62fa24caa1b10';
@@ -76,7 +78,7 @@ vi.mock('@/services/database/database-select-service', () => {
 
 describe('answerValidateService', () => {
     beforeEach(() => {
-
+        setActivePinia(createPinia());
     });
     afterEach(() => {
         // vi.restoreAllMocks();
@@ -147,7 +149,7 @@ describe('answerValidateService', () => {
     it('LOCATION answer object invalid', async () => {
 
         params.answer.answer = {
-            latitude: '45.90067',//must be 6 decimals
+            latitude: '45.9006787',//must be <= 6 decimals
             longitude: '12.004856',
             accuracy: 8
         };
@@ -157,16 +159,7 @@ describe('answerValidateService', () => {
             [inputRef]: ['ec5_30']
         });
 
-        params.answer.answer = {
-            latitude: '45.900679',
-            longitude: '12.04856',//must be 6 decimals
-            accuracy: 8
-        };
-        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
-        expect(answerValidateService.getErrors()).toMatchObject({
-            //"ec5_30": "Location data not valid"
-            [inputRef]: ['ec5_30']
-        });
+
 
         params.answer.answer = {
             latitude: '45.900679',

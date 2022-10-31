@@ -1,5 +1,7 @@
 import { answerValidateService } from '@/services/validation/answer-validate-service';
 import { vi } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
+
 import { utilsService } from '@/services/utilities/utils-service';
 
 const inputRef = '70dcdb0b606843989674d3851c544f23_62fa24c5161be_62fa24caa1b10';
@@ -82,6 +84,10 @@ vi.mock('@/services/database/database-select-service', () => {
 });
 
 describe('answerValidateService', () => {
+
+    beforeEach(() => {
+        setActivePinia(createPinia());
+    });
 
     it('CHECKBOX answer does not match', async () => {
 

@@ -73,7 +73,7 @@ import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import { projectModel } from '@/models/project-model.js';
-import HeaderModal from '@/components/HeaderModal';
+import HeaderModal from '@/components/HeaderModal.vue';
 
 export default {
 	components: { HeaderModal },

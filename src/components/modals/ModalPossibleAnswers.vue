@@ -67,7 +67,7 @@ import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import ListPossibleAnswersCheckbox from '@/components/ListPossibleAnswersCheckbox';
 import ListPossibleAnswersRadio from '@/components/ListPossibleAnswersRadio';
-import HeaderModal from '@/components/HeaderModal';
+import HeaderModal from '@/components/HeaderModal.vue';
 
 export default {
 	components: { ListPossibleAnswersCheckbox, ListPossibleAnswersRadio, HeaderModal },
@@ -137,7 +137,7 @@ export default {
 					}, PARAMETERS.DELAY_FAST);
 				}
 
-				request_timeout = setTimeout(function() {
+				request_timeout = setTimeout(function () {
 					state.hits = [];
 					possibleAnswers.forEach((possibleAnswer) => {
 						if (possibleAnswer.answer.toLowerCase().indexOf(state.searchTerm.toLowerCase()) >= 0) {

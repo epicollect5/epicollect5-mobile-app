@@ -1,12 +1,12 @@
 import { utilsService } from '@/services/utilities/utils-service';
 import { PARAMETERS } from '@/config';
-import { STRINGS } from '@/config/strings';
 import { setActivePinia, createPinia } from 'pinia';
 import { answerService } from '@/services/entry/answer-service';
 import { useRootStore } from '@/stores/root-store';
 import { vi } from 'vitest';
 
 //mock nested modules until it fixes "Failed to load /src/components/HeaderModal"
+//imp: remember to add .vue, see https://stackoverflow.com/questions/72525945/getting-failed-to-load-component-while-implementing-unit-tests-in-nuxt3-using
 vi.mock('@/services/errors-service', () => {
     const errorsService = vi.fn();
     return { errorsService };

@@ -66,7 +66,7 @@ import { useRouter } from 'vue-router';
 import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import { readonly, toRefs } from 'vue';
-import HeaderModal from '@/components/HeaderModal';
+import HeaderModal from '@/components/HeaderModal.vue';
 
 export default {
 	components: {

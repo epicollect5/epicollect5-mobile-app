@@ -71,7 +71,7 @@ import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import { readonly, toRefs } from 'vue';
 import ModalPasswordlessLogin from '@/components/modals/ModalPasswordlessLogin';
-import HeaderModal from '@/components/HeaderModal';
+import HeaderModal from '@/components/HeaderModal.vue';
 
 export default {
 	components: {

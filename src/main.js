@@ -57,6 +57,7 @@ import * as IonComponents from '@ionic/vue';
 import '@/registerServiceWorker';
 
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.fullscreen/Control.FullScreen.css';
 
 const pinia = createPinia();
 pinia.use(PiniaLogger({

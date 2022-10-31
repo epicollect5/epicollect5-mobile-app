@@ -81,7 +81,7 @@ import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import { readonly, toRefs } from 'vue';
 import { loginLocal } from '@/use/login-local.js';
-import HeaderModal from '@/components/HeaderModal';
+import HeaderModal from '@/components/HeaderModal.vue';
 
 export default {
 	components: {

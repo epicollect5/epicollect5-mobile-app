@@ -1,6 +1,8 @@
 import { answerValidateService } from '@/services/validation/answer-validate-service';
 import { vi } from 'vitest';
 import { utilsService } from '@/services/utilities/utils-service';
+import { setActivePinia, createPinia } from 'pinia';
+
 
 const inputRef = '70dcdb0b606843989674d3851c544f23_62fa24c5161be_62fa24caa1b10';
 const entry = {
@@ -83,15 +85,19 @@ vi.mock('@/services/database/database-select-service', () => {
 
 describe('answerValidateService', () => {
 
-    it('SEARCH_SINGLE allows single answer ONLY', async () => {
+    beforeEach(() => {
+        setActivePinia(createPinia());
+    }),
 
-        params.answer.answer = ['62fd0291a1b1f', '62fd029da1b20'];
-        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
-        expect(answerValidateService.getErrors()).toMatchObject({
-            // "ec5_340": "Too many possible answers!"
-            [inputRef]: ['ec5_340']
+        it('SEARCH_SINGLE allows single answer ONLY', async () => {
+
+            params.answer.answer = ['62fd0291a1b1f', '62fd029da1b20'];
+            await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
+            expect(answerValidateService.getErrors()).toMatchObject({
+                // "ec5_340": "Too many possible answers!"
+                [inputRef]: ['ec5_340']
+            });
         });
-    });
 
     it('SEARCH_SINGLE answer does not match', async () => {
 

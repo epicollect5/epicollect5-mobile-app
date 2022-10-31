@@ -2,6 +2,7 @@ import { answerValidateService } from '@/services/validation/answer-validate-ser
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { vi } from 'vitest';
 import { PARAMETERS } from '@/config';
+import { setActivePinia, createPinia } from 'pinia';
 
 const inputRef = '70dcdb0b606843989674d3851c544f23_62fa24c5161be_62fba82ca1b11';
 const entry = {
@@ -68,7 +69,7 @@ vi.mock('@/services/database/database-select-service', () => {
 
 describe('answerValidateService', () => {
     beforeEach(() => {
-
+        setActivePinia(createPinia());
     });
     afterEach(() => {
         // vi.restoreAllMocks();
