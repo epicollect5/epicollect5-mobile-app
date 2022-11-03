@@ -69,8 +69,7 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { videocam } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import { Capacitor } from '@capacitor/core';
@@ -79,6 +78,7 @@ import { popoverMediaHandler } from '@/use/questions/popover-media-handler';
 import GridQuestionNarrow from '@/components/GridQuestionNarrow';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
 import Dropzone from '@/components/Dropzone';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	components: {
@@ -130,7 +130,7 @@ export default {
 		});
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		onMounted(async () => {
 			console.log('Component Question is mounted, type ->', questionType);
@@ -247,20 +247,15 @@ export default {
 			labels,
 			state,
 			entryUuid,
-			...icons,
 			...methods,
 			...props,
-			...computedScope
+			...computedScope,
+			//icons
+			videocam
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-.question-location-grid {
-	font-size: 18px;
-	ion-row.border-bottom {
-		border-bottom: 1px solid var(--ion-color-light-shade);
-	}
-}
 </style>

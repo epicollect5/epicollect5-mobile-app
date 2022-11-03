@@ -80,12 +80,15 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { locate } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import GridQuestionWide from '@/components/GridQuestionWide';
 import { Geolocation } from '@capacitor/geolocation';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { locationService } from '@/services/utilities/location-cordova-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	components: {
@@ -132,11 +135,11 @@ export default {
 		});
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		const computedScope = {
 			hasError: computed(() => {
-				return services.utilsService.hasQuestionError(state);
+				return utilsService.hasQuestionError(state);
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -184,9 +187,9 @@ export default {
 		});
 
 		function _getCoords() {
-			console.log('TIMEOUT SHOULD BE -> ', services.locationService.getWatchTimeout());
+			console.log('TIMEOUT SHOULD BE -> ', locationService.getWatchTimeout());
 
-			const interval_ID = setInterval(async function() {
+			const interval_ID = setInterval(async function () {
 				// did we timeout/errors??
 				if (rootStore.deviceGeolocation.error) {
 					//deal with error
@@ -201,12 +204,12 @@ export default {
 							// 		...{ position: position.coords }
 							// 	};
 
-							// 	services.notificationService.hideProgressDialog();
+							// 	notificationService.hideProgressDialog();
 							// },
 
 							{
 								maximumAge: 0,
-								timeout: services.locationService.getWatchTimeout(),
+								timeout: locationService.getWatchTimeout(),
 								enableHighAccuracy: false
 							}
 						);
@@ -219,26 +222,22 @@ export default {
 						};
 					} catch (error) {
 						console.log(error);
-						services.notificationService.hideProgressDialog();
-						services.notificationService.showAlert(
-							STRINGS[language].labels.location_fail,
-							error.message
-						);
+						notificationService.hideProgressDialog();
+						notificationService.showAlert(STRINGS[language].labels.location_fail, error.message);
 					}
 				} else {
 					//check whether we have a value yet
 					if (rootStore.deviceGeolocation.position) {
 						//toFixed(6) rounds the co-ords to 6 digits, which is cm accuracy
 						state.answer.answer.latitude = rootStore.deviceGeolocation.position.latitude.toFixed(6);
-						state.answer.answer.longitude = rootStore.deviceGeolocation.position.longitude.toFixed(
-							6
-						);
+						state.answer.answer.longitude =
+							rootStore.deviceGeolocation.position.longitude.toFixed(6);
 						state.answer.answer.accuracy = Math.round(
 							rootStore.deviceGeolocation.position.accuracy
 						);
 
 						clearInterval(interval_ID);
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 					}
 					console.log('cannot get location yet');
 				}
@@ -254,14 +253,14 @@ export default {
 
 				if (rootStore.device.platform === PARAMETERS.WEB && PARAMETERS.DEBUG) {
 					//running function until we get a position, then refresh UI
-					services.notificationService.showAlert('Not availble on web debug.');
+					notificationService.showAlert('Not availble on web debug.');
 					return;
 				}
 
 				if (rootStore.geolocationPermission) {
 					if (rootStore.device.platform === PARAMETERS.WEB) {
 						//running function until we get a position, then refresh UI
-						await services.notificationService.showProgressDialog(
+						await notificationService.showProgressDialog(
 							STRINGS[language].labels.acquiring_position,
 							STRINGS[language].labels.wait
 						);
@@ -271,25 +270,25 @@ export default {
 
 					//check if location is enabled (edge case when the user disable location and then go back to the app)
 					cordova.plugins.diagnostic.isLocationAvailable(
-						async function(isAvailable) {
+						async function (isAvailable) {
 							if (isAvailable) {
 								//running function until we get a position, then refresh UI
-								await services.notificationService.showProgressDialog(
+								await notificationService.showProgressDialog(
 									STRINGS[language].labels.acquiring_position,
 									STRINGS[language].labels.wait
 								);
 								_getCoords();
 							} else {
 								rootStore.geolocationPermission = false;
-								services.notificationService.showAlert(
+								notificationService.showAlert(
 									STRINGS[language].labels.location_not_available,
 									STRINGS[language].labels.error
 								);
 							}
 						},
-						function(error) {
+						function (error) {
 							console.log(error);
-							services.notificationService.showAlert(
+							notificationService.showAlert(
 								STRINGS[language].labels.location_fail,
 								STRINGS[language].labels.error
 							);
@@ -299,7 +298,7 @@ export default {
 					if (rootStore.device.platform !== PARAMETERS.WEB) {
 						//check if location is enabled
 						cordova.plugins.diagnostic.isLocationAvailable(
-							function(isAvailable) {
+							function (isAvailable) {
 								if (isAvailable) {
 									rootStore.deviceGeolocation = {
 										...rootStore.deviceGeolocation,
@@ -310,19 +309,19 @@ export default {
 										}
 									};
 
-									services.locationService.startWatching();
+									locationService.startWatching();
 									methods.updateLocation();
 								} else {
 									rootStore.geolocationPermission = false;
-									services.notificationService.showAlert(
+									notificationService.showAlert(
 										STRINGS[language].labels.location_not_available,
 										STRINGS[language].labels.error
 									);
 								}
 							},
-							function(error) {
+							function (error) {
 								console.log(error);
-								services.notificationService.showAlert(
+								notificationService.showAlert(
 									STRINGS[language].labels.location_fail,
 									STRINGS[language].labels.error
 								);
@@ -336,21 +335,15 @@ export default {
 		return {
 			labels,
 			state,
-			...icons,
 			...computedScope,
 			...methods,
-			...props
+			...props,
+			//icons
+			locate
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-.question-location-grid {
-	//font-size: 14px;
-	text-transform: uppercase;
-	ion-row.border-bottom {
-		border-bottom: 1px solid var(--ion-color-light-shade);
-	}
-}
 </style>

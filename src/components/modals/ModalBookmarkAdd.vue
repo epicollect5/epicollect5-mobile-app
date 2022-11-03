@@ -62,18 +62,18 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { add } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { modalController } from '@ionic/vue';
-import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import { projectModel } from '@/models/project-model.js';
 import HeaderModal from '@/components/HeaderModal.vue';
+import { bookmarksService } from '@/services/utilities/bookmarks-service';
+import { notificationService } from '@/services/notification-service';
 
 export default {
 	components: { HeaderModal },
@@ -109,7 +109,7 @@ export default {
 			},
 			async addBookmark() {
 				try {
-					const bookmarkId = await services.bookmarksService.insertBookmark(
+					const bookmarkId = await bookmarksService.insertBookmark(
 						projectRef,
 						formRef,
 						state.bookmarkTitle
@@ -117,9 +117,9 @@ export default {
 					// Set current bookmark id
 					bookmarkStore.bookmarkId = bookmarkId;
 
-					services.notificationService.showToast(STRINGS[language].status_codes.ec5_126);
+					notificationService.showToast(STRINGS[language].status_codes.ec5_126);
 				} catch (error) {
-					services.notificationService.showAlert(STRINGS[language].status_codes.ec5_104);
+					notificationService.showAlert(STRINGS[language].status_codes.ec5_104);
 				}
 				modalController.dismiss();
 			}
@@ -144,24 +144,13 @@ export default {
 			labels,
 			state,
 			...computedScope,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			add
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-ion-content {
-	--background: transparent;
-}
-ion-header {
-	ion-toolbar {
-		--background: transparent;
-		ion-button,
-		ion-icon {
-			color: #333;
-		}
-	}
-}
 </style>

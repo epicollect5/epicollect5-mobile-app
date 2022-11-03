@@ -57,17 +57,15 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
+import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import ListSavedAnswers from '@/components/ListSavedAnswers';
 import HeaderModal from '@/components/HeaderModal.vue';
-import * as services from '@/services';
+import { databaseSelectService } from '@/services/database/database-select-service';
 
 export default {
 	components: { ListSavedAnswers, HeaderModal },
@@ -152,7 +150,7 @@ export default {
 							return false;
 						}
 
-						services.databaseSelectService
+						databaseSelectService
 							.getSavedAnswers(projectRef, formRef, isBranch, offset)
 							.then((result) => {
 								if (result.rows.length === 0) {
@@ -196,7 +194,7 @@ export default {
 						return false;
 					}
 
-					services.databaseSelectService
+					databaseSelectService
 						.getSavedAnswers(projectRef, formRef, isBranch, offset)
 						.then((result) => {
 							if (result.rows.length === 0) {
@@ -232,7 +230,6 @@ export default {
 			state,
 			...props,
 			...computedScope,
-			...icons,
 			...methods
 		};
 	}
@@ -240,16 +237,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-ion-content {
-	--background: transparent;
-}
-ion-header {
-	ion-toolbar {
-		--background: transparent;
-		ion-button,
-		ion-icon {
-			color: #333;
-		}
-	}
-}
 </style>

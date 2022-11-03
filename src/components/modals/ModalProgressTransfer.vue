@@ -30,7 +30,6 @@
 
 <script>
 import { computed } from '@vue/reactivity';
-
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
 
@@ -70,16 +69,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-ion-content {
-	--background: transparent;
-}
-ion-header {
-	ion-toolbar {
-		--background: transparent;
-		ion-button,
-		ion-icon {
-			color: #333;
-		}
-	}
-}
 </style>

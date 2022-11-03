@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { eye } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
@@ -66,7 +66,7 @@ export default {
 				code: null
 			},
 			authLdapCredentials: {},
-			eyeIcon: icons.eye,
+			eyeIcon: eye,
 			authLdapInputPasswordType: 'password'
 		});
 
@@ -79,8 +79,9 @@ export default {
 		return {
 			labels,
 			state,
-			...icons,
-			...computedScope
+			...computedScope,
+			//icons
+			eye
 		};
 	}
 };

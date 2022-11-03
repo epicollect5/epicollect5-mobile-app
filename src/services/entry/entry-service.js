@@ -4,8 +4,17 @@ import { formModel } from '@/models/form-model.js';
 import { entryModel } from '@/models/entry-model';
 import { useRootStore } from '@/stores/root-store';
 import { Capacitor } from '@capacitor/core';
-import * as services from '@/services';
 import { toRaw } from 'vue';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { databaseInsertService } from '@/services/database/database-insert-service';
+import { databaseDeleteService } from '@/services/database/database-delete-service';
+import { databaseUpdateService } from '@/services/database/database-update-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { locationService } from '@/services/utilities/location-cordova-service';
+import { entryCommonService } from '@/services/entry/entry-common-service';
+import { mediaService } from '@/services/entry/media-service';
+import { webService } from '@/services/web-service';
+import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
 
 export const entryService = {
     type: PARAMETERS.ENTRY,
@@ -21,7 +30,7 @@ export const entryService = {
 
         // Initialise the entry model
         this.entry.initialise({
-            entry_uuid: services.utilsService.uuid(),
+            entry_uuid: utilsService.uuid(),
             parent_entry_uuid: parentEntryUuid,
             form_ref: formRef,
             parent_form_ref: parentFormRef,
@@ -56,7 +65,7 @@ export const entryService = {
                 };
 
                 console.log('asking for permission');
-                services.locationService.requestLocationPermission();
+                locationService.requestLocationPermission();
             }
         }
     },
@@ -95,20 +104,20 @@ export const entryService = {
                             watchId: 0
                         };
 
-                        services.locationService.requestLocationPermission();
+                        locationService.requestLocationPermission();
                     }
                 }
             }
             if (Capacitor.isNativePlatform()) {
                 // This is a promise to be resolved BEFORE any directive is called
-                services.mediaService.getEntryStoredMedia(self.entry.entryUuid).then(function (response) {
+                mediaService.getEntryStoredMedia(self.entry.entryUuid).then(function (response) {
                     self.entry.media = response;
                     resolve();
                 });
             } else {
                 if (rootStore.isPWA) {
                     // This is a promise to be resolved BEFORE any directive is called
-                    services.mediaService.getEntryStoredMediaPWA(self.entry.entryUuid).then(function (response) {
+                    mediaService.getEntryStoredMediaPWA(self.entry.entryUuid).then(function (response) {
                         self.entry.media = response;
                         resolve();
                     });
@@ -131,7 +140,7 @@ export const entryService = {
             // If this is an entry we can actually edit, i.e. not a remote entry
             if (self.entry.canEdit === 1) {
                 // Set the entry title 
-                services.entryCommonService.setEntryTitle(projectModel.getExtraForm(
+                entryCommonService.setEntryTitle(projectModel.getExtraForm(
                     self.entry.formRef),
                     projectModel.getExtraInputs(),
                     self.entry,
@@ -157,19 +166,19 @@ export const entryService = {
             this.unsyncParentEntries(projectModel.getProjectRef(), self.entry.parentEntryUuid).then(function () {
 
                 // Save the entry in the database
-                services.databaseInsertService.insertEntry(self.entry, syncType).then(function (res) {
+                databaseInsertService.insertEntry(self.entry, syncType).then(function (res) {
 
                     // Insert any unique answers for this entry
-                    services.databaseInsertService.insertUniqueAnswers(self.entry, false).then(function () {
+                    databaseInsertService.insertUniqueAnswers(self.entry, false).then(function () {
 
                         // Next move over any branch entries from the temp table to the main table
-                        services.databaseInsertService.moveBranchEntries(self.entry).then(function (res) {
+                        databaseInsertService.moveBranchEntries(self.entry).then(function (res) {
 
                             // Move over temp unique answers (for branches) into unique answers table
-                            services.databaseInsertService.moveUniqueAnswers().then(function (res) {
+                            databaseInsertService.moveUniqueAnswers().then(function (res) {
 
                                 // If there are any media files for this entry, insert metadata into media table and save files
-                                services.mediaService.saveMedia(self.entry, syncType).then(function () {
+                                mediaService.saveMedia(self.entry, syncType).then(function () {
                                     console.log('All media files saved ***************************');
                                     resolve(res);
                                 }, _onError);
@@ -195,7 +204,7 @@ export const entryService = {
 
             // Set the entry title 
 
-            services.entryCommonService.setEntryTitle(projectModel.getExtraForm(
+            entryCommonService.setEntryTitle(projectModel.getExtraForm(
                 self.entry.formRef),
                 projectModel.getExtraInputs(),
                 self.entry,
@@ -212,7 +221,7 @@ export const entryService = {
                 answers: JSON.stringify(self.entry.answers),
                 form_ref: self.entry.formRef,
                 parent_form_ref: self.entry.parentFormRef,
-                created_at: services.utilsService.getISODateTime(),
+                created_at: utilsService.getISODateTime(),
                 title: self.entry.title,
                 synced: 0,
                 can_edit: 1,
@@ -226,16 +235,16 @@ export const entryService = {
             console.log(JSON.stringify(parsedEntry));
 
             //upload entry to server
-            const uploadableEntry = services.JSONTransformerService.makeJsonEntry(PARAMETERS.ENTRY, parsedEntry);
+            const uploadableEntry = JSONTransformerService.makeJsonEntry(PARAMETERS.ENTRY, parsedEntry);
 
-            services.webService.uploadEntryPWA(projectSlug, uploadableEntry).then((response) => {
+            webService.uploadEntryPWA(projectSlug, uploadableEntry).then((response) => {
                 //any branches to upload for this entry?
                 const allBranchEntries = toRaw(rootStore.queueTempBranchEntriesPWA);
                 if (Object.keys(allBranchEntries).length > 0) {
                     const uploadBranchEntryPromises = [];
                     Object.values(allBranchEntries).forEach((questionBranchEntries) => {
                         questionBranchEntries.forEach(async (branchEntry) => {
-                            uploadBranchEntryPromises.push(services.webService.uploadEntryPWA(projectSlug, branchEntry));
+                            uploadBranchEntryPromises.push(webService.uploadEntryPWA(projectSlug, branchEntry));
                         });
                     });
 
@@ -262,7 +271,7 @@ export const entryService = {
     },
 
     getAnswers (inputRef) {
-        return services.entryCommonService.getAnswers(this.entry, inputRef);
+        return entryCommonService.getAnswers(this.entry, inputRef);
     },
 
     //Validate and append answer/title to entry object
@@ -301,7 +310,7 @@ export const entryService = {
         // }
 
 
-        return services.entryCommonService.validateAnswer(this.entry, params);
+        return entryCommonService.validateAnswer(this.entry, params);
     },
 
     /**
@@ -310,7 +319,7 @@ export const entryService = {
      * Set any answer 'was_jumped' properties to true/false
      */
     processJumpsNext (answer, inputDetails, currentInputIndex) {
-        return services.entryCommonService.processJumpsNext(this.entry, answer, inputDetails, currentInputIndex, this.form.inputs);
+        return entryCommonService.processJumpsNext(this.entry, answer, inputDetails, currentInputIndex, this.form.inputs);
     },
 
     /**
@@ -318,7 +327,7 @@ export const entryService = {
      * Check for previous questions that were jumped
      */
     processJumpsPrevious (currentInputIndex) {
-        return services.entryCommonService.processJumpsPrevious(this.entry, currentInputIndex, this.form.inputs);
+        return entryCommonService.processJumpsPrevious(this.entry, currentInputIndex, this.form.inputs);
     },
 
     /**
@@ -331,14 +340,14 @@ export const entryService = {
 
             function _unsync (entryUuid) {
 
-                services.databaseUpdateService.unsyncParentEntry(projectRef, entryUuid).then(function () {
+                databaseUpdateService.unsyncParentEntry(projectRef, entryUuid).then(function () {
                     select(entryUuid);
                 });
             }
 
             function select (entryUuid) {
 
-                services.databaseSelectService.selectParentEntry(entryUuid).then(function (res) {
+                databaseSelectService.selectParentEntry(entryUuid).then(function (res) {
 
                     if (res.rows.length > 0) {
                         _unsync(res.rows.item(0).parent_entry_uuid);
@@ -366,13 +375,13 @@ export const entryService = {
             }
             else {
                 // Select all temp branch entries uuids
-                services.databaseSelectService.selectTempBranches(self.entry.entryUuid).then(function (res) {
+                databaseSelectService.selectTempBranches(self.entry.entryUuid).then(function (res) {
 
                     // Remove unique_answers, if any, for each temp branch
                     if (res.rows.length > 0) {
-                        services.databaseDeleteService.removeUniqueAnswers(res).then(function () {
+                        databaseDeleteService.removeUniqueAnswers(res).then(function () {
                             // Then delete all temp branch entries
-                            services.databaseDeleteService.deleteTempBranchEntries().then(function () {
+                            databaseDeleteService.deleteTempBranchEntries().then(function () {
                                 // Finished, resolve
                                 resolve();
                             });

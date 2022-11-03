@@ -213,12 +213,19 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import {
+	videocam,
+	chevronBackOutline,
+	checkmark,
+	images,
+	musicalNotes,
+	alertCircle,
+	documentText
+} from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { useRouter } from 'vue-router';
-import * as services from '@/services';
 import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import { computed } from '@vue/runtime-core';
@@ -227,6 +234,13 @@ import { modalController } from '@ionic/vue';
 import { updateProject } from '@/use/update-project';
 import { showModalLogin } from '@/use/show-modal-login';
 import { useBackButton } from '@ionic/vue';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { errorsService } from '@/services/errors-service';
+import { mediaService } from '@/services/entry/media-service';
+import { uploadMediaService } from '@/services/upload-media-service';
+import { uploadDataService } from '@/services/upload-data-service';
 
 export default {
 	setup() {
@@ -251,8 +265,8 @@ export default {
 		//Check if we have any media to upload
 		function _checkMedia() {
 			return new Promise((resolve, reject) => {
-				(async function() {
-					const response = await services.mediaService.getProjectStoredMedia({
+				(async function () {
+					const response = await mediaService.getProjectStoredMedia({
 						project_ref: projectModel.getProjectRef(),
 						synced: 0,
 						entry_uuid: null
@@ -277,8 +291,8 @@ export default {
 			const projectRef = projectModel.getProjectRef();
 
 			return new Promise((resolve) => {
-				(async function() {
-					const result = await services.databaseSelectService.countUnsyncedEntries(projectRef);
+				(async function () {
+					const result = await databaseSelectService.countUnsyncedEntries(projectRef);
 
 					state.totalEntries = result.rows.item(0).total_number_of_entries;
 					state.totalEntriesUnsynced = result.rows.item(0).total_number_of_entries_unsynced;
@@ -335,16 +349,14 @@ export default {
 				const authErrors = PARAMETERS.AUTH_ERROR_CODES;
 
 				//no internet connection -> bail out
-				const hasInternetConnection = await services.utilsService.hasInternetConnection();
+				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
-					services.notificationService.showAlert(
-						STRINGS[language].labels.connect_to_internet_to_upload
-					);
+					notificationService.showAlert(STRINGS[language].labels.connect_to_internet_to_upload);
 					return false;
 				}
 				//no entries to upload -> bail out
 				if (state.totalEntriesUnsynced === 0) {
-					services.notificationService.showToast(STRINGS[language].status_codes.ec5_119);
+					notificationService.showToast(STRINGS[language].status_codes.ec5_119);
 					return false;
 				}
 				// If we have entries to upload, upload
@@ -353,8 +365,8 @@ export default {
 					state.isUploading = true;
 					await _showModalProgressTransfer(labels.uploading_entries, state.totalEntriesUnsynced);
 
-					services.uploadDataService.execute(state.totalEntriesUnsynced).then(
-						async function(errors) {
+					uploadDataService.execute(state.totalEntriesUnsynced).then(
+						async function (errors) {
 							// Check the state of the data/media left to upload
 							await _checkData();
 							// Finished!
@@ -365,16 +377,16 @@ export default {
 
 							// If we have any errors
 							if (state.errors || state.totalEntriesWithErrors > 0) {
-								services.notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
+								notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
 							} else if (state.totalEntriesIncomplete > 0) {
 								// If we have any incomplete entries
-								services.notificationService.showAlert(STRINGS[language].status_codes.ec5_139);
+								notificationService.showAlert(STRINGS[language].status_codes.ec5_139);
 							} else {
 								// If all entries were successfully uploaded
-								services.notificationService.showToast(STRINGS[language].status_codes.ec5_120);
+								notificationService.showToast(STRINGS[language].status_codes.ec5_120);
 							}
 						},
-						async function(error) {
+						async function (error) {
 							console.log('Show stopping error hit');
 
 							// Check the state of the data/media left to upload
@@ -385,7 +397,7 @@ export default {
 
 							// Check if we have a project out of date error
 							if (projectOutdatedErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
-								const confirmed = await services.notificationService.confirmSingle(
+								const confirmed = await notificationService.confirmSingle(
 									STRINGS[language].labels.update_project,
 									STRINGS[language].labels.project_outdated
 								);
@@ -394,13 +406,13 @@ export default {
 									updateProject();
 								} else {
 									//warn user abut project put of date and entries cannot be synced
-									services.errorsService.handleWebError(error);
+									errorsService.handleWebError(error);
 								}
 							} else if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
 								// Check if we have an auth error
 								//if error code is ec5_78 it means the user is logged in but has no role in the requested project
 								if (error.data.errors[0].code !== 'ec5_78') {
-									const confirmed = await services.notificationService.confirmSingle(
+									const confirmed = await notificationService.confirmSingle(
 										STRINGS[rootStore.language].status_codes[error.data.errors[0].code]
 									);
 
@@ -409,11 +421,11 @@ export default {
 										showModalLogin();
 									}
 								} else {
-									services.errorsService.handleWebError(error);
+									errorsService.handleWebError(error);
 								}
 							} else {
 								// Other error
-								services.errorsService.handleWebError(error);
+								errorsService.handleWebError(error);
 							}
 						}
 					);
@@ -423,16 +435,14 @@ export default {
 				const mediaCount = state[type + 's'].length;
 				let header = labels.uploading_entries;
 				//no internet connection -> bail out
-				const hasInternetConnection = await services.utilsService.hasInternetConnection();
+				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
-					services.notificationService.showAlert(
-						STRINGS[language].labels.connect_to_internet_to_upload
-					);
+					notificationService.showAlert(STRINGS[language].labels.connect_to_internet_to_upload);
 					return false;
 				}
 				//no media files to upload -> bail out
 				if (mediaCount === 0) {
-					services.notificationService.showToast(STRINGS[language].status_codes.ec5_119);
+					notificationService.showToast(STRINGS[language].status_codes.ec5_119);
 					return false;
 				}
 
@@ -451,26 +461,24 @@ export default {
 				await _showModalProgressTransfer(header, mediaCount);
 				state.isUploading = true;
 
-				services.uploadMediaService
-					.execute(state[type + 's'], mediaCount, 0)
-					.then(async function(errors) {
-						console.log('We have media errors:', JSON.stringify(errors));
-						// Check the state of the data/media left to upload
-						await _checkData();
-						// Finished!
-						//dismiss the upload modal
-						modalController.dismiss();
-						state.isUploading = false;
-						state.errors = errors;
+				uploadMediaService.execute(state[type + 's'], mediaCount, 0).then(async function (errors) {
+					console.log('We have media errors:', JSON.stringify(errors));
+					// Check the state of the data/media left to upload
+					await _checkData();
+					// Finished!
+					//dismiss the upload modal
+					modalController.dismiss();
+					state.isUploading = false;
+					state.errors = errors;
 
-						if (state.errors) {
-							//some errors occurred
-							services.notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
-						} else {
-							// If all media files were successfully uploaded
-							services.notificationService.showToast(STRINGS[language].status_codes.ec5_120);
-						}
-					});
+					if (state.errors) {
+						//some errors occurred
+						notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
+					} else {
+						// If all media files were successfully uploaded
+						notificationService.showToast(STRINGS[language].status_codes.ec5_120);
+					}
+				});
 			},
 			goBack() {
 				//refresh entries page only when an upload was attempted
@@ -508,7 +516,7 @@ export default {
 		};
 
 		const computedScope = {
-			projectName: services.utilsService.getProjectNameMarkup(),
+			projectName: utilsService.getProjectNameMarkup(),
 			areAllEntrieUploaded: computed(() => {
 				return (
 					state.totalEntriesIncomplete === 0 &&
@@ -536,20 +544,21 @@ export default {
 		return {
 			labels,
 			PARAMETERS,
-			...icons,
 			...methods,
 			...computedScope,
-			state
+			state,
+			//icons
+			videocam,
+			chevronBackOutline,
+			checkmark,
+			images,
+			musicalNotes,
+			alertCircle,
+			documentText
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-.spinner-fetch-projects {
-	left: 50%;
-	position: fixed;
-	transform: translate(-50%, -50%);
-	margin-top: 50px;
-}
 </style>

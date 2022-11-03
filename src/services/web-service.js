@@ -1,8 +1,6 @@
 import { PARAMETERS } from '@/config';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { projectModel } from '@/models/project-model';
-import * as services from '@/services';
-
 import axios from 'axios';
 
 import { useRootStore } from '@/stores/root-store';

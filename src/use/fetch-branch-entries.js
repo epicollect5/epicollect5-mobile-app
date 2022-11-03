@@ -1,6 +1,6 @@
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
 import { useRootStore } from '@/stores/root-store';
+import { databaseSelectService } from '@/services/database/database-select-service';
 
 export async function fetchBranchEntries (params) {
 
@@ -26,7 +26,7 @@ export async function fetchBranchEntries (params) {
     else {
 
         //get branch entries chunk for this BRANCH question
-        const result = await services.databaseSelectService.selectBranchesForQuestion(
+        const result = await databaseSelectService.selectBranchesForQuestion(
             uuid,
             inputRef,
             PARAMETERS.ENTRIES_PER_PAGE,
@@ -60,7 +60,7 @@ export async function fetchBranchEntries (params) {
             }
         }
         //check if any entry has some media file sync failure (i.e file not saved or missing)
-        const mediaResult = await services.databaseSelectService.selectEntryMediaErrors(
+        const mediaResult = await databaseSelectService.selectEntryMediaErrors(
             uuids
         );
 

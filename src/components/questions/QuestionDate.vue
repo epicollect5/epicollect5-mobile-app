@@ -87,11 +87,11 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { calendarClearOutline, closeOutline } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
-import { PARAMETERS } from '@/config';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	props: {
@@ -136,7 +136,7 @@ export default {
 		});
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		let today = '';
 
@@ -144,19 +144,19 @@ export default {
 		if (state.answer.answer === '') {
 			state.userFormattedDate = '';
 		} else {
-			state.userFormattedDate = services.utilsService.getUserFormattedDate(
+			state.userFormattedDate = utilsService.getUserFormattedDate(
 				state.answer.answer,
 				state.inputDetails.datetime_format
 			);
-			state.inputFormattedDate = services.utilsService.getInputFormattedDate(state.answer.answer);
+			state.inputFormattedDate = utilsService.getInputFormattedDate(state.answer.answer);
 
 			//imp: check this by setting a different timezone
 			//IMPORTANT Add timezone in, so the local date is still correct in the date picker
-			//console.log(state.answer.answer + services.utilsService.getTimeZone());
+			//console.log(state.answer.answer + utilsService.getTimeZone());
 
 			//see this answer for Safari issues https://goo.gl/guXxh7
 			//;
-			//state.date.answer = state.answer.answer + services.utilsService.getTimeZone();
+			//state.date.answer = state.answer.answer + utilsService.getTimeZone();
 			//imp: timezone not needed for a input type date, YYYY-MM-DD, ??
 			state.date.answer = state.answer.answer.substring(0, 10);
 		}
@@ -165,14 +165,14 @@ export default {
 		if (state.inputDetails.set_to_current_datetime && state.answer.answer === '') {
 			//Important: we need to hack it a bit to get the absolute date, without timezone offset
 			today = new Date();
-			state.inputFormattedDate = services.utilsService.getInputFormattedDate(today.toISOString());
-			state.answer.answer = services.utilsService.getISODateOnly(
+			state.inputFormattedDate = utilsService.getInputFormattedDate(today.toISOString());
+			state.answer.answer = utilsService.getISODateOnly(
 				today.toISOString(),
 				state.inputDetails.datetime_format
 			); //no timezone!
 			//show today's date in input type "date" on first run
 			state.date.answer = state.inputFormattedDate;
-			state.userFormattedDate = services.utilsService.getUserFormattedDate(
+			state.userFormattedDate = utilsService.getUserFormattedDate(
 				today.toISOString(),
 				state.inputDetails.datetime_format
 			);
@@ -180,7 +180,7 @@ export default {
 
 		const computedScope = {
 			hasError: computed(() => {
-				return services.utilsService.hasQuestionError(state);
+				return utilsService.hasQuestionError(state);
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -232,15 +232,13 @@ export default {
 					state.userFormattedDate = '---';
 				} else {
 					// Set model
-					state.answer.answer = services.utilsService.getISODateOnly(
+					state.answer.answer = utilsService.getISODateOnly(
 						state.date.answer,
 						state.inputDetails.datetime_format
 					); //no timezone!
-					state.inputFormattedDate = services.utilsService.getInputFormattedDate(
-						state.answer.answer
-					);
+					state.inputFormattedDate = utilsService.getInputFormattedDate(state.answer.answer);
 					// Show formatted date
-					state.userFormattedDate = services.utilsService.getUserFormattedDate(
+					state.userFormattedDate = utilsService.getUserFormattedDate(
 						state.date.answer,
 						state.inputDetails.datetime_format
 					);
@@ -251,10 +249,12 @@ export default {
 		return {
 			labels,
 			state,
-			...icons,
 			...computedScope,
 			...methods,
-			...props
+			...props,
+			//icons
+			calendarClearOutline,
+			closeOutline
 		};
 	}
 };

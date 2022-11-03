@@ -1,9 +1,11 @@
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
 import { projectModel } from '@/models/project-model.js';
-import * as services from '@/services';
 import { PARAMETERS } from '@/config';
+import { notificationService } from '@/services/notification-service';
+import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
+import { databaseInsertService } from '@/services/database/database-insert-service';
+import { webService } from '@/services/web-service';
 
 export const downloadService = {
 
@@ -29,7 +31,7 @@ export const downloadService = {
 
             function _download (url) {
 
-                services.webService.downloadEntries(slug, formRef, url).then(
+                webService.downloadEntries(slug, formRef, url).then(
                     function (response) {
 
                         if (response.data.data) {
@@ -48,10 +50,10 @@ export const downloadService = {
                                 // Loop entries
                                 entries.forEach((entry) => {
                                     // Insert into the db
-                                    const flattenedEntry = services.JSONTransformerService.flattenJsonEntry(entry, PARAMETERS.EDIT_CODES.CANT, PARAMETERS.REMOTE_CODES.IS);
+                                    const flattenedEntry = JSONTransformerService.flattenJsonEntry(entry, PARAMETERS.EDIT_CODES.CANT, PARAMETERS.REMOTE_CODES.IS);
                                     // Add the projectRef
                                     flattenedEntry.projectRef = projectModel.getProjectRef();
-                                    services.databaseInsertService.insertEntry(flattenedEntry, PARAMETERS.SYNCED_CODES.SYNCED).then(
+                                    databaseInsertService.insertEntry(flattenedEntry, PARAMETERS.SYNCED_CODES.SYNCED).then(
                                         function () {
                                             console.log('inserted');
                                         },
@@ -90,7 +92,7 @@ export const downloadService = {
 
             //Update the progress counter
             function _updateProgress (entryNumber) {
-                services.notificationService.setProgress({ total: totalEntries, done: entryNumber });
+                notificationService.setProgress({ total: totalEntries, done: entryNumber });
             }
 
             // Start the first download

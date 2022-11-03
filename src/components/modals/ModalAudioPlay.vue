@@ -52,11 +52,9 @@
 
 <script>
 import { modalController } from '@ionic/vue';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { musicalNote, stopCircleSharp } from 'ionicons/icons';
 import { PARAMETERS } from '@/config';
-import { readonly, toRefs } from 'vue';
-
+import { readonly } from 'vue';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
 
@@ -134,24 +132,15 @@ export default {
 		return {
 			labels,
 			...props,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			musicalNote,
+			stopCircleSharp
+			//
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-ion-content {
-	--background: transparent;
-}
-ion-header {
-	ion-toolbar {
-		--background: transparent;
-		ion-button,
-		ion-icon {
-			color: #333;
-		}
-	}
-}
 </style>

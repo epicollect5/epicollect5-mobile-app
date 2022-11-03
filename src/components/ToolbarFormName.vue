@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { star, filter } from 'ionicons/icons';
 import { readonly } from '@vue/reactivity';
 import ModalEntriesFilter from '@/components/modals/ModalEntriesFilter';
 import { modalController } from '@ionic/vue';
@@ -115,8 +115,10 @@ export default {
 
 		return {
 			...props,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			star,
+			filter
 		};
 	}
 };

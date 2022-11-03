@@ -1,8 +1,8 @@
 
 import { useDBStore } from '@/stores/db-store';
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
 import { projectModel } from '@/models/project-model.js';
+import { databaseSelectService } from '@/services/database/database-select-service';
 
 //get entries for a form
 export async function fetchEntries (params) {
@@ -17,7 +17,7 @@ export async function fetchEntries (params) {
     const order = dbStore.dbEntriesOrder;
 
     //todo: need another query to check for unsynced entries, without forms and limits etc
-    // const resultNoFilters = await services.databaseSelectService.selectEntries(
+    // const resultNoFilters = await databaseSelectService.selectEntries(
     //     projectRef,
     //     formRef,
     //     parentEntryUuid,
@@ -29,15 +29,15 @@ export async function fetchEntries (params) {
     // );
 
     //is there any unsynced entry project wide?
-    const resultEntriesUnsynced = await services.databaseSelectService.countEntriesUnsynced(projectRef);
+    const resultEntriesUnsynced = await databaseSelectService.countEntriesUnsynced(projectRef);
     const totalEntriesUnsynced = resultEntriesUnsynced.rows.item(0).total;
 
-    const resultMediaUnsynced = await services.databaseSelectService.countMediaUnsynced(projectRef);
+    const resultMediaUnsynced = await databaseSelectService.countMediaUnsynced(projectRef);
     const totalMediaUnsynced = resultMediaUnsynced.rows.item(0).total;
 
     hasUnsyncedEntries = (totalEntriesUnsynced > 0 || totalMediaUnsynced > 0);
 
-    const result = await services.databaseSelectService.selectEntries(
+    const result = await databaseSelectService.selectEntries(
         projectRef,
         formRef,
         parentEntryUuid,
@@ -65,7 +65,7 @@ export async function fetchEntries (params) {
     }
 
     //get all branches belonging to each entry (mediaUuids now contains only the hierarchy entries)
-    const branches = await services.databaseSelectService.selectBranches(allMediaUuids);
+    const branches = await databaseSelectService.selectBranches(allMediaUuids);
     //add branch entries uuids to the media uuids
     for (let branchesIndex = 0; branchesIndex < branches.rows.length; branchesIndex++) {
         branchMediaUuids.push({
@@ -77,8 +77,8 @@ export async function fetchEntries (params) {
     }
 
     //find all media errors and also count hierarchy entries (the latter for pagination)
-    const mediaErrors = await services.databaseSelectService.selectEntryMediaErrors(allMediaUuids);
-    const entriesCount = await services.databaseSelectService.countEntries(
+    const mediaErrors = await databaseSelectService.selectEntryMediaErrors(allMediaUuids);
+    const entriesCount = await databaseSelectService.countEntries(
         projectRef,
         formRef,
         parentEntryUuid
@@ -123,7 +123,7 @@ export async function fetchEntries (params) {
     //         title:
     //             i +
     //             '  entry',
-    //         entry_uuid: services.utilsService.uuid(),
+    //         entry_uuid: utilsService.uuid(),
     //         synced: 0,
     //         can_edit: 0,
     //         is_remote: 0,

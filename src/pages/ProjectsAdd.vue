@@ -71,14 +71,16 @@
 
 <script>
 import ListItemProjects from '@/components/ListItemProjects';
-import * as icons from 'ionicons/icons';
+import { chevronBackOutline } from 'ionicons/icons';
 import { reactive, readonly } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { useRouter } from 'vue-router';
 import { addProject } from '@/use/add-project';
 import { fetchServerProjects } from '@/use/fetch-server-projects';
-import * as services from '@/services';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { errorsService } from '@/services/errors-service';
 import { useBackButton } from '@ionic/vue';
 
 export default {
@@ -113,9 +115,9 @@ export default {
 					return false;
 				}
 				//no internet connection, bail out
-				const hasInternetConnection = await services.utilsService.hasInternetConnection();
+				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
-					services.notificationService.showAlert(
+					notificationService.showAlert(
 						STRINGS[rootStore.language].status_codes.ec5_135 + '!',
 						STRINGS[rootStore.language].labels.error
 					);
@@ -134,7 +136,7 @@ export default {
 						state.isFetching = false;
 					},
 					(error) => {
-						services.errorsService.handleWebError(error);
+						errorsService.handleWebError(error);
 						// No projects?
 						try {
 							if (error?.data === null) {
@@ -161,9 +163,9 @@ export default {
 
 		return {
 			labels: STRINGS[rootStore.language].labels,
-			...icons,
 			...methods,
-			state
+			state,
+			chevronBackOutline
 		};
 	}
 };

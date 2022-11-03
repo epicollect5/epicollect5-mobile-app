@@ -169,13 +169,19 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import {
+	closeOutline,
+	filter,
+	cloud,
+	removeCircle,
+	cloudOutline,
+	calendarClearOutline
+} from 'ionicons/icons';
 import { STRINGS } from '@/config/strings';
-
+import { databaseSelectService } from '@/services/database/database-select-service';
 import { useRootStore } from '@/stores/root-store';
 import { reactive, computed } from '@vue/reactivity';
 import { modalController } from '@ionic/vue';
-import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 
@@ -232,7 +238,7 @@ export default {
 				};
 
 				(async () => {
-					const result = await services.databaseSelectService.countEntries(
+					const result = await databaseSelectService.countEntries(
 						projectRef,
 						formRef,
 						parentEntryUuid,
@@ -360,24 +366,18 @@ export default {
 			state,
 			PARAMETERS,
 			...computedScope,
-			...icons,
-			...methods
+			...methods,
+			//icon
+			closeOutline,
+			filter,
+			cloud,
+			removeCircle,
+			cloudOutline,
+			calendarClearOutline
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-ion-content {
-	--background: transparent;
-}
-ion-header {
-	ion-toolbar {
-		--background: transparent;
-		ion-button,
-		ion-icon {
-			color: #333;
-		}
-	}
-}
 </style>

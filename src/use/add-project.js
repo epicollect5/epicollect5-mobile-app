@@ -1,9 +1,13 @@
-import * as services from '@/services';
 import { DB_ERRORS, PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { projectModel } from '@/models/project-model.js';
 import { useRootStore } from '@/stores/root-store';
 import { showModalLogin } from '@/use/show-modal-login';
+import { databaseInsertService } from '@/services/database/database-insert-service';
+import { notificationService } from '@/services/notification-service';
+import { errorsService } from '@/services/errors-service';
+import { downloadFileService } from '@/services/download-file-service';
+import { webService } from '@/services/web-service';
 
 //imp: router gets passed because is available only in setup()
 export async function addProject (project, router) {
@@ -12,14 +16,14 @@ export async function addProject (project, router) {
     const authErrors = PARAMETERS.AUTH_ERROR_CODES;
     const rootStore = useRootStore();
 
-    await services.notificationService.showProgressDialog(
+    await notificationService.showProgressDialog(
         STRINGS[rootStore.language].labels.wait,
         STRINGS[rootStore.language].labels.loading_project
     );
     return new Promise((resolve, reject) => {
         (async () => {
             try {
-                const response = await services.webService.getProject(project.slug);
+                const response = await webService.getProject(project.slug);
 
                 const data = response.data;
                 // Check we have project
@@ -33,14 +37,14 @@ export async function addProject (project, router) {
 
                     // If no inputs, do not allow user to add this project
                     if (noInputs) {
-                        services.notificationService.hideProgressDialog();
-                        services.notificationService.showAlert(
+                        notificationService.hideProgressDialog();
+                        notificationService.showAlert(
                             STRINGS[rootStore.language].status_codes.ec5_133
                         );
                     } else {
                         try {
                             //insert project to sqlite database
-                            await services.databaseInsertService.insertProject(
+                            await databaseInsertService.insertProject(
                                 project.slug,
                                 project.name,
                                 project.ref,
@@ -52,14 +56,14 @@ export async function addProject (project, router) {
 
                             try {
                                 // Attempt to download the project logo
-                                await services.downloadFileService.downloadProjectLogo(
+                                await downloadFileService.downloadProjectLogo(
                                     project.slug,
                                     project.ref
                                 );
 
                                 window.setTimeout(function () {
-                                    // services.notificationService.hideProgressDialog();
-                                    services.notificationService.showToast(
+                                    // notificationService.hideProgressDialog();
+                                    notificationService.showToast(
                                         STRINGS[rootStore.language].status_codes.ec5_112
                                     );
                                     router.replace({
@@ -71,13 +75,13 @@ export async function addProject (project, router) {
                             } catch (error) {
                                 // Error
                                 // todo: how to handle this?
-                                services.notificationService.showToast(
+                                notificationService.showToast(
                                     STRINGS[rootStore.language].status_codes.ec5_138
                                 );
 
                                 window.setTimeout(function () {
-                                    // services.notificationService.hideProgressDialog();
-                                    services.notificationService.showToast(
+                                    // notificationService.hideProgressDialog();
+                                    notificationService.showToast(
                                         STRINGS[rootStore.language].status_codes.ec5_112
                                     );
                                     router.replace({
@@ -93,8 +97,8 @@ export async function addProject (project, router) {
                             if (errorCode === 'ec5_109') {
                                 errorCode = 'ec5_111';
                             }
-                            services.notificationService.hideProgressDialog();
-                            services.notificationService.showAlert(
+                            notificationService.hideProgressDialog();
+                            notificationService.showAlert(
                                 STRINGS[rootStore.language].status_codes[errorCode]
                             );
                             resolve();
@@ -102,13 +106,13 @@ export async function addProject (project, router) {
                     }
                 } else {
                     // Web error
-                    services.notificationService.hideProgressDialog();
-                    services.errorsService.handleWebError({ data: 'ec5_116' });
+                    notificationService.hideProgressDialog();
+                    errorsService.handleWebError({ data: 'ec5_116' });
                     resolve();
                 }
             } catch (error) {
                 // Web error
-                services.notificationService.hideProgressDialog();
+                notificationService.hideProgressDialog();
                 /*
                      ec5_77: user is not logged in (or jwt expired)
                      ec5_78: user is logged but cannot access the project
@@ -117,7 +121,7 @@ export async function addProject (project, router) {
 
                 // Check if we have an auth error
                 if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
-                    const confirmed = await services.notificationService.confirmSingle(
+                    const confirmed = await notificationService.confirmSingle(
                         STRINGS[rootStore.language].status_codes[
                         error.data.errors[0].code
                         ]
@@ -138,7 +142,7 @@ export async function addProject (project, router) {
                     }
                 } else {
                     // Other error
-                    services.errorsService.handleWebError(error);
+                    errorsService.handleWebError(error);
                 }
                 resolve();
             }

@@ -1,7 +1,9 @@
 import { STRINGS } from '@/config/strings';
 
 import { useRootStore } from '@/stores/root-store';
-import * as services from '@/services';
+import { notificationService } from '@/services/notification-service';
+import { authLocalService } from '@/services/auth/auth-local-service';
+import { modalsHandlerService } from '@/services/modals/modals-handler-service';
 
 export async function loginLocal (credentials) {
 
@@ -9,14 +11,14 @@ export async function loginLocal (credentials) {
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
 
-    await services.notificationService.showProgressDialog(labels.sign_in + '...');
+    await notificationService.showProgressDialog(labels.sign_in + '...');
     //try to authenticate user
     try {
-        await services.authLocalService.authLocalUser(credentials);
+        await authLocalService.authLocalUser(credentials);
 
-        services.notificationService.showToast(STRINGS[language].status_codes.ec5_115);
+        notificationService.showToast(STRINGS[language].status_codes.ec5_115);
         //user is logged in, dismiss all modals related to auth
-        services.modalsHandlerService.dismissAll();
+        modalsHandlerService.dismissAll();
 
         //any extra action to perform? (like addProject()...)
         if (rootStore.afterUserIsLoggedIn.callback !== null) {
@@ -31,12 +33,12 @@ export async function loginLocal (credentials) {
             rootStore.afterUserIsLoggedIn = { callback: null, params: null };
         }
         else {
-            services.notificationService.hideProgressDialog();
+            notificationService.hideProgressDialog();
         }
     } catch (errorCode) {
         //show error to user
-        services.notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
-        services.notificationService.hideProgressDialog();
+        notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
+        notificationService.hideProgressDialog();
     }
-    services.notificationService.hideProgressDialog();
+    notificationService.hideProgressDialog();
 }

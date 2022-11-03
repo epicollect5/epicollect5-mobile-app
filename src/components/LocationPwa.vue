@@ -92,17 +92,17 @@
 </template>
 
 <script>
-import { onMounted, onBeforeUnmount } from 'vue';
+import { onMounted, onBeforeMount, onBeforeUnmount } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import * as services from '@/services';
-import * as icons from 'ionicons/icons';
+import { search, locate } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
-import 'leaflet.fullscreen';
-import L from 'leaflet';
 import markerIcon from '@/leaflet/images/marker-icon@2x.png';
 import markerShadow from '@/leaflet/images/marker-shadow.png';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { webService } from '@/services/web-service';
 
 export default {
 	props: {
@@ -134,6 +134,7 @@ export default {
 		const zoom = 1;
 		let map = null;
 		let marker = null;
+		let L = null;
 
 		const state = reactive({
 			latitude: props.latitude,
@@ -145,16 +146,16 @@ export default {
 		const methods = {
 			async geocodeAddress() {
 				if (state.address === '') {
-					services.notificationService.showAlert(labels.no_hits_found);
+					notificationService.showAlert(labels.no_hits_found);
 					return;
 				}
-				services.notificationService.showProgressDialog(
+				notificationService.showProgressDialog(
 					STRINGS[language].labels.acquiring_position,
 					STRINGS[language].labels.wait
 				);
 
 				try {
-					const coords = await services.webService.geocodeAddressPWA(state.address);
+					const coords = await webService.geocodeAddressPWA(state.address);
 
 					state.latitude = coords.latitude;
 					state.longitude = coords.longitude;
@@ -163,9 +164,9 @@ export default {
 					updateMarker(false);
 				} catch (error) {
 					//handle error
-					services.notificationService.showAlert(labels.location_fail);
+					notificationService.showAlert(labels.location_fail);
 				} finally {
-					services.notificationService.hideProgressDialog();
+					notificationService.hideProgressDialog();
 				}
 			},
 			updateLocation(showAlert) {
@@ -177,18 +178,18 @@ export default {
 					return;
 				}
 
-				if (services.utilsService.isValidLatitude(state.latitude)) {
-					if (services.utilsService.isValidLongitude(state.longitude)) {
+				if (utilsService.isValidLatitude(state.latitude)) {
+					if (utilsService.isValidLongitude(state.longitude)) {
 						//update marker position
 						updateMarker(showAlert);
 					} else {
 						if (showAlert) {
-							services.notificationService.showAlert(labels.location_fail);
+							notificationService.showAlert(labels.location_fail);
 						}
 					}
 				} else {
 					if (showAlert) {
-						services.notificationService.showAlert(labels.location_fail);
+						notificationService.showAlert(labels.location_fail);
 					}
 				}
 			},
@@ -212,7 +213,7 @@ export default {
 
 		function addMarker(showProgressDialog) {
 			if (showProgressDialog) {
-				services.notificationService.showProgressDialog(
+				notificationService.showProgressDialog(
 					STRINGS[language].labels.acquiring_position,
 					STRINGS[language].labels.wait
 				);
@@ -247,11 +248,11 @@ export default {
 			//close up to marker
 			map.setView([state.latitude, state.longitude], closeUpZoom);
 			if (showProgressDialog) {
-				services.notificationService.showToast(labels.location_acquired);
+				notificationService.showToast(labels.location_acquired);
 			}
 			emitPWALocationUpdate();
 			setTimeout(() => {
-				services.notificationService.hideProgressDialog();
+				notificationService.hideProgressDialog();
 			}, PARAMETERS.DELAY_MEDIUM);
 		}
 
@@ -261,7 +262,7 @@ export default {
 				return;
 			}
 			if (showProgressDialog) {
-				services.notificationService.showProgressDialog(
+				notificationService.showProgressDialog(
 					STRINGS[language].labels.acquiring_position,
 					STRINGS[language].labels.wait
 				);
@@ -269,11 +270,11 @@ export default {
 			marker.setLatLng(new L.LatLng(state.latitude, state.longitude));
 			map.setView([state.latitude, state.longitude], closeUpZoom);
 			if (showProgressDialog) {
-				services.notificationService.showToast(labels.location_acquired);
+				notificationService.showToast(labels.location_acquired);
 			}
 			emitPWALocationUpdate();
 			setTimeout(() => {
-				services.notificationService.hideProgressDialog();
+				notificationService.hideProgressDialog();
 			}, PARAMETERS.DELAY_MEDIUM);
 		}
 
@@ -292,7 +293,7 @@ export default {
 				timeout: PARAMETERS.GEOLOCATION_TIMEOUT
 			};
 
-			services.notificationService.showProgressDialog(
+			notificationService.showProgressDialog(
 				STRINGS[language].labels.acquiring_position,
 				STRINGS[language].labels.wait
 			);
@@ -304,7 +305,7 @@ export default {
 						state.longitude = position.coords.longitude.toFixed(6);
 						state.latitude = position.coords.latitude.toFixed(6);
 						state.accuracy = Math.round(position.coords.accuracy);
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 						console.log(state.longitude, state.latitude, state.accuracy);
 
 						//add marker to map
@@ -312,21 +313,31 @@ export default {
 					},
 					(error) => {
 						//todo: handle error
-						services.notificationService.showAlert(error, STRINGS[language].labels.error);
-						services.notificationService.hideProgressDialog();
+						notificationService.showAlert(error, STRINGS[language].labels.error);
+						notificationService.hideProgressDialog();
 					},
 					options
 				);
 			} else {
-				services.notificationService.showAlert(
+				notificationService.showAlert(
 					STRINGS[language].labels.location_not_available,
 					STRINGS[language].labels.error
 				);
-				services.notificationService.hideProgressDialog();
+				notificationService.hideProgressDialog();
 			}
 		}
 
+		onBeforeMount(() => {
+			//load leaflet from CDN
+			debugger;
+			if (!window.L) {
+				//
+			}
+		});
+
 		onMounted(async () => {
+			L = window.L;
+
 			map = L.map(props.inputRef).setView([0, 0], zoom);
 
 			const carto = L.tileLayer(PARAMETERS.CARTO_LIGHT_TILES_PROVIDER, {
@@ -418,8 +429,10 @@ export default {
 			labels,
 			state,
 			...PARAMETERS,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			search,
+			locate
 		};
 	}
 };

@@ -37,7 +37,7 @@
 <script>
 import { modalController } from '@ionic/vue';
 import { Share } from '@capacitor/share';
-import * as icons from 'ionicons/icons';
+import { shareSocialSharp, closeOutline } from 'ionicons/icons';
 
 export default {
 	props: {
@@ -72,34 +72,14 @@ export default {
 		return {
 			...props,
 			sliderOptions,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			shareSocialSharp,
+			closeOutline
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-ion-content {
-	--background: transparent;
-}
-ion-header {
-	ion-toolbar {
-		--background: transparent;
-		ion-button,
-		ion-icon {
-			color: #333;
-		}
-	}
-}
-ion-slides {
-	width: 100% !important;
-	height: 100%;
-	.swiper-zoom-container {
-		width: 100% !important;
-	}
-}
-img {
-	width: 100%;
-}
 </style>

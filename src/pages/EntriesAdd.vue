@@ -305,8 +305,7 @@
 
 <script>
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { closeOutline, power, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
 import { useRouter } from 'vue-router';
@@ -341,6 +340,13 @@ import { handlePrev } from '@/use/questions/handle-prev';
 import { useBackButton } from '@ionic/vue';
 import { setupPWAEntry } from '@/use/setup-pwa-entry';
 import NotFound from '@/pages/NotFound';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { locationService } from '@/services/utilities/location-cordova-service';
+import { errorsService } from '@/services/errors-service';
+import { entryService } from '@/services/entry/entry-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
+
 
 export default {
 	components: {
@@ -380,7 +386,7 @@ export default {
 			};
 		}
 
-		const projectName = services.utilsService.getProjectNameMarkup();
+		const projectName = utilsService.getProjectNameMarkup();
 
 		const state = reactive({
 			isFetching: true,
@@ -399,8 +405,8 @@ export default {
 				errors: {}
 			},
 			// Allow saving by default (via quit button)
-			allowSave: services.entryService.allowSave,
-			action: services.entryService.actionState,
+			allowSave: entryService.allowSave,
+			action: entryService.actionState,
 			entrySavedPWA: false,
 			entryFailedPWA: false,
 			showSaved: false
@@ -430,16 +436,14 @@ export default {
 		const methods = {
 			async saveEntry(syncType) {
 				if (rootStore.isPWA) {
-					await services.notificationService.showProgressDialog(labels.wait, labels.saving);
+					await notificationService.showProgressDialog(labels.wait, labels.saving);
 
 					rootStore.entriesAddScope.entryService.saveEntryPWA().then(
 						() => {
 							//if branch, go back to branch question and update branches list
 							if (rootStore.entriesAddScope.entryService.type === PARAMETERS.BRANCH_ENTRY) {
 								quit(
-									services.questionCommonService.getNavigationParams(
-										rootStore.entriesAddScope.entryService
-									)
+									questionCommonService.getNavigationParams(rootStore.entriesAddScope.entryService)
 								);
 							} else {
 								//this is a hierarchy entry:
@@ -450,15 +454,15 @@ export default {
 								state.showSaved = true;
 								state.disablePrevious = true;
 								state.disableNext = true;
-								services.notificationService.hideProgressDialog();
+								notificationService.hideProgressDialog();
 							}
 						},
 						(errorResponse) => {
 							//random server errors bail out
 							if (!errorResponse.data?.errors) {
 								console.log(errorResponse);
-								services.notificationService.hideProgressDialog();
-								services.errorsService.handleWebError(errorResponse);
+								notificationService.hideProgressDialog();
+								errorsService.handleWebError(errorResponse);
 								return false;
 							}
 
@@ -486,8 +490,8 @@ export default {
 							state.disableNext = true;
 
 							//handle error, user can go back to check for errors
-							services.errorsService.handleWebError(errorResponse);
-							services.notificationService.hideProgressDialog();
+							errorsService.handleWebError(errorResponse);
+							notificationService.hideProgressDialog();
 						}
 					);
 				} else {
@@ -499,29 +503,25 @@ export default {
 				// Determine the syncType
 				syncType = syncType ? syncType : PARAMETERS.SYNCED_CODES.UNSYNCED;
 
-				await services.notificationService.showProgressDialog(labels.wait, labels.saving);
+				await notificationService.showProgressDialog(labels.wait, labels.saving);
 				// SAVE ENTRY
 				rootStore.entriesAddScope.entryService.saveEntry(syncType).then(
 					function () {
 						// Quit with navigation params
-						quit(
-							services.questionCommonService.getNavigationParams(
-								rootStore.entriesAddScope.entryService
-							)
-						);
+						quit(questionCommonService.getNavigationParams(rootStore.entriesAddScope.entryService));
 					},
 					function (error) {
 						console.log(error);
 						// An error occurred
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 						if (error.error && state.error) {
-							services.errorsService.handleEntryErrors(error.error, state.error, error.inputRefs);
+							errorsService.handleEntryErrors(error.error, state.error, error.inputRefs);
 						} else {
 							//db errors are {code:0, message:'something'}
 							if (error.message) {
-								services.notificationService.showAlert(error.message, labels.error);
+								notificationService.showAlert(error.message, labels.error);
 							} else {
-								services.notificationService.showAlert(error, labels.error);
+								notificationService.showAlert(error, labels.error);
 							}
 						}
 					}
@@ -529,7 +529,7 @@ export default {
 			},
 			async addEntryPWA() {
 				// Show loader
-				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
+				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 				// Set up a new entry based on URL params
 				const formRef = await setupPWAEntry(PARAMETERS.PWA_ADD_ENTRY);
 				//get first form question input ref
@@ -545,7 +545,7 @@ export default {
 
 				//fake answer (to re-use prev() method)
 				state.questionParams.currentInputIndex = 1;
-				services.entryService.entry.answers[firstInputRef] = {
+				entryService.entry.answers[firstInputRef] = {
 					answer: '',
 					was_jumped: false
 				};
@@ -571,7 +571,7 @@ export default {
 					quitMessage = labels.are_you_sure;
 				}
 
-				const action = await services.notificationService.confirmMultiple(
+				const action = await notificationService.confirmMultiple(
 					quitMessage,
 					labels.quit,
 					labels.save,
@@ -580,15 +580,13 @@ export default {
 
 				switch (action) {
 					case PARAMETERS.ACTIONS.ENTRY_QUIT:
-						await services.notificationService.showProgressDialog(labels.wait, labels.quitting);
+						await notificationService.showProgressDialog(labels.wait, labels.quitting);
 						// Remove any temp answers/entries
 						try {
 							await rootStore.entriesAddScope.entryService.removeTempBranches();
 							// Quit with navigation params
 							quit(
-								services.questionCommonService.getNavigationParams(
-									rootStore.entriesAddScope.entryService
-								)
+								questionCommonService.getNavigationParams(rootStore.entriesAddScope.entryService)
 							);
 						} catch (error) {
 							console.log(error);
@@ -599,7 +597,7 @@ export default {
 					case PARAMETERS.ACTIONS.ENTRY_SAVE:
 						if (!state.allowSave) {
 							// Has a jump question been changed while editing an entry?
-							services.notificationService.showAlert(STRINGS[language].status_codes.ec5_140);
+							notificationService.showAlert(STRINGS[language].status_codes.ec5_140);
 							return;
 						}
 						// SAVE AND QUIT
@@ -643,7 +641,7 @@ export default {
 								methods.saveEntry(syncType);
 							} catch (error) {
 								// An error occurred
-								services.errorsService.handleEntryErrors(error.error, state.error, error.inputRefs);
+								errorsService.handleEntryErrors(error.error, state.error, error.inputRefs);
 							}
 						}
 						break;
@@ -670,7 +668,7 @@ export default {
 			},
 			onQuestionMounted() {
 				state.isFetching = false;
-				services.notificationService.hideProgressDialog();
+				notificationService.hideProgressDialog();
 			}
 		};
 
@@ -689,13 +687,13 @@ export default {
 				// If we stop watching it would be impossible to add another location in a branch, as the watchPosition would not work
 				if (projectModel.hasLocation(formRef) && !isBranch) {
 					console.log('Stopped watching position ------------------------>');
-					services.locationService.stopWatching();
+					locationService.stopWatching();
 				}
 			}
 
 			setTimeout(function () {
 				//todo: why is this needed?
-				//services.notificationService.hideProgressDialog();
+				//notificationService.hideProgressDialog();
 
 				//imp: fix this, we need to handle quit entry (hierarchy) and quit branch
 
@@ -715,12 +713,12 @@ export default {
 					if (response.routeName === PARAMETERS.ROUTES.PWA_QUIT) {
 						if (process.env.NODE_ENV === 'production') {
 							//redirect to dataviewer URL ()
-							console.log(services.utilsService.getDataViewerURL(projectSlug));
-							window.location.href = services.utilsService.getDataViewerURL(projectSlug);
+							console.log(utilsService.getDataViewerURL(projectSlug));
+							window.location.href = utilsService.getDataViewerURL(projectSlug);
 						} else {
-							console.log(services.utilsService.getDataViewerURL(projectSlug));
-							services.notificationService.showAlert('Should go back to dataviewer :)');
-							services.notificationService.hideProgressDialog();
+							console.log(utilsService.getDataViewerURL(projectSlug));
+							notificationService.showAlert('Should go back to dataviewer :)');
+							notificationService.hideProgressDialog();
 						}
 						return false;
 					}
@@ -741,7 +739,7 @@ export default {
 		}
 
 		//get markup to show project logo in page header
-		rootStore.entriesAddScope.projectName = services.utilsService.getProjectNameMarkup();
+		rootStore.entriesAddScope.projectName = utilsService.getProjectNameMarkup();
 
 		// Retrieve state params from previous view
 		const routeParams = rootStore.routeParams;
@@ -808,11 +806,15 @@ export default {
 		return {
 			labels,
 			state,
-			...icons,
 			...methods,
 			...computedScope,
 			projectName,
-			notFound: false
+			notFound: false,
+			//icons
+			closeOutline,
+			power,
+			chevronBackOutline,
+			chevronForwardOutline
 		};
 	}
 };

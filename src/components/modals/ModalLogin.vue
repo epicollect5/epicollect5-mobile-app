@@ -16,15 +16,11 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
-import { menuController, modalController } from '@ionic/vue';
-import * as services from '@/services';
+import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
-import ModalPasswordlessSend from '@/components/modals/ModalPasswordlessSend';
 import HeaderModal from '@/components/HeaderModal.vue';
 import CardLoginLocal from '@/components/CardLoginLocal';
 import CardLoginLdap from '@/components/CardLoginLdap.vue';
@@ -70,7 +66,6 @@ export default {
 			labels,
 			state,
 			...computedScope,
-			...icons,
 			...methods,
 			...props
 		};
@@ -79,16 +74,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-ion-content {
-	--background: transparent;
-}
-ion-header {
-	ion-toolbar {
-		--background: transparent;
-		ion-button,
-		ion-icon {
-			color: #333;
-		}
-	}
-}
 </style>

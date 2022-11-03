@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { ellipsisVertical, search, filter, helpCircle } from 'ionicons/icons';
 import { computed } from '@vue/reactivity';
 
 export default {
@@ -72,21 +72,20 @@ export default {
 				const { action } = props;
 				switch (action) {
 					case 'media':
-						return icons.ellipsisVertical;
+						return ellipsisVertical;
 					case 'search':
-						return icons.search;
+						return search;
 					case 'filter':
-						return icons.filter;
+						return filter;
 					case 'help':
-						return icons.helpCircle;
+						return helpCircle;
 					default:
-						return icons.filter;
+						return filter;
 				}
 			})
 		};
 
 		return {
-			...icons,
 			...props,
 			...methods,
 			...computedScope

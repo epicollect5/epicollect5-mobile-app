@@ -59,11 +59,11 @@
 <script>
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
-
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
+import { chatbubbleEllipses } from 'ionicons/icons';
 import { computed } from '@vue/reactivity';
+import { utilsService } from '@/services/utilities/utils-service';
+import { notificationService } from '@/services/notification-service';
 
 export default {
 	props: {
@@ -81,12 +81,9 @@ export default {
 		const labels = STRINGS[language].labels;
 		const methods = {
 			async reportBug() {
-				const hasInternetConnection = await services.utilsService.hasInternetConnection();
+				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
-					services.notificationService.showAlert(
-						STRINGS[language].status_codes.ec5_135 + '!',
-						labels.error
-					);
+					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
 				}
 				window.open(PARAMETERS.COMMUNITY_SUPPORT_URL, '_system', 'location=yes');
 			}
@@ -109,7 +106,7 @@ export default {
 		};
 
 		return {
-			...icons,
+			chatbubbleEllipses,
 			...methods,
 			...computedScope
 		};

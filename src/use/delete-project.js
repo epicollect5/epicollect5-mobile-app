@@ -3,8 +3,12 @@ import { projectModel } from '@/models/project-model.js';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
-import * as services from '@/services';
 import { menuController } from '@ionic/vue';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { databaseDeleteService } from '@/services/database/database-delete-service';
+import { notificationService } from '@/services/notification-service';
+import { bookmarksService } from '@/services/utilities/bookmarks-service';
+import { deleteFileService } from '@/services/filesystem/delete-file-service';
 
 /**
  * Delete a project and redirect to projects page if success
@@ -18,7 +22,7 @@ export async function deleteProject (router) {
 
 
     //ask user confirmation
-    const confirmed = await services.notificationService.confirmSingle(
+    const confirmed = await notificationService.confirmSingle(
         STRINGS[language].status_codes.ec5_113,
         STRINGS[language].labels.delete_project
     );
@@ -28,12 +32,12 @@ export async function deleteProject (router) {
     }
 
     //show spinning loader
-    await services.notificationService.showProgressDialog(
+    await notificationService.showProgressDialog(
         STRINGS[language].labels.deleting_project
     );
 
     //get project media files
-    const projectMedia = await services.databaseSelectService.selectProjectMedia({
+    const projectMedia = await databaseSelectService.selectProjectMedia({
         project_ref: projectModel.getProjectRef(),
         synced: null,
         entry_uuid: null
@@ -45,33 +49,33 @@ export async function deleteProject (router) {
 
     if (files.length > 0) {
         try {
-            await services.deleteFileService.removeFiles(files);
-            await services.databaseDeleteService.deleteProject(projectModel.getProjectRef());
+            await deleteFileService.removeFiles(files);
+            await databaseDeleteService.deleteProject(projectModel.getProjectRef());
             _onDeleteSuccess();
         } catch (error) {
             console.log(error);
-            services.notificationService.hideProgressDialog();
-            services.notificationService.showAlert(labels.unknown_error, labels.error);
+            notificationService.hideProgressDialog();
+            notificationService.showAlert(labels.unknown_error, labels.error);
         }
     } else {
         try {
-            await services.databaseDeleteService.deleteProject(projectModel.getProjectRef());
+            await databaseDeleteService.deleteProject(projectModel.getProjectRef());
             _onDeleteSuccess();
         } catch (error) {
             console.log(error);
-            services.notificationService.hideProgressDialog();
-            services.notificationService.showAlert(labels.unknown_error, labels.error);
+            notificationService.hideProgressDialog();
+            notificationService.showAlert(labels.unknown_error, labels.error);
         }
     }
 
     async function _onDeleteSuccess () {
         // Refresh bookmarks after deletion
-        await services.bookmarksService.getBookmarks();
+        await bookmarksService.getBookmarks();
         // Destroy project model
         projectModel.destroy();
         //show feedback to user
-        services.notificationService.hideProgressDialog();
-        services.notificationService.showToast(STRINGS[language].status_codes.ec5_114);
+        notificationService.hideProgressDialog();
+        notificationService.showToast(STRINGS[language].status_codes.ec5_114);
         //hide right drawer
         menuController.close();
         // Go back to projects page

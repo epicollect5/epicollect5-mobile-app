@@ -64,7 +64,7 @@
 
 <script>
 import ListItemProjects from '@/components/ListItemProjects';
-import * as icons from 'ionicons/icons';
+import { add } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { onMounted, onActivated, watch, onRenderTriggered } from 'vue';
 import { STRINGS } from '@/config/strings';
@@ -72,7 +72,7 @@ import { useRootStore } from '@/stores/root-store';
 import { fetchLocalProjects } from '@/use/fetch-local-projects';
 import { useRouter, useRoute } from 'vue-router';
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
+import { notificationService } from '@/services/notification-service';
 import { Plugins } from '@capacitor/core';
 const { App } = Plugins;
 import { onIonViewWillEnter, onIonViewWillLeave, useBackButton } from '@ionic/vue';
@@ -97,7 +97,7 @@ export default {
 		fetchLocalProjects().then((projects) => {
 			state.projects = projects;
 			state.isFetching = false;
-			services.notificationService.hideProgressDialog();
+			notificationService.hideProgressDialog();
 		});
 
 		const methods = {
@@ -134,7 +134,7 @@ export default {
 
 		//exit app when pressing back button (Android)
 		useBackButton(10, async () => {
-			const confirmed = await services.notificationService.confirmSingle(
+			const confirmed = await notificationService.confirmSingle(
 				labels.are_you_sure,
 				labels.close + ' App'
 			);
@@ -175,7 +175,7 @@ export default {
 							state.projects = projects;
 							state.isFetching = false;
 
-							services.notificationService.hideProgressDialog();
+							notificationService.hideProgressDialog();
 						});
 					}, PARAMETERS.DELAY_LONG);
 				}
@@ -184,9 +184,11 @@ export default {
 
 		return {
 			labels,
-			...icons,
+
 			...methods,
-			state
+			state,
+			//icons
+			add
 		};
 	}
 };

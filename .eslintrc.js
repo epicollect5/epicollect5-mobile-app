@@ -21,7 +21,7 @@ module.exports = {
     'arrow-parens': 1,
     'no-var': 1,
     'prefer-const': 1,
-    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-console': process.env.NODE_ENV === 'production' ? 'off' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     //this is to force a semi colon at the end, seems like vue does not want that, crazy.
     'semi': ['error', 'always'],

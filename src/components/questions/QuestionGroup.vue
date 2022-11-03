@@ -152,7 +152,6 @@
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
-import * as services from '@/services';
 import { reactive, computed } from '@vue/reactivity';
 import { inject, provide } from 'vue';
 import { projectModel } from '@/models/project-model.js';
@@ -174,6 +173,8 @@ import questionText from '@/components/questions/QuestionText';
 import questionTextarea from '@/components/questions/QuestionTextarea';
 import questionTime from '@/components/questions/QuestionTime';
 import questionVideo from '@/components/questions/QuestionVideo';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	components: {
@@ -239,7 +240,7 @@ export default {
 		});
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		// We want the whole confirmAnswer object here
 		state.confirmAnswer = entriesAddState.confirmAnswer;
@@ -271,7 +272,7 @@ export default {
 
 		const computedScope = {
 			hasError: computed(() => {
-				return services.utilsService.hasQuestionError(state);
+				return utilsService.hasQuestionError(state);
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {

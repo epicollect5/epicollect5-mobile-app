@@ -1,11 +1,15 @@
-import * as services from '@/services';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { modalController } from '@ionic/vue';
 import ModalConfirmPassword from '@/components/modals/ModalConfirmPassword.vue';
 import ModalConfirmEmail from '@/components/modals/ModalConfirmEmail.vue';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { errorsService } from '@/services/errors-service';
+import { webService } from '@/services/web-service';
+import { authLoginService } from '@/services/auth/auth-login-service';
+import { modalsHandlerService } from '@/services/modals/modals-handler-service';
 
 export const authGoogleService = {
 
@@ -47,12 +51,12 @@ export const authGoogleService = {
         const account = {};
 
         // Check if we have a connection
-        const hasInternetConnection = await services.utilsService.hasInternetConnection();
+        const hasInternetConnection = await utilsService.hasInternetConnection();
         if (!hasInternetConnection) {
-            services.notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
+            notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
         } else {
 
-            await services.notificationService.showProgressDialog(STRINGS[language].labels.sign_in + '...');
+            await notificationService.showProgressDialog(STRINGS[language].labels.sign_in + '...');
 
             this.getGoogleCodeNatively(authIds).then(
                 function (googleResponse) {
@@ -63,15 +67,15 @@ export const authGoogleService = {
                         family_name: googleResponse.family_name
                     };
 
-                    services.webService.authGoogleUser(googleResponse.code).then(
+                    webService.authGoogleUser(googleResponse.code).then(
                         async function (response) {
                             console.log('response', response);
 
                             //Google user is authenticated, save to store
                             try {
-                                await services.authLoginService.loginUser(response);
-                                services.modalsHandlerService.dismissAll();
-                                services.notificationService.showToast(STRINGS[language].status_codes.ec5_115);
+                                await authLoginService.loginUser(response);
+                                modalsHandlerService.dismissAll();
+                                notificationService.showToast(STRINGS[language].status_codes.ec5_115);
 
                                 //any extra action to perform? (like addProject()...)
                                 if (rootStore.afterUserIsLoggedIn.callback !== null) {
@@ -87,11 +91,11 @@ export const authGoogleService = {
                                     rootStore.afterUserIsLoggedIn = { callback: null, params: null };
                                 }
                                 else {
-                                    services.notificationService.hideProgressDialog();
+                                    notificationService.hideProgressDialog();
                                 }
                             } catch (errorCode) {
-                                services.notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
-                                services.notificationService.hideProgressDialog();
+                                notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
+                                notificationService.hideProgressDialog();
                             }
                         },
                         async function (error) {
@@ -101,10 +105,10 @@ export const authGoogleService = {
                             if (errors[0].code === 'ec5_383') {
                                 account.code = null;
                                 //need to confirm email
-                                services.webService.getEmailConfirmationCode(account.email).then(async function () {
-                                    services.notificationService.hideProgressDialog();
+                                webService.getEmailConfirmationCode(account.email).then(async function () {
+                                    notificationService.hideProgressDialog();
                                     //show form to enter code
-                                    services.modalsHandlerService.confirmEmail = await modalController.create({
+                                    modalsHandlerService.confirmEmail = await modalController.create({
                                         cssClass: 'modal-confirm-email',
                                         component: ModalConfirmEmail,
                                         showBackdrop: true,
@@ -114,25 +118,25 @@ export const authGoogleService = {
                                         }
                                     });
 
-                                    services.modalsHandlerService.confirmEmail.onDidDismiss().then((response) => {
+                                    modalsHandlerService.confirmEmail.onDidDismiss().then((response) => {
                                         console.log('is', response.data);
                                     });
-                                    return services.modalsHandlerService.confirmEmail.present();
+                                    return modalsHandlerService.confirmEmail.present();
 
                                 }, function (error) {
                                     console.log(error);
                                     // hide all auth modals
-                                    services.modalsHandlerService.dismissAll();
-                                    services.notificationService.hideProgressDialog();
-                                    services.errorsService.handleWebError(error);
+                                    modalsHandlerService.dismissAll();
+                                    notificationService.hideProgressDialog();
+                                    errorsService.handleWebError(error);
                                 });
                             }
 
                             if (errors[0].code === 'ec5_390') {
                                 //need to confirm password
-                                services.notificationService.hideProgressDialog();
+                                notificationService.hideProgressDialog();
                                 //show modal to enter password
-                                services.modalsHandlerService.confirmPassword = await modalController.create({
+                                modalsHandlerService.confirmPassword = await modalController.create({
                                     cssClass: 'modal-confirm-password',
                                     component: ModalConfirmPassword,
                                     showBackdrop: true,
@@ -142,26 +146,26 @@ export const authGoogleService = {
                                     }
                                 });
 
-                                services.modalsHandlerService.confirmPassword.onDidDismiss().then((response) => {
+                                modalsHandlerService.confirmPassword.onDidDismiss().then((response) => {
                                     console.log('is', response.data);
                                 });
-                                return services.modalsHandlerService.confirmPassword.present();
+                                return modalsHandlerService.confirmPassword.present();
                             }
 
                             if (errors[0].code !== 'ec5_390' && errors[0].code !== 'ec5_383') {
                                 // hide any modals
-                                services.modalsHandlerService.dismissAll();
-                                services.notificationService.hideProgressDialog();
-                                services.errorsService.handleWebError(error);
+                                modalsHandlerService.dismissAll();
+                                notificationService.hideProgressDialog();
+                                errorsService.handleWebError(error);
                             }
 
                         });
                 }, function (error) {
                     //t.ly/wlpO => SIGN IN CANCELLED gets code 12501
                     if (error != '12501') {
-                        services.notificationService.showAlert(error);
+                        notificationService.showAlert(error);
                     }
-                    services.notificationService.hideProgressDialog();
+                    notificationService.hideProgressDialog();
                 });
         }
     }

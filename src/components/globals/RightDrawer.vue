@@ -150,9 +150,19 @@ import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { STRINGS } from '@/config/strings';
-import * as icons from 'ionicons/icons';
+import {
+	cloudUpload,
+	cloudDownload,
+	unlink,
+	bookmark,
+	informationCircle,
+	trash,
+	checkmark,
+	arrowUpCircle,
+	arrowDownCircle,
+	timeOutline
+} from 'ionicons/icons';
 import { useRouter } from 'vue-router';
-import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import { deleteProject } from '@/use/delete-project';
 import { deleteEntries } from '@/use/delete-entries';
@@ -162,6 +172,11 @@ import { modalController, menuController } from '@ionic/vue';
 import { ref, reactive, computed } from '@vue/reactivity';
 import ModalProjectInfo from '@/components/modals/ModalProjectInfo';
 import ModalBookmarkAdd from '@/components/modals/ModalBookmarkAdd';
+import { notificationService } from '@/services/notification-service';
+import { bookmarksService } from '@/services/utilities/bookmarks-service';
+import { databaseInsertService } from '@/services/database/database-insert-service';
+import { databaseUpdateService } from '@/services/database/database-update-service';
+import { exportService } from '@/services/export-service';
 
 export default {
 	setup() {
@@ -195,40 +210,40 @@ export default {
 				const projectRef = projectModel.getProjectRef();
 				const projectSlug = projectModel.getSlug();
 				//show loader
-				await services.notificationService.showProgressDialog(labels.wait);
+				await notificationService.showProgressDialog(labels.wait);
 				//export all hierarchy entries
 				try {
-					await services.exportService.exportHierarchyEntries(projectRef, projectSlug);
+					await exportService.exportHierarchyEntries(projectRef, projectSlug);
 				} catch (error) {
-					services.notificationService.hideProgressDialog();
-					services.notificationService.showAlert(error);
+					notificationService.hideProgressDialog();
+					notificationService.showAlert(error);
 				}
 				//export all branch entries
 				try {
-					await services.exportService.exportBranchEntries(projectRef, projectSlug);
+					await exportService.exportBranchEntries(projectRef, projectSlug);
 				} catch (error) {
-					services.notificationService.hideProgressDialog();
-					services.notificationService.showAlert(error);
+					notificationService.hideProgressDialog();
+					notificationService.showAlert(error);
 				}
 				//export all media files (skip for the web)
 				if (rootStore.device.platform !== PARAMETERS.WEB) {
 					try {
-						await services.exportService.exportMedia(projectRef, projectSlug);
-						services.notificationService.hideProgressDialog();
-						services.notificationService.showAlert(
+						await exportService.exportMedia(projectRef, projectSlug);
+						notificationService.hideProgressDialog();
+						notificationService.showAlert(
 							//downloadFolder + projectSlug,
 							labels.all_entries_downloaded
 						);
 						menuController.close();
 					} catch (error) {
 						console.log(error);
-						services.notificationService.hideProgressDialog();
-						services.notificationService.showAlert(error);
+						notificationService.hideProgressDialog();
+						notificationService.showAlert(error);
 					}
 				} else {
 					//just remove the loader on the web, for testing
-					services.notificationService.hideProgressDialog();
-					services.notificationService.showAlert(labels.all_entries_downloaded);
+					notificationService.hideProgressDialog();
+					notificationService.showAlert(labels.all_entries_downloaded);
 					menuController.close();
 				}
 			},
@@ -243,15 +258,15 @@ export default {
 			},
 			async unsyncAllEntries() {
 				const projectRef = projectModel.getProjectRef();
-				await services.notificationService.showProgressDialog(labels.wait);
+				await notificationService.showProgressDialog(labels.wait);
 
 				//todo: should catch errors...
-				await services.databaseUpdateService.unsyncAllEntries(projectRef);
-				await services.databaseUpdateService.unsyncAllBranchEntries(projectRef);
-				await services.databaseUpdateService.unsyncAllFileEntries(projectRef);
+				await databaseUpdateService.unsyncAllEntries(projectRef);
+				await databaseUpdateService.unsyncAllBranchEntries(projectRef);
+				await databaseUpdateService.unsyncAllFileEntries(projectRef);
 
-				services.notificationService.hideProgressDialog();
-				services.notificationService.showToast(labels.unsynced);
+				notificationService.hideProgressDialog();
+				notificationService.showToast(labels.unsynced);
 				// Refresh view
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES,
@@ -289,7 +304,7 @@ export default {
 				state.order = dbStore.dbEntriesOrder;
 
 				// Insert the new order by into the database
-				await services.databaseInsertService.insertSetting(
+				await databaseInsertService.insertSetting(
 					'order_by',
 					JSON.stringify(dbStore.dbEntriesOrder)
 				);
@@ -336,12 +351,12 @@ export default {
 				const bookmarkId = bookmarkStore.bookmarkId;
 
 				try {
-					await services.bookmarksService.deleteBookmark(bookmarkId);
+					await bookmarksService.deleteBookmark(bookmarkId);
 					// Remove this page as bookmarked
 					bookmarkStore.bookmarkId = null;
-					services.notificationService.showToast(STRINGS[language].status_codes.ec5_127);
+					notificationService.showToast(STRINGS[language].status_codes.ec5_127);
 				} catch (error) {
-					services.notificationService.showAlert(STRINGS[language].status_codes.ec5_104);
+					notificationService.showAlert(STRINGS[language].status_codes.ec5_104);
 				}
 				menuController.close();
 			},
@@ -365,9 +380,20 @@ export default {
 			labels,
 			state,
 			...computedScope,
-			...icons,
 			...methods,
-			drawerContent
+			drawerContent,
+			//icons**********
+			cloudUpload,
+			cloudDownload,
+			unlink,
+			bookmark,
+			informationCircle,
+			trash,
+			checkmark,
+			arrowUpCircle,
+			arrowDownCircle,
+			timeOutline
+			//*****************
 		};
 	}
 };

@@ -1,6 +1,7 @@
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
 import { initialSetup } from '@/use/questions/initial-setup';
+import { errorsService } from '@/services/errors-service';
+import { entryService } from '@/services/entry/entry-service';
 
 // Initial set up for each question
 export async function handleNext (state, scope) {
@@ -43,8 +44,8 @@ export async function handleNext (state, scope) {
         // Set timeout to give rendering time to catch up
         window.setTimeout(() => {
             // Check if allowSave variable has changed
-            if (state.allowSave !== services.entryService.allowSave) {
-                state.allowSave = services.entryService.allowSave;
+            if (state.allowSave !== entryService.allowSave) {
+                state.allowSave = entryService.allowSave;
             }
             // Go to next question
             state.questionParams.currentInputRef = jumpParams.next_input_ref;
@@ -61,7 +62,7 @@ export async function handleNext (state, scope) {
             state.disablePrevious = false;
             // Set current type back
             state.questionParams.type = state.inputDetails.type;
-            services.errorsService.handleEntryErrors(error.error, state.error, error.inputRefs);
+            errorsService.handleEntryErrors(error.error, state.error, error.inputRefs);
         }, PARAMETERS.DELAY_SHORT);
     }
 }

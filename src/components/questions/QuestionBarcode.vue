@@ -108,12 +108,12 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { scanSharp } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
-import { modalController } from '@ionic/vue';
-import ModalBarcode from '@/components/modals/ModalBarcode';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	props: {
@@ -158,7 +158,7 @@ export default {
 		});
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		onMounted(async () => {
 			console.log('Component Question is mounted, type ->', questionType);
@@ -171,7 +171,7 @@ export default {
 				return state.pattern !== '' && state.pattern !== null;
 			}),
 			hasError: computed(() => {
-				return services.utilsService.hasQuestionError(state);
+				return utilsService.hasQuestionError(state);
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -188,39 +188,20 @@ export default {
 		const methods = {
 			onInputValueChange(event) {
 				const value = event.target.value;
-				state.answer.answer = services.utilsService.getSanitisedAnswer(value);
+				state.answer.answer = utilsService.getSanitisedAnswer(value);
 			},
 
-			async scanPWA() {
-				//open barcode modal
-				const modal = await modalController.create({
-					component: ModalBarcode,
-					componentProps: {}
-				});
-
-				//rab barcode value on modal dismiss
-				modal.onWillDismiss().then((response) => {
-					state.answer.answer = services.utilsService.getSanitisedAnswer(response);
-				});
-
-				return modal.present();
-			},
 			async scan() {
 				//show spinner and hide it immediately
-				await services.notificationService.showProgressDialog(
+				await notificationService.showProgressDialog(
 					STRINGS[language].labels.preparing_scanner,
 					STRINGS[language].labels.wait
 				);
 
-				if (rootStore.isPWA) {
-					methods.scanPWA();
-					return false;
-				}
-
-				services.notificationService.hideProgressDialog();
+				notificationService.hideProgressDialog();
 
 				//foreground service helps the app to not be killed
-				services.notificationService.startForegroundService();
+				notificationService.startForegroundService();
 
 				//request camera permission
 				if (rootStore.device.platform === PARAMETERS.ANDROID) {
@@ -229,18 +210,18 @@ export default {
 							if (cordova.plugins.diagnostic.runtimePermissionStatus.GRANTED === status) {
 								console.log('Permission granted');
 
-								services.utilsService.triggerBarcode().then(
+								utilsService.triggerBarcode().then(
 									function (result) {
-										services.notificationService.stopForegroundService();
+										notificationService.stopForegroundService();
 										//do not override value if the scan action is cancelled by the user
 										if (!result.cancelled) {
-											state.answer.answer = services.utilsService.getSanitisedAnswer(result.text);
+											state.answer.answer = utilsService.getSanitisedAnswer(result.text);
 										}
 									},
 									function (error) {
-										services.notificationService.stopForegroundService();
+										notificationService.stopForegroundService();
 										if (error !== null) {
-											services.notificationService.showAlert(
+											notificationService.showAlert(
 												STRINGS[language].labels.failed_because + error
 											);
 										}
@@ -248,15 +229,15 @@ export default {
 								);
 							} else {
 								//warn user the permission is required
-								services.notificationService.showAlert(
+								notificationService.showAlert(
 									STRINGS[language].labels.missing_permission,
 									STRINGS[language].labels.warning
 								);
-								services.notificationService.stopForegroundService();
+								notificationService.stopForegroundService();
 							}
 						},
 						function (error) {
-							services.notificationService.stopForegroundService();
+							notificationService.stopForegroundService();
 							console.error(error);
 						},
 						cordova.plugins.diagnostic.runtimePermission.CAMERA
@@ -266,17 +247,15 @@ export default {
 					cordova.plugins.diagnostic.isCameraAuthorized(
 						function (response) {
 							if (response) {
-								services.utilsService.triggerBarcode().then(
+								utilsService.triggerBarcode().then(
 									function (result) {
 										//do not override value if the scan action is cancelled by the user
 										if (!result.cancelled) {
-											state.answer.answer = services.utilsService.getSanitisedAnswer(result.text);
+											state.answer.answer = utilsService.getSanitisedAnswer(result.text);
 										}
 									},
 									function (error) {
-										services.notificationService.showAlert(
-											STRINGS[language].labels.failed_because + error
-										);
+										notificationService.showAlert(STRINGS[language].labels.failed_because + error);
 									}
 								);
 							} else {
@@ -287,30 +266,28 @@ export default {
 										//on iOS permission is true or false only
 										if (permission) {
 											//scan
-											services.utilsService.triggerBarcode().then(
+											utilsService.triggerBarcode().then(
 												function (result) {
 													//do not override value if the scan action is cancelled by the user
 													if (!result.cancelled) {
-														state.answer.answer = services.utilsService.getSanitisedAnswer(
-															result.text
-														);
+														state.answer.answer = utilsService.getSanitisedAnswer(result.text);
 													}
 												},
 												function (error) {
-													services.notificationService.showAlert(
+													notificationService.showAlert(
 														STRINGS[language].labels.failed_because + error
 													);
 												}
 											);
 										} else {
-											services.notificationService.showAlert(
+											notificationService.showAlert(
 												STRINGS[language].labels.missing_permission,
 												STRINGS[language].labels.warning
 											);
 										}
 									},
-									function (error) {
-										services.notificationService.showAlert(
+									function () {
+										notificationService.showAlert(
 											STRINGS[language].labels.missing_permission,
 											STRINGS[language].labels.warning
 										);
@@ -330,16 +307,15 @@ export default {
 			labels,
 			state,
 			...computedScope,
-			...icons,
+
 			...methods,
-			...props
+			...props,
+			//icons
+			scanSharp
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-.pwa-margin-fix {
-	margin-top: -15px !important;
-}
 </style>

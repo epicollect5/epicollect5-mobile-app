@@ -98,7 +98,7 @@
 import { useRootStore } from '@/stores/root-store';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
-import * as icons from 'ionicons/icons';
+import { chevronForward } from 'ionicons/icons';
 import { reactive, computed, readonly, toRefs, ref } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 import { useRouter } from 'vue-router';
@@ -272,19 +272,14 @@ export default {
 
 		return {
 			labels,
-			...icons,
 			...methods,
 			...props,
 			...computedScope,
 			state,
-			PARAMETERS
+			PARAMETERS,
+			//icons
+			chevronForward
 		};
 	}
 };
 </script>
-
-<style lang="scss" scoped>
-.list-entries {
-	margin-bottom: 24px;
-}
-</style>

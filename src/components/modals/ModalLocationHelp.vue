@@ -82,10 +82,9 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { closeOutline, locate } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 
@@ -108,8 +107,10 @@ export default {
 			labels,
 			state,
 			...computedScope,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			closeOutline,
+			locate
 		};
 	}
 };

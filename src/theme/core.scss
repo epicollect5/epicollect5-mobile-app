@@ -69,6 +69,10 @@ ion-toolbar.toolbar-title {
     }
 }
 
+.list-entries {
+    margin-bottom: 24px;
+}
+
 .list-entries-item {
     --padding-end: 4px !important;
     --padding-start: 4px !important;
@@ -490,6 +494,12 @@ ion-item.item-warning {
 .spinner-filter {
     margin-top: 8px;
 }
+.spinner-fetch-projects {
+    left: 50%;
+    position: fixed;
+    transform: translate(-50%, -50%);
+    margin-top: 50px;
+}
 .filter-by-date-to,
 .filter-by-date-from {
     --background: #fff;
@@ -578,4 +588,7 @@ textarea {
         text-transform: uppercase;
         font-size: 13px;
     }
+}
+.pwa-margin-fix {
+    margin-top: -15px !important;
 }

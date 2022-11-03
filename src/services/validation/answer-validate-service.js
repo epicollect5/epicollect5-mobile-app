@@ -15,8 +15,8 @@ import { searchsingleValidate } from '@/services/validation/searchsingle-validat
 import { searchmultipleValidate } from '@/services/validation/searchmultiple-validate';
 import { commonValidate } from '@/services/validation/common-validate';
 import { useRootStore } from '@/stores/root-store';
-import * as services from '@/services';
 import { projectModel } from '@/models/project-model.js';
+import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
 
 
 import { PARAMETERS } from '@/config';
@@ -173,7 +173,7 @@ export const answerValidateService = {
                     const inputRef = inputDetails.ref;
                     const projectVersion = projectModel.getLastUpdated();
                     const projectSlug = projectModel.getSlug();
-                    const payload = services.JSONTransformerService.makeUniqueEntry(formRef, entry, inputRef, answer, projectVersion);
+                    const payload = JSONTransformerService.makeUniqueEntry(formRef, entry, inputRef, answer, projectVersion);
 
 
                     //for debugging
@@ -181,7 +181,7 @@ export const answerValidateService = {
                     //todo: remove the above
 
                     // //check uniqueness against the entries saved on the server
-                    // services.webService.checkUniquenessPWA(projectSlug, payload).then((response) => {
+                    // webService.checkUniquenessPWA(projectSlug, payload).then((response) => {
                     //     //ec5_249 answer unique
                     //     if (response.data.data.code === 'ec5_249') {
                     //         resolve(true);

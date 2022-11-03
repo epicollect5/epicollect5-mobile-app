@@ -30,10 +30,35 @@
 
       <script src="<%= BASE_URL %>assets/js/randexp.min.js"></script>
       <script src="<%= BASE_URL %>assets/js/jwt-decode.js"></script>
+
+      <link href="<%= BASE_URL %>assets/css/Control.FullScreen.css"
+            rel="stylesheet" />
+
+
+      <script>
+            //On PWA debugging, load dependencies from CDN
+            if ('<%= VUE_APP_MODE %>' === 'PWA' && '<%= NODE_ENV %>' === 'development') {
+
+                  const leafletCSS = document.createElement('link');
+                  leafletCSS.setAttribute('href', 'https://unpkg.com/leaflet@1.9.2/dist/leaflet.css');
+                  leafletCSS.setAttribute('integrity', 'sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14=');
+                  leafletCSS.setAttribute('crossorigin', '');
+                  leafletCSS.setAttribute('rel', 'stylesheet');
+                  document.head.appendChild(leafletCSS);
+
+                  const leafletJS = document.createElement('script');
+                  leafletJS.setAttribute('src', 'https://unpkg.com/leaflet@1.9.2/dist/leaflet.js');
+                  leafletJS.setAttribute('integrity', 'sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg=');
+                  leafletJS.setAttribute('crossorigin', '');
+                  document.head.appendChild(leafletJS);
+            }
+      </script>
 </head>
 
 <body>
       <div id="app"></div>
+      <script defer
+              src="<%= BASE_URL %>assets/js/Control.FullScreen.js"></script>
 </body>
 
 </html>

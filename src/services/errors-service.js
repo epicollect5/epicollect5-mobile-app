@@ -1,10 +1,8 @@
 import { PARAMETERS } from '@/config';
-
-import * as services from '@/services';
 import { STRINGS } from '@/config/strings';
-
-
 import { useRootStore } from '@/stores/root-store';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
 
 
 export const errorsService = {
@@ -57,13 +55,13 @@ export const errorsService = {
         const language = rootStore.language;
         let errorCode;
         // No internet? (yeah let's say the connection dropped...)
-        const hasInternetConnection = await services.utilsService.hasInternetConnection();
+        const hasInternetConnection = await utilsService.hasInternetConnection();
         if (!hasInternetConnection) {
             errorCode = 'ec5_135';
         } else {
             errorCode = this.getWebErrorCode(response);
         }
-        services.notificationService.showAlert(STRINGS[language].status_codes[errorCode], STRINGS[language].labels.error);
+        notificationService.showAlert(STRINGS[language].status_codes[errorCode], STRINGS[language].labels.error);
     },
 
 
@@ -90,7 +88,7 @@ export const errorsService = {
                     scopeErrors.hasError = true;
                     scopeErrors.errors[inputRef] = errors[inputRef];
                     // Show error notification
-                    services.notificationService.showAlert(scopeErrors.errors[inputRef].message, STRINGS[language].labels.error);
+                    notificationService.showAlert(scopeErrors.errors[inputRef].message, STRINGS[language].labels.error);
                     // Break after first error
                     break;
                 }

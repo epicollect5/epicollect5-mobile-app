@@ -134,20 +134,32 @@
 <script>
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
-import * as icons from 'ionicons/icons';
+import {
+	desktopOutline,
+	cloudUpload,
+	trash,
+	removeCircle,
+	chevronBackOutline
+} from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
 import { entryModel } from '@/models/entry-model';
 import { useRouter, useRoute } from 'vue-router';
 import { watch } from 'vue';
-import * as services from '@/services';
 import ListAnswers from '@/components/ListAnswers';
 import { useBackButton } from '@ionic/vue';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { databaseDeleteService } from '@/services/database/database-delete-service';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { bookmarksService } from '@/services/utilities/bookmarks-service';
+import { deleteFileService } from '@/services/filesystem/delete-file-service';
+import { answerService } from '@/services/entry/answer-service';
 
 export default {
 	components: { ListAnswers },
-	setup(props) {
+	setup() {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -225,11 +237,11 @@ export default {
 					//map all the uuids to promises
 					await Promise.all(
 						uuids.map((uuid) => {
-							return services.databaseDeleteService.deleteEntry(uuid);
+							return databaseDeleteService.deleteEntry(uuid);
 						})
 					);
 					// Refresh bookmarks after deletion
-					await services.bookmarksService.getBookmarks();
+					await bookmarksService.getBookmarks();
 
 					//back to entries list with refresh
 					if (rootStore.nextRoute) {
@@ -262,16 +274,16 @@ export default {
 							}
 						});
 					}
-					services.notificationService.showToast(labels.entry_deleted);
+					notificationService.showToast(labels.entry_deleted);
 				}
 
-				const confirmed = await services.notificationService.confirmSingle(
+				const confirmed = await notificationService.confirmSingle(
 					STRINGS[language].status_codes.ec5_129
 				);
 
 				if (confirmed) {
 					// Get an array of all the child entries related to this entry (if any)
-					services.databaseSelectService
+					databaseSelectService
 						.getHierarchyEntries(state.entryUuid)
 						.then(function (relatedEntries) {
 							//get all media files names for this entry, child entries and branch entries
@@ -282,7 +294,7 @@ export default {
 							// Now grab the media entries if any
 							Promise.all(
 								allEntries.map(function (uuid) {
-									return services.databaseSelectService.selectEntryMedia(projectRef, uuid);
+									return databaseSelectService.selectEntryMedia(projectRef, uuid);
 								})
 							).then(function (mediaRows) {
 								//mediaRows is an array of arrays, flat it to a single array of uuids
@@ -300,11 +312,11 @@ export default {
 
 								//if any, delete all media files for this entry, child entries and branch entries
 								if (files.length > 0) {
-									services.deleteFileService.removeFiles(files).then(function () {
+									deleteFileService.removeFiles(files).then(function () {
 										//then delete media entries in media table
 										Promise.all(
 											uuids.map(function (uuid) {
-												return services.databaseDeleteService.deleteEntryMedia(uuid);
+												return databaseDeleteService.deleteEntryMedia(uuid);
 											})
 										).then(function () {
 											// Now delete all the entries
@@ -333,11 +345,11 @@ export default {
 			let inputDetails;
 
 			// Show loader
-			await services.notificationService.showProgressDialog(labels.wait, labels.loading_entry);
+			await notificationService.showProgressDialog(labels.wait, labels.loading_entry);
 
 			Promise.all([
-				services.databaseSelectService.selectEntry(state.entryUuid, state.parentEntryUuid),
-				services.databaseSelectService.selectEntryMediaErrors([state.entryUuid])
+				databaseSelectService.selectEntry(state.entryUuid, state.parentEntryUuid),
+				databaseSelectService.selectEntryMediaErrors([state.entryUuid])
 			]).then(function (response) {
 				const res = response[0];
 				const mediaRes = response[1];
@@ -377,7 +389,7 @@ export default {
 				}
 
 				// Retrieve branch entries
-				services.databaseSelectService.selectBranches([state.entry.entryUuid]).then(function (res) {
+				databaseSelectService.selectBranches([state.entry.entryUuid]).then(function (res) {
 					//reset branches counts
 					state.branches = {};
 					// Loop round branches, counting
@@ -414,7 +426,7 @@ export default {
 
 					state.isFetching = false;
 					setTimeout(() => {
-						services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
+						notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
 					}, PARAMETERS.DELAY_LONG);
 				});
 			});
@@ -476,7 +488,7 @@ export default {
 								type: groupInputDetails.type,
 								question:
 									groupInputDetails.type === PARAMETERS.QUESTION_TYPES.README
-										? services.utilsService.htmlDecode(groupInputDetails.question)
+										? utilsService.htmlDecode(groupInputDetails.question)
 										: groupInputDetails.question,
 								answer: _getAnswer(
 									groupInputDetails,
@@ -497,7 +509,7 @@ export default {
 					answer = _getAnswer(inputDetails, state.branches);
 
 					//any media errors on branches?
-					services.databaseSelectService
+					databaseSelectService
 						.countCurrentBranchMediaErrors(inputDetails.ref)
 						.then(function (response) {
 							//set up generic branch error
@@ -536,7 +548,7 @@ export default {
 			//Get answer for viewing via the AnswerService
 
 			function _getAnswer(inputDetails, answer) {
-				return services.answerService.parseAnswerForViewing(inputDetails, answer);
+				return answerService.parseAnswerForViewing(inputDetails, answer);
 			}
 
 			function _renderErrors() {
@@ -570,7 +582,7 @@ export default {
 				state.items[inputDetails.ref] = {
 					question:
 						inputDetails.type === PARAMETERS.QUESTION_TYPES.README
-							? services.utilsService.htmlDecode(inputDetails.question)
+							? utilsService.htmlDecode(inputDetails.question)
 							: inputDetails.question,
 					answer: answer,
 					possible_answers:
@@ -584,14 +596,18 @@ export default {
 			}
 
 			//get markup to show project logo in page header
-			state.projectName = services.utilsService.getProjectNameMarkup();
+			state.projectName = utilsService.getProjectNameMarkup();
 
-			return {
-				labels,
-				...icons,
-				...methods,
-				state
-			};
+			// return {
+			// 	labels,
+			// 	...methods,
+			// 	state,
+			// 	desktopOutline,
+			// 	cloudUpload,
+			// 	trash,
+			// 	removeCircle,
+			// 	chevronBackOutline
+			// };
 		}
 
 		fetchAnswers();
@@ -609,7 +625,7 @@ export default {
 
 				if (changes[0].refreshEntriesView === 'true') {
 					state.isFetching = true;
-					await services.notificationService.showProgressDialog(labels.wait, labels.loading_entry);
+					await notificationService.showProgressDialog(labels.wait, labels.loading_entry);
 					setTimeout(async () => {
 						fetchAnswers();
 					}, PARAMETERS.DELAY_LONG);
@@ -629,8 +645,13 @@ export default {
 			state,
 			labels,
 			statusCodes,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			desktopOutline,
+			cloudUpload,
+			trash,
+			removeCircle,
+			chevronBackOutline
 		};
 	}
 };

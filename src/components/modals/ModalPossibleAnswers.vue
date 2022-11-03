@@ -58,7 +58,6 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
 import { reactive, computed, toRefs } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
@@ -176,7 +175,6 @@ export default {
 			state,
 			...props,
 			...computedScope,
-			...icons,
 			...methods
 		};
 	}
@@ -184,16 +182,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-ion-content {
-	--background: transparent;
-}
-ion-header {
-	ion-toolbar {
-		--background: transparent;
-		ion-button,
-		ion-icon {
-			color: #333;
-		}
-	}
-}
 </style>

@@ -137,15 +137,16 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { chevronBackOutline, add, remove, checkmark } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { useRouter } from 'vue-router';
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
 import { useBackButton } from '@ionic/vue';
+import { databaseInsertService } from '@/services/database/database-insert-service';
+import { notificationService } from '@/services/notification-service';
 
 export default {
 	components: {},
@@ -179,7 +180,7 @@ export default {
 			},
 			async saveSettings() {
 				let failed = false;
-				await services.notificationService.showProgressDialog();
+				await notificationService.showProgressDialog();
 				state.isSaving = true;
 				//change zoom level
 				//remove any zoom class
@@ -196,7 +197,7 @@ export default {
 					switch (key) {
 						case PARAMETERS.SETTINGS_KEYS.SERVER_URL:
 							try {
-								await services.databaseInsertService.insertSetting(key, state.serverUrl);
+								await databaseInsertService.insertSetting(key, state.serverUrl);
 								rootStore.serverUrl = state.serverUrl;
 							} catch (error) {
 								console.log(error);
@@ -205,7 +206,7 @@ export default {
 							break;
 						case PARAMETERS.SETTINGS_KEYS.SELECTED_TEXT_SIZE:
 							try {
-								await services.databaseInsertService.insertSetting(key, state.selectedTextSize);
+								await databaseInsertService.insertSetting(key, state.selectedTextSize);
 								rootStore.selectedTextSize = state.selectedTextSize;
 							} catch (error) {
 								console.log(error);
@@ -215,7 +216,7 @@ export default {
 						case PARAMETERS.SETTINGS_KEYS.FILTERS_TOGGLE:
 							//imp: filters_toggle is saved as string
 							try {
-								await services.databaseInsertService.insertSetting(key, state.filtersToggle);
+								await databaseInsertService.insertSetting(key, state.filtersToggle);
 								rootStore.filtersToggle = state.filtersToggle;
 							} catch (error) {
 								console.log(error);
@@ -225,12 +226,12 @@ export default {
 					}
 				});
 
-				services.notificationService.hideProgressDialog();
+				notificationService.hideProgressDialog();
 				state.isSaving = false;
 				if (failed) {
-					services.notificationService.showAlert(labels.unknown_error, labels.error);
+					notificationService.showAlert(labels.unknown_error, labels.error);
 				} else {
-					services.notificationService.showToast(STRINGS[language].status_codes.ec5_123);
+					notificationService.showToast(STRINGS[language].status_codes.ec5_123);
 				}
 			},
 			updateSelectedTextSize(e) {
@@ -256,10 +257,14 @@ export default {
 
 		return {
 			labels,
-			...icons,
 			...methods,
 			...computedScope,
-			state
+			state,
+			//icons
+			chevronBackOutline,
+			add,
+			remove,
+			checkmark
 		};
 	}
 };

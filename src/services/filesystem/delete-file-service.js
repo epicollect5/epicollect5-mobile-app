@@ -1,7 +1,3 @@
-
-import { useRootStore } from '@/stores/root-store';
-import { PARAMETERS } from '@/config';
-
 export const deleteFileService = {
 
     //use Cordova implementation for legacy reasons

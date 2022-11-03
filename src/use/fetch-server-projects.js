@@ -1,5 +1,6 @@
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
+import { utilsService } from '@/services/utilities/utils-service';
+import { webService } from '@/services/web-service';
 
 export function fetchServerProjects (searchTerm) {
 
@@ -14,18 +15,18 @@ export function fetchServerProjects (searchTerm) {
             let projects = [];
 
             // Search for project
-            services.webService.searchForProject(searchTerm).then(
+            webService.searchForProject(searchTerm).then(
                 function (response) {
                     // Loop round and add to projects array
                     if (response.data.data.length > 0) {
                         response.data.data.forEach((projectData) => {
                             const project = projectData.project;
                             // Add image url
-                            project.logo = services.webService.getProjectImageUrl(project.slug);
+                            project.logo = webService.getProjectImageUrl(project.slug);
                             projects.push(project);
                         });
                         //on slow devices, sometimes projects gets duplicated, so we take care of it here
-                        projects = services.utilsService.filterObjectsByUniqueKey(projects, 'ref');
+                        projects = utilsService.filterObjectsByUniqueKey(projects, 'ref');
                         resolve(projects);
                     } else {
                         resolve([]);

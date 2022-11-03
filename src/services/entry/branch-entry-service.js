@@ -9,8 +9,8 @@ import { entryCommonService } from '@/services/entry/entry-common-service';
 import { databaseSelectService } from '../database/database-select-service';
 import { databaseDeleteService } from '../database/database-delete-service';
 import { branchEntryModel } from '@/models/branch-entry-model.js';
-import * as services from '@/services';
 import { Capacitor } from '@capacitor/core';
+import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
 
 export const branchEntryService = {
     type: PARAMETERS.BRANCH_ENTRY,
@@ -136,7 +136,7 @@ export const branchEntryService = {
         return new Promise((resolve) => {
 
             // Set the entry title 
-            services.entryCommonService.setEntryTitle(
+            entryCommonService.setEntryTitle(
                 projectModel.getExtraForm(self.entry.formRef),
                 projectModel.getExtraInputs(),
                 self.entry,
@@ -154,7 +154,7 @@ export const branchEntryService = {
                 answers: JSON.stringify(self.entry.answers),
                 form_ref: self.entry.formRef,
                 parent_form_ref: self.entry.parentFormRef,
-                created_at: services.utilsService.getISODateTime(),
+                created_at: utilsService.getISODateTime(),
                 title: self.entry.title,
                 synced: 0,
                 can_edit: 1,
@@ -170,7 +170,7 @@ export const branchEntryService = {
             console.log(JSON.stringify(parsedBranchEntry));
 
             //conver entry to upload format
-            const uploadableBranchEntry = services.JSONTransformerService.makeJsonEntry(PARAMETERS.BRANCH_ENTRY, parsedBranchEntry);
+            const uploadableBranchEntry = JSONTransformerService.makeJsonEntry(PARAMETERS.BRANCH_ENTRY, parsedBranchEntry);
 
             //store branch entry in memory
             if (!Object.prototype.hasOwnProperty.call(rootStore.queueTempBranchEntriesPWA, self.entry.ownerInputRef)) {

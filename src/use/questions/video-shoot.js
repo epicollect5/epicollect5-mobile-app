@@ -2,8 +2,10 @@
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
-import * as services from '@/services';
 import { Capacitor } from '@capacitor/core';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { moveFileService } from '@/services/filesystem/move-file-service';
 
 export async function videoShoot ({ media, entryUuid, state, filename }) {
 
@@ -17,29 +19,29 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
         console.log(media_object[0]);
         console.log(video_URI);
 
-        services.notificationService.stopForegroundService();
+        notificationService.stopForegroundService();
 
         //rename video file (by moving it)
-        services.moveFileService.moveToAppTemporaryDir(video_URI, filename).then(
+        moveFileService.moveToAppTemporaryDir(video_URI, filename).then(
             function () {
                 //set <video> source to video
                 //Capacitor.convertFileSrc() -> fix for WKWebView
                 //use timestamp to refresh UI
-                const timestamp = services.utilsService.generateTimestamp();
+                const timestamp = utilsService.generateTimestamp();
                 state.fileSource = Capacitor.convertFileSrc(tempDir + filename) + '?t=' + timestamp;
-                services.notificationService.hideProgressDialog();
-                services.notificationService.showToast(STRINGS[language].labels.video_saved);
+                notificationService.hideProgressDialog();
+                notificationService.showToast(STRINGS[language].labels.video_saved);
             },
             function () {
-                services.notificationService.hideProgressDialog();
-                services.notificationService.showAlert(STRINGS[language].labels.cannot_save_file);
+                notificationService.hideProgressDialog();
+                notificationService.showAlert(STRINGS[language].labels.cannot_save_file);
             }
         );
     }
 
     function _onCaptureVideoError (error) {
         console.log(error);
-        services.notificationService.stopForegroundService();
+        notificationService.stopForegroundService();
         //if not canceled by the user, reset media object
         if (error.code !== 3) {
             //reset media object to avoid saving a file that does not exist...
@@ -47,12 +49,12 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
             // Reset answer
             state.answer.answer = '';
         }
-        services.notificationService.showToast(error.message);
-        services.notificationService.hideProgressDialog();
+        notificationService.showToast(error.message);
+        notificationService.hideProgressDialog();
     }
 
     if (rootStore.device.platform !== PARAMETERS.WEB) {
-        await services.notificationService.showProgressDialog(labels.wait);
+        await notificationService.showProgressDialog(labels.wait);
 
         //record 1 video at a time
         const options = {
@@ -65,7 +67,7 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
             //check if we have a stored filename, i.e user is replacing the photo for the entry
             if (media[entryUuid][state.inputDetails.ref].stored === '') {
                 //generate new file name, this is a brand new file
-                filename = services.utilsService.generateMediaFilename(
+                filename = utilsService.generateMediaFilename(
                     entryUuid,
                     PARAMETERS.QUESTION_TYPES.VIDEO
                 );
@@ -84,7 +86,7 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
         // start video capture
         //request camera permission (Android)
         if (rootStore.device.platform === PARAMETERS.ANDROID) {
-            services.notificationService.startForegroundService();
+            notificationService.startForegroundService();
             cordova.plugins.diagnostic.requestRuntimePermission(
                 function (status) {
                     if (status === cordova.plugins.diagnostic.runtimePermissionStatus.GRANTED) {
@@ -102,30 +104,30 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
                                         options
                                     );
                                 } else {
-                                    services.notificationService.showAlert(
+                                    notificationService.showAlert(
                                         STRINGS[language].labels.permission_denied
                                     );
-                                    services.notificationService.hideProgressDialog();
+                                    notificationService.hideProgressDialog();
                                 }
                             },
                             function (error) {
                                 console.error('The following error occurred: ' + error);
-                                services.notificationService.hideProgressDialog();
+                                notificationService.hideProgressDialog();
                             },
                             cordova.plugins.diagnostic.runtimePermission.WRITE_EXTERNAL_STORAGE
                         );
                     } else {
-                        services.notificationService.showAlert(
+                        notificationService.showAlert(
                             STRINGS[language].labels.permission_denied
                         );
-                        services.notificationService.stopForegroundService();
-                        services.notificationService.hideProgressDialog();
+                        notificationService.stopForegroundService();
+                        notificationService.hideProgressDialog();
                     }
                 },
                 function (error) {
                     console.error('The following error occurred: ' + error);
-                    services.notificationService.stopForegroundService();
-                    services.notificationService.hideProgressDialog();
+                    notificationService.stopForegroundService();
+                    notificationService.hideProgressDialog();
                 },
                 cordova.plugins.diagnostic.runtimePermission.CAMERA
             );
@@ -142,8 +144,8 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
                 function (error) {
                     console.log(error);
                     console.error('The following error occurred: ' + error);
-                    services.notificationService.showToast(error.message);
-                    services.notificationService.hideProgressDialog();
+                    notificationService.showToast(error.message);
+                    notificationService.hideProgressDialog();
                 }
             );
         }

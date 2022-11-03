@@ -61,7 +61,7 @@
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
+import { addOutline, arrowBackOutline } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import { PARAMETERS } from '@/config';
@@ -123,18 +123,14 @@ export default {
 			entriesAddState,
 			state,
 			...computedScope,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			addOutline,
+			arrowBackOutline
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-.question-location-grid {
-	font-size: 18px;
-	ion-row.border-bottom {
-		border-bottom: 1px solid var(--ion-color-light-shade);
-	}
-}
 </style>

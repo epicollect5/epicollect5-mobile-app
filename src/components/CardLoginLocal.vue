@@ -55,16 +55,14 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { eye, eyeOff } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
-import { menuController, modalController } from '@ionic/vue';
-import * as services from '@/services';
+import { menuController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
-import { readonly, toRefs } from 'vue';
 import { loginLocal } from '@/use/login-local';
+
 export default {
 	setup(props) {
 		const rootStore = useRootStore();
@@ -80,7 +78,7 @@ export default {
 				email: '',
 				password: ''
 			},
-			eyeIcon: icons.eye,
+			eyeIcon: eye,
 			authLocalInputPasswordType: 'password'
 		});
 
@@ -91,11 +89,11 @@ export default {
 				loginLocal(state.authLocalCredentials);
 			},
 			toggleInputType() {
-				if (state.eyeIcon === icons.eye) {
-					state.eyeIcon = icons.eyeOff;
+				if (state.eyeIcon === eye) {
+					state.eyeIcon = eyeOff;
 					state.authLocalInputPasswordType = 'text';
 				} else {
-					state.eyeIcon = icons.eye;
+					state.eyeIcon = eye;
 					state.authLocalInputPasswordType = 'password';
 				}
 			}
@@ -116,8 +114,11 @@ export default {
 			labels,
 			state,
 			...computedScope,
-			...icons,
-			...methods
+
+			...methods,
+			//icons
+			eye,
+			eyeOff
 		};
 	}
 };

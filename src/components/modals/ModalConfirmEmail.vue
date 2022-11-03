@@ -70,18 +70,15 @@
 
 <script>
 import { modalController } from '@ionic/vue';
-import { Share } from '@capacitor/share';
-import * as icons from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
+import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
-import { useRouter } from 'vue-router';
-import * as services from '@/services';
-import { PARAMETERS } from '@/config';
-import { readonly, toRefs } from 'vue';
-import { loginLocal } from '@/use/login-local.js';
+import { readonly } from 'vue';
 import HeaderModal from '@/components/HeaderModal.vue';
+import { notificationService } from '@/services/notification-service';
+import { authVerificationService } from '@/services/auth/auth-verification-service';
+import { authLoginService } from '@/services/auth/auth-login-service';
+import { modalsHandlerService } from '@/services/modals/modals-handler-service';
 
 export default {
 	components: {
@@ -115,12 +112,12 @@ export default {
 				};
 
 				try {
-					const response = await services.authVerificationService.verifyUser(credentials);
+					const response = await authVerificationService.verifyUser(credentials);
 					//auth success, login user
-					await services.authLoginService.loginUser(response);
+					await authLoginService.loginUser(response);
 
 					//dismiss all modals
-					services.modalsHandlerService.dismissAll();
+					modalsHandlerService.dismissAll();
 
 					//any extra action to perform? (like addProject()...)
 					if (rootStore.afterUserIsLoggedIn.callback !== null) {
@@ -136,14 +133,14 @@ export default {
 						//reset callback
 						rootStore.afterUserIsLoggedIn = { callback: null, params: null };
 					} else {
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 					}
 					//show notification
-					services.notificationService.showToast(STRINGS[language].status_codes.ec5_115);
+					notificationService.showToast(STRINGS[language].status_codes.ec5_115);
 				} catch (errorCode) {
 					//show error to user
-					services.notificationService.hideProgressDialog();
-					services.notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
+					notificationService.hideProgressDialog();
+					notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
 				}
 			}
 		};
@@ -151,7 +148,6 @@ export default {
 			labels,
 			state,
 			...props,
-			...icons,
 			...methods
 		};
 	}

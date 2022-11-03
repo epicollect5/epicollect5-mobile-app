@@ -1,8 +1,10 @@
-import * as services from '@/services';
 import { STRINGS } from '@/config/strings';
 
 import { useRootStore } from '@/stores/root-store';
-import { PARAMETERS } from '@/config';
+import { utilsService } from '@/services/utilities/utils-service';
+import { errorsService } from '@/services/errors-service';
+import { webService } from '@/services/web-service';
+import { authLoginService } from '@/services/auth/auth-login-service';
 
 
 export const authLocalService = {
@@ -13,21 +15,21 @@ export const authLocalService = {
 
             (async () => {
                 // Check if we have a connection
-                const hasInternetConnection = await services.utilsService.hasInternetConnection();
+                const hasInternetConnection = await utilsService.hasInternetConnection();
                 if (!hasInternetConnection) {
                     //"no network" error
                     reject(STRINGS[language].status_codes.ec5_118);
                 }
                 //attempt login
                 try {
-                    const authResponse = await services.webService.login(credentials, 'local');
-                    const isValidResponse = services.authLoginService.validateResponse(authResponse);
+                    const authResponse = await webService.login(credentials, 'local');
+                    const isValidResponse = authLoginService.validateResponse(authResponse);
 
                     if (!isValidResponse) {
                         reject('ec5_210');
                     }
                     try {
-                        await services.authLoginService.loginUser(authResponse);
+                        await authLoginService.loginUser(authResponse);
                         resolve();
                     }
                     catch (errorCode) {
@@ -35,7 +37,7 @@ export const authLocalService = {
                     }
                 }
                 catch (response) {
-                    const errorCode = services.errorsService.getWebErrorCode(response);
+                    const errorCode = errorsService.getWebErrorCode(response);
                     reject(errorCode);
                 }
             })();

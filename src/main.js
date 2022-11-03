@@ -8,11 +8,16 @@ import { IonicVue } from '@ionic/vue';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { projectModel } from '@/models/project-model.js';
 import { setupPWAEntry } from '@/use/setup-pwa-entry';
-import * as services from '@/services';
 import { STRINGS } from '@/config/strings';
 import { commonValidate } from '@/services/validation/common-validate';
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { bookmarksService } from '@/services/utilities/bookmarks-service';
+import { initService } from '@/services/init-service';
+import { webService } from '@/services/web-service';
+import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
 
 /* Basic CSS for apps built with Ionic */
 import '@ionic/vue/css/normalize.css';
@@ -41,23 +46,16 @@ import LeftDrawer from '@/components/globals/LeftDrawer.vue';
 import RightDrawer from '@/components/globals/RightDrawer.vue';
 import ListAnswers from '@/components/ListAnswers.vue';
 import ListItemAnswer from '@/components/ListItemAnswer.vue';
-
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';
-import { initService } from '@/services/init-service';
-import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
 import { tempDirsService } from '@/services/filesystem/temp-dirs-service';
 import { persistentDirsService } from '@/services/filesystem/persistent-dirs-service';
 import { createDatabaseService } from '@/services/database/database-create-service';
-import { bookmarksService } from '@/services/utilities/bookmarks-service';
-import { utilsService } from '@/services/utilities/utils-service';
 import { PARAMETERS } from '@/config';
 import * as IonComponents from '@ionic/vue';
-import '@/registerServiceWorker';
+//import '@/registerServiceWorker';
 
-import 'leaflet/dist/leaflet.css';
-import 'leaflet.fullscreen/Control.FullScreen.css';
 
 const pinia = createPinia();
 pinia.use(PiniaLogger({
@@ -76,15 +74,93 @@ export const app = createApp(App)
   const rootStore = useRootStore();
   //register all Ionic components globally
   //imp: check performance hit of doing this
+  const keys = [
+    'IonActionSheet',
+    'IonAlert',
+    'IonApp',
+    'IonAvatar',
+    'IonBackButton',
+    'IonBackdrop',
+    'IonBadge',
+    'IonButton',
+    'IonButtons',
+    'IonCard',
+    'IonCardContent',
+    'IonCardHeader',
+    'IonCardSubtitle',
+    'IonCardTitle',
+    'IonCheckbox',
+    'IonChip',
+    'IonCol',
+    'IonContent',
+    'IonDatetime',
+    'IonFooter',
+    'IonGrid',
+    'IonHeader',
+    'IonIcon',
+    'IonImg',
+    'IonInfiniteScroll',
+    'IonInfiniteScrollContent',
+    'IonInput',
+    'IonItem',
+    'IonItemDivider',
+    'IonItemGroup',
+    'IonItemOption',
+    'IonItemOptions',
+    'IonItemSliding',
+    'IonLabel',
+    'IonList',
+    'IonListHeader',
+    'IonLoading',
+    'IonMenu',
+    'IonMenuButton',
+    'IonMenuToggle',
+    'IonModal',
+    'IonNav',
+    'IonNavLink',
+    'IonNote',
+    'IonPage',
+    'IonPicker',
+    'IonPopover',
+    'IonProgressBar',
+    'IonRadio',
+    'IonRadioGroup',
+    'IonRange',
+    'IonRefresher',
+    'IonRefresherContent',
+    'IonReorder',
+    'IonReorderGroup',
+    'IonRippleEffect',
+    'IonRouterOutlet',
+    'IonRow',
+    'IonSearchbar',
+    'IonSelect',
+    'IonSelectOption',
+    'IonSpinner',
+    'IonSplitPane',
+    'IonText',
+    'IonTextarea',
+    'IonThumbnail',
+    'IonTitle',
+    'IonToast',
+    'IonToggle',
+    'IonToolbar',
+    'IonVirtualScroll'
+  ];
   Object.keys(IonComponents).forEach((key) => {
     if (/^Ion[A-Z]\w+$/.test(key)) {
-      app.component(key, IonComponents[key]);
+      if (keys.includes(key)) {
+        app.component(key, IonComponents[key]);
+      }
     }
   });
+
+  console.log(JSON.stringify(keys));
 
   //register global components (any platform)
   app.component('base-layout', BaseLayout);
   //global components for mobile app
+  //loaded for pwa as well since thery are referenced
   app.component('left-drawer', LeftDrawer);
   app.component('right-drawer', RightDrawer);
   app.component('list-answers', ListAnswers);
@@ -110,15 +186,15 @@ export const app = createApp(App)
 
     //set en as language (PWA can get translated by browser tools)
     rootStore.language = PARAMETERS.DEFAULT_LANGUAGE;
-    //load language files
-    await initService.getLanguage();
+    //load language files for PWA
+    await initService.getLanguagePWA();
 
     //start PWA
     if (process.env.NODE_ENV === 'production') {
       rootStore.serverUrl = window.location.href.replace(window.location.pathname, '');
     }
     else {
-      const serverUrl = services.utilsService.stripTrailingSlash(process.env.VUE_APP_PWA_DEVELOPMENT_SERVER);
+      const serverUrl = utilsService.stripTrailingSlash(process.env.VUE_APP_PWA_DEVELOPMENT_SERVER);
       rootStore.serverUrl = serverUrl;
     }
     console.log('Server URL -> ', rootStore.serverUrl);
@@ -134,7 +210,7 @@ export const app = createApp(App)
 
       try {
         //get requested project and init PWA
-        const response = await services.webService.getProjectPWA(projectSlug);
+        const response = await webService.getProjectPWA(projectSlug);
         projectModel.initialisePWA((response));
 
         // Set up a new entry or edit existing one
@@ -191,11 +267,11 @@ export const app = createApp(App)
       catch (error) {
         console.log(error);
         if (error) {
-          services.notificationService
+          notificationService
             .showAlert(error.statusText, error.status);
         }
         else {
-          services.notificationService
+          notificationService
             .showAlert(STRINGS[rootStore.language].labels.unknown_error);
         }
         rootStore.notFound = true;
@@ -203,7 +279,6 @@ export const app = createApp(App)
     }
   }
   else {
-
     //start mobile app
     const dbStore = useDBStore();
     const bookmarkStore = useBookmarkStore();

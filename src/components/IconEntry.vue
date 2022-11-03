@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { bug, cloudOutline, removeCircle, cloud, cloudDone, desktopOutline } from 'ionicons/icons';
 
 export default {
 	props: {
@@ -55,7 +55,13 @@ export default {
 	setup(props) {
 		return {
 			...props,
-			...icons
+			//icons
+			bug,
+			cloudOutline,
+			removeCircle,
+			cloud,
+			cloudDone,
+			desktopOutline
 		};
 	}
 };

@@ -1,9 +1,12 @@
 import { STRINGS } from '@/config/strings';
 
 import { useRootStore } from '@/stores/root-store';
-import * as services from '@/services';
 import { projectModel } from '@/models/project-model.js';
-import { PARAMETERS } from '@/config';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
+import { exportMediaService } from '@/services/filesystem/export-media-service';
+import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
+import { writeFileService } from '@/services/filesystem/write-file-service';
 
 export const exportService = {
 
@@ -26,7 +29,7 @@ export const exportService = {
 
             function processForm (form) {
                 const formRef = form.details.ref;
-                const headers = services.JSONTransformerService.getFormCSVHeaders(
+                const headers = JSONTransformerService.getFormCSVHeaders(
                     form,
                     mappings,
                     false,
@@ -35,7 +38,7 @@ export const exportService = {
                 );
 
                 async function getEntry (offset) {
-                    const result = await services.databaseSelectService.selectOneEntry(
+                    const result = await databaseSelectService.selectOneEntry(
                         projectRef,
                         formRef,
                         null,
@@ -62,7 +65,7 @@ export const exportService = {
                         const entry = result.rows.item(0);
                         const formRef = form.details.ref;
                         //  console.log(entry);
-                        const rowArray = await services.JSONTransformerService.getFormCSVRow(
+                        const rowArray = await JSONTransformerService.getFormCSVRow(
                             entry,
                             form,
                             JSON.parse(entry.answers),
@@ -71,7 +74,7 @@ export const exportService = {
                         const rowCSV = rowArray.join(',');
                         //write entry to file
                         try {
-                            await services.writeFileService.appendCSVRow(headers, rowCSV, formRef, offset, null);
+                            await writeFileService.appendCSVRow(headers, rowCSV, formRef, offset, null);
                         } catch (error) {
                             reject(error);
                         }
@@ -100,7 +103,7 @@ export const exportService = {
 
             (async function () {
                 //get all the branch entries for all the forms
-                const result = await services.databaseSelectService.selectDistinctBranchRefs(projectRef);
+                const result = await databaseSelectService.selectDistinctBranchRefs(projectRef);
 
                 if (result.rows.length > 0) {
                     for (let i = 0; i < result.rows.length; i++) {
@@ -122,13 +125,13 @@ export const exportService = {
                     const mappings = projectModel.getProjectMappings();
                     const ownerInputRef = branch.branchRef;
                     //get branch headers first
-                    const headers = services.JSONTransformerService.getBranchCSVHeaders(
+                    const headers = JSONTransformerService.getBranchCSVHeaders(
                         branch,
                         mappings
                     );
 
                     async function getBranchEntry (offset) {
-                        const result = await services.databaseSelectService.selectOneBranchEntryForExport(
+                        const result = await databaseSelectService.selectOneBranchEntryForExport(
                             projectRef,
                             ownerInputRef,
                             offset
@@ -151,7 +154,7 @@ export const exportService = {
                         else {
                             const branchEntry = result.rows.item(0);
                             console.log(branchEntry);
-                            const row = await services.JSONTransformerService.getBranchCSVRow(
+                            const row = await JSONTransformerService.getBranchCSVRow(
                                 branchEntry,
                                 branch,
                                 JSON.parse(branchEntry.answers),
@@ -162,7 +165,7 @@ export const exportService = {
 
                             //write entry to file
                             try {
-                                await services.writeFileService.appendCSVRow(headers, row, branch.formRef, offset, branch.branchRef);
+                                await writeFileService.appendCSVRow(headers, row, branch.formRef, offset, branch.branchRef);
                             } catch (error) {
                                 reject(error);
                             }
@@ -189,10 +192,10 @@ export const exportService = {
             (async function () {
                 // 1 - silently remove external media directories (if they exist already)
                 try {
-                    await services.mediaDirsService.removeExternalMediaDirs(projectSlug);
+                    await mediaDirsService.removeExternalMediaDirs(projectSlug);
                     // 2 - copy all media files by copying the media private folders to the download folder
                     try {
-                        await services.exportMediaService.execute(projectRef, projectSlug);
+                        await exportMediaService.execute(projectRef, projectSlug);
                         resolve();
                     } catch (error) {
                         reject(error);

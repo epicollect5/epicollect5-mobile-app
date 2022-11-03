@@ -1,8 +1,10 @@
 import { STRINGS } from '@/config/strings';
 
 import { useRootStore } from '@/stores/root-store';
-import * as services from '@/services';
-
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { errorsService } from '@/services/errors-service';
+import { webService } from '@/services/web-service';
 
 export const authPasswordlessService = {
 
@@ -18,15 +20,15 @@ export const authPasswordlessService = {
             }
             (async () => {
                 // Check if we have a connection
-                const hasInternetConnection = await services.utilsService.hasInternetConnection();
+                const hasInternetConnection = await utilsService.hasInternetConnection();
                 if (!hasInternetConnection) {
                     reject('ec5_118');
                 } else {
-                    await services.notificationService.showProgressDialog(STRINGS[language].labels.wait + '...');
+                    await notificationService.showProgressDialog(STRINGS[language].labels.wait + '...');
 
-                    services.webService.getPasswordlessCode(email).then(
+                    webService.getPasswordlessCode(email).then(
                         function (response) {
-                            services.notificationService.hideProgressDialog();
+                            notificationService.hideProgressDialog();
                             console.log(response);
 
                             if (response.data.data.code === 'ec5_372') {
@@ -38,14 +40,14 @@ export const authPasswordlessService = {
                                 //   $rootStore.passwordlessLoginModal.show();
                             }
                             else {
-                                services.notificationService.hideProgressDialog();
-                                const errorCode = services.errorsService.getWebErrorCode(response);
+                                notificationService.hideProgressDialog();
+                                const errorCode = errorsService.getWebErrorCode(response);
                                 reject(errorCode);
                             }
                         },
                         function (response) {
-                            services.notificationService.hideProgressDialog();
-                            const errorCode = services.errorsService.getWebErrorCode(response);
+                            notificationService.hideProgressDialog();
+                            const errorCode = errorsService.getWebErrorCode(response);
                             reject(errorCode);
                         });
                 }
@@ -60,19 +62,19 @@ export const authPasswordlessService = {
         return new Promise((resolve, reject) => {
             (async () => {
                 // Check if we have a connection
-                const hasInternetConnection = await services.utilsService.hasInternetConnection();
+                const hasInternetConnection = await utilsService.hasInternetConnection();
                 if (!hasInternetConnection) {
                     reject('ec5_118');
                 } else {
-                    await services.notificationService.showProgressDialog(STRINGS[language].labels.sign_in + '...');
+                    await notificationService.showProgressDialog(STRINGS[language].labels.sign_in + '...');
 
-                    services.webService.passwordlessLogin(credentials).then(
+                    webService.passwordlessLogin(credentials).then(
                         (response) => {
                             resolve(response);
                         },
                         (response) => {
-                            services.notificationService.hideProgressDialog();
-                            const errorCode = services.errorsService.getWebErrorCode(response);
+                            notificationService.hideProgressDialog();
+                            const errorCode = errorsService.getWebErrorCode(response);
                             reject(errorCode);
                         });
                 }

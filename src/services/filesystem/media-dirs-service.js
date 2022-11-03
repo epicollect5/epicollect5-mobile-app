@@ -2,7 +2,7 @@ import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import * as services from '@/services';
+import { utilsService } from '@/services/utilities/utils-service';
 
 export const mediaDirsService = {
 
@@ -127,7 +127,7 @@ export const mediaDirsService = {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const labels = STRINGS[language].language;
-        const downloadFolder = services.utilsService.getPlatformDownloadFolder();
+        const downloadFolder = utilsService.getPlatformDownloadFolder();
         const photoDirDestination =
             downloadFolder + projectSlug + '/' + PARAMETERS.PHOTO_DIR;
         const audioDirDestination =

@@ -138,15 +138,15 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { closeOutline, filter, cloud, removeCircle, cloudOutline } from 'ionicons/icons';
 import { STRINGS } from '@/config/strings';
 
 import { useRootStore } from '@/stores/root-store';
 import { reactive, computed } from '@vue/reactivity';
 import { modalController } from '@ionic/vue';
-import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
+import { databaseSelectService } from '@/services/database/database-select-service';
 
 export default {
 	props: {
@@ -197,7 +197,7 @@ export default {
 				};
 
 				(async () => {
-					const result = await services.databaseSelectService.countBranchesForQuestion(
+					const result = await databaseSelectService.countBranchesForQuestion(
 						ownerEntryUuid,
 						ownerInputRef,
 						filters,
@@ -317,24 +317,17 @@ export default {
 			state,
 			PARAMETERS,
 			...computedScope,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			closeOutline,
+			filter,
+			cloud,
+			removeCircle,
+			cloudOutline
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-ion-content {
-	--background: transparent;
-}
-ion-header {
-	ion-toolbar {
-		--background: transparent;
-		ion-button,
-		ion-icon {
-			color: #333;
-		}
-	}
-}
 </style>

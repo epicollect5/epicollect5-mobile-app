@@ -43,14 +43,13 @@
 <script>
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
-
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
-import { reactive, computed, readonly, toRefs } from '@vue/reactivity';
-import { inject, provide } from 'vue';
+import { reactive, computed, readonly } from '@vue/reactivity';
+import { inject } from 'vue';
 import QuestionLabelPossibleAnswers from '@/components/QuestionLabelPossibleAnswers';
 import ListPossibleAnswersRadio from '@/components/ListPossibleAnswersRadio';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	components: {
@@ -99,7 +98,7 @@ export default {
 		const scope = { questionType, isGroupInput };
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		//set up array with the selected answer to make modals and child componets work
 		if (state.answer.answer !== '') {
@@ -109,7 +108,7 @@ export default {
 		const computedScope = {
 			hasError: computed(() => {
 				//any error for this question?
-				return services.utilsService.questionHasError(readonly(state));
+				return utilsService.questionHasError(readonly(state));
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -148,7 +147,6 @@ export default {
 		return {
 			labels: STRINGS[rootStore.language].labels,
 			state,
-			...icons,
 			...computedScope,
 			...scope,
 			...methods

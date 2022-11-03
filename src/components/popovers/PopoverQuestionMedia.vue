@@ -29,8 +29,7 @@
 
 <script>
 import { popoverController } from '@ionic/vue';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { trash, shareSocial } from 'ionicons/icons';
 import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import { useRootStore } from '@/stores/root-store';
@@ -38,7 +37,9 @@ import { STRINGS } from '@/config/strings';
 import { Share } from '@capacitor/share';
 import { computed } from '@vue/reactivity';
 import { projectModel } from '@/models/project-model';
-import axios from 'axios';
+import { notificationService } from '@/services/notification-service';
+import { deleteFileService } from '@/services/filesystem/delete-file-service';
+import { webService } from '@/services/web-service';
 
 export default {
 	props: {
@@ -107,27 +108,27 @@ export default {
 				//if stored, we delete the filename reference, and the file is deleted
 				//from the server when the entry is saved
 				//todo: check if stored files are deleted
-				await services.notificationService.showProgressDialog(labels.wait);
+				await notificationService.showProgressDialog(labels.wait);
 
 				const projectSlug = projectModel.getSlug();
 
 				if (filenameCachedPWA !== '') {
 					//delete temp file from server
 					try {
-						await services.webService.deleteTempMediaFile(
+						await webService.deleteTempMediaFile(
 							projectSlug,
 							entryUuid,
 							props.mediaType,
 							filenameCachedPWA
 						);
-						services.notificationService.showToast(labels.file_deleted);
+						notificationService.showToast(labels.file_deleted);
 						popoverController.dismiss(PARAMETERS.ACTIONS.FILE_DELETED);
 					} catch (error) {
-						services.notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
+						notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
 						popoverController.dismiss(null);
 						console.log(error);
 					} finally {
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 					}
 				} else {
 					if (filenameStoredPWA !== '') {
@@ -137,17 +138,17 @@ export default {
 							filename: filenameStoredPWA
 						});
 
-						services.notificationService.showToast(labels.file_deleted);
+						notificationService.showToast(labels.file_deleted);
 						popoverController.dismiss(PARAMETERS.ACTIONS.FILE_DELETED);
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 					} else {
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 						return false;
 					}
 				}
 			},
 			async removeNative() {
-				await services.notificationService.showProgressDialog(labels.wait);
+				await notificationService.showProgressDialog(labels.wait);
 
 				if (filenameCached !== '') {
 					//delete file immediately as it is not saved yet
@@ -158,15 +159,15 @@ export default {
 						}
 					}
 
-					services.deleteFileService.removeFile(fileURI).then(
+					deleteFileService.removeFile(fileURI).then(
 						() => {
-							services.notificationService.hideProgressDialog();
+							notificationService.hideProgressDialog();
 							popoverController.dismiss(PARAMETERS.ACTIONS.FILE_DELETED);
 						},
 						(error) => {
-							services.notificationService.hideProgressDialog();
+							notificationService.hideProgressDialog();
 							popoverController.dismiss();
-							services.notificationService.showAlert(error.code, labels.error);
+							notificationService.showAlert(error.code, labels.error);
 						}
 					);
 				} else {
@@ -191,17 +192,17 @@ export default {
 						});
 						//The actual deletion is done after the user save the entry
 						//just remove from the UI the reference
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 						popoverController.dismiss(PARAMETERS.ACTIONS.FILE_QUEUED);
 					} else {
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 						return false;
 					}
 				}
 			},
 			async remove() {
 				//ask user for confirmation
-				const confirmed = await services.notificationService.confirmSingle(
+				const confirmed = await notificationService.confirmSingle(
 					labels.are_you_sure,
 					labels.delete
 				);
@@ -224,9 +225,12 @@ export default {
 
 		return {
 			labels,
-			...icons,
+
 			...methods,
-			...computedScope
+			...computedScope,
+			//icons
+			trash,
+			shareSocial
 		};
 	}
 };

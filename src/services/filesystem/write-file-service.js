@@ -1,9 +1,9 @@
 /*
 
 */
-import * as services from '@/services';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { projectModel } from '@/models/project-model.js';
+import { utilsService } from '@/services/utilities/utils-service';
 
 export const writeFileService = {
 
@@ -48,7 +48,7 @@ export const writeFileService = {
     },
     getFilePath (formRef, branchRef) {
 
-        const downloadFolder = services.utilsService.getPlatformDownloadFolder();
+        const downloadFolder = utilsService.getPlatformDownloadFolder();
         const projectSlug = projectModel.getSlug();
         const mappings = projectModel.getProjectMappings();
         const projectExtra = projectModel.getProjectExtra();
@@ -72,7 +72,7 @@ export const writeFileService = {
             for (const [inputRef, input] of Object.entries(defaultMapping[0].forms[formRef])) {
                 if (inputRef === branchRef) {
                     // branchIndex + 1 to start from 1
-                    filename = services.utilsService.generateFilenameForExport('branch-' + (branchIndex + 1), branchHeader);
+                    filename = utilsService.generateFilenameForExport('branch-' + (branchIndex + 1), branchHeader);
                     break;
                 }
                 branchIndex++;
@@ -80,7 +80,7 @@ export const writeFileService = {
         }
         else {
             // formIndex + 1 to start from 1
-            filename = services.utilsService.generateFilenameForExport('form-' + (formIndex + 1), formName);
+            filename = utilsService.generateFilenameForExport('form-' + (formIndex + 1), formName);
         }
         path = downloadFolder + projectSlug + '/' + filename + '.csv';
         return path;

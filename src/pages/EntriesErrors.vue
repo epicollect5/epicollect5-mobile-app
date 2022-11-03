@@ -146,16 +146,19 @@
 import { menuController } from '@ionic/vue';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
-import * as icons from 'ionicons/icons';
+import { bug, cloud, chevronBackOutline, ellipsisVertical } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
 import { useRouter, useRoute } from 'vue-router';
 import { onMounted, watch } from 'vue';
-import * as services from '@/services';
 import IconEntry from '@/components/IconEntry';
 import { entryModel } from '@/models/entry-model';
 import { useBackButton } from '@ionic/vue';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { entryService } from '@/services/entry/entry-service';
 
 export default {
 	components: { IconEntry },
@@ -176,7 +179,7 @@ export default {
 		});
 
 		//get markup to show project logo in page header
-		state.projectName = services.utilsService.getProjectNameMarkup();
+		state.projectName = utilsService.getProjectNameMarkup();
 
 		onMounted(async () => {
 			console.log('Component Entries Errors is mounted!');
@@ -219,29 +222,27 @@ export default {
 				} else {
 					// If we have a branch entry
 					// We need to load the owner entry
-					services.databaseSelectService
-						.selectEntry(entry.owner_entry_uuid, null)
-						.then(function (res) {
-							// Set up the owner entry
-							const ownerEntry = entryModel;
-							ownerEntry.initialise(res.rows.item(0));
-							services.entryService.setUpExisting(ownerEntry).then(function () {
-								// Go to the branch owner question
-								rootStore.routeParams = {
-									formRef: entry.form_ref,
-									inputRef: entry.owner_input_ref,
-									inputIndex: projectModel.getInputIndexFromRef(
-										entry.form_ref,
-										entry.owner_input_ref
-									),
-									error: { errors: [] }
-								};
+					databaseSelectService.selectEntry(entry.owner_entry_uuid, null).then(function (res) {
+						// Set up the owner entry
+						const ownerEntry = entryModel;
+						ownerEntry.initialise(res.rows.item(0));
+						entryService.setUpExisting(ownerEntry).then(function () {
+							// Go to the branch owner question
+							rootStore.routeParams = {
+								formRef: entry.form_ref,
+								inputRef: entry.owner_input_ref,
+								inputIndex: projectModel.getInputIndexFromRef(
+									entry.form_ref,
+									entry.owner_input_ref
+								),
+								error: { errors: [] }
+							};
 
-								router.replace({
-									name: PARAMETERS.ROUTES.ENTRIES_ADD
-								});
+							router.replace({
+								name: PARAMETERS.ROUTES.ENTRIES_ADD
 							});
 						});
+					});
 				}
 			}
 		};
@@ -286,7 +287,7 @@ export default {
 			let entry;
 
 			// Show loader
-			await services.notificationService.showProgressDialog(labels.wait);
+			await notificationService.showProgressDialog(labels.wait);
 			state.isFetching = true;
 
 			// Reset state.entriesInvalid
@@ -294,7 +295,7 @@ export default {
 
 			// Get hierarchy entries with errors
 
-			const entriesResult = await services.databaseSelectService.selectInvalidEntries(
+			const entriesResult = await databaseSelectService.selectInvalidEntries(
 				PARAMETERS.ENTRIES_TABLE,
 				projectRef
 			);
@@ -319,7 +320,7 @@ export default {
 			}
 
 			// Get branch entries with errors
-			const branchEntriesResult = await services.databaseSelectService.selectInvalidEntries(
+			const branchEntriesResult = await databaseSelectService.selectInvalidEntries(
 				PARAMETERS.BRANCH_ENTRIES_TABLE,
 				projectRef
 			);
@@ -351,7 +352,7 @@ export default {
 			}
 
 			// Hide loader
-			services.notificationService.hideProgressDialog();
+			notificationService.hideProgressDialog();
 			state.isFetching = false;
 
 			console.log(state.entriesInvalid);
@@ -381,10 +382,14 @@ export default {
 
 		return {
 			labels,
-			...icons,
 			...methods,
 			...scope,
-			state
+			state,
+			//icons
+			bug,
+			cloud,
+			chevronBackOutline,
+			ellipsisVertical
 		};
 	}
 };

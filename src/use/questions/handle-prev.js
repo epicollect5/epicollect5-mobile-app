@@ -1,6 +1,6 @@
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
 import { initialSetup } from '@/use/questions/initial-setup';
+import { entryService } from '@/services/entry/entry-service';
 
 // Initial set up for each question
 export async function handlePrev (state, scope) {
@@ -24,8 +24,8 @@ export async function handlePrev (state, scope) {
     // Set timeout to give rendering time to catch up
     setTimeout(function () {
         // Check if allowSave variable has changed
-        if (state.allowSave !== services.entryService.allowSave) {
-            state.allowSave = services.entryService.allowSave;
+        if (state.allowSave !== entryService.allowSave) {
+            state.allowSave = entryService.allowSave;
         }
         state.questionParams.currentInputRef = jumpParams.previous_input_ref;
         state.questionParams.currentInputIndex = jumpParams.previous_input_index;

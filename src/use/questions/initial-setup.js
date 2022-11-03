@@ -1,6 +1,7 @@
 import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
+import { entryService } from '@/services/entry/entry-service';
+import { branchEntryService } from '@/services/entry/branch-entry-service';
 
 // Initial set up for each question
 export async function initialSetup (state, scope) {
@@ -38,11 +39,11 @@ export async function initialSetup (state, scope) {
     // Set up entry/branch entry specific details
     if (state.questionParams.isBranch) {
         //is branch
-        scope.entryService = services.branchEntryService;
+        scope.entryService = branchEntryService;
         state.inputs = scope.entryService.branchInputs;
     } else {
         //is hierarchy
-        scope.entryService = services.entryService;
+        scope.entryService = entryService;
         state.inputs = scope.entryService.form.inputs;
     }
     // If we've been passed currentInputIndex 0, retrieve the first input ref

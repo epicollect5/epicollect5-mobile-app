@@ -78,16 +78,16 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { open, closeOutline } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 
 import { useRootStore } from '@/stores/root-store';
-import { useRouter } from 'vue-router';
 import { modalController } from '@ionic/vue';
-import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
+import { utilsService } from '@/services/utilities/utils-service';
+import { notificationService } from '@/services/notification-service';
 
 export default {
 	setup(props) {
@@ -106,18 +106,15 @@ export default {
 				modalController.dismiss();
 			},
 			getProjectNameMarkup() {
-				return services.utilsService.getProjectNameMarkup(true);
+				return utilsService.getProjectNameMarkup(true);
 			},
 			async goToProjectHomePage() {
 				const slug = projectModel.getSlug();
 				const homepage = PARAMETERS.DEFAULT_SERVER_URL + PARAMETERS.API.ROUTES.PROJECT + slug;
 
-				const hasInternetConnection = await services.utilsService.hasInternetConnection();
+				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
-					services.notificationService.showAlert(
-						STRINGS[language].status_codes.ec5_135 + '!',
-						labels.error
-					);
+					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
 					state.isFetching = false;
 					return;
 				}
@@ -135,24 +132,14 @@ export default {
 			labels,
 			state,
 			...computedScope,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			open,
+			closeOutline
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-ion-content {
-	--background: transparent;
-}
-ion-header {
-	ion-toolbar {
-		--background: transparent;
-		ion-button,
-		ion-icon {
-			color: #333;
-		}
-	}
-}
 </style>

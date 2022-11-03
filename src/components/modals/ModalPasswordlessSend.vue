@@ -60,18 +60,15 @@
 
 <script>
 import { modalController } from '@ionic/vue';
-import { Share } from '@capacitor/share';
-import * as icons from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
+import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
-import { useRouter } from 'vue-router';
-import * as services from '@/services';
-import { PARAMETERS } from '@/config';
-import { readonly, toRefs } from 'vue';
+import { readonly } from 'vue';
 import ModalPasswordlessLogin from '@/components/modals/ModalPasswordlessLogin';
 import HeaderModal from '@/components/HeaderModal.vue';
+import { notificationService } from '@/services/notification-service';
+import { authPasswordlessService } from '@/services/auth/auth-passwordless-service';
+import { modalsHandlerService } from '@/services/modals/modals-handler-service';
 
 export default {
 	components: {
@@ -97,14 +94,14 @@ export default {
 		const scope = {};
 		const methods = {
 			dismiss() {
-				services.modalsHandlerService.passwordlessSend.dismiss();
+				modalsHandlerService.passwordlessSend.dismiss();
 			},
 			async requestPasswordlessCode() {
 				const email = readonly(state.authPasswordlessCredentials.email);
-				services.authPasswordlessService.getCode(email).then(
+				authPasswordlessService.getCode(email).then(
 					async () => {
 						//open modal to enter code
-						services.modalsHandlerService.passwordlessLogin = await modalController.create({
+						modalsHandlerService.passwordlessLogin = await modalController.create({
 							cssClass: 'modal-passwordless-login',
 							component: ModalPasswordlessLogin,
 							showBackdrop: true,
@@ -114,7 +111,7 @@ export default {
 							}
 						});
 
-						services.modalsHandlerService.passwordlessLogin.onDidDismiss().then((response) => {
+						modalsHandlerService.passwordlessLogin.onDidDismiss().then((response) => {
 							console.log('is', response.data);
 							//when user is logged in, close all modals
 							if (response?.data?.closeAllModals) {
@@ -122,11 +119,11 @@ export default {
 								modalController.dismiss({ closeAllModals: true });
 							}
 						});
-						services.modalsHandlerService.passwordlessLogin.present();
+						modalsHandlerService.passwordlessLogin.present();
 					},
 					(errorCode) => {
 						//show error to user
-						services.notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
+						notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
 					}
 				);
 			}
@@ -134,7 +131,6 @@ export default {
 		return {
 			labels,
 			state,
-			...icons,
 			...methods
 		};
 	}

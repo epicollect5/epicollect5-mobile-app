@@ -99,20 +99,26 @@
 <script>
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
-import * as icons from 'ionicons/icons';
+import { chevronBackOutline, trash } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
 import { branchEntryModel } from '@/models/branch-entry-model.js';
 import { useRouter, useRoute } from 'vue-router';
 import { watch } from 'vue';
-import * as services from '@/services';
 import ListAnswers from '@/components/ListAnswers';
 import { useBackButton } from '@ionic/vue';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { databaseDeleteService } from '@/services/database/database-delete-service';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { branchEntryService } from '@/services/entry/branch-entry-service';
+import { deleteFileService } from '@/services/filesystem/delete-file-service';
+import { answerService } from '@/services/entry/answer-service';
 
 export default {
 	components: { ListAnswers },
-	setup(props) {
+	setup() {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -148,7 +154,7 @@ export default {
 		state.ownerInputRef = routeParams.ownerInputRef;
 		state.formRef = routeParams.formRef;
 		//get markup to show project logo in page header
-		state.projectName = services.utilsService.getProjectNameMarkup();
+		state.projectName = utilsService.getProjectNameMarkup();
 		// Retrieve all branch inputs
 
 		state.branchInputs = projectModel.getBranches(state.formRef, state.ownerInputRef);
@@ -177,16 +183,16 @@ export default {
 				});
 			},
 			async deleteEntryBranch() {
-				const confirmed = await services.notificationService.confirmSingle(
+				const confirmed = await notificationService.confirmSingle(
 					STRINGS[language].status_codes.ec5_129,
 					labels.delete_branch_entry + '?'
 				);
 
 				if (confirmed) {
-					await services.databaseDeleteService.deleteBranchEntry(state.entryUuid);
+					await databaseDeleteService.deleteBranchEntry(state.entryUuid);
 
 					// Delete all the media related to this entry
-					const mediaFiles = await services.databaseSelectService.selectProjectMedia({
+					const mediaFiles = await databaseSelectService.selectProjectMedia({
 						project_ref: projectModel.getProjectRef(),
 						synced: null,
 						entry_uuid: [state.entryUuid]
@@ -199,17 +205,17 @@ export default {
 
 					if (allMediaFiles.length === 0) {
 						// Go back
-						services.notificationService.showToast(labels.entry_deleted);
+						notificationService.showToast(labels.entry_deleted);
 						methods.goBack();
 						return false;
 					}
 
 					try {
-						await services.deleteFileService.removeFiles(allMediaFiles);
+						await deleteFileService.removeFiles(allMediaFiles);
 						//remove all related rows from media table
-						await services.databaseDeleteService.deleteEntryMedia(state.entryUuid);
+						await databaseDeleteService.deleteEntryMedia(state.entryUuid);
 						//navigate back
-						services.notificationService.showToast(labels.entry_deleted);
+						notificationService.showToast(labels.entry_deleted);
 						methods.goBack();
 					} catch (error) {
 						console.log(error);
@@ -218,7 +224,7 @@ export default {
 				}
 			},
 			async editEntry(inputRef, inputIndex) {
-				await services.branchEntryService.setUpExisting(state.entry);
+				await branchEntryService.setUpExisting(state.entry);
 
 				rootStore.routeParams = {
 					formRef: state.entry.formRef,
@@ -239,15 +245,14 @@ export default {
 		 */
 		async function fetchBranchAnswers() {
 			let data;
-			const error = '';
 			let inputDetails;
 
 			// Show loader
-			await services.notificationService.showProgressDialog(labels.wait, labels.loading_entry);
+			await notificationService.showProgressDialog(labels.wait, labels.loading_entry);
 
 			Promise.all([
-				services.databaseSelectService.selectBranchEntry(state.entryUuid),
-				services.databaseSelectService.selectEntryMediaErrors([state.entryUuid])
+				databaseSelectService.selectBranchEntry(state.entryUuid),
+				databaseSelectService.selectEntryMediaErrors([state.entryUuid])
 			]).then((response) => {
 				const res = response[0];
 				const mediaRes = response[1];
@@ -297,7 +302,7 @@ export default {
 				});
 
 				// Hide loader
-				services.notificationService.hideProgressDialog();
+				notificationService.hideProgressDialog();
 				state.isFetching = false;
 			});
 		}
@@ -358,7 +363,7 @@ export default {
 								type: groupInputDetails.type,
 								question:
 									groupInputDetails.type === PARAMETERS.QUESTION_TYPES.README
-										? services.utilsService.htmlDecode(groupInputDetails.question)
+										? utilsService.htmlDecode(groupInputDetails.question)
 										: groupInputDetails.question,
 								answer: _getAnswer(
 									groupInputDetails,
@@ -379,9 +384,9 @@ export default {
 					answer = _getAnswer(inputDetails, state.branches);
 
 					//any media errors on branches?
-					services.databaseSelectService
+					databaseSelectService
 						.countCurrentBranchMediaErrors(inputDetails.ref)
-						.then(function(response) {
+						.then(function (response) {
 							//set up generic branch error
 							const branch_synced_error = {
 								errors: [
@@ -418,7 +423,7 @@ export default {
 			//Get answer for viewing via the AnswerService
 
 			function _getAnswer(inputDetails, answer) {
-				return services.answerService.parseAnswerForViewing(inputDetails, answer);
+				return answerService.parseAnswerForViewing(inputDetails, answer);
 			}
 
 			function _renderErrors() {
@@ -452,7 +457,7 @@ export default {
 				state.items[inputDetails.ref] = {
 					question:
 						inputDetails.type === PARAMETERS.QUESTION_TYPES.README
-							? services.utilsService.htmlDecode(inputDetails.question)
+							? utilsService.htmlDecode(inputDetails.question)
 							: inputDetails.question,
 					answer: answer,
 					possible_answers:
@@ -466,17 +471,10 @@ export default {
 			}
 
 			//get markup to show project logo in page header
-			state.projectName = services.utilsService.getProjectNameMarkup();
+			state.projectName = utilsService.getProjectNameMarkup();
 
 			const routeParams = rootStore.routeParams;
 			console.log(routeParams);
-
-			return {
-				labels,
-				...icons,
-				...methods,
-				state
-			};
 		}
 
 		fetchBranchAnswers();
@@ -513,8 +511,10 @@ export default {
 			state,
 			labels,
 			statusCodes,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			chevronBackOutline,
+			trash
 		};
 	}
 };

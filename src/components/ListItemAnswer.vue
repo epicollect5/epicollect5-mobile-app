@@ -32,7 +32,6 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
 import AnswerLocation from '@/components/answers/AnswerLocation.vue';
 import AnswerGroup from '@/components/answers/AnswerGroup.vue';
 
@@ -73,8 +72,7 @@ export default {
 
 		return {
 			...props,
-			...methods,
-			...icons
+			...methods
 		};
 	}
 };

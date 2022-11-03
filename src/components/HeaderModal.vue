@@ -19,9 +19,8 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { closeOutline } from 'ionicons/icons';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
 export default {
 	emit: ['on-dismiss'],
@@ -38,8 +37,9 @@ export default {
 
 		return {
 			labels,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			closeOutline
 		};
 	}
 };

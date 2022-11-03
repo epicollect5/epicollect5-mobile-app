@@ -242,8 +242,7 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { trash, cloudUpload, create, add } from 'ionicons/icons';
 import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject, watch } from 'vue';
 import { modalController } from '@ionic/vue';
@@ -255,6 +254,11 @@ import ModalEntriesBranchFilter from '@/components/modals/ModalEntriesBranchFilt
 import ToolbarEntriesFilters from '@/components/ToolbarEntriesFilters';
 import IconEntry from '@/components/IconEntry';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { branchEntryService } from '@/services/entry/branch-entry-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	components: {
@@ -315,7 +319,7 @@ export default {
 		const scope = {};
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		console.log(state.answer.answer);
 
@@ -336,13 +340,12 @@ export default {
 					//get count without filters to have the total reference in the UI
 					//i.e "Found 6/50 entries"
 					//imp: not the most optimised solution, for now it will do
-					const resultWithoutFilters =
-						await services.databaseSelectService.countBranchesForQuestion(
-							ownerEntryUuid,
-							inputRef,
-							PARAMETERS.FILTERS_DEFAULT,
-							PARAMETERS.STATUS.ALL
-						);
+					const resultWithoutFilters = await databaseSelectService.countBranchesForQuestion(
+						ownerEntryUuid,
+						inputRef,
+						PARAMETERS.FILTERS_DEFAULT,
+						PARAMETERS.STATUS.ALL
+					);
 
 					//set entries counter without any filter
 					state.countNoFilters = resultWithoutFilters.rows.item(0).total;
@@ -351,7 +354,7 @@ export default {
 					state.entriesLimitReached =
 						state.entriesLimit !== null && state.countNoFilters >= state.entriesLimit;
 
-					const result = await services.databaseSelectService.countBranchesForQuestion(
+					const result = await databaseSelectService.countBranchesForQuestion(
 						ownerEntryUuid,
 						inputRef,
 						state.filters,
@@ -406,7 +409,7 @@ export default {
 		const methods = {
 			addBranch() {
 				// Set up a new branch entry
-				services.branchEntryService.setUpNew(
+				branchEntryService.setUpNew(
 					entriesAddScope.entryService.entry.formRef,
 					entriesAddState.questionParams.currentInputRef,
 					entriesAddScope.entryService.entry.entryUuid
@@ -468,7 +471,7 @@ export default {
 
 				scope.ModalEntriesBranchFilter.onWillDismiss().then((response) => {
 					//if filters changed, refresh entries
-					if (!services.utilsService.objectsMatch(state.filters, response.data.filters)) {
+					if (!utilsService.objectsMatch(state.filters, response.data.filters)) {
 						state.isFetching = true;
 						state.filters = response.data.filters;
 						state.countWithFilters = response.data.count;
@@ -487,7 +490,7 @@ export default {
 							state.hasUnsavedBranches = result.hasUnsavedBranches;
 							state.isFetching = false;
 							// hide loader (progress dialog) with a bit of delay for UX
-							services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
+							notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
 						});
 					}
 				});
@@ -555,7 +558,7 @@ export default {
 			},
 			async removeBranchPWA(id) {
 				//ask delete confirmation
-				const confirmed = await services.notificationService.confirmSingle(
+				const confirmed = await notificationService.confirmSingle(
 					labels.are_you_sure,
 					labels.delete
 				);
@@ -592,10 +595,10 @@ export default {
 					answers: entry.branch_entry.answers
 				};
 				// Show loader
-				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
+				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
 				//edit on PWA onlways start from first question
-				await services.branchEntryService.setUpExisting(branchEntry);
+				await branchEntryService.setUpExisting(branchEntry);
 				rootStore.routeParams = {
 					formRef,
 					inputRef: '',
@@ -626,7 +629,7 @@ export default {
 				state.hasUnsavedBranches = result.hasUnsavedBranches;
 				state.isFetching = false;
 				// hide loader (progress dialog) with a bit of delay for UX
-				services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
+				notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
 			});
 		}
 
@@ -665,7 +668,7 @@ export default {
 							state.hasUnsavedBranches = result.hasUnsavedBranches;
 							state.isFetching = false;
 							// hide loader (progress dialog) with a bit of delay for UX
-							services.notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
+							notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
 						});
 					}, PARAMETERS.DELAY_LONG);
 				}
@@ -676,9 +679,13 @@ export default {
 			labels,
 			state,
 			...computedScope,
-			...icons,
 			...methods,
-			PARAMETERS
+			PARAMETERS,
+			//icons
+			trash,
+			cloudUpload,
+			create,
+			add
 		};
 	}
 };

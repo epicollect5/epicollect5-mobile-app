@@ -1,20 +1,16 @@
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { fakeFileService } from '@/services/filesystem/fake-file-service';
 import { PARAMETERS } from '@/config';
-
 import { useRootStore } from '@/stores/root-store';
-
-import * as services from '@/services';
-import wordsSpanish from 'an-array-of-spanish-words';
-import wordsEnglish from 'an-array-of-english-words';
-import wordsGerman from 'an-array-of-german-words';
-
-
-
+import { utilsService } from '@/services/utilities/utils-service';
 
 export const fakeAnswerService = {
 
-    createFakeAnswer (inputDetails, entry, entryIndex) {
+    async createFakeAnswer (inputDetails, entry, entryIndex) {
+
+        const wordsSpanish = await import('an-array-of-spanish-words');
+        const wordsEnglish = await import('an-array-of-english-words');
+        const wordsGerman = await import('an-array-of-german-words');
 
         return new Promise((resolve) => {
             const rootStore = useRootStore();
@@ -53,16 +49,16 @@ export const fakeAnswerService = {
                         console.log('answer matching regex ->', answer.answer, inputDetails.regex);
                     } else {
 
-                        const numberOfWords = services.utilsService.getRandomInt(10);
+                        const numberOfWords = utilsService.getRandomInt(10);
                         let randomPhrase = '';
 
                         //add random words
                         for (let i = 0; i < numberOfWords; i++) {
-                            const language = languagesArrays[services.utilsService.getRandomInt(languagesArrays.length - 1)];
-                            randomPhrase += ' ' + language[services.utilsService.getRandomInt(language.length - 1)] + '';
+                            const language = languagesArrays[utilsService.getRandomInt(languagesArrays.length - 1)];
+                            randomPhrase += ' ' + language[utilsService.getRandomInt(language.length - 1)] + '';
                         }
 
-                        randomPhrase += ' ' + symbolsArray[services.utilsService.getRandomInt(symbolsArray.length)];
+                        randomPhrase += ' ' + symbolsArray[utilsService.getRandomInt(symbolsArray.length)];
 
                         //sanitise < and > replacing by unicode (this is here for testing)
                         randomPhrase = randomPhrase.replaceAll('>', '\ufe65');
@@ -140,9 +136,9 @@ export const fakeAnswerService = {
                 case 'location': {
                     //Mirko Locations (whole world range are -170 + 170 for lat, -80 +80 for long, considering a bit of padding)
                     //please amend accordingly
-                    const lat = services.utilsService.getRandomInRange(-160, 160, 5);
-                    const lng = services.utilsService.getRandomInRange(-80, 80, 5);
-                    answer.answer = services.utilsService.getRandomLocation(lat, lng);
+                    const lat = utilsService.getRandomInRange(-160, 160, 5);
+                    const lng = utilsService.getRandomInRange(-80, 80, 5);
+                    answer.answer = utilsService.getRandomLocation(lat, lng);
                     resolve(answer);
                     break;
                 }

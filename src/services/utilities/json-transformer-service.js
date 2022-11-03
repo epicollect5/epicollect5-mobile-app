@@ -1,9 +1,10 @@
 import { useRootStore } from '@/stores/root-store';
 import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
 import proj4 from 'proj4';
 import { Capacitor } from '@capacitor/core';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { utilsService } from '@/services/utilities/utils-service';
 
 /**
 * Make the json entry object
@@ -364,7 +365,7 @@ export const JSONTransformerService = {
                         if (answer === '') {
                             row.push('');
                         } else {
-                            row.push(services.utilsService.getUserFormattedDate(answer, format));
+                            row.push(utilsService.getUserFormattedDate(answer, format));
                         }
                         break;
                     }
@@ -373,7 +374,7 @@ export const JSONTransformerService = {
                         if (answer === '') {
                             row.push('');
                         } else {
-                            row.push(services.utilsService.getUserFormattedTime(answer, format));
+                            row.push(utilsService.getUserFormattedTime(answer, format));
                         }
                         break;
                     }
@@ -484,7 +485,7 @@ export const JSONTransformerService = {
         //if any branches, grab the counts (async)
         if (branches.length > 0) {
             branchesCounts = await Promise.all(branches.map(async (branch) => {
-                const result = await services.databaseSelectService.countBranchesForQuestion(branch.ownerEntryUuid, branch.inputRef, null, null);
+                const result = await databaseSelectService.countBranchesForQuestion(branch.ownerEntryUuid, branch.inputRef, null, null);
 
                 //shift position by metadata columns
                 let shiftBy = 3;//parent form -> [entry_uuid, created_at, title]

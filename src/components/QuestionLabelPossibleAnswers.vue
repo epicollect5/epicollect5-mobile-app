@@ -34,13 +34,13 @@
 
 <script>
 import { STRINGS } from '@/config/strings';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { filter } from 'ionicons/icons';
 import { readonly, toRefs } from '@vue/reactivity';
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 import ModalPossibleAnswers from '@/components/modals/ModalPossibleAnswers';
 import { PARAMETERS } from '@/config';
+import { notificationService } from '@/services/notification-service';
 
 export default {
 	props: {
@@ -74,7 +74,7 @@ export default {
 		const scope = {};
 		const methods = {
 			async openModalPossibleAnswers() {
-				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
+				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 				scope.ModalPossibleAnswers = await modalController.create({
 					cssClass: 'modal-search',
 					component: ModalPossibleAnswers,
@@ -97,16 +97,17 @@ export default {
 
 				scope.ModalPossibleAnswers.present().then(
 					setTimeout(() => {
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 					}, PARAMETERS.DELAY_FAST)
 				);
 			}
 		};
 
 		return {
-			...icons,
 			...props,
-			...methods
+			...methods,
+			//icons
+			filter
 		};
 	}
 };

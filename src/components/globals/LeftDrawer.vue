@@ -107,17 +107,20 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { document, bookmark, personCircle, book, people, settings } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { useRouter } from 'vue-router';
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
 import { projectModel } from '@/models/project-model.js';
 import { menuController } from '@ionic/vue';
 import { showModalLogin } from '@/use/show-modal-login';
+import { utilsService } from '@/services/utilities/utils-service';
+import { notificationService } from '@/services/notification-service';
+import { databaseDeleteService } from '@/services/database/database-delete-service';
+
 export default {
 	setup() {
 		const rootStore = useRootStore();
@@ -157,22 +160,16 @@ export default {
 				menuController.close();
 			},
 			async goToCommunityPage() {
-				const hasInternetConnection = await services.utilsService.hasInternetConnection();
+				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
-					services.notificationService.showAlert(
-						STRINGS[language].status_codes.ec5_135 + '!',
-						labels.error
-					);
+					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
 				}
 				window.open(PARAMETERS.COMMUNITY_SUPPORT_URL, '_system', 'location=yes');
 			},
 			async goToUserGuide() {
-				const hasInternetConnection = await services.utilsService.hasInternetConnection();
+				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
-					services.notificationService.showAlert(
-						STRINGS[language].status_codes.ec5_135 + '!',
-						labels.error
-					);
+					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
 					return;
 				}
 				window.open(PARAMETERS.USER_GUIDE_URL, '_system', 'location=yes');
@@ -198,11 +195,11 @@ export default {
 				menuController.close();
 			},
 			async openModalLogin() {
-				const hasInternetConnection = await services.utilsService.hasInternetConnection();
+				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
-					services.notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
+					notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
 				} else {
-					await services.notificationService.showProgressDialog();
+					await notificationService.showProgressDialog();
 
 					// Call logout first
 					methods.logout(false).then(
@@ -210,8 +207,8 @@ export default {
 							showModalLogin();
 						},
 						async function () {
-							services.notificationService.hideProgressDialog();
-							services.notificationService.showToast(STRINGS[language].status_codes.ec5_267);
+							notificationService.hideProgressDialog();
+							notificationService.showToast(STRINGS[language].status_codes.ec5_267);
 						}
 					);
 				}
@@ -230,13 +227,13 @@ export default {
 					};
 
 					if (showToast) {
-						services.notificationService.showToast(STRINGS[language].status_codes.ec5_141);
+						notificationService.showToast(STRINGS[language].status_codes.ec5_141);
 					}
 					menuController.close();
 				}
 				return new Promise((resolve) => {
 					// Delete the current token
-					services.databaseDeleteService.deleteToken().then(function () {
+					databaseDeleteService.deleteToken().then(function () {
 						if (rootStore.device.platform !== PARAMETERS.WEB) {
 							// Attempt to logout google user
 							window.plugins.googleplus.logout(
@@ -276,9 +273,16 @@ export default {
 		return {
 			labels,
 			state,
-			...icons,
 			...methods,
-			...computedScope
+			...computedScope,
+			//icons*******
+			document,
+			bookmark,
+			personCircle,
+			book,
+			people,
+			settings
+			//************
 		};
 	}
 };

@@ -31,7 +31,7 @@
 <script>
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
-import * as icons from 'ionicons/icons';
+import { close } from 'ionicons/icons';
 
 export default {
 	emit: ['filters-clear'],
@@ -58,9 +58,10 @@ export default {
 
 		return {
 			labels,
-			...icons,
 			...props,
-			...methods
+			...methods,
+			//icons
+			close
 		};
 	}
 };

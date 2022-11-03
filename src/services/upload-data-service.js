@@ -1,9 +1,13 @@
 import { STRINGS } from '@/config/strings';
 
 import { useRootStore } from '@/stores/root-store';
-import * as services from '@/services';
 import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { databaseUpdateService } from '@/services/database/database-update-service';
+import { notificationService } from '@/services/notification-service';
+import { webService } from '@/services/web-service';
+import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
 
 export const uploadDataService = {
 
@@ -73,7 +77,7 @@ export const uploadDataService = {
                         parentUuid = entries[entries.length - 1];
                     }
                     // Select one entry that is either unsynced, or has unsynced children
-                    services.databaseSelectService.selectOneEntry(projectRef, formRef, parentUuid, [PARAMETERS.SYNCED_CODES.UNSYNCED, PARAMETERS.SYNCED_CODES.HAS_UNSYNCED_CHILD_ENTRIES], null).then(
+                    databaseSelectService.selectOneEntry(projectRef, formRef, parentUuid, [PARAMETERS.SYNCED_CODES.UNSYNCED, PARAMETERS.SYNCED_CODES.HAS_UNSYNCED_CHILD_ENTRIES], null).then(
                         function (res) {
                             if (res.rows.length > 0) {
                                 console.log('synced code: ' + res.rows.item(0).synced);
@@ -92,8 +96,8 @@ export const uploadDataService = {
                                         _uploadBranch();
                                     }, PARAMETERS.DELAY_FAST);
                                 } else {
-                                    entry = services.JSONTransformerService.makeJsonEntry(PARAMETERS.ENTRY, res.rows.item(0));
-                                    services.webService.uploadEntry(slug, entry).then(
+                                    entry = JSONTransformerService.makeJsonEntry(PARAMETERS.ENTRY, res.rows.item(0));
+                                    webService.uploadEntry(slug, entry).then(
                                         function () {
 
 
@@ -113,7 +117,7 @@ export const uploadDataService = {
                                             //upload the progress with that total since we are
                                             //skipping to the next hierarchy entry
                                             const ownerEntryUuid = entry.entry.entry_uuid;
-                                            const entryBranchesCount = await services.databaseSelectService.countUnsyncedBranchEntries(projectRef, ownerEntryUuid);
+                                            const entryBranchesCount = await databaseSelectService.countUnsyncedBranchEntries(projectRef, ownerEntryUuid);
 
                                             //add branche to upload counter (if any)
                                             if (entryBranchesCount.rows.item(0).count > 0) {
@@ -164,7 +168,7 @@ export const uploadDataService = {
                                     parentUuid = entries[entries.length - 1];
                                 }
                                 // Only sync this entry when fully uploaded (all its branches and children are uploaded)
-                                services.databaseUpdateService.updateSynced(PARAMETERS.ENTRY, parentUuid, PARAMETERS.SYNCED_CODES.SYNCED).then(
+                                databaseUpdateService.updateSynced(PARAMETERS.ENTRY, parentUuid, PARAMETERS.SYNCED_CODES.SYNCED).then(
                                     function () {
                                         console.log('Syncing');
                                         // No children left to upload for this entry
@@ -197,7 +201,7 @@ export const uploadDataService = {
                 }
 
                 // Select one unsynced branch entry
-                services.databaseSelectService.selectOneBranchEntry(projectRef, ownerEntryUuid, PARAMETERS.SYNCED_CODES.UNSYNCED).then(
+                databaseSelectService.selectOneBranchEntry(projectRef, ownerEntryUuid, PARAMETERS.SYNCED_CODES.UNSYNCED).then(
                     function (res) {
 
                         // If we have a branch, upload it
@@ -206,12 +210,12 @@ export const uploadDataService = {
                             // Can edit, so go ahead and upload entry
                             if (res.rows.item(0).can_edit === 1) {
 
-                                entry = services.JSONTransformerService.makeJsonEntry(PARAMETERS.BRANCH_ENTRY, res.rows.item(0));
+                                entry = JSONTransformerService.makeJsonEntry(PARAMETERS.BRANCH_ENTRY, res.rows.item(0));
 
-                                services.webService.uploadEntry(slug, entry).then(
+                                webService.uploadEntry(slug, entry).then(
                                     function () {
                                         // Sync branch entry
-                                        services.databaseUpdateService.updateSynced(PARAMETERS.BRANCH_ENTRY, res.rows.item(0).entry_uuid, PARAMETERS.SYNCED_CODES.SYNCED).then(
+                                        databaseUpdateService.updateSynced(PARAMETERS.BRANCH_ENTRY, res.rows.item(0).entry_uuid, PARAMETERS.SYNCED_CODES.SYNCED).then(
                                             function () {
                                                 console.log('Syncing branch');
 
@@ -271,7 +275,7 @@ export const uploadDataService = {
              */
             function _updateProgress (count) {
                 count ? currentEntryIndex += count : currentEntryIndex++;
-                services.notificationService.setProgress({ total, done: currentEntryIndex });
+                notificationService.setProgress({ total, done: currentEntryIndex });
             }
 
             /**
@@ -300,7 +304,7 @@ export const uploadDataService = {
                     } else {
 
                         // Update synced_error field then allow upload to continue
-                        services.databaseUpdateService.updateSynced(type, entryUuid, PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR, errorObj).then(
+                        databaseUpdateService.updateSynced(type, entryUuid, PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR, errorObj).then(
                             function () {
                                 console.log('Syncing error');
 

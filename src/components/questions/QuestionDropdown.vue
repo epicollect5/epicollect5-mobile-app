@@ -51,14 +51,16 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { caretDown } from 'ionicons/icons';
 import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject } from 'vue';
 import { PARAMETERS } from '@/config';
 import { modalController } from '@ionic/vue';
 import ModalPossibleAnswers from '@/components/modals/ModalPossibleAnswers';
 import GridQuestionWide from '@/components/GridQuestionWide';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	components: {
@@ -108,12 +110,10 @@ export default {
 		const scope = {};
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		const mode = rootStore.device.platform === PARAMETERS.IOS ? 'ios' : 'md';
-		const hashMap = services.utilsService.buildPossibleAnswersHashMap(
-			state.inputDetails.possible_answers
-		);
+		const hashMap = utilsService.buildPossibleAnswersHashMap(state.inputDetails.possible_answers);
 
 		//set up array with the selected answer to make modals and child componets work
 		if (state.answer.answer !== '') {
@@ -126,7 +126,7 @@ export default {
 				mode
 			},
 			hasError: computed(() => {
-				return services.utilsService.hasQuestionError(state);
+				return utilsService.hasQuestionError(state);
 			}),
 			dropdownButtonLabel: computed(() => {
 				if (state.answer.answer === '') {
@@ -152,7 +152,7 @@ export default {
 
 		const methods = {
 			async openModalPossibleAnswers() {
-				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
+				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
 				scope.ModalPossibleAnswers = await modalController.create({
 					cssClass: 'modal-search',
@@ -180,7 +180,7 @@ export default {
 				});
 				scope.ModalPossibleAnswers.present().then(
 					setTimeout(() => {
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 					}, PARAMETERS.DELAY_FAST)
 				);
 			}
@@ -189,10 +189,11 @@ export default {
 		return {
 			labels: STRINGS[rootStore.language].labels,
 			state,
-			...icons,
 			...computedScope,
 			...methods,
-			...props
+			...props,
+			//icons
+			caretDown
 		};
 	}
 };

@@ -74,8 +74,7 @@ import { modalController } from '@ionic/vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { mic, playSharp } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import ModalAudioPlay from '@/components/modals/ModalAudioPlay';
@@ -84,6 +83,9 @@ import GridQuestionNarrow from '@/components/GridQuestionNarrow';
 import { popoverMediaHandler } from '@/use/questions/popover-media-handler';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
 import Dropzone from '@/components/Dropzone';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	components: {
@@ -136,11 +138,11 @@ export default {
 		});
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		const computedScope = {
 			hasError: computed(() => {
-				return services.utilsService.hasQuestionError(state);
+				return utilsService.hasQuestionError(state);
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -237,7 +239,7 @@ export default {
 									_doRecord();
 								} else {
 									//warn user the permission is required
-									services.notificationService.showAlert(
+									notificationService.showAlert(
 										STRINGS[language].labels.missing_permission,
 										STRINGS[language].labels.warning
 									);
@@ -257,7 +259,7 @@ export default {
 									_doRecord();
 								} else {
 									//warn user the permission is required
-									services.notificationService.showAlert(
+									notificationService.showAlert(
 										STRINGS[language].labels.missing_permission,
 										STRINGS[language].labels.warning
 									);
@@ -284,7 +286,7 @@ export default {
 					}
 				});
 
-				scope.ModalAudioPlay.onDidDismiss().then((response) => {
+				scope.ModalAudioPlay.onDidDismiss().then(() => {
 					//console.log('filename is: ', response.data);
 					//state.answer.answer = response.data;
 					rootStore.isAudioModalActive = false;
@@ -333,20 +335,17 @@ export default {
 			labels,
 			state,
 			entryUuid,
-			...icons,
+
 			...computedScope,
 			...methods,
-			...props
+			...props,
+			//icons
+			mic,
+			playSharp
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-.question-location-grid {
-	font-size: 18px;
-	ion-row.border-bottom {
-		border-bottom: 1px solid var(--ion-color-light-shade);
-	}
-}
 </style>

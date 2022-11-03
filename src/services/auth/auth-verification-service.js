@@ -1,6 +1,8 @@
-import * as services from '@/services';
 import { STRINGS } from '@/config/strings';
-
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { errorsService } from '@/services/errors-service';
+import { webService } from '@/services/web-service';
 import { useRootStore } from '@/stores/root-store';
 
 export const authVerificationService = {
@@ -11,20 +13,20 @@ export const authVerificationService = {
         return new Promise((resolve, reject) => {
             (async () => {
                 // Check if we have a connection
-                const hasInternetConnection = await services.utilsService.hasInternetConnection();
+                const hasInternetConnection = await utilsService.hasInternetConnection();
                 if (!hasInternetConnection) {
-                    services.notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
+                    notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
                 } else {
-                    await services.notificationService.showProgressDialog(STRINGS[language].labels.sign_in + '...');
+                    await notificationService.showProgressDialog(STRINGS[language].labels.sign_in + '...');
 
                     //verify user
-                    services.webService.verifyUserEmail(credentials).then(
+                    webService.verifyUserEmail(credentials).then(
                         (response) => {
                             resolve(response);
                         },
                         (response) => {
-                            services.notificationService.hideProgressDialog();
-                            const errorCode = services.errorsService.getWebErrorCode(response);
+                            notificationService.hideProgressDialog();
+                            const errorCode = errorsService.getWebErrorCode(response);
                             reject(errorCode);
                         });
                 }

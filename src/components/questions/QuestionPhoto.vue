@@ -88,8 +88,7 @@ import { modalController } from '@ionic/vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { camera, images } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import { Capacitor } from '@capacitor/core';
@@ -98,6 +97,9 @@ import { photoTake } from '@/use/questions/photo-take';
 import GridQuestionNarrow from '@/components/GridQuestionNarrow';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
 import Dropzone from '@/components/Dropzone';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	components: {
@@ -150,7 +152,7 @@ export default {
 		});
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		onMounted(async () => {
 			console.log('Component Question is mounted, type ->', questionType);
@@ -214,7 +216,7 @@ export default {
 		state.answer.answer = filename;
 
 		function _loadImageOnView(source) {
-			const timestamp = services.utilsService.generateTimestamp();
+			const timestamp = utilsService.generateTimestamp();
 			state.fileSource = source;
 			//fix for WKWebView and Android 11+ as well
 			source = Capacitor.convertFileSrc(source);
@@ -260,12 +262,12 @@ export default {
 				return modal.present();
 			},
 			onImageLoad() {
-				services.notificationService.hideProgressDialog();
+				notificationService.hideProgressDialog();
 			},
 			onImageError(error) {
 				console.log(error);
 				console.log('Image failed!');
-				services.notificationService.hideProgressDialog();
+				notificationService.hideProgressDialog();
 			},
 			onFileLoadedPWA(filename) {
 				state.answer.answer = filename;
@@ -293,10 +295,12 @@ export default {
 			labels,
 			state,
 			entryUuid,
-			...icons,
 			...methods,
 			...props,
-			...computedScope
+			...computedScope,
+			//icons
+			camera,
+			images
 		};
 	}
 };

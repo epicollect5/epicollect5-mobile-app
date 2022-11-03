@@ -93,14 +93,15 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { eye, create } from 'ionicons/icons';
 import { reactive, computed, readonly } from '@vue/reactivity';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { PARAMETERS } from '@/config';
-import { onMounted } from 'vue';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
+import { notificationService } from '@/services/notification-service';
+import { entryService } from '@/services/entry/entry-service';
+import { branchEntryService } from '@/services/entry/branch-entry-service';
 
 export default {
 	name: 'ListAnswers',
@@ -156,9 +157,9 @@ export default {
 
 				console.log('should open EntriesAdd component for editing hierarchy entry');
 				// Show loader
-				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
+				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 				// Set up an existing entry
-				services.entryService.setUpExisting(props.entry).then(function () {
+				entryService.setUpExisting(props.entry).then(function () {
 					//go to EntriesAdd page
 					rootStore.routeParams = {
 						formRef: props.formRef,
@@ -177,10 +178,10 @@ export default {
 				console.log('should open EntriesAdd component for editing branch entry');
 				const { entry, errors } = readonly(props);
 				// Show loader
-				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
+				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
 				//init the edit
-				await services.branchEntryService.setUpExisting(entry);
+				await branchEntryService.setUpExisting(entry);
 				rootStore.routeParams = {
 					formRef: entry.formRef,
 					inputRef: inputRef,
@@ -235,7 +236,9 @@ export default {
 			...props,
 			...methods,
 			...computedScope,
-			...icons
+			//icons
+			eye,
+			create
 		};
 	}
 };

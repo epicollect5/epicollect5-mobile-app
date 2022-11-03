@@ -89,14 +89,15 @@ import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { trash, search } from 'ionicons/icons';
 import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject } from 'vue';
-import { Capacitor } from '@capacitor/core';
-import { modalController, popoverController } from '@ionic/vue';
+import { modalController } from '@ionic/vue';
 import ModalPossibleAnswers from '@/components/modals/ModalPossibleAnswers';
 import GridQuestionNarrow from '@/components/GridQuestionNarrow';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	components: {
@@ -141,18 +142,16 @@ export default {
 		};
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		console.log(state.answer.answer);
 
-		const hashMap = services.utilsService.buildPossibleAnswersHashMap(
-			state.inputDetails.possible_answers
-		);
+		const hashMap = utilsService.buildPossibleAnswersHashMap(state.inputDetails.possible_answers);
 
 		//search types come as array, check if we have a cached answer to display
 		if (state.answer.answer.length > 0) {
 			state.picks = [];
-			state.answer.answer.forEach((value, index) => {
+			state.answer.answer.forEach((value) => {
 				//build picks array
 				state.picks.push({
 					ref: value,
@@ -172,7 +171,7 @@ export default {
 				return state.pattern !== '' && state.pattern !== null;
 			}),
 			hasError: computed(() => {
-				return services.utilsService.hasQuestionError(state);
+				return utilsService.hasQuestionError(state);
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -186,7 +185,7 @@ export default {
 		const methods = {
 			test() {},
 			async openSearch() {
-				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
+				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
 				scope.ModalPossibleAnswers = await modalController.create({
 					cssClass: 'modal-search',
@@ -217,7 +216,7 @@ export default {
 				});
 				scope.ModalPossibleAnswers.present().then(
 					setTimeout(() => {
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 					}, PARAMETERS.DELAY_FAST)
 				);
 			},
@@ -241,19 +240,16 @@ export default {
 			labels,
 			state,
 			...computedScope,
-			...icons,
+
 			...methods,
-			...props
+			...props,
+			//icons
+			trash,
+			search
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-.question-location-grid {
-	font-size: 18px;
-	ion-row.border-bottom {
-		border-bottom: 1px solid var(--ion-color-light-shade);
-	}
-}
 </style>

@@ -403,6 +403,12 @@ ion-item-divider.saved-answers-serchbar-wrapper {
         font-size: 16px;
     }
 }
+.question-location-grid {
+    font-size: 18px;
+    ion-row.border-bottom {
+        border-bottom: 1px solid var(--ion-color-light-shade);
+    }
+}
 .dropzone {
     padding: 16px;
     border: 2px dashed var(--ion-color-medium);

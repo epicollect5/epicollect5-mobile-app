@@ -1,10 +1,14 @@
 import { STRINGS } from '@/config/strings';
 
 import { useRootStore } from '@/stores/root-store';
-import * as services from '@/services';
 import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
-
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { databaseUpdateService } from '@/services/database/database-update-service';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { errorsService } from '@/services/errors-service';
+import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
 
 export const uploadMediaService = {
 
@@ -23,12 +27,12 @@ export const uploadMediaService = {
         //update progress counter
         function _updateProgress (count) {
             count ? currentEntryIndex += count : currentEntryIndex++;
-            services.notificationService.setProgress({ total, done: currentEntryIndex });
+            notificationService.setProgress({ total, done: currentEntryIndex });
         }
 
         return new Promise(function (resolve, reject) {
             // Attempt to retrieve the jwt token
-            services.databaseSelectService.getUser().then(function (res) {
+            databaseSelectService.getUser().then(function (res) {
                 // Check if we have one and add to entry
                 if (res.rows.length > 0) {
                     jwt = res.rows.item(0).jwt;
@@ -82,15 +86,15 @@ export const uploadMediaService = {
                             _uploadNext(1);
                         } else {
                             //todo: not sure what this is
-                            services.notificationService.hideProgressDialog();
-                            services.notificationService.showToast(STRINGS[language].status_codes.ec5_125);
+                            notificationService.hideProgressDialog();
+                            notificationService.showToast(STRINGS[language].status_codes.ec5_125);
                         }
                     }
 
                     function _onError (error) {
                         console.log(error);
 
-                        services.notificationService.hideProgressDialog();
+                        notificationService.hideProgressDialog();
                         // Store reference to this error
                         errors = true;
                         if (error.body) {
@@ -104,7 +108,7 @@ export const uploadMediaService = {
                         }
                         else {
                             //no internet connection? (body should be null)
-                            services.utilsService.hasInternetConnection().then((connected) => {
+                            utilsService.hasInternetConnection().then((connected) => {
                                 if (!connected) {
                                     errorObj = {
                                         errors: [{
@@ -122,16 +126,16 @@ export const uploadMediaService = {
 
                     function _uploadNext (synced, error) {
                         // Update synced via main entry_uuid column
-                        services.databaseUpdateService.updateFileEntrySynced(file.id, synced, error).then(function (res) {
+                        databaseUpdateService.updateFileEntrySynced(file.id, synced, error).then(function (res) {
                             console.log('Syncing');
                             currentEntryIndex++;
 
-                            services.notificationService.setProgress({ total, done: currentEntryIndex });
+                            notificationService.setProgress({ total, done: currentEntryIndex });
 
                             // If no more files left to upload
                             if (files.length === 0) {
                                 if (errors) {
-                                    services.errorsService.handleWebError({ data: errorObj });
+                                    errorsService.handleWebError({ data: errorObj });
                                 }
                                 resolve(errors);
 
@@ -141,9 +145,9 @@ export const uploadMediaService = {
 
                                     //if the error was caused by a dropped internet connection, stop here.
                                     // (and re-fetch entries, maybe some uploads went through)
-                                    const hasInternetConnection = await services.utilsService.hasInternetConnection();
+                                    const hasInternetConnection = await utilsService.hasInternetConnection();
                                     if (!hasInternetConnection) {
-                                        services.errorsService.handleWebError({ data: errorObj });
+                                        errorsService.handleWebError({ data: errorObj });
                                         resolve(errors);
                                     }
                                     else {
@@ -159,12 +163,12 @@ export const uploadMediaService = {
 
                     // Set options for multipart entity file
                     //options.httpMethod = 'POST';
-                    options.mimeType = services.utilsService.getMIMEType(file.file_type);
+                    options.mimeType = utilsService.getMIMEType(file.file_type);
                     //options.mimeType = '';
                     options.fileKey = 'name';
                     options.fileName = file.file_name;
                     options.params = {
-                        data: JSON.stringify(services.JSONTransformerService.makeJsonFileEntry(file))
+                        data: JSON.stringify(JSONTransformerService.makeJsonFileEntry(file))
                     };
                     // options.trustAllHosts = true;
                     // console.log(options.fileName);

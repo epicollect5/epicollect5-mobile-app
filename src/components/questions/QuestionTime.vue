@@ -111,13 +111,13 @@
 <script>
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
-import { pickerController } from '@ionic/vue';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { closeOutline, timeOutline } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import { PARAMETERS } from '@/config';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	props: {
@@ -164,7 +164,7 @@ export default {
 		});
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		let today;
 		state.datetime_format = state.inputDetails.datetime_format;
@@ -183,18 +183,18 @@ export default {
 			state.userFormattedTime = '';
 		} else {
 			//Get time regardless of timezone and daylight saving
-			state.userFormattedTime = services.utilsService.getUserFormattedTime(
+			state.userFormattedTime = utilsService.getUserFormattedTime(
 				state.answer.answer,
 				state.inputDetails.datetime_format
 			);
 
 			//show a "static" time in the time picker, i.e. no timezone parsing, no daylight
-			state.inputFormattedTime = services.utilsService.getInputFormattedTime(
+			state.inputFormattedTime = utilsService.getInputFormattedTime(
 				state.answer.answer,
 				state.inputDetails.datetime_format
 			);
 
-			state.pickerFormattedTime = services.utilsService.getPickerFormattedTime(
+			state.pickerFormattedTime = utilsService.getPickerFormattedTime(
 				state.answer.answer,
 				state.inputDetails.datetime_format
 			);
@@ -207,23 +207,20 @@ export default {
 		if (state.inputDetails.set_to_current_datetime && state.answer.answer === '') {
 			today = new Date();
 			//get time locale to display to user
-			state.inputFormattedTime = services.utilsService.getInputFormattedTime(
+			state.inputFormattedTime = utilsService.getInputFormattedTime(
 				today.toISOString(),
 				state.inputDetails.datetime_format
 			);
-			state.pickerFormattedTime = services.utilsService.getPickerFormattedTime(
+			state.pickerFormattedTime = utilsService.getPickerFormattedTime(
 				today.toISOString(),
 				state.inputDetails.datetime_format
 			);
 			//parse today's date to remove timezone -> we save the time locale without the timezone
-			state.answer.answer = services.utilsService.getISOTime(
-				today,
-				state.inputDetails.datetime_format
-			);
+			state.answer.answer = utilsService.getISOTime(today, state.inputDetails.datetime_format);
 			//strip milliseconds for time picker display
 			state.time.answer = state.inputFormattedTime;
 			state.time.answerPicker = state.pickerFormattedTime;
-			state.userFormattedTime = services.utilsService.getUserFormattedTime(
+			state.userFormattedTime = utilsService.getUserFormattedTime(
 				state.answer.answer,
 				state.inputDetails.datetime_format
 			);
@@ -231,7 +228,7 @@ export default {
 
 		const computedScope = {
 			hasError: computed(() => {
-				return services.utilsService.hasQuestionError(state);
+				return utilsService.hasQuestionError(state);
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -282,9 +279,9 @@ export default {
 				let items;
 
 				const pickerData = {
-					hours: services.utilsService.getHoursColumnPicker(),
-					minutes: services.utilsService.getMinutesColumnPicker(),
-					seconds: services.utilsService.getSecondsColumnPicker()
+					hours: utilsService.getHoursColumnPicker(),
+					minutes: utilsService.getMinutesColumnPicker(),
+					seconds: utilsService.getSecondsColumnPicker()
 				};
 
 				if (state.time.answerPicker) {
@@ -344,13 +341,13 @@ export default {
 						// Set hours, minutes and seconds
 						const currentDate = new Date();
 						currentDate.setHours(currentHours, currentMinutes, currentSeconds);
-						state.answer.answer = services.utilsService.getISOTime(
+						state.answer.answer = utilsService.getISOTime(
 							currentDate,
 							state.inputDetails.datetime_format
 						);
 
 						// set format for user
-						state.userFormattedTime = services.utilsService.getUserFormattedTime(
+						state.userFormattedTime = utilsService.getUserFormattedTime(
 							state.answer.answer,
 							state.inputDetails.datetime_format
 						);
@@ -390,14 +387,11 @@ export default {
 
 				// Set hours, minutes and seconds
 				today.setHours(hrs, minutes, seconds);
-				state.answer.answer = services.utilsService.getISOTime(
-					today,
-					state.inputDetails.datetime_format
-				);
+				state.answer.answer = utilsService.getISOTime(today, state.inputDetails.datetime_format);
 				//set format for input
-				state.inputFormattedTime = services.utilsService.getInputFormattedTime(state.answer.answer);
+				state.inputFormattedTime = utilsService.getInputFormattedTime(state.answer.answer);
 				// set format for user
-				state.userFormattedTime = services.utilsService.getUserFormattedTime(
+				state.userFormattedTime = utilsService.getUserFormattedTime(
 					state.answer.answer,
 					state.inputDetails.datetime_format
 				);
@@ -407,10 +401,12 @@ export default {
 		return {
 			labels,
 			state,
-			...icons,
 			...computedScope,
 			...methods,
-			...props
+			...props,
+			//icons
+			closeOutline,
+			timeOutline
 		};
 	}
 };

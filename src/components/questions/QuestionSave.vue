@@ -51,7 +51,7 @@
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
+import { archive } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { inject } from 'vue';
 
@@ -104,18 +104,13 @@ export default {
 			labels,
 			entriesAddState,
 			state,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			archive
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-.question-location-grid {
-	font-size: 18px;
-	ion-row.border-bottom {
-		border-bottom: 1px solid var(--ion-color-light-shade);
-	}
-}
 </style>

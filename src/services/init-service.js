@@ -163,7 +163,6 @@ export const initService = {
             }
 
             function _getLanguageFile (language) {
-
                 //get status codes files (json) from public folder
                 axios('./assets/ec5-status-codes/' + language + '.json')
                     .then((data) => {
@@ -177,6 +176,29 @@ export const initService = {
                         });
                     });
             }
+        });
+    },
+
+    async getLanguagePWA () {
+        const language = useRootStore().language;
+        let url = '/';
+
+        return new Promise((resolve, reject) => {
+            if (process.env.NODE_ENV === 'production') {
+                url = process.env.BASE_URL + '/assets/ec5-status-codes/' + language + '.json';
+            }
+            else {
+                //development i.e debugging pwa in the browser
+                url = './assets/ec5-status-codes/' + language + '.json';
+            }
+
+            axios(url)
+                .then((data) => {
+                    STRINGS[language].status_codes = data.data;
+                    resolve(language);
+                }).catch((error) => {
+                    console.log(error);
+                });
         });
     },
 

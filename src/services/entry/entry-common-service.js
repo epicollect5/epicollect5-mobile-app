@@ -4,7 +4,6 @@ import { PARAMETERS } from '@/config';
 import { locationService } from '@/services/utilities/location-cordova-service';
 import { errorsService } from '@/services/errors-service';
 import { jumpsService } from '@/services/entry/jumps-service';
-import { fakeAnswerService } from '@/services/entry/fake-answer-service';
 
 export const entryCommonService = {
     /**
@@ -36,7 +35,9 @@ export const entryCommonService = {
     /**
      * Add fake answers for all questions in entry
      */
-    addFakeAnswers (entry, inputs, entryIndex) {
+    async addFakeAnswers (entry, inputs, entryIndex) {
+
+        const fakeAnswerService = await import('@/services/entry/fake-answer-service');
 
         return new Promise((resolve, reject) => {
             //stop location

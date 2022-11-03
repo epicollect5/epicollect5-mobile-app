@@ -1,7 +1,5 @@
-import * as services from '@/services';
 import { STRINGS } from '@/config/strings';
-import { PARAMETERS } from '@/config';
-
+import { databaseInsertService } from '@/services/database/database-insert-service';
 import { useRootStore } from '@/stores/root-store';
 
 export const authLoginService = {
@@ -38,7 +36,7 @@ export const authLoginService = {
         return new Promise((resolve, reject) => {
             // Check we were given a jwt string
             if (jwt) {
-                services.databaseInsertService.insertUser(jwt, name, email).then(
+                databaseInsertService.insertUser(jwt, name, email).then(
                     function () {
                         resolve();
                     },

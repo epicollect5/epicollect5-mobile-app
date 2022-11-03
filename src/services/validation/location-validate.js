@@ -1,4 +1,4 @@
-import * as services from '@/services';
+import { utilsService } from '@/services/utilities/utils-service';
 
 export const locationValidate = {
 
@@ -23,19 +23,19 @@ export const locationValidate = {
         }
 
         if (answer.latitude !== '') {
-            if (!services.utilsService.isValidLatitude(answer.latitude)) {
+            if (!utilsService.isValidLatitude(answer.latitude)) {
                 this.errors[inputDetails.ref] = ['ec5_30'];
                 return false;
             }
         }
         if (answer.longitude !== '') {
-            if (!services.utilsService.isValidLongitude(answer.longitude)) {
+            if (!utilsService.isValidLongitude(answer.longitude)) {
                 this.errors[inputDetails.ref] = ['ec5_30'];
                 return false;
             }
         }
         if (answer.accuracy !== '') {
-            if (!services.utilsService.isValidAccuracy(answer.accuracy)) {
+            if (!utilsService.isValidAccuracy(answer.accuracy)) {
                 this.errors[inputDetails.ref] = ['ec5_30'];
                 return false;
             }

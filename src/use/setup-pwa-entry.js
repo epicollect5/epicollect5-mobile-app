@@ -1,9 +1,10 @@
-import * as services from '@/services';
 import { PARAMETERS } from '@/config';
-import { STRINGS } from '@/config/strings';
 import { projectModel } from '@/models/project-model';
 import { entryModel } from '@/models/entry-model';
 import { useRootStore } from '@/stores/root-store';
+import { errorsService } from '@/services/errors-service';
+import { entryService } from '@/services/entry/entry-service';
+import { webService } from '@/services/web-service';
 
 export async function setupPWAEntry (action) {
     return new Promise((resolve, reject) => {
@@ -26,7 +27,7 @@ export async function setupPWAEntry (action) {
         }
 
         if (action === PARAMETERS.PWA_ADD_ENTRY) {
-            services.entryService.setUpNew(formRef, parentEntryUuid, parentFormRef);
+            entryService.setUpNew(formRef, parentEntryUuid, parentFormRef);
             resolve(formRef);
             return false;
         }
@@ -38,7 +39,7 @@ export async function setupPWAEntry (action) {
                 const entryUuid = searchParams.get('uuid');
                 let webEntry = null;
                 try {
-                    const response = await services.webService.downloadEntryPWA(projectSlug, formRef, entryUuid);
+                    const response = await webService.downloadEntryPWA(projectSlug, formRef, entryUuid);
                     console.log(JSON.stringify(response.data.data.entries[0]));
                     if (response.data.data.entries.length > 0) {
                         webEntry = response.data.data.entries[0];
@@ -49,7 +50,7 @@ export async function setupPWAEntry (action) {
                     }
                 }
                 catch (errorResponse) {
-                    services.errorsService.handleWebError(errorResponse);
+                    errorsService.handleWebError(errorResponse);
                     reject(errorResponse);
                     return false;
                 }
@@ -94,7 +95,7 @@ export async function setupPWAEntry (action) {
                 entryModel.initialise(data);
 
 
-                services.entryService.setUpExisting(entry);
+                entryService.setUpExisting(entry);
 
                 resolve(formRef);
             })();

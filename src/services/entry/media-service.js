@@ -1,9 +1,15 @@
-import * as services from '@/services';
 import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings.js';
-
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { databaseInsertService } from '@/services/database/database-insert-service';
+import { databaseDeleteService } from '@/services/database/database-delete-service';
+import { databaseUpdateService } from '@/services/database/database-update-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { entryService } from '@/services/entry/entry-service';
+import { moveFileService } from '@/services/filesystem/move-file-service';
+import { deleteFileService } from '@/services/filesystem/delete-file-service';
 
 export const mediaService = {
     saveMedia (entry, syncType) {
@@ -16,14 +22,14 @@ export const mediaService = {
             (async () => {
                 //map media object to array (cached and store properties contains only the filename)
                 //also empty answers (no media was saved) are filtered
-                const mediaFiles = services.utilsService.mapMediaObjectToArray(entry.media);
+                const mediaFiles = utilsService.mapMediaObjectToArray(entry.media);
                 const queuedFiles = [...rootStore.queueFilesToDelete];
                 let filename;
 
                 if (rootStore.queueFilesToDelete.length > 0) {
                     //remove all queued files
                     try {
-                        await services.deleteFileService.removeFiles(queuedFiles);
+                        await deleteFileService.removeFiles(queuedFiles);
                     } catch (error) {
                         console.log(error);
                         reject(error);
@@ -33,7 +39,7 @@ export const mediaService = {
                         const filenamesToDelete = rootStore.queueFilesToDelete.map((file) => {
                             return '"' + file.file_name + '"';
                         });
-                        await services.databaseDeleteService.deleteMediaFiles(entry.entryUuid, filenamesToDelete);
+                        await databaseDeleteService.deleteMediaFiles(entry.entryUuid, filenamesToDelete);
                         //reset delete queue
                         rootStore.queueFilesToDelete = [];
                     } catch (error) {
@@ -49,7 +55,7 @@ export const mediaService = {
 
                 if (mediaFiles.length > 0) {
                     //insert file references to db
-                    services.databaseInsertService.insertMedia(entry, mediaFiles, syncType).then(function (response) {
+                    databaseInsertService.insertMedia(entry, mediaFiles, syncType).then(function (response) {
                         //move files (recursively) from app cache folder to app private folder for permanent storage
                         function _moveFile (file) {
 
@@ -59,7 +65,7 @@ export const mediaService = {
                                 //if we have a stored filename, overwrite that, otherwise create new file
                                 filename = (file.stored === '') ? file.cached : file.stored;
 
-                                services.moveFileService.moveToAppPrivateDir(
+                                moveFileService.moveToAppPrivateDir(
                                     rootStore.tempDir + file.cached,
                                     filename,
                                     file.type,
@@ -71,7 +77,7 @@ export const mediaService = {
                                     }
                                     else {
                                         if (syncType === PARAMETERS.SYNCED_CODES.UNSYNCED) {
-                                            services.databaseUpdateService.updateFileEntryIncomplete(entry.entryUuid).then(
+                                            databaseUpdateService.updateFileEntryIncomplete(entry.entryUuid).then(
                                                 function () {
                                                     resolve();
                                                 }, _onError);
@@ -92,7 +98,7 @@ export const mediaService = {
                     //update any incomplete media file for this entry
                     //(set them to unsynced(0) when there is an actual save (syncType = 0))
                     if (syncType === PARAMETERS.SYNCED_CODES.UNSYNCED) {
-                        services.databaseUpdateService.updateFileEntryIncomplete(entry.entryUuid).then(
+                        databaseUpdateService.updateFileEntryIncomplete(entry.entryUuid).then(
                             function (response) {
                                 resolve();
                             }, _onError);
@@ -118,7 +124,7 @@ export const mediaService = {
                 reject(error);
             }
 
-            services.databaseSelectService.selectEntryMedia(projectRef, uuid).then(function (response) {
+            databaseSelectService.selectEntryMedia(projectRef, uuid).then(function (response) {
                 console.log(response);
                 // Parse response and build media object
                 response.forEach((value) => {
@@ -156,7 +162,7 @@ export const mediaService = {
 
             mediaInputs.forEach((mediaInput) => {
                 const inputRef = mediaInput.data.ref;
-                const answers = services.entryService.entry.answers;
+                const answers = entryService.entry.answers;
                 const answer = answers[inputRef].answer;
                 media[uuid] = media[uuid] || {};
                 media[uuid][mediaInput.data.ref] = {};
@@ -178,7 +184,7 @@ export const mediaService = {
                 reject(error);
             }
             //select only unsynced media files (synced flag 0)
-            services.databaseSelectService.selectProjectMedia(options).then(function (response) {
+            databaseSelectService.selectProjectMedia(options).then(function (response) {
                 resolve(response);
             }, _onError);
         });

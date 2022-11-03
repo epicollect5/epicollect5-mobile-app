@@ -107,14 +107,17 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { locate } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import GridQuestionWide from '@/components/GridQuestionWide';
 import LocationPwa from '@/components/LocationPwa';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
 import ModalLocationHelp from '@/components/modals/ModalLocationHelp.vue';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { locationService } from '@/services/utilities/location-cordova-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 /**
  * imp: we use Cordova implementation (basically Geolocatiom API https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API)
@@ -169,11 +172,11 @@ export default {
 		const scope = {};
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		const computedScope = {
 			hasError: computed(() => {
-				return services.utilsService.hasQuestionError(state);
+				return utilsService.hasQuestionError(state);
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -237,23 +240,20 @@ export default {
 								...rootStore.deviceGeolocation,
 								...{ position: position.coords }
 							};
-							services.notificationService.hideProgressDialog();
+							notificationService.hideProgressDialog();
 							rootStore.isLocationModalActive = false;
 						},
 						function (error) {
 							//timeout
 
 							console.log(error);
-							services.notificationService.hideProgressDialog();
+							notificationService.hideProgressDialog();
 							rootStore.isLocationModalActive = false;
-							services.notificationService.showAlert(
-								STRINGS[language].labels.location_fail,
-								error.message
-							);
+							notificationService.showAlert(STRINGS[language].labels.location_fail, error.message);
 						},
 						{
 							maximumAge: 0,
-							timeout: services.locationService.getWatchTimeout(),
+							timeout: locationService.getWatchTimeout(),
 							enableHighAccuracy: false
 						}
 					);
@@ -269,7 +269,7 @@ export default {
 						);
 
 						clearInterval(interval_ID);
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 						rootStore.isLocationModalActive = false;
 					}
 				}
@@ -302,14 +302,14 @@ export default {
 
 				if (rootStore.device.platform === PARAMETERS.WEB && PARAMETERS.DEBUG) {
 					//running function until we get a position, then refresh UI
-					services.notificationService.showAlert('Not availble on web debug.');
+					notificationService.showAlert('Not availble on web debug.');
 					return;
 				}
 
 				if (rootStore.geolocationPermission) {
 					if (rootStore.device.platform === PARAMETERS.WEB) {
 						//running function until we get a position, then refresh UI
-						await services.notificationService.showProgressDialog(
+						await notificationService.showProgressDialog(
 							STRINGS[language].labels.acquiring_position,
 							STRINGS[language].labels.wait
 						);
@@ -323,7 +323,7 @@ export default {
 						async function (isAvailable) {
 							if (isAvailable) {
 								//running function until we get a position, then refresh UI
-								await services.notificationService.showProgressDialog(
+								await notificationService.showProgressDialog(
 									STRINGS[language].labels.acquiring_position,
 									STRINGS[language].labels.wait
 								);
@@ -331,7 +331,7 @@ export default {
 								_getCoords();
 							} else {
 								rootStore.geolocationPermission = false;
-								services.notificationService.showAlert(
+								notificationService.showAlert(
 									STRINGS[language].labels.location_not_available,
 									STRINGS[language].labels.error
 								);
@@ -339,7 +339,7 @@ export default {
 						},
 						function (error) {
 							console.log(error);
-							services.notificationService.showAlert(
+							notificationService.showAlert(
 								STRINGS[language].labels.location_fail,
 								STRINGS[language].labels.error
 							);
@@ -360,11 +360,11 @@ export default {
 										}
 									};
 
-									services.locationService.startWatching();
+									locationService.startWatching();
 									methods.updateLocation();
 								} else {
 									rootStore.geolocationPermission = false;
-									services.notificationService.showAlert(
+									notificationService.showAlert(
 										STRINGS[language].labels.location_not_available,
 										STRINGS[language].labels.error
 									);
@@ -372,7 +372,7 @@ export default {
 							},
 							function (error) {
 								console.log(error);
-								services.notificationService.showAlert(
+								notificationService.showAlert(
 									STRINGS[language].labels.location_fail,
 									STRINGS[language].labels.error
 								);
@@ -386,21 +386,15 @@ export default {
 		return {
 			labels,
 			state,
-			...icons,
 			...computedScope,
 			...methods,
-			...props
+			...props,
+			//icons
+			locate
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-.question-location-grid {
-	//font-size: 14px;
-	text-transform: uppercase;
-	ion-row.border-bottom {
-		border-bottom: 1px solid var(--ion-color-light-shade);
-	}
-}
 </style>

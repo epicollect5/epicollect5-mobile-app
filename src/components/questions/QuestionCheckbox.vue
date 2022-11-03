@@ -46,13 +46,12 @@
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
 import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject } from 'vue';
 import QuestionLabelPossibleAnswers from '@/components/QuestionLabelPossibleAnswers';
 import ListPossibleAnswersCheckbox from '@/components/ListPossibleAnswersCheckbox';
-
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 export default {
 	components: {
 		QuestionLabelPossibleAnswers,
@@ -101,7 +100,7 @@ export default {
 		const scope = { questionType, isGroupInput };
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		onMounted(async () => {
 			console.log('Component Question is mounted, type ->', questionType);
@@ -112,7 +111,7 @@ export default {
 
 		const computedScope = {
 			hasError: computed(() => {
-				return services.utilsService.hasQuestionError(state);
+				return utilsService.hasQuestionError(state);
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -133,7 +132,6 @@ export default {
 		return {
 			labels,
 			state,
-			...icons,
 			...computedScope,
 			...scope,
 			...methods,

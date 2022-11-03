@@ -62,19 +62,22 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
+import { chevronBackOutline, documentText } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 
 import { useRootStore } from '@/stores/root-store';
 import { useRouter } from 'vue-router';
 import { projectModel } from '@/models/project-model.js';
-import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import ModalProgressTransfer from '@/components/modals/ModalProgressTransfer';
 import { modalController } from '@ionic/vue';
 import { showModalLogin } from '@/use/show-modal-login';
 import { useBackButton } from '@ionic/vue';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { errorsService } from '@/services/errors-service';
+import { downloadService } from '@/services/utilities/download-service';
 
 export default {
 	setup() {
@@ -96,7 +99,7 @@ export default {
 		});
 
 		//get markup to show project logo in page header
-		state.projectName = services.utilsService.getProjectNameMarkup();
+		state.projectName = utilsService.getProjectNameMarkup();
 
 		// Get all the forms for the form download buttons
 		function _getFormButtons() {
@@ -168,9 +171,9 @@ export default {
 
 				// Warn user
 				if (state.showWarning) {
-					services.notificationService
+					notificationService
 						.confirmSingle(labels.download_warning, labels.download_remote_entries)
-						.then(function(result) {
+						.then(function (result) {
 							// If ok was selected, download
 							if (result) {
 								state.showWarning = false;
@@ -186,8 +189,8 @@ export default {
 					_showModalUploadProgress();
 
 					// Start downloading for this form
-					services.downloadService.downloadFormEntries(formRef).then(
-						function(hasEntries) {
+					downloadService.downloadFormEntries(formRef).then(
+						function (hasEntries) {
 							// Entries downloaded code
 							let code = 'ec5_143';
 
@@ -217,9 +220,9 @@ export default {
 								}
 							}
 
-							services.notificationService.showToast(STRINGS[language].status_codes[code]);
+							notificationService.showToast(STRINGS[language].status_codes[code]);
 						},
-						async function(error) {
+						async function (error) {
 							const authErrors = PARAMETERS.AUTH_ERROR_CODES;
 
 							//dismiss the upload modal
@@ -234,7 +237,7 @@ export default {
 							if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
 								//if error code is ec5_78 it means the user is logged in but has no role in the requested project
 								if (error.data.errors[0].code !== 'ec5_78') {
-									const confirmed = await services.notificationService.confirmSingle(
+									const confirmed = await notificationService.confirmSingle(
 										STRINGS[rootStore.language].status_codes[error.data.errors[0].code]
 									);
 
@@ -245,7 +248,7 @@ export default {
 								}
 							} else {
 								// Other error
-								services.errorsService.handleWebError(error);
+								errorsService.handleWebError(error);
 							}
 						}
 					);
@@ -265,9 +268,11 @@ export default {
 
 		return {
 			labels,
-			...icons,
 			...methods,
-			state
+			state,
+			//icons
+			chevronBackOutline,
+			documentText
 		};
 	}
 };

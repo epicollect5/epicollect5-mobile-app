@@ -52,13 +52,13 @@
 
 <script>
 import { modalController } from '@ionic/vue';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { micCircleOutline, stopCircleSharp } from 'ionicons/icons';
 import { PARAMETERS } from '@/config';
-import { readonly, toRefs } from 'vue';
-
+import { readonly } from 'vue';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
+import { utilsService } from '@/services/utilities/utils-service';
+import { notificationService } from '@/services/notification-service';
 
 export default {
 	props: {
@@ -90,10 +90,7 @@ export default {
 			//check if we have a stored filename, i.e user is replacing the photo for the entry
 			if (media[entryUuid][inputRef].stored === '') {
 				//generate new file name, this is a brand new file
-				filename = services.utilsService.generateMediaFilename(
-					entryUuid,
-					PARAMETERS.QUESTION_TYPES.AUDIO
-				);
+				filename = utilsService.generateMediaFilename(entryUuid, PARAMETERS.QUESTION_TYPES.AUDIO);
 			} else {
 				//use stored filename
 				filename = media[entryUuid][inputRef].stored;
@@ -124,7 +121,7 @@ export default {
 								console.log('current_path: ' + tempDir + filename);
 							},
 							function onRecordingError(error) {
-								services.notificationService.showAlert(error.code, labels.error);
+								notificationService.showAlert(error.code, labels.error);
 								filename = '';
 								modalController.dismiss(filename);
 								console.log('recordAudio():Audio Error: ' + error.code);
@@ -145,14 +142,14 @@ export default {
 			async stop() {
 				//stop recording
 				if (rootStore.device.platform !== PARAMETERS.WEB) {
-					await services.notificationService.showProgressDialog(labels.saving, labels.wait);
+					await notificationService.showProgressDialog(labels.saving, labels.wait);
 
 					//stop recording and release resources
 					mediaRecorder.stopRecord();
 					mediaRecorder.release();
 
-					services.notificationService.hideProgressDialog();
-					services.notificationService.showToast(labels.audio_saved);
+					notificationService.hideProgressDialog();
+					notificationService.showToast(labels.audio_saved);
 
 					modalController.dismiss(filename);
 				} else {
@@ -165,24 +162,14 @@ export default {
 		return {
 			labels,
 			...props,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			micCircleOutline,
+			stopCircleSharp
 		};
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-ion-content {
-	--background: transparent;
-}
-ion-header {
-	ion-toolbar {
-		--background: transparent;
-		ion-button,
-		ion-icon {
-			color: #333;
-		}
-	}
-}
 </style>

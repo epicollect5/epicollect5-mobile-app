@@ -2,6 +2,15 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import Projects from '@/pages/Projects';
 import NotFound from '@/pages/NotFound.vue';
 import { PARAMETERS } from '@/config';
+import EntriesAdd from '@/pages/EntriesAdd.vue';
+import ProjectsAdd from '@/pages/ProjectsAdd.vue';
+import Entries from '@/pages/ProjectsAdd.vue';
+import EntriesErrors from '@/pages/EntriesErrors.vue';
+import EntriesView from '@/pages/EntriesView.vue';
+import EntriesViewBranch from '@/pages/EntriesViewBranch.vue';
+import EntriesUpload from '@/pages/EntriesUpload.vue';
+import Settings from '@/pages/Settings.vue';
+import EntriesDownload from '@/pages/EntriesDownload.vue';
 
 let routes = [];
 //routes for PWA
@@ -14,17 +23,17 @@ if (process.env.VUE_APP_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
     },
     {
       path: '/project/:project_slug/add-entry',
-      component: () => import('@/pages/EntriesAdd.vue'),
+      component: EntriesAdd,
       name: PARAMETERS.ROUTES.ENTRIES_ADD
     },
     {
       path: '/project/:project_slug/edit-entry',
-      component: () => import('@/pages/EntriesAdd.vue'),
+      component: EntriesAdd,
       name: PARAMETERS.ROUTES.ENTRIES_EDIT
     },
     {
       path: '/project/:project_slug/add-entry/branch',
-      component: () => import('@/pages/EntriesAdd.vue'),
+      component: EntriesAdd,
       name: PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
     },
     {
@@ -49,55 +58,54 @@ else {
     },
     {
       path: '/projects/add',
-      component: () => import('@/pages/ProjectsAdd.vue'),
+      component: ProjectsAdd,
       name: PARAMETERS.ROUTES.PROJECTS_ADD
     },
     {
       path: '/projects/entries',
-      component: () => import('@/pages/Entries.vue'),
+      component: Entries,
       name: PARAMETERS.ROUTES.ENTRIES
     },
     {
       path: '/projects/entries/add',
-      component: () => import('@/pages/EntriesAdd.vue'),
+      component: EntriesAdd,
       name: PARAMETERS.ROUTES.ENTRIES_ADD
     },
     {
       path: '/projects/entries/errors',
-      component: () => import('@/pages/EntriesErrors.vue'),
+      component: EntriesErrors,
       name: PARAMETERS.ROUTES.ENTRIES_ERRORS
     },
     {
       path: '/projects/entries/add/branch',
-      component: () => import('@/pages/EntriesAdd.vue'),
+      component: EntriesAdd,
       name: PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
     },
     {
       path: '/projects/entries/view',
-      component: () => import('@/pages/EntriesView.vue'),
+      component: EntriesView,
       name: PARAMETERS.ROUTES.ENTRIES_VIEW
     },
     {
       path: '/projects/entries/view/branch',
-      component: () => import('@/pages/EntriesViewBranch.vue'),
+      component: EntriesViewBranch,
       name: PARAMETERS.ROUTES.ENTRIES_VIEW_BRANCH
     },
     {
       path: '/projects/entries/upload',
-      component: () => import('@/pages/EntriesUpload.vue'),
+      component: EntriesUpload,
       name: PARAMETERS.ROUTES.ENTRIES_UPLOAD
     },
     {
       path: '/settings',
-      component: () => import('@/pages/Settings.vue'),
+      component: Settings,
       name: PARAMETERS.ROUTES.SETTINGS
     },
     {
       path: '/projects/entries/download',
-      component: () => import('@/pages/EntriesDownload.vue'),
+      component: EntriesDownload,
       name: PARAMETERS.ROUTES.ENTRIES_DOWNLOAD
     }
-
   ];
 }
 

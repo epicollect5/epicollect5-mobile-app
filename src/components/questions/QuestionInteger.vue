@@ -117,10 +117,11 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
+import { addSharp, removeSharp } from 'ionicons/icons';
 import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject } from 'vue';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	props: {
@@ -162,7 +163,7 @@ export default {
 		});
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		// Parse answer into integer
 		if (state.answer.answer !== '') {
@@ -184,7 +185,7 @@ export default {
 			}),
 			hasError: computed(() => {
 				//any error for this question?
-				return services.utilsService.questionHasError(readonly(state));
+				return utilsService.questionHasError(readonly(state));
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -224,9 +225,11 @@ export default {
 		return {
 			labels: STRINGS[rootStore.language].labels,
 			state,
-			...icons,
 			...computedScope,
-			...methods
+			...methods,
+			//icons
+			addSharp,
+			removeSharp
 		};
 	}
 };

@@ -62,15 +62,16 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
-import * as services from '@/services';
 import { PARAMETERS } from '@/config';
 import ModalPasswordlessSend from '@/components/modals/ModalPasswordlessSend';
+import { authGoogleService } from '@/services/auth/auth-google-service';
+import { authAppleService } from '@/services/auth/auth-apple-service';
+import { modalsHandlerService } from '@/services/modals/modals-handler-service';
+
 export default {
 	props: {
 		authMethods: {
@@ -120,7 +121,7 @@ export default {
 				return PARAMETERS.EMAIL_SIGNIN_BUTTON_IMAGE;
 			},
 			async openModalPasswordlessSend() {
-				services.modalsHandlerService.passwordlessSend = await modalController.create({
+				modalsHandlerService.passwordlessSend = await modalController.create({
 					cssClass: 'modal-passwordless-send',
 					component: ModalPasswordlessSend,
 					showBackdrop: true,
@@ -128,11 +129,11 @@ export default {
 					componentProps: {}
 				});
 
-				services.modalsHandlerService.passwordlessSend.onDidDismiss().then((response) => {
+				modalsHandlerService.passwordlessSend.onDidDismiss().then((response) => {
 					console.log('is ModalPasswordlessSend', response.data);
 				});
 
-				return services.modalsHandlerService.passwordlessSend.present();
+				return modalsHandlerService.passwordlessSend.present();
 			},
 			/**
 			 * Send user to native google sign in page
@@ -141,10 +142,10 @@ export default {
 			 */
 			async performLoginGoogle() {
 				const { authIds } = props;
-				services.authGoogleService.authGoogleUser(authIds);
+				authGoogleService.authGoogleUser(authIds);
 			},
 			async performLoginApple() {
-				services.authAppleService.authAppleUser();
+				authAppleService.authAppleUser();
 			}
 		};
 
@@ -172,7 +173,6 @@ export default {
 			labels,
 			state,
 			...computedScope,
-			...icons,
 			...methods
 		};
 	}

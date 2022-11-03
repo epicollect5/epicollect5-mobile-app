@@ -64,10 +64,13 @@
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import * as services from '@/services';
-import { reactive, computed, toRaw } from '@vue/reactivity';
+import { reactive, toRaw } from '@vue/reactivity';
 import { useDropzone } from 'vue3-dropzone';
 import { projectModel } from '@/models/project-model';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { webService } from '@/services/web-service';
+import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
 
 export default {
 	props: {
@@ -123,11 +126,11 @@ export default {
 				if (acceptFiles.length === 0) {
 					//state.hasDropError = true;
 					const message = rejectReasons[0].errors[0].message;
-					services.notificationService.showAlert(message, labels.error);
+					notificationService.showAlert(message, labels.error);
 					state.isDraggingOver = false;
 					return false;
 				} else {
-					await services.notificationService.showProgressDialog(labels.wait, labels.uploading);
+					await notificationService.showProgressDialog(labels.wait, labels.uploading);
 
 					//upload file
 					const file = acceptFiles[0];
@@ -142,12 +145,12 @@ export default {
 
 					//get existing filename or generate new one
 					if (props.filename === '') {
-						filename = services.utilsService.generateMediaFilename(props.uuid, state.type);
+						filename = utilsService.generateMediaFilename(props.uuid, state.type);
 					} else {
 						filename = props.filename;
 					}
 					const payload = new FormData();
-					const uploadData = services.JSONTransformerService.makeJsonFileEntry({
+					const uploadData = JSONTransformerService.makeJsonFileEntry({
 						entry_uuid: props.uuid,
 						form_ref: formRef,
 						file_name: filename,
@@ -164,13 +167,13 @@ export default {
 					// Add file to api request
 					payload.append('file', file);
 
-					services.webService
+					webService
 						.uploadFilePWA(projectSlug, payload)
 						.then(
 							(response) => {
 								console.log(response);
 								//show preview
-								services.notificationService.showToast(labels.file_uploaded);
+								notificationService.showToast(labels.file_uploaded);
 								console.log(filename);
 
 								state.filesource = getMediaURL(filename, props.type);
@@ -182,7 +185,7 @@ export default {
 							}
 						)
 						.finally(() => {
-							services.notificationService.hideProgressDialog();
+							notificationService.hideProgressDialog();
 							state.isDraggingOver = false;
 							context.emit('file-dropped', filename);
 						});
@@ -225,7 +228,7 @@ export default {
 		};
 
 		function getMediaURL(filename, type, filestate) {
-			const timestamp = services.utilsService.generateTimestamp();
+			const timestamp = utilsService.generateTimestamp();
 			const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
 			const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
 			let mediaURL = rootStore.serverUrl;

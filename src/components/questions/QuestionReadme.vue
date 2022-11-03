@@ -16,11 +16,11 @@
 <script>
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
-
 import { useRootStore } from '@/stores/root-store';
-import * as services from '@/services';
 import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject } from 'vue';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	props: {
@@ -61,14 +61,12 @@ export default {
 			}
 		});
 
-		const { isGroupInput } = readonly(props);
-
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		const computedScope = {
 			html: computed(() => {
-				return services.utilsService.htmlDecode(state.question);
+				return utilsService.htmlDecode(state.question);
 			})
 		};
 

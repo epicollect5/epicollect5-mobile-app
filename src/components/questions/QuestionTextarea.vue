@@ -65,8 +65,6 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import * as icons from 'ionicons/icons';
-import * as services from '@/services';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import { projectModel } from '@/models/project-model.js';
@@ -74,6 +72,9 @@ import { formModel } from '@/models/form-model.js';
 import { modalController } from '@ionic/vue';
 import ModalSavedAnswers from '@/components/modals/ModalSavedAnswers';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
 	components: { QuestionLabelAction },
@@ -120,14 +121,14 @@ export default {
 		const scope = {};
 
 		//set up question
-		services.questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		const computedScope = {
 			hasPattern: computed(() => {
 				return state.pattern !== '' && state.pattern !== null;
 			}),
 			hasError: computed(() => {
-				return services.utilsService.hasQuestionError(state);
+				return utilsService.hasQuestionError(state);
 			}),
 			errorMessage: computed(() => {
 				if (Object.keys(state.error.errors).length > 0) {
@@ -151,7 +152,7 @@ export default {
 				const inputRef = state.inputDetails.ref;
 				const isBranch = entriesAddState.questionParams.isBranch;
 
-				await services.notificationService.showProgressDialog(labels.wait);
+				await notificationService.showProgressDialog(labels.wait);
 
 				scope.ModalSavedAnswers = await modalController.create({
 					cssClass: 'modal-search',
@@ -175,24 +176,23 @@ export default {
 
 				scope.ModalSavedAnswers.present().then(
 					setTimeout(() => {
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 					}, PARAMETERS.DELAY_FAST)
 				);
 			},
 			onInputValueChange(event) {
 				const value = event.target.value;
-				state.answer.answer = services.utilsService.getSanitisedAnswer(value);
+				state.answer.answer = utilsService.getSanitisedAnswer(value);
 			},
 			onInputValueChangeConfirm(event) {
 				const value = event.target.value;
-				state.confirmAnswer.answer = services.utilsService.getSanitisedAnswer(value);
+				state.confirmAnswer.answer = utilsService.getSanitisedAnswer(value);
 			}
 		};
 
 		return {
 			labels,
 			state,
-			...icons,
 			...computedScope,
 			...methods,
 			...props

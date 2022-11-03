@@ -70,11 +70,10 @@
 </template>
 
 <script>
+import { eye, eyeOff } from 'ionicons/icons';
 import { modalController } from '@ionic/vue';
-import * as icons from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
 import { readonly } from 'vue';
 import { loginLocal } from '@/use/login-local';
@@ -97,7 +96,7 @@ export default {
 
 		const state = reactive({
 			password: '',
-			eyeIcon: icons.eye,
+			eyeIcon: eye,
 			authLocalInputPasswordType: 'password'
 		});
 		const methods = {
@@ -110,11 +109,11 @@ export default {
 				loginLocal({ email, password: state.password });
 			},
 			toggleInputType() {
-				if (state.eyeIcon === icons.eye) {
-					state.eyeIcon = icons.eyeOff;
+				if (state.eyeIcon === eye) {
+					state.eyeIcon = eyeOff;
 					state.authLocalInputPasswordType = 'text';
 				} else {
-					state.eyeIcon = icons.eye;
+					state.eyeIcon = eye;
 					state.authLocalInputPasswordType = 'password';
 				}
 			}
@@ -123,8 +122,10 @@ export default {
 			labels,
 			state,
 			...props,
-			...icons,
-			...methods
+			...methods,
+			//icons
+			eye,
+			eyeOff
 		};
 	}
 };

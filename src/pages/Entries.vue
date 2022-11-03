@@ -157,7 +157,7 @@ import { menuController } from '@ionic/vue';
 import { useRootStore } from '@/stores/root-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { STRINGS } from '@/config/strings';
-import * as icons from 'ionicons/icons';
+import { cloudUpload, add, chevronBackOutline, ellipsisVertical } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
@@ -167,12 +167,16 @@ import { onMounted, watch } from 'vue';
 import { updateLocalProject } from '@/use/update-local-project';
 import { addFakeEntries } from '@/use/add-fake-entries';
 import { format } from 'date-fns';
-import * as services from '@/services';
 import { fetchEntries } from '@/use/fetch-entries.js';
 import ListEntries from '@/components/ListEntries';
 import ToolbarFormName from '@/components/ToolbarFormName';
 import { provide } from 'vue';
 import { useBackButton } from '@ionic/vue';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { notificationService } from '@/services/notification-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { bookmarksService } from '@/services/utilities/bookmarks-service';
+import { entryService } from '@/services/entry/entry-service';
 
 export default {
 	components: { ListEntries, ToolbarFormName },
@@ -226,7 +230,7 @@ export default {
 					//get count without filters to have the total reference in the UI
 					//i.e "Found 6/50 entries"
 					//imp: not the most optimised solution, for now it will do
-					const resultWithoutFilters = await services.databaseSelectService.countEntries(
+					const resultWithoutFilters = await databaseSelectService.countEntries(
 						scope.projectRef,
 						state.formRef,
 						state.parentEntryUuid,
@@ -240,7 +244,7 @@ export default {
 					state.entriesLimitReached =
 						state.entriesLimit !== null && state.countNoFilters >= state.entriesLimit;
 
-					const result = await services.databaseSelectService.countEntries(
+					const result = await databaseSelectService.countEntries(
 						scope.projectRef,
 						state.formRef,
 						state.parentEntryUuid,
@@ -278,7 +282,7 @@ export default {
 
 		//Retrieve the project and entries
 		scope.getProjectAndEntries = async function () {
-			await services.notificationService.showProgressDialog(
+			await notificationService.showProgressDialog(
 				STRINGS[language].labels.wait,
 				STRINGS[language].labels.loading_entries
 			);
@@ -318,7 +322,7 @@ export default {
 				}
 
 				// Do we have this page bookmarked?
-				bookmarkStore.getBookmarkId = services.bookmarksService.getBookmarkId(
+				bookmarkStore.getBookmarkId = bookmarksService.getBookmarkId(
 					scope.projectRef,
 					state.formRef,
 					state.parentEntryUuid
@@ -328,7 +332,7 @@ export default {
 			function _loadFormEntries() {
 				state.entries = [];
 				//get markup to show project logo in page header
-				state.projectName = services.utilsService.getProjectNameMarkup();
+				state.projectName = utilsService.getProjectNameMarkup();
 
 				_loadForm();
 
@@ -358,7 +362,7 @@ export default {
 
 							state.isFetching = false;
 							setTimeout(function () {
-								services.notificationService.hideProgressDialog();
+								notificationService.hideProgressDialog();
 							}, PARAMETERS.DELAY_MEDIUM);
 						});
 					}, 0);
@@ -369,7 +373,7 @@ export default {
 
 			console.log('project store ->', projectModel.getProjectRef());
 			if (!projectModel.hasInitialised()) {
-				const result = await services.databaseSelectService.selectProject(scope.projectRef);
+				const result = await databaseSelectService.selectProject(scope.projectRef);
 				// Can update
 				rootStore.continueProjectVersionUpdate = true;
 				// Initialise the project model
@@ -381,7 +385,7 @@ export default {
 
 				updateLocalProject(scope).then((updated) => {
 					if (updated) {
-						services.notificationService.hideProgressDialog();
+						notificationService.hideProgressDialog();
 						_loadFormEntries();
 					}
 				});
@@ -477,9 +481,9 @@ export default {
 				rootStore.queueFilesToDelete = [];
 
 				// Show loader
-				await services.notificationService.showProgressDialog(STRINGS[language].labels.wait);
+				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 				// Set up a new entry
-				services.entryService.setUpNew(state.formRef, state.parentEntryUuid, state.parentFormRef);
+				entryService.setUpNew(state.formRef, state.parentEntryUuid, state.parentFormRef);
 
 				rootStore.routeParams = {
 					formRef: state.formRef,
@@ -490,7 +494,7 @@ export default {
 				};
 
 				window.setTimeout(function () {
-					services.notificationService.hideProgressDialog();
+					notificationService.hideProgressDialog();
 				}, PARAMETERS.DELAY_LONG);
 
 				router.replace({
@@ -517,7 +521,7 @@ export default {
 			},
 			applyFilters(params) {
 				//if filters changed, refresh entries
-				if (!services.utilsService.objectsMatch(state.filters, params.filters)) {
+				if (!utilsService.objectsMatch(state.filters, params.filters)) {
 					state.isFetching = true;
 					state.filters = params.filters;
 					state.countWithFilters = params.count;
@@ -545,7 +549,7 @@ export default {
 				//imp: fix this it gets checked all the  time
 				if (changes[0].refreshEntries === 'true') {
 					state.isFetching = true;
-					await services.notificationService.showProgressDialog(
+					await notificationService.showProgressDialog(
 						STRINGS[language].labels.wait,
 						STRINGS[language].labels.loading_entries
 					);
@@ -578,10 +582,14 @@ export default {
 
 		return {
 			labels,
-			...icons,
 			...methods,
 			...scope,
-			state
+			state,
+			//icons
+			cloudUpload,
+			add,
+			chevronBackOutline,
+			ellipsisVertical
 		};
 	}
 };

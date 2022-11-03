@@ -8,9 +8,10 @@ Web - N/A
 
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
-import * as services from '@/services';
 import { STRINGS } from '@/config/strings';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { utilsService } from '@/services/utilities/utils-service';
+import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
 
 
 export const exportMediaService = {
@@ -19,7 +20,7 @@ export const exportMediaService = {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
-        const downloadFolder = services.utilsService.getPlatformDownloadFolder();
+        const downloadFolder = utilsService.getPlatformDownloadFolder();
         const persistentDir = rootStore.persistentDir;
         const photoDirSource = persistentDir + PARAMETERS.PHOTO_DIR + projectRef;
         const audioDirSource = persistentDir + PARAMETERS.AUDIO_DIR + projectRef;
@@ -35,9 +36,9 @@ export const exportMediaService = {
         return new Promise((resolve, reject) => {
             (async function () {
                 //find out what folders exists
-                const dirExistsPhoto = await services.mediaDirsService.dirExists(photoDirSource);
-                const dirExistsAudio = await services.mediaDirsService.dirExists(audioDirSource);
-                const dirExistsVideo = await services.mediaDirsService.dirExists(videoDirSource);
+                const dirExistsPhoto = await mediaDirsService.dirExists(photoDirSource);
+                const dirExistsAudio = await mediaDirsService.dirExists(audioDirSource);
+                const dirExistsVideo = await mediaDirsService.dirExists(videoDirSource);
 
                 //any errors bail out
                 if (dirExistsPhoto === null || dirExistsAudio === null || dirExistsVideo === null) {

@@ -1,5 +1,17 @@
 .modal-audio-record,
 .modal-audio-play {
+    ion-content {
+        --background: transparent;
+    }
+    ion-header {
+        ion-toolbar {
+            --background: transparent;
+            ion-button,
+            ion-icon {
+                color: #333;
+            }
+        }
+    }
     &::part(content) {
         position: absolute;
         width: 75%;
@@ -14,6 +26,7 @@
         font-size: 64px !important;
     }
 }
+
 .modal-search {
     .spinner-search-possible-answers,
     .spinner-search-saved-answers {
@@ -91,5 +104,51 @@
             width: 75%;
             height: 80%;
         }
+    }
+}
+.modal-barcode {
+    .button-container {
+        display: none !important;
+    }
+}
+.modal-barcode,
+.modal-bookmark-add,
+.modal-entries-branch-filter,
+.modal-entries-filter {
+    ion-content {
+        --background: transparent;
+    }
+    ion-header {
+        ion-toolbar {
+            --background: transparent;
+            ion-button,
+            ion-icon {
+                color: #333;
+            }
+        }
+    }
+}
+.modal-photo {
+    ion-content {
+        --background: transparent;
+    }
+    ion-header {
+        ion-toolbar {
+            --background: transparent;
+            ion-button,
+            ion-icon {
+                color: #333;
+            }
+        }
+    }
+    ion-slides {
+        width: 100% !important;
+        height: 100%;
+        .swiper-zoom-container {
+            width: 100% !important;
+        }
+    }
+    img {
+        width: 100%;
     }
 }

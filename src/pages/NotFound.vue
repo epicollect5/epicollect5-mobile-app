@@ -32,7 +32,6 @@
 </template>
 
 <script>
-import * as icons from 'ionicons/icons';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
@@ -49,8 +48,7 @@ export default {
 		});
 
 		return {
-			labels,
-			...icons
+			labels
 		};
 	}
 };

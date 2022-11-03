@@ -3,7 +3,10 @@ import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { formModel } from '@/models/form-model.js';
-import * as services from '@/services';
+import { notificationService } from '@/services/notification-service';
+import { entryCommonService } from '@/services/entry/entry-common-service';
+import { entryService } from '@/services/entry/entry-service';
+import { branchEntryService } from '@/services/entry/branch-entry-service';
 
 export async function addFakeEntries (params) {
     return new Promise((resolve, reject) => {
@@ -15,7 +18,7 @@ export async function addFakeEntries (params) {
         (async () => {
 
             // Show loader
-            await services.notificationService.showProgressDialog(labels.wait);
+            await notificationService.showProgressDialog(labels.wait);
 
             //todo add a popup to ask how many so we do not recompile ;)
             const howManyEntries = PARAMETERS.HOW_MANY_ENTRIES;
@@ -32,14 +35,14 @@ export async function addFakeEntries (params) {
                 currentBranchIndex = 0;
 
                 // Set up a new entry
-                services.entryService.setUpNew(formRef, parentEntryUuid, parentFormRef);
+                entryService.setUpNew(formRef, parentEntryUuid, parentFormRef);
                 // Add fake answers for all questions in this entry
-                console.log(i + '. - adding fake entry for ' + services.entryService.entry.entryUuid);
+                console.log(i + '. - adding fake entry for ' + entryService.entry.entryUuid);
 
-                services.entryCommonService
+                entryCommonService
                     .addFakeAnswers(
-                        services.entryService.entry,
-                        services.entryService.form.inputs.slice(0), //pass a copy to keep the original array intact
+                        entryService.entry,
+                        entryService.form.inputs.slice(0), //pass a copy to keep the original array intact
                         i
                     )
                     .then(function () {
@@ -47,13 +50,13 @@ export async function addFakeEntries (params) {
                             // If we have any branches
                             if (branches[currentBranchIndex]) {
                                 console.log(
-                                    j + '. - adding fake branch for ' + services.entryService.entry.entryUuid
+                                    j + '. - adding fake branch for ' + entryService.entry.entryUuid
                                 );
                                 // Set up a new entry
-                                services.branchEntryService.setUpNew(
+                                branchEntryService.setUpNew(
                                     formModel.formRef,
                                     branches[currentBranchIndex],
-                                    services.entryService.entry.entryUuid
+                                    entryService.entry.entryUuid
                                 );
 
                                 const branchInputs = projectModel.getBranches(
@@ -62,15 +65,15 @@ export async function addFakeEntries (params) {
                                 );
 
                                 // Add fake answers for all questions in this branch entry
-                                services.entryCommonService
+                                entryCommonService
                                     .addFakeAnswers(
-                                        services.branchEntryService.entry,
+                                        branchEntryService.entry,
                                         branchInputs.slice(0), //pass copy to keep original array intact
                                         j
                                     )
                                     .then(function () {
                                         // Save the entry
-                                        services.branchEntryService.saveEntry(PARAMETERS.SYNCED_CODES.UNSYNCED);
+                                        branchEntryService.saveEntry(PARAMETERS.SYNCED_CODES.UNSYNCED);
 
                                         if (j < howManyBranches) {
                                             // Increment this branch entry count
@@ -87,7 +90,7 @@ export async function addFakeEntries (params) {
                                     });
                             } else {
                                 //Save the whole entry
-                                services.entryService
+                                entryService
                                     .saveEntry(PARAMETERS.SYNCED_CODES.UNSYNCED)
                                     .then(function () {
                                         if (i < howManyEntries) {
@@ -95,7 +98,7 @@ export async function addFakeEntries (params) {
                                             _addFakeHierarchyEntry(i);
                                         } else {
                                             // hide loader
-                                            services.notificationService.hideProgressDialog();
+                                            notificationService.hideProgressDialog();
                                             resolve();
                                         }
                                     });
