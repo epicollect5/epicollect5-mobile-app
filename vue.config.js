@@ -2,8 +2,6 @@ const path = require('path');
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 
-const publicPath = process.env.NODE_ENV === 'production' ? process.env.VUE_APP_DEPLOY : '/';
-
 module.exports = {
 
     pluginOptions: {
@@ -13,7 +11,7 @@ module.exports = {
         }
     },
     filenameHashing: false,
-    productionSourceMap: false,
+    productionSourceMap: true,
 
     //this is to avoid compiling a lot of builds when debugging
     configureWebpack: (config) => {
@@ -80,26 +78,17 @@ module.exports = {
                     new webpack.IgnorePlugin({
                         resourceRegExp: /swiper.bundle.js/
                     }),
-                    new webpack.IgnorePlugin({
-                        resourceRegExp: /services\/database\/database-/
-                    }),
-                    new webpack.IgnorePlugin({
-                        resourceRegExp: /services\/auth\/auth-/
-                    }),
-                    new webpack.IgnorePlugin({
-                        resourceRegExp: /services\/filesystem/
-                    }),
-
                     //remove console.log()
                     new TerserPlugin({
                         terserOptions: {
-                            compress: {
-                                drop_console: true
-                            },
-                            output: {
+                            format: {
                                 comments: false
+                            },
+                            compress: {
+                                drop_console: process.env.VUE_APP_DEBUG !== '1'
                             }
-                        }
+                        },
+                        extractComments: false
                     })
                 ];
 
@@ -150,29 +139,11 @@ module.exports = {
             .type('javascript/auto')
             .include.add(/node_modules/)
             .end();
-
-        // config.module
-        //     .rule('images')
-        //     .use('url-loader')
-        //     .loader('url-loader')
-        //     .tap((options) => {
-        //         // Do not base64 encode images URLs
-        //         options.limit = -1;
-        //         return options;
-        //     });
-
-        // if (process.env.VUE_APP_MODE === 'PWA' && process.env.NODE_ENV === 'production') {
-        // config.optimization.splitChunks(false);
-        // config.optimization.delete('splitChunks');
-        // }
-
-
     },
     pwa: {
         //workboxPluginMode: 'GenerateSW',
         assetsVersion: '5.0.5',
         themeColor: '#673C90',
         msTileColor: '#FFFFFF'
-    },
-    publicPath
+    }
 };

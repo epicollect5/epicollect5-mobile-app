@@ -56,7 +56,6 @@ import { PARAMETERS } from '@/config';
 import * as IonComponents from '@ionic/vue';
 //import '@/registerServiceWorker';
 
-
 const pinia = createPinia();
 pinia.use(PiniaLogger({
   expanded: true,
@@ -149,13 +148,11 @@ export const app = createApp(App)
   ];
   Object.keys(IonComponents).forEach((key) => {
     if (/^Ion[A-Z]\w+$/.test(key)) {
-      if (keys.includes(key)) {
-        app.component(key, IonComponents[key]);
-      }
+      //    if (keys.includes(key)) {
+      app.component(key, IonComponents[key]);
+      //  }
     }
   });
-
-  console.log(JSON.stringify(keys));
 
   //register global components (any platform)
   app.component('base-layout', BaseLayout);
@@ -178,35 +175,38 @@ export const app = createApp(App)
 
     const searchParams = new URLSearchParams(window.location.search);
     rootStore.searchParams = searchParams;
-    // Display the key/value pairs
-    for (const [key, value] of searchParams.entries()) {
-      console.log(`${key}, ${value}`);
-    }
-    // console.log(window.location.search);
-
-    //set en as language (PWA can get translated by browser tools)
-    rootStore.language = PARAMETERS.DEFAULT_LANGUAGE;
-    //load language files for PWA
-    await initService.getLanguagePWA();
-
-    //start PWA
-    if (process.env.NODE_ENV === 'production') {
-      rootStore.serverUrl = window.location.href.replace(window.location.pathname, '');
-    }
-    else {
-      const serverUrl = utilsService.stripTrailingSlash(process.env.VUE_APP_PWA_DEVELOPMENT_SERVER);
-      rootStore.serverUrl = serverUrl;
-    }
-    console.log('Server URL -> ', rootStore.serverUrl);
-    //check if PWA URL is correct
     const urlSegments = window.location.pathname.split('/');
     const acceptedSegments = [PARAMETERS.PWA_ADD_ENTRY, PARAMETERS.PWA_EDIT_ENTRY];
     const providedSegment = urlSegments.pop();
     if (!acceptedSegments.includes(providedSegment)) {
       rootStore.notFound = true;
     }
+
+    rootStore.searchParams = searchParams;
+    // Display the key/value pairs
+    for (const [key, value] of searchParams.entries()) {
+      console.log(`${key}, ${value}`);
+    }
+
+    //start PWA by getting the server URL for vue router and internal API requests
+    if (process.env.NODE_ENV === 'production') {
+      const url = new URL(window.location.href);
+      rootStore.serverUrl = url.origin + utilsService.getBasepath();
+    }
+    else {
+      const serverUrl = utilsService.stripTrailingSlash(process.env.VUE_APP_PWA_DEVELOPMENT_SERVER);
+      rootStore.serverUrl = serverUrl;
+    }
+    console.log('Server URL -> ', rootStore.serverUrl);
+
+    //set en as language (PWA can get translated by browser tools)
+    rootStore.language = PARAMETERS.DEFAULT_LANGUAGE;
+    //load language files for PWA
+    await initService.getLanguagePWA();
+
     if (!rootStore.notFound) {
       const projectSlug = window.location.pathname.split('/').splice(-2, 1)[0];
+      console.log({ path: window.location.pathname }, projectSlug);
 
       try {
         //get requested project and init PWA
@@ -244,7 +244,8 @@ export const app = createApp(App)
         }
 
         //update route params BRANCH
-        if (rootStore.searchParams.has('branch_ref') && rootStore.searchParams.has('branch_owner_uuid')) {
+        if (rootStore.searchParams.get('branch_ref') && rootStore.searchParams.get('branch_owner_uuid')) {
+          console.log('should open branch');
           rootStore.routeParams = {
             formRef,
             inputRef: null,
@@ -254,6 +255,7 @@ export const app = createApp(App)
           };
         }
         else {
+          console.log('should open hierarchy');
           //update route params HIERARCHY
           rootStore.routeParams = {
             formRef,
@@ -384,11 +386,15 @@ export const app = createApp(App)
 
   //mount app
   router.isReady().then(() => {
+
+    console.log('mounting app');
     app.mount('#app');
 
-    setTimeout(async () => {
-      await SplashScreen.hide();
-    }, PARAMETERS.DELAY_EXTRA_LONG
-    );
+    if (!rootStore.isPWA) {
+      setTimeout(async () => {
+        await SplashScreen.hide();
+      }, PARAMETERS.DELAY_EXTRA_LONG
+      );
+    }
   });
 }());

@@ -180,15 +180,21 @@ export const initService = {
     },
 
     async getLanguagePWA () {
-        const language = useRootStore().language;
+
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const serverUrl = rootStore.serverUrl;
         let url = '/';
 
         return new Promise((resolve, reject) => {
             if (process.env.NODE_ENV === 'production') {
-                url = process.env.BASE_URL + '/assets/ec5-status-codes/' + language + '.json';
+                //get the language files from data-editor folder in laravel
+                const endpoint = PARAMETERS.PWA_LANGUAGE_FILES_ENDPOINT;
+                url = serverUrl + endpoint + language + '.json';
             }
             else {
                 //development i.e debugging pwa in the browser
+                //get language file from local assets
                 url = './assets/ec5-status-codes/' + language + '.json';
             }
 

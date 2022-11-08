@@ -832,7 +832,7 @@ export const utilsService = {
 
         return rootStore.serverUrl
             + PARAMETERS.API.ROUTES.PROJECT
-            + projectSlug + '/'
+            + projectSlug
             + PARAMETERS.API.ROUTES.PWA.DATA_VIEWER
             + PARAMETERS.API.PARAMS.DATA_VIEWER_RESTORE_QUERY_STRING;
     },
@@ -863,5 +863,17 @@ export const utilsService = {
     isValidAccuracy (accuracy) {
         const num = Number(accuracy);
         return Number.isInteger(num) && num > 0;
+    },
+    //get base path from url, to be used by vue router and internal api requests
+    getBasepath () {
+        const url = new URL(window.location.href);
+        const pathname = url.pathname;
+        const pathnameParts = pathname.split('/');
+        //remove last 3 segments /project/:slug/(add-entry|edit-entry)
+        pathnameParts.pop();
+        pathnameParts.pop();
+        pathnameParts.pop();
+
+        return pathnameParts.join('/');
     }
 };

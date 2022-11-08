@@ -23,6 +23,7 @@
 				size="default"
 				color="secondary"
 				slot="end"
+				@click="updateLocation(true)"
 			>
 				<ion-icon :icon="locate"></ion-icon>
 			</ion-button>
@@ -329,7 +330,7 @@ export default {
 
 		onBeforeMount(() => {
 			//load leaflet from CDN
-			debugger;
+
 			if (!window.L) {
 				//
 			}

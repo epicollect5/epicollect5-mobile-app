@@ -26,6 +26,7 @@
 					class="project-header"
 					:class="isPWA ? 'pwa' : 'ion-text-center'"
 					v-html="title"
+					@click="exitApp($event)"
 				></ion-title>
 				<ion-buttons slot="end">
 					<slot name="actions-end"></slot>
@@ -60,6 +61,7 @@
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
+import { useRoute } from 'vue-router';
 import { chatbubbleEllipses } from 'ionicons/icons';
 import { computed } from '@vue/reactivity';
 import { utilsService } from '@/services/utilities/utils-service';
@@ -75,8 +77,10 @@ export default {
 			type: String
 		}
 	},
-	setup() {
+	emits: ['exit-app'],
+	setup(props, context) {
 		const rootStore = useRootStore();
+		const route = useRoute();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
 		const methods = {
@@ -86,6 +90,26 @@ export default {
 					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
 				}
 				window.open(PARAMETERS.COMMUNITY_SUPPORT_URL, '_system', 'location=yes');
+			},
+			//emit event to exit app and go back to dataviewer
+			// PWA in production only
+			exitApp(e) {
+				const allowedRoutes = [
+					PARAMETERS.ROUTES.NOT_FOUND,
+					PARAMETERS.ROUTES.ENTRIES_ADD,
+					PARAMETERS.ROUTES.ENTRIES_EDIT,
+					PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
+				];
+				console.log('should exit app...');
+				if (rootStore.isPWA && process.env.NODE_ENV === 'production') {
+					//only the project logo is clickable
+					if (e.target.className === 'project-logo' && e.target.localName === 'img') {
+						//emit only on PWA routes
+						if (allowedRoutes.includes(route.name)) {
+							context.emit('exit-app');
+						}
+					}
+				}
 			}
 		};
 

@@ -338,6 +338,7 @@ export const PARAMETERS = {
         STORED: 'stored'
     },
     PWA_MAX_LATLONG_LENGTH: 10,
+    PWA_LANGUAGE_FILES_ENDPOINT: '/data-editor/app/assets/ec5-status-codes/',
 
 
 

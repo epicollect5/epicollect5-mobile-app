@@ -11,6 +11,7 @@ import { IonApp, IonRouterOutlet } from '@ionic/vue';
 import { useRootStore } from '@/stores/root-store';
 import { computed } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
+import { onMounted } from 'vue';
 
 export default {
 	name: 'App',
@@ -25,6 +26,16 @@ export default {
 				return rootStore.device.platform !== PARAMETERS.PWA;
 			})
 		};
+
+		onMounted(async () => {
+			console.log('App mounted');
+
+			if (rootStore.isPWA && process.env.NODE_ENV === 'production') {
+				//remove loader div (laravel servers only)
+				console.log(document.querySelector('#loader.loader'));
+				document.querySelector('#loader.loader').remove();
+			}
+		});
 
 		return {
 			...computedScope

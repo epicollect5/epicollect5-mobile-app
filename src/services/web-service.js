@@ -52,6 +52,7 @@ export const webService = {
 
             let url = '';
             if (process.env.NODE_ENV === 'production') {
+
                 url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
             }
             else {

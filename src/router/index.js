@@ -11,33 +11,35 @@ import EntriesViewBranch from '@/pages/EntriesViewBranch.vue';
 import EntriesUpload from '@/pages/EntriesUpload.vue';
 import Settings from '@/pages/Settings.vue';
 import EntriesDownload from '@/pages/EntriesDownload.vue';
+import { utilsService } from '@/services/utilities/utils-service';
 
 let routes = [];
 //routes for PWA
 if (process.env.VUE_APP_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
+  const basePath = utilsService.getBasepath();
   routes = [
     {
-      path: '/',
+      path: basePath + '/',
       component: NotFound,
       name: PARAMETERS.ROUTES.NOT_FOUND
     },
     {
-      path: '/project/:project_slug/add-entry',
+      path: basePath + '/project/:project_slug/add-entry',
       component: EntriesAdd,
       name: PARAMETERS.ROUTES.ENTRIES_ADD
     },
     {
-      path: '/project/:project_slug/edit-entry',
+      path: basePath + '/project/:project_slug/edit-entry',
       component: EntriesAdd,
       name: PARAMETERS.ROUTES.ENTRIES_EDIT
     },
     {
-      path: '/project/:project_slug/add-entry/branch',
+      path: basePath + '/project/:project_slug/add-entry/branch',
       component: EntriesAdd,
       name: PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
     },
     {
-      path: '/:pathMatch(.*)*',
+      path: basePath + '/:pathMatch(.*)*',
       redirect: { name: PARAMETERS.ROUTES.NOT_FOUND }
     }
   ];
@@ -110,6 +112,7 @@ else {
 }
 
 console.log(routes);
+console.log({ base_url: process.env.BASE_URL });
 
 const router = createRouter({
   /** imp: across the app we always use router.replace()
@@ -119,28 +122,34 @@ const router = createRouter({
    * imp: using a mix of push() and replace() was just messing up
    * imp: the back button navigation
    */
-  history: createWebHistory(process.env.BASE_URL),
+
+  //https://router.vuejs.org/api/index.html#createwebhashhistory
+  //imp: passing a base url into createWebHistory() breaks the PWA
+  // history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory(),
   scrollBehavior () {
     return { x: 0, y: 0 };
   },
   routes
 });
-if (process.env.VUE_APP_MODE.toLowerCase() !== PARAMETERS.PWA.toLowerCase()) {
-  router.beforeEach((to, from, next) => {
-    //hack: on app page reloads (but not in PWA mode), always redirect to the projects page
-    //hack: "from.name" would be undefined, and when the requested route
-    //hack: is NOT / or /projects, it needs redirecting
-    //hack: this is helpful when debugginh in the browser and using hot reload
-    if (!from.name && to.name !== PARAMETERS.ROUTES.PROJECTS) {
-      next({
-        path: PARAMETERS.ROUTES.PROJECTS,
-        replace: true
-      });
-    }
-    else {
-      next();
-    }
-  });
+if (process.env.NODE_ENV !== 'production') {
+  if (process.env.VUE_APP_MODE.toLowerCase() !== PARAMETERS.PWA.toLowerCase()) {
+    router.beforeEach((to, from, next) => {
+      //hack: on app page reloads (but not in PWA mode), always redirect to the projects page
+      //hack: "from.name" would be undefined, and when the requested route
+      //hack: is NOT / or /projects, it needs redirecting
+      //hack: this is helpful when debugginh in the browser and using hot reload
+      if (!from.name && to.name !== PARAMETERS.ROUTES.PROJECTS) {
+        next({
+          path: PARAMETERS.ROUTES.PROJECTS,
+          replace: true
+        });
+      }
+      else {
+        next();
+      }
+    });
+  }
 }
 
 export default router;

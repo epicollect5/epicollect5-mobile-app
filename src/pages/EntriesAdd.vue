@@ -4,6 +4,7 @@
 		v-else
 		:title="projectName"
 		:id="pageId"
+		@exit-app="quitEntry()"
 	>
 		<template #actions-start>
 			<ion-button
@@ -346,7 +347,6 @@ import { locationService } from '@/services/utilities/location-cordova-service';
 import { errorsService } from '@/services/errors-service';
 import { entryService } from '@/services/entry/entry-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
-
 
 export default {
 	components: {
