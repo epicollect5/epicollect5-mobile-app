@@ -55,22 +55,6 @@ export async function setupPWAEntry (action) {
                     return false;
                 }
 
-                //add group question to answers object (as empty)
-                //we do this because they are removed from the answers
-                //but the native apps need them to display existing answers
-                //for questions belonging to a group
-
-                //imp: the group question could have been jumped, but on the PWA
-                //we can edit only from the first question onwards, so
-                //was_jumped will be set correctly once the end of the form  
-                //is reached (or left untouched if the user quits)
-                Object.keys(projectModel.getFormGroups(formRef)).forEach((key) => {
-                    webEntry.entry.answers[key] = {
-                        answer: '',
-                        was_jumped: false
-                    };
-                });
-
                 //build entry object
                 const entry = {
                     entryUuid,

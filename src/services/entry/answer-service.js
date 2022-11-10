@@ -199,6 +199,7 @@ export const answerService = {
     // Generate a default answer
     generateAnswer (entry, inputRef) {
 
+        const rootStore = useRootStore();
         const inputsExtra = projectModel.getExtraInputs();
         const inputDetails = inputsExtra[inputRef].data;
 
@@ -210,8 +211,22 @@ export const answerService = {
             const group = projectModel.getFormGroups(entry.formRef);
             for (let j = 0; j < group[inputDetails.ref].length; j++) {
                 const groupInputDetails = inputsExtra[group[inputDetails.ref][j]].data;
-                // Add answer
-                entry.answers[groupInputDetails.ref] = this.createDefaultAnswer(groupInputDetails);
+
+                if (rootStore.isPWA) {
+                    //check if there is an existing answer for this group question already
+                    //happens when old entries are edited on the pwa
+                    //todo:could also check for action ENTRY_EDIT
+
+                    //imp: we do this here because when editing entries on the PWA, the group question ref
+                    //is missing from the response but it is needed by the app logic to show existing answers
+                    //in group questions
+                    if (!entry.answers[groupInputDetails.ref]) {
+                        entry.answers[groupInputDetails.ref] = this.createDefaultAnswer(groupInputDetails);
+                    }
+                }
+                else {
+                    entry.answers[groupInputDetails.ref] = this.createDefaultAnswer(groupInputDetails);
+                }
             }
         }
     },
