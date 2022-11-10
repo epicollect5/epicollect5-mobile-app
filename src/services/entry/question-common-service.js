@@ -37,9 +37,6 @@ export const questionCommonService = {
     },
 
     getNavigationParamsPWA (entryService) {
-
-
-
         let routeName = '';
         const routeParams = {
             projectRef: projectModel.getProjectRef(),

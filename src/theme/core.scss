@@ -106,10 +106,9 @@ ion-toolbar.toolbar-title {
         border-radius: 50%;
         border: 1px solid #fff;
         margin-right: 8px;
-        // span {
-        //     vertical-align: middle;
-        //     font-size: 14px;
-        // }
+        &:hover {
+            cursor: pointer;
+        }
     }
     span {
         vertical-align: middle;

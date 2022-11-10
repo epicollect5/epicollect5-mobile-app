@@ -29,11 +29,9 @@ export default {
 
 		onMounted(async () => {
 			console.log('App mounted');
-
 			if (rootStore.isPWA && process.env.NODE_ENV === 'production') {
 				//remove loader div (laravel servers only)
-				console.log(document.querySelector('#loader.loader'));
-				document.querySelector('#loader.loader').remove();
+				document.querySelector('#loader.loader-placeholder').remove();
 			}
 		});
 

@@ -4,7 +4,7 @@ import NotFound from '@/pages/NotFound.vue';
 import { PARAMETERS } from '@/config';
 import EntriesAdd from '@/pages/EntriesAdd.vue';
 import ProjectsAdd from '@/pages/ProjectsAdd.vue';
-import Entries from '@/pages/ProjectsAdd.vue';
+import Entries from '@/pages/Entries.vue';
 import EntriesErrors from '@/pages/EntriesErrors.vue';
 import EntriesView from '@/pages/EntriesView.vue';
 import EntriesViewBranch from '@/pages/EntriesViewBranch.vue';
@@ -125,7 +125,7 @@ const router = createRouter({
 
   //https://router.vuejs.org/api/index.html#createwebhashhistory
   //imp: passing a base url into createWebHistory() breaks the PWA
-  // history: createWebHistory(process.env.BASE_URL),
+  //history: createWebHistory(process.env.BASE_URL),
   history: createWebHistory(),
   scrollBehavior () {
     return { x: 0, y: 0 };

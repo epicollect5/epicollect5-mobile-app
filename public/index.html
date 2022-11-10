@@ -36,6 +36,13 @@
 
 
       <script>
+            function _onLeafletLoaded () {
+                  console.log('Leaflet loaded');
+                  //add full screen plugin for leaflet AFTER leaflet is loaded
+                  const leafletFullScreenJS = document.createElement('script');
+                  leafletFullScreenJS.setAttribute('src', '<%= BASE_URL %>assets/js/Control.FullScreen.js');
+                  document.head.appendChild(leafletFullScreenJS);
+            }
             //On PWA debugging, load dependencies from CDN
             if ('<%= VUE_APP_MODE %>' === 'PWA' && '<%= NODE_ENV %>' === 'development') {
 
@@ -50,6 +57,8 @@
                   leafletJS.setAttribute('src', 'https://unpkg.com/leaflet@1.9.2/dist/leaflet.js');
                   leafletJS.setAttribute('integrity', 'sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg=');
                   leafletJS.setAttribute('crossorigin', '');
+                  leafletJS.setAttribute('defer', '');
+                  leafletJS.setAttribute('onload', '_onLeafletLoaded()')
                   document.head.appendChild(leafletJS);
             }
       </script>
@@ -57,8 +66,5 @@
 
 <body>
       <div id="app"></div>
-      <script defer
-              src="<%= BASE_URL %>assets/js/Control.FullScreen.js"></script>
-</body>
 
 </html>
