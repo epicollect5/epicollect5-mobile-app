@@ -23,7 +23,7 @@ export const entryService = {
     //Initial function to set up the entry
     setUpNew (formRef, parentEntryUuid, parentFormRef) {
         const rootStore = useRootStore();
-        this.actionState = PARAMETERS.ENTRY_ADD;
+        this.action = PARAMETERS.ENTRY_ADD;
         this.allowSave = true;
         this.form = formModel;
         this.entry = entryModel;
@@ -82,7 +82,7 @@ export const entryService = {
         self.entry = entryModel;
 
         return new Promise((resolve, reject) => {
-            self.actionState = PARAMETERS.ENTRY_EDIT;
+            self.action = PARAMETERS.ENTRY_EDIT;
             self.allowSave = true;
 
             // Replace entry model object
@@ -283,7 +283,7 @@ export const entryService = {
         // we don't show the 'quit' button
         // This is to make sure the user reaches the end of the entry
         // before saving, so the jumps and answers retain their integrity
-        if (this.actionState === PARAMETERS.ENTRY_EDIT &&
+        if (this.action === PARAMETERS.ENTRY_EDIT &&
             params.mainInputDetails.jumps.length > 0 &&
             (typeof this.entry.answers[params.mainInputDetails.ref] !== 'undefined' && params.current_answer !== this.entry.answers[params.mainInputDetails.ref].answer)) {
             this.allowSave = false;
@@ -293,7 +293,7 @@ export const entryService = {
         //For edits: check if all the required questions have an answer
         //Users can edit an existing entry, go back and save. 
         //The server would catch the missing required answer anyway
-        // if (this.actionState === PARAMETERS.ENTRY_EDIT) {
+        // if (this.action === PARAMETERS.ENTRY_EDIT) {
         //     const inputs = projectModel.getExtraInputs();
 
         //     for (const [inputRef, answerObj] of Object.entries(this.entry.answers)) {

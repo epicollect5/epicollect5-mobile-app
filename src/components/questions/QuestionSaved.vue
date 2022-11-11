@@ -114,7 +114,7 @@ export default {
 
 		const computedScope = {
 			showAddEntryButton: computed(() => {
-				return rootStore.entriesAddScope.entryService.actionState === PARAMETERS.ENTRY_ADD;
+				return rootStore.entriesAddScope.entryService.action === PARAMETERS.ENTRY_ADD;
 			})
 		};
 

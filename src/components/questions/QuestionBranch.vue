@@ -394,7 +394,7 @@ export default {
 				return entriesAddScope.entryService.entry.isRemote;
 			}),
 			isPWAEntryEdit: computed(() => {
-				return entriesAddScope.entryService.entry.actionState === PARAMETERS.ENTRY_EDIT;
+				return entriesAddScope.entryService.entry.action === PARAMETERS.ENTRY_EDIT;
 			}),
 			parentEntryName: props.parentEntryName,
 			currentFormName: props.currentFormName,
@@ -598,6 +598,7 @@ export default {
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
 				//edit on PWA onlways start from first question
+				debugger;
 				await branchEntryService.setUpExisting(branchEntry);
 				rootStore.routeParams = {
 					formRef,

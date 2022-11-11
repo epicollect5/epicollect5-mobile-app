@@ -875,5 +875,21 @@ export const utilsService = {
         pathnameParts.pop();
 
         return pathnameParts.join('/');
+    },
+    isValidDecimalDegreesString (str) {
+        if (!str.includes(',')) {
+            return false;
+        }
+
+        //validate coords
+        const parts = str.split(',');
+        const latitude = parts[0].trim();
+        const longitude = parts[1].trim();
+
+        if (utilsService.isValidLatitude(latitude) && utilsService.isValidLongitude(longitude)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 };

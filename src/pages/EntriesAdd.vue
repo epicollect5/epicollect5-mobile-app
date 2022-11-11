@@ -406,7 +406,7 @@ export default {
 			},
 			// Allow saving by default (via quit button)
 			allowSave: entryService.allowSave,
-			action: entryService.actionState,
+			action: entryService.action,
 			entrySavedPWA: false,
 			entryFailedPWA: false,
 			showSaved: false

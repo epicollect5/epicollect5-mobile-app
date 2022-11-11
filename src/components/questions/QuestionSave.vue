@@ -23,7 +23,7 @@
 						>
 							<ion-icon
 								slot="start"
-								:icon="archive"
+								:icon="isPWA ? cloudUpload :  archive"
 							></ion-icon>
 							{{labels.save_entry}}
 						</ion-button>
@@ -36,7 +36,7 @@
 						>
 							<ion-icon
 								slot="start"
-								:icon="archive"
+								:icon="isPWA ? cloudUpload :  archive"
 							></ion-icon>
 							{{labels.save_branch_entry}}
 						</ion-button>
@@ -51,8 +51,8 @@
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
-import { archive } from 'ionicons/icons';
-import { reactive } from '@vue/reactivity';
+import { archive, cloudUpload } from 'ionicons/icons';
+import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 
 export default {
@@ -99,14 +99,21 @@ export default {
 				context.emit('question-save');
 			}
 		};
+		const computedScope = {
+			isPWA: computed(() => {
+				return rootStore.isPWA;
+			})
+		};
 
 		return {
 			labels,
 			entriesAddState,
 			state,
 			...methods,
+			...computedScope,
 			//icons
-			archive
+			archive,
+			cloudUpload
 		};
 	}
 };

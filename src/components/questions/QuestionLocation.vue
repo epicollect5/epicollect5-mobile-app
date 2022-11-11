@@ -3,10 +3,7 @@
 		class="question-card"
 		:class="{'animate__animated animate__fadeIn' : !isGroupInput}"
 	>
-		<ion-card-header
-			class="question-label"
-			:class="isPWA ? 'force-no-padding' : ''"
-		>
+		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title v-if="isPWA">
 				<question-label-action
 					:disabled="false"
@@ -16,7 +13,12 @@
 				></question-label-action>
 			</ion-card-title>
 			<ion-card-title v-else>
-				{{state.question}}
+				<question-label-action
+					:disabled="false"
+					action="edit"
+					:questionText="state.question"
+					@on-label-button-click="openModalLocationEdit"
+				></question-label-action>
 			</ion-card-title>
 		</ion-card-header>
 		<ion-card-content
@@ -114,6 +116,7 @@ import GridQuestionWide from '@/components/GridQuestionWide';
 import LocationPwa from '@/components/LocationPwa';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
 import ModalLocationHelp from '@/components/modals/ModalLocationHelp.vue';
+import ModalLocationEdit from '@/components/modals/ModalLocationEdit.vue';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { locationService } from '@/services/utilities/location-cordova-service';
@@ -287,6 +290,33 @@ export default {
 				});
 
 				return scope.ModalLocationHelp.present();
+			},
+
+			async openModalLocationEdit() {
+				scope.ModalLocationEdit = await modalController.create({
+					cssClass: 'modal-location-edit',
+					component: ModalLocationEdit,
+					showBackdrop: true,
+					backdropDismiss: false,
+					componentProps: {
+						latitude: state.answer.answer.latitude,
+						longitude: state.answer.answer.longitude
+					}
+				});
+
+				//update location only when modal is dismiss with "Update Location"
+				scope.ModalLocationEdit.onWillDismiss().then((response) => {
+					console.log('coords ->', response.data);
+					if (response.data) {
+						state.answer.answer = {
+							latitude: response.data.latitude,
+							longitude: response.data.longitude,
+							accuracy: PARAMETERS.GEOLOCATION_DEFAULT_ACCURACY
+						};
+					}
+				});
+
+				return scope.ModalLocationEdit.present();
 			},
 
 			onPWALocationUpdate(coords) {

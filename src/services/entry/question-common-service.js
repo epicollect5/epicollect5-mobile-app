@@ -43,7 +43,7 @@ export const questionCommonService = {
             formRef: entryService.entry.formRef
         };
 
-        switch (entryService.actionState) {
+        switch (entryService.action) {
             case PARAMETERS.ENTRY_EDIT:
                 routeParams.entryUuid = entryService.entry.entryUuid;
                 if (!entryService.entry.isBranch) {
@@ -95,7 +95,7 @@ export const questionCommonService = {
         }
 
         // Add or edit
-        switch (entryService.actionState) {
+        switch (entryService.action) {
             case PARAMETERS.ENTRY_EDIT:
                 routeParams.entryUuid = entryService.entry.entryUuid;
                 // If edit and native app, we will send user back to view/edit page

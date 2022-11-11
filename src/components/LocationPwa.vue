@@ -179,16 +179,15 @@ export default {
 					return;
 				}
 
-				if (utilsService.isValidLatitude(state.latitude)) {
-					if (utilsService.isValidLongitude(state.longitude)) {
-						//update marker position
-						updateMarker(showAlert);
-					} else {
-						if (showAlert) {
-							notificationService.showAlert(labels.location_fail);
-						}
-					}
+				//valid coords?
+				if (
+					utilsService.isValidLatitude(state.latitude) &&
+					utilsService.isValidLongitude(state.longitude)
+				) {
+					//update marker position
+					updateMarker(showAlert);
 				} else {
+					//show error
 					if (showAlert) {
 						notificationService.showAlert(labels.location_fail);
 					}
@@ -242,6 +241,7 @@ export default {
 
 				map.setView([state.latitude, state.longitude], map.getZoom());
 				console.log('zoom ', map.getZoom());
+				emitPWALocationUpdate();
 			});
 
 			//add marker to map

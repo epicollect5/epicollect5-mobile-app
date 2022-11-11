@@ -172,13 +172,12 @@ export const webService = {
                 resolve(response);
             }, function (error) {
                 console.log(error);
-
                 reject(error.response);
             });
         });
     },
 
-    downloadEntryPWA (slug, formRef, entryUuid) {
+    downloadEntryPWA (slug, formRef, entryUuid, branchRef, branchOwnerUuid) {
 
         const self = this;
 
@@ -196,6 +195,12 @@ export const webService = {
             }
 
             getURL += '?form_ref=' + formRef + '&uuid=' + entryUuid;
+
+            //add extra params to fetch a single branch (for editing)
+            if (branchRef && branchOwnerUuid) {
+                getURL += '&branch_ref=' + branchRef;
+                getURL += '&branch_owner_uuid=' + branchOwnerUuid;
+            }
 
             axios({
                 method: 'GET',

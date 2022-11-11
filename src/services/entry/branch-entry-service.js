@@ -23,7 +23,7 @@ export const branchEntryService = {
 
         this.form = formModel;
         this.entry = branchEntryModel;
-        this.actionState = PARAMETERS.ENTRY_ADD;
+        this.action = PARAMETERS.ENTRY_ADD;
 
         // Initialise the entry model
         this.entry.initialise({
@@ -60,7 +60,7 @@ export const branchEntryService = {
         //  self.entry = branchEntryModel;
         return new Promise((resolve, reject) => {
 
-            this.actionState = PARAMETERS.ENTRY_EDIT;
+            this.action = PARAMETERS.ENTRY_EDIT;
 
             // Replace entry model object with that supplied
             this.entry = entry;
@@ -218,7 +218,7 @@ export const branchEntryService = {
 
             //if editing existing entry and quitting, just bail out
             //as no changes need to be made
-            if (self.actionState === PARAMETERS.ENTRY_EDIT) {
+            if (self.action === PARAMETERS.ENTRY_EDIT) {
                 resolve();
                 return false;
             }

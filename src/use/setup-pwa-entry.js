@@ -6,14 +6,17 @@ import { errorsService } from '@/services/errors-service';
 import { entryService } from '@/services/entry/entry-service';
 import { webService } from '@/services/web-service';
 
-export async function setupPWAEntry (action) {
+export async function setupPWAEntry (action, isBranch) {
     return new Promise((resolve, reject) => {
 
         let formRef;
         let parentFormRef;
         let parentEntryUuid;
+        let branchRef = '';
+        let branchOwnerUuid = '';
         const rootStore = useRootStore();
         const searchParams = rootStore.searchParams;
+
 
         if (searchParams.has('form_ref') && searchParams.has('parent_form_ref') && searchParams.has('parent_uuid')) {
             formRef = searchParams.get('form_ref');
@@ -24,6 +27,11 @@ export async function setupPWAEntry (action) {
             formRef = projectModel.getFirstFormRef();
             parentFormRef = '';
             parentEntryUuid = '';
+        }
+
+        if (isBranch) {
+            branchRef = searchParams.get('branch_ref');
+            branchOwnerUuid = searchParams.get('branch_owner_uuid');
         }
 
         if (action === PARAMETERS.PWA_ADD_ENTRY) {
@@ -39,7 +47,7 @@ export async function setupPWAEntry (action) {
                 const entryUuid = searchParams.get('uuid');
                 let webEntry = null;
                 try {
-                    const response = await webService.downloadEntryPWA(projectSlug, formRef, entryUuid);
+                    const response = await webService.downloadEntryPWA(projectSlug, formRef, entryUuid, branchRef, branchOwnerUuid);
                     console.log(JSON.stringify(response.data.data.entries[0]));
                     if (response.data.data.entries.length > 0) {
                         webEntry = response.data.data.entries[0];
@@ -56,35 +64,36 @@ export async function setupPWAEntry (action) {
                 }
 
                 //build entry object
+                const entryType = webEntry.type;
                 const entry = {
                     entryUuid,
-                    parentEntryUuid: '',//todo:
+                    parentEntryUuid,
                     isRemote: 0,
                     synced: 0,
                     canEdit: 1,
-                    createdAt: webEntry.entry.createdAt,
-                    title: webEntry.entry.title,
+                    createdAt: webEntry[entryType].createdAt,
+                    title: webEntry[entryType].title,
                     formRef,
-                    parentFormRef: '',//todo:
+                    parentFormRef,
                     projectRef,
                     branchEntries: {},
                     media: {},
                     uniqueAnswers: {},
                     syncedError: '',
-                    isBranch: false,//todo: handle branch edits
+                    isBranch,
                     verifyAnswers: {},
-                    answers: webEntry.entry.answers
+                    answers: webEntry[entryType].answers
                 };
 
                 const data = {
                     entry_uuid: entryUuid,
-                    answers: JSON.stringify(webEntry.entry.answers),
+                    answers: JSON.stringify(webEntry[entryType].answers),
                     form_ref: formRef,
                     parent_form_ref: '',
                     parent_entry_uuid: '',
                     project_ref: projectRef,
-                    created_at: webEntry.entry.createdAt,
-                    title: webEntry.entry.title,
+                    created_at: webEntry[entryType].createdAt,
+                    title: webEntry[entryType].title,
                     synced: 0,
                     synced_error: '',
                     can_edit: 1,

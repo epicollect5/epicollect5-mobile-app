@@ -215,9 +215,16 @@ export const app = createApp(App)
 
         // Set up a new entry or edit existing one
         let formRef = '';
+        let isBranch = false;
+        if
+          (rootStore.searchParams.get('branch_ref')
+          && rootStore.searchParams.get('branch_owner_uuid')) {
+          isBranch = true;
+        }
+
         if (providedSegment === PARAMETERS.PWA_ADD_ENTRY) {
           try {
-            formRef = await setupPWAEntry(PARAMETERS.PWA_ADD_ENTRY);
+            formRef = await setupPWAEntry(PARAMETERS.PWA_ADD_ENTRY, isBranch);
           }
           catch (error) {
             console.log(error);
@@ -235,7 +242,7 @@ export const app = createApp(App)
           }
 
           try {
-            formRef = await setupPWAEntry(PARAMETERS.PWA_EDIT_ENTRY);
+            formRef = await setupPWAEntry(PARAMETERS.PWA_EDIT_ENTRY, isBranch);
           }
           catch (error) {
             console.log(error);
@@ -244,7 +251,7 @@ export const app = createApp(App)
         }
 
         //update route params BRANCH
-        if (rootStore.searchParams.get('branch_ref') && rootStore.searchParams.get('branch_owner_uuid')) {
+        if (isBranch) {
           console.log('should open branch');
           rootStore.routeParams = {
             formRef,
