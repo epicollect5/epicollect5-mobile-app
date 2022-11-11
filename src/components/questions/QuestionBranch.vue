@@ -598,7 +598,7 @@ export default {
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
 				//edit on PWA onlways start from first question
-				debugger;
+
 				await branchEntryService.setUpExisting(branchEntry);
 				rootStore.routeParams = {
 					formRef,
