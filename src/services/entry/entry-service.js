@@ -75,7 +75,6 @@ export const entryService = {
 
         console.log(JSON.stringify(entry));
 
-
         const self = this;
         const rootStore = useRootStore();
         self.form = formModel;
@@ -203,7 +202,6 @@ export const entryService = {
         return new Promise((resolve, reject) => {
 
             // Set the entry title 
-
             entryCommonService.setEntryTitle(projectModel.getExtraForm(
                 self.entry.formRef),
                 projectModel.getExtraInputs(),

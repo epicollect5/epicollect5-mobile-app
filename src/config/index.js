@@ -333,6 +333,8 @@ export const PARAMETERS = {
     },
     PWA_ADD_ENTRY: 'add-entry',
     PWA_EDIT_ENTRY: 'edit-entry',
+    PWA_EDIT_BRANCH_LOCAL: 'edit-branch-local',
+    PWA_EDIT_BRANCH_REMOTE: 'edit-branch-remote',
     PWA_FILE_STATE: {
         CACHED: 'cached',
         STORED: 'stored'

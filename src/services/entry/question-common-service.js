@@ -37,7 +37,10 @@ export const questionCommonService = {
     },
 
     getNavigationParamsPWA (entryService) {
+
+        const rootStore = useRootStore();
         let routeName = '';
+
         const routeParams = {
             projectRef: projectModel.getProjectRef(),
             formRef: entryService.entry.formRef
@@ -49,10 +52,18 @@ export const questionCommonService = {
                 if (!entryService.entry.isBranch) {
                     routeName = PARAMETERS.ROUTES.PWA_QUIT;
                 } else {
-                    routeName = PARAMETERS.ROUTES.ENTRIES_ADD;
-                    routeParams.entryUuid = entryService.entry.entryUuid;
-                    routeParams.ownerEntryUuid = entryService.entry.ownerEntryUuid;
-                    routeParams.ownerInputRef = entryService.entry.ownerInputRef;
+                    if (rootStore.branchEditType === PARAMETERS.PWA_EDIT_BRANCH_REMOTE) {
+                        //this is a remote branch entry edit, just quit
+                        // (no temp entry in memory)
+                        routeName = PARAMETERS.ROUTES.PWA_QUIT;
+                    }
+                    else {
+                        //this was a pwa temp branch editing, go back to hierarchy entry
+                        routeName = PARAMETERS.ROUTES.ENTRIES_ADD;
+                        routeParams.entryUuid = entryService.entry.entryUuid;
+                        routeParams.ownerEntryUuid = entryService.entry.ownerEntryUuid;
+                        routeParams.ownerInputRef = entryService.entry.ownerInputRef;
+                    }
                 }
                 break;
             case PARAMETERS.ENTRY_ADD:

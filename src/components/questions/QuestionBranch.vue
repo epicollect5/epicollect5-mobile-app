@@ -45,7 +45,7 @@
 				<ion-row v-if="isPWA && isPWAEntryEdit">
 					<ion-col>
 						<ion-item color="warning">
-							<ion-label class="item-divider-label-centered">{{pwaEntryEditWarning}}</ion-label>
+							<ion-label class="item-divider-label-centered ion-text-wrap">{{pwaEntryEditWarning}}</ion-label>
 						</ion-item>
 					</ion-col>
 				</ion-row>
@@ -289,12 +289,12 @@ export default {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
-
 		const router = useRouter();
 		const route = useRoute();
 		const { type: questionType, inputRef } = readonly(props);
 		const entriesAddState = inject('entriesAddState');
 		const entriesAddScope = rootStore.entriesAddScope;
+
 		const projectRef = projectModel.getProjectRef();
 		const state = reactive({
 			inputDetails: {},
@@ -394,7 +394,7 @@ export default {
 				return entriesAddScope.entryService.entry.isRemote;
 			}),
 			isPWAEntryEdit: computed(() => {
-				return entriesAddScope.entryService.entry.action === PARAMETERS.ENTRY_EDIT;
+				return entriesAddScope.entryService.action === PARAMETERS.ENTRY_EDIT;
 			}),
 			parentEntryName: props.parentEntryName,
 			currentFormName: props.currentFormName,
@@ -598,7 +598,6 @@ export default {
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
 				//edit on PWA onlways start from first question
-
 				await branchEntryService.setUpExisting(branchEntry);
 				rootStore.routeParams = {
 					formRef,

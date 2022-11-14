@@ -11,6 +11,7 @@ import { databaseDeleteService } from '../database/database-delete-service';
 import { branchEntryModel } from '@/models/branch-entry-model.js';
 import { Capacitor } from '@capacitor/core';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
+import { webService } from '@/services/web-service';
 
 export const branchEntryService = {
     type: PARAMETERS.BRANCH_ENTRY,
@@ -56,8 +57,8 @@ export const branchEntryService = {
         const rootStore = useRootStore();
         const self = this;
 
-        //self.form = formModel;
-        //  self.entry = branchEntryModel;
+        self.form = formModel;
+        self.entry = branchEntryModel;
         return new Promise((resolve, reject) => {
 
             this.action = PARAMETERS.ENTRY_EDIT;
@@ -66,7 +67,6 @@ export const branchEntryService = {
             this.entry = entry;
 
             this.branchInputs = projectModel.getBranches(this.entry.formRef, this.entry.ownerInputRef);
-
 
             // Get inputs extra details
             const inputsExtra = projectModel.getExtraInputs();
@@ -127,13 +127,16 @@ export const branchEntryService = {
 
     },
 
-    saveEntryPWA () {
+    async saveEntryPWA () {
+
+
 
         //save branch entry in memory, it will be uploaded the owner entry is uploaded
         const rootStore = useRootStore();
+        const projectSlug = projectModel.getSlug();
         const self = this;
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
 
             // Set the entry title 
             entryCommonService.setEntryTitle(
@@ -147,7 +150,6 @@ export const branchEntryService = {
             //so we can re-use all the functions
 
             console.log(JSON.stringify(self.entry.answers));
-            //self.entry.answers['d0e78fbfec83499c955271d9c2a2b5c9_631898d10c582_63467a7adc3fa_63467a86dc3fb'].answer = '';
             const parsedBranchEntry = {
                 entry_uuid: self.entry.entryUuid,
                 parent_entry_uuid: self.entry.parentEntryUuid,
@@ -172,13 +174,24 @@ export const branchEntryService = {
             //conver entry to upload format
             const uploadableBranchEntry = JSONTransformerService.makeJsonEntry(PARAMETERS.BRANCH_ENTRY, parsedBranchEntry);
 
-            //store branch entry in memory
-            if (!Object.prototype.hasOwnProperty.call(rootStore.queueTempBranchEntriesPWA, self.entry.ownerInputRef)) {
-                rootStore.queueTempBranchEntriesPWA[self.entry.ownerInputRef] = [];
-
+            //if a remote branch, upload
+            if (rootStore.branchEditType === PARAMETERS.PWA_EDIT_BRANCH_REMOTE) {
+                webService.uploadEntryPWA(projectSlug, uploadableBranchEntry).then((response) => {
+                    resolve(response);
+                }, (error) => {
+                    console.log(error);
+                    reject(error);
+                });
             }
-            rootStore.queueTempBranchEntriesPWA[self.entry.ownerInputRef].push(uploadableBranchEntry);
-            resolve();
+            else {
+                //store branch entry in memory
+                if (!Object.prototype.hasOwnProperty.call(rootStore.queueTempBranchEntriesPWA, self.entry.ownerInputRef)) {
+                    rootStore.queueTempBranchEntriesPWA[self.entry.ownerInputRef] = [];
+
+                }
+                rootStore.queueTempBranchEntriesPWA[self.entry.ownerInputRef].push(uploadableBranchEntry);
+                resolve();
+            }
         });
     },
 

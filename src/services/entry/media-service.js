@@ -160,10 +160,11 @@ export const mediaService = {
                     return mediaTypes.includes(input.data.type);
                 });
 
+            const answers = entryService.entry.answers;
             mediaInputs.forEach((mediaInput) => {
                 const inputRef = mediaInput.data.ref;
-                const answers = entryService.entry.answers;
-                const answer = answers[inputRef].answer;
+                //if no answer, default to empty string (no media file)
+                const answer = answers[inputRef]?.answer || '';
                 media[uuid] = media[uuid] || {};
                 media[uuid][mediaInput.data.ref] = {};
                 media[uuid][mediaInput.data.ref].filenamePWA = {};

@@ -1,9 +1,11 @@
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model';
+import { formModel } from '@/models/form-model';
 import { entryModel } from '@/models/entry-model';
 import { useRootStore } from '@/stores/root-store';
 import { errorsService } from '@/services/errors-service';
 import { entryService } from '@/services/entry/entry-service';
+import { branchEntryService } from '@/services/entry/branch-entry-service';
 import { webService } from '@/services/web-service';
 
 export async function setupPWAEntry (action, isBranch) {
@@ -16,7 +18,6 @@ export async function setupPWAEntry (action, isBranch) {
         let branchOwnerUuid = '';
         const rootStore = useRootStore();
         const searchParams = rootStore.searchParams;
-
 
         if (searchParams.has('form_ref') && searchParams.has('parent_form_ref') && searchParams.has('parent_uuid')) {
             formRef = searchParams.get('form_ref');
@@ -99,10 +100,22 @@ export async function setupPWAEntry (action, isBranch) {
                     can_edit: 1,
                     is_remote: 0
                 };
+
+                //initialise formModel
+                formModel.initialise(projectModel.getExtraForm(formRef));
+
                 //initialise entryModel
                 entryModel.initialise(data);
 
-                entryService.setUpExisting(entry);
+                if (isBranch) {
+                    entry.ownerInputRef = branchRef;
+                    entry.ownerEntryUuid = branchOwnerUuid;
+                    await branchEntryService.setUpExisting(entry);
+                    rootStore.branchEditType = PARAMETERS.PWA_EDIT_BRANCH_REMOTE;
+                }
+                else {
+                    entryService.setUpExisting(entry);
+                }
 
                 resolve(formRef);
             })();

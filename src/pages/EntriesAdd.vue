@@ -346,6 +346,8 @@ import { utilsService } from '@/services/utilities/utils-service';
 import { locationService } from '@/services/utilities/location-cordova-service';
 import { errorsService } from '@/services/errors-service';
 import { entryService } from '@/services/entry/entry-service';
+import { branchEntryService } from '@/services/entry/branch-entry-service';
+
 import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
@@ -405,12 +407,27 @@ export default {
 				errors: {}
 			},
 			// Allow saving by default (via quit button)
-			allowSave: entryService.allowSave,
-			action: entryService.action,
+			//tjhis is to allow saveing halfway through
+			//can be disabled when user edits jumps
+			allowSave: null,
+			action: null, //add or edit
 			entrySavedPWA: false,
 			entryFailedPWA: false,
 			showSaved: false
 		});
+
+		if (rootStore.isPWA) {
+			//hierarchy or branch?
+			if (entryService) {
+				//hierachy
+				state.allowSave = entryService.allowSave;
+				state.action = entryService.action;
+			} else {
+				//branch
+				state.allowSave = branchEntryService.allowSave;
+				state.action = branchEntryService.action;
+			}
+		}
 
 		const lastNavIndex = rootStore.hierarchyNavigation.length - 1;
 		const lastNavItem = rootStore.hierarchyNavigation[lastNavIndex];
@@ -433,28 +450,41 @@ export default {
 			})
 		};
 
+		function showEntrySavedSuccessScreen() {
+			state.entrySavedPWA = true;
+			state.entryFailedPWA = false;
+			state.showSave = false;
+			state.showSaved = true;
+			state.disablePrevious = true;
+			state.disableNext = true;
+			notificationService.hideProgressDialog();
+		}
+
 		const methods = {
 			async saveEntry(syncType) {
 				if (rootStore.isPWA) {
 					await notificationService.showProgressDialog(labels.wait, labels.saving);
 
+					state.allowSave = true;
+					state.action = rootStore.entriesAddScope.entryService.action;
+
 					rootStore.entriesAddScope.entryService.saveEntryPWA().then(
 						() => {
 							//if branch, go back to branch question and update branches list
 							if (rootStore.entriesAddScope.entryService.type === PARAMETERS.BRANCH_ENTRY) {
-								quit(
-									questionCommonService.getNavigationParams(rootStore.entriesAddScope.entryService)
-								);
+								//if editing a branch entry, just show the success screen
+								if (rootStore.entriesAddScope.entryService.action === PARAMETERS.ENTRY_EDIT) {
+									showEntrySavedSuccessScreen();
+								} else {
+									quit(
+										questionCommonService.getNavigationParams(
+											rootStore.entriesAddScope.entryService
+										)
+									);
+								}
 							} else {
 								//this is a hierarchy entry:
-								//show success screen for PWA entry saved
-								state.entrySavedPWA = true;
-								state.entryFailedPWA = false;
-								state.showSave = false;
-								state.showSaved = true;
-								state.disablePrevious = true;
-								state.disableNext = true;
-								notificationService.hideProgressDialog();
+								showEntrySavedSuccessScreen();
 							}
 						},
 						(errorResponse) => {
@@ -709,6 +739,7 @@ export default {
 				};
 
 				//lets check if we are quitting from the PWA
+
 				if (rootStore.isPWA) {
 					if (response.routeName === PARAMETERS.ROUTES.PWA_QUIT) {
 						if (process.env.NODE_ENV === 'production') {
