@@ -30,6 +30,7 @@ export async function handlePrev (state, scope) {
         state.questionParams.currentInputRef = jumpParams.previous_input_ref;
         state.questionParams.currentInputIndex = jumpParams.previous_input_index;
         // Set up previous question
+
         initialSetup(state, scope);
     }, PARAMETERS.DELAY_SHORT);
 }

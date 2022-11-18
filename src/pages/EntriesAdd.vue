@@ -117,7 +117,7 @@
 					></ion-spinner>
 				</div>
 
-				<ion-grid>
+				<ion-grid class="ion-no-padding">
 					<ion-row>
 						<ion-col
 							size-md="10"
@@ -334,7 +334,7 @@ import questionTime from '@/components/questions/QuestionTime';
 import questionVideo from '@/components/questions/QuestionVideo';
 import questionSave from '@/components/questions/QuestionSave';
 import questionSaved from '@/components/questions/QuestionSaved';
-import { provide } from 'vue';
+import { provide, inject } from 'vue';
 import { initialSetup } from '@/use/questions/initial-setup';
 import { handleNext } from '@/use/questions/handle-next';
 import { handlePrev } from '@/use/questions/handle-prev';
@@ -407,7 +407,7 @@ export default {
 				errors: {}
 			},
 			// Allow saving by default (via quit button)
-			//tjhis is to allow saveing halfway through
+			//this is to allow saving halfway through
 			//can be disabled when user edits jumps
 			allowSave: null,
 			action: null, //add or edit
@@ -496,22 +496,15 @@ export default {
 								return false;
 							}
 
-							//we need to map the server erros to match the question errors object
-							const mappedErrors = {};
-							for (const error of errorResponse.data.errors) {
-								mappedErrors[error.source] = {
-									message: error.title,
-									code: error.code
-								};
-							}
-
+							//cache any errors
 							rootStore.routeParams = {
-								error: { errors: mappedErrors }
+								error: { errors: errorResponse.data.errors }
 							};
 							state.error = {
-								hasError: true,
-								errors: mappedErrors
+								//hasError: true,
+								errors: errorResponse.data.errors
 							};
+
 							state.entrySavedPWA = false;
 							state.entryFailedPWA = true;
 							state.showSave = false;
@@ -774,31 +767,54 @@ export default {
 
 		// Retrieve state params from previous view
 		const routeParams = rootStore.routeParams;
+
 		state.questionParams = {
-			currentInputRef: routeParams.inputRef,
+			currentInputRef: routeParams.inputRef, // imp:-> check this
 			currentInputIndex: routeParams.inputIndex,
 			previousInputIndex: routeParams.inputIndex - 1,
-			isBranch: routeParams.isBranch
+			isBranch: routeParams.isBranch,
+			branchEntryUuid: routeParams.branchEntryUuid
 		};
 
-		//Set up the scope errors
-		if (state.questionParams.currentInputRef !== null) {
-			// Reset error message for this question
-			state.error.errors[state.questionParams.currentInputRef] = {
-				message: ''
-			};
-		}
+		//Reset up the scope errors if needed
+		//why? imp:
+		// if (state.questionParams.currentInputRef !== null) {
+		// 	// Reset error message for this question
+		// 	state.error.errors[state.questionParams.currentInputRef] = {
+		// 		message: ''
+		// 	};
+		// }
+		//imp: ********************
 
 		// Check if we have had any errors passed in and assign to scope error object
 		if (routeParams.error?.errors) {
 			if (routeParams.error.errors.length > 0) {
+				const entryErrors = routeParams.error.errors;
 				// We have errors passed in via the routeParams
-				state.error.hasError = true;
-				for (let i = 0; i < routeParams.error.errors.length; i++) {
+				//state.error.hasError = true;
+				for (let i = 0; i < entryErrors.length; i++) {
 					// Add the error messages to the scope errors
-					state.error.errors[routeParams.error.errors[i].source] = {
-						message: STRINGS[language].status_codes[routeParams.error.errors[i].code]
+					state.error.errors[entryErrors[i].source] = {
+						message: STRINGS[language].status_codes[entryErrors[i].code]
 					};
+
+					//do we have the uuid?
+					//Happens when branches have upload errors on the PWA
+					if (rootStore.isPWA) {
+						if (entryErrors[i].uuid) {
+							//is this an edit?
+							if (
+								rootStore.entriesAddScope.entryService.action === PARAMETERS.ENTRY_EDIT &&
+								state.questionParams.isBranch
+							) {
+								if (entryErrors[i].uuid !== state.questionParams.branchEntryUuid) {
+									//the uuid does not match, this branch does not need to show  errors
+									//for the current question
+									state.error.errors[entryErrors[i].source] = {};
+								}
+							}
+						}
+					}
 				}
 			}
 		}

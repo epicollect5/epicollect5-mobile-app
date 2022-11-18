@@ -14,6 +14,8 @@ export const questionCommonService = {
         // Current input ref
         state.currentInputRef = inputRef;
         // Check if any errors
+        console.log({ 'entriesAddState.error': entriesAddState.error });
+        console.log(JSON.stringify(entriesAddState.error));
         state.error = entriesAddState.error;
         // Required
         state.required = state.inputDetails.is_required;
@@ -63,13 +65,15 @@ export const questionCommonService = {
                         routeParams.entryUuid = entryService.entry.entryUuid;
                         routeParams.ownerEntryUuid = entryService.entry.ownerEntryUuid;
                         routeParams.ownerInputRef = entryService.entry.ownerInputRef;
+                        routeParams.inputRef = entryService.entry.ownerInputRef;
+                        routeParams.inputIndex = projectModel.getInputIndexFromRef(entryService.entry.formRef, routeParams.inputRef);
+                        routeParams.isBranch = false;
                     }
                 }
                 break;
             case PARAMETERS.ENTRY_ADD:
                 // If add, back to relevant starting page
                 if (!entryService.entry.isBranch) {
-
                     routeName = PARAMETERS.ROUTES.PWA_QUIT;
                 } else {
                     routeName = PARAMETERS.ROUTES.ENTRIES_ADD;

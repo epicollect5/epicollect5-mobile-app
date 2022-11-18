@@ -21,7 +21,7 @@
     "vitest": "vitest",
     "vitest-ui": "vitest --ui",
     "web": "export VUE_APP_MODE=WEB && ionic serve --no-open",
-    "pwa": "export VUE_APP_MODE=PWA && ionic serve --no-open -p 1234",
+    "pwa": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG=1 && ionic serve --no-open -p 1234",
     "pwa-build-prod": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG= && ionic build",
     "pwa-build-dev": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG=1 && ionic build"
   },

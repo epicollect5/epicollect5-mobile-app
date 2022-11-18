@@ -1,5 +1,4 @@
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
 import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';

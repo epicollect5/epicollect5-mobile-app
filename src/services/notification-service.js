@@ -5,15 +5,16 @@ import { loadingController, toastController, alertController } from '@ionic/vue'
 
 export const notificationService = {
 
-    showToast (message, delay) {
+    showToast (message, delay, position) {
 
         const setDelay = delay || 0;
+        const setPosition = position || 'bottom';
 
         setTimeout(async () => {
             const toast = await toastController
                 .create({
                     message,
-                    position: 'bottom',
+                    position: setPosition,
                     duration: 3000
                 });
             return toast.present();

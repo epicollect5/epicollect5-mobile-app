@@ -636,26 +636,30 @@ export const JSONTransformerService = {
     },
     //Create a json object used in the api uniqueness check
     makeUniqueEntry (formRef, entry, inputRef, answer, projectVersion) {
+
+        const isBranch = entry.isBranch;
+        const entryType = isBranch ? PARAMETERS.BRANCH_ENTRY : PARAMETERS.ENTRY;
+
         const relationships = {
             parent: {},
             branch: {}
         };
 
         // If this entry has a parent
-        if (entry.parent_entry_uuid) {
+        if (entry.parentEntryUuid) {
             relationships.parent = {
                 data: {
-                    parent_form_ref: entry.parent_form_ref,
-                    parent_entry_uuid: entry.parent_entry_uuid
+                    parent_form_ref: entry.parentFormRef,
+                    parent_entry_uuid: entry.parentEntryUuid
                 }
             };
         }
 
-        if (entry.owner_entry_uuid) {
+        if (entry.ownerEntryUuid) {
             relationships.branch = {
                 data: {
-                    owner_input_ref: entry.owner_input_ref,
-                    owner_entry_uuid: entry.owner_entry_uuid
+                    owner_input_ref: entry.ownerInputRef,
+                    owner_entry_uuid: entry.ownerEntryUuid
                 }
             };
         }
@@ -663,7 +667,7 @@ export const JSONTransformerService = {
 
         return {
             id: entry.entryUuid,
-            type: 'entry',
+            type: entryType,
             attributes: {
                 form: {
                     ref: formRef,
@@ -671,7 +675,7 @@ export const JSONTransformerService = {
                 }
             },
             relationships,
-            entry: {
+            [entryType]: {
                 entry_uuid: entry.entryUuid,
                 input_ref: inputRef,
                 answer,

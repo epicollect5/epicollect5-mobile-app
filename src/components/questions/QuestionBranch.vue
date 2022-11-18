@@ -11,7 +11,7 @@
 			@click="saveBranchEntry()"
 		>
 			<ion-icon
-				:icon="cloudUpload"
+				:icon="archive"
 				slot="start"
 			></ion-icon>
 			{{labels.save}}
@@ -242,7 +242,7 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import { trash, cloudUpload, create, add } from 'ionicons/icons';
+import { trash, cloudUpload, create, add, archive } from 'ionicons/icons';
 import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject, watch } from 'vue';
 import { modalController } from '@ionic/vue';
@@ -596,17 +596,16 @@ export default {
 				};
 				// Show loader
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
-
 				//edit on PWA onlways start from first question
 				await branchEntryService.setUpExisting(branchEntry);
 				rootStore.routeParams = {
 					formRef,
 					inputRef: '',
 					inputIndex: 0,
-					error: {}, //todo: build error object
-					isBranch: true
+					error: state.error,
+					isBranch: true,
+					branchEntryUuid: id // -> pass this to avoid errors on ALL the branches ;)
 				};
-
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
 				});
@@ -685,7 +684,8 @@ export default {
 			trash,
 			cloudUpload,
 			create,
-			add
+			add,
+			archive
 		};
 	}
 };

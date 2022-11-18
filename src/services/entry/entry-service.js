@@ -199,6 +199,46 @@ export const entryService = {
         // self.entry = entryModel;
         const projectSlug = projectModel.getSlug();
 
+        let uploadErrors = [];
+        async function uploadBranchEntriesSequential (branchEntries) {
+
+            return new Promise((resolve) => {
+                const branchEntry = branchEntries.pop();
+                webService.uploadEntryPWA(projectSlug, branchEntry).then((response) => {
+
+                    console.log('branch entry uploaded', response);
+                    if (branchEntries.length > 0) {
+                        resolve(uploadBranchEntriesSequential(branchEntries));
+                    }
+                    else {
+                        resolve(uploadErrors);
+                    }
+                }, (error) => {
+                    console.log({ branchEntry });
+                    console.log('branch entry upload error', error);
+                    console.log(error);
+
+                    //attach branch uuid to errors so we can identify which
+                    //branch entry failed and update UI
+                    // (branchRef is the same for multiple entries so not enough)
+                    //on pwa is needed, on native app we get it from the DB
+                    const branchErrors = error.data.errors.map((branchError) => {
+                        branchError.uuid = branchEntry.id;
+                        return branchError;
+                    });
+
+                    //cache errors (DISTINCT)
+                    uploadErrors = [...new Set([...uploadErrors, ...branchErrors])];
+                    if (branchEntries.length > 0) {
+                        resolve(uploadBranchEntriesSequential(branchEntries));
+                    }
+                    else {
+                        resolve(uploadErrors);
+                    }
+                });
+            });
+        }
+
         return new Promise((resolve, reject) => {
 
             // Set the entry title 
@@ -230,32 +270,33 @@ export const entryService = {
                 entry_type: PARAMETERS.ENTRY
             };
 
-            console.log(JSON.stringify(parsedEntry));
-
             //upload entry to server
             const uploadableEntry = JSONTransformerService.makeJsonEntry(PARAMETERS.ENTRY, parsedEntry);
 
-            webService.uploadEntryPWA(projectSlug, uploadableEntry).then((response) => {
+            webService.uploadEntryPWA(projectSlug, uploadableEntry).then(async (response) => {
                 //any branches to upload for this entry?
                 const allBranchEntries = toRaw(rootStore.queueTempBranchEntriesPWA);
                 if (Object.keys(allBranchEntries).length > 0) {
-                    const uploadBranchEntryPromises = [];
+                    const branchEntries = [];
                     Object.values(allBranchEntries).forEach((questionBranchEntries) => {
                         questionBranchEntries.forEach(async (branchEntry) => {
-                            uploadBranchEntryPromises.push(webService.uploadEntryPWA(projectSlug, branchEntry));
+                            console.log({ branchEntry });
+                            branchEntries.push(branchEntry);
                         });
                     });
 
-                    Promise.all(uploadBranchEntryPromises).then((response) => {
-                        console.log(response);
-                        resolve(response);
+                    //imp: collect upload errors for branches
+                    const branchUploadErrors = await uploadBranchEntriesSequential(branchEntries);
+
+                    if (branchUploadErrors.length > 0) {
+                        //remove uploaded temp branches, keep the failed only?
+                        //rootStore.queueTempBranchEntriesPWA
+                        reject({ data: { errors: branchUploadErrors } });
+                    }
+                    else {
+                        resolve();
                         rootStore.queueTempBranchEntriesPWA = {};
-                    }).catch((error) => {
-                        //remove only branches already uploaded
-                        //todo: how do we do it?
-                        console.log(error);
-                        reject(error);
-                    });
+                    }
                 }
                 else {
                     console.log(response);

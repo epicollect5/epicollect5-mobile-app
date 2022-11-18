@@ -129,12 +129,11 @@ export const branchEntryService = {
 
     async saveEntryPWA () {
 
-
-
         //save branch entry in memory, it will be uploaded the owner entry is uploaded
         const rootStore = useRootStore();
         const projectSlug = projectModel.getSlug();
         const self = this;
+        const ownerInputRef = self.entry.ownerInputRef;
 
         return new Promise((resolve, reject) => {
 
@@ -148,7 +147,6 @@ export const branchEntryService = {
 
             //convert self.entry to an object identical to the one we save to the DB, 
             //so we can re-use all the functions
-
             console.log(JSON.stringify(self.entry.answers));
             const parsedBranchEntry = {
                 entry_uuid: self.entry.entryUuid,
@@ -165,7 +163,7 @@ export const branchEntryService = {
                 device_id: '',
                 platform: PARAMETERS.WEB,
                 entry_type: PARAMETERS.BRANCH_ENTRY,
-                owner_input_ref: self.entry.ownerInputRef,
+                owner_input_ref: ownerInputRef,
                 owner_entry_uuid: self.entry.ownerEntryUuid
             };
 
@@ -185,11 +183,22 @@ export const branchEntryService = {
             }
             else {
                 //store branch entry in memory
-                if (!Object.prototype.hasOwnProperty.call(rootStore.queueTempBranchEntriesPWA, self.entry.ownerInputRef)) {
-                    rootStore.queueTempBranchEntriesPWA[self.entry.ownerInputRef] = [];
-
+                if (!Object.prototype.hasOwnProperty.call(rootStore.queueTempBranchEntriesPWA, ownerInputRef)) {
+                    rootStore.queueTempBranchEntriesPWA[ownerInputRef] = [];
                 }
-                rootStore.queueTempBranchEntriesPWA[self.entry.ownerInputRef].push(uploadableBranchEntry);
+
+                //if edit, replace current temp branch entry
+                if (branchEntryService.action === PARAMETERS.ENTRY_EDIT) {
+                    const existingBranchEntries = rootStore.queueTempBranchEntriesPWA[ownerInputRef];
+                    const index = existingBranchEntries.findIndex((branch) => {
+                        return branch.id === self.entry.entryUuid;
+                    });
+                    rootStore.queueTempBranchEntriesPWA[ownerInputRef][index] = uploadableBranchEntry;
+                }
+                else {
+                    //new branch, just add it
+                    rootStore.queueTempBranchEntriesPWA[ownerInputRef].push(uploadableBranchEntry);
+                }
                 resolve();
             }
         });

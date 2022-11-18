@@ -672,16 +672,15 @@ export const utilsService = {
         return parseFloat(inputStep);
     },
     questionHasError (questionState) {
+
         if (questionState.error?.errors?.[questionState.currentInputRef]?.message?.trim() === '') {
             //no error message , answer is valid
             return false;
         }
-
         if (questionState.error?.errors?.[questionState.currentInputRef]?.message === undefined) {
             //no message key , answer is valid
             return false;
         }
-
         return true;
     },
     filterObjectsByUniqueKey (arrayOfObjects, keyname) {

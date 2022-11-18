@@ -17,6 +17,8 @@ import { commonValidate } from '@/services/validation/common-validate';
 import { useRootStore } from '@/stores/root-store';
 import { projectModel } from '@/models/project-model.js';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
+import { notificationService } from '@/services/notification-service';
+import { webService } from '@/services/web-service';
 
 
 import { PARAMETERS } from '@/config';
@@ -174,31 +176,57 @@ export const answerValidateService = {
                     const projectVersion = projectModel.getLastUpdated();
                     const projectSlug = projectModel.getSlug();
                     const payload = JSONTransformerService.makeUniqueEntry(formRef, entry, inputRef, answer, projectVersion);
+                    let tempAnswerFound = false;
+                    //bypass uniqueness check for debugging locally
+                    if (PARAMETERS.DEBUG && PARAMETERS.IS_LOCALHOST) {
+                        notificationService.showToast('bypassed uniqueness check!', 0, 'top');
+                        resolve(true);
+                    }
+                    else {
+                        // check uniqueness against the entries saved on the server
 
+                        //if branch, first check uniqueness against temp branch entries
+                        if (entry.isBranch) {
 
-                    //for debugging
-                    resolve(true);
-                    //todo: remove the above
+                            console.log({ tempBranches: rootStore.queueTempBranchEntriesPWA });
 
-                    // //check uniqueness against the entries saved on the server
-                    // webService.checkUniquenessPWA(projectSlug, payload).then((response) => {
-                    //     //ec5_249 answer unique
-                    //     if (response.data.data.code === 'ec5_249') {
-                    //         resolve(true);
-                    //     }
-                    //     else {
-                    //         resolve(false);
-                    //     }
-                    // }, (error) => {
-                    //     //ec5_22 answer NOT unique
-                    //     if (error.data?.errors[0]?.code === 'ec5_22') {
-                    //         resolve(false);
-                    //     }
-                    //     else {
-                    //         console.log(error);
-                    //         reject(error);
-                    //     }
-                    // });
+                            //get branches by branchRef
+                            const tempBranches = rootStore.queueTempBranchEntriesPWA[entry.ownerInputRef] || [];
+                            //any match in temp branch answers?
+                            tempBranches.every((tempBranch) => {
+                                const tempAnswer = tempBranch.branch_entry.answers[inputRef].answer;
+                                if (tempAnswer === answer) {
+                                    //match found, bail out
+                                    resolve(false);
+                                    tempAnswerFound = true;
+                                    return false;
+                                }
+                                return true;
+                            });
+                        }
+
+                        //check uniqueness on server (only when temp branch entries are ok)
+                        if (!tempAnswerFound) {
+                            webService.checkUniquenessPWA(projectSlug, payload).then((response) => {
+                                //ec5_249 answer unique
+                                if (response.data.data.code === 'ec5_249') {
+                                    resolve(true);
+                                }
+                                else {
+                                    resolve(false);
+                                }
+                            }, (error) => {
+                                //ec5_22 answer NOT unique
+                                if (error.data?.errors[0]?.code === 'ec5_22') {
+                                    resolve(false);
+                                }
+                                else {
+                                    console.log(error);
+                                    reject(error);
+                                }
+                            });
+                        }
+                    }
                 }
                 else {
                     databaseSelectService.isUnique(entry, inputDetails, answer).then(function (res) {
