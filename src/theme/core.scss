@@ -95,6 +95,9 @@ ion-toolbar.toolbar-title {
     ion-grid {
         padding: 6px 12px;
     }
+    ion-icon {
+        vertical-align: top;
+    }
 }
 .project-header {
     //fix for PWA

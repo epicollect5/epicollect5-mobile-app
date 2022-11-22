@@ -128,7 +128,6 @@ export const branchEntryService = {
     },
 
     async saveEntryPWA () {
-
         //save branch entry in memory, it will be uploaded the owner entry is uploaded
         const rootStore = useRootStore();
         const projectSlug = projectModel.getSlug();
@@ -136,7 +135,6 @@ export const branchEntryService = {
         const ownerInputRef = self.entry.ownerInputRef;
 
         return new Promise((resolve, reject) => {
-
             // Set the entry title 
             entryCommonService.setEntryTitle(
                 projectModel.getExtraForm(self.entry.formRef),
@@ -168,6 +166,18 @@ export const branchEntryService = {
             };
 
             console.log(JSON.stringify(parsedBranchEntry));
+
+            //remove upload errors for this branch (looking up uuid)
+            if (Object.keys(rootStore.queueBranchUploadErrorsPWA).length > 0) {
+                for (const [branchRef, errors] of Object.entries(rootStore.queueBranchUploadErrorsPWA)) {
+                    for (let i = 0; i < errors.length; i++) {
+                        if (errors[i].uuid === self.entry.entryUuid) {
+                            rootStore.queueBranchUploadErrorsPWA[branchRef].splice(i, 1);
+                        }
+                    }
+                }
+            }
+
 
             //conver entry to upload format
             const uploadableBranchEntry = JSONTransformerService.makeJsonEntry(PARAMETERS.BRANCH_ENTRY, parsedBranchEntry);

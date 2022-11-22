@@ -114,11 +114,22 @@
 										slot="start"
 										@click="editBranchPWA(entry.id)"
 									></ion-icon>
-									<ion-label>
+
+									<ion-label
+										v-if="hasPWABranchUploadError(entry.id)"
+										color="danger"
+									>
+										<ion-icon
+											class="icon-danger pwa-branch-upload-error"
+											:icon="alertCircle"
+										></ion-icon>
+										{{ entry.branch_entry.title }}
+									</ion-label>
+									<ion-label v-else>
 										{{ entry.branch_entry.title }}
 									</ion-label>
 									<ion-icon
-										class="icon-danger"
+										class="icon-primary"
 										:icon="trash"
 										slot="end"
 										@click="removeBranchPWA(entry.id)"
@@ -242,7 +253,7 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import { trash, cloudUpload, create, add, archive } from 'ionicons/icons';
+import { trash, cloudUpload, create, add, archive, cloudy, alertCircle } from 'ionicons/icons';
 import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject, watch } from 'vue';
 import { modalController } from '@ionic/vue';
@@ -401,6 +412,16 @@ export default {
 			isPWA: computed(() => {
 				return rootStore.isPWA;
 			}),
+			hasPWABranchUploadError(branchUuid) {
+				//check the branch uuid only, as we can have errors
+				//in any branch question
+				//One error will flag the whole branch as invalid
+				return Object.values(rootStore.queueBranchUploadErrorsPWA).some((errors) => {
+					return errors.some((error) => {
+						return error.uuid === branchUuid;
+					});
+				});
+			},
 			pwaEntryEditWarning: computed(() => {
 				return STRINGS[language].labels.editing_branches_pwa;
 			})
@@ -685,7 +706,9 @@ export default {
 			cloudUpload,
 			create,
 			add,
-			archive
+			archive,
+			cloudy,
+			alertCircle
 		};
 	}
 };

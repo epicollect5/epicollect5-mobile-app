@@ -398,7 +398,7 @@ export default {
 			questionParams: {},
 			inputs: [],
 			inputsExtra: {},
-			inputsDetails: {},
+			inputDetails: {},
 			currentAnswer: {},
 			answers: [],
 			confirmAnswer: {},
@@ -501,7 +501,6 @@ export default {
 								error: { errors: errorResponse.data.errors }
 							};
 							state.error = {
-								//hasError: true,
 								errors: errorResponse.data.errors
 							};
 
@@ -732,7 +731,6 @@ export default {
 				};
 
 				//lets check if we are quitting from the PWA
-
 				if (rootStore.isPWA) {
 					if (response.routeName === PARAMETERS.ROUTES.PWA_QUIT) {
 						if (process.env.NODE_ENV === 'production') {
@@ -797,25 +795,27 @@ export default {
 					state.error.errors[entryErrors[i].source] = {
 						message: STRINGS[language].status_codes[entryErrors[i].code]
 					};
-
-					//do we have the uuid?
-					//Happens when branches have upload errors on the PWA
-					if (rootStore.isPWA) {
-						if (entryErrors[i].uuid) {
-							//is this an edit?
-							if (
-								rootStore.entriesAddScope.entryService.action === PARAMETERS.ENTRY_EDIT &&
-								state.questionParams.isBranch
-							) {
-								if (entryErrors[i].uuid !== state.questionParams.branchEntryUuid) {
-									//the uuid does not match, this branch does not need to show  errors
-									//for the current question
-									state.error.errors[entryErrors[i].source] = {};
-								}
-							}
-						}
-					}
 				}
+			}
+		}
+
+		//do we have the branch upload errors?
+		//happens when branches have upload errors on the PWA
+		if (rootStore.isPWA && Object.keys(rootStore.queueBranchUploadErrorsPWA).length > 0) {
+			//is this a branch edit?
+			if (state.questionParams.isBranch && state.questionParams.branchEntryUuid) {
+				//loop all the uopload errors and build error object in memory
+				Object.values(rootStore.queueBranchUploadErrorsPWA).forEach((branchErrors) => {
+					branchErrors.forEach((branchQuestionError) => {
+						// Add the error messages and current branch entry uuid to the scope errors
+						if (state.questionParams.branchEntryUuid === branchQuestionError.uuid) {
+							state.error.errors[branchQuestionError.source] = {
+								message: STRINGS[language].status_codes[branchQuestionError.code],
+								uuid: branchQuestionError.uuid
+							};
+						}
+					});
+				});
 			}
 		}
 

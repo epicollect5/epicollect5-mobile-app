@@ -634,15 +634,9 @@ export const utilsService = {
     },
     hasQuestionError (state) {
         if (Object.keys(state.error.errors).length > 0) {
-            if (state.error?.errors[state.currentInputRef]?.message === '') {
+            if (!state.error?.errors[state.currentInputRef]?.message) {
                 return false;
             }
-            if (
-                state.error?.errors[state.currentInputRef]?.message === undefined
-            ) {
-                return false;
-            }
-
             return true;
         }
         return false;
@@ -890,5 +884,11 @@ export const utilsService = {
         } else {
             return false;
         }
+    },
+    isObject (obj) {
+        return Object.prototype.toString.call(obj) === '[object Object]';
+    },
+    arrayGroupBy (arr, cb) {
+        return arr.reduce((a, b, i) => ((a[cb(b, i, arr)] ||= []).push(b), a), {});
     }
 };

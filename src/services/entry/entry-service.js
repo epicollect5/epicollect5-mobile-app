@@ -198,8 +198,9 @@ export const entryService = {
         // self.form = formModel;
         // self.entry = entryModel;
         const projectSlug = projectModel.getSlug();
-
         let uploadErrors = [];
+        //clear branch errors
+        rootStore.queueBranchUploadErrorsPWA = {};
         async function uploadBranchEntriesSequential (branchEntries) {
 
             return new Promise((resolve) => {
@@ -233,6 +234,8 @@ export const entryService = {
                         resolve(uploadBranchEntriesSequential(branchEntries));
                     }
                     else {
+                        //group branch errors by branch input ref (source)
+                        rootStore.queueBranchUploadErrorsPWA = utilsService.arrayGroupBy(uploadErrors, (v) => { return v.source; });
                         resolve(uploadErrors);
                     }
                 });
