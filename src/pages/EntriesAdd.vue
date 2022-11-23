@@ -97,6 +97,16 @@
 		<template #content>
 			<div>
 				<ion-item-divider
+					v-if="isPWA && hasGlobalError"
+					color="danger"
+					class="entry-error-global"
+					sticky
+				>
+					<ion-label class="entry-title-label ion-text-center ion-text-wrap">
+						{{state.errorGlobal}}
+					</ion-label>
+				</ion-item-divider>
+				<ion-item-divider
 					v-if="state.questionParams.type!=='branch'"
 					class="entry-name"
 					color="light"
@@ -403,13 +413,13 @@ export default {
 			answers: [],
 			confirmAnswer: {},
 			error: {
-				hasError: false,
 				errors: {}
 			},
+			errorGlobal: '',
 			// Allow saving by default (via quit button)
 			//this is to allow saving halfway through
 			//can be disabled when user edits jumps
-			allowSave: null,
+			allowSave: true,
 			action: null, //add or edit
 			entrySavedPWA: false,
 			entryFailedPWA: false,
@@ -447,6 +457,16 @@ export default {
 			}),
 			isPWA: computed(() => {
 				return rootStore.isPWA;
+			}),
+			hasGlobalError: computed(() => {
+				//show errors at the top when they do not belong to a question
+				//but they are global
+				if (rootStore.queueGlobalUploadErrorsPWA.length > 0) {
+					state.errorGlobal = rootStore.queueGlobalUploadErrorsPWA[0].title;
+					return true;
+				}
+
+				return false;
 			})
 		};
 
@@ -804,7 +824,7 @@ export default {
 		if (rootStore.isPWA && Object.keys(rootStore.queueBranchUploadErrorsPWA).length > 0) {
 			//is this a branch edit?
 			if (state.questionParams.isBranch && state.questionParams.branchEntryUuid) {
-				//loop all the uopload errors and build error object in memory
+				//loop all the upload errors and build error object in memory
 				Object.values(rootStore.queueBranchUploadErrorsPWA).forEach((branchErrors) => {
 					branchErrors.forEach((branchQuestionError) => {
 						// Add the error messages and current branch entry uuid to the scope errors

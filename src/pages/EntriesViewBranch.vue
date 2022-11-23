@@ -62,8 +62,8 @@
 						class="entry-error"
 						sticky
 					>
-						<ion-label class="entry-title-label ion-text-center">
-							{{ statusCodes[error.code] || error.title }}
+						<ion-label class="entry-title-label ion-text-center ion-text-wrap">
+							{{statusCodes[error.code].split('.')[0] || error.title.split('.')[0] }}
 						</ion-label>
 					</ion-item-divider>
 				</div>

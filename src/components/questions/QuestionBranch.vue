@@ -62,6 +62,7 @@
 						class="ion-align-self-center"
 					>
 						<ion-button
+							:disabled="isEntriesLimitReached"
 							class="question-action-button"
 							color="secondary"
 							expand="block"
@@ -73,6 +74,11 @@
 							></ion-icon>
 							{{labels.add_branch}}
 						</ion-button>
+						<ion-label
+							v-if="isEntriesLimitReached"
+							color="warning"
+							class="ion-text-wrap"
+						>{{ warningEntriesLimitReached}}</ion-label>
 					</ion-col>
 				</ion-row>
 
@@ -318,11 +324,11 @@ export default {
 			answer: [],
 			branchEntries: [],
 			hasUnsavedBranches: false,
-			entriesLimitReached: false,
 			isFetching: true,
 			countNoFilters: 0,
 			countWithFilters: 0,
 			entriesOffset: 0,
+			limit: Infinity,
 			filters: { ...PARAMETERS.FILTERS_DEFAULT },
 			isInfiniteScrollDisabled: false
 		});
@@ -360,10 +366,6 @@ export default {
 
 					//set entries counter without any filter
 					state.countNoFilters = resultWithoutFilters.rows.item(0).total;
-					//check entries limit
-					state.entriesLimit = parseInt(projectModel.getEntriesLimit(inputRef), 10);
-					state.entriesLimitReached =
-						state.entriesLimit !== null && state.countNoFilters >= state.entriesLimit;
 
 					const result = await databaseSelectService.countBranchesForQuestion(
 						ownerEntryUuid,
@@ -424,6 +426,13 @@ export default {
 			},
 			pwaEntryEditWarning: computed(() => {
 				return STRINGS[language].labels.editing_branches_pwa;
+			}),
+			isEntriesLimitReached: computed(() => {
+				state.limit = parseInt(projectModel.getEntriesLimit(inputRef), 10);
+				return state.limit !== null && state.countNoFilters >= state.limit;
+			}),
+			warningEntriesLimitReached: computed(() => {
+				return STRINGS[language].status_codes.ec5_250.split('.')[0];
 			})
 		};
 

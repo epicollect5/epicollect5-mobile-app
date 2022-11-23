@@ -45,7 +45,7 @@
 
 				<ion-buttons slot="end">
 					<ion-button
-						:disabled="state.entriesLimitReached"
+						:disabled="isEntriesLimitReached"
 						@click="addEntry()"
 					>
 						<ion-icon
@@ -66,25 +66,22 @@
 				v-if="state.isDebug && !state.isFetching"
 				color="tertiary"
 				mode="ios"
-				class="animate__animated animate__fadeIn"
+				class="animate__animated animate__fadeIn ion-no-margin ion-no-padding ion-text-center"
 			>
 
-				<ion-title>
-					<ion-button
-						class="ion-text-uppercase"
-						fill="clear"
-						color="dark"
-						@click="addFakeEntries()"
+				<ion-button
+					class="ion-text-uppercase ion-no-margin ion-no-padding"
+					fill="clear"
+					color="dark"
+					@click="addFakeEntries()"
+				>
+					<ion-icon
+						slot="start"
+						:icon="add"
 					>
-						<ion-icon
-							slot="start"
-							:icon="add"
-						>
-						</ion-icon>
-						Add fakes
-					</ion-button>
-
-				</ion-title>
+					</ion-icon>
+					Add fakes
+				</ion-button>
 			</ion-toolbar>
 
 			<!-- entries unsynced toolbar -->
@@ -133,6 +130,18 @@
 				v-else
 				class="animate__animated animate__fadeIn"
 			>
+				<ion-item
+					v-if="isEntriesLimitReached"
+					class="ion-text-center ion-no-padding ion-no-margin"
+					lines="none"
+				>
+					<ion-label
+						color="warning"
+						class="ion-no-padding ion-no-margin ion-text-wrap"
+					>
+						{{warningEntriesLimitReached}}
+					</ion-label>
+				</ion-item>
 				<list-entries
 					v-show="!state.isFetching"
 					:projectRef="projectRef"
@@ -158,7 +167,7 @@ import { useRootStore } from '@/stores/root-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { STRINGS } from '@/config/strings';
 import { cloudUpload, add, chevronBackOutline, ellipsisVertical } from 'ionicons/icons';
-import { reactive } from '@vue/reactivity';
+import { reactive, computed } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
 import { formModel } from '@/models/form-model.js';
@@ -200,9 +209,8 @@ export default {
 			formRef: '',
 			nextFormRef: '',
 			parentEntryUuid: '',
-			entriesLimitReached: false,
 			hasUnsyncedEntries: false,
-			entriesLimit: Number.POSITIVE_INFINITY,
+			limit: Infinity,
 			status: PARAMETERS.STATUS.ALL,
 			backLabel: STRINGS[language].labels.projects,
 			allMediaUuids: [],
@@ -239,10 +247,8 @@ export default {
 					);
 
 					//set entries counter without any filter
+
 					state.countNoFilters = resultWithoutFilters.rows.item(0).total;
-					state.entriesLimit = parseInt(projectModel.getEntriesLimit(state.formRef), 10);
-					state.entriesLimitReached =
-						state.entriesLimit !== null && state.countNoFilters >= state.entriesLimit;
 
 					const result = await databaseSelectService.countEntries(
 						scope.projectRef,
@@ -327,6 +333,9 @@ export default {
 					state.formRef,
 					state.parentEntryUuid
 				);
+
+				//any entries limit?
+				state.limit = parseInt(projectModel.getEntriesLimit(state.formRef), 10);
 			}
 
 			function _loadFormEntries() {
@@ -525,11 +534,24 @@ export default {
 					state.isFetching = true;
 					state.filters = params.filters;
 					state.countWithFilters = params.count;
+
 					console.log('countNoFilters', state.countNoFilters);
 					//re-fetch entries
 					scope.getProjectAndEntries();
 				}
 			}
+		};
+
+		const computedScope = {
+			isEntriesLimitReached: computed(() => {
+				if (!state.formRef) {
+					return false;
+				}
+				return state.limit !== null && state.countNoFilters >= state.limit;
+			}),
+			warningEntriesLimitReached: computed(() => {
+				return STRINGS[language].status_codes.ec5_250.split('.')[0];
+			})
 		};
 
 		//re-fetch entries list when needed (after add or delete)
@@ -584,6 +606,7 @@ export default {
 			labels,
 			...methods,
 			...scope,
+			...computedScope,
 			state,
 			//icons
 			cloudUpload,

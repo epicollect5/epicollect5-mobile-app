@@ -224,6 +224,10 @@ ion-item-divider.entry-incomplete {
         width: 100%;
     }
 }
+ion-item-divider.entry-error-global {
+    --padding-start: 8px;
+    --padding-end: 8px;
+}
 
 ion-item-divider.form-name {
     background-color: #fff !important;

@@ -212,7 +212,8 @@ export const projectModel = {
         return this.project_extra.forms[form_ref].details.has_location;
     },
     getEntriesLimit (ref) {
-        return this.project_extra.project.entries_limits && this.project_extra.project.entries_limits[ref] ? this.project_extra.project.entries_limits[ref] : null;
+        const refLookUp = ref || this.getFirstFormRef();
+        return this.project_extra.project.entries_limits && this.project_extra.project.entries_limits[refLookUp] ? this.project_extra.project.entries_limits[refLookUp] : null;
     },
     getLastUpdated () {
         return this.data.last_updated;

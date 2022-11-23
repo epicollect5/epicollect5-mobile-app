@@ -53,6 +53,7 @@ export const useRootStore = defineStore('RootStore', {
             queueTempBranchEntriesPWA: {},
             queueRemoteFilesToDeletePWA: [],
             queueBranchUploadErrorsPWA: {},
+            queueGlobalUploadErrorsPWA: [],
             branchEditType: PARAMETERS.PWA_EDIT_BRANCH_LOCAL
         };
     },

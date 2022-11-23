@@ -201,6 +201,7 @@ export const entryService = {
         let uploadErrors = [];
         //clear branch errors
         rootStore.queueBranchUploadErrorsPWA = {};
+        rootStore.queueGlobalUploadErrorsPWA = [];
         async function uploadBranchEntriesSequential (branchEntries) {
 
             return new Promise((resolve) => {
@@ -235,7 +236,17 @@ export const entryService = {
                     }
                     else {
                         //group branch errors by branch input ref (source)
+
                         rootStore.queueBranchUploadErrorsPWA = utilsService.arrayGroupBy(uploadErrors, (v) => { return v.source; });
+                        //extract global errors
+
+                        const inputsExtra = projectModel.getExtraInputs();
+                        for (const [inpuRef, errors] of Object.entries(rootStore.queueBranchUploadErrorsPWA)) {
+                            if (!inputsExtra[inpuRef]) {
+                                rootStore.queueGlobalUploadErrorsPWA.push(...errors);
+                            }
+                        }
+
                         resolve(uploadErrors);
                     }
                 });
@@ -350,8 +361,6 @@ export const entryService = {
         //    // console.log(this.entry);
         //     //console.log(params);
         // }
-
-
         return entryCommonService.validateAnswer(this.entry, params);
     },
 

@@ -184,6 +184,7 @@ export const branchEntryService = {
 
             //if a remote branch, upload
             if (rootStore.branchEditType === PARAMETERS.PWA_EDIT_BRANCH_REMOTE) {
+                rootStore.queueGlobalUploadErrorsPWA = [];
                 webService.uploadEntryPWA(projectSlug, uploadableBranchEntry).then((response) => {
                     resolve(response);
                 }, (error) => {
