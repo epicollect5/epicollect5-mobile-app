@@ -52,60 +52,23 @@
 		</template>
 
 		<template #subheader>
-			<ion-toolbar
-				color="dark"
-				mode="md"
+			<toolbar-entries-add-navigation
+				:progressBarWidth="progressBarWidth"
+				:disablePrevious="state.disablePrevious"
+				:disableNext="state.disableNext"
+				@prev-clicked="prev()"
+				@next-clicked="next()"
 			>
-				<ion-buttons slot="start">
-					<ion-button
-						:disabled="state.disablePrevious"
-						@click="prev()"
-					>
-						<ion-icon
-							slot="start"
-							:icon="chevronBackOutline"
-						>
-						</ion-icon>
-						{{labels.prev}}
-					</ion-button>
-				</ion-buttons>
-
-				<div>
-					<div class="question-progress-bar">
-						<div :style="{width: progressBarWidth }">
-						</div>
-					</div>
-				</div>
-
-				<ion-buttons slot="end">
-					<ion-button
-						:disabled="state.disableNext"
-						@click="next()"
-					>
-						{{labels.next}}
-						<ion-icon
-							slot="end"
-							:icon="chevronForwardOutline"
-						>
-						</ion-icon>
-					</ion-button>
-				</ion-buttons>
-
-			</ion-toolbar>
+			</toolbar-entries-add-navigation>
 		</template>
 
 		<template #content>
 			<div>
-				<ion-item-divider
+				<item-divider-error
 					v-if="isPWA && hasGlobalError"
-					color="danger"
-					class="entry-error-global"
-					sticky
-				>
-					<ion-label class="entry-title-label ion-text-center ion-text-wrap">
-						{{state.errorGlobal}}
-					</ion-label>
-				</ion-item-divider>
+					:message="state.errorGlobal"
+				></item-divider-error>
+
 				<ion-item-divider
 					v-if="state.questionParams.type!=='branch'"
 					class="entry-name"
@@ -344,7 +307,7 @@ import questionTime from '@/components/questions/QuestionTime';
 import questionVideo from '@/components/questions/QuestionVideo';
 import questionSave from '@/components/questions/QuestionSave';
 import questionSaved from '@/components/questions/QuestionSaved';
-import { provide, inject } from 'vue';
+import { provide } from 'vue';
 import { initialSetup } from '@/use/questions/initial-setup';
 import { handleNext } from '@/use/questions/handle-next';
 import { handlePrev } from '@/use/questions/handle-prev';
@@ -357,8 +320,9 @@ import { locationService } from '@/services/utilities/location-cordova-service';
 import { errorsService } from '@/services/errors-service';
 import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
-
+import ItemDividerError from '@/components/ItemDividerError.vue';
 import { questionCommonService } from '@/services/entry/question-common-service';
+import ToolbarEntriesAddNavigation from '@/components/ToolbarEntriesAddNavigation.vue';
 
 export default {
 	components: {
@@ -383,7 +347,9 @@ export default {
 		questionVideo,
 		questionSave,
 		questionSaved,
-		NotFound
+		NotFound,
+		ItemDividerError,
+		ToolbarEntriesAddNavigation
 	},
 	setup(props) {
 		const rootStore = useRootStore();
@@ -409,7 +375,7 @@ export default {
 			inputs: [],
 			inputsExtra: {},
 			inputDetails: {},
-			currentAnswer: {},
+			existingAnswer: {},
 			answers: [],
 			confirmAnswer: {},
 			error: {
@@ -429,12 +395,12 @@ export default {
 		if (rootStore.isPWA) {
 			//hierarchy or branch?
 			if (entryService) {
-				//hierachy
-				state.allowSave = entryService.allowSave;
+				//hierarchy
+				rootStore.entriesAddScope.entryService.allowSave = entryService.allowSave;
 				state.action = entryService.action;
 			} else {
 				//branch
-				state.allowSave = branchEntryService.allowSave;
+				rootStore.entriesAddScope.entryService.allowSave = branchEntryService.allowSave;
 				state.action = branchEntryService.action;
 			}
 		}
@@ -485,7 +451,7 @@ export default {
 				if (rootStore.isPWA) {
 					await notificationService.showProgressDialog(labels.wait, labels.saving);
 
-					state.allowSave = true;
+					rootStore.entriesAddScope.entryService.allowSave = true;
 					state.action = rootStore.entriesAddScope.entryService.action;
 
 					rootStore.entriesAddScope.entryService.saveEntryPWA().then(
@@ -637,11 +603,6 @@ export default {
 						break;
 
 					case PARAMETERS.ACTIONS.ENTRY_SAVE:
-						if (!state.allowSave) {
-							// Has a jump question been changed while editing an entry?
-							notificationService.showAlert(STRINGS[language].status_codes.ec5_140);
-							return;
-						}
 						// SAVE AND QUIT
 
 						// If we're on the last page, just save the entry, no further validation needed
@@ -652,7 +613,9 @@ export default {
 							// Validate and save current answer
 							try {
 								await rootStore.entriesAddScope.entryService.validateAnswer({
-									// Send in all answers
+									// The existing answer (old, previous)
+									existingAnswer: state.existingAnswer,
+									// Send in all answers (the modified ones)
 									answers: state.answers,
 									// And all verified answers
 									confirmAnswer: state.confirmAnswer,
@@ -662,9 +625,25 @@ export default {
 									error: state.error
 								});
 
+								//Has a jump question been changed while editing an entry?
+								if (
+									rootStore.entriesAddScope.entryService.wasJumpEdited({
+										existingAnswer: state.existingAnswer,
+										mainInputDetails: state.inputDetails
+									})
+								) {
+									//if so, user must reach end of form/branch to save as the flow has changed
+									rootStore.entriesAddScope.entryService.allowSave = false;
+								}
+
+								//if a jump was edited, "{entryService}.allowSave" would be false
+								if (!rootStore.entriesAddScope.entryService.allowSave) {
+									notificationService.showAlert(STRINGS[language].status_codes.ec5_140);
+									return;
+								}
+
 								// Process the next set of jumps
 								// So that we have correct was_jumped values if we save part way through an entry
-
 								rootStore.entriesAddScope.entryService.processJumpsNext(
 									state.answers[state.questionParams.currentInputRef],
 									state.inputDetails,
@@ -840,6 +819,7 @@ export default {
 		}
 
 		// Set up the question
+
 		initialSetup(state, rootStore.entriesAddScope);
 		provide('entriesAddState', state);
 

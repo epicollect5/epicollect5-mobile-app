@@ -1,10 +1,10 @@
 import { PARAMETERS } from '@/config';
 import { initialSetup } from '@/use/questions/initial-setup';
 import { errorsService } from '@/services/errors-service';
-import { entryService } from '@/services/entry/entry-service';
 
 // Initial set up for each question
 export async function handleNext (state, scope) {
+
     // Disable next/previous buttons
     state.disableNext = true;
     state.disablePrevious = true;
@@ -21,10 +21,11 @@ export async function handleNext (state, scope) {
 
     const inputRef = state.questionParams.currentInputRef;
 
+
     try {
         await scope.entryService.validateAnswer({
             // The current answer
-            current_answer: state.currentAnswer,
+            existingAnswer: state.existingAnswer,
             // Send in all answers
             answers: state.answers,
             // And all verified answers
@@ -43,10 +44,20 @@ export async function handleNext (state, scope) {
         );
         // Set timeout to give rendering time to catch up
         window.setTimeout(() => {
-            // Check if allowSave variable has changed
-            if (state.allowSave !== entryService.allowSave) {
-                state.allowSave = entryService.allowSave;
+
+            //has a jump question been modified?
+            //if so, force user to the end of the form
+            //for consistency, as the new form flow must be completed
+            if (
+                scope.entryService.wasJumpEdited({
+                    existingAnswer: state.existingAnswer,
+                    mainInputDetails: state.inputDetails
+                })
+            ) {
+                //if so, user must reach end of form/branch to save as the flow has changed
+                scope.entryService.allowSave = false;
             }
+
             // Go to next question
             state.questionParams.currentInputRef = jumpParams.next_input_ref;
             state.questionParams.currentInputIndex = jumpParams.next_input_index;

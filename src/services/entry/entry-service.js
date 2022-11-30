@@ -15,9 +15,11 @@ import { entryCommonService } from '@/services/entry/entry-common-service';
 import { mediaService } from '@/services/entry/media-service';
 import { webService } from '@/services/web-service';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
+import { wasJumpEdited } from '@/use/questions/was-jump-edited';
 
 export const entryService = {
     type: PARAMETERS.ENTRY,
+    allowSave: true,
     form: {},
     entry: {},
     //Initial function to set up the entry
@@ -327,21 +329,12 @@ export const entryService = {
         return entryCommonService.getAnswers(this.entry, inputRef);
     },
 
+    wasJumpEdited (params) {
+        return wasJumpEdited(this, params);
+    },
+
     //Validate and append answer/title to entry object
     validateAnswer (params) {
-
-        // For edits:
-        // Check if the input has jumps
-        // If the answer if different to the previous one
-        // we don't show the 'quit' button
-        // This is to make sure the user reaches the end of the entry
-        // before saving, so the jumps and answers retain their integrity
-        if (this.action === PARAMETERS.ENTRY_EDIT &&
-            params.mainInputDetails.jumps.length > 0 &&
-            (typeof this.entry.answers[params.mainInputDetails.ref] !== 'undefined' && params.current_answer !== this.entry.answers[params.mainInputDetails.ref].answer)) {
-            this.allowSave = false;
-        }
-
         //todo: test this throughly in the future...
         //For edits: check if all the required questions have an answer
         //Users can edit an existing entry, go back and save. 

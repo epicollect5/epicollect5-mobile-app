@@ -12,9 +12,11 @@ import { branchEntryModel } from '@/models/branch-entry-model.js';
 import { Capacitor } from '@capacitor/core';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
 import { webService } from '@/services/web-service';
+import { wasJumpEdited } from '@/use/questions/was-jump-edited';
 
 export const branchEntryService = {
     type: PARAMETERS.BRANCH_ENTRY,
+    allowSave: true,
     form: {},
     entry: {},
     branchInputs: {},
@@ -213,6 +215,13 @@ export const branchEntryService = {
                 resolve();
             }
         });
+    },
+
+    wasJumpEdited (params) {
+
+        return wasJumpEdited(this, params);
+
+
     },
 
     //Validate and append answer/title to entry object

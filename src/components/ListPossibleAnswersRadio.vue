@@ -1,4 +1,5 @@
 <template>
+
 	<ion-list
 		class="possible-answers-list ion-no-padding"
 		:class="{'has-error' : hasError}"
@@ -41,7 +42,6 @@
 						</div>
 					</ion-col>
 				</ion-row>
-
 			</ion-grid>
 		</div>
 	</ion-list>
@@ -59,6 +59,7 @@
 		>
 		</ion-infinite-scroll-content>
 	</ion-infinite-scroll>
+
 </template>
 
 <script>

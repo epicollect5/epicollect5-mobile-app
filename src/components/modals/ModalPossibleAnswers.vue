@@ -21,10 +21,7 @@
 			name="crescent"
 		></ion-spinner>
 
-		<div
-			v-if="!state.isFetching && state.hits.length >0"
-			class="possible-answers-list"
-		>
+		<div v-if="!state.isFetching && state.hits.length >0">
 			<list-possible-answers-radio
 				v-if="isSingleSelectionType"
 				:possibleAnswers="state.hits"

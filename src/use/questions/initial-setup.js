@@ -2,6 +2,7 @@ import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
+import { reactive, toRaw } from '@vue/reactivity';
 
 // Initial set up for each question
 export async function initialSetup (state, scope) {
@@ -14,9 +15,28 @@ export async function initialSetup (state, scope) {
     }
     //Set up answers
     function setUpAnswer () {
+
         // Retrieve stored answer(s) for this whole entry
         state.answers = scope.entryService.getAnswers(state.questionParams.currentInputRef);
-        state.currentAnswer = state.answers[state.questionParams.currentInputRef].answer;
+        //get a clone of the existing answers (NOT reactive, otherwise it will change behind the scenes)
+
+        switch (state.questionParams.type) {
+
+            //checkbox and search are array
+            case PARAMETERS.QUESTION_TYPES.CHECKBOX:
+            case PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE:
+            case PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE: {
+                //clone array
+                //hack: we need to clone the array to break Vue reactivity
+                //hack: otherwise the existing answer changes when we change the original array
+                state.existingAnswer = [...state.answers[state.questionParams.currentInputRef].answer];
+            }
+                break;
+            default:
+                //assign primitive
+                state.existingAnswer = state.answers[state.questionParams.currentInputRef].answer;
+        }
+
 
         // Get the confirm answer for this question
         state.confirmAnswer = {};

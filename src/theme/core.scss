@@ -44,8 +44,28 @@ ion-toolbar.toolbar-title {
     padding-left: 8px;
     &.radio-padding {
         padding: 8px !important;
+        ion-col {
+            //->this gets the modal and the inline radios to have roughly
+            //the same padding, otherwise inline radios are smaller
+            padding: 8px; //->this fixes the modal
+        }
     }
 }
+//hack:
+ion-card-content {
+    .half-padding-start.radio-padding,
+    .half-padding.checkbox-padding {
+        ion-col {
+            //->this gets the inline radios & checkbox to have roughly
+            //the same padding as the modal, otherwise inline radios are smaller
+            padding: 4px;
+            .possible-answer-checkbox {
+                margin-right: 4px;
+            }
+        }
+    }
+}
+
 .half-padding-end {
     padding-right: 8px;
 }

@@ -124,7 +124,7 @@ export default {
 
 		const methods = {
 			onSelectedAnswers(answerRefs) {
-				console.log('onSelectedAnswers QuestionCheckbox called');
+				console.log('onSelectedAnswers QuestionCheckbox called ->', { answerRefs });
 				state.answer.answer = answerRefs;
 			}
 		};

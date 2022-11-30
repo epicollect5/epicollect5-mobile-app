@@ -55,17 +55,11 @@
 			<div v-else>
 				<!-- Errors banner ----------------------------------------->
 				<div v-if="state.errors?.errors?.length > 0">
-					<ion-item-divider
+					<item-divider-error
 						v-for="(error, index) in state.errors.errors"
 						:key="index"
-						color="danger"
-						class="entry-error"
-						sticky
-					>
-						<ion-label class="entry-title-label ion-text-center ion-text-wrap">
-							{{statusCodes[error.code].split('.')[0] || error.title.split('.')[0] }}
-						</ion-label>
-					</ion-item-divider>
+						:message="statusCodes[error.code] || error.title"
+					></item-divider-error>
 				</div>
 				<!-- ----------------------------------------------------- -->
 
@@ -115,9 +109,10 @@ import { utilsService } from '@/services/utilities/utils-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
 import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import { answerService } from '@/services/entry/answer-service';
+import ItemDividerError from '@/components/ItemDividerError.vue';
 
 export default {
-	components: { ListAnswers },
+	components: { ListAnswers, ItemDividerError },
 	setup() {
 		const rootStore = useRootStore();
 		const language = rootStore.language;

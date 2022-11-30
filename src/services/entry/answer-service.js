@@ -141,6 +141,7 @@ export const answerService = {
         const language = rootStore.language;
 
         switch (inputDetails.type) {
+            //radio and dropdown answers are string
             case PARAMETERS.QUESTION_TYPES.RADIO:
             case PARAMETERS.QUESTION_TYPES.DROPDOWN:
                 inputDetails.possible_answers.forEach((value, index) => {
@@ -149,26 +150,17 @@ export const answerService = {
                     }
                 });
                 break;
-            case PARAMETERS.QUESTION_TYPES.CHECKBOX: {
-                const checkBoxAnswers = [];
-                inputDetails.possible_answers.forEach((value, index) => {
-                    if (answer.indexOf(value.answer_ref) > -1) {
-                        checkBoxAnswers.push(inputDetails.possible_answers[index].answer);
-                    }
-                });
-                answer = checkBoxAnswers.join(', ');
-                break;
-            }
+            //checkbox and search are array
+            case PARAMETERS.QUESTION_TYPES.CHECKBOX:
             case PARAMETERS.QUESTION_TYPES.SEARCH_SINGLE:
             case PARAMETERS.QUESTION_TYPES.SEARCH_MULTIPLE: {
-
-                const searchAnswers = [];
+                const answers = [];
                 inputDetails.possible_answers.forEach((value, index) => {
                     if (answer.indexOf(value.answer_ref) > -1) {
-                        searchAnswers.push(inputDetails.possible_answers[index].answer);
+                        answers.push(inputDetails.possible_answers[index].answer);
                     }
                 });
-                answer = searchAnswers.join(', ');
+                answer = answers.join(', ');
                 break;
             }
             case PARAMETERS.QUESTION_TYPES.AUDIO:

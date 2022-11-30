@@ -284,10 +284,7 @@ textarea {
         }
     }
 }
-.question-checkbox-item {
-    // --ripple-color: transparent;
-    // --background-hover: transparent;
-}
+
 .question-group,
 .question-branch {
     padding: 0 !important;
@@ -315,11 +312,7 @@ textarea {
             font-size: 16px;
             color: #222;
         }
-        .possible-answer-radio-button {
-            // to make the radio de-selectable programmatically
-            //without this, the click event conflicts with the @click on parent
-            // pointer-events: none;
-        }
+
         .possible-answer-radio,
         .saved-answer-checkbox {
             width: 1em;
@@ -366,6 +359,9 @@ textarea {
             // text-transform: uppercase;
         }
     }
+}
+.possible-answers-list {
+    border-top: 1px solid var(--ion-color-light-shade);
 }
 ion-item-divider.possible-answers-serchbar-wrapper,
 ion-item-divider.saved-answers-serchbar-wrapper {
