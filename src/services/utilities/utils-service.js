@@ -889,6 +889,6 @@ export const utilsService = {
         return Object.prototype.toString.call(obj) === '[object Object]';
     },
     arrayGroupBy (arr, cb) {
-        return arr.reduce((a, b, i) => ((a[cb(b, i, arr)] ||= []).push(b), a), {});
+        return arr.reduce((a, b, i) => ((a[cb(b, i, arr)] || (a[cb(b, i, arr)] = [])).push(b), a), {});
     }
 };

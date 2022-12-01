@@ -8,6 +8,7 @@ import { useRootStore } from '@/stores/root-store';
 import { vi } from 'vitest';
 
 
+
 //mock nested modules until it fixes "Failed to load /src/components/HeaderModal"
 vi.mock('@/services/errors-service', () => {
     const errorsService = vi.fn();
@@ -70,6 +71,10 @@ const inputsExtra = {
 describe('generateAnswer', () => {
 
     beforeEach(() => {
+        // creates a fresh pinia and make it active so it's automatically picked
+        // up by any useStore() call without having to pass it to it:
+        // `useStore(pinia)`
+        setActivePinia(createPinia());
         entry.answers = {};
         inputsExtra[inputRef].data.default = '';
     });

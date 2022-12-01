@@ -2,6 +2,7 @@ import { jumpsService } from '@/services/entry/jumps-service';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model';
 import { vi } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
 
 //imp: mock nested modules until it fixes "Failed to load /src/components/HeaderModal"
 vi.mock('@/services/errors-service', () => {
@@ -242,6 +243,10 @@ const nextInputRef = '548d97a8ec0d4bdfac131834f331a65d_6310b618055cf_6310b6c18f3
 describe('processJumpsNext', () => {
 
     beforeEach(() => {
+        // creates a fresh pinia and make it active so it's automatically picked
+        // up by any useStore() call without having to pass it to it:
+        // `useStore(pinia)`
+        setActivePinia(createPinia());
         projectModel.initialise(projectData);
     });
 

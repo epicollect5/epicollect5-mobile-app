@@ -124,7 +124,6 @@ export default {
 				return state.currentSelectedAnswers.indexOf(answerRef) > -1;
 			},
 			toggleCheckbox(answerRef) {
-				console.log('toggle checkbox call');
 				const idx = state.currentSelectedAnswers.indexOf(answerRef);
 				// Is currently selected
 				if (idx > -1) {

@@ -6,8 +6,6 @@ export const locationValidate = {
     check (params) {
         const inputDetails = params.input_details;
         const answer = params.answer.answer;
-
-
         //"ec5_30": "Location data not valid.",
         if (!Object.prototype.hasOwnProperty.call(answer, 'latitude')) {
             this.errors[inputDetails.ref] = ['ec5_30'];
