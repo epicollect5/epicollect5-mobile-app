@@ -241,3 +241,66 @@ describe('Filename', () => {
         expect(filename.endsWith(PARAMETERS.AUDIO_EXT_IOS)).toBe(true);
     });
 });
+
+describe('isValidDecimalDegreesString', () => {
+    beforeEach(() => {
+        // creates a fresh pinia and make it active so it's automatically picked
+        // up by any useStore() call without having to pass it to it:
+        // `useStore(pinia)`
+        setActivePinia(createPinia());
+    });
+
+    it('Valid coords', () => {
+
+        let coords = '-77.508333, 164.754167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+
+        coords = '-77.50833, 164.75416';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+
+        coords = '-77, 164';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+
+        for (let i = 0; i < 500; i++) {
+
+            const lat = utilsService.getRandomInRange(-90, 90, 5);
+            const long = utilsService.getRandomInRange(-180, 180, 5);
+            coords = lat + ',' + long;
+            expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+        }
+    });
+
+    it('Invalid coords', () => {
+
+        let coords = '-77.508333';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = 'adkjskjasjkd';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = 'me, too';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = '-77.508333 164.754167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = '-77.508333 - 164.754167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = '-77.5083633, 164.754167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = ',-77.508333 ,164.754167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = '2000 ,164.754167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = '-77.508333 ,190';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = '-77.508333 ,164.#54167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+    });
+});

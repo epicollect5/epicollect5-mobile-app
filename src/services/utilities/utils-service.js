@@ -5,6 +5,8 @@ import { Capacitor } from '@capacitor/core';
 import { Network } from '@capacitor/network';
 import { projectModel } from '@/models/project-model.js';
 import slugify from 'slugify';
+import isValidCoords from 'is-valid-coords';
+
 
 export const utilsService = {
 
@@ -839,18 +841,18 @@ export const utilsService = {
             }
         }
 
-        return isFinite(lat) && Math.abs(lat) <= 90;
+        return isValidCoords(lat, 0);
     },
-    isValidLongitude (lng) {
-        if (!lng) {
+    isValidLongitude (long) {
+        if (!long) {
             return false;
         }
-        if (lng.includes('.')) {
-            if (lng.split('.')[1].length > 6) {
+        if (long.includes('.')) {
+            if (long.split('.')[1].length > 6) {
                 return false;
             }
         }
-        return isFinite(lng) && Math.abs(lng) <= 180;
+        return isValidCoords(0, long);
     },
     //accuracy must be a positive integer
     isValidAccuracy (accuracy) {
@@ -879,11 +881,8 @@ export const utilsService = {
         const latitude = parts[0].trim();
         const longitude = parts[1].trim();
 
-        if (utilsService.isValidLatitude(latitude) && utilsService.isValidLongitude(longitude)) {
-            return true;
-        } else {
-            return false;
-        }
+        return utilsService.isValidLatitude(latitude) && utilsService.isValidLongitude(longitude);
+
     },
     isObject (obj) {
         return Object.prototype.toString.call(obj) === '[object Object]';

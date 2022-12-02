@@ -136,9 +136,9 @@ export const fakeAnswerService = {
                 case 'location': {
                     //Mirko Locations (whole world range are -170 + 170 for lat, -80 +80 for long, considering a bit of padding)
                     //please amend accordingly
-                    const lat = utilsService.getRandomInRange(-160, 160, 5);
-                    const lng = utilsService.getRandomInRange(-80, 80, 5);
-                    answer.answer = utilsService.getRandomLocation(lat, lng);
+                    const lat = utilsService.getRandomInRange(-80, 80, 5);
+                    const long = utilsService.getRandomInRange(-160, 160, 5);
+                    answer.answer = utilsService.getRandomLocation(lat, long);
                     resolve(answer);
                     break;
                 }

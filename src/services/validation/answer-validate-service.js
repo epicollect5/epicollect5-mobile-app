@@ -35,7 +35,7 @@ export const answerValidateService = {
      * Note: sometimes we're stopping answers from passing through to
      * helper functions here, as ionic sometimes gives null and undefined
      */
-    validate (entry, params) {
+    async validate (entry, params) {
 
         const self = this;
 
@@ -78,7 +78,6 @@ export const answerValidateService = {
 
                 // If we have a confirm field, check
                 if (params.input_details.verify) {
-
                     if (answer !== null && confirmAnswer !== null) {
                         if (!commonValidate.checkConfirmed(params.input_details, answer, confirmAnswer)) {
                             // Assign errors from the answer validator helper
@@ -108,7 +107,6 @@ export const answerValidateService = {
                 }
 
                 // Checks this answer against the input type
-
                 if (!commonValidate.answerChecks(params)) {
                     // Assign errors from the answer validator helper
                     self.errors = commonValidate.getErrors();

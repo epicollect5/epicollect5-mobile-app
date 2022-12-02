@@ -320,6 +320,17 @@ export const entryService = {
                 }
             }, (error) => {
                 console.log(error);
+                if (error.data.errors) {
+                    //add global errors (if any) to store
+                    const inputsExtra = projectModel.getExtraInputs();
+                    error.data.errors.forEach((error) => {
+                        const inpuRef = error.source;
+                        if (!inputsExtra[inpuRef]) {
+                            //no inputRef, this is a global error
+                            rootStore.queueGlobalUploadErrorsPWA.push(error);
+                        }
+                    });
+                }
                 reject(error);
             });
         });

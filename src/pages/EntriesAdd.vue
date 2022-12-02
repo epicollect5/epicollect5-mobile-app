@@ -392,19 +392,6 @@ export default {
 			showSaved: false
 		});
 
-		if (rootStore.isPWA) {
-			//hierarchy or branch?
-			if (entryService) {
-				//hierarchy
-				rootStore.entriesAddScope.entryService.allowSave = entryService.allowSave;
-				state.action = entryService.action;
-			} else {
-				//branch
-				rootStore.entriesAddScope.entryService.allowSave = branchEntryService.allowSave;
-				state.action = branchEntryService.action;
-			}
-		}
-
 		const lastNavIndex = rootStore.hierarchyNavigation.length - 1;
 		const lastNavItem = rootStore.hierarchyNavigation[lastNavIndex];
 
@@ -427,6 +414,7 @@ export default {
 			hasGlobalError: computed(() => {
 				//show errors at the top when they do not belong to a question
 				//but they are global
+
 				if (rootStore.queueGlobalUploadErrorsPWA.length > 0) {
 					state.errorGlobal = rootStore.queueGlobalUploadErrorsPWA[0].title;
 					return true;
@@ -822,6 +810,19 @@ export default {
 
 		initialSetup(state, rootStore.entriesAddScope);
 		provide('entriesAddState', state);
+
+		if (rootStore.isPWA) {
+			//hierarchy or branch?
+			if (entryService) {
+				//hierarchy
+				rootStore.entriesAddScope.entryService.allowSave = entryService.allowSave;
+				state.action = entryService.action;
+			} else {
+				//branch
+				rootStore.entriesAddScope.entryService.allowSave = branchEntryService.allowSave;
+				state.action = branchEntryService.action;
+			}
+		}
 
 		//back with back button (Android)
 		useBackButton(10, () => {

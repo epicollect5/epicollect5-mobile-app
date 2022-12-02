@@ -104,6 +104,7 @@ import markerShadow from '@/leaflet/images/marker-shadow.png';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { webService } from '@/services/web-service';
+import isValidCoords from 'is-valid-coords';
 
 export default {
 	props: {
