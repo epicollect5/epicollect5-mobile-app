@@ -247,6 +247,9 @@ ion-item-divider.entry-incomplete {
 ion-item-divider.entry-error-global {
     --padding-start: 8px;
     --padding-end: 8px;
+    ion-label {
+        margin: 16px auto;
+    }
 }
 
 ion-item-divider.form-name {

@@ -2,7 +2,7 @@
 <template>
 	<ion-item-divider
 		color="danger"
-		class="entry-error-global"
+		class="entry-error-global ion-text-center"
 		sticky
 	>
 		<ion-label class="entry-title-label ion-text-center ion-text-wrap">
