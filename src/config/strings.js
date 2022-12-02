@@ -3,7 +3,7 @@ export const STRINGS = {
         labels: {
             address: 'Address',
             exit: 'Exit',
-            editing_branches_pwa: 'Please note: to edit existing branch entries you can use the Epicollect5 Data Viewer.',
+            editing_branches_pwa: 'Please note: to edit existing branch entries you must use the Epicollect5 Data Viewer.',
             format: 'Format',
             clear_filters: 'Clear Filters',
             invalid_value: 'Invalid value',

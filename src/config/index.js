@@ -333,16 +333,14 @@ export const PARAMETERS = {
     },
     PWA_ADD_ENTRY: 'add-entry',
     PWA_EDIT_ENTRY: 'edit-entry',
-    PWA_EDIT_BRANCH_LOCAL: 'edit-branch-local',
-    PWA_EDIT_BRANCH_REMOTE: 'edit-branch-remote',
+    PWA_BRANCH_LOCAL: 'branch-local',
+    PWA_BRANCH_REMOTE: 'branch-remote',
     PWA_FILE_STATE: {
         CACHED: 'cached',
         STORED: 'stored'
     },
     PWA_MAX_LATLONG_LENGTH: 10,
     PWA_LANGUAGE_FILES_ENDPOINT: '/data-editor/app/assets/ec5-status-codes/',
-
-
 
     //ESRI satellite -> https://wiki.openstreetmap.org/wiki/Esri#Legal_permissions
     ESRI_TILES_PROVIDER_SATELLITE: 'https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=' + process.env.VUE_APP_ESRI_API_TOKEN,

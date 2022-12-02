@@ -54,7 +54,7 @@ export const questionCommonService = {
                 if (!entryService.entry.isBranch) {
                     routeName = PARAMETERS.ROUTES.PWA_QUIT;
                 } else {
-                    if (rootStore.branchEditType === PARAMETERS.PWA_EDIT_BRANCH_REMOTE) {
+                    if (rootStore.branchEditType === PARAMETERS.PWA_BRANCH_REMOTE) {
                         //this is a remote branch entry edit, just quit
                         // (no temp entry in memory)
                         routeName = PARAMETERS.ROUTES.PWA_QUIT;

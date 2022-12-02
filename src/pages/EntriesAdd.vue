@@ -446,8 +446,8 @@ export default {
 						() => {
 							//if branch, go back to branch question and update branches list
 							if (rootStore.entriesAddScope.entryService.type === PARAMETERS.BRANCH_ENTRY) {
-								//if editing a branch entry, just show the success screen
-								if (rootStore.entriesAddScope.entryService.action === PARAMETERS.ENTRY_EDIT) {
+								//if dealing with a remote branch entry, just show the success screen
+								if (rootStore.branchEditType === PARAMETERS.PWA_BRANCH_REMOTE) {
 									showEntrySavedSuccessScreen();
 								} else {
 									quit(
@@ -807,20 +807,19 @@ export default {
 		}
 
 		// Set up the question
-
 		initialSetup(state, rootStore.entriesAddScope);
 		provide('entriesAddState', state);
 
 		if (rootStore.isPWA) {
 			//hierarchy or branch?
-			if (entryService) {
-				//hierarchy
-				rootStore.entriesAddScope.entryService.allowSave = entryService.allowSave;
-				state.action = entryService.action;
-			} else {
+			if (entryService.type === PARAMETERS.BRANCH_ENTRY) {
 				//branch
 				rootStore.entriesAddScope.entryService.allowSave = branchEntryService.allowSave;
 				state.action = branchEntryService.action;
+			} else {
+				//hierarchy
+				rootStore.entriesAddScope.entryService.allowSave = entryService.allowSave;
+				state.action = entryService.action;
 			}
 		}
 

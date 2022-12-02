@@ -19,6 +19,8 @@ export async function setupPWAEntry (action, isBranch) {
         const rootStore = useRootStore();
         const searchParams = rootStore.searchParams;
 
+
+
         if (searchParams.has('form_ref') && searchParams.has('parent_form_ref') && searchParams.has('parent_uuid')) {
             formRef = searchParams.get('form_ref');
             parentFormRef = searchParams.get('parent_form_ref');
@@ -35,8 +37,20 @@ export async function setupPWAEntry (action, isBranch) {
             branchOwnerUuid = searchParams.get('branch_owner_uuid');
         }
 
+        //are we adding a new entry?
         if (action === PARAMETERS.PWA_ADD_ENTRY) {
-            entryService.setUpNew(formRef, parentEntryUuid, parentFormRef);
+            if (isBranch) {
+                //use branch service
+                branchEntryService.setUpNew(formRef, branchRef, branchOwnerUuid);
+                rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
+            }
+            else {
+                //use hierarchy service
+                entryService.setUpNew(formRef, parentEntryUuid, parentFormRef);
+            }
+
+            //initialise formModel
+            formModel.initialise(projectModel.getExtraForm(formRef));
             resolve(formRef);
             return false;
         }
@@ -111,7 +125,8 @@ export async function setupPWAEntry (action, isBranch) {
                     entry.ownerInputRef = branchRef;
                     entry.ownerEntryUuid = branchOwnerUuid;
                     await branchEntryService.setUpExisting(entry);
-                    rootStore.branchEditType = PARAMETERS.PWA_EDIT_BRANCH_REMOTE;
+
+                    rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
                 }
                 else {
                     entryService.setUpExisting(entry);

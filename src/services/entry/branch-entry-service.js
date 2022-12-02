@@ -24,6 +24,7 @@ export const branchEntryService = {
     //Initial function to set up the branch entry
     setUpNew (formRef, ownerInputRef, ownerInputUuid) {
 
+
         this.form = formModel;
         this.entry = branchEntryModel;
         this.action = PARAMETERS.ENTRY_ADD;
@@ -67,6 +68,7 @@ export const branchEntryService = {
 
             // Replace entry model object with that supplied
             this.entry = entry;
+
 
             this.branchInputs = projectModel.getBranches(this.entry.formRef, this.entry.ownerInputRef);
 
@@ -185,7 +187,7 @@ export const branchEntryService = {
             const uploadableBranchEntry = JSONTransformerService.makeJsonEntry(PARAMETERS.BRANCH_ENTRY, parsedBranchEntry);
 
             //if a remote branch, upload
-            if (rootStore.branchEditType === PARAMETERS.PWA_EDIT_BRANCH_REMOTE) {
+            if (rootStore.branchEditType === PARAMETERS.PWA_BRANCH_REMOTE) {
                 rootStore.queueGlobalUploadErrorsPWA = [];
                 webService.uploadEntryPWA(projectSlug, uploadableBranchEntry).then((response) => {
                     resolve(response);
