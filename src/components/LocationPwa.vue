@@ -315,7 +315,7 @@ export default {
 					},
 					(error) => {
 						//todo: handle error
-						notificationService.showAlert(error, STRINGS[language].labels.error);
+						notificationService.showAlert(error.message, STRINGS[language].labels.error);
 						notificationService.hideProgressDialog();
 					},
 					options
