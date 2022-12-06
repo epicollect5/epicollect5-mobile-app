@@ -38,6 +38,7 @@ export async function setupPWAEntry (action, isBranch) {
         }
 
         //are we adding a new entry?
+
         if (action === PARAMETERS.PWA_ADD_ENTRY) {
             if (isBranch) {
                 //use branch service

@@ -527,19 +527,29 @@ export default {
 				// Show loader
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 				// Set up a new entry based on URL params
-				const formRef = await setupPWAEntry(PARAMETERS.PWA_ADD_ENTRY);
+
+				const entryService = rootStore.entriesAddScope.entryService;
+				const isBranch = entryService.entry.isBranch;
+				const formRef = await setupPWAEntry(PARAMETERS.PWA_ADD_ENTRY, isBranch);
 				//get first form question input ref
-				const firstInputRef = projectModel.getInputs(formRef)[0];
+				let firstInputRef = projectModel.getInputs(formRef)[0];
+
+				if (isBranch) {
+					const ownerInputRef = entryService.entry.ownerInputRef;
+					firstInputRef = projectModel.getBranches(formRef, ownerInputRef)[0];
+				}
 
 				rootStore.routeParams = {
 					formRef,
 					inputRef: null,
 					inputIndex: 0,
-					isBranch: false,
+					isBranch,
 					error: {}
 				};
 
-				//fake answer (to re-use prev() method)
+				//hack: fake answer (to re-use prev() method)
+				//no worries about question type, it is just
+				//to make other functions work
 				state.questionParams.currentInputIndex = 1;
 				entryService.entry.answers[firstInputRef] = {
 					answer: '',

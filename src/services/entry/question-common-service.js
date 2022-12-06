@@ -72,20 +72,28 @@ export const questionCommonService = {
                 }
                 break;
             case PARAMETERS.ENTRY_ADD:
+
                 // If add, back to relevant starting page
                 if (!entryService.entry.isBranch) {
                     routeName = PARAMETERS.ROUTES.PWA_QUIT;
                 } else {
-                    routeName = PARAMETERS.ROUTES.ENTRIES_ADD;
-                    routeParams.inputRef = entryService.entry.ownerInputRef;
-                    routeParams.inputIndex = projectModel.getInputIndexFromRef(entryService.form.formRef, entryService.entry.ownerInputRef);
-                    routeParams.isBranch = false;
+                    //remote or local branch?
+                    if (rootStore.branchEditType === PARAMETERS.PWA_BRANCH_REMOTE) {
+                        //exit back to dataviewer
+                        routeName = PARAMETERS.ROUTES.PWA_QUIT;
+                    }
+                    else {
+                        //local branch, back to entrisAdd component
+                        routeName = PARAMETERS.ROUTES.ENTRIES_ADD;
+                        routeParams.inputRef = entryService.entry.ownerInputRef;
+                        routeParams.inputIndex = projectModel.getInputIndexFromRef(entryService.form.formRef, entryService.entry.ownerInputRef);
+                        routeParams.isBranch = false;
+                    }
                 }
                 break;
             default:
             //
         }
-
 
         return {
             routeName,
