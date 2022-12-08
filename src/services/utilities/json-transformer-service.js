@@ -679,7 +679,8 @@ export const JSONTransformerService = {
                 entry_uuid: entry.entryUuid,
                 input_ref: inputRef,
                 answer,
-                project_version: projectVersion
+                project_version: projectVersion,
+                platform: PARAMETERS.LEGACY_WEB
             }
         };
     }

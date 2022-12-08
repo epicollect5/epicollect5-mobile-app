@@ -5,6 +5,7 @@ export const PARAMETERS = {
 
     DEBUG: process.env.VUE_APP_DEBUG,
     IS_LOCALHOST: process.env.NODE_ENV === 'production' ? 0 : 1, //for debugging outside of Laravel(production), it is set to 1
+    BYPASS_UNIQUENESS: process.env.VUE_APP_BYPASS_UNIQUENESS,
     // url production
     DEFAULT_SERVER_URL: 'https://five.epicollect.net',
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',

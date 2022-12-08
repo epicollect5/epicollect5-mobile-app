@@ -176,7 +176,7 @@ export const answerValidateService = {
                     const payload = JSONTransformerService.makeUniqueEntry(formRef, entry, inputRef, answer, projectVersion);
                     let tempAnswerFound = false;
                     //bypass uniqueness check for debugging locally
-                    if (PARAMETERS.DEBUG && PARAMETERS.IS_LOCALHOST) {
+                    if (PARAMETERS.BYPASS_UNIQUENESS && PARAMETERS.IS_LOCALHOST) {
                         notificationService.showToast('bypassed uniqueness check!', 0, 'top');
                         resolve(true);
                     }
@@ -194,10 +194,13 @@ export const answerValidateService = {
                             tempBranches.every((tempBranch) => {
                                 const tempAnswer = tempBranch.branch_entry.answers[inputRef].answer;
                                 if (tempAnswer === answer) {
-                                    //match found, bail out
-                                    resolve(false);
-                                    tempAnswerFound = true;
-                                    return false;
+                                    //match found, if NOT an edit on same uuid, bail out
+                                    if (entry.entryUuid !== tempBranch.id) {
+                                        //match found, bail out
+                                        resolve(false);
+                                        tempAnswerFound = true;
+                                        return false;
+                                    }
                                 }
                                 return true;
                             });
