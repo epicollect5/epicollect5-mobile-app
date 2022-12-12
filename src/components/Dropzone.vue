@@ -55,7 +55,7 @@
 			lines="none"
 			class="ion-text-center"
 		>
-			<ion-label color="danger">{{labels.unknown_error}}</ion-label>
+			<ion-label color="danger">{{props.fileError}}</ion-label>
 		</ion-item>
 	</div>
 </template>
@@ -71,6 +71,7 @@ import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { webService } from '@/services/web-service';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
+import { errorsService } from '@/services/errors-service';
 
 export default {
 	props: {
@@ -79,6 +80,10 @@ export default {
 			required: true
 		},
 		filestate: {
+			type: String,
+			required: true
+		},
+		fileError: {
 			type: String,
 			required: true
 		},
@@ -95,7 +100,7 @@ export default {
 			required: true
 		}
 	},
-	emits: ['file-dropped', 'file-loaded'],
+	emits: ['file-dropped', 'file-loaded', 'file-error'],
 	setup(props, context) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
@@ -176,11 +181,18 @@ export default {
 								notificationService.showToast(labels.file_uploaded);
 								console.log(filename);
 
-								state.filesource = getMediaURL(filename, props.type);
+								state.filesource = getMediaURL(
+									filename,
+									props.type,
+									PARAMETERS.PWA_FILE_STATE.CACHED
+								);
 								console.log(state.filesource);
+								state.loadingError = false;
 							},
-							(error) => {
+							async (error) => {
 								//todo: handle error
+								const fileError = await errorsService.handleWebError(error);
+								context.emit('file-error', fileError);
 								console.log(error);
 							}
 						)
@@ -276,6 +288,7 @@ export default {
 			labels,
 			state,
 			PARAMETERS,
+			props,
 			...methods
 		};
 	}

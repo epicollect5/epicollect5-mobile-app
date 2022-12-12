@@ -62,6 +62,7 @@ export const errorsService = {
             errorCode = this.getWebErrorCode(response);
         }
         notificationService.showAlert(STRINGS[language].status_codes[errorCode], STRINGS[language].labels.error);
+        return STRINGS[language].status_codes[errorCode];
     },
 
 

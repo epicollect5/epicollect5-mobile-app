@@ -27,8 +27,10 @@
 				:type="state.inputDetails.type"
 				:inputRef="state.inputDetails.ref"
 				:uuid="entryUuid"
+				:fileError="state.fileError"
 				@file-loaded="onFileLoadedPWA"
 				@file-dropped="onFileDroppedPWA"
+				@file-error="onFileErrorPWA"
 			></dropzone>
 
 			<grid-question-narrow v-if="!isPWA">
@@ -148,7 +150,8 @@ export default {
 			},
 			imageSource: '',
 			fileSource: '',
-			pwaFileState: PARAMETERS.PWA_FILE_STATE.CACHED
+			pwaFileState: PARAMETERS.PWA_FILE_STATE.CACHED,
+			fileError: labels.unknow_error
 		});
 
 		//set up question
@@ -278,6 +281,9 @@ export default {
 				media[entryUuid][state.inputDetails.ref].filenamePWA.cached = filename;
 				state.pwaFileState = PARAMETERS.PWA_FILE_STATE.CACHED;
 				state.answer.answer = filename;
+			},
+			onFileErrorPWA(error) {
+				state.fileError = error;
 			}
 		};
 

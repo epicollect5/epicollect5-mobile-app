@@ -21,6 +21,7 @@
 			<dropzone
 				:filestate="state.pwaFileState"
 				:filename="state.answer.answer"
+				:fileError="state.fileError"
 				:key="state.answer.answer"
 				v-if="isPWA"
 				:type="state.inputDetails.type"
@@ -28,6 +29,7 @@
 				:uuid="entryUuid"
 				@file-loaded="onFileLoadedPWA"
 				@file-dropped="onFileDroppedPWA"
+				@file-error="onFileErrorPWA"
 			></dropzone>
 
 			<grid-question-narrow v-if="!isPWA">
@@ -304,6 +306,9 @@ export default {
 				media[entryUuid][state.inputDetails.ref].filenamePWA.cached = filename;
 				state.pwaFileState = PARAMETERS.PWA_FILE_STATE.CACHED;
 				state.answer.answer = filename;
+			},
+			onFileErrorPWA(error) {
+				state.fileError = error;
 			}
 		};
 
