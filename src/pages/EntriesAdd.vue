@@ -713,6 +713,7 @@ export default {
 			setTimeout(function () {
 				//todo: why is this needed?
 				//notificationService.hideProgressDialog();
+				const query = {};
 
 				//imp: fix this, we need to handle quit entry (hierarchy) and quit branch
 
@@ -741,11 +742,22 @@ export default {
 						}
 						return false;
 					}
+
+					//re-append query params if this is an entry edit
+					//(happens after adding a local branch durign a hierarchy edit)
+					if (response.routeName === PARAMETERS.ROUTES.ENTRIES_EDIT) {
+						query.form_ref = formRef;
+						query.uuid = response.routeParams.entryUuid;
+						//these are for child forms edits
+						query.parent_form_ref = response.routeParams.parentFormRef || '';
+						query.parent_uuid = response.routeParams.parentEntryUuid || '';
+					}
 				}
 
 				//todo: fix this for all the use cases or just refresh all ha ha ha
 				router.replace({
 					name: response.routeName,
+					query,
 					params: {
 						refreshBranchEntries: isBranch && !refreshEntriesView ? 'true' : null,
 						refreshEntries: !isBranch && refreshEntries ? 'true' : null,

@@ -19,8 +19,6 @@ export async function setupPWAEntry (action, isBranch) {
         const rootStore = useRootStore();
         const searchParams = rootStore.searchParams;
 
-
-
         if (searchParams.has('form_ref') && searchParams.has('parent_form_ref') && searchParams.has('parent_uuid')) {
             formRef = searchParams.get('form_ref');
             parentFormRef = searchParams.get('parent_form_ref');
@@ -38,7 +36,6 @@ export async function setupPWAEntry (action, isBranch) {
         }
 
         //are we adding a new entry?
-
         if (action === PARAMETERS.PWA_ADD_ENTRY) {
             if (isBranch) {
                 //use branch service
@@ -105,8 +102,8 @@ export async function setupPWAEntry (action, isBranch) {
                     entry_uuid: entryUuid,
                     answers: JSON.stringify(webEntry[entryType].answers),
                     form_ref: formRef,
-                    parent_form_ref: '',
-                    parent_entry_uuid: '',
+                    parent_form_ref: parentFormRef,
+                    parent_entry_uuid: parentEntryUuid,
                     project_ref: projectRef,
                     created_at: webEntry[entryType].createdAt,
                     title: webEntry[entryType].title,
@@ -132,7 +129,6 @@ export async function setupPWAEntry (action, isBranch) {
                 else {
                     entryService.setUpExisting(entry);
                 }
-
                 resolve(formRef);
             })();
         }

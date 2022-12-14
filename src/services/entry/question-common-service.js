@@ -2,6 +2,7 @@ import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
 import { toRaw } from '@vue/reactivity';
 import { useRootStore } from '@/stores/root-store';
+import { entryModel } from '@/models/entry-model';
 
 export const questionCommonService = {
     //Add common params to the input state
@@ -83,8 +84,23 @@ export const questionCommonService = {
                         routeName = PARAMETERS.ROUTES.PWA_QUIT;
                     }
                     else {
-                        //local branch, back to entrisAdd component
-                        routeName = PARAMETERS.ROUTES.ENTRIES_ADD;
+                        //local branch, back to entriesAdd component
+                        if (rootStore.providedSegment === PARAMETERS.PWA_EDIT_ENTRY) {
+
+                            routeName = PARAMETERS.ROUTES.ENTRIES_EDIT;
+                            routeParams.entryUuid = entryService.entry.ownerEntryUuid;
+
+                            //if a child form, it needs extra parameters
+                            const hierachyEntry = entryModel;
+                            if (hierachyEntry.parentEntryUuid && hierachyEntry.parentFormRef) {
+                                //we are going back to a child form
+                                routeParams.parentFormRef = hierachyEntry.parentFormRef;
+                                routeParams.parentEntryUuid = hierachyEntry.parentEntryUuid;
+                            }
+                        }
+                        else {
+                            routeName = PARAMETERS.ROUTES.ENTRIES_ADD;
+                        }
                         routeParams.inputRef = entryService.entry.ownerInputRef;
                         routeParams.inputIndex = projectModel.getInputIndexFromRef(entryService.form.formRef, entryService.entry.ownerInputRef);
                         routeParams.isBranch = false;

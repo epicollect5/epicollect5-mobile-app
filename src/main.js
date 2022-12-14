@@ -225,6 +225,7 @@ export const app = createApp(App)
         if (providedSegment === PARAMETERS.PWA_ADD_ENTRY) {
           try {
             formRef = await setupPWAEntry(PARAMETERS.PWA_ADD_ENTRY, isBranch);
+            rootStore.providedSegment = PARAMETERS.PWA_ADD_ENTRY;
           }
           catch (error) {
             console.log(error);
@@ -243,6 +244,7 @@ export const app = createApp(App)
 
           try {
             formRef = await setupPWAEntry(PARAMETERS.PWA_EDIT_ENTRY, isBranch);
+            rootStore.providedSegment = PARAMETERS.PWA_EDIT_ENTRY;
           }
           catch (error) {
             console.log(error);

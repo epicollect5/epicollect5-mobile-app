@@ -599,7 +599,13 @@ export default {
 					state.branchEntries = state.branchEntries.filter((entry) => {
 						return entry.id !== id;
 					});
-					rootStore.queueTempBranchEntriesPWA[props.inputRef] = state.branchEntries;
+
+					if (state.branchEntries.length > 0) {
+						rootStore.queueTempBranchEntriesPWA[props.inputRef] = state.branchEntries;
+					} else {
+						//remove branch key when no branch entries
+						delete rootStore.queueTempBranchEntriesPWA[props.inputRef];
+					}
 				}
 			},
 			async editBranchPWA(id) {

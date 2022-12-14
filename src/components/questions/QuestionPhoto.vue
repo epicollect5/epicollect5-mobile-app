@@ -151,7 +151,7 @@ export default {
 			imageSource: '',
 			fileSource: '',
 			pwaFileState: PARAMETERS.PWA_FILE_STATE.CACHED,
-			fileError: labels.unknow_error
+			fileError: labels.unknown_error
 		});
 
 		//set up question
