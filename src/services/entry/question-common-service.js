@@ -102,7 +102,7 @@ export const questionCommonService = {
                             routeName = PARAMETERS.ROUTES.ENTRIES_ADD;
                         }
                         routeParams.inputRef = entryService.entry.ownerInputRef;
-                        routeParams.inputIndex = projectModel.getInputIndexFromRef(entryService.form.formRef, entryService.entry.ownerInputRef);
+                        routeParams.inputIndex = projectModel.getInputIndexFromRef(entryService.entry.formRef, entryService.entry.ownerInputRef);
                         routeParams.isBranch = false;
                     }
                 }
@@ -115,7 +115,6 @@ export const questionCommonService = {
             routeName,
             routeParams
         };
-
     },
 
     // Returns the navigation route and navigation params
@@ -159,7 +158,7 @@ export const questionCommonService = {
                 } else {
                     routeName = PARAMETERS.ROUTES.ENTRIES_ADD;
                     routeParams.inputRef = entryService.entry.ownerInputRef;
-                    routeParams.inputIndex = projectModel.getInputIndexFromRef(entryService.form.formRef, entryService.entry.ownerInputRef);
+                    routeParams.inputIndex = projectModel.getInputIndexFromRef(entryService.entry.formRef, entryService.entry.ownerInputRef);
                     routeParams.isBranch = false;
                 }
         }

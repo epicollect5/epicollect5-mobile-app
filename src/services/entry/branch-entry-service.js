@@ -48,8 +48,6 @@ export const branchEntryService = {
         });
 
         this.branchInputs = projectModel.getBranches(this.entry.formRef, this.entry.ownerInputRef);
-
-
         // Get inputs extra details
         const inputsExtra = projectModel.getExtraInputs();
         this.branchInput = inputsExtra[this.entry.ownerInputRef].data;
@@ -57,18 +55,14 @@ export const branchEntryService = {
 
     //Initial function to set up the entry from an existing stored entry
     setUpExisting (entry) {
-        const rootStore = useRootStore();
         const self = this;
-
         self.form = formModel;
         self.entry = branchEntryModel;
         return new Promise((resolve, reject) => {
 
             this.action = PARAMETERS.ENTRY_EDIT;
-
             // Replace entry model object with that supplied
             this.entry = entry;
-
 
             this.branchInputs = projectModel.getBranches(this.entry.formRef, this.entry.ownerInputRef);
 
@@ -220,10 +214,7 @@ export const branchEntryService = {
     },
 
     wasJumpEdited (params) {
-
         return wasJumpEdited(this, params);
-
-
     },
 
     //Validate and append answer/title to entry object
