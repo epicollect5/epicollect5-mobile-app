@@ -58,36 +58,36 @@
 				<ion-row class="ion-align-items-center border-bottom">
 					<ion-col>
 						<div class="ion-text-end">
-							<strong>{{labels.latitude}}</strong>
+							<strong>{{labels.latitude}}&nbsp;</strong>
 						</div>
 					</ion-col>
 					<ion-col>
 						<div class="ion-text-start">
-							{{latitude}}
+							&nbsp;{{latitude}}
 						</div>
 					</ion-col>
 				</ion-row>
 				<ion-row class="ion-align-items-center border-bottom">
 					<ion-col>
 						<div class="ion-text-end">
-							<strong>{{labels.longitude}}</strong>
+							<strong>{{labels.longitude}}&nbsp;</strong>
 						</div>
 					</ion-col>
 					<ion-col>
 						<div class="ion-text-start">
-							{{longitude}}
+							&nbsp;{{longitude}}
 						</div>
 					</ion-col>
 				</ion-row>
 				<ion-row class="ion-align-items-center border-bottom">
 					<ion-col>
 						<div class="ion-text-end">
-							<strong>{{labels.accuracy}}</strong>
+							<strong>{{labels.accuracy}}&nbsp;</strong>
 						</div>
 					</ion-col>
 					<ion-col>
 						<div class="ion-text-start">
-							{{accuracy}}
+							&nbsp;{{accuracy}}
 						</div>
 					</ion-col>
 				</ion-row>

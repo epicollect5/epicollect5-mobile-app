@@ -10,11 +10,11 @@
 				v-show="!state.imagesLoaded.includes(index)"
 				name="crescent"
 			></ion-spinner>
-			<ion-img
+			<img
 				class="animate__animated animate__fadeIn"
 				:src="getProjectLogo(project)"
-				@ionImgDidLoad="onImgLoaded(index)"
-			></ion-img>
+				@load="onImgLoaded(index)"
+			>
 		</ion-avatar>
 
 		<ion-label>

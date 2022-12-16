@@ -241,7 +241,11 @@ export default {
 		const computedScope = {
 			isFileAvailable: computed(() => {
 				const mediaFile = media[entryUuid][state.inputDetails.ref];
-				return mediaFile.cached !== '' || mediaFile.stored !== '' || mediaFile.filenamePWA !== '';
+
+				if (rootStore.isPWA) {
+					return mediaFile.filenamePWA.cached !== '' || mediaFile.filenamePWA.stored !== '';
+				}
+				return mediaFile.cached !== '' || mediaFile.stored !== '';
 			}),
 			isPWA: computed(() => {
 				return rootStore.isPWA;

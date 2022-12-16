@@ -7,7 +7,7 @@ module.exports = {
     pluginOptions: {
         webpackBundleAnalyzer: {
             openAnalyzer: process.env.NODE_ENV === 'production' && process.env.VUE_APP_MODE === 'PWA',
-            analyzerMode: process.env.NODE_ENV === 'development' ? 'disabled' : 'server'
+            analyzerMode: process.env.NODE_ENV === 'development' || process.env.VUE_APP_MODE === 'WEB' ? 'disabled' : 'server'
         }
     },
     filenameHashing: false,
@@ -40,25 +40,27 @@ module.exports = {
 
         if (process.env.NODE_ENV === 'production') {
 
+            if (process.env.VUE_APP_MODE === 'WEB') {
+                // // See available sourcemaps:
+                // // https://webpack.js.org/configuration/devtool/#devtool
+                config.devtool = 'eval-source-map';
+                // console.log(`NOTICE: vue.config.js directive: ${config.devtool}`)
 
-            // // See available sourcemaps:
-            // // https://webpack.js.org/configuration/devtool/#devtool
-            // config.devtool = 'eval-source-map';
-            // // console.log(`NOTICE: vue.config.js directive: ${config.devtool}`)
+                config.output.devtoolModuleFilenameTemplate = (info) => {
+                    const resPath = path.normalize(info.resourcePath);
+                    const isVue = resPath.match(/\.vue$/);
+                    const isGenerated = info.allLoaders;
 
-            // config.output.devtoolModuleFilenameTemplate = (info) => {
-            //     const resPath = path.normalize(info.resourcePath);
-            //     const isVue = resPath.match(/\.vue$/);
-            //     const isGenerated = info.allLoaders;
+                    const generated = `webpack-generated:///${resPath}?${info.hash}`;
+                    const vuesource = `vue-source://${resPath}`;
 
-            //     const generated = `webpack-generated:///${resPath}?${info.hash}`;
-            //     const vuesource = `vue-source://${resPath}`;
+                    return isVue && isGenerated ? generated : vuesource;
+                };
 
-            //     return isVue && isGenerated ? generated : vuesource;
-            // };
+                config.output.devtoolFallbackModuleFilenameTemplate =
+                    'webpack:///[resource-path]?[hash]';
 
-            // config.output.devtoolFallbackModuleFilenameTemplate =
-            //     'webpack:///[resource-path]?[hash]';
+            }
 
             if (process.env.VUE_APP_MODE === 'PWA') {
 
@@ -74,6 +76,9 @@ module.exports = {
                     }),
                     new webpack.IgnorePlugin({
                         resourceRegExp: /fake-answer-service/
+                    }),
+                    new webpack.IgnorePlugin({
+                        resourceRegExp: /an-array-of/
                     }),
                     new webpack.IgnorePlugin({
                         resourceRegExp: /swiper.bundle.js/

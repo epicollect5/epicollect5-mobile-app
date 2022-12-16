@@ -37,7 +37,7 @@ export const entryCommonService = {
      */
     async addFakeAnswers (entry, inputs, entryIndex) {
 
-        const fakeAnswerService = await import('@/services/entry/fake-answer-service');
+        const { fakeAnswerService } = await import('@/services/entry/fake-answer-service');
 
         return new Promise((resolve, reject) => {
             //stop location

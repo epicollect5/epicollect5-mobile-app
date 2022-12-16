@@ -80,8 +80,8 @@ export default {
 		const filenameCached = readonly(props.media[entryUuid][inputRef].cached);
 		const filenameStored = readonly(props.media[entryUuid][inputRef].stored);
 
-		const filenameCachedPWA = readonly(props.media[entryUuid][inputRef].filenamePWA.cached);
-		const filenameStoredPWA = readonly(props.media[entryUuid][inputRef].filenamePWA.stored);
+		const filenameCachedPWA = readonly(props.media[entryUuid][inputRef].filenamePWA?.cached || '');
+		const filenameStoredPWA = readonly(props.media[entryUuid][inputRef].filenamePWA?.stored || '');
 		//share cached audio if any (and this wins over a stored audio file)
 		if (filenameCached !== '') {
 			fileURI = tempDir + filenameCached;
@@ -225,7 +225,6 @@ export default {
 
 		return {
 			labels,
-
 			...methods,
 			...computedScope,
 			//icons

@@ -3,14 +3,16 @@ import { fakeFileService } from '@/services/filesystem/fake-file-service';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { utilsService } from '@/services/utilities/utils-service';
+import wordsSpanish from 'an-array-of-spanish-words';
+import wordsEnglish from 'an-array-of-english-words';
+import wordsGerman from 'an-array-of-german-words';
 
 export const fakeAnswerService = {
 
     async createFakeAnswer (inputDetails, entry, entryIndex) {
 
-        const wordsSpanish = await import('an-array-of-spanish-words');
-        const wordsEnglish = await import('an-array-of-english-words');
-        const wordsGerman = await import('an-array-of-german-words');
+
+
 
         return new Promise((resolve) => {
             const rootStore = useRootStore();
