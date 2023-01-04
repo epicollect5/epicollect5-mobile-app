@@ -811,7 +811,7 @@ export const utilsService = {
         return (Math.random() * (to - from) + from).toFixed(fixed) * 1;
         // .toFixed() returns string, so ' * 1' is a trick to convert to number
     },
-    getRandomLocation (centerlon, centerlat) {
+    getRandomLocation (lat, long) {
 
         function normish (mean, range) {
             const num_out = ((Math.random() + Math.random() + Math.random() + Math.random() - 2) / 2) * range + mean;
@@ -820,7 +820,7 @@ export const utilsService = {
 
         const x = normish(0, 0.01);
         const y = normish(0, 0.01);
-        return { longitude: (((x * 0.1) + centerlon)).toFixed(6), latitude: (((y * 0.1) + centerlat)).toFixed(6), accuracy: this.getRandomInRange(3, 100, 0) };
+        return { longitude: (((x * 0.1) + long)).toFixed(6), latitude: (((y * 0.1) + lat)).toFixed(6), accuracy: this.getRandomInRange(3, 100, 0) };
     },
     getDataViewerURL (projectSlug) {
         const rootStore = useRootStore();

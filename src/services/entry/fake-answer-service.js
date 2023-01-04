@@ -10,10 +10,6 @@ import wordsGerman from 'an-array-of-german-words';
 export const fakeAnswerService = {
 
     async createFakeAnswer (inputDetails, entry, entryIndex) {
-
-
-
-
         return new Promise((resolve) => {
             const rootStore = useRootStore();
             const answer = { was_jumped: false };
@@ -73,8 +69,6 @@ export const fakeAnswerService = {
                     break;
                 case 'integer':
                 case 'phone':
-
-                    console.log('min and max', inputDetails.min, inputDetails.max);
                     if (inputDetails.min && inputDetails.max) {
                         answer.answer = randomIntegerInRange(+inputDetails.min, +inputDetails.max);
                     }
@@ -136,7 +130,7 @@ export const fakeAnswerService = {
                     break;
 
                 case 'location': {
-                    //Mirko Locations (whole world range are -170 + 170 for lat, -80 +80 for long, considering a bit of padding)
+                    //Mirko Locations (whole world range are -170 + 170 for long, -80 +80 for lat, considering a bit of padding)
                     //please amend accordingly
                     const lat = utilsService.getRandomInRange(-80, 80, 5);
                     const long = utilsService.getRandomInRange(-160, 160, 5);

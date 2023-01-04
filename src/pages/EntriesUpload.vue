@@ -338,6 +338,49 @@ export default {
 			return modal.present();
 		}
 
+		async function _handleGeneralError(error) {
+			const projectOutdatedErrors = PARAMETERS.PROJECT_OUTDATED_ERROR_CODES;
+			const authErrors = PARAMETERS.AUTH_ERROR_CODES;
+			// Check the state of the data/media left to upload
+			await _checkData();
+			//dismiss the upload modal
+			modalController.dismiss();
+			state.isUploading = false;
+
+			// Check if we have a project out of date error
+			if (projectOutdatedErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
+				const confirmed = await notificationService.confirmSingle(
+					STRINGS[language].labels.update_project,
+					STRINGS[language].labels.project_outdated
+				);
+
+				if (confirmed) {
+					updateProject();
+				} else {
+					//warn user abut project put of date and entries cannot be synced
+					errorsService.handleWebError(error);
+				}
+			} else if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
+				// Check if we have an auth error
+				//if error code is ec5_78 it means the user is logged in but has no role in the requested project
+				if (error.data.errors[0].code !== 'ec5_78') {
+					const confirmed = await notificationService.confirmSingle(
+						STRINGS[rootStore.language].status_codes[error.data.errors[0].code]
+					);
+
+					if (confirmed) {
+						//the user is not logged in, send to login page
+						showModalLogin();
+					}
+				} else {
+					errorsService.handleWebError(error);
+				}
+			} else {
+				// Other error
+				errorsService.handleWebError(error);
+			}
+		}
+
 		const methods = {
 			/**
 			 * Upload all entry data
@@ -345,9 +388,6 @@ export default {
 			 * Then move on to related children, child branches and repeat
 			 */
 			async uploadData() {
-				const projectOutdatedErrors = PARAMETERS.PROJECT_OUTDATED_ERROR_CODES;
-				const authErrors = PARAMETERS.AUTH_ERROR_CODES;
-
 				//no internet connection -> bail out
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
@@ -388,45 +428,7 @@ export default {
 						},
 						async function (error) {
 							console.log('Show stopping error hit');
-
-							// Check the state of the data/media left to upload
-							await _checkData();
-							//dismiss the upload modal
-							modalController.dismiss();
-							state.isUploading = false;
-
-							// Check if we have a project out of date error
-							if (projectOutdatedErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
-								const confirmed = await notificationService.confirmSingle(
-									STRINGS[language].labels.update_project,
-									STRINGS[language].labels.project_outdated
-								);
-
-								if (confirmed) {
-									updateProject();
-								} else {
-									//warn user abut project put of date and entries cannot be synced
-									errorsService.handleWebError(error);
-								}
-							} else if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
-								// Check if we have an auth error
-								//if error code is ec5_78 it means the user is logged in but has no role in the requested project
-								if (error.data.errors[0].code !== 'ec5_78') {
-									const confirmed = await notificationService.confirmSingle(
-										STRINGS[rootStore.language].status_codes[error.data.errors[0].code]
-									);
-
-									if (confirmed) {
-										//the user is not logged in, send to login page
-										showModalLogin();
-									}
-								} else {
-									errorsService.handleWebError(error);
-								}
-							} else {
-								// Other error
-								errorsService.handleWebError(error);
-							}
+							_handleGeneralError(error);
 						}
 					);
 				}
@@ -461,24 +463,29 @@ export default {
 				await _showModalProgressTransfer(header, mediaCount);
 				state.isUploading = true;
 
-				uploadMediaService.execute(state[type + 's'], mediaCount, 0).then(async function (errors) {
-					console.log('We have media errors:', JSON.stringify(errors));
-					// Check the state of the data/media left to upload
-					await _checkData();
-					// Finished!
-					//dismiss the upload modal
-					modalController.dismiss();
-					state.isUploading = false;
-					state.errors = errors;
+				uploadMediaService.execute(state[type + 's'], mediaCount, 0).then(
+					async function (errors) {
+						console.log('We have media errors:', JSON.stringify(errors));
+						// Check the state of the data/media left to upload
+						await _checkData();
+						// Finished!
+						//dismiss the upload modal
+						modalController.dismiss();
+						state.isUploading = false;
+						state.errors = errors;
 
-					if (state.errors) {
-						//some errors occurred
-						notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
-					} else {
-						// If all media files were successfully uploaded
-						notificationService.showToast(STRINGS[language].status_codes.ec5_120);
+						if (state.errors) {
+							//some errors occurred
+							notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
+						} else {
+							// If all media files were successfully uploaded
+							notificationService.showToast(STRINGS[language].status_codes.ec5_120);
+						}
+					},
+					(error) => {
+						_handleGeneralError(error);
 					}
-				});
+				);
 			},
 			goBack() {
 				//refresh entries page only when an upload was attempted

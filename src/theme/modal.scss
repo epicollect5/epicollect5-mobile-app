@@ -147,6 +147,8 @@
         height: 100%;
         .swiper-zoom-container {
             width: 100% !important;
+            height: 100vh;
+            margin-top: -8px;
         }
     }
     img {

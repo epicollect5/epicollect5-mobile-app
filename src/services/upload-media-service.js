@@ -38,7 +38,6 @@ export const uploadMediaService = {
                     jwt = res.rows.item(0).jwt;
                 }
 
-                const projectRef = projectModel.getProjectRef();
                 const slug = projectModel.getSlug();
                 const uploader = new window.FileTransfer();
                 const options = new window.FileUploadOptions();
@@ -94,12 +93,32 @@ export const uploadMediaService = {
                     function _onError (error) {
                         console.log(error);
 
+
                         notificationService.hideProgressDialog();
                         // Store reference to this error
                         errors = true;
                         if (error.body) {
                             try {
                                 errorObj = JSON.parse(error.body);
+                                try {
+                                    if (errorObj.errors[0]?.code === 'ec5_77') {
+                                        //authentication error, reject
+                                        errors = false;//=> no entries errors...
+                                        reject({
+                                            data: {
+                                                errors: [{
+                                                    code: 'ec5_77',
+                                                    source: '',
+                                                    title: STRINGS[language].status_codes.ec5_77
+                                                }]
+                                            }
+                                        });
+                                        return false;
+                                    }
+                                }
+                                catch (e) {
+                                    //failed
+                                }
                             } catch (e) {
                                 // Failed
                             }
