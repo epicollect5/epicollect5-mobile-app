@@ -257,6 +257,7 @@ export default {
 			async openViewer() {
 				const modal = await modalController.create({
 					component: ModalPhoto,
+					cssClass: 'modal-photo',
 					componentProps: {
 						imageSource: state.imageSource,
 						fileSource: state.fileSource

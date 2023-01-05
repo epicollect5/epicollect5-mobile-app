@@ -30,8 +30,6 @@
 			</ion-slide>
 		</ion-slides>
 	</ion-content>
-	<ion-footer>
-	</ion-footer>
 </template>
 
 <script>

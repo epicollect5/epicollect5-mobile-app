@@ -134,21 +134,25 @@
         --background: transparent;
     }
     ion-header {
-        ion-toolbar {
-            --background: transparent;
-            ion-button,
-            ion-icon {
-                color: #333;
-            }
-        }
+        // ion-toolbar {
+        //     --background: transparent;
+        //     ion-button,
+        //     ion-icon {
+        //         color: #333;
+        //     }
+        // }
     }
     ion-slides {
+        ion-slide {
+            width: 100% !important;
+            height: 100% !important;
+        }
         width: 100% !important;
-        height: 100%;
+        height: 100% !important;
         .swiper-zoom-container {
             width: 100% !important;
-            height: 100vh;
-            margin-top: -8px;
+            height: 100% !important;
+            margin-top: -8px !important;
         }
     }
     img {
