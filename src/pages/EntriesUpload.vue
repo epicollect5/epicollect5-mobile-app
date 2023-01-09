@@ -241,6 +241,7 @@ import { errorsService } from '@/services/errors-service';
 import { mediaService } from '@/services/entry/media-service';
 import { uploadMediaService } from '@/services/upload-media-service';
 import { uploadDataService } from '@/services/upload-data-service';
+import { logout } from '@/use/logout';
 
 export default {
 	setup() {
@@ -369,7 +370,9 @@ export default {
 					);
 
 					if (confirmed) {
-						//the user is not logged in, send to login page
+						//the user is not logged in or token expired,
+						// clear token and send to login page
+						await logout();
 						showModalLogin();
 					}
 				} else {

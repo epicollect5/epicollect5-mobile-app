@@ -5,6 +5,8 @@ import { showModalLogin } from '@/use/show-modal-login';
 import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
 import { versioningService } from '@/services/utilities/versioning-service';
+import { logout } from '@/use/logout';
+
 
 export async function updateProject () {
     const rootStore = useRootStore();
@@ -31,7 +33,7 @@ export async function updateProject () {
                 notificationService.showAlert(STRINGS[language].status_codes.ec5_136);
             }
         },
-        function (error) {
+        async function (error) {
             console.log(error);
             notificationService.hideProgressDialog();
             // Web error
@@ -46,7 +48,8 @@ export async function updateProject () {
                     callback: updateProject,
                     params: null
                 };
-                //2- Ask user to login
+                //2- Clear any token and ask user to login again
+                await logout();
                 showModalLogin();
             } else {
                 // Other error

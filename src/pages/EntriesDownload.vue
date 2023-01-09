@@ -78,6 +78,7 @@ import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { errorsService } from '@/services/errors-service';
 import { downloadService } from '@/services/utilities/download-service';
+import { logout } from '@/use/logout';
 
 export default {
 	setup() {
@@ -242,7 +243,9 @@ export default {
 									);
 
 									if (confirmed) {
-										//the user is not logged in, send to login page
+										//the user is not logged in or token expired,
+										//send to login page
+										await logout();
 										showModalLogin();
 									}
 								}

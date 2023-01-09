@@ -1,7 +1,6 @@
 import { menuController, modalController } from '@ionic/vue';
 import ModalLogin from '@/components/modals/ModalLogin';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
 import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';

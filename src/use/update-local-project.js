@@ -6,6 +6,8 @@ import { notificationService } from '@/services/notification-service';
 import { STRINGS } from '@/config/strings';
 import { errorsService } from '@/services/errors-service';
 import { showModalLogin } from '@/use/show-modal-login';
+import { logout } from '@/use/logout';
+
 
 export function updateLocalProject () {
     const rootStore = useRootStore();
@@ -50,7 +52,7 @@ export function updateLocalProject () {
                     //project was updated
                     resolve(true);
                 },
-                function (error) {
+                async function (error) {
                     // Hide loader
                     notificationService.hideProgressDialog();
 
@@ -72,7 +74,8 @@ export function updateLocalProject () {
                             callback: updateProject,
                             params: null
                         };
-                        //2- Ask user to login
+                        //2- Clear any token and dsk user to login again
+                        await logout();
                         showModalLogin();
                     } else {
                         // Other error

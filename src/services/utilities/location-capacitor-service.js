@@ -77,11 +77,11 @@ export const locationService = {
 
     getWatchTimeout () {
         const rootStore = useRootStore();
-        let timeout = PARAMETERS.GEOLOCATION_TIMEOUT;
+        let timeout = PARAMETERS.DEFAULT_TIMEOUT;
         //set unlimited timeout for watch position to avoid timeout error on iOS when the device does not move
         // see http://goo.gl/tYsBSC, http://goo.gl/jYQhgr, http://goo.gl/8oR1g2
         if (rootStore.device.platform !== PARAMETERS.WEB) {
-            timeout = (rootStore.device.platform === PARAMETERS.IOS) ? Infinity : PARAMETERS.GEOLOCATION_TIMEOUT;
+            timeout = (rootStore.device.platform === PARAMETERS.IOS) ? Infinity : PARAMETERS.DEFAULT_TIMEOUT;
         }
         return timeout;
     },

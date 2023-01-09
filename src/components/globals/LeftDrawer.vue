@@ -119,7 +119,7 @@ import { menuController } from '@ionic/vue';
 import { showModalLogin } from '@/use/show-modal-login';
 import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
-import { databaseDeleteService } from '@/services/database/database-delete-service';
+import { logout } from '@/use/logout';
 
 export default {
 	setup() {
@@ -140,7 +140,7 @@ export default {
 					methods.openModalLogin();
 				}
 				if (rootStore.user.action === STRINGS[language].labels.logout) {
-					methods.logout(true);
+					methods.logout(true, true);
 				}
 			},
 			goToProjects() {
@@ -202,7 +202,7 @@ export default {
 					await notificationService.showProgressDialog();
 
 					// Call logout first
-					methods.logout(false).then(
+					methods.logout(false, true).then(
 						() => {
 							showModalLogin();
 						},
@@ -213,44 +213,17 @@ export default {
 					);
 				}
 			},
-			logout(showToast) {
+			async logout(showToast, closeMenu) {
 				console.log('should log user out');
-				/**
-				 * Function to reset label, show toast etc after logout
-				 * @private
-				 */
-				function _afterLogout() {
-					rootStore.user = {
-						action: STRINGS[language].labels.login,
-						name: '',
-						email: ''
-					};
-
-					if (showToast) {
-						notificationService.showToast(STRINGS[language].status_codes.ec5_141);
-					}
-					menuController.close();
-				}
 				return new Promise((resolve) => {
-					// Delete the current token
-					databaseDeleteService.deleteToken().then(function () {
-						if (rootStore.device.platform !== PARAMETERS.WEB) {
-							// Attempt to logout google user
-							window.plugins.googleplus.logout(
-								async function (response) {
-									_afterLogout();
-									resolve();
-								},
-								function (error) {
-									// If it failed, they weren't logged in to Google, so just call afterLogout and resolve
-									_afterLogout();
-									resolve();
-								}
-							);
-						} else {
-							_afterLogout();
-							resolve();
+					logout().then(() => {
+						if (showToast) {
+							notificationService.showToast(STRINGS[language].status_codes.ec5_141);
 						}
+						if (closeMenu) {
+							menuController.close();
+						}
+						resolve();
 					});
 				});
 			}

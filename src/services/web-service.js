@@ -29,12 +29,13 @@ export const webService = {
         return new Promise((resolve, reject) => {
             // Attempt to retrieve the jwt token
             self.getHeaders(true).then(function (headers) {
+                console.log(headers);
                 const url = self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.PROJECT + slug;
                 axios({
                     method: 'GET',
                     url,
                     headers,
-                    timeout: 30000
+                    timeout: PARAMETERS.DEFAULT_TIMEOUT
                 }).then(function (response) {
                     resolve(response);
                 }, function (error) {
@@ -63,7 +64,7 @@ export const webService = {
             axios({
                 method: 'GET',
                 url,
-                timeout: 30000
+                timeout: PARAMETERS.DEFAULT_TIMEOUT
             }).then(function (response) {
                 const data = {
                     id: 0,

@@ -8,6 +8,8 @@ import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
 import { downloadFileService } from '@/services/download-file-service';
 import { webService } from '@/services/web-service';
+import { logout } from '@/use/logout';
+
 
 //imp: router gets passed because is available only in setup()
 export async function addProject (project, router) {
@@ -136,7 +138,8 @@ export async function addProject (project, router) {
                                 callback: addProject,
                                 params: [project, router]
                             };
-                            //2- Ask user to login
+                            //2- Clear any token and ask user to login again
+                            await logout();
                             showModalLogin();
                         }
                     }

@@ -292,7 +292,7 @@ export default {
 			const options = {
 				enableHighAccuracy: false,
 				maximumAge: 0,
-				timeout: PARAMETERS.GEOLOCATION_TIMEOUT
+				timeout: PARAMETERS.DEFAULT_TIMEOUT
 			};
 
 			notificationService.showProgressDialog(

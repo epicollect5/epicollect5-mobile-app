@@ -93,12 +93,14 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
         // see https://goo.gl/WwNMSh
         window.cordova.plugins.diagnostic.isCameraAuthorized(
             function (response) {
+
                 if (response) {
                     _openCamera();
                 } else {
                     //request permission
                     cordova.plugins.diagnostic.requestCameraAuthorization(
                         function (permission) {
+
                             console.log(permission);
 
                             //check permission status android
@@ -123,6 +125,7 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
                 }
             },
             function (error) {
+
                 console.log(error);
             }
         );
