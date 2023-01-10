@@ -35,7 +35,7 @@ export const moveFileService = {
 
             function _onError (error) {
                 console.log(error);
-                reject();
+                reject(error);
             }
 
             function _onSuccess (video_file_entry) {
@@ -74,7 +74,7 @@ export const moveFileService = {
 
             function _onError (error) {
                 console.log(error);
-                reject();
+                reject(error);
             }
 
             function _onSuccess (file_entry) {
@@ -127,7 +127,7 @@ export const moveFileService = {
 
             function _onError (error) {
                 console.log(error);
-                reject();
+                reject(error);
             }
 
             function _onSuccess (file_entry) {
@@ -170,7 +170,7 @@ export const moveFileService = {
         return new Promise((resolve, reject) => {
             function _onError (error) {
                 console.log(error);
-                reject();
+                reject(error);
             }
 
             function _onSuccess (file_entry) {

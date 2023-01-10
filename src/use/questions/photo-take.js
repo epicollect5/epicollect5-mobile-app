@@ -110,6 +110,11 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
                                 ) {
                                     _openCamera();
                                 }
+                                else {
+                                    //warn user camera permssion is compulsory
+                                    notificationService.hideProgressDialog();
+                                    notificationService.showAlert(labels.missing_permission);
+                                }
                             } else {
                                 //on iOS permission is true or false only
                                 if (permission) {
@@ -118,21 +123,18 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
                             }
                         },
                         function (error) {
-                            console.error(error);
                             notificationService.hideProgressDialog();
+                            notificationService.showAlert(error);
                         }
                     );
                 }
             },
             function (error) {
-
-                console.log(error);
+                notificationService.hideProgressDialog();
+                notificationService.showAlert(error);
             }
         );
     } else {
-        //todo, it is a browser ;)
-        // element.find('img').attr('src', 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Ciao_logo_300dpi.jpg');
-        // state.url_landscape = 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Ciao_logo_300dpi.jpg';
         notificationService.hideProgressDialog();
     }
 }

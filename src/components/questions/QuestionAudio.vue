@@ -245,14 +245,12 @@ export default {
 									_doRecord();
 								} else {
 									//warn user the permission is required
-									notificationService.showAlert(
-										STRINGS[language].labels.missing_permission,
-										STRINGS[language].labels.warning
-									);
+									notificationService.showAlert(labels.missing_permission);
 								}
 							},
 							function (error) {
 								console.error('The following error occurred: ' + error);
+								notificationService.showAlert(error);
 							},
 							cordova.plugins.diagnostic.runtimePermission.RECORD_AUDIO
 						);
@@ -265,14 +263,12 @@ export default {
 									_doRecord();
 								} else {
 									//warn user the permission is required
-									notificationService.showAlert(
-										STRINGS[language].labels.missing_permission,
-										STRINGS[language].labels.warning
-									);
+									notificationService.showAlert(labels.missing_permission);
 								}
 							},
 							function (error) {
 								console.error(error);
+								notificationService.showAlert(error);
 							}
 						);
 					}

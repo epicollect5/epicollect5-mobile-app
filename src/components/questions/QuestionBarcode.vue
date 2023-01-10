@@ -221,24 +221,19 @@ export default {
 									function (error) {
 										notificationService.stopForegroundService();
 										if (error !== null) {
-											notificationService.showAlert(
-												STRINGS[language].labels.failed_because + error
-											);
+											notificationService.showAlert(labels.failed_because + error);
 										}
 									}
 								);
 							} else {
 								//warn user the permission is required
-								notificationService.showAlert(
-									STRINGS[language].labels.missing_permission,
-									STRINGS[language].labels.warning
-								);
+								notificationService.showAlert(labels.missing_permission);
 								notificationService.stopForegroundService();
 							}
 						},
 						function (error) {
 							notificationService.stopForegroundService();
-							console.error(error);
+							notificationService.showAlert(error);
 						},
 						cordova.plugins.diagnostic.runtimePermission.CAMERA
 					);
@@ -255,7 +250,7 @@ export default {
 										}
 									},
 									function (error) {
-										notificationService.showAlert(STRINGS[language].labels.failed_because + error);
+										notificationService.showAlert(labels.failed_because + error);
 									}
 								);
 							} else {
@@ -274,29 +269,22 @@ export default {
 													}
 												},
 												function (error) {
-													notificationService.showAlert(
-														STRINGS[language].labels.failed_because + error
-													);
+													notificationService.showAlert(labels.failed_because + error);
 												}
 											);
 										} else {
-											notificationService.showAlert(
-												STRINGS[language].labels.missing_permission,
-												STRINGS[language].labels.warning
-											);
+											notificationService.showAlert(labels.missing_permission);
 										}
 									},
 									function () {
-										notificationService.showAlert(
-											STRINGS[language].labels.missing_permission,
-											STRINGS[language].labels.warning
-										);
+										notificationService.showAlert(labels.missing_permission);
 									}
 								);
 							}
 						},
 						function (error) {
 							console.error(error);
+							notificationService.showAlert(error);
 						}
 					);
 				}

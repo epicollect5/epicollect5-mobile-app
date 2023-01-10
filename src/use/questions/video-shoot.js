@@ -75,7 +75,6 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
                 //use stored filename
                 filename = media[entryUuid][state.inputDetails.ref].stored;
             }
-
             media[entryUuid][state.inputDetails.ref].cached = filename;
             state.answer.answer = filename;
         } else {
@@ -117,15 +116,21 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
                             cordova.plugins.diagnostic.runtimePermission.WRITE_EXTERNAL_STORAGE
                         );
                     } else {
-                        notificationService.showAlert(
-                            STRINGS[language].labels.permission_denied
-                        );
+                        //warn user camera permssion is compulsory
+                        notificationService.showAlert(labels.missing_permission);
                         notificationService.stopForegroundService();
                         notificationService.hideProgressDialog();
+
+                        //clear video references
+                        state.answer.answer = '';
+                        media[entryUuid][state.inputDetails.ref].cached = '';
                     }
                 },
                 function (error) {
+                    state.answer.answer = '';
+                    media[entryUuid][state.inputDetails.ref].cached = '';
                     console.error('The following error occurred: ' + error);
+                    notificationService.showAlert(error);
                     notificationService.stopForegroundService();
                     notificationService.hideProgressDialog();
                 },
@@ -142,9 +147,11 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
                     );
                 },
                 function (error) {
+                    state.answer.answer = '';
+                    media[entryUuid][state.inputDetails.ref].cached = '';
                     console.log(error);
                     console.error('The following error occurred: ' + error);
-                    notificationService.showToast(error.message);
+                    notificationService.showAlert(error.message);
                     notificationService.hideProgressDialog();
                 }
             );
