@@ -111,7 +111,7 @@
 				</ion-card-content>
 			</ion-card>
 
-			<ion-card v-if="isDebug">
+			<ion-card v-if="isDebug || hasEasterEggProject">
 				<ion-card-header class="settings-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
 						{{labels.advanced_settings}}
@@ -168,6 +168,9 @@ export default {
 			}),
 			isDebug: computed(() => {
 				return PARAMETERS.DEBUG;
+			}),
+			hasEasterEggProject: computed(() => {
+				return rootStore.easterEgg;
 			})
 		};
 

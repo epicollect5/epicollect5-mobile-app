@@ -14,7 +14,7 @@ export function fetchLocalProjects () {
         databaseSelectService.selectProjects().then(
             function (res) {
                 let appPersistentStoragePath;
-                // let easterEggFound = false;
+                let easterEggFound = false;
 
                 if (res.rows.length > 0) {
                     for (let i = 0; i < res.rows.length; i++) {
@@ -46,40 +46,25 @@ export function fetchLocalProjects () {
                             name: res.rows.item(i).name,
                             logo: appPersistentStoragePath
                         });
-                        //todo: do this somewhere else
-                        //check if we have the EASTER EGG project to unlock extra settings
-                        // if (
-                        //     res.rows.item(i).project_ref ===
-                        //     PARAMETERS.EASTER_EGG.PROJECT_REF
-                        // ) {
-                        //     easterEggFound = true;
-                        // }
+
+                        //imp:check if we have the EASTER EGG project to unlock extra settings
+                        if (
+                            res.rows.item(i).project_ref ===
+                            PARAMETERS.EASTER_EGG.PROJECT_REF
+                        ) {
+                            easterEggFound = true;
+                        }
                     }
                 }
 
+                //set flag if the EASTER EGG project was found
+                rootStore.easterEgg = easterEggFound;
+
                 resolve(projects);
-
-                //todo: do this somewhere else
-                // //set flag if the EASTER EGG project was found
-                // if (easterEggFound) {
-                //     //found, unlock extra settings
-                //     PARAMETERS.EASTER_EGG.STATUS = 1;
-                // } else {
-                //     //not found, hide extra settings
-                //     PARAMETERS.EASTER_EGG.STATUS = 0;
-                // }
-
-                //hide loader
-                //state.isFetching = false;
-
-                //todo: check this on device
-                // _hideSplashscreen();
             },
             function (error) {
                 console.log(error);
                 resolve([]);
-                // Error
-                //  _hideSplashscreen();
             }
         );
     });

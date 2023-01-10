@@ -1,5 +1,4 @@
 import { projectModel } from '@/models/project-model.js';
-
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
@@ -9,6 +8,7 @@ import { databaseDeleteService } from '@/services/database/database-delete-servi
 import { notificationService } from '@/services/notification-service';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { deleteFileService } from '@/services/filesystem/delete-file-service';
+import { databaseInsertService } from '@/services/database/database-insert-service';
 
 /**
  * Delete a project and redirect to projects page if success
@@ -69,6 +69,13 @@ export async function deleteProject (router) {
     }
 
     async function _onDeleteSuccess () {
+
+        //if we are deleting the easter egg project, reset server url to default
+        if (projectModel.getProjectRef() === PARAMETERS.EASTER_EGG.PROJECT_REF) {
+            await databaseInsertService.insertSetting(PARAMETERS.SETTINGS_KEYS.SERVER_URL, PARAMETERS.DEFAULT_SERVER_URL);
+            rootStore.serverUrl = PARAMETERS.DEFAULT_SERVER_URL;
+        }
+
         // Refresh bookmarks after deletion
         await bookmarksService.getBookmarks();
         // Destroy project model

@@ -55,7 +55,8 @@ export const useRootStore = defineStore('RootStore', {
             queueBranchUploadErrorsPWA: {},
             queueGlobalUploadErrorsPWA: [],
             branchEditType: PARAMETERS.PWA_BRANCH_LOCAL,
-            providedSegment: null
+            providedSegment: null,
+            easterEgg: false
         };
     },
     getters: {},

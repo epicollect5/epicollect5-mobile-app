@@ -15,7 +15,6 @@ export const PARAMETERS = {
     DEFAULT_LANGUAGE: 'en',
 
     EASTER_EGG: {
-        STATUS: 0,
         PROJECT_REF: '031ad19cdaf04dbb9cc9a1c2086bdcbd'
     },
 

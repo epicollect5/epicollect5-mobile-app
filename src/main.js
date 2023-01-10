@@ -272,7 +272,7 @@ export const app = createApp(App)
     //clear temporary tables
     await initService.tidyTempTables();
 
-    //get the user preferred entrie order
+    //get the user preferred entries order
     const dbEntriesOrder = await initService.getEntriesOrder();
     if (dbEntriesOrder !== null) {
       dbStore.dbEntriesOrder = dbEntriesOrder;
