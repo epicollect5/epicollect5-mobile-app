@@ -213,6 +213,8 @@ export default {
 					} else {
 						methods.removeNative();
 					}
+				} else {
+					popoverController.dismiss();
 				}
 			}
 		};

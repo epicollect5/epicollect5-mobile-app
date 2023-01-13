@@ -1,0 +1,25 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><title>Epicollect5 Beta</title><base href="/"/><meta name="color-scheme" content="light dark"/><meta name="viewport" content="viewport-fit=cover,width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/><meta name="format-detection" content="telephone=no"/><meta name="msapplication-tap-highlight" content="no"/><link rel="shortcut icon" type="image/png" href="/assets/icon/favicon.png"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="Ionic App"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><script src="/assets/js/randexp.min.js"></script><script src="/assets/js/jwt-decode.js"></script><link href="/assets/css/Control.FullScreen.css" rel="stylesheet"/><script>function _onLeafletLoaded () {
+                  console.log('Leaflet loaded');
+                  //add full screen plugin for leaflet AFTER leaflet is loaded
+                  const leafletFullScreenJS = document.createElement('script');
+                  leafletFullScreenJS.setAttribute('src', '/assets/js/Control.FullScreen.js');
+                  document.head.appendChild(leafletFullScreenJS);
+            }
+            //On PWA debugging, load dependencies from CDN
+            if ('WEB' === 'PWA' && 'production' === 'development') {
+
+                  const leafletCSS = document.createElement('link');
+                  leafletCSS.setAttribute('href', 'https://unpkg.com/leaflet@1.9.2/dist/leaflet.css');
+                  leafletCSS.setAttribute('integrity', 'sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14=');
+                  leafletCSS.setAttribute('crossorigin', '');
+                  leafletCSS.setAttribute('rel', 'stylesheet');
+                  document.head.appendChild(leafletCSS);
+
+                  const leafletJS = document.createElement('script');
+                  leafletJS.setAttribute('src', 'https://unpkg.com/leaflet@1.9.2/dist/leaflet.js');
+                  leafletJS.setAttribute('integrity', 'sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg=');
+                  leafletJS.setAttribute('crossorigin', '');
+                  leafletJS.setAttribute('defer', '');
+                  leafletJS.setAttribute('onload', '_onLeafletLoaded()')
+                  document.head.appendChild(leafletJS);
+            }</script><script defer="defer" src="/js/chunk-vendors.js"></script><script defer="defer" src="/js/app.js"></script><link href="/css/chunk-vendors.css" rel="stylesheet"><link href="/css/app.css" rel="stylesheet"><!--[if IE]><link rel="icon" type="image/svg+xml" href="/img/icons/favicon.svg?v=5.0.5"><![endif]--><link rel="icon" type="image/png" sizes="32x32" href="/img/icons/favicon-32x32.png?v=5.0.5"><link rel="icon" type="image/png" sizes="16x16" href="/img/icons/favicon-16x16.png?v=5.0.5"><link rel="manifest" href="/manifest.json?v=5.0.5"><meta name="theme-color" content="#673C90"><meta name="apple-mobile-web-app-capable" content="no"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="uk.ac.imperial.epicollect.five.beta"><link rel="apple-touch-icon" href="/img/icons/apple-touch-icon-152x152.png?v=5.0.5"><link rel="mask-icon" href="/img/icons/safari-pinned-tab.svg?v=5.0.5" color="#673C90"><meta name="msapplication-TileImage" content="/img/icons/msapplication-icon-144x144.png?v=5.0.5"><meta name="msapplication-TileColor" content="#FFFFFF"></head><body><div id="app"></div></body></html>
