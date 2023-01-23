@@ -31,6 +31,7 @@
 				@file-loaded="onFileLoadedPWA"
 				@file-dropped="onFileDroppedPWA"
 				@file-error="onFileErrorPWA"
+				@photo-clicked="openViewerPWA"
 			></dropzone>
 
 			<grid-question-narrow v-if="!isPWA">
@@ -255,13 +256,29 @@ export default {
 			},
 			//open viewer to see image with zoom capabilities
 			async openViewer() {
+				const componentProps = {
+					imageSource: state.imageSource,
+					fileSource: state.fileSource,
+					isPWA: false
+				};
+
 				const modal = await modalController.create({
 					component: ModalPhoto,
 					cssClass: 'modal-photo',
-					componentProps: {
-						imageSource: state.imageSource,
-						fileSource: state.fileSource
-					}
+					componentProps
+				});
+				return modal.present();
+			},
+			async openViewerPWA(fileURL) {
+				const componentProps = {
+					imageSource: fileURL,
+					fileSource: fileURL,
+					isPWA: true
+				};
+				const modal = await modalController.create({
+					component: ModalPhoto,
+					cssClass: 'modal-photo',
+					componentProps
 				});
 				return modal.present();
 			},

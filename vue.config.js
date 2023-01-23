@@ -80,9 +80,9 @@ module.exports = {
                     new webpack.IgnorePlugin({
                         resourceRegExp: /an-array-of/
                     }),
-                    new webpack.IgnorePlugin({
-                        resourceRegExp: /swiper.bundle.js/
-                    }),
+                    // new webpack.IgnorePlugin({
+                    //     resourceRegExp: /swiper.bundle.js/
+                    // }),
                     //remove console.log()
                     new TerserPlugin({
                         terserOptions: {

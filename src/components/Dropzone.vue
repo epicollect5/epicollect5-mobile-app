@@ -29,6 +29,7 @@
 				:src="state.filesource"
 				@load="onImageLoaded()"
 				@error="onError"
+				@click="onClick"
 			>
 			<audio
 				v-if="state.type === PARAMETERS.QUESTION_TYPES.AUDIO"
@@ -100,7 +101,7 @@ export default {
 			required: true
 		}
 	},
-	emits: ['file-dropped', 'file-loaded', 'file-error'],
+	emits: ['file-dropped', 'file-loaded', 'file-error', 'photo-clicked'],
 	setup(props, context) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
@@ -227,6 +228,9 @@ export default {
 				state.loadingError = true;
 				console.log(error);
 				//context.emit('file-loaded', filename);
+			},
+			onClick() {
+				context.emit('photo-clicked', state.filesource);
 			},
 			onAudioLoaded() {
 				state.previewLoaded = true;

@@ -11,7 +11,10 @@
 				</ion-button>
 			</ion-buttons>
 			<ion-buttons slot="end">
-				<ion-button @click="share()">
+				<ion-button
+					v-if="!isPWA"
+					@click="share()"
+				>
 					<ion-icon
 						slot="icon-only"
 						:icon="shareSocialSharp"
@@ -46,6 +49,10 @@ export default {
 		fileSource: {
 			type: String,
 			required: true
+		},
+		isPWA: {
+			type: Boolean,
+			required: true
 		}
 	},
 	setup(props) {
@@ -67,6 +74,7 @@ export default {
 				});
 			}
 		};
+
 		return {
 			...props,
 			sliderOptions,
