@@ -25,22 +25,44 @@
 		</ion-toolbar>
 	</ion-header>
 	<ion-content>
-		<ion-slides :options="sliderOptions">
-			<ion-slide>
+
+		<swiper
+			:modules="sliderModules"
+			:zoom="true"
+		>
+			<swiper-slide>
 				<div class="swiper-zoom-container">
-					<img :src="imageSource">
+					<ion-spinner
+						class="spinner ion-margin-top"
+						v-show="!state.imageLoaded"
+						name="crescent"
+					></ion-spinner>
+					<img
+						:src="imageSource"
+						@load="onImageLoad()"
+					>
 				</div>
-			</ion-slide>
-		</ion-slides>
+			</swiper-slide>
+
+		</swiper>
+
 	</ion-content>
 </template>
 
 <script>
+import { reactive } from '@vue/reactivity';
+import { IonicSlides } from '@ionic/vue';
 import { modalController } from '@ionic/vue';
 import { Share } from '@capacitor/share';
 import { shareSocialSharp, closeOutline } from 'ionicons/icons';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Zoom } from 'swiper';
+import 'swiper/css';
+import '@ionic/vue/css/ionic-swiper.css';
+import 'swiper/css/zoom';
 
 export default {
+	components: { Swiper, SwiperSlide },
 	props: {
 		imageSource: {
 			type: String,
@@ -56,10 +78,10 @@ export default {
 		}
 	},
 	setup(props) {
-		const sliderOptions = {
-			zoom: true
-		};
-
+		const sliderModules = [Zoom, IonicSlides];
+		const state = reactive({
+			imageLoaded: false
+		});
 		const methods = {
 			dismiss() {
 				modalController.dismiss();
@@ -68,16 +90,20 @@ export default {
 				Share.share({
 					title: '',
 					text: '',
-					//this works in ios 14
+					//this works in ios 14+
 					url: 'file://' + props.fileSource,
 					dialogTitle: ''
 				});
+			},
+			onImageLoad() {
+				state.imageLoaded = true;
 			}
 		};
 
 		return {
 			...props,
-			sliderOptions,
+			state,
+			sliderModules,
 			...methods,
 			//icons
 			shareSocialSharp,

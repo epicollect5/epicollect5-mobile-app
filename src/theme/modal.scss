@@ -142,18 +142,18 @@
         //     }
         // }
     }
-    ion-slides {
-        ion-slide {
+    .swiper {
+        .swiper-slide {
             width: 100% !important;
             height: 100% !important;
+            .swiper-zoom-container {
+                width: 100% !important;
+                height: 100% !important;
+                margin-top: -8px !important;
+            }
         }
         width: 100% !important;
         height: 100% !important;
-        .swiper-zoom-container {
-            width: 100% !important;
-            height: 100% !important;
-            margin-top: -8px !important;
-        }
     }
     img {
         width: 100%;
