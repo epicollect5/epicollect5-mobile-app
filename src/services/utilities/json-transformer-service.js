@@ -65,6 +65,8 @@ function _makeJsonEntry (entry) {
         if (rootStore.isPWA) {
             entryJson[entry.entry_type].files_to_delete = rootStore.queueRemoteFilesToDeletePWA;
         }
+
+
     } catch (e) {
         // Failed - just reset the answers
         entryJson[entry.entry_type] = {};

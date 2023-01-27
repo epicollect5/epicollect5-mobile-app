@@ -6,6 +6,7 @@
 		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title>
 				<question-label-action
+					:key="state.answer.answer"
 					:disabled="!isFileAvailable"
 					action="media"
 					:questionText="state.question"
@@ -128,7 +129,8 @@ export default {
 				answer: ''
 			},
 			fileSource: '',
-			pwaFileState: PARAMETERS.PWA_FILE_STATE.CACHED
+			pwaFileState: PARAMETERS.PWA_FILE_STATE.CACHED,
+			fileError: labels.unknown_error
 		});
 
 		//set up question

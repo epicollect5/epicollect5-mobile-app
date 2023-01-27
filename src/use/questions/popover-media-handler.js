@@ -41,6 +41,7 @@ export async function popoverMediaHandler ({ media, entryUuid, state, e, mediaTy
         side: 'left'
     });
     popover.onDidDismiss().then((response) => {
+
         //update UI only when file gets deleted or queued
         const actions = [PARAMETERS.ACTIONS.FILE_DELETED, PARAMETERS.ACTIONS.FILE_QUEUED];
 

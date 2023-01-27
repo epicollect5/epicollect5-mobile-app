@@ -72,24 +72,47 @@ export default {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
-		const { entryUuid, inputRef, projectRef, mediaFolder } = readonly(props);
+		//const { entryUuid, inputRef, projectRef, mediaFolder } = readonly(props);
 		const tempDir = rootStore.tempDir;
 		const persistentDir = rootStore.persistentDir;
 
-		let fileURI = '';
-		const filenameCached = readonly(props.media[entryUuid][inputRef].cached);
-		const filenameStored = readonly(props.media[entryUuid][inputRef].stored);
+		function getFileURI() {
+			let fileURI = '';
+			const { entryUuid, inputRef, projectRef, mediaFolder } = readonly(props);
+			const filenameCached = readonly(props.media[entryUuid][inputRef].cached);
+			const filenameStored = readonly(props.media[entryUuid][inputRef].stored);
 
-		const filenameCachedPWA = readonly(props.media[entryUuid][inputRef].filenamePWA?.cached || '');
-		const filenameStoredPWA = readonly(props.media[entryUuid][inputRef].filenamePWA?.stored || '');
-		//share cached audio if any (and this wins over a stored audio file)
-		if (filenameCached !== '') {
-			fileURI = tempDir + filenameCached;
-		} else {
-			if (filenameStored !== '') {
-				//share stored file
-				fileURI = persistentDir + mediaFolder + projectRef + '/' + filenameStored;
+			//share cached media if any (and this wins over a stored media file)
+			if (filenameCached !== '') {
+				fileURI = tempDir + filenameCached;
+			} else {
+				if (filenameStored !== '') {
+					//share stored file
+					fileURI = persistentDir + mediaFolder + projectRef + '/' + filenameStored;
+				}
 			}
+
+			return fileURI;
+		}
+
+		function getFilenames() {
+			const { entryUuid, inputRef } = readonly(props);
+			const filenameCached = readonly(props.media[entryUuid][inputRef].cached);
+			const filenameStored = readonly(props.media[entryUuid][inputRef].stored);
+
+			const filenameCachedPWA = readonly(
+				props.media[entryUuid][inputRef].filenamePWA?.cached || ''
+			);
+			const filenameStoredPWA = readonly(
+				props.media[entryUuid][inputRef].filenamePWA?.stored || ''
+			);
+
+			return {
+				filenameCached,
+				filenameStored,
+				filenameCachedPWA,
+				filenameStoredPWA
+			};
 		}
 
 		const methods = {
@@ -98,7 +121,7 @@ export default {
 					title: '',
 					text: '',
 					//this works in ios 14
-					url: 'file://' + fileURI,
+					url: 'file://' + getFileURI(),
 					dialogTitle: ''
 				});
 				popoverController.dismiss();
@@ -111,15 +134,17 @@ export default {
 				await notificationService.showProgressDialog(labels.wait);
 
 				const projectSlug = projectModel.getSlug();
+				const filenames = getFilenames();
+				const { entryUuid } = readonly(props);
 
-				if (filenameCachedPWA !== '') {
+				if (filenames.filenameCachedPWA !== '') {
 					//delete temp file from server
 					try {
 						await webService.deleteTempMediaFile(
 							projectSlug,
 							entryUuid,
 							props.mediaType,
-							filenameCachedPWA
+							filenames.filenameCachedPWA
 						);
 						notificationService.showToast(labels.file_deleted);
 						popoverController.dismiss(PARAMETERS.ACTIONS.FILE_DELETED);
@@ -131,11 +156,11 @@ export default {
 						notificationService.hideProgressDialog();
 					}
 				} else {
-					if (filenameStoredPWA !== '') {
+					if (filenames.filenameStoredPWA !== '') {
 						//keep track of stored files deleted
 						rootStore.queueRemoteFilesToDeletePWA.push({
 							type: props.mediaType,
-							filename: filenameStoredPWA
+							filename: filenames.filenameStoredPWA
 						});
 
 						notificationService.showToast(labels.file_deleted);
@@ -149,8 +174,11 @@ export default {
 			},
 			async removeNative() {
 				await notificationService.showProgressDialog(labels.wait);
+				const { inputRef, projectRef, mediaFolder } = readonly(props);
+				const filenames = getFilenames();
+				let fileURI = getFileURI();
 
-				if (filenameCached !== '') {
+				if (filenames.filenameCached !== '') {
 					//delete file immediately as it is not saved yet
 					// imp:on iOS, cordova needs the 'file://' protocol if it is not there
 					if (rootStore.device.platform === PARAMETERS.IOS) {
@@ -172,7 +200,7 @@ export default {
 					);
 				} else {
 					//we have a stored file
-					if (filenameStored !== '') {
+					if (filenames.filenameStored !== '') {
 						//put file in the queue and delete on save
 
 						let filePath = persistentDir + mediaFolder;
@@ -182,13 +210,13 @@ export default {
 							}
 						}
 
-						console.log('queue file -> ', filenameStored);
+						console.log('queue file -> ', filenames.filenameStored);
 						rootStore.queueFilesToDelete.push({
 							inputRef,
-							filenameStored,
+							filenameStored: filenames.filenameStored,
 							file_path: filePath,
 							project_ref: projectRef,
-							file_name: filenameStored
+							file_name: filenames.filenameStored
 						});
 						//The actual deletion is done after the user save the entry
 						//just remove from the UI the reference

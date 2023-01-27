@@ -6,6 +6,7 @@
 		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title>
 				<question-label-action
+					:key="state.answer.answer"
 					:disabled="!isFileAvailable"
 					action="media"
 					:questionText="state.question"
