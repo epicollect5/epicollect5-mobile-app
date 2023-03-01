@@ -30,7 +30,7 @@ export const initService = {
         const rootStore = useRootStore();
         if ([PARAMETERS.WEB, PARAMETERS.PWA].includes(rootStore.device.platform)) {
             return {
-                name: 'Epicollect5 Beta',
+                name: 'Epicollect5',
                 version: 'n/a'
             };
         }

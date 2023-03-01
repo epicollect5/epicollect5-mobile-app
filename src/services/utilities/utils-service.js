@@ -528,7 +528,7 @@ export const utilsService = {
         const rootStore = useRootStore();
         return new Promise((resolve) => {
             if (rootStore.device.platform === PARAMETERS.WEB) {
-                resolve('Epicollect5 Beta');
+                resolve('Epicollect5');
             }
             resolve(rootStore.app.name);
         });

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Epicollect5 Beta</string>
-    <string name="title_activity_main">Epicollect5 Beta</string>
-    <string name="package_name">uk.ac.imperial.epicollect.five.beta</string>
-    <string name="custom_url_scheme">uk.ac.imperial.epicollect.five.beta</string>
+    <string name="app_name">Epicollect5</string>
+    <string name="title_activity_main">Epicollect5</string>
+    <string name="package_name">uk.ac.imperial.epicollect.five</string>
+    <string name="custom_url_scheme">uk.ac.imperial.epicollect.five</string>
 </resources>

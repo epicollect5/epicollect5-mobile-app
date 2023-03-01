@@ -1,4 +1,4 @@
-package uk.ac.imperial.epicollect.five.beta;
+package uk.ac.imperial.epicollect.five;
 
 import android.os.Bundle;
 

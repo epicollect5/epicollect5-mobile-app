@@ -1,5 +1,5 @@
 export const PARAMETERS = {
-    APP_NAME: 'Epicollect5 Beta',
+    APP_NAME: 'Epicollect5',
     USER_GUIDE_URL: 'https://docs.epicollect.net',
     COMMUNITY_SUPPORT_URL: 'https://community.epicollect.net',
 

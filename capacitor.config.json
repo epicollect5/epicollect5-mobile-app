@@ -1,6 +1,6 @@
 {
-  "appId": "uk.ac.imperial.epicollect.five.beta",
-  "appName": "Epicollect5 Beta",
+  "appId": "uk.ac.imperial.epicollect.five",
+  "appName": "Epicollect5",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "dist",

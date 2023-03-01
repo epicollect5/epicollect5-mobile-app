@@ -2,7 +2,7 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:/Users/mirko/Sites/opensource/epicollect5-mobile-app-os/ios/App/Epicollect5Beta.xcodeproj">
+      location = "group:/Users/mirko/Sites/opensource/epicollect5-mobile-app-os/ios/App/Epicollect5.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Pods/Pods.xcodeproj">

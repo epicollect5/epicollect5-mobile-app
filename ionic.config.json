@@ -1,5 +1,5 @@
 {
-  "name": "uk.ac.imperial.epicollect.five.beta",
+  "name": "uk.ac.imperial.epicollect.five",
   "integrations": {
     "capacitor": {}
   },
