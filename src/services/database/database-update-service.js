@@ -77,7 +77,7 @@ export const databaseUpdateService = {
 
         if (syncedError) {
             query += ',synced_error=?';
-            params.push(syncedError);
+            params.push(JSON.stringify(syncedError));
         }
 
         query += ' WHERE id = ?';

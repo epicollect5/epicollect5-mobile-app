@@ -31,7 +31,7 @@ npm-debug.log*
 /platforms
 /plugins
 /www
-
+/android/app/debug
 *.iml
 .gradle
 /local.properties
