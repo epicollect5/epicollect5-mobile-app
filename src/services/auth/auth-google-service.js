@@ -48,6 +48,7 @@ export const authGoogleService = {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
+        const labels = STRINGS[language].labels;
         const account = {};
 
         // Check if we have a connection
@@ -56,7 +57,7 @@ export const authGoogleService = {
             notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
         } else {
 
-            await notificationService.showProgressDialog(STRINGS[language].labels.sign_in + '...');
+            await notificationService.showProgressDialog(labels.sign_in + '...');
 
             this.getGoogleCodeNatively(authIds).then(
                 function (googleResponse) {
@@ -163,7 +164,7 @@ export const authGoogleService = {
                 }, function (error) {
                     //t.ly/wlpO => SIGN IN CANCELLED gets code 12501
                     if (error != '12501') {
-                        notificationService.showAlert(error);
+                        notificationService.showAlert(STRINGS[language].status_codes.ec5_103, labels.error + ' ' + error);
                     }
                     notificationService.hideProgressDialog();
                 });

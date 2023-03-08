@@ -730,16 +730,6 @@ export const utilsService = {
 
         return prefix + '__' + slugify(this.trunc(body.toLowerCase(), 100));
     },
-    async hasGoogleServices () {
-        return new Promise((resolve) => {
-            window.CheckHuaweiServices.checkHuaweiServicesAvailability((response) => {
-                resolve(!response.status);
-            }, () => {
-                console.log('Failed to check for Huawei Services, assuming Google Services');
-                resolve(true);
-            });
-        });
-    },
     getHoursColumnPicker () {
         const hours = Array.from({ length: 24 }, (_, index) => index);
         return hours.map((value) => {

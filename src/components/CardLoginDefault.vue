@@ -157,7 +157,6 @@ export default {
 				return props.authMethods.includes(PARAMETERS.PROVIDERS.APPLE) && state.showAppleSignIn;
 			}),
 			isGoogleAuthEnabled: computed(() => {
-				//on Huawei without Google Services, never show "Sign in with Google"
 				if (rootStore.hasGoogleServices) {
 					return props.authMethods.includes(PARAMETERS.PROVIDERS.GOOGLE);
 				} else {

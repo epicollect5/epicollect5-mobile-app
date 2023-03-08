@@ -50,7 +50,10 @@
 				</template>
 			</grid-question-narrow>
 
-			<grid-question-narrow v-if="!isPWA">
+			<grid-question-narrow
+				v-if="!isPWA"
+				class="ion-margin-top"
+			>
 				<template #content>
 					<ion-button
 						:disabled="!isFileAvailable"

@@ -292,12 +292,6 @@ export const app = createApp(App)
     // Attempt to retrieve the jwt token
     const user = await initService.retrieveJwtToken();
     rootStore.user = user;
-
-    //are Google Services available?
-    if (rootStore.device.platform === PARAMETERS.ANDROID) {
-      rootStore.hasGoogleServices = await utilsService.hasGoogleServices();
-      console.log('has Google Services?', rootStore.hasGoogleServices);
-    }
   }
 
   /**
