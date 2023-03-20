@@ -42,5 +42,7 @@ npm-debug.log*
 /captures
 .externalNativeBuild
 /android/.idea
+/android/App/debug/*
 ios/App/App/env.xcconfig
 .env.local
+
