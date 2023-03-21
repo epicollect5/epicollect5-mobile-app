@@ -43,4 +43,5 @@ npm-debug.log*
 .externalNativeBuild
 /android/.idea
 ios/App/App/env.xcconfig
+ios/App/Epicollect5/env.xcconfig
 .env.local
