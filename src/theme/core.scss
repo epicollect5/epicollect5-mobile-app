@@ -469,9 +469,25 @@ ion-select {
     }
 }
 .child-entries-item-button {
+    margin: 4px 0;
     --border-radius: 4px;
     font-weight: 700;
     --detail-icon-color: #333 !important;
+    --min-height: 36px !important;
+    ion-label {
+        margin: 8px 0;
+    }
+    ion-icon {
+        margin: 6px 0 !important;
+    }
+}
+.child-entries-item-button-only {
+    //  --padding-end: 0 !important;
+    //--inner-padding-end: 0 !important;
+}
+.list-entries-item-child {
+    //padding: 12px;
+    min-height: 36px;
 }
 
 button.child-entries-button {
