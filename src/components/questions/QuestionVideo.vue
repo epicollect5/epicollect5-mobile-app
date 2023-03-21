@@ -191,6 +191,10 @@ export default {
 					if (media[entryUuid][state.inputDetails.ref].stored !== '') {
 						filename = media[entryUuid][state.inputDetails.ref].stored;
 						source = persistentDir + PARAMETERS.VIDEO_DIR + projectRef + '/' + filename;
+
+						//console.log('playing video file from URL -> ', source);
+						//console.log('capacitor conversion -> ', Capacitor.convertFileSrc(source));
+
 						state.fileSource = Capacitor.convertFileSrc(source);
 					}
 				}
