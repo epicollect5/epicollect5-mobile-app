@@ -22,13 +22,7 @@
 				<ion-grid @click="viewEntry(entry)">
 					<ion-row>
 						<!-- Expand column to full width for single form projects -->
-						<ion-col
-							:size-xs="nextFormRef ? 8 : 12"
-							:size-sm="nextFormRef ? 8 : 12"
-							:size-md="nextFormRef ? 9 : 12"
-							:size-lg="nextFormRef ? 9 : 12"
-							:size-xl="nextFormRef ? 9 : 12"
-						>
+						<ion-col :size="nextFormRef ? 9 : 12">
 							<ion-label class="list-entries-item-title">
 								<icon-entry :entry="entry"></icon-entry>
 								{{entry.title}}
@@ -36,27 +30,32 @@
 						</ion-col>
 						<!-- Two columns layout to be shown for projects with multiple forms -->
 						<ion-col
-							size-xs="4"
-							size-sm="4"
-							size-md="3"
-							size-lg="3"
-							size-xl="3"
-							class="list-entries-item-child"
+							size="3"
+							class="list-entries-item-child ion-text-end"
 							v-if="nextFormRef"
 						>
 							<ion-item
 								lines="none"
 								color="secondary"
-								button
-								class="child-entries-item-button"
+								class="child-entries-item-button ion-hide-sm-down"
 								@click.stop="goToChildEntriesPage(entry.entry_uuid, entry.title)"
 							>
 								<ion-label> {{ formName }} </ion-label>
 								<ion-icon
-									:icon="chevronForward"
+									:icon="enter"
 									slot="end"
 								></ion-icon>
 							</ion-item>
+
+							<ion-button
+								class="child-entries-item-button-only ion-hide-sm-up"
+								color="secondary"
+								size="default"
+								@click.stop="goToChildEntriesPage(entry.entry_uuid, entry.title)"
+							>
+								<ion-icon :icon="enter"></ion-icon>
+							</ion-button>
+
 						</ion-col>
 
 					</ion-row>
@@ -98,7 +97,7 @@
 import { useRootStore } from '@/stores/root-store';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
-import { chevronForward } from 'ionicons/icons';
+import { chevronForward, enter } from 'ionicons/icons';
 import { reactive, computed, readonly, toRefs, ref } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 import { useRouter } from 'vue-router';
@@ -278,7 +277,8 @@ export default {
 			state,
 			PARAMETERS,
 			//icons
-			chevronForward
+			chevronForward,
+			enter
 		};
 	}
 };
