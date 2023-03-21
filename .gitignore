@@ -31,7 +31,7 @@ npm-debug.log*
 /platforms
 /plugins
 /www
-
+/android/app/debug
 *.iml
 .gradle
 /local.properties
@@ -42,7 +42,5 @@ npm-debug.log*
 /captures
 .externalNativeBuild
 /android/.idea
-/android/App/debug/*
 ios/App/App/env.xcconfig
 .env.local
-
