@@ -18,6 +18,19 @@ export const persistentDirsService = {
             if (device.platform === PARAMETERS.IOS) {
                 window.resolveLocalFileSystemURL(cordova.file.dataDirectory, (fileSystem) => {
                     path = fileSystem.nativeURL;
+
+
+                    /* We need to provide the full path to the tmp folder to record/play an audio file
+                    *
+                    * iOS 7+ does not want 'file://' in the path to record/play an audio file
+                    *
+                    * if the path starts with 'file://', error thrown is
+                    * 'Failed to start recording using AvAudioRecorder'
+                    * so it is removed using slice(7);
+                    */
+                    if (path.startsWith('file://')) {
+                        path = path.slice(7);
+                    }
                     resolve(path);
                 }, (error) => {
                     console.log(JSON.stringify(error));
