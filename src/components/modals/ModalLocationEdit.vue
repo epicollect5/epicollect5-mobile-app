@@ -16,13 +16,16 @@
 					{{labels.format}}:&nbsp;lat, long</ion-card-subtitle>
 			</ion-card-header>
 			<ion-card-content class="ion-text-center">
-				<input
-					type="text"
-					class="question-input ion-margin-bottom"
-					placeholder="i.e. 51.509865, -0.118092"
-					v-model="state.value"
-				/>
-				<grid-question-wide>
+				<ion-item fill="outline">
+					<ion-input
+						inputmode="text"
+						class="question-input"
+						placeholder="i.e. 51.509865, -0.118092"
+						v-model="state.value"
+						:clear-input="true"
+					/>
+				</ion-item>
+				<grid-question-wide class="ion-margin-top">
 					<template #content>
 						<ion-button
 							class="question-action-button"
