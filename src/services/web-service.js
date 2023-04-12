@@ -215,6 +215,44 @@ export const webService = {
         });
     },
 
+    fetchSavedAnswersPWA (slug, formRef, branchRef, offset, inputRef) {
+
+        const self = this;
+
+        return new Promise((resolve, reject) => {
+
+            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
+            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
+            let getURL = self.getServerUrl();
+
+            if (PARAMETERS.DEBUG) {
+                //use debug endpoint (no csrf)
+                getURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.ANSWERS_DEBUG + slug;
+            } else {
+                getURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.ANSWERS + slug;
+            }
+
+            getURL += '?form_ref=' + formRef;
+            getURL += '&input_ref=' + inputRef;
+            getURL += '&page=' + (offset + 1) + '&per_page=' + PARAMETERS.MAX_SAVED_ANSWERS;
+
+            //add extra params to fetch branch entries
+            if (branchRef) {
+                getURL += '&branch_ref=' + branchRef;
+            }
+
+            axios({
+                method: 'GET',
+                url: getURL
+            }).then(function (response) {
+                resolve(response);
+            }, function (error) {
+                console.log(error);
+                reject(error.response);
+            });
+        });
+    },
+
     uploadFilePWA (slug, formData) {
 
         const self = this;

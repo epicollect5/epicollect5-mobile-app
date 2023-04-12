@@ -85,7 +85,9 @@ export const PARAMETERS = {
                 UNIQUE_ANSWER_DEBUG: '/pwa-unique-answer/',//for debugging
                 DATA_VIEWER: '/data',
                 OPENCAGE: '/proxies/opencage/',
-                OPENCAGE_DEBUG: '/proxies/pwa-opencage/'
+                OPENCAGE_DEBUG: '/proxies/pwa-opencage/',
+                ANSWERS: '/answers/',
+                ANSWERS_DEBUG: '/pwa-answers/'
             }
         },
         PARAMS: {

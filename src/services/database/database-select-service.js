@@ -1002,8 +1002,8 @@ export const databaseSelectService = {
     async getSavedAnswers (projectRef, formRef, isBranch, offset) {
 
         const table = isBranch ? 'branch_entries' : 'entries';
-        const query = 'SELECT answers FROM ' + table + ' WHERE project_ref=? AND form_ref=? ORDER BY created_at DESC LIMIT 1 OFFSET ' + offset;
-        const params = [projectRef, formRef];
+        const query = 'SELECT answers FROM ' + table + ' WHERE project_ref=? AND form_ref=? ORDER BY created_at DESC LIMIT ? OFFSET ' + offset;
+        const params = [projectRef, formRef, PARAMETERS.MAX_SAVED_ANSWERS];
 
         return await this.getRows(query, params);
     },

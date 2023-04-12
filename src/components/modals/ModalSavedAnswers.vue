@@ -65,7 +65,8 @@ import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import ListSavedAnswers from '@/components/ListSavedAnswers';
 import HeaderModal from '@/components/HeaderModal.vue';
-import { databaseSelectService } from '@/services/database/database-select-service';
+import { answerService } from '@/services/entry/answer-service';
+import { errorsService } from '@/services/errors-service';
 
 export default {
 	components: { ListSavedAnswers, HeaderModal },
@@ -95,7 +96,7 @@ export default {
 		let request_timeout;
 
 		const state = reactive({
-			isFetching: false,
+			isFetching: true,
 			selectedAnswer: '',
 			searchTerm: '',
 			hits: []
@@ -134,24 +135,24 @@ export default {
 				}
 
 				//search the db for matching answers
-				//one row at a time to keep memory low
+				//50 (MAX_SAVED_ANSWERS) row at a time to keep memory low
 				request_timeout = setTimeout(function () {
 					state.hits = [];
 
-					let offset = -1;
+					let offset = -PARAMETERS.MAX_SAVED_ANSWERS;
 
 					function searchNeedle() {
-						offset++;
+						offset += PARAMETERS.MAX_SAVED_ANSWERS;
 
-						if (offset > PARAMETERS.MAX_SAVED_ANSWERS) {
+						if (state.hits >= PARAMETERS.MAX_SAVED_ANSWERS) {
 							setTimeout(() => {
 								state.isFetching = false;
 							}, PARAMETERS.DELAY_MEDIUM);
 							return false;
 						}
 
-						databaseSelectService
-							.getSavedAnswers(projectRef, formRef, isBranch, offset)
+						answerService
+							.getSavedAnswers(projectRef, formRef, isBranch, offset, inputRef)
 							.then((result) => {
 								if (result.rows.length === 0) {
 									setTimeout(() => {
@@ -160,14 +161,16 @@ export default {
 
 									return false;
 								} else {
-									const answers = JSON.parse(result.rows.item(0).answers);
-									const answer = answers[inputRef];
+									for (let i = 0; i < result.rows.length; i++) {
+										const answers = JSON.parse(result.rows.item(i).answers);
+										const answer = answers[inputRef];
 
-									//show only matching answers
-									if (answer.answer.toLowerCase().includes(state.searchTerm)) {
-										//skip duplicates
-										if (!state.hits.includes(answer.answer)) {
-											state.hits.push(answer.answer);
+										//show only matching answers
+										if (answer.answer.toLowerCase().includes(state.searchTerm)) {
+											//skip duplicates
+											if (!state.hits.includes(answer.answer)) {
+												state.hits.push(answer.answer);
+											}
 										}
 									}
 									searchNeedle();
@@ -180,23 +183,23 @@ export default {
 			//imp: initially load saved answers without any filtering
 			//imp: lazy loading is done on the front end
 			//imp: this works by assuming on the mobile app users will not have
-			//imp: thousand of entries saved. We do limit to a set of 50,
-			//imp: no reason to load more than that
+			//imp: thousand of entries saved. We do limit to a set of latest 50,
+			//imp: no reasons to load more than that
 			loadSavedAnswers() {
-				let offset = -1;
+				let offset = -PARAMETERS.MAX_SAVED_ANSWERS;
 				function loadSavedAnswer() {
-					offset++;
+					offset += PARAMETERS.MAX_SAVED_ANSWERS;
 
-					if (offset > PARAMETERS.MAX_SAVED_ANSWERS) {
+					//if we have already MAX_SAVED_ANSWERS, bail out
+					if (state.hits >= PARAMETERS.MAX_SAVED_ANSWERS) {
 						setTimeout(() => {
 							state.isFetching = false;
 						}, PARAMETERS.DELAY_MEDIUM);
 						return false;
 					}
-
-					databaseSelectService
-						.getSavedAnswers(projectRef, formRef, isBranch, offset)
-						.then((result) => {
+					answerService.getSavedAnswers(projectRef, formRef, isBranch, offset, inputRef).then(
+						(result) => {
+							//no more rows (offset too big), bailout
 							if (result.rows.length === 0) {
 								setTimeout(() => {
 									state.isFetching = false;
@@ -204,18 +207,26 @@ export default {
 
 								return false;
 							} else {
-								const answers = JSON.parse(result.rows.item(0).answers);
-								const answer = answers[inputRef];
-								//if an answer is found, show it
-								if (answer.answer.trim() !== '') {
-									//skip duplicates
-									if (!state.hits.includes(answer.answer)) {
-										state.hits.push(answer.answer);
+								//loop the result
+								for (let i = 0; i < result.rows.length; i++) {
+									const answers = JSON.parse(result.rows.item(i).answers);
+									const answer = answers[inputRef];
+									//if an answer is found, show it
+									if (answer.answer.trim() !== '') {
+										//skip duplicates
+										if (!state.hits.includes(answer.answer)) {
+											state.hits.push(answer.answer);
+										}
 									}
 								}
 								loadSavedAnswer();
 							}
-						});
+						},
+						(error) => {
+							errorsService.handleWebError(error);
+							state.isFetching = false;
+						}
+					);
 				}
 				loadSavedAnswer();
 			}

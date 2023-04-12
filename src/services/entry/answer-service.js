@@ -5,6 +5,9 @@ import { projectModel } from '@/models/project-model.js';
 import { utilsService } from '@/services/utilities/utils-service';
 import { answerValidateService } from '@/services/validation/answer-validate-service';
 import { useRootStore } from '@/stores/root-store';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { webService } from '@/services/web-service';
+import { branchEntryService } from '@/services/entry/branch-entry-service';
 
 export const answerService = {
 
@@ -374,5 +377,54 @@ export const answerService = {
             getTitles(input);
         }
         return titles;
+    },
+
+    async getSavedAnswers (projectRef, formRef, isBranch, offset, inputRef) {
+        const rootStore = useRootStore();
+
+        return new Promise((resolve, reject) => {
+            if (rootStore.isPWA) {
+                //get answers from server
+                //todo: check entries permission and filtering i.e for collectors
+                const slug = projectModel.getSlug();
+                //get branchRef 
+                let branchRef = null;
+                if (isBranch) {
+                    branchRef = branchEntryService.branchInput.ref;
+                }
+
+                webService.fetchSavedAnswersPWA(slug, formRef, branchRef, offset, inputRef).then((response) => {
+                    //build result object like web sql so we can re-use the code in the caller
+                    const rows = {
+                        count: response.data.data.answers.length,
+                        entries: response.data.data.answers.map((answer) => {
+                            const parsedAnswer = {
+                                [inputRef]: {
+                                    answer,
+                                    was_jumped: false
+                                }
+                            };
+                            return { answers: JSON.stringify(parsedAnswer) };
+                        }),
+                        get length () {
+                            return this.count;
+                        },
+                        item (index) {
+                            return this.entries[index];
+                        }
+                    };
+                    resolve({ rows });
+                }, (error) => {
+                    console.log(error);
+                    reject(error);
+                });
+            }
+            else {
+                //get answers from local database
+                databaseSelectService.getSavedAnswers(projectRef, formRef, isBranch, offset).then((result) => {
+                    resolve(result);
+                });
+            }
+        });
     }
 };

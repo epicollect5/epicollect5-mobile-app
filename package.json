@@ -19,6 +19,7 @@
     "ios-build": "ionic cap copy ios",
     "preprod": "vitest --run --silent",
     "prod": "export VUE_APP_DEBUG= && ionic cap copy",
+    "open-android": "ionic cap open android",
     "vitest": "vitest",
     "vitest-ui": "vitest --ui",
     "web": "export VUE_APP_MODE=WEB && ionic serve --no-open",
