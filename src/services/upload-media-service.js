@@ -91,8 +91,6 @@ export const uploadMediaService = {
 
                     function _onError (error) {
                         console.log(error);
-
-
                         notificationService.hideProgressDialog();
                         // Store reference to this error
                         errors = true;
@@ -116,10 +114,10 @@ export const uploadMediaService = {
                                     }
                                 }
                                 catch (e) {
-                                    //failed
+                                    reject({ data: errorObj });
                                 }
                             } catch (e) {
-                                // Failed
+                                reject({ data: errorObj });
                             }
                             //todo catch file read error on the server
                             _uploadNext(0, errorObj);
@@ -152,11 +150,7 @@ export const uploadMediaService = {
 
                             // If no more files left to upload
                             if (files.length === 0) {
-                                if (errors) {
-                                    errorsService.handleWebError({ data: errorObj });
-                                }
                                 resolve(errors);
-
                             } else {
                                 // Call _uploadOneFile(), popping off one file from files array
                                 window.setTimeout(async function () {
