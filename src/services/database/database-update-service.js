@@ -76,8 +76,14 @@ export const databaseUpdateService = {
         const params = [sync];
 
         if (syncedError) {
-            query += ',synced_error=?';
+            query += ', synced_error=?';
             params.push(JSON.stringify(syncedError));
+        }
+
+        //is the synced value is SYNCED (1), clear any previous media error
+        if (sync === PARAMETERS.SYNCED_CODES.SYNCED) {
+            query += ', synced_error=?';
+            params.push('');
         }
 
         query += ' WHERE id = ?';
