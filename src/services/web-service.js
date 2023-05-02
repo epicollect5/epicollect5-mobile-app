@@ -29,7 +29,7 @@ export const webService = {
         return new Promise((resolve, reject) => {
             // Attempt to retrieve the jwt token
             self.getHeaders(true).then(function (headers) {
-                console.log(headers);
+
                 const url = self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.PROJECT + slug;
                 axios({
                     method: 'GET',
@@ -356,6 +356,27 @@ export const webService = {
         });
     },
 
+    requestAccountDeletion () {
+        const self = this;
+        return new Promise((resolve, reject) => {
+            const apiProdEndpoint = self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT;
+            const postURL = apiProdEndpoint + PARAMETERS.API.ROUTES.ACCOUNT_DELETION;
+
+            self.getHeaders(true).then(function (headers) {
+                console.log(headers);
+                axios({
+                    method: 'POST',
+                    url: postURL,
+                    headers
+                }).then(function (response) {
+                    resolve(response);
+                }, function (error) {
+                    reject(error.response);
+                });
+            });
+        });
+    },
+
     geocodeAddressPWA (address) {
 
         const self = this;
@@ -412,7 +433,6 @@ export const webService = {
 
             // Attempt to retrieve the jwt token
             self.getHeaders(true).then(function (headers) {
-
                 axios({
                     method: 'GET',
                     url: entriesUrl,
@@ -606,6 +626,19 @@ export const webService = {
             } else {
                 resolve(headers);
             }
+        });
+    },
+
+    getJWT () {
+        return new Promise(function (resolve) {
+            databaseSelectService.getUser().then(function (res) {
+                let jwt;
+                // Check if we have one
+                if (res.rows.length > 0) {
+                    jwt = res.rows.item(0).jwt;
+                }
+                resolve(jwt ?? null);
+            });
         });
     },
 

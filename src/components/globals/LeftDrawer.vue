@@ -15,19 +15,36 @@
 		</ion-header>
 		<ion-content>
 			<ion-list>
-				<ion-item-group>
-					<div
-						v-if="isLoggedIn"
-						class="user-label"
-						lines="none"
-					>
-						<ion-label color="tertiary">
-							<strong>{{labels.hi}}, {{ user.name}}</strong>
-						</ion-label>
-						<ion-label color="dark">
-							<small>{{ user.email}}</small>
-						</ion-label>
-					</div>
+				<ion-item-group
+					v-if="isLoggedIn"
+					class="profile"
+					@click="goToProfile()"
+				>
+					<ion-grid>
+						<ion-row>
+							<ion-col size="10">
+								<div
+									class="profile__label"
+									lines="none"
+								>
+									<ion-label color="tertiary">
+										<strong>{{labels.hi}}, {{ user.name}}</strong>
+									</ion-label>
+									<ion-label color="dark">
+										<small>{{ user.email}}</small>
+									</ion-label>
+
+								</div>
+							</ion-col>
+							<ion-col>
+								<ion-icon
+									class="profile__icon"
+									:icon="enter"
+									size="large"
+								></ion-icon>
+							</ion-col>
+						</ion-row>
+					</ion-grid>
 				</ion-item-group>
 
 				<ion-item
@@ -107,7 +124,7 @@
 </template>
 
 <script>
-import { document, bookmark, personCircle, book, people, settings } from 'ionicons/icons';
+import { enter, document, bookmark, personCircle, book, people, settings } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
@@ -142,6 +159,14 @@ export default {
 				if (rootStore.user.action === STRINGS[language].labels.logout) {
 					methods.logout(true, true);
 				}
+			},
+			goToProfile() {
+				rootStore.nextRoute = router.currentRoute.value.name;
+				router.replace({
+					name: PARAMETERS.ROUTES.PROFILE,
+					params: {}
+				});
+				menuController.close();
 			},
 			goToProjects() {
 				router.replace({
@@ -254,7 +279,8 @@ export default {
 			personCircle,
 			book,
 			people,
-			settings
+			settings,
+			enter
 			//************
 		};
 	}

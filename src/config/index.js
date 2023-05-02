@@ -66,6 +66,7 @@ export const PARAMETERS = {
                 GOOGLE: '/login/verify-google',
                 APPLE: '/login/verify-apple'
             },
+            ACCOUNT_DELETION: '/profile/account-deletion-request',
             PWA: {
                 ROOT: '/api/internal',
                 ROOT_DEBUG: '/api',
@@ -263,6 +264,7 @@ export const PARAMETERS = {
 
     ROUTES: {
         PWA_QUIT: 'pwa-quit',
+        PROFILE: 'profile',
         PROJECTS: 'projects',
         PROJECTS_ADD: 'projects-add',
         ENTRIES: 'entries',
