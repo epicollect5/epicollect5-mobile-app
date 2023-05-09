@@ -207,14 +207,17 @@ export default {
 		if (state.inputDetails.set_to_current_datetime && state.answer.answer === '') {
 			today = new Date();
 			//get time locale to display to user
+			//imp: toISOString() return UTC, so we are using a custom function
+			//imp to get a locale ISO string
 			state.inputFormattedTime = utilsService.getInputFormattedTime(
-				today.toISOString(),
+				utilsService.toISOStringLocale(today),
 				state.inputDetails.datetime_format
 			);
 			state.pickerFormattedTime = utilsService.getPickerFormattedTime(
-				today.toISOString(),
+				utilsService.toISOStringLocale(today),
 				state.inputDetails.datetime_format
 			);
+
 			//parse today's date to remove timezone -> we save the time locale without the timezone
 			state.answer.answer = utilsService.getISOTime(today, state.inputDetails.datetime_format);
 			//strip milliseconds for time picker display
@@ -389,7 +392,11 @@ export default {
 				today.setHours(hrs, minutes, seconds);
 				state.answer.answer = utilsService.getISOTime(today, state.inputDetails.datetime_format);
 				//set format for input
-				state.inputFormattedTime = utilsService.getInputFormattedTime(state.answer.answer);
+
+				state.inputFormattedTime = utilsService.getInputFormattedTime(
+					state.answer.answer,
+					state.inputDetails.datetime_format
+				);
 				// set format for user
 				state.userFormattedTime = utilsService.getUserFormattedTime(
 					state.answer.answer,
