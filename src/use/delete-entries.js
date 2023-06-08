@@ -1,6 +1,6 @@
 
 import { projectModel } from '@/models/project-model.js';
-
+import { useBookmarkStore } from '@/stores/bookmark-store';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
@@ -67,8 +67,24 @@ export async function deleteEntries (router) {
     }
 
     async function _onDeleteSuccess () {
+        const bookmarkStore = useBookmarkStore();
+        const projectRef = projectModel.getProjectRef();
         // Refresh bookmarks after deletion
-        await bookmarksService.getBookmarks();
+        try {
+            await bookmarksService.deleteBookmarks(projectRef);
+        }
+        catch (error) {
+            console.log(error);
+        }
+
+        try {
+            const bookmarks = await bookmarksService.getBookmarks();
+            bookmarkStore.setBookmarks(bookmarks);
+        }
+        catch (error) {
+            notificationService.showAlert(labels.bookmarks_loading_error);
+            bookmarkStore.setBookmarks([]);
+        }
         //show feedback to users
         notificationService.hideProgressDialog();
         notificationService.showToast(STRINGS[language].status_codes.ec5_122);

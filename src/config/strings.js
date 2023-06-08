@@ -1,6 +1,7 @@
 export const STRINGS = {
     en: {
         labels: {
+            bookmarks_loading_error: 'Error loading bookmarks',
             address: 'Address',
             exit: 'Exit',
             editing_branches_pwa: 'Please note: to edit existing branch entries you must use the Epicollect5 Data Viewer.',
@@ -225,6 +226,7 @@ export const STRINGS = {
     },
     it: {
         labels: {
+            bookmarks_loading_error: 'Errore caricando bookmarks',
             address: 'Indirizzo',
             exit: 'Esci',
             editing_branches_pwa: 'Nota: per visualizzare le voci BRANCH esistenti è possibile utilizzare Epicollect5 Data Viewer.',
@@ -449,6 +451,7 @@ export const STRINGS = {
     },
     es: {
         labels: {
+            bookmarks_loading_error: 'Error al cargar bookmarks',
             address: 'Dirección',
             exit: 'Terminar',
             editing_branches_pwa: 'Tenga en cuenta: para ver las entradas BRANCH existentes, puede usar Epicollect5 Data Viewer.',
@@ -673,6 +676,7 @@ export const STRINGS = {
     },
     fr: {
         labels: {
+            bookmarks_loading_error: 'Erreur lors du chargement bookmarks',
             address: 'Adresse',
             exit: 'Sortir',
             editing_branches_pwa: 'Remarque: pour afficher les entrées BRANCH existantes, vous pouvez utiliser Epicollect5 Data Viewer.',
@@ -896,6 +900,7 @@ export const STRINGS = {
     },
     pl: {
         labels: {
+            bookmarks_loading_error: 'Błąd ładowania bookmarks',
             address: 'Adress',
             exit: 'Exit',
             editing_branches_pwa: 'Uwaga: aby wyświetlić istniejące wpisy oddziałów, można użyć przeglądarki danych Epicollect5.',

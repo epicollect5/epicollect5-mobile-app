@@ -1,163 +1,117 @@
 <template>
-	<base-layout
-		v-if="true"
-		:title="state.projectName"
-	>
-
+	<base-layout v-if="true"
+				 :title="state.projectName">
 		<template #actions-start>
 			<ion-menu-button></ion-menu-button>
 		</template>
 
 		<template #actions-end>
 			<ion-button @click="goToUploadPage()">
-				<ion-icon
-					slot="icon-only"
-					:icon="cloudUpload"
-				>
-				</ion-icon>
+				<ion-icon slot="icon-only"
+						  :icon="cloudUpload"> </ion-icon>
 			</ion-button>
 			<ion-button @click="openRightDrawer()">
-				<ion-icon
-					slot="icon-only"
-					:icon="ellipsisVertical"
-				>
-				</ion-icon>
+				<ion-icon slot="icon-only"
+						  :icon="ellipsisVertical"> </ion-icon>
 			</ion-button>
 		</template>
 
 		<template #subheader>
-			<ion-toolbar
-				color="dark"
-				mode="md"
-			>
+			<ion-toolbar color="dark"
+						 mode="md">
 				<ion-buttons slot="start">
 					<ion-button @click="goBack()">
-						<ion-icon
-							slot="start"
-							:icon="chevronBackOutline"
-						>
-						</ion-icon>
+						<ion-icon slot="start"
+								  :icon="chevronBackOutline"> </ion-icon>
 						<div class="overflow-ellipsis toolbar-navigation-button">
-							{{state.backLabel}}
+							{{ state.backLabel }}
 						</div>
 					</ion-button>
 				</ion-buttons>
 
 				<ion-buttons slot="end">
-					<ion-button
-						:disabled="isEntriesLimitReached"
-						@click="addEntry()"
-					>
-						<ion-icon
-							slot="start"
-							:icon="add"
-						>
-						</ion-icon>
+					<ion-button :disabled="isEntriesLimitReached"
+								@click="addEntry()">
+						<ion-icon slot="start"
+								  :icon="add"> </ion-icon>
 						<div class="overflow-ellipsis toolbar-navigation-button">
-							{{labels.add_entry}}
+							{{ labels.add_entry }}
 						</div>
 					</ion-button>
 				</ion-buttons>
-
 			</ion-toolbar>
 
 			<!-- fake entries toolbar -->
-			<ion-toolbar
-				v-if="state.isDebug && !state.isFetching"
-				color="tertiary"
-				mode="ios"
-				class="animate__animated animate__fadeIn ion-no-margin ion-no-padding ion-text-center"
-			>
-
-				<ion-button
-					class="ion-text-uppercase ion-no-margin ion-no-padding"
-					fill="clear"
-					color="dark"
-					@click="addFakeEntries()"
-				>
-					<ion-icon
-						slot="start"
-						:icon="add"
-					>
-					</ion-icon>
+			<ion-toolbar v-if="state.isDebug && !state.isFetching"
+						 color="tertiary"
+						 mode="ios"
+						 class="animate__animated animate__fadeIn ion-no-margin ion-no-padding ion-text-center">
+				<ion-button class="ion-text-uppercase ion-no-margin ion-no-padding"
+							fill="clear"
+							color="dark"
+							@click="addFakeEntries()">
+					<ion-icon slot="start"
+							  :icon="add"> </ion-icon>
 					Add fakes
 				</ion-button>
 			</ion-toolbar>
 
 			<!-- entries unsynced toolbar -->
-			<ion-item
-				v-if="state.hasUnsyncedEntries && !state.isFetching"
-				class="item-warning ion-text-center animate__animated animate__fadeIn"
-				lines="full"
-			>
-				<ion-label class="ion-text-uppercase ion-text-start">{{ labels.unsynced_entries }}</ion-label>
-				<ion-button
-					color="warning"
-					size="default"
-					@click="goToUploadPage()"
-				>
-					<ion-icon
-						:icon="cloudUpload"
-						slot="start"
-					></ion-icon>
-					{{labels.sync_now}}
+			<ion-item v-if="state.hasUnsyncedEntries && !state.isFetching"
+					  class="item-warning ion-text-center animate__animated animate__fadeIn"
+					  lines="full">
+				<ion-label class="ion-text-uppercase ion-text-start">{{
+					labels.unsynced_entries
+				}}</ion-label>
+				<ion-button color="warning"
+							size="default"
+							@click="goToUploadPage()">
+					<ion-icon :icon="cloudUpload"
+							  slot="start"></ion-icon>
+					{{ labels.sync_now }}
 				</ion-button>
 			</ion-item>
 
 			<!-- form name (and filters button)  toolbar -->
-			<toolbar-form-name
-				:isFetching="state.isFetching"
-				:projectRef="projectRef"
-				:parentEntryName="state.parentEntryName"
-				:currentFormName="state.currentFormName"
-				:formRef="state.formRef"
-				:parentEntryUuid="state.parentEntryUuid"
-				:countWithFilters="state.countWithFilters"
-				:countNoFilters="state.countNoFilters"
-				:filters="{...state.filters}"
-				@filters-params="applyFilters"
-			></toolbar-form-name>
+			<toolbar-form-name :isFetching="state.isFetching"
+							   :projectRef="projectRef"
+							   :parentEntryName="state.parentEntryName"
+							   :currentFormName="state.currentFormName"
+							   :formRef="state.formRef"
+							   :parentEntryUuid="state.parentEntryUuid"
+							   :countWithFilters="state.countWithFilters"
+							   :countNoFilters="state.countNoFilters"
+							   :filters="{ ...state.filters }"
+							   @filters-params="applyFilters"></toolbar-form-name>
 		</template>
 
 		<template #content>
-			<ion-spinner
-				v-if="state.isFetching"
-				class="loader"
-				name="crescent"
-			></ion-spinner>
+			<ion-spinner v-if="state.isFetching"
+						 class="loader"
+						 name="crescent"></ion-spinner>
 
-			<div
-				v-else
-				class="animate__animated animate__fadeIn"
-			>
-				<ion-item
-					v-if="isEntriesLimitReached"
-					class="ion-text-center ion-no-padding ion-no-margin"
-					lines="none"
-				>
-					<ion-label
-						color="warning"
-						class="ion-no-padding ion-no-margin ion-text-wrap"
-					>
-						{{warningEntriesLimitReached}}
+			<div v-else
+				 class="animate__animated animate__fadeIn">
+				<ion-item v-if="isEntriesLimitReached"
+						  class="ion-text-center ion-no-padding ion-no-margin"
+						  lines="none">
+					<ion-label color="warning"
+							   class="ion-no-padding ion-no-margin ion-text-wrap">
+						{{ warningEntriesLimitReached }}
 					</ion-label>
 				</ion-item>
-				<list-entries
-					v-show="!state.isFetching"
-					:projectRef="projectRef"
-					:entries="state.entries"
-					:nextFormRef="state.nextFormRef"
-					:formRef="state.formRef"
-					:parentEntryUuid="state.parentEntryUuid"
-					:filters="state.filters"
-					:countWithFilters="state.countWithFilters"
-					:countNoFilters="state.countNoFilters"
-				>
+				<list-entries v-show="!state.isFetching"
+							  :projectRef="projectRef"
+							  :entries="state.entries"
+							  :nextFormRef="state.nextFormRef"
+							  :formRef="state.formRef"
+							  :parentEntryUuid="state.parentEntryUuid"
+							  :filters="state.filters"
+							  :countWithFilters="state.countWithFilters"
+							  :countNoFilters="state.countNoFilters">
 				</list-entries>
 			</div>
-
 		</template>
-
 	</base-layout>
 </template>
 
@@ -166,7 +120,12 @@ import { menuController } from '@ionic/vue';
 import { useRootStore } from '@/stores/root-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { STRINGS } from '@/config/strings';
-import { cloudUpload, add, chevronBackOutline, ellipsisVertical } from 'ionicons/icons';
+import {
+	cloudUpload,
+	add,
+	chevronBackOutline,
+	ellipsisVertical
+} from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
@@ -189,7 +148,7 @@ import { entryService } from '@/services/entry/entry-service';
 
 export default {
 	components: { ListEntries, ToolbarFormName },
-	setup() {
+	setup () {
 		const rootStore = useRootStore();
 		const bookmarkStore = useBookmarkStore();
 		const language = rootStore.language;
@@ -227,9 +186,10 @@ export default {
 			? routeParams.projectRef
 			: projectModel.getProjectRef();
 
-		state.formRef = routeParams.formRef !== '' ? routeParams.formRef : formModel.formRef;
+		state.formRef =
+			routeParams.formRef !== '' ? routeParams.formRef : formModel.formRef;
 
-		function _updateEntriesFilterByDates() {
+		function _updateEntriesFilterByDates () {
 			let oldestDateISO;
 			let newestDateISO;
 
@@ -270,7 +230,10 @@ export default {
 
 							//we save the oldest and newest on the first run only to reset
 							//dates if needed
-							if (state.filters.oldest === null && state.filters.newest === null) {
+							if (
+								state.filters.oldest === null &&
+								state.filters.newest === null
+							) {
 								state.filters.oldest = oldestDateISO;
 								state.filters.newest = newestDateISO;
 								//set from and to on first run.
@@ -294,7 +257,7 @@ export default {
 			);
 
 			//Load the form model
-			function _loadForm() {
+			function _loadForm () {
 				let form = projectModel.getExtraForm(state.formRef);
 				// We set the first form ref as the current form ref if we don't have one already or if the form doesn't exist
 				if (
@@ -313,7 +276,9 @@ export default {
 				const lastIndex = rootStore.hierarchyNavigation.length - 1;
 				const lastItem = rootStore.hierarchyNavigation[lastIndex];
 				state.parentEntryUuid = lastItem ? lastItem.parentEntryUuid : '';
-				state.parentEntryName = lastItem ? '"' + lastItem.parentEntryName + '"' : '';
+				state.parentEntryName = lastItem
+					? '"' + lastItem.parentEntryName + '"'
+					: '';
 				state.currentFormName = formModel.getName();
 				state.nextFormRef = projectModel.getNextFormRef(state.formRef);
 
@@ -327,8 +292,8 @@ export default {
 					state.backLabel = PARAMETERS.ROUTES.PROJECTS;
 				}
 
-				// Do we have this page bookmarked?
-				bookmarkStore.getBookmarkId = bookmarksService.getBookmarkId(
+				//imp: Do we have this page bookmarked?
+				bookmarkStore.bookmarkId = bookmarksService.getBookmarkId(
 					scope.projectRef,
 					state.formRef,
 					state.parentEntryUuid
@@ -338,7 +303,7 @@ export default {
 				state.limit = parseInt(projectModel.getEntriesLimit(state.formRef), 10);
 			}
 
-			function _loadFormEntries() {
+			function _loadFormEntries () {
 				state.entries = [];
 				//get markup to show project logo in page header
 				state.projectName = utilsService.getProjectNameMarkup();
@@ -382,7 +347,9 @@ export default {
 
 			console.log('project store ->', projectModel.getProjectRef());
 			if (!projectModel.hasInitialised()) {
-				const result = await databaseSelectService.selectProject(scope.projectRef);
+				const result = await databaseSelectService.selectProject(
+					scope.projectRef
+				);
 				// Can update
 				rootStore.continueProjectVersionUpdate = true;
 				// Initialise the project model
@@ -411,12 +378,12 @@ export default {
 		});
 
 		const methods = {
-			openRightDrawer() {
+			openRightDrawer () {
 				menuController.open('right-drawer');
 			},
 			//redirect to projects list (first form)
 			//otherwise go up one level in the hierarchy
-			goBack() {
+			goBack () {
 				// Project update cannot take place if navigating away
 				rootStore.continueProjectVersionUpdate = false;
 
@@ -454,7 +421,7 @@ export default {
 					});
 				}
 			},
-			goToUploadPage() {
+			goToUploadPage () {
 				// Project update cannot take place if navigating away
 				rootStore.continueProjectVersionUpdate = false;
 				rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES;
@@ -465,10 +432,10 @@ export default {
 					name: PARAMETERS.ROUTES.ENTRIES_UPLOAD
 				});
 			},
-			utcToLocal(utcDateString) {
+			utcToLocal (utcDateString) {
 				return format(new Date(utcDateString), 'dd MMM, yyyy @ h:mma');
 			},
-			viewEntry(entry) {
+			viewEntry (entry) {
 				// Project update cannot take place if navigating away
 				rootStore.continueProjectVersionUpdate = false;
 
@@ -482,7 +449,7 @@ export default {
 					name: PARAMETERS.ROUTES.ENTRIES_VIEW
 				});
 			},
-			async addEntry() {
+			async addEntry () {
 				//Project update cannot take place if navigating away
 				rootStore.continueProjectVersionUpdate = false;
 
@@ -490,9 +457,15 @@ export default {
 				rootStore.queueFilesToDelete = [];
 
 				// Show loader
-				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
+				await notificationService.showProgressDialog(
+					STRINGS[language].labels.wait
+				);
 				// Set up a new entry
-				entryService.setUpNew(state.formRef, state.parentEntryUuid, state.parentFormRef);
+				entryService.setUpNew(
+					state.formRef,
+					state.parentEntryUuid,
+					state.parentFormRef
+				);
 
 				rootStore.routeParams = {
 					formRef: state.formRef,
@@ -511,7 +484,7 @@ export default {
 				});
 			},
 			//generate fake entries for debugging
-			async addFakeEntries() {
+			async addFakeEntries () {
 				const { formRef, parentEntryUuid, parentFormRef } = state;
 				const params = { formRef, parentEntryUuid, parentFormRef };
 				state.isAddingFakeEntries = true;
@@ -528,7 +501,7 @@ export default {
 					});
 				}, PARAMETERS.DELAY_FAST);
 			},
-			applyFilters(params) {
+			applyFilters (params) {
 				//if filters changed, refresh entries
 				if (!utilsService.objectsMatch(state.filters, params.filters)) {
 					state.isFetching = true;
@@ -570,6 +543,8 @@ export default {
 				rootStore.continueProjectVersionUpdate = false;
 				//imp: fix this it gets checked all the  time
 				if (changes[0].refreshEntries === 'true') {
+
+
 					state.isFetching = true;
 					await notificationService.showProgressDialog(
 						STRINGS[language].labels.wait,
@@ -578,6 +553,9 @@ export default {
 					setTimeout(async () => {
 						// Retrieve the project and entries
 						state.formRef = rootStore.routeParams.formRef;
+						scope.projectRef = rootStore.routeParams.projectRef
+							? rootStore.routeParams.projectRef
+							: projectModel.getProjectRef();
 						//reset filters since we are navigating to another form
 						state.filters = { ...PARAMETERS.FILTERS_DEFAULT };
 						//re-fetch entries
@@ -618,5 +596,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

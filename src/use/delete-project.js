@@ -9,6 +9,8 @@ import { notificationService } from '@/services/notification-service';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import { databaseInsertService } from '@/services/database/database-insert-service';
+import { useBookmarkStore } from '@/stores/bookmark-store';
+
 
 /**
  * Delete a project and redirect to projects page if success
@@ -18,8 +20,7 @@ export async function deleteProject (router) {
     const rootStore = useRootStore();
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
-
-
+    const projectRef = projectModel.getProjectRef();
 
     //ask user confirmation
     const confirmed = await notificationService.confirmSingle(
@@ -38,7 +39,7 @@ export async function deleteProject (router) {
 
     //get project media files
     const projectMedia = await databaseSelectService.selectProjectMedia({
-        project_ref: projectModel.getProjectRef(),
+        project_ref: projectRef,
         synced: null,
         entry_uuid: null
     });
@@ -50,7 +51,7 @@ export async function deleteProject (router) {
     if (files.length > 0) {
         try {
             await deleteFileService.removeFiles(files);
-            await databaseDeleteService.deleteProject(projectModel.getProjectRef());
+            await databaseDeleteService.deleteProject(projectRef);
             _onDeleteSuccess();
         } catch (error) {
             console.log(error);
@@ -59,7 +60,7 @@ export async function deleteProject (router) {
         }
     } else {
         try {
-            await databaseDeleteService.deleteProject(projectModel.getProjectRef());
+            await databaseDeleteService.deleteProject(projectRef);
             _onDeleteSuccess();
         } catch (error) {
             console.log(error);
@@ -70,14 +71,30 @@ export async function deleteProject (router) {
 
     async function _onDeleteSuccess () {
 
+        const projectRef = projectModel.getProjectRef();
+        const bookmarkStore = useBookmarkStore();
         //if we are deleting the easter egg project, reset server url to default
-        if (projectModel.getProjectRef() === PARAMETERS.EASTER_EGG.PROJECT_REF) {
+        if (projectRef === PARAMETERS.EASTER_EGG.PROJECT_REF) {
             await databaseInsertService.insertSetting(PARAMETERS.SETTINGS_KEYS.SERVER_URL, PARAMETERS.DEFAULT_SERVER_URL);
             rootStore.serverUrl = PARAMETERS.DEFAULT_SERVER_URL;
         }
 
         // Refresh bookmarks after deletion
-        await bookmarksService.getBookmarks();
+        try {
+            await bookmarksService.deleteBookmarks(projectRef);
+        }
+        catch (error) {
+            console.log(error);
+        }
+
+        try {
+            const bookmarks = await bookmarksService.getBookmarks();
+            bookmarkStore.setBookmarks(bookmarks);
+        }
+        catch (error) {
+            notificationService.showAlert(labels.bookmarks_loading_error);
+            bookmarkStore.setBookmarks([]);
+        }
         // Destroy project model
         projectModel.destroy();
         //show feedback to user

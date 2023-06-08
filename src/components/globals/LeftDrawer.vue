@@ -1,92 +1,72 @@
 <template>
-	<ion-menu
-		side="start"
-		menu-id="left-drawer"
-		content-id="main"
-		swipe-gesture="false"
-	>
+	<ion-menu side="start"
+			  menu-id="left-drawer"
+			  content-id="main"
+			  swipe-gesture="false">
 		<ion-header>
-			<ion-toolbar
-				color="primary"
-				class="ion-text-center ion-text-uppercase"
-			>
-				{{labels.menu}}
+			<ion-toolbar color="primary"
+						 class="ion-text-center ion-text-uppercase">
+				{{ labels.menu }}
 			</ion-toolbar>
 		</ion-header>
 		<ion-content>
 			<ion-list>
 				<ion-item-group>
-					<div
-						v-if="isLoggedIn"
-						class="user-label"
-						lines="none"
-					>
+					<div v-if="isLoggedIn"
+						 class="user-label"
+						 lines="none">
 						<ion-label color="tertiary">
-							<strong>{{labels.hi}}, {{ user.name}}</strong>
+							<strong>{{ labels.hi }}, {{ user.name }}</strong>
 						</ion-label>
 						<ion-label color="dark">
-							<small>{{ user.email}}</small>
+							<small>{{ user.email }}</small>
 						</ion-label>
 					</div>
 				</ion-item-group>
 
-				<ion-item
-					@click="goToProjects()"
-					lines="full"
-				>
+				<ion-item @click="goToProjects()"
+						  lines="full">
 					<ion-icon :icon="document"></ion-icon>
 					&nbsp;
-					{{labels.projects}}
+					{{ labels.projects }}
 				</ion-item>
-				<ion-item
-					@click="goToSettings()"
-					lines="full"
-				>
+				<ion-item @click="goToSettings()"
+						  lines="full">
 					<ion-icon :icon="settings"></ion-icon>
 					&nbsp;
-					{{labels.settings}}
+					{{ labels.settings }}
 				</ion-item>
-				<ion-item
-					@click="goToCommunityPage()"
-					lines="full"
-				>
+				<ion-item @click="goToCommunityPage()"
+						  lines="full">
 					<ion-icon :icon="people">
 					</ion-icon>
 					&nbsp;
-					{{labels.help}}
+					{{ labels.help }}
 				</ion-item>
-				<ion-item
-					@click="goToUserGuide()"
-					lines="full"
-				>
+				<ion-item @click="goToUserGuide()"
+						  lines="full">
 					<ion-icon :icon="book">
 					</ion-icon>
 					&nbsp;
-					{{labels.user_guide}}
+					{{ labels.user_guide }}
 				</ion-item>
-				<ion-item
-					lines="full"
-					@click="performAuthAction()"
-				>
+				<ion-item lines="full"
+						  @click="performAuthAction()">
 					<ion-icon :icon="personCircle">
 					</ion-icon>
 					&nbsp;
-					{{authAction}}
+					{{ authAction }}
 				</ion-item>
-				<ion-item-divider
-					color="primary"
-					class="ion-no-padding"
-				>
+				<ion-item-divider color="primary"
+								  class="ion-no-padding">
 					<ion-label class="item-divider-label-centered ion-text-uppercase">
-						{{labels.my_bookmarks}}
+						{{ labels.my_bookmarks }}
 					</ion-label>
 				</ion-item-divider>
-				<ion-item
-					v-for="(bookmarkItem, index) in state.bookmarks"
-					:key="index"
-					lines="full"
-					@click="goToBookmark(bookmarkItem)"
-				>
+				<ion-item v-for="(bookmarkItem, index) in state.bookmarks"
+						  :key="index"
+						  lines="full"
+						  @click="goToBookmark(bookmarkItem)">
 					<ion-icon :icon="bookmark">
 					</ion-icon>
 					&nbsp;
@@ -94,16 +74,13 @@
 						{{ bookmarkItem.title }}
 					</ion-label>
 				</ion-item>
-				<ion-item
-					v-if="state.bookmarks.length === 0"
-					lines="full"
-				>
-					<ion-label class="ion-text-center">{{labels.no_bookmarks_found}}</ion-label>
+				<ion-item v-if="state.bookmarks.length === 0"
+						  lines="full">
+					<ion-label class="ion-text-center">{{ labels.no_bookmarks_found }}</ion-label>
 				</ion-item>
 			</ion-list>
 		</ion-content>
 	</ion-menu>
-
 </template>
 
 <script>
@@ -115,6 +92,7 @@ import { useBookmarkStore } from '@/stores/bookmark-store';
 import { useRouter } from 'vue-router';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
+import { formModel } from '@/models/form-model.js';
 import { menuController } from '@ionic/vue';
 import { showModalLogin } from '@/use/show-modal-login';
 import { utilsService } from '@/services/utilities/utils-service';
@@ -122,7 +100,7 @@ import { notificationService } from '@/services/notification-service';
 import { logout } from '@/use/logout';
 
 export default {
-	setup() {
+	setup () {
 		const rootStore = useRootStore();
 		const bookmarkStore = useBookmarkStore();
 		const language = rootStore.language;
@@ -134,7 +112,7 @@ export default {
 		});
 
 		const methods = {
-			performAuthAction() {
+			performAuthAction () {
 				//todo: check this with different languages...
 				if (rootStore.user.action === STRINGS[language].labels.login) {
 					methods.openModalLogin();
@@ -143,14 +121,20 @@ export default {
 					methods.logout(true, true);
 				}
 			},
-			goToProjects() {
+			goToProjects () {
+				//reset hierarchy navigation
+				rootStore.hierarchyNavigation = [];
+				//reset models
+				projectModel.destroy();
+				formModel.destroy();
+
 				router.replace({
 					name: PARAMETERS.ROUTES.PROJECTS,
 					params: {}
 				});
 				menuController.close();
 			},
-			goToSettings() {
+			goToSettings () {
 				rootStore.nextRoute = router.currentRoute.value.name;
 				//todo: check with back button android
 				router.replace({
@@ -159,14 +143,14 @@ export default {
 				});
 				menuController.close();
 			},
-			async goToCommunityPage() {
+			async goToCommunityPage () {
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
 					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
 				}
 				window.open(PARAMETERS.COMMUNITY_SUPPORT_URL, '_system', 'location=yes');
 			},
-			async goToUserGuide() {
+			async goToUserGuide () {
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
 					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
@@ -174,16 +158,24 @@ export default {
 				}
 				window.open(PARAMETERS.USER_GUIDE_URL, '_system', 'location=yes');
 			},
-			goToBookmark(bookmark) {
+			goToBookmark (bookmark) {
+
+				console.log(bookmark);
 				// Remove current project from the store
 				projectModel.destroy();
+				formModel.destroy();
+				rootStore.routeParams = {};
+				rootStore.hierarchyNavigation = [];
 				// Add this entry uuid as parent entry uuid to the history
 				rootStore.hierarchyNavigation = [...bookmark.bookmark.slice()];
+
+				console.log(rootStore.hierarchyNavigation);
 				//navigate to saved bookmark
 				rootStore.routeParams = {
 					projectRef: bookmark.projectRef,
 					formRef: bookmark.formRef
 				};
+
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES,
 					params: {
@@ -194,7 +186,7 @@ export default {
 				//hide menu
 				menuController.close();
 			},
-			async openModalLogin() {
+			async openModalLogin () {
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
 					notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
@@ -213,7 +205,7 @@ export default {
 					);
 				}
 			},
-			async logout(showToast, closeMenu) {
+			async logout (showToast, closeMenu) {
 				console.log('should log user out');
 				return new Promise((resolve) => {
 					logout().then(() => {
@@ -261,5 +253,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

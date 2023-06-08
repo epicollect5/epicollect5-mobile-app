@@ -1,17 +1,13 @@
 <template>
-	<ion-menu
-		side="end"
-		menu-id="right-drawer"
-		content-id="main"
-		@ionWillClose="onMenuWillClose()"
-		swipe-gesture="false"
-	>
+	<ion-menu side="end"
+			  menu-id="right-drawer"
+			  content-id="main"
+			  @ionWillClose="onMenuWillClose()"
+			  swipe-gesture="false">
 		<ion-header>
-			<ion-toolbar
-				color="primary"
-				class="ion-text-center ion-text-uppercase"
-			>
-				<ion-label>{{labels.project_options}}</ion-label>
+			<ion-toolbar color="primary"
+						 class="ion-text-center ion-text-uppercase">
+				<ion-label>{{ labels.project_options }}</ion-label>
 			</ion-toolbar>
 		</ion-header>
 		<ion-content ref="drawerContent">
@@ -19,18 +15,18 @@
 				<ion-item @click="goToUploadPage()">
 					<ion-icon :icon="cloudUpload">
 					</ion-icon>
-					&nbsp;{{labels.upload_entries}}
+					&nbsp;{{ labels.upload_entries }}
 				</ion-item>
 				<ion-item @click="goToDownloadPage()">
 					<ion-icon :icon="cloudDownload">
 					</ion-icon>
-					&nbsp;{{labels.download_entries}}
+					&nbsp;{{ labels.download_entries }}
 				</ion-item>
 
 				<ion-item @click="unsyncAllEntries()">
 					<ion-icon :icon="unlink">
 					</ion-icon>
-					&nbsp;{{labels.unsync_all_entries}}
+					&nbsp;{{ labels.unsync_all_entries }}
 				</ion-item>
 
 				<!-- <ion-item @click="exportAllEntries()">
@@ -39,105 +35,85 @@
 					&nbsp;{{labels.export_all_entries}}<sup>Beta</sup>
 				</ion-item> -->
 
-				<ion-item
-					v-if="!isBookmarked"
-					@click="openModalBookmarkAdd()"
-				>
+				<ion-item v-if="!isBookmarked"
+						  @click="openModalBookmarkAdd()">
 					<ion-icon :icon="bookmark">
 					</ion-icon>
-					&nbsp;{{labels.bookmark_page}}
+					&nbsp;{{ labels.bookmark_page }}
 				</ion-item>
-				<ion-item
-					v-else
-					@click="removeBookmark()"
-				>
+				<ion-item v-else
+						  @click="removeBookmark()">
 					<ion-icon :icon="bookmark">
 					</ion-icon>
-					&nbsp;{{labels.remove_bookmark}}
+					&nbsp;{{ labels.remove_bookmark }}
 				</ion-item>
 				<ion-item @click="showProjectInfo()">
 					<ion-icon :icon="informationCircle">
 					</ion-icon>
-					&nbsp;{{labels.project_info}}
+					&nbsp;{{ labels.project_info }}
 				</ion-item>
-				<ion-item-divider
-					color="primary"
-					class="ion-no-padding"
-				>
+				<ion-item-divider color="primary"
+								  class="ion-no-padding">
 					<ion-label class="item-divider-label-centered ion-text-uppercase">
-						{{labels.sort}}
+						{{ labels.sort }}
 					</ion-label>
 				</ion-item-divider>
 				<ion-item @click="sortBy('title', 'ASC')">
 					<ion-icon :icon="arrowUpCircle">
 					</ion-icon>
 					&nbsp;A-Z
-					<ion-icon
-						v-if="state.order.field === 'title' && state.order.sortType === 'ASC'"
-						:icon="checkmark"
-						slot="end"
-					>
+					<ion-icon v-if="state.order.field === 'title' && state.order.sortType === 'ASC'"
+							  :icon="checkmark"
+							  slot="end">
 					</ion-icon>
 				</ion-item>
 				<ion-item @click="sortBy('title', 'DESC')">
 					<ion-icon :icon="arrowDownCircle">
 					</ion-icon>
 					&nbsp;Z-A
-					<ion-icon
-						v-if="state.order.field === 'title' && state.order.sortType === 'DESC'"
-						:icon="checkmark"
-						slot="end"
-					>
+					<ion-icon v-if="state.order.field === 'title' && state.order.sortType === 'DESC'"
+							  :icon="checkmark"
+							  slot="end">
 					</ion-icon>
 				</ion-item>
 				<ion-item @click="sortBy('created_at', 'DESC')">
 					<ion-icon :icon="timeOutline">
 					</ion-icon>
-					&nbsp;{{labels.newest}}
-					<ion-icon
-						v-if="state.order.field === 'created_at' && state.order.sortType === 'DESC'"
-						:icon="checkmark"
-						slot="end"
-					>
+					&nbsp;{{ labels.newest }}
+					<ion-icon v-if="state.order.field === 'created_at' && state.order.sortType === 'DESC'"
+							  :icon="checkmark"
+							  slot="end">
 					</ion-icon>
 				</ion-item>
 				<ion-item @click="sortBy('created_at', 'ASC')">
 					<ion-icon :icon="timeOutline">
 					</ion-icon>
-					&nbsp;{{labels.oldest}}
-					<ion-icon
-						v-if="state.order.field === 'created_at' && state.order.sortType === 'ASC'"
-						:icon="checkmark"
-						slot="end"
-					>
+					&nbsp;{{ labels.oldest }}
+					<ion-icon v-if="state.order.field === 'created_at' && state.order.sortType === 'ASC'"
+							  :icon="checkmark"
+							  slot="end">
 					</ion-icon>
 				</ion-item>
-				<ion-item-divider
-					color="danger"
-					class="ion-no-padding"
-				>
+				<ion-item-divider color="danger"
+								  class="ion-no-padding">
 					<ion-label class="item-divider-label-centered ion-text-uppercase">
-						{{labels.delete}}
+						{{ labels.delete }}
 					</ion-label>
 				</ion-item-divider>
 				<ion-item @click="deleteEntries()">
-					<ion-icon
-						class="icon-danger"
-						:icon="trash"
-					>
+					<ion-icon class="icon-danger"
+							  :icon="trash">
 					</ion-icon>
 					<ion-label color="danger">
-						&nbsp;{{labels.delete_all_entries}}
+						&nbsp;{{ labels.delete_all_entries }}
 					</ion-label>
 				</ion-item>
 				<ion-item @click="deleteProject()">
-					<ion-icon
-						class="icon-danger"
-						:icon="trash"
-					>
+					<ion-icon class="icon-danger"
+							  :icon="trash">
 					</ion-icon>
 					<ion-label color="danger">
-						&nbsp;{{labels.delete_project}}
+						&nbsp;{{ labels.delete_project }}
 					</ion-label>
 				</ion-item>
 			</ion-list>
@@ -179,7 +155,7 @@ import { databaseUpdateService } from '@/services/database/database-update-servi
 import { exportService } from '@/services/export-service';
 
 export default {
-	setup() {
+	setup () {
 		const rootStore = useRootStore();
 		const dbStore = useDBStore();
 		const bookmarkStore = useBookmarkStore();
@@ -192,7 +168,6 @@ export default {
 
 		const drawerContent = ref(null);
 		const scope = {};
-
 		const computedScope = {
 			isBookmarked: computed(() => {
 				return bookmarkStore.bookmarkId !== null;
@@ -200,12 +175,12 @@ export default {
 		};
 
 		const methods = {
-			onMenuWillClose() {
+			onMenuWillClose () {
 				//scroll menu to top
 				//imp:does not work after the menu is closed, so onWillClose is used
 				drawerContent.value.$el.scrollToTop(PARAMETERS.DELAY_FAST);
 			},
-			async exportAllEntries() {
+			async exportAllEntries () {
 				//todo:
 				const projectRef = projectModel.getProjectRef();
 				const projectSlug = projectModel.getSlug();
@@ -248,15 +223,15 @@ export default {
 				}
 			},
 			//todo
-			deleteProject() {
+			deleteProject () {
 				//try to delete current project and redirect to projects list
 				deleteProject(router);
 			},
-			deleteEntries() {
+			deleteEntries () {
 				//try to delete all entries and reload  entries page
 				deleteEntries(router);
 			},
-			async unsyncAllEntries() {
+			async unsyncAllEntries () {
 				const projectRef = projectModel.getProjectRef();
 				await notificationService.showProgressDialog(labels.wait);
 
@@ -277,7 +252,7 @@ export default {
 				//hide right drawer
 				menuController.close();
 			},
-			async showProjectInfo() {
+			async showProjectInfo () {
 				scope.ModalProjectInfo = await modalController.create({
 					cssClass: 'modal-project-info',
 					component: ModalProjectInfo,
@@ -288,7 +263,7 @@ export default {
 
 				return scope.ModalProjectInfo.present();
 			},
-			async sortBy(field, sortType) {
+			async sortBy (field, sortType) {
 				const dbStore = useDBStore();
 				// Sanitise the field and sort type, as they will be used in db queries
 				const dbField =
@@ -318,7 +293,7 @@ export default {
 					}
 				});
 			},
-			async openModalBookmarkAdd() {
+			async openModalBookmarkAdd () {
 				let bookmarkTitle = '';
 				const hierarchyNavigation = rootStore.hierarchyNavigation;
 
@@ -346,7 +321,7 @@ export default {
 				});
 				return scope.ModalBookmarkAdd.present();
 			},
-			async removeBookmark() {
+			async removeBookmark () {
 				// Retrieve bookmarkid from current bookmark
 				const bookmarkId = bookmarkStore.bookmarkId;
 
@@ -360,14 +335,14 @@ export default {
 				}
 				menuController.close();
 			},
-			goToDownloadPage() {
+			goToDownloadPage () {
 				rootStore.nextRoute = router.currentRoute.value.name;
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES_DOWNLOAD
 				});
 				menuController.close();
 			},
-			goToUploadPage() {
+			goToUploadPage () {
 				rootStore.nextRoute = router.currentRoute.value.name;
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES_UPLOAD
@@ -375,6 +350,7 @@ export default {
 				menuController.close();
 			}
 		};
+
 
 		return {
 			labels,
@@ -399,5 +375,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
