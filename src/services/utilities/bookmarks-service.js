@@ -135,8 +135,7 @@ export const bookmarksService = {
             bookmark.bookmark.forEach(async (obj) => {
                 if (obj.parentEntryUuid === entryUuid) {
                     //delete this bookmark
-
-                    //await this.deleteBookmark(bookmark.id);
+                    await this.deleteBookmark(bookmark.id);
                 }
             });
         });
