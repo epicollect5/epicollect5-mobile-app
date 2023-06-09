@@ -11,6 +11,7 @@
     "lint": "vue-cli-service lint",
     "all-build": "ionic cap copy",
     "all-build-prod": "export VUE_APP_MODE=WEB && export VUE_APP_DEBUG= && VUE_APP_BYPASS_UNIQUENESS= && ionic cap copy",
+    "ios-build-prod": "export VUE_APP_MODE=WEB && export VUE_APP_DEBUG= && VUE_APP_BYPASS_UNIQUENESS= && ionic cap copy ios",
     "all-copy": "ionic cap copy --no-build",
     "android": "export VUE_APP_MODE=WEB && ionic cap copy android && ionic cap open android",
     "android-build": "export VUE_APP_MODE=WEB && ionic cap copy android",
