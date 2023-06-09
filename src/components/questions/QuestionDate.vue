@@ -165,15 +165,17 @@ export default {
 		if (state.inputDetails.set_to_current_datetime && state.answer.answer === '') {
 			//Important: we need to hack it a bit to get the absolute date, without timezone offset
 			today = new Date();
-			state.inputFormattedDate = utilsService.getInputFormattedDate(today.toISOString());
+			state.inputFormattedDate = utilsService.getInputFormattedDate(
+				utilsService.toISOStringLocale(today)
+			);
 			state.answer.answer = utilsService.getISODateOnly(
-				today.toISOString(),
+				utilsService.toISOStringLocale(today),
 				state.inputDetails.datetime_format
 			); //no timezone!
 			//show today's date in input type "date" on first run
 			state.date.answer = state.inputFormattedDate;
 			state.userFormattedDate = utilsService.getUserFormattedDate(
-				today.toISOString(),
+				utilsService.toISOStringLocale(today),
 				state.inputDetails.datetime_format
 			);
 		}

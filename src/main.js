@@ -125,6 +125,7 @@ export const app = createApp(App)
 
     //set en as language (PWA can get translated by browser tools)
     rootStore.language = PARAMETERS.DEFAULT_LANGUAGE;
+
     //load language files for PWA
     await initService.getLanguagePWA();
 
@@ -225,6 +226,7 @@ export const app = createApp(App)
     const language = await initService.getLanguage();
     rootStore.language = language;
     console.log('Device language -> ', rootStore.language);
+    const labels = STRINGS[rootStore.language].labels;
 
     //open db
     const db = await initService.openDB(deviceInfo.platform);
@@ -266,8 +268,16 @@ export const app = createApp(App)
     console.log('Server URL -> ', rootStore.serverUrl);
 
     //set bookmarks in pinia store
-    const bookmarks = await bookmarksService.getBookmarks();
-    bookmarkStore.setBookmarks(bookmarks);
+    try {
+      const bookmarks = await bookmarksService.getBookmarks();
+      bookmarkStore.setBookmarks(bookmarks);
+    }
+    catch (error) {
+      debugger;
+      notificationService.showAlert(labels.bookmarks_loading_error);
+      bookmarkStore.setBookmarks([]);
+    }
+
 
     //clear temporary tables
     await initService.tidyTempTables();

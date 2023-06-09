@@ -115,4 +115,6 @@
             "backgroundColor": "#00B2ED"
         }
     ],
+    "editor.bracketPairColorization.enabled": false,
+    "volar.inlayHints.eventArgumentInInlineHandlers": false
 }

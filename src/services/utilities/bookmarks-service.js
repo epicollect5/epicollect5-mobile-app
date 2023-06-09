@@ -82,24 +82,61 @@ export const bookmarksService = {
         const bookmarks = [];
 
         return new Promise((resolve, reject) => {
+            (async function () {
+                try {
+                    const res = await databaseSelectService.selectBookmarks();
 
-            databaseSelectService.selectBookmarks().then(function (res) {
-
-                if (res.rows.length > 0) {
-
-                    Object.values(res.rows).forEach((row) => {
-                        bookmarks.push({
-                            id: row.id,
-                            projectRef: row.project_ref,
-                            formRef: row.form_ref,
-                            title: row.title,
-                            bookmark: JSON.parse(row.bookmark)
-                        });
-                    });
+                    // throw new Error('Parameter is not a number!');
+                    if (res.rows.length > 0) {
+                        for (let i = 0; i < res.rows.length; i++) {
+                            const currentRow = res.rows.item(i);
+                            bookmarks.push({
+                                id: currentRow.id,
+                                projectRef: currentRow.project_ref,
+                                formRef: currentRow.form_ref,
+                                title: currentRow.title,
+                                bookmark: JSON.parse(currentRow.bookmark)
+                            });
+                        }
+                    }
+                    resolve(bookmarks);
                 }
-                resolve(bookmarks);
-            }, function (error) {
-                reject(error);
+                catch (error) {
+                    console.log(error);
+                    reject();
+                }
+            }());
+        });
+    },
+
+    //delete all bookmarks of a project
+    //used whe deletign a project or all its entries
+    async deleteBookmarks (projectRef) {
+
+        const bookmarkStore = useBookmarkStore();
+        const bookmarks = bookmarkStore.bookmarks;
+
+        bookmarks.forEach(async (bookmark) => {
+            // Check that the project ref and form ref are the same
+            if (bookmark.projectRef === projectRef) {
+                //delete this bookmark
+                await this.deleteBookmark(bookmark.id);
+            }
+        });
+    },
+    //delete all bookmarks related to a single entry
+    async deleteBookmarksForEntry (entryUuid) {
+
+        const bookmarkStore = useBookmarkStore();
+        const bookmarks = bookmarkStore.bookmarks;
+
+        bookmarks.forEach(async (bookmark) => {
+            // Check that the project ref and form ref are the same
+            bookmark.bookmark.forEach(async (obj) => {
+                if (obj.parentEntryUuid === entryUuid) {
+                    //delete this bookmark
+                    await this.deleteBookmark(bookmark.id);
+                }
             });
         });
     }

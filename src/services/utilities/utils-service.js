@@ -42,8 +42,28 @@ export const utilsService = {
 
         return year + '-' + month + '-' + day;
     },
+    //https://stackoverflow.com/questions/49330139/date-toisostring-but-local-time-instead-of-utc
+    toISOStringLocale (d) {
+        const z = (n) => ('0' + n).slice(-2);
+        const zz = (n) => ('00' + n).slice(-3);
+        let off = d.getTimezoneOffset();
+        const sign = off > 0 ? '-' : '+';
+        off = Math.abs(off);
+
+        const iso = d.getFullYear() + '-'
+            + z(d.getMonth() + 1) + '-' +
+            z(d.getDate()) + 'T' +
+            z(d.getHours()) + ':' +
+            z(d.getMinutes()) + ':' +
+            z(d.getSeconds()) + '.' +
+            zz(d.getMilliseconds());
+        //  sign + z(off / 60 | 0) + ':' + z(off % 60);
+
+        return iso;
+    },
 
     getInputFormattedTime (input_date, format) {
+
 
         //"1970-01-01T01:03:00.000"
         const timepart = input_date.split('T')[1];

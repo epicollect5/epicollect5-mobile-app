@@ -13,29 +13,23 @@
 		</template>
 
 		<template #subheader>
-			<ion-toolbar
-				color="dark"
-				mode="md"
-			>
+			<ion-toolbar color="dark"
+						 mode="md">
 				<ion-buttons slot="start">
 					<ion-button @click="goBack()">
-						<ion-icon
-							slot="start"
-							:icon="chevronBackOutline"
-						>
+						<ion-icon slot="start"
+								  :icon="chevronBackOutline">
 						</ion-icon>
-						{{labels.back}}
+						{{ labels.back }}
 					</ion-button>
 				</ion-buttons>
 
 				<ion-buttons slot="end">
 					<ion-button @click="deleteEntry()">
-						<ion-icon
-							slot="start"
-							:icon="trash"
-						>
+						<ion-icon slot="start"
+								  :icon="trash">
 						</ion-icon>
-						{{labels.delete}}
+						{{ labels.delete }}
 					</ion-button>
 				</ion-buttons>
 
@@ -44,83 +38,63 @@
 		</template>
 
 		<template #content>
-			<ion-spinner
-				v-if="state.isFetching"
-				class="loader"
-				name="crescent"
-			></ion-spinner>
+			<ion-spinner v-if="state.isFetching"
+						 class="loader"
+						 name="crescent"></ion-spinner>
 
 			<div v-else>
 
 				<!-- Errors banner ----------------------------------------->
 				<div v-if="state.errors?.errors?.length > 0">
-					<item-divider-error
-						v-for="(error, index) in state.errors.errors"
-						:key="index"
-						:message="statusCodes[error.code] || error.title"
-					></item-divider-error>
+					<item-divider-error v-for="(error, index) in state.errors.errors"
+										:key="index"
+										:message="statusCodes[error.code] || error.title"></item-divider-error>
 				</div>
 				<!-- ----------------------------------------------------- -->
 
 				<!-- Incomplete entry banner--------------------------------->
 				<div v-if="state.synced === 2">
-					<ion-item
-						class="item-warning animate__animated animate__fadeIn"
-						lines="full"
-						mode="md"
-					>
-						<ion-icon
-							slot="end"
-							:icon="removeCircle"
-						></ion-icon>
+					<ion-item class="item-warning animate__animated animate__fadeIn"
+							  lines="full"
+							  mode="md">
+						<ion-icon slot="end"
+								  :icon="removeCircle"></ion-icon>
 						<ion-label class="ion-text-uppercase"> {{ labels.incomplete_entry }}</ion-label>
 					</ion-item>
 				</div>
 				<!-- ------------------------------------------------------ -->
 
 				<!-- entries unsynced banner --------------------------------------->
-				<ion-item
-					v-if="state.synced ===0"
-					class="item-warning ion-text-center animate__animated animate__fadeIn"
-					lines="full"
-				>
+				<ion-item v-if="state.synced === 0"
+						  class="item-warning ion-text-center animate__animated animate__fadeIn"
+						  lines="full">
 					<ion-label class="ion-text-uppercase ion-text-start">{{ labels.unsynced_entry }}</ion-label>
-					<ion-button
-						color="warning"
-						size="default"
-						@click="goToUploadPage()"
-					>
-						<ion-icon
-							:icon="cloudUpload"
-							slot="start"
-						></ion-icon>
-						{{labels.sync_now}}
+					<ion-button color="warning"
+								size="default"
+								@click="goToUploadPage()">
+						<ion-icon :icon="cloudUpload"
+								  slot="start"></ion-icon>
+						{{ labels.sync_now }}
 					</ion-button>
 				</ion-item>
 
 				<!-- Remote entry warning banner -->
 				<div v-if="state.entry.isRemote === 1">
-					<ion-item
-						class="item-warning animate__animated animate__fadeIn"
-						lines="full"
-						mode="md"
-					>
-						<ion-icon
-							slot="end"
-							:icon="desktopOutline"
-						></ion-icon>
-						<ion-label class="ion-text-uppercase">{{labels.remote_entry}}</ion-label>
+					<ion-item class="item-warning animate__animated animate__fadeIn"
+							  lines="full"
+							  mode="md">
+						<ion-icon slot="end"
+								  :icon="desktopOutline"></ion-icon>
+						<ion-label class="ion-text-uppercase">{{ labels.remote_entry }}</ion-label>
 					</ion-item>
 				</div>
 
-				<list-answers
-					:formRef="state.formRef"
-					:items="state.items"
-					:entry="state.entry"
-					:errors="state.errors"
-					:areGroupAnswers="false"
-					:areBranchAnswers="false"
-				></list-answers>
+				<list-answers :formRef="state.formRef"
+							  :items="state.items"
+							  :entry="state.entry"
+							  :errors="state.errors"
+							  :areGroupAnswers="false"
+							  :areBranchAnswers="false"></list-answers>
 			</div>
 		</template>
 	</base-layout>
@@ -152,14 +126,16 @@ import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import { answerService } from '@/services/entry/answer-service';
 import ItemDividerError from '@/components/ItemDividerError.vue';
+import { useBookmarkStore } from '@/stores/bookmark-store';
+
 
 export default {
 	components: { ListAnswers, ItemDividerError },
-	setup() {
+	setup () {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
-
+		const bookmarkStore = useBookmarkStore();
 		const statusCodes = STRINGS[language].status_codes;
 		const router = useRouter();
 		const route = useRoute();
@@ -196,7 +172,7 @@ export default {
 		state.synced = state.entry.synced;
 
 		const methods = {
-			goBack() {
+			goBack () {
 				if (rootStore.nextRoute) {
 					const route = rootStore.nextRoute;
 					const refreshEntries = route === PARAMETERS.ROUTES.ENTRIES;
@@ -222,22 +198,39 @@ export default {
 					});
 				}
 			},
-			async deleteEntry() {
+			async deleteEntry () {
 				const projectRef = projectModel.getProjectRef();
 				let allEntries = [];
 				const uuids = [];
 				const files = [];
 
 				//todo: should probably catch errors...
-				async function _deleteAllEntries(uuids) {
+				async function _deleteAllEntries (uuids) {
 					//map all the uuids to promises
 					await Promise.all(
 						uuids.map((uuid) => {
 							return databaseDeleteService.deleteEntry(uuid);
 						})
 					);
+
+					//delete any bookmarks related to current entry uuid
+					try {
+						await bookmarksService.deleteBookmarksForEntry(state.entryUuid);
+					}
+					catch (error) {
+						console.log(error);
+						notificationService.showAlert(labels.bookmarks_loading_error);
+					}
+
 					// Refresh bookmarks after deletion
-					await bookmarksService.getBookmarks();
+					try {
+						const bookmarks = await bookmarksService.getBookmarks();
+						bookmarkStore.setBookmarks(bookmarks);
+					}
+					catch (error) {
+						notificationService.showAlert(labels.bookmarks_loading_error);
+						bookmarkStore.setBookmarks([]);
+					}
 
 					//back to entries list with refresh
 					if (rootStore.nextRoute) {
@@ -327,7 +320,7 @@ export default {
 						});
 				}
 			},
-			goToUploadPage() {
+			goToUploadPage () {
 				rootStore.nextRoute = router.currentRoute.value.name;
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES_UPLOAD
@@ -335,7 +328,7 @@ export default {
 			}
 		};
 
-		async function fetchAnswers() {
+		async function fetchAnswers () {
 			let branchIndex;
 			let data;
 			let inputDetails;
@@ -428,7 +421,7 @@ export default {
 			});
 		}
 
-		function _addAnswerToItems(inputDetails, index) {
+		function _addAnswerToItems (inputDetails, index) {
 			let error = '';
 			let scopeError;
 			let groupIndex;
@@ -543,11 +536,11 @@ export default {
 
 			//Get answer for viewing via the AnswerService
 
-			function _getAnswer(inputDetails, answer) {
+			function _getAnswer (inputDetails, answer) {
 				return answerService.parseAnswerForViewing(inputDetails, answer);
 			}
 
-			function _renderErrors() {
+			function _renderErrors () {
 				// Check for synced errors on main input
 				if (state.errors.errors) {
 					// Check if this input has an error
@@ -574,7 +567,7 @@ export default {
 				}
 			}
 
-			function _renderAnswers() {
+			function _renderAnswers () {
 				state.items[inputDetails.ref] = {
 					question:
 						inputDetails.type === PARAMETERS.QUESTION_TYPES.README
@@ -653,5 +646,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
