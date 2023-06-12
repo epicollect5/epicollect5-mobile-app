@@ -273,7 +273,6 @@ export const app = createApp(App)
       bookmarkStore.setBookmarks(bookmarks);
     }
     catch (error) {
-      debugger;
       notificationService.showAlert(labels.bookmarks_loading_error);
       bookmarkStore.setBookmarks([]);
     }
