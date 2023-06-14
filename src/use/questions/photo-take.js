@@ -1,5 +1,4 @@
 import { PARAMETERS } from '@/config';
-
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings.js';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
@@ -29,7 +28,9 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
     await notificationService.showProgressDialog(labels.wait);
 
     async function _openCamera () {
-        notificationService.startForegroundService();
+
+        await notificationService.startForegroundService();
+
         try {
             const imageURI = await Camera.getPhoto(cameraOptions);
 
@@ -106,7 +107,7 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
                             //check permission status android
                             if (rootStore.device.platform === PARAMETERS.ANDROID) {
                                 if (
-                                    permission === cordova.plugins.diagnostic.runtimePermissionStatus.GRANTED
+                                    permission === cordova.plugins.diagnostic.permissionStatus.GRANTED
                                 ) {
                                     _openCamera();
                                 }

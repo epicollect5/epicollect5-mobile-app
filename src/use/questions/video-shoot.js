@@ -85,38 +85,20 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
         // start video capture
         //request camera permission (Android)
         if (rootStore.device.platform === PARAMETERS.ANDROID) {
-            notificationService.startForegroundService();
+
+            await notificationService.startForegroundService();
+
             cordova.plugins.diagnostic.requestRuntimePermission(
                 function (status) {
-                    if (status === cordova.plugins.diagnostic.runtimePermissionStatus.GRANTED) {
-                        //request storage permission
-                        cordova.plugins.diagnostic.requestRuntimePermission(
-                            function (status) {
-                                if (status === cordova.plugins.diagnostic.runtimePermissionStatus.GRANTED) {
-                                    console.log('Permission granted');
-
-
-
-                                    window.navigator.device.capture.captureVideo(
-                                        _onCaptureVideoSuccess,
-                                        _onCaptureVideoError,
-                                        options
-                                    );
-                                } else {
-                                    notificationService.showAlert(
-                                        STRINGS[language].labels.permission_denied
-                                    );
-                                    notificationService.hideProgressDialog();
-                                }
-                            },
-                            function (error) {
-                                console.error('The following error occurred: ' + error);
-                                notificationService.hideProgressDialog();
-                            },
-                            cordova.plugins.diagnostic.runtimePermission.WRITE_EXTERNAL_STORAGE
+                    if (status === cordova.plugins.diagnostic.permissionStatus.GRANTED) {
+                        window.navigator.device.capture.captureVideo(
+                            _onCaptureVideoSuccess,
+                            _onCaptureVideoError,
+                            options
                         );
-                    } else {
-                        //warn user camera permssion is compulsory
+                    }
+                    else {
+                        //warn user camera permission is compulsory
                         notificationService.showAlert(labels.missing_permission);
                         notificationService.stopForegroundService();
                         notificationService.hideProgressDialog();
@@ -134,7 +116,7 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
                     notificationService.stopForegroundService();
                     notificationService.hideProgressDialog();
                 },
-                cordova.plugins.diagnostic.runtimePermission.CAMERA
+                cordova.plugins.diagnostic.permission.CAMERA
             );
         } else {
             //ios permission

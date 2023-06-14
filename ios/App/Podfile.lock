@@ -1,0 +1,200 @@
+PODS:
+  - AppAuth (1.6.2):
+    - AppAuth/Core (= 1.6.2)
+    - AppAuth/ExternalUserAgent (= 1.6.2)
+  - AppAuth/Core (1.6.2)
+  - AppAuth/ExternalUserAgent (1.6.2):
+    - AppAuth/Core
+  - Capacitor (5.0.5):
+    - CapacitorCordova
+  - CapacitorActionSheet (5.0.4):
+    - Capacitor
+  - CapacitorApp (5.0.3):
+    - Capacitor
+  - CapacitorCamera (5.0.4):
+    - Capacitor
+  - CapacitorCordova (5.0.5)
+  - CapacitorDevice (5.0.4):
+    - Capacitor
+  - CapacitorDialog (5.0.4):
+    - Capacitor
+  - CapacitorFilesystem (5.0.4):
+    - Capacitor
+  - CapacitorGeolocation (5.0.4):
+    - Capacitor
+  - CapacitorHaptics (5.0.4):
+    - Capacitor
+  - CapacitorKeyboard (5.0.4):
+    - Capacitor
+  - CapacitorLocalNotifications (5.0.4):
+    - Capacitor
+  - CapacitorNetwork (5.0.4):
+    - Capacitor
+  - CapacitorPushNotifications (5.0.4):
+    - Capacitor
+  - CapacitorShare (5.0.4):
+    - Capacitor
+  - CapacitorSplashScreen (5.0.4):
+    - Capacitor
+  - CapacitorStatusBar (5.0.4):
+    - Capacitor
+  - CapacitorToast (5.0.4):
+    - Capacitor
+  - CordovaPlugins (5.0.5):
+    - CapacitorCordova
+  - CordovaPluginsResources (0.0.105)
+  - CordovaPluginsStatic (5.0.5):
+    - CapacitorCordova
+    - GoogleSignIn (~> 5.0.2)
+    - GoogleUtilities (~> 7.2.2)
+  - GoogleSignIn (5.0.2):
+    - AppAuth (~> 1.2)
+    - GTMAppAuth (~> 1.0)
+    - GTMSessionFetcher/Core (~> 1.1)
+  - GoogleUtilities (7.2.2):
+    - GoogleUtilities/AppDelegateSwizzler (= 7.2.2)
+    - GoogleUtilities/Environment (= 7.2.2)
+    - GoogleUtilities/ISASwizzler (= 7.2.2)
+    - GoogleUtilities/Logger (= 7.2.2)
+    - GoogleUtilities/MethodSwizzler (= 7.2.2)
+    - GoogleUtilities/Network (= 7.2.2)
+    - "GoogleUtilities/NSData+zlib (= 7.2.2)"
+    - GoogleUtilities/Reachability (= 7.2.2)
+    - GoogleUtilities/SwizzlerTestHelpers (= 7.2.2)
+    - GoogleUtilities/UserDefaults (= 7.2.2)
+  - GoogleUtilities/AppDelegateSwizzler (7.2.2):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
+  - GoogleUtilities/Environment (7.2.2):
+    - PromisesObjC (~> 1.2)
+  - GoogleUtilities/ISASwizzler (7.2.2)
+  - GoogleUtilities/Logger (7.2.2):
+    - GoogleUtilities/Environment
+  - GoogleUtilities/MethodSwizzler (7.2.2):
+    - GoogleUtilities/Logger
+  - GoogleUtilities/Network (7.2.2):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (7.2.2)"
+  - GoogleUtilities/Reachability (7.2.2):
+    - GoogleUtilities/Logger
+  - GoogleUtilities/SwizzlerTestHelpers (7.2.2):
+    - GoogleUtilities/MethodSwizzler
+  - GoogleUtilities/UserDefaults (7.2.2):
+    - GoogleUtilities/Logger
+  - GTMAppAuth (1.3.1):
+    - AppAuth/Core (~> 1.6)
+    - GTMSessionFetcher/Core (< 3.0, >= 1.5)
+  - GTMSessionFetcher/Core (1.7.2)
+  - PromisesObjC (1.2.12)
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorActionSheet (from `../../node_modules/@capacitor/action-sheet`)"
+  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorCamera (from `../../node_modules/@capacitor/camera`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorDevice (from `../../node_modules/@capacitor/device`)"
+  - "CapacitorDialog (from `../../node_modules/@capacitor/dialog`)"
+  - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
+  - "CapacitorGeolocation (from `../../node_modules/@capacitor/geolocation`)"
+  - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
+  - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
+  - "CapacitorLocalNotifications (from `../../node_modules/@capacitor/local-notifications`)"
+  - "CapacitorNetwork (from `../../node_modules/@capacitor/network`)"
+  - "CapacitorPushNotifications (from `../../node_modules/@capacitor/push-notifications`)"
+  - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
+  - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
+  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
+  - "CapacitorToast (from `../../node_modules/@capacitor/toast`)"
+  - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
+  - CordovaPluginsResources (from `../capacitor-cordova-ios-plugins`)
+  - CordovaPluginsStatic (from `../capacitor-cordova-ios-plugins`)
+
+SPEC REPOS:
+  trunk:
+    - AppAuth
+    - GoogleSignIn
+    - GoogleUtilities
+    - GTMAppAuth
+    - GTMSessionFetcher
+    - PromisesObjC
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorActionSheet:
+    :path: "../../node_modules/@capacitor/action-sheet"
+  CapacitorApp:
+    :path: "../../node_modules/@capacitor/app"
+  CapacitorCamera:
+    :path: "../../node_modules/@capacitor/camera"
+  CapacitorCordova:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorDevice:
+    :path: "../../node_modules/@capacitor/device"
+  CapacitorDialog:
+    :path: "../../node_modules/@capacitor/dialog"
+  CapacitorFilesystem:
+    :path: "../../node_modules/@capacitor/filesystem"
+  CapacitorGeolocation:
+    :path: "../../node_modules/@capacitor/geolocation"
+  CapacitorHaptics:
+    :path: "../../node_modules/@capacitor/haptics"
+  CapacitorKeyboard:
+    :path: "../../node_modules/@capacitor/keyboard"
+  CapacitorLocalNotifications:
+    :path: "../../node_modules/@capacitor/local-notifications"
+  CapacitorNetwork:
+    :path: "../../node_modules/@capacitor/network"
+  CapacitorPushNotifications:
+    :path: "../../node_modules/@capacitor/push-notifications"
+  CapacitorShare:
+    :path: "../../node_modules/@capacitor/share"
+  CapacitorSplashScreen:
+    :path: "../../node_modules/@capacitor/splash-screen"
+  CapacitorStatusBar:
+    :path: "../../node_modules/@capacitor/status-bar"
+  CapacitorToast:
+    :path: "../../node_modules/@capacitor/toast"
+  CordovaPlugins:
+    :path: "../capacitor-cordova-ios-plugins"
+  CordovaPluginsResources:
+    :path: "../capacitor-cordova-ios-plugins"
+  CordovaPluginsStatic:
+    :path: "../capacitor-cordova-ios-plugins"
+
+SPEC CHECKSUMS:
+  AppAuth: 3bb1d1cd9340bd09f5ed189fb00b1cc28e1e8570
+  Capacitor: b1248915663add1bd6567e2b67c1c1fa3abcf5e8
+  CapacitorActionSheet: 0bed77a015817ac656469b4c7491a3371295baa5
+  CapacitorApp: 7a5dec8b33573707164b293475d5c89ba684364a
+  CapacitorCamera: 9b5c8e809c1042f263994f97ba846aa37e974f12
+  CapacitorCordova: f8c06b897c74ee8f7701fe10e6443b40822bc83a
+  CapacitorDevice: eb4b5e3b42ac35d2527f20aad296b59e0785dc8d
+  CapacitorDialog: fe8b913cdf8c73cabe556974565fc44f2a09c75f
+  CapacitorFilesystem: e1bdfab09b95b181c844c16abcfda45ec8e8ed6b
+  CapacitorGeolocation: 33015be1ef496585a60da9efa1c5642ff8624db3
+  CapacitorHaptics: e36653b37326d71bb35ae42b944124037dbc3d97
+  CapacitorKeyboard: d1b25fde6f19744ad09c890862aefc6e2a7ded3d
+  CapacitorLocalNotifications: 2c95d27ccf9cc28ecc59d69b54d29074c1740172
+  CapacitorNetwork: e2bd0bf1614aca34bb976f125a756a8a3df1c81a
+  CapacitorPushNotifications: 3704ac3dac68a9bfc669fb384cbc7beec9b1f100
+  CapacitorShare: 427bba238a1e3f116b2b349019aec6ea7f42cebd
+  CapacitorSplashScreen: 93a389d4f7673c08214ae25bb6f21d867d5305c5
+  CapacitorStatusBar: 190e0321b8734f4244d0c81baa183a00d5806ddf
+  CapacitorToast: fcc4329f01d06cf02f190f8f5ce7f16509a2263c
+  CordovaPlugins: 0bbf83a2d5e08e2f2c6974e2f36408b1a2588584
+  CordovaPluginsResources: 1b3992e05cb6336d2850cd77dd5e3054f2f76f96
+  CordovaPluginsStatic: d3307518c9852006c8c3815bd34144ddc7369c93
+  GoogleSignIn: 7137d297ddc022a7e0aa4619c86d72c909fa7213
+  GoogleUtilities: 31c5b01f978a70c6cff2afc6272b3f1921614b43
+  GTMAppAuth: 0ff230db599948a9ad7470ca667337803b3fc4dd
+  GTMSessionFetcher: 5595ec75acf5be50814f81e9189490412bad82ba
+  PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
+
+PODFILE CHECKSUM: 8b93fa5a7f18043cb267efa27d3494e54d38da70
+
+COCOAPODS: 1.12.1

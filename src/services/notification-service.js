@@ -2,6 +2,8 @@ import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { loadingController, toastController, alertController } from '@ionic/vue';
+import { PushNotifications } from '@capacitor/push-notifications';
+
 
 export const notificationService = {
 
@@ -180,25 +182,48 @@ export const notificationService = {
     },
     //start a foreground service (with notification)
     //to avoid Android killing the app
-    startForegroundService () {
+    async startForegroundService () {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
-        if (rootStore.device.platform === PARAMETERS.ANDROID) {
-            //only for api >= 28 (Android 9)
-            //app might crash on Android 8
-            if (parseInt(rootStore.device.osVersion) >= 9) {
-                cordova.plugins.foregroundService.start(
-                    PARAMETERS.APP_NAME,
-                    labels.working_in_background,
-                    'ic_launcher.png',
-                    1,
-                    10
-                );
-            }
-        }
+
+        return new Promise((resolve) => {
+            (async function () {
+                let status = await PushNotifications.checkPermissions();
+                switch (status.receive) {
+                    case 'granted':
+                        //do nothing
+                        break;
+                    case 'prompt':
+                        await PushNotifications.requestPermissions();
+                        break;
+                    case 'prompt-with-rationale':
+                        await PushNotifications.requestPermissions();
+                        break;
+                    default:
+                    //dp nothing
+                }
+
+                //recheck after user interaction
+                status = await PushNotifications.checkPermissions();
+
+                if (status.receive === 'granted') {
+                    cordova.plugins.foregroundService.start(
+                        PARAMETERS.APP_NAME,
+                        labels.loading,
+                        'ec5_notification.png',
+                        1,
+                        10
+                    );
+                    resolve();
+                }
+                else {
+                    resolve();
+                }
+            })();
+        });
     },
-    stopForegroundService () {
+    async stopForegroundService () {
         const rootStore = useRootStore();
         if (rootStore.device.platform === PARAMETERS.ANDROID) {
             //only for api >= 28 (Android 9)
