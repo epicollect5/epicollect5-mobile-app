@@ -1,57 +1,44 @@
 <template>
 	<header-modal @on-dismiss="dismiss()"></header-modal>
 	<ion-content>
-		<ion-item-divider
-			v-if="showFilters"
-			sticky
-			color="dark"
-			class="possible-answers-serchbar-wrapper"
-		>
-			<ion-searchbar
-				animated
-				debounce="500"
-				:placeholder="labels.type_hint"
-				@ionChange="filterPossibleAnswers"
-			></ion-searchbar>
+		<ion-item-divider v-if="showFilters"
+						  sticky
+						  color="dark"
+						  class="possible-answers-serchbar-wrapper">
+			<ion-searchbar animated
+						   debounce="500"
+						   :placeholder="labels.type_hint"
+						   @ionInput="filterPossibleAnswers"></ion-searchbar>
 		</ion-item-divider>
 
-		<ion-spinner
-			v-if="state.isFetching"
-			class="spinner-search-possible-answers"
-			name="crescent"
-		></ion-spinner>
+		<ion-spinner v-if="state.isFetching"
+					 class="spinner-search-possible-answers"
+					 name="crescent"></ion-spinner>
 
-		<div v-if="!state.isFetching && state.hits.length >0">
-			<list-possible-answers-radio
-				v-if="isSingleSelectionType"
-				:possibleAnswers="state.hits"
-				:selectedAnswers="selectedAnswers"
-				:isGroupInput="isGroupInput"
-				@on-selected-answers="onSelectedAnswers"
-			>
+		<div v-if="!state.isFetching && state.hits.length > 0">
+			<list-possible-answers-radio v-if="isSingleSelectionType"
+										 :possibleAnswers="state.hits"
+										 :selectedAnswers="selectedAnswers"
+										 :isGroupInput="isGroupInput"
+										 @on-selected-answers="onSelectedAnswers">
 			</list-possible-answers-radio>
 
-			<list-possible-answers-checkbox
-				v-if="!isSingleSelectionType"
-				:possibleAnswers="state.hits"
-				:selectedAnswers="selectedAnswers"
-				:isGroupInput="isGroupInput"
-				@on-selected-answers="onSelectedAnswers"
-			>
+			<list-possible-answers-checkbox v-if="!isSingleSelectionType"
+											:possibleAnswers="state.hits"
+											:selectedAnswers="selectedAnswers"
+											:isGroupInput="isGroupInput"
+											@on-selected-answers="onSelectedAnswers">
 			</list-possible-answers-checkbox>
 		</div>
-		<div
-			v-if="!state.isFetching && state.hits.length === 0"
-			class="animate__animated animate__fadeIn"
-		>
+		<div v-if="!state.isFetching && state.hits.length === 0"
+			 class="animate__animated animate__fadeIn">
 			<ion-card class="ion-text-center">
 				<ion-card-header>
-					<ion-card-title>{{labels.no_hits_found}}</ion-card-title>
+					<ion-card-title>{{ labels.no_hits_found }}</ion-card-title>
 				</ion-card-header>
 			</ion-card>
 		</div>
 	</ion-content>
-
 </template>
 
 <script>
@@ -85,7 +72,7 @@ export default {
 			required: true
 		}
 	},
-	setup(props) {
+	setup (props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -104,7 +91,7 @@ export default {
 		state.hits = [...possibleAnswers];
 
 		const methods = {
-			onSelectedAnswers(answerRefs) {
+			onSelectedAnswers (answerRefs) {
 				console.log('onSelectedAnswers modal called');
 				state.selectedAnswers = answerRefs;
 				//dropdown close after selection (expected behaviour)
@@ -112,10 +99,10 @@ export default {
 					methods.dismiss();
 				}
 			},
-			dismiss() {
+			dismiss () {
 				modalController.dismiss(state.selectedAnswers);
 			},
-			filterPossibleAnswers(e) {
+			filterPossibleAnswers (e) {
 				state.searchTerm = e.target.value;
 				state.isFetching = true;
 				// Throttle requests before checking for empty search, so we clear the previuos one
@@ -178,5 +165,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

@@ -245,7 +245,7 @@ export default {
 				// Refresh view
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES,
-					params: {
+					query: {
 						refreshEntries: true
 					}
 				});
@@ -287,7 +287,7 @@ export default {
 				//reload page to re-fetch entries
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES,
-					params: {
+					query: {
 						refreshEntries: true,
 						timestamp: Date.now()
 					}

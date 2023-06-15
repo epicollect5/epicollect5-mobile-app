@@ -129,8 +129,7 @@ export default {
 				formModel.destroy();
 
 				router.replace({
-					name: PARAMETERS.ROUTES.PROJECTS,
-					params: {}
+					name: PARAMETERS.ROUTES.PROJECTS
 				});
 				menuController.close();
 			},
@@ -138,8 +137,7 @@ export default {
 				rootStore.nextRoute = router.currentRoute.value.name;
 				//todo: check with back button android
 				router.replace({
-					name: PARAMETERS.ROUTES.SETTINGS,
-					params: {}
+					name: PARAMETERS.ROUTES.SETTINGS
 				});
 				menuController.close();
 			},
@@ -178,7 +176,7 @@ export default {
 
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES,
-					params: {
+					query: {
 						refreshEntries: 'true',
 						timestamp: Date.now()
 					}

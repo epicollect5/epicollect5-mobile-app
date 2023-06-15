@@ -393,10 +393,10 @@ export default {
 					formModel.destroy();
 
 					router.replace({
-						name: PARAMETERS.ROUTES.PROJECTS,
-						params: {
-							projectName: state.projectName
-						}
+						name: PARAMETERS.ROUTES.PROJECTS
+						// query: {
+						// 	projectName: state.projectName
+						// }
 					});
 				} else {
 					// Remove last parent object from the history
@@ -414,7 +414,7 @@ export default {
 					rootStore.routeParams = routeParams;
 					router.replace({
 						name: PARAMETERS.ROUTES.ENTRIES,
-						params: {
+						query: {
 							refreshEntries: 'true',
 							timestamp: Date.now()
 						}
@@ -494,7 +494,7 @@ export default {
 				setTimeout(function () {
 					router.replace({
 						name: PARAMETERS.ROUTES.ENTRIES,
-						params: {
+						query: {
 							refreshEntries: 'true',
 							timestamp: Date.now()
 						}
@@ -531,12 +531,13 @@ export default {
 		watch(
 			() => [
 				{
-					refreshEntries: route.params.refreshEntries,
-					refresh: route.params.refresh,
-					timestamp: route.params.timestamp
+					refreshEntries: route.query.refreshEntries,
+					refresh: route.query.refresh,
+					timestamp: route.query.timestamp
 				}
 			],
 			async (changes) => {
+				debugger;
 				console.log('WATCH ROUTING CALLED WITH ->', route);
 				// Indicator as to whether a project update can take place
 				// eg if the user goes to a different page, then this must be set to false;

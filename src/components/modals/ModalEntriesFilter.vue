@@ -2,92 +2,70 @@
 	<ion-header>
 		<ion-toolbar color="primary">
 			<ion-buttons slot="start">
-				<ion-button
-					:disabled="state.isFetching"
-					class="button-close"
-					@click="dismiss()"
-				>
-					<ion-icon
-						slot="start"
-						:icon="closeOutline"
-					>
+				<ion-button :disabled="state.isFetching"
+							class="button-close"
+							@click="dismiss()">
+					<ion-icon slot="start"
+							  :icon="closeOutline">
 					</ion-icon>
-					{{labels.close}}
+					{{ labels.close }}
 				</ion-button>
 			</ion-buttons>
 			<ion-buttons slot="end">
-				<ion-button
-					:disabled="state.isFetching"
-					class="button-close"
-					@click="resetFilters()"
-				>
-					<ion-icon
-						slot="start"
-						:icon="filter"
-					>
+				<ion-button :disabled="state.isFetching"
+							class="button-close"
+							@click="resetFilters()">
+					<ion-icon slot="start"
+							  :icon="filter">
 					</ion-icon>
-					{{labels.reset}}
+					{{ labels.reset }}
 				</ion-button>
 			</ion-buttons>
 
 		</ion-toolbar>
 	</ion-header>
 	<ion-content>
-		<ion-item
-			lines="none"
-			class="filter-by-title"
-		>
+		<ion-item lines="none"
+				  class="filter-by-title">
 			<div class="center-item-content-wrapper half-padding">
-				<ion-spinner
-					v-if="state.isFetching"
-					name="crescent"
-					class="spinner-filter"
-				></ion-spinner>
-				<ion-button
-					v-else
-					color="secondary"
-					size="default"
-					expand="block"
-					class="animate__animated animate__fadeIn"
-					@click="dismiss()"
-				>{{labels.show}} {{state.count}} {{labels.entries}}</ion-button>
+				<ion-spinner v-if="state.isFetching"
+							 name="crescent"
+							 class="spinner-filter"></ion-spinner>
+				<ion-button v-else
+							color="secondary"
+							size="default"
+							expand="block"
+							class="animate__animated animate__fadeIn"
+							@click="dismiss()">{{ labels.show }} {{ state.count }} {{ labels.entries }}</ion-button>
 			</div>
 		</ion-item>
 
 		<ion-item lines="none">
-			<ion-searchbar
-				animated
-				debounce="500"
-				:placeholder="labels.filter_by_title"
-				@ionChange="filterByTitle"
-				:value="state.searchbarInitialValue"
-			></ion-searchbar>
+			<ion-searchbar animated
+						   debounce="500"
+						   :placeholder="labels.filter_by_title"
+						   @ionInput="filterByTitle"
+						   :value="state.searchbarInitialValue"></ion-searchbar>
 		</ion-item>
 
 		<ion-toolbar class="filter-by-date-from">
 			<ion-title class="ion-text-end">
 
 				<div>
-					<ion-label>{{labels.from}}</ion-label>
-					<ion-chip
-						class="chip-datetimepicker entries-filters"
-						outline
-						mode="ios"
-					>
+					<ion-label>{{ labels.from }}</ion-label>
+					<ion-chip class="chip-datetimepicker entries-filters"
+							  outline
+							  mode="ios">
 						<div class="datetime-value">
-							<ion-icon
-								class="date-icon-left"
-								size="small"
-								:icon="calendarClearOutline"
-							></ion-icon>
-							<input
-								type="date"
-								:min="state.filters.oldest"
-								:max="state.filters.newest"
-								class="question-input question-datetimepicker"
-								v-model.trim="state.filters.from"
-								@change="filterByDate()"
-							/>
+							<ion-icon class="date-icon-left"
+									  size="small"
+									  :icon="calendarClearOutline"></ion-icon>
+							<input type="date"
+								   :min="state.filters.oldest"
+								   :max="state.filters.newest"
+								   class="question-input question-datetimepicker"
+								   v-model.trim="state.filters.from"
+								   @change="filterByDate()" />
 						</div>
 					</ion-chip>
 				</div>
@@ -98,26 +76,20 @@
 			<ion-title class="ion-text-end">
 				<div>
 					<div>
-						<ion-label>{{labels.to}}</ion-label>
-						<ion-chip
-							class="chip-datetimepicker entries-filters"
-							outline
-							mode="ios"
-						>
+						<ion-label>{{ labels.to }}</ion-label>
+						<ion-chip class="chip-datetimepicker entries-filters"
+								  outline
+								  mode="ios">
 							<div class="datetime-value">
-								<ion-icon
-									class="date-icon-left"
-									size="small"
-									:icon="calendarClearOutline"
-								></ion-icon>
-								<input
-									type="date"
-									:min="state.filters.oldest"
-									:max="state.filters.newest"
-									class="question-input question-datetimepicker"
-									v-model.trim="state.filters.to"
-									@change="filterByDate()"
-								/>
+								<ion-icon class="date-icon-left"
+										  size="small"
+										  :icon="calendarClearOutline"></ion-icon>
+								<input type="date"
+									   :min="state.filters.oldest"
+									   :max="state.filters.newest"
+									   class="question-input question-datetimepicker"
+									   v-model.trim="state.filters.to"
+									   @change="filterByDate()" />
 							</div>
 						</ion-chip>
 					</div>
@@ -125,47 +97,32 @@
 			</ion-title>
 		</ion-toolbar>
 		<div class="line-divider"></div>
-		<ion-item
-			lines="none"
-			class="filter-by-status"
-		>
-			<ion-segment
-				@ionChange="filterByStatus($event)"
-				color="tertiary"
-				:value="state.filters.status"
-			>
-				<ion-segment-button
-					:value="PARAMETERS.STATUS.ALL"
-					layout="icon-bottom"
-				>
+		<ion-item lines="none"
+				  class="filter-by-status">
+			<ion-segment @ionChange="filterByStatus($event)"
+						 color="tertiary"
+						 :value="state.filters.status">
+				<ion-segment-button :value="PARAMETERS.STATUS.ALL"
+									layout="icon-bottom">
 					<ion-icon :icon="cloudOutline"></ion-icon>
-					<ion-label>{{labels.all}}</ion-label>
+					<ion-label>{{ labels.all }}</ion-label>
 				</ion-segment-button>
-				<ion-segment-button
-					:value="PARAMETERS.STATUS.INCOMPLETE"
-					layout="icon-bottom"
-				>
-					<ion-icon
-						:icon="removeCircle"
-						class="entry-incomplete"
-					></ion-icon>
-					<ion-label>{{labels.incomplete}}</ion-label>
+				<ion-segment-button :value="PARAMETERS.STATUS.INCOMPLETE"
+									layout="icon-bottom">
+					<ion-icon :icon="removeCircle"
+							  class="entry-incomplete"></ion-icon>
+					<ion-label>{{ labels.incomplete }}</ion-label>
 				</ion-segment-button>
-				<ion-segment-button
-					:value="PARAMETERS.STATUS.ERROR"
-					layout="icon-bottom"
-				>
-					<ion-icon
-						:icon="cloud"
-						class="entry-sync-error"
-					></ion-icon>
-					<ion-label>{{labels.error}}</ion-label>
+				<ion-segment-button :value="PARAMETERS.STATUS.ERROR"
+									layout="icon-bottom">
+					<ion-icon :icon="cloud"
+							  class="entry-sync-error"></ion-icon>
+					<ion-label>{{ labels.error }}</ion-label>
 				</ion-segment-button>
 			</ion-segment>
 		</ion-item>
 
 	</ion-content>
-
 </template>
 
 <script>
@@ -212,7 +169,7 @@ export default {
 			required: true
 		}
 	},
-	setup(props) {
+	setup (props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -226,7 +183,7 @@ export default {
 			searchbarInitialValue: props.filters.title
 		});
 
-		function _getEntriesCount(params) {
+		function _getEntriesCount (params) {
 			const { projectRef, formRef, parentEntryUuid, filters } = params;
 
 			return new Promise((resolve) => {
@@ -271,13 +228,13 @@ export default {
 		};
 
 		const methods = {
-			dismiss() {
+			dismiss () {
 				modalController.dismiss({
 					filters: state.filters,
 					count: state.count
 				});
 			},
-			filterByTitle(e) {
+			filterByTitle (e) {
 				const searchTerm = e.target.value;
 
 				state.isFetching = true;
@@ -299,7 +256,7 @@ export default {
 					state.isFetching = false;
 				}, PARAMETERS.DELAY_LONG);
 			},
-			async filterByStatus(e) {
+			async filterByStatus (e) {
 				const status = e.target.value;
 				console.log(status);
 				state.isFetching = true;
@@ -318,7 +275,7 @@ export default {
 					state.isFetching = false;
 				}, PARAMETERS.DELAY_LONG);
 			},
-			resetFilters() {
+			resetFilters () {
 				//todo: what about min/max?
 				state.isFetching = true;
 				state.searchbarInitialValue = '';
@@ -340,7 +297,7 @@ export default {
 						state.isFetching = false;
 					}, PARAMETERS.DELAY_LONG);
 			},
-			filterByDate() {
+			filterByDate () {
 				//v-model updates when picking a date in the datepicker
 				state.isFetching = true;
 				setTimeout(async () => {
@@ -379,5 +336,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

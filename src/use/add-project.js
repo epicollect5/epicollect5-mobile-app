@@ -70,7 +70,7 @@ export async function addProject (project, router) {
                                     );
                                     router.replace({
                                         name: PARAMETERS.ROUTES.PROJECTS,
-                                        params: { refresh: true }
+                                        query: { refresh: true }
                                     });
                                     resolve();
                                 }, PARAMETERS.DELAY_MEDIUM);
@@ -88,7 +88,7 @@ export async function addProject (project, router) {
                                     );
                                     router.replace({
                                         name: 'projects',
-                                        params: { refresh: false }
+                                        query: { refresh: false }
                                     });
                                     resolve();
                                 }, PARAMETERS.DELAY_MEDIUM);

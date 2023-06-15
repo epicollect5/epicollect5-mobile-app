@@ -8,25 +8,19 @@
 		<template #actions-end>
 
 			<ion-button @click='openRightDrawer()'>
-				<ion-icon
-					slot='icon-only'
-					:icon='ellipsisVertical'
-				>
+				<ion-icon slot='icon-only'
+						  :icon='ellipsisVertical'>
 				</ion-icon>
 			</ion-button>
 		</template>
 
 		<template #subheader>
-			<ion-toolbar
-				color='dark'
-				mode='md'
-			>
+			<ion-toolbar color='dark'
+						 mode='md'>
 				<ion-buttons slot='start'>
 					<ion-button @click='goToUploadPage()'>
-						<ion-icon
-							slot='start'
-							:icon='chevronBackOutline'
-						>
+						<ion-icon slot='start'
+								  :icon='chevronBackOutline'>
 						</ion-icon>
 						{{ labels.sync_now }}
 					</ion-button>
@@ -35,95 +29,67 @@
 		</template>
 
 		<template #content>
-			<ion-spinner
-				v-if='state.isFetching'
-				class='loader'
-				name='crescent'
-			>
+			<ion-spinner v-if='state.isFetching'
+						 class='loader'
+						 name='crescent'>
 			</ion-spinner>
 
 			<div v-if="Object.keys(state.entriesInvalid).length > 0">
-				<div
-					v-for="(form, key, index) in state.entriesInvalid"
-					:key="index"
-				>
-					<ion-toolbar
-						color="light"
-						class="form-name"
-						mode="md"
-					>
+				<div v-for="(form, key, index) in state.entriesInvalid"
+					 :key="index">
+					<ion-toolbar color="light"
+								 class="form-name"
+								 mode="md">
 						<ion-title class="form-name-label-errors">
 							{{ state.refNames[key] }}
 						</ion-title>
 					</ion-toolbar>
 
 					<!-- todo: maybe useless, the loop goes over 'entries', 'branch_entries' keys -->
-					<div
-						v-for="(entriesObjects, key, index) in form"
-						:key="index"
-						class="entries-errors-item"
-					>
+					<div v-for="(entriesObjects, key, index) in form"
+						 :key="index"
+						 class="entries-errors-item">
 						<!--entries-->
-						<ion-list
-							lines="full"
-							class="ion-no-padding"
-							v-if="form.entries !== undefined && key==='entries'"
-						>
-							<ion-item
-								v-for="(entry, key, index) in entriesObjects"
-								:key="index"
-							>
-								<ion-label
-									class="list-entries-item-title"
-									@click="viewEntry(entry)"
-								>
-									<ion-icon
-										:icon="cloud"
-										v-if="entry.synced === -1 "
-										class="entry-sync-error icon-error-entries"
-									></ion-icon>
-									<ion-icon
-										:icon="bug"
-										class="entry-sync-error icon-error-entries"
-										v-if="entry.hasMediaError"
-									></ion-icon>
-									{{entry.title}}
+						<ion-list lines="full"
+								  class="ion-no-padding"
+								  v-if="form.entries !== undefined && key === 'entries'">
+							<ion-item v-for="(entry, key, index) in entriesObjects"
+									  :key="index">
+								<ion-label class="list-entries-item-title"
+										   @click="viewEntry(entry)">
+									<ion-icon :icon="cloud"
+											  v-if="entry.synced === -1"
+											  class="entry-sync-error icon-error-entries"></ion-icon>
+									<ion-icon :icon="bug"
+											  class="entry-sync-error icon-error-entries"
+											  v-if="entry.hasMediaError"></ion-icon>
+									{{ entry.title }}
 								</ion-label>
 							</ion-item>
 						</ion-list>
 
 						<!--branch entries-->
-						<div
-							v-if="form.branch_entries !== undefined && key==='branch_entries'"
-							class="branch-entries-errors-item"
-						>
-							<ion-list
-								lines="full"
-								class="ion-no-padding"
-								v-for="(branchEntries, branchRef, index) in entriesObjects"
-								:key="index"
-							>
-								<ion-toolbar
-									color="medium"
-									class="form-name"
-									mode="md"
-								>
+						<div v-if="form.branch_entries !== undefined && key === 'branch_entries'"
+							 class="branch-entries-errors-item">
+							<ion-list lines="full"
+									  class="ion-no-padding"
+									  v-for="(branchEntries, branchRef, index) in entriesObjects"
+									  :key="index">
+								<ion-toolbar color="medium"
+											 class="form-name"
+											 mode="md">
 									<ion-title class="form-name-label-errors">
 										{{ state.refNames[branchRef] }}
 									</ion-title>
 								</ion-toolbar>
 
-								<ion-item
-									v-for="(branchEntry, key, index) in branchEntries"
-									:key="index"
-								>
-									<ion-label
-										class="list-entries-item-title"
-										@click="viewEntry(branchEntry)"
-										ng-class="left_column"
-									>
+								<ion-item v-for="(branchEntry, key, index) in branchEntries"
+										  :key="index">
+									<ion-label class="list-entries-item-title"
+											   @click="viewEntry(branchEntry)"
+											   ng-class="left_column">
 										<icon-entry :entry="branchEntry"></icon-entry>
-										{{branchEntry.title}}
+										{{ branchEntry.title }}
 									</ion-label>
 								</ion-item>
 							</ion-list>
@@ -134,7 +100,7 @@
 			<div v-else>
 				<ion-card class="ion-text-center">
 					<ion-card-header>
-						<ion-card-title>{{labels.no_errors_found}}</ion-card-title>
+						<ion-card-title>{{ labels.no_errors_found }}</ion-card-title>
 					</ion-card-header>
 				</ion-card>
 			</div>
@@ -162,7 +128,7 @@ import { entryService } from '@/services/entry/entry-service';
 
 export default {
 	components: { IconEntry },
-	setup() {
+	setup () {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -191,16 +157,16 @@ export default {
 		});
 
 		const methods = {
-			openRightDrawer() {
+			openRightDrawer () {
 				menuController.open('right-drawer');
 			},
-			goToUploadPage() {
+			goToUploadPage () {
 				rootStore.nextRoute = router.currentRoute.value.name;
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES_UPLOAD
 				});
 			},
-			viewEntry(entry) {
+			viewEntry (entry) {
 				// If the user edits an entry here, make sure they come back to this page when they're done
 				// Set this route as the next route after editing/viewing error entries
 				rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES_ERRORS;
@@ -215,7 +181,7 @@ export default {
 
 					router.replace({
 						name: PARAMETERS.ROUTES.ENTRIES_VIEW,
-						params: {
+						query: {
 							timestamp: Date.now()
 						}
 					});
@@ -247,7 +213,7 @@ export default {
 			}
 		};
 
-		function mapRefNames() {
+		function mapRefNames () {
 			let branchRef;
 			const inputs = projectModel.getExtraInputs();
 			let branches;
@@ -278,7 +244,7 @@ export default {
 		//Get the entries invalid for all forms and branches to be shown as a flat list
 		//Epicollect5 server validation bails out after the first error though
 		//multiple uploads attempts are needed
-		async function getEntriesInvalid() {
+		async function getEntriesInvalid () {
 			const projectRef = projectModel.getProjectRef();
 			let title;
 			let formRef;
@@ -395,5 +361,4 @@ export default {
 };
 </script>
 
-<style lang='scss' scoped>
-</style>
+<style lang='scss' scoped></style>

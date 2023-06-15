@@ -94,7 +94,7 @@ export async function deleteEntries (router) {
         menuController.close();
         router.replace({
             name: PARAMETERS.ROUTES.ENTRIES,
-            params: { refreshEntries: true }
+            query: { refreshEntries: true }
         });
     }
 }

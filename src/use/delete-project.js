@@ -105,7 +105,7 @@ export async function deleteProject (router) {
         // Go back to projects page
         router.replace({
             name: PARAMETERS.ROUTES.PROJECTS,
-            params: { refresh: true }
+            query: { refresh: true }
         });
     }
 }

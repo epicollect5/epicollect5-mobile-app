@@ -1,58 +1,44 @@
 <template>
 	<!-- v-if to avoid re-rendering when going back to projects list -->
 	<div>
-		<ion-list
-			class="list-entries ion-no-padding"
-			lines="full"
-			mode="md"
-		>
+		<ion-list class="list-entries ion-no-padding"
+				  lines="full"
+				  mode="md">
 
-			<toolbar-entries-filters
-				:countWithFilters="countWithFilters"
-				:countNoFilters="countNoFilters"
-				@filters-clear="filtersClear()"
-			>
+			<toolbar-entries-filters :countWithFilters="countWithFilters"
+									 :countNoFilters="countNoFilters"
+									 @filters-clear="filtersClear()">
 			</toolbar-entries-filters>
-			<ion-item
-				v-show="countWithFilters >0"
-				class="list-entries-item"
-				v-for="entry in state.entriesChunk"
-				:key="entry.uuid"
-			>
+			<ion-item v-show="countWithFilters > 0"
+					  class="list-entries-item"
+					  v-for="entry in state.entriesChunk"
+					  :key="entry.uuid">
 				<ion-grid @click="viewEntry(entry)">
 					<ion-row>
 						<!-- Expand column to full width for single form projects -->
 						<ion-col :size="nextFormRef ? 9 : 12">
 							<ion-label class="list-entries-item-title">
 								<icon-entry :entry="entry"></icon-entry>
-								{{entry.title}}
+								{{ entry.title }}
 							</ion-label>
 						</ion-col>
 						<!-- Two columns layout to be shown for projects with multiple forms -->
-						<ion-col
-							size="3"
-							class="list-entries-item-child ion-text-end"
-							v-if="nextFormRef"
-						>
-							<ion-item
-								lines="none"
-								color="secondary"
-								class="child-entries-item-button ion-hide-sm-down"
-								@click.stop="goToChildEntriesPage(entry.entry_uuid, entry.title)"
-							>
+						<ion-col size="3"
+								 class="list-entries-item-child ion-text-end"
+								 v-if="nextFormRef">
+							<ion-item lines="none"
+									  color="secondary"
+									  class="child-entries-item-button ion-hide-sm-down"
+									  @click.stop="goToChildEntriesPage(entry.entry_uuid, entry.title)">
 								<ion-label> {{ formName }} </ion-label>
-								<ion-icon
-									:icon="enter"
-									slot="end"
-								></ion-icon>
+								<ion-icon :icon="enter"
+										  slot="end"></ion-icon>
 							</ion-item>
 
-							<ion-button
-								class="child-entries-item-button-only ion-hide-sm-up"
-								color="secondary"
-								size="default"
-								@click.stop="goToChildEntriesPage(entry.entry_uuid, entry.title)"
-							>
+							<ion-button class="child-entries-item-button-only ion-hide-sm-up"
+										color="secondary"
+										size="default"
+										@click.stop="goToChildEntriesPage(entry.entry_uuid, entry.title)">
 								<ion-icon :icon="enter"></ion-icon>
 							</ion-button>
 
@@ -62,7 +48,7 @@
 					<ion-row>
 						<ion-col>
 							<small class="entry-collected-on">
-								<em>{{labels.collected_on + utcToLocal(entry.created_at)}}</em>
+								<em>{{ labels.collected_on + utcToLocal(entry.created_at) }}</em>
 							</small>
 						</ion-col>
 					</ion-row>
@@ -70,22 +56,18 @@
 
 			</ion-item>
 		</ion-list>
-		<ion-infinite-scroll
-			:disabled="countNoFilters <= PARAMETERS.ENTRIES_PER_PAGE"
-			v-show="countWithFilters >0"
-			@ionInfinite="loadEntriesChunk($event)"
-			threshold="100px"
-		>
-			<ion-infinite-scroll-content
-				loading-spinner="crescent"
-				:loading-text="labels.loading"
-			>
+		<ion-infinite-scroll :disabled="countNoFilters <= PARAMETERS.ENTRIES_PER_PAGE"
+							 v-show="countWithFilters > 0"
+							 @ionInfinite="loadEntriesChunk($event)"
+							 threshold="100px">
+			<ion-infinite-scroll-content loading-spinner="crescent"
+										 :loading-text="labels.loading">
 			</ion-infinite-scroll-content>
 		</ion-infinite-scroll>
 		<div v-show="countNoFilters === 0 || countWithFilters === 0">
 			<ion-card class="ion-text-center">
 				<ion-card-header>
-					<ion-card-title>{{labels.no_entries_found}}</ion-card-title>
+					<ion-card-title>{{ labels.no_entries_found }}</ion-card-title>
 				</ion-card-header>
 			</ion-card>
 		</div>
@@ -144,7 +126,7 @@ export default {
 			required: true
 		}
 	},
-	setup(props) {
+	setup (props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -160,7 +142,7 @@ export default {
 		console.log('Total entries ----------------->', entries.length);
 
 		const methods = {
-			viewEntry(entry) {
+			viewEntry (entry) {
 				// Project update cannot take place if navigating away
 				rootStore.routeParams = {
 					entryUuid: entry.entry_uuid,
@@ -173,7 +155,7 @@ export default {
 				});
 			},
 			//Go to the entries page for the child of an entry
-			goToChildEntriesPage(entryUuid, title) {
+			goToChildEntriesPage (entryUuid, title) {
 				// Project update cannot take place if navigating away
 				rootStore.continueProjectVersionUpdate = false;
 
@@ -191,18 +173,18 @@ export default {
 
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES,
-					params: {
+					query: {
 						refreshEntries: 'true',
 						timestamp: Date.now()
 					}
 				});
 			},
 
-			utcToLocal(utcDateString) {
+			utcToLocal (utcDateString) {
 				return format(new Date(utcDateString), 'dd MMM, yyyy @ h:mma');
 			},
-			loadEntriesChunk(ev) {
-				async function pushEntriesChunk() {
+			loadEntriesChunk (ev) {
+				async function pushEntriesChunk () {
 					return new Promise((resolve) => {
 						const offset = PARAMETERS.ENTRIES_PER_PAGE;
 						const max = state.entriesChunk.length + offset;
@@ -239,14 +221,14 @@ export default {
 					}
 				}, PARAMETERS.DELAY_MEDIUM);
 			},
-			filtersClear() {
+			filtersClear () {
 				//reset all filters
 				entriesState.filters = { ...PARAMETERS.FILTERS_DEFAULT };
 
 				//reload page to re-fecth entries
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES,
-					params: {
+					query: {
 						refreshEntries: 'true',
 						timestamp: Date.now()
 					}

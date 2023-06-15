@@ -15,18 +15,14 @@
 		</template>
 
 		<template #subheader>
-			<ion-toolbar
-				color="dark"
-				mode="md"
-			>
+			<ion-toolbar color="dark"
+						 mode="md">
 				<ion-buttons slot="start">
 					<ion-button @click="goBack()">
-						<ion-icon
-							slot="start"
-							:icon="chevronBackOutline"
-						>
+						<ion-icon slot="start"
+								  :icon="chevronBackOutline">
 						</ion-icon>
-						{{labels.back}}
+						{{ labels.back }}
 					</ion-button>
 				</ion-buttons>
 
@@ -36,16 +32,14 @@
 		<template #content>
 
 			<ion-grid class="ion-no-padding">
-				<ion-row
-					v-cloak
-					v-show="areAllEntrieUploaded"
-					class="animate__animated animate__fadeIn"
-				>
+				<ion-row v-cloak
+						 v-show="areAllEntrieUploaded"
+						 class="animate__animated animate__fadeIn">
 					<ion-col class="subheader-success">
 						<div class="ion-text-center">
 							<p>
 								<ion-icon :icon="checkmark"></ion-icon>
-								{{labels.all_entries_uploaded}}
+								{{ labels.all_entries_uploaded }}
 							</p>
 						</div>
 					</ion-col>
@@ -54,154 +48,122 @@
 				<ion-row v-if="state.totalEntries === 0">
 					<ion-col class="ion-text-center subheader-default">
 						<p>
-							{{labels.no_entries_found}}
+							{{ labels.no_entries_found }}
 						</p>
 					</ion-col>
 				</ion-row>
 
-				<ion-row
-					v-if="state.totalEntriesIncomplete > 0"
-					class="subheader-error"
-				>
+				<ion-row v-if="state.totalEntriesIncomplete > 0"
+						 class="subheader-error">
 					<ion-col>
 						<div class="ion-text-center">
 							<p>
 								<ion-icon :icon="alertCircle"></ion-icon>
-								{{labels.incomplete_entries}}
+								{{ labels.incomplete_entries }}
 							</p>
 						</div>
 					</ion-col>
 				</ion-row>
 
-				<ion-row
-					v-if="state.totalEntries > 0 && state.errors"
-					class="ion-margin-top"
-				>
-					<ion-col
-						size-xs="8"
-						offset-xs="2"
-						size-sm="6"
-						offset-sm="3"
-						size-md="4"
-						offset-md="4"
-						size-lg="4"
-						offset-lg="4"
-						class="ion-align-self-center"
-					>
-						<ion-button
-							color="danger"
-							expand="block"
-							@click="goToEntriesErrors()"
-						>
-							{{labels.check_entries}}
+				<ion-row v-if="state.totalEntries > 0 && state.errors"
+						 class="ion-margin-top">
+					<ion-col size-xs="8"
+							 offset-xs="2"
+							 size-sm="6"
+							 offset-sm="3"
+							 size-md="4"
+							 offset-md="4"
+							 size-lg="4"
+							 offset-lg="4"
+							 class="ion-align-self-center">
+						<ion-button color="danger"
+									expand="block"
+									@click="goToEntriesErrors()">
+							{{ labels.check_entries }}
 						</ion-button>
 					</ion-col>
 				</ion-row>
 
 				<ion-row class="ion-margin-bottom ion-margin-top">
-					<ion-col
-						size-xs="8"
-						offset-xs="2"
-						size-sm="6"
-						offset-sm="3"
-						size-md="4"
-						offset-md="4"
-						size-lg="4"
-						offset-lg="4"
-						class="ion-align-self-center"
-					>
-						<ion-button
-							:disabled="!state.canUploadData"
-							color="secondary"
-							expand="block"
-							@click="uploadData()"
-						>
-							<ion-icon
-								slot="start"
-								:icon="documentText"
-							></ion-icon>
-							{{labels.upload_data}}
+					<ion-col size-xs="8"
+							 offset-xs="2"
+							 size-sm="6"
+							 offset-sm="3"
+							 size-md="4"
+							 offset-md="4"
+							 size-lg="4"
+							 offset-lg="4"
+							 class="ion-align-self-center">
+						<ion-button :disabled="!state.canUploadData"
+									color="secondary"
+									expand="block"
+									@click="uploadData()">
+							<ion-icon slot="start"
+									  :icon="documentText"></ion-icon>
+							{{ labels.upload_data }}
 						</ion-button>
 					</ion-col>
 				</ion-row>
 
 				<ion-row class="ion-margin-bottom">
-					<ion-col
-						size-xs="8"
-						offset-xs="2"
-						size-sm="6"
-						offset-sm="3"
-						size-md="4"
-						offset-md="4"
-						size-lg="4"
-						offset-lg="4"
-						class="ion-align-self-center"
-					>
-						<ion-button
-							:disabled="state.photos.length===0"
-							color="secondary"
-							expand="block"
-							@click="uploadMedia(PARAMETERS.QUESTION_TYPES.PHOTO)"
-						>
-							<ion-icon
-								slot="start"
-								:icon="images"
-							></ion-icon>
-							{{labels.upload_photos}}
+					<ion-col size-xs="8"
+							 offset-xs="2"
+							 size-sm="6"
+							 offset-sm="3"
+							 size-md="4"
+							 offset-md="4"
+							 size-lg="4"
+							 offset-lg="4"
+							 class="ion-align-self-center">
+						<ion-button :disabled="state.photos.length === 0"
+									color="secondary"
+									expand="block"
+									@click="uploadMedia(PARAMETERS.QUESTION_TYPES.PHOTO)">
+							<ion-icon slot="start"
+									  :icon="images"></ion-icon>
+							{{ labels.upload_photos }}
 						</ion-button>
 					</ion-col>
 				</ion-row>
 
 				<ion-row class="ion-margin-bottom">
-					<ion-col
-						size-xs="8"
-						offset-xs="2"
-						size-sm="6"
-						offset-sm="3"
-						size-md="4"
-						offset-md="4"
-						size-lg="4"
-						offset-lg="4"
-						class="ion-align-self-center"
-					>
-						<ion-button
-							:disabled="state.audios.length===0"
-							color="secondary"
-							expand="block"
-							@click="uploadMedia(PARAMETERS.QUESTION_TYPES.AUDIO)"
-						>
-							<ion-icon
-								slot="start"
-								:icon="musicalNotes"
-							></ion-icon>
-							{{labels.upload_audios}}
+					<ion-col size-xs="8"
+							 offset-xs="2"
+							 size-sm="6"
+							 offset-sm="3"
+							 size-md="4"
+							 offset-md="4"
+							 size-lg="4"
+							 offset-lg="4"
+							 class="ion-align-self-center">
+						<ion-button :disabled="state.audios.length === 0"
+									color="secondary"
+									expand="block"
+									@click="uploadMedia(PARAMETERS.QUESTION_TYPES.AUDIO)">
+							<ion-icon slot="start"
+									  :icon="musicalNotes"></ion-icon>
+							{{ labels.upload_audios }}
 						</ion-button>
 					</ion-col>
 				</ion-row>
 
 				<ion-row class="ion-margin-bottom">
-					<ion-col
-						size-xs="8"
-						offset-xs="2"
-						size-sm="6"
-						offset-sm="3"
-						size-md="4"
-						offset-md="4"
-						size-lg="4"
-						offset-lg="4"
-						class="ion-align-self-center"
-					>
-						<ion-button
-							:disabled="state.videos.length===0"
-							color="secondary"
-							expand="block"
-							@click="uploadMedia(PARAMETERS.QUESTION_TYPES.VIDEO)"
-						>
-							<ion-icon
-								slot="start"
-								:icon="videocam"
-							></ion-icon>
-							{{labels.upload_videos}}
+					<ion-col size-xs="8"
+							 offset-xs="2"
+							 size-sm="6"
+							 offset-sm="3"
+							 size-md="4"
+							 offset-md="4"
+							 size-lg="4"
+							 offset-lg="4"
+							 class="ion-align-self-center">
+						<ion-button :disabled="state.videos.length === 0"
+									color="secondary"
+									expand="block"
+									@click="uploadMedia(PARAMETERS.QUESTION_TYPES.VIDEO)">
+							<ion-icon slot="start"
+									  :icon="videocam"></ion-icon>
+							{{ labels.upload_videos }}
 						</ion-button>
 					</ion-col>
 				</ion-row>
@@ -244,7 +206,7 @@ import { uploadDataService } from '@/services/upload-data-service';
 import { logout } from '@/use/logout';
 
 export default {
-	setup() {
+	setup () {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -264,7 +226,7 @@ export default {
 		});
 
 		//Check if we have any media to upload
-		function _checkMedia() {
+		function _checkMedia () {
 			return new Promise((resolve, reject) => {
 				(async function () {
 					const response = await mediaService.getProjectStoredMedia({
@@ -288,7 +250,7 @@ export default {
 		}
 
 		//Check if we have any unsynced data to upload
-		function _checkData() {
+		function _checkData () {
 			const projectRef = projectModel.getProjectRef();
 
 			return new Promise((resolve) => {
@@ -325,7 +287,7 @@ export default {
 			});
 		}
 
-		async function _showModalProgressTransfer(header, total) {
+		async function _showModalProgressTransfer (header, total) {
 			rootStore.progressTransfer = { total, done: 0 };
 			const modal = await modalController.create({
 				cssClass: 'modal-progress-transfer',
@@ -339,7 +301,7 @@ export default {
 			return modal.present();
 		}
 
-		async function _handleGeneralError(error) {
+		async function _handleGeneralError (error) {
 			const projectOutdatedErrors = PARAMETERS.PROJECT_OUTDATED_ERROR_CODES;
 			const authErrors = PARAMETERS.AUTH_ERROR_CODES;
 			// Check the state of the data/media left to upload
@@ -390,7 +352,7 @@ export default {
 			 * Start with top level parent forms and their branches
 			 * Then move on to related children, child branches and repeat
 			 */
-			async uploadData() {
+			async uploadData () {
 				//no internet connection -> bail out
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
@@ -436,7 +398,7 @@ export default {
 					);
 				}
 			},
-			async uploadMedia(type) {
+			async uploadMedia (type) {
 				const mediaCount = state[type + 's'].length;
 				let header = labels.uploading_entries;
 				//no internet connection -> bail out
@@ -490,7 +452,7 @@ export default {
 					}
 				);
 			},
-			goBack() {
+			goBack () {
 				//refresh entries page only when an upload was attempted
 				if (rootStore.attemptedUploadOrErrorFix) {
 					rootStore.attemptedUploadOrErrorFix = false;
@@ -498,7 +460,7 @@ export default {
 
 					router.replace({
 						name: PARAMETERS.ROUTES.ENTRIES,
-						params: {
+						query: {
 							refreshEntries: true,
 							timestamp: Date.now()
 						}
@@ -507,17 +469,17 @@ export default {
 					//go back
 					router.replace({
 						name: rootStore.nextRoute,
-						params: { ...rootStore.routeParams }
+						query: { ...rootStore.routeParams }
 					});
 				}
 			},
-			goToEntriesErrors() {
+			goToEntriesErrors () {
 				//let's set a flag to refresh entries when user get back,
 				//just in case some entry got deleted or edited
 				rootStore.attemptedUploadOrErrorFix = true;
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES_ERRORS,
-					params: {
+					query: {
 						refreshEntriesErrors: true,
 						timestamp: Date.now()
 					}
@@ -570,5 +532,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

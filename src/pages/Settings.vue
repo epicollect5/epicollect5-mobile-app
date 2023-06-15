@@ -6,15 +6,11 @@
 		</template>
 
 		<template #actions-end>
-			<ion-button
-				fill="clear"
-				@click="saveSettings()"
-			>
-				<ion-icon
-					slot="start"
-					:icon="checkmark"
-				></ion-icon>
-				{{labels.save}}
+			<ion-button fill="clear"
+						@click="saveSettings()">
+				<ion-icon slot="start"
+						  :icon="checkmark"></ion-icon>
+				{{ labels.save }}
 			</ion-button>
 		</template>
 
@@ -22,74 +18,58 @@
 			<ion-toolbar color="dark">
 				<ion-buttons slot="start">
 					<ion-button @click="goBack()">
-						<ion-icon
-							slot="start"
-							:icon="chevronBackOutline"
-						>
+						<ion-icon slot="start"
+								  :icon="chevronBackOutline">
 						</ion-icon>
-						{{labels.back}}
+						{{ labels.back }}
 					</ion-button>
 				</ion-buttons>
-				<ion-buttons
-					class="toolbar-spacer"
-					slot="end"
-				>
+				<ion-buttons class="toolbar-spacer"
+							 slot="end">
 					<ion-button>
-						<ion-icon
-							slot="end"
-							:icon="chevronBackOutline"
-						>
+						<ion-icon slot="end"
+								  :icon="chevronBackOutline">
 						</ion-icon>
-						{{labels.back}}
+						{{ labels.back }}
 					</ion-button>
 				</ion-buttons>
 			</ion-toolbar>
 		</template>
 
 		<template #content>
-			<ion-toolbar
-				color="light"
-				mode="ios"
-				class="animate__animated animate__fadeIn"
-			>
+			<ion-toolbar color="light"
+						 mode="ios"
+						 class="animate__animated animate__fadeIn">
 				<div class="center-item-content-wrapper">
 					<ion-label class="ion-text-center ion-text-uppercase ">
-						{{labels.settings}}
+						{{ labels.settings }}
 					</ion-label>
 				</div>
 			</ion-toolbar>
 			<ion-card>
 				<ion-card-header class="settings-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{labels.accessibility}}
+						{{ labels.accessibility }}
 					</ion-card-title>
 				</ion-card-header>
 				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item
-						lines="full"
-						class="ion-text-left"
-					>
-						<ion-label>{{labels.text_size}}</ion-label>
+					<ion-item lines="full"
+							  class="ion-text-left">
+						<ion-label>{{ labels.text_size }}</ion-label>
 					</ion-item>
 					<ion-item lines="none">
-						<ion-range
-							min="0"
-							max="5"
-							step="1"
-							debounce="500"
-							snaps="true"
-							ticks="true"
-							:value="state.selectedTextSize"
-							@ionChange="updateSelectedTextSize($event)"
-						>
-							<ion-icon
-								slot="start"
-								:icon="remove"
-							></ion-icon>
-							<ion-icon
-								slot="end"
-								:icon="add"
-							></ion-icon>
+						<ion-range min="0"
+								   :max="zoomLevels"
+								   step="1"
+								   debounce="500"
+								   snaps="true"
+								   ticks="true"
+								   :value="state.selectedTextSize"
+								   @ionChange="updateSelectedTextSize($event)">
+							<ion-icon slot="start"
+									  :icon="remove"></ion-icon>
+							<ion-icon slot="end"
+									  :icon="add"></ion-icon>
 						</ion-range>
 					</ion-item>
 				</ion-card-content>
@@ -98,15 +78,13 @@
 			<ion-card>
 				<ion-card-header class="settings-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{labels.version}}
+						{{ labels.version }}
 					</ion-card-title>
 				</ion-card-header>
 				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item
-						lines="none"
-						class="ion-text-left"
-					>
-						<ion-label>{{appVersion}}</ion-label>
+					<ion-item lines="none"
+							  class="ion-text-left">
+						<ion-label>{{ appVersion }}</ion-label>
 					</ion-item>
 				</ion-card-content>
 			</ion-card>
@@ -114,20 +92,18 @@
 			<ion-card v-if="isDebug || hasEasterEggProject">
 				<ion-card-header class="settings-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{labels.advanced_settings}}
+						{{ labels.advanced_settings }}
 					</ion-card-title>
 				</ion-card-header>
 				<ion-card-content class="ion-text-center ion-no-padding">
 					<ion-item>
-						<ion-label color="dark">{{labels.server_url}}
+						<ion-label color="dark">{{ labels.server_url }}
 						</ion-label>
 					</ion-item>
 					<ion-item lines="none">
-						<input
-							class="full-width"
-							type="text"
-							v-model="state.serverUrl"
-						/>
+						<input class="full-width"
+							   type="text"
+							   v-model="state.serverUrl" />
 					</ion-item>
 				</ion-card-content>
 			</ion-card>
@@ -150,7 +126,7 @@ import { notificationService } from '@/services/notification-service';
 
 export default {
 	components: {},
-	setup() {
+	setup () {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -161,6 +137,7 @@ export default {
 			selectedTextSize: rootStore.selectedTextSize,
 			isSaving: false
 		});
+		const zoomLevels = PARAMETERS.ZOOM_LEVELS;
 
 		const computedScope = {
 			appVersion: computed(() => {
@@ -175,19 +152,19 @@ export default {
 		};
 
 		const methods = {
-			goBack() {
+			goBack () {
 				router.replace({
 					name: rootStore.nextRoute,
-					params: { ...rootStore.routeParams }
+					query: { ...rootStore.routeParams }
 				});
 			},
-			async saveSettings() {
+			async saveSettings () {
 				let failed = false;
 				await notificationService.showProgressDialog();
 				state.isSaving = true;
 				//change zoom level
 				//remove any zoom class
-				for (let i = 0; i <= 5; i++) {
+				for (let i = 0; i <= zoomLevels; i++) {
 					document.body.classList.remove('zoom-' + i);
 				}
 				//add selected zoom level class
@@ -237,11 +214,11 @@ export default {
 					notificationService.showToast(STRINGS[language].status_codes.ec5_123);
 				}
 			},
-			updateSelectedTextSize(e) {
+			updateSelectedTextSize (e) {
 				state.selectedTextSize = e.detail.value;
 				rootStore.selectedTextSize = state.selectedTextSize;
 			},
-			onFiltersToggleChange() {
+			onFiltersToggleChange () {
 				state.filtersToggle = !state.filtersToggle;
 			}
 		};
@@ -263,6 +240,7 @@ export default {
 			...methods,
 			...computedScope,
 			state,
+			zoomLevels,
 			//icons
 			chevronBackOutline,
 			add,
@@ -273,5 +251,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

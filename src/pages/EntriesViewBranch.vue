@@ -1,8 +1,6 @@
 <template>
-	<base-layout
-		:title="state.projectName"
-		id="entries-view-branch"
-	>
+	<base-layout :title="state.projectName"
+				 id="entries-view-branch">
 
 		<template #actions-start>
 			<ion-menu-button></ion-menu-button>
@@ -16,29 +14,23 @@
 		</template>
 
 		<template #subheader>
-			<ion-toolbar
-				color="dark"
-				mode="md"
-			>
+			<ion-toolbar color="dark"
+						 mode="md">
 				<ion-buttons slot="start">
 					<ion-button @click="goBack()">
-						<ion-icon
-							slot="start"
-							:icon="chevronBackOutline"
-						>
+						<ion-icon slot="start"
+								  :icon="chevronBackOutline">
 						</ion-icon>
-						{{labels.back}}
+						{{ labels.back }}
 					</ion-button>
 				</ion-buttons>
 
 				<ion-buttons slot="end">
 					<ion-button @click="deleteEntryBranch()">
-						<ion-icon
-							slot="start"
-							:icon="trash"
-						>
+						<ion-icon slot="start"
+								  :icon="trash">
 						</ion-icon>
-						{{labels.delete}}
+						{{ labels.delete }}
 					</ion-button>
 				</ion-buttons>
 
@@ -46,30 +38,24 @@
 		</template>
 
 		<template #content>
-			<ion-spinner
-				v-if="state.isFetching"
-				class="loader"
-				name="crescent"
-			></ion-spinner>
+			<ion-spinner v-if="state.isFetching"
+						 class="loader"
+						 name="crescent"></ion-spinner>
 
 			<div v-else>
 				<!-- Errors banner ----------------------------------------->
 				<div v-if="state.errors?.errors?.length > 0">
-					<item-divider-error
-						v-for="(error, index) in state.errors.errors"
-						:key="index"
-						:message="statusCodes[error.code] || error.title"
-					></item-divider-error>
+					<item-divider-error v-for="(error, index) in state.errors.errors"
+										:key="index"
+										:message="statusCodes[error.code] || error.title"></item-divider-error>
 				</div>
 				<!-- ----------------------------------------------------- -->
 
 				<!-- Incomplete entry banner--------------------------------->
 				<div v-if="state.synced === 2">
-					<ion-item-divider
-						color="warning"
-						class="entry-incomplete"
-						sticky
-					>
+					<ion-item-divider color="warning"
+									  class="entry-incomplete"
+									  sticky>
 						<ion-label class="entry-title-label ion-text-center">
 							{{ labels.incomplete_entry }}
 						</ion-label>
@@ -77,14 +63,12 @@
 				</div>
 				<!-- ------------------------------------------------------ -->
 
-				<list-answers
-					:formRef="state.formRef"
-					:items="state.items"
-					:entry="state.entry"
-					:errors="state.errors"
-					:areGroupAnswers="false"
-					:areBranchAnswers="true"
-				></list-answers>
+				<list-answers :formRef="state.formRef"
+							  :items="state.items"
+							  :entry="state.entry"
+							  :errors="state.errors"
+							  :areGroupAnswers="false"
+							  :areBranchAnswers="true"></list-answers>
 			</div>
 		</template>
 	</base-layout>
@@ -113,7 +97,7 @@ import ItemDividerError from '@/components/ItemDividerError.vue';
 
 export default {
 	components: { ListAnswers, ItemDividerError },
-	setup() {
+	setup () {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -158,7 +142,7 @@ export default {
 		state.synced = state.entry.synced;
 
 		const methods = {
-			goBack() {
+			goBack () {
 				rootStore.routeParams = {
 					formRef: state.entry.formRef,
 					inputRef: state.entry.ownerInputRef,
@@ -171,13 +155,13 @@ export default {
 
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES_ADD,
-					params: {
+					query: {
 						refreshBranchEntries: 'true',
 						timestamp: Date.now()
 					}
 				});
 			},
-			async deleteEntryBranch() {
+			async deleteEntryBranch () {
 				const confirmed = await notificationService.confirmSingle(
 					STRINGS[language].status_codes.ec5_129,
 					labels.delete_branch_entry + '?'
@@ -218,7 +202,7 @@ export default {
 					}
 				}
 			},
-			async editEntry(inputRef, inputIndex) {
+			async editEntry (inputRef, inputIndex) {
 				await branchEntryService.setUpExisting(state.entry);
 
 				rootStore.routeParams = {
@@ -238,7 +222,7 @@ export default {
 		/*
 		 * View this entry answers
 		 */
-		async function fetchBranchAnswers() {
+		async function fetchBranchAnswers () {
 			let data;
 			let inputDetails;
 
@@ -302,7 +286,7 @@ export default {
 			});
 		}
 
-		function _addAnswerToItems(inputDetails, index) {
+		function _addAnswerToItems (inputDetails, index) {
 			let error = '';
 			let scopeError;
 			let groupIndex;
@@ -417,11 +401,11 @@ export default {
 
 			//Get answer for viewing via the AnswerService
 
-			function _getAnswer(inputDetails, answer) {
+			function _getAnswer (inputDetails, answer) {
 				return answerService.parseAnswerForViewing(inputDetails, answer);
 			}
 
-			function _renderErrors() {
+			function _renderErrors () {
 				// Check for synced errors on main input
 				if (state.errors.errors) {
 					// Check if this input has an error
@@ -448,7 +432,7 @@ export default {
 				}
 			}
 
-			function _renderAnswers() {
+			function _renderAnswers () {
 				state.items[inputDetails.ref] = {
 					question:
 						inputDetails.type === PARAMETERS.QUESTION_TYPES.README
@@ -515,5 +499,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

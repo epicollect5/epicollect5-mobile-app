@@ -180,7 +180,7 @@ export default {
 					//there is a route saved, go there
 					router.replace({
 						name: rootStore.nextRoute,
-						params: {
+						query: {
 							refreshEntries,
 							refreshEntriesErrors,
 							timestamp: Date.now()
@@ -192,7 +192,7 @@ export default {
 					//go back to entries list
 					router.replace({
 						name: PARAMETERS.ROUTES.ENTRIES,
-						params: {
+						query: {
 							refreshEntries: true
 						}
 					});
@@ -242,7 +242,7 @@ export default {
 						//(should be either the EntriesError or Entries page)
 						router.replace({
 							name: rootStore.nextRoute,
-							params: {
+							query: {
 								refreshEntries,
 								refreshEntriesErrors,
 								timestamp: Date.now()
@@ -257,7 +257,7 @@ export default {
 						};
 						router.replace({
 							name: PARAMETERS.ROUTES.ENTRIES,
-							params: {
+							query: {
 								refreshEntries: true,
 								timestamp: Date.now()
 							}

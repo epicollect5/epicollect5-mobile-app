@@ -63,7 +63,11 @@ pinia.use(PiniaLogger({
 }));
 
 export const app = createApp(App)
-  .use(IonicVue, { hardwareBackButton: true, mode: 'md' })
+  .use(IonicVue, {
+    innerHTMLTemplatesEnabled: true,
+    hardwareBackButton: true,
+    mode: 'md'
+  })
   .use(router)
   .use(pinia);
 

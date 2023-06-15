@@ -11,7 +11,7 @@ export const PARAMETERS = {
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',
     HOW_MANY_ENTRIES: 5,
     HOW_MANY_BRANCH_ENTRIES: 2,
-
+    ZOOM_LEVELS: 7,
     DEFAULT_LANGUAGE: 'en',
 
     EASTER_EGG: {
