@@ -1,17 +1,13 @@
 <template>
 	<ion-page :id="id">
-		<ion-header>
-			<ion-toolbar
-				v-if=showBetaToolbarAndroid
-				color="warning"
-				class="beta-toolbar"
-			>
+		<ion-header class="ion-no-border">
+			<ion-toolbar v-if=showBetaToolbarAndroid
+						 color="warning"
+						 class="beta-toolbar">
 				<ion-title slot="start">Beta</ion-title>
 				<ion-buttons slot="end">
-					<ion-button
-						size="small"
-						@click="reportBug()"
-					>
+					<ion-button size="small"
+								@click="reportBug()">
 						Report a bug&nbsp;
 						<ion-icon :icon="chatbubbleEllipses"></ion-icon>
 					</ion-button>
@@ -22,27 +18,21 @@
 				<ion-buttons slot="start">
 					<slot name="actions-start"></slot>
 				</ion-buttons>
-				<ion-title
-					class="project-header"
-					:class="isPWA ? 'pwa' : 'ion-text-center'"
-					v-html="title"
-					@click="exitApp($event)"
-				></ion-title>
+				<ion-title class="project-header"
+						   :class="isPWA ? 'pwa' : 'ion-text-center'"
+						   v-html="title"
+						   @click="exitApp($event)"></ion-title>
 				<ion-buttons slot="end">
 					<slot name="actions-end"></slot>
 				</ion-buttons>
 			</ion-toolbar>
-			<ion-toolbar
-				v-if="showBetaToolbariOS"
-				color="warning"
-				class="beta-toolbar"
-			>
+			<ion-toolbar v-if="showBetaToolbariOS"
+						 color="warning"
+						 class="beta-toolbar">
 				<ion-title slot="start">Beta</ion-title>
 				<ion-buttons slot="end">
-					<ion-button
-						size="small"
-						@click="reportBug()"
-					>
+					<ion-button size="small"
+								@click="reportBug()">
 						Report a bug&nbsp;
 						<ion-icon :icon="chatbubbleEllipses"></ion-icon>
 					</ion-button>
@@ -78,13 +68,13 @@ export default {
 		}
 	},
 	emits: ['exit-app'],
-	setup(props, context) {
+	setup (props, context) {
 		const rootStore = useRootStore();
 		const route = useRoute();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
 		const methods = {
-			async reportBug() {
+			async reportBug () {
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
 					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
@@ -93,7 +83,7 @@ export default {
 			},
 			//emit event to exit app and go back to dataviewer
 			// PWA in production only
-			exitApp(e) {
+			exitApp (e) {
 				const allowedRoutes = [
 					PARAMETERS.ROUTES.NOT_FOUND,
 					PARAMETERS.ROUTES.ENTRIES_ADD,
@@ -138,5 +128,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

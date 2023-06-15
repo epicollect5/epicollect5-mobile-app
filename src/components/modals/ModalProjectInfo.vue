@@ -1,32 +1,22 @@
 <template>
-	<ion-header>
+	<ion-header class="ion-no-border">
 		<ion-toolbar color="primary">
 			<ion-buttons slot="start">
-				<ion-button
-					class="button-close"
-					@click="dismiss()"
-				>
-					<ion-icon
-						slot="start"
-						:icon="closeOutline"
-					>
+				<ion-button class="button-close"
+							@click="dismiss()">
+					<ion-icon slot="start"
+							  :icon="closeOutline">
 					</ion-icon>
-					{{labels.close}}
+					{{ labels.close }}
 				</ion-button>
 			</ion-buttons>
-			<ion-title
-				class="project-header ion-text-center"
-				v-html="getProjectNameMarkup()"
-			></ion-title>
+			<ion-title class="project-header ion-text-center"
+					   v-html="getProjectNameMarkup()"></ion-title>
 			<ion-buttons slot="end">
-				<ion-button
-					class="button-open"
-					@click="goToProjectHomePage()"
-				>
-					<ion-icon
-						slot="end"
-						:icon="open"
-					>
+				<ion-button class="button-open"
+							@click="goToProjectHomePage()">
+					<ion-icon slot="end"
+							  :icon="open">
 					</ion-icon>
 				</ion-button>
 			</ion-buttons>
@@ -38,12 +28,12 @@
 		<ion-card>
 			<ion-card-header class="settings-label">
 				<ion-card-title class="ion-text-center ion-text-uppercase">
-					{{labels.project_info}}
+					{{ labels.project_info }}
 				</ion-card-title>
 			</ion-card-header>
 			<ion-card-content>
 				<h2 class="ion-padding-top">
-					{{projectName}}
+					{{ projectName }}
 				</h2>
 			</ion-card-content>
 		</ion-card>
@@ -51,12 +41,12 @@
 		<ion-card>
 			<ion-card-header class="settings-label">
 				<ion-card-title class="ion-text-center ion-text-uppercase">
-					{{labels.small_description}}
+					{{ labels.small_description }}
 				</ion-card-title>
 			</ion-card-header>
 			<ion-card-content>
 				<h2 class="ion-padding-top">
-					{{projectSmallDescription}}
+					{{ projectSmallDescription }}
 				</h2>
 			</ion-card-content>
 		</ion-card>
@@ -64,17 +54,16 @@
 		<ion-card>
 			<ion-card-header class="settings-label">
 				<ion-card-title class="ion-text-center ion-text-uppercase">
-					{{labels.description}}
+					{{ labels.description }}
 				</ion-card-title>
 			</ion-card-header>
 			<ion-card-content>
 				<h2 class="ion-padding-top">
-					{{projectDescription}}
+					{{ projectDescription }}
 				</h2>
 			</ion-card-content>
 		</ion-card>
 	</ion-content>
-
 </template>
 
 <script>
@@ -90,7 +79,7 @@ import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
 
 export default {
-	setup(props) {
+	setup (props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -102,13 +91,13 @@ export default {
 		});
 
 		const methods = {
-			dismiss() {
+			dismiss () {
 				modalController.dismiss();
 			},
-			getProjectNameMarkup() {
+			getProjectNameMarkup () {
 				return utilsService.getProjectNameMarkup(true);
 			},
-			async goToProjectHomePage() {
+			async goToProjectHomePage () {
 				const slug = projectModel.getSlug();
 				const homepage = PARAMETERS.DEFAULT_SERVER_URL + PARAMETERS.API.ROUTES.PROJECT + slug;
 
@@ -141,5 +130,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

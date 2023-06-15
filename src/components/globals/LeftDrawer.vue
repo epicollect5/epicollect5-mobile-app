@@ -3,7 +3,7 @@
 			  menu-id="left-drawer"
 			  content-id="main"
 			  swipe-gesture="false">
-		<ion-header>
+		<ion-header class="ion-no-border">
 			<ion-toolbar color="primary"
 						 class="ion-text-center ion-text-uppercase">
 				{{ labels.menu }}

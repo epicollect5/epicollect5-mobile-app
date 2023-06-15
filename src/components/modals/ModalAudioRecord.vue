@@ -1,5 +1,5 @@
 <template>
-	<ion-header>
+	<ion-header class="ion-no-border">
 		<ion-toolbar>
 			<ion-title class="ion-text-center"
 					   color="dark">{{ labels.recording_audio }}</ion-title>

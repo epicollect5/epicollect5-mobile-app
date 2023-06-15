@@ -1,5 +1,5 @@
 <template>
-	<ion-header>
+	<ion-header class="ion-no-border">
 		<ion-toolbar color="primary">
 			<ion-buttons slot="start">
 				<ion-button :disabled="state.isFetching"

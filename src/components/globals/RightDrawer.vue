@@ -4,7 +4,7 @@
 			  content-id="main"
 			  @ionWillClose="onMenuWillClose()"
 			  swipe-gesture="false">
-		<ion-header>
+		<ion-header class="ion-no-border">
 			<ion-toolbar color="primary"
 						 class="ion-text-center ion-text-uppercase">
 				<ion-label>{{ labels.project_options }}</ion-label>
