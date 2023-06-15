@@ -211,7 +211,7 @@ export const notificationService = {
                     cordova.plugins.foregroundService.start(
                         PARAMETERS.APP_NAME,
                         labels.loading,
-                        'ec5_notification.png',
+                        'ec5_notification',
                         1,
                         10
                     );
