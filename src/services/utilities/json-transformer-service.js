@@ -128,7 +128,7 @@ export const JSONTransformerService = {
         }
         else {
             //on native platforms use unique device identifier
-            entry.device_id = rootStore.device.uuid;
+            entry.device_id = rootStore.device.identifier;
         }
 
         //upload as WEB when using the PWA, otherwise ANDROID or IOS
@@ -166,7 +166,7 @@ export const JSONTransformerService = {
         const rootStore = useRootStore();
         // Add extra properties needed by the json formatter
         file.structure_last_updated = projectModel.getLastUpdated();
-        file.device_id = rootStore.device.uuid;
+        file.device_id = rootStore.device.identifier;
 
         //upload as WEB when using the PWA, otherwise ANDROID or IOS
         file.platform = Capacitor.isNativePlatform()
