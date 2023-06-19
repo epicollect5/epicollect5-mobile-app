@@ -10,6 +10,7 @@ import { errorsService } from '@/services/errors-service';
 import { webService } from '@/services/web-service';
 import { authLoginService } from '@/services/auth/auth-login-service';
 import { modalsHandlerService } from '@/services/modals/modals-handler-service';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 export const authGoogleService = {
 
@@ -51,6 +52,11 @@ export const authGoogleService = {
         const labels = STRINGS[language].labels;
         const account = {};
 
+        //const response = await GoogleAuth.signIn();
+        //  notificationService.showAlert(JSON.stringify(response));
+        // notificationService.hideProgressDialog();
+        // return;
+
         // Check if we have a connection
         const hasInternetConnection = await utilsService.hasInternetConnection();
         if (!hasInternetConnection) {
@@ -59,16 +65,32 @@ export const authGoogleService = {
 
             await notificationService.showProgressDialog(labels.sign_in + '...');
 
-            this.getGoogleCodeNatively(authIds).then(
+            //const response = await GoogleAuth.signIn();
+            /// notificationService.showAlert(JSON.stringify(response));
+            /// notificationService.hideProgressDialog();
+            //  console.log(response);
+
+            // {
+            //     "email":"email",      
+            //     "familyName":"name",
+            //     "givenName":"name",
+            //     "id":"id",
+            //     "imageUrl":"img",
+            //     "name":"name",
+            //     "authentication":{"accessToken":"token","refreshToken":""},
+            //     "serverAuthCode": undefined,
+            //   }
+
+            GoogleAuth.signIn().then(
                 function (googleResponse) {
                     account.email = googleResponse.email;
                     account.provider = PARAMETERS.PROVIDERS.GOOGLE;
                     account.user = {
-                        given_name: googleResponse.given_name,
-                        family_name: googleResponse.family_name
+                        given_name: googleResponse.givenName,
+                        family_name: googleResponse.familyName
                     };
 
-                    webService.authGoogleUser(googleResponse.code).then(
+                    webService.authGoogleUser(googleResponse.serverAuthCode).then(
                         async function (response) {
                             console.log('response', response);
 

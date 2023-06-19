@@ -18,6 +18,7 @@ import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { initService } from '@/services/init-service';
 import { webService } from '@/services/web-service';
 import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 /* Basic CSS for apps built with Ionic */
 import '@ionic/vue/css/normalize.css';
@@ -328,6 +329,7 @@ export const app = createApp(App)
   router.isReady().then(() => {
 
     console.log('mounting app');
+    GoogleAuth.initialize();
     app.mount('#app');
 
     if (!rootStore.isPWA) {

@@ -12,8 +12,8 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            '@': path.resolve(__dirname, '/src'),
-            '@ionic/vue': fileURLToPath(new URL('./node_modules/@ionic/vue/dist/index.esm', import.meta.url))
+            '@': path.resolve(__dirname, '/src')
+            // '@ionic/vue': fileURLToPath(new URL('./node_modules/@ionic/vue/dist/index.esm', import.meta.url))
         }
     },
     clearScreen: true,

@@ -1,7 +1,6 @@
 {
 	"appId": "uk.ac.imperial.epicollect.five",
 	"appName": "Epicollect5",
-	"bundledWebRuntime": false,
 	"npmClient": "npm",
 	"webDir": "dist",
 	"plugins": {
@@ -11,6 +10,13 @@
 			"splashFullScreen": true,
 			"splashImmersive": false,
 			"backgroundColor": "#ffffff"
+		},
+		"GoogleAuth": {
+			"scopes": [
+				"profile",
+				"email"
+			],
+			"forceCodeForRefreshToken": true
 		}
 	},
 	"cordova": {
