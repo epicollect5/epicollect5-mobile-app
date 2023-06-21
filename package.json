@@ -10,6 +10,7 @@
     "test:e2e": "vue-cli-service test:e2e",
     "lint": "vue-cli-service lint",
     "all-build": "ionic cap copy",
+    "preall-build-prod": "vitest --run --silent",
     "all-build-prod": "export VUE_APP_MODE=WEB && export VUE_APP_DEBUG= && VUE_APP_BYPASS_UNIQUENESS= && ionic cap copy",
     "all-copy": "ionic cap copy --no-build",
     "android": "export VUE_APP_MODE=WEB && ionic cap copy android && ionic cap open android",
