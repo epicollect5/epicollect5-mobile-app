@@ -9,21 +9,21 @@
 			fill="clear"
 			color="primary"
 			@click="filtersClear()"
-		>{{labels.clear_filters}}
+		>{{ labels.clear_filters }}
 			<ion-icon :icon="close"></ion-icon>
 		</ion-button>
 		<div
 			v-if="countWithFilters !== countNoFilters"
 			slot="end"
-			class="filters-count ion-text-uppercase ion-padding-end"
+			class="filters-count ion-text-uppercase"
 		>
-			{{labels.entries}} <span> {{countWithFilters}}/{{countNoFilters}} </span>
+			{{ labels.entries }} <span> {{ countWithFilters }}/{{ countNoFilters }} </span>
 		</div>
 		<div
 			v-else
 			slot="end"
-			class="filters-count ion-text-uppercase ion-padding-end"
-		>{{labels.entries}} <span> {{countNoFilters}} </span>
+			class="filters-count ion-text-uppercase "
+		>{{ labels.entries }} <span> {{ countNoFilters }} </span>
 		</div>
 	</ion-item-divider>
 </template>
@@ -67,5 +67,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
