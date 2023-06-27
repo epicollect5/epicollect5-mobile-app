@@ -25,7 +25,7 @@ export const uploadDataService = {
      *
      * @param total
      */
-    execute (total) {
+    execute(total) {
 
         return new Promise(function (resolve, reject) {
             const rootStore = useRootStore();
@@ -57,7 +57,7 @@ export const uploadDataService = {
              *
              * @private
              */
-            function _uploadEntry (formRef) {
+            function _uploadEntry(formRef) {
 
                 parentUuid = null;
 
@@ -83,8 +83,6 @@ export const uploadDataService = {
                                 // Check if the user can edit
                                 // If we have a synced value HAS_UNSYNCED_CHILD_ENTRIES, then we will also ignore
                                 if (res.rows.item(0).can_edit === 0 || res.rows.item(0).synced === PARAMETERS.SYNCED_CODES.HAS_UNSYNCED_CHILD_ENTRIES) {
-
-
                                     _updateProgress();
                                     // Can't edit, so just insert branches
                                     console.log('cant edit or only uploading child entries, synced and moved on: ' + res.rows.item(0).entry_uuid);
@@ -98,8 +96,6 @@ export const uploadDataService = {
                                     entry = JSONTransformerService.makeJsonEntry(PARAMETERS.ENTRY, res.rows.item(0));
                                     webService.uploadEntry(slug, entry).then(
                                         function () {
-
-
                                             _updateProgress();
                                             console.log('uploaded entry: ' + res.rows.item(0).entry_uuid);
                                             // Add entry uuid to entries array, to retrieve its children later
@@ -130,8 +126,6 @@ export const uploadDataService = {
                                             try {
                                                 _uploadError(PARAMETERS.ENTRY, response.data, res.rows.item(0).entry_uuid).then(
                                                     function () {
-
-
                                                         _updateProgress();
                                                         // Continue - try to upload the next child
                                                         window.setTimeout(function () {
@@ -189,7 +183,7 @@ export const uploadDataService = {
              *
              * @private
              */
-            function _uploadBranch () {
+            function _uploadBranch() {
 
                 ownerEntryUuid = null;
 
@@ -272,7 +266,7 @@ export const uploadDataService = {
             /**
              * Update the progress counter
              */
-            function _updateProgress (count) {
+            function _updateProgress(count) {
                 count ? currentEntryIndex += count : currentEntryIndex++;
                 notificationService.setProgress({ total, done: currentEntryIndex });
             }
@@ -281,7 +275,7 @@ export const uploadDataService = {
              * Handle an upload error
              * May be show stopping, or may allow the rest of the upload to continue
              */
-            function _uploadError (type, errorResponse, entryUuid) {
+            function _uploadError(type, errorResponse, entryUuid) {
 
                 errors = true;
 

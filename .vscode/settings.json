@@ -55,6 +55,7 @@
     //to remove annoying search sidebar when using keyboard shorcuts
     //otherwise it make wrong changes
     "javascript.format.insertSpaceBeforeFunctionParenthesis": false,
+    "typescript.format.insertSpaceBeforeFunctionParenthesis": false,
     "eslint.format.enable": true,
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": true

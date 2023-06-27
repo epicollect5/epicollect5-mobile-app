@@ -8,7 +8,7 @@ import { useRootStore } from '@/stores/root-store';
 export const webService = {
 
     // Get XSRF token from cookie
-    getXsrfToken () {
+    getXsrfToken() {
 
         const cookies = document.cookie.split(';');
         let token = '';
@@ -22,7 +22,7 @@ export const webService = {
         return token;
     },
     //jwt auth
-    getProject (slug) {
+    getProject(slug) {
 
         const self = this;
 
@@ -45,7 +45,7 @@ export const webService = {
         });
     },
     //session auth (private projects only within laravel, checking cookie)
-    getProjectPWA (slug) {
+    getProjectPWA(slug) {
 
         const rootStore = useRootStore();
 
@@ -53,7 +53,6 @@ export const webService = {
 
             let url = '';
             if (process.env.NODE_ENV === 'production') {
-
                 url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
             }
             else {
@@ -86,7 +85,7 @@ export const webService = {
     },
 
     //Search for a project
-    searchForProject (searchTerm) {
+    searchForProject(searchTerm) {
 
         const self = this;
 
@@ -111,7 +110,7 @@ export const webService = {
     /**
      * Upload an entry to the server
      */
-    uploadEntry (slug, data) {
+    uploadEntry(slug, data) {
 
         const self = this;
         const rootStore = useRootStore();
@@ -120,7 +119,7 @@ export const webService = {
             // Attempt to retrieve the jwt token
             self.getHeaders(true).then(function (headers) {
 
-                if (rootStore.device.platform !== PARAMETERS.WEB && PARAMETERS.MOBILE_DEBUG === 1) {
+                if (rootStore.device.platform !== PARAMETERS.WEB && parseInt(PARAMETERS.DEBUG) === 1) {
                     console.log(JSON.stringify(
                         {
                             method: 'POST',
@@ -147,7 +146,7 @@ export const webService = {
         });
     },
 
-    uploadEntryPWA (slug, data) {
+    uploadEntryPWA(slug, data) {
 
         const self = this;
 
@@ -178,7 +177,7 @@ export const webService = {
         });
     },
 
-    downloadEntryPWA (slug, formRef, entryUuid, branchRef, branchOwnerUuid) {
+    downloadEntryPWA(slug, formRef, entryUuid, branchRef, branchOwnerUuid) {
 
         const self = this;
 
@@ -215,7 +214,7 @@ export const webService = {
         });
     },
 
-    fetchSavedAnswersPWA (slug, formRef, branchRef, offset, inputRef) {
+    fetchSavedAnswersPWA(slug, formRef, branchRef, offset, inputRef) {
 
         const self = this;
 
@@ -253,7 +252,7 @@ export const webService = {
         });
     },
 
-    uploadFilePWA (slug, formData) {
+    uploadFilePWA(slug, formData) {
 
         const self = this;
 
@@ -285,7 +284,7 @@ export const webService = {
         });
     },
 
-    deleteTempMediaFile (projectSlug, entryUuid, mediaType, filename) {
+    deleteTempMediaFile(projectSlug, entryUuid, mediaType, filename) {
         return new Promise((resolve, reject) => {
             const payload = {
                 data: {
@@ -328,7 +327,7 @@ export const webService = {
         });
     },
 
-    checkUniquenessPWA (slug, data) {
+    checkUniquenessPWA(slug, data) {
         const self = this;
 
         return new Promise((resolve, reject) => {
@@ -356,7 +355,7 @@ export const webService = {
         });
     },
 
-    geocodeAddressPWA (address) {
+    geocodeAddressPWA(address) {
 
         const self = this;
 
@@ -402,7 +401,7 @@ export const webService = {
     /**
      * Download entries for a form from the server
      */
-    downloadEntries (slug, formRef, url) {
+    downloadEntries(slug, formRef, url) {
 
         const self = this;
         // Use either the url passed in or construct manually
@@ -429,7 +428,7 @@ export const webService = {
     /**
      * Upload a media entry to the server
      */
-    uploadMediaEntry (slug, data) {
+    uploadMediaEntry(slug, data) {
 
         const self = this;
 
@@ -453,7 +452,7 @@ export const webService = {
     /**
      * Upload an entry to the serve
      */
-    login (data, type) {
+    login(data, type) {
 
         const self = this;
 
@@ -477,7 +476,7 @@ export const webService = {
     /**
      * Authorise google user
      */
-    authGoogleUser (code) {
+    authGoogleUser(code) {
 
         const self = this;
 
@@ -502,7 +501,7 @@ export const webService = {
         });
     },
 
-    authAppleUser (identityToken, user) {
+    authAppleUser(identityToken, user) {
         const self = this;
 
         return new Promise(function (resolve, reject) {
@@ -528,7 +527,7 @@ export const webService = {
     /**
      * Get login methods from server
      */
-    getLoginMethods () {
+    getLoginMethods() {
 
         const self = this;
 
@@ -551,7 +550,7 @@ export const webService = {
     /**
      * Get the project version
      */
-    getProjectVersion (projectSlug) {
+    getProjectVersion(projectSlug) {
 
         const self = this;
 
@@ -582,7 +581,7 @@ export const webService = {
     //imp: be careful when debugging with multiple tabs or between old/new app.
     //imp: to be sure, test on postman with different jwt tokens:
     //imp: only the latest is valid, all the others do not work anymore.
-    getHeaders (getJwt) {
+    getHeaders(getJwt) {
 
         const headers = { 'Content-Type': 'application/vnd.api+json' };
 
@@ -615,7 +614,7 @@ export const webService = {
      *
      * @returns {*}
      */
-    getServerUrl () {
+    getServerUrl() {
         const rootStore = useRootStore();
         return projectModel.getServerUrl() ? projectModel.getServerUrl() : rootStore.serverUrl;
     },
@@ -623,11 +622,11 @@ export const webService = {
     /**
      * Get the mobile project image
      */
-    getProjectImageUrl (slug) {
+    getProjectImageUrl(slug) {
         return this.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.MEDIA + slug + PARAMETERS.API.PARAMS.PROJECT_LOGO_QUERY_STRING;
     },
 
-    passwordlessLogin (credentials) {
+    passwordlessLogin(credentials) {
 
         const self = this;
 
@@ -652,7 +651,7 @@ export const webService = {
         });
     },
 
-    getPasswordlessCode (email) {
+    getPasswordlessCode(email) {
 
         const self = this;
 
@@ -673,7 +672,7 @@ export const webService = {
         });
     },
 
-    getEmailConfirmationCode (email) {
+    getEmailConfirmationCode(email) {
 
         const self = this;
 
@@ -694,7 +693,7 @@ export const webService = {
         });
     },
 
-    verifyUserEmail (credentials) {
+    verifyUserEmail(credentials) {
 
         const self = this;
         const provider = credentials.provider.toUpperCase();
