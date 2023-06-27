@@ -1,7 +1,7 @@
 <template>
 	<ion-card
 		class="question-card"
-		:class="{'animate__animated animate__fadeIn' : !isGroupInput}"
+		:class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
 	>
 		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title>
@@ -17,7 +17,7 @@
 		</ion-card-header>
 		<ion-card-content
 			class="ion-text-center"
-			:class="{'ion-margin' : isGroupInput}"
+			:class="{ 'ion-margin': isGroupInput }"
 		>
 			<dropzone
 				:filestate="state.pwaFileState"
@@ -45,7 +45,7 @@
 							slot="start"
 							:icon="mic"
 						></ion-icon>
-						{{labels.record}}
+						{{ labels.record }}
 					</ion-button>
 				</template>
 			</grid-question-narrow>
@@ -66,7 +66,7 @@
 							slot="start"
 							:icon="playSharp"
 						></ion-icon>
-						{{labels.play}}
+						{{ labels.play }}
 					</ion-button>
 				</template>
 			</grid-question-narrow>
@@ -185,9 +185,10 @@ export default {
 		const projectRef = entriesAddScope.entryService.entry.projectRef;
 		const media = entriesAddScope.entryService.entry.media;
 		// Check whether we want to index the media object using the main entry uuid, or branch entry uuid
-		const entryUuid = !entriesAddState.isBranch
-			? entriesAddScope.entryService.entry.entryUuid
-			: entriesAddState.branchEntryService.entry.entryUuid;
+		const entryUuid = !entriesAddState.questionParams.isBranch
+			? entriesAddScope.entryService.entry.entryUuid //use entry_uuid
+			: entriesAddScope.branchEntryService.entry.
+				entryUuid;//use branch entry_uuid 
 
 		media[entryUuid] = media[entryUuid] || {};
 
@@ -243,9 +244,11 @@ export default {
 				if (rootStore.device.platform !== PARAMETERS.WEB) {
 					if (rootStore.device.platform === PARAMETERS.ANDROID) {
 						//android permission
+						debugger;
+						console.log(cordova.plugins);
 						cordova.plugins.diagnostic.requestRuntimePermission(
 							(status) => {
-								if (status === cordova.plugins.diagnostic.runtimePermissionStatus.GRANTED) {
+								if (status === cordova.plugins.diagnostic.permissionStatus.GRANTED) {
 									console.log('Permission granted');
 									_doRecord();
 								} else {
@@ -257,7 +260,7 @@ export default {
 								console.error('The following error occurred: ' + error);
 								notificationService.showAlert(error);
 							},
-							cordova.plugins.diagnostic.runtimePermission.RECORD_AUDIO
+							cordova.plugins.diagnostic.permission.RECORD_AUDIO
 						);
 					} else {
 						//ios permission if needed
@@ -357,5 +360,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

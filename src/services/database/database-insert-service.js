@@ -133,10 +133,12 @@ export const databaseInsertService = {
                     tx.executeSql(find_file_query, [entry.projectRef, entry.entryUuid, filename], function (tx, res) {
 
                         //if the filename is not found, insert, otherwise update ans set unsynced
+
                         if (res.rows.item(0).count === 0) {
                             tx.executeSql(query, [
                                 entry.entryUuid,
-                                (file.entry_uuid !== entry.entryUuid ? file.entry_uuid : ''), // if the media uuid is different to the main entry uuid, we have a branch here
+                                //todo: test this
+                                entry.isBranch ? file.entry_uuid : '',
                                 file.input_ref,
                                 entry.projectRef,
                                 entry.formRef,

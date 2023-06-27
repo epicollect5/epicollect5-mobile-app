@@ -1,7 +1,7 @@
 <template>
 	<ion-card
 		class="question-card"
-		:class="{'animate__animated animate__fadeIn' : !isGroupInput}"
+		:class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
 	>
 		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title>
@@ -17,7 +17,7 @@
 		</ion-card-header>
 		<ion-card-content
 			class="ion-text-center"
-			:class="{'ion-margin' : isGroupInput}"
+			:class="{ 'ion-margin': isGroupInput }"
 		>
 
 			<dropzone
@@ -47,7 +47,7 @@
 							slot="start"
 							:icon="camera"
 						></ion-icon>
-						{{labels.take}}
+						{{ labels.take }}
 					</ion-button>
 				</template>
 			</grid-question-narrow>
@@ -64,7 +64,7 @@
 							slot="start"
 							:icon="images"
 						></ion-icon>
-						{{labels.pick}}
+						{{ labels.pick }}
 					</ion-button>
 				</template>
 			</grid-question-narrow>
@@ -133,6 +133,7 @@ export default {
 		const questionType = props.type.toUpperCase();
 		const entriesAddState = inject('entriesAddState');
 		const entriesAddScope = rootStore.entriesAddScope;
+
 		const state = reactive({
 			inputDetails: {},
 			currentInputRef: null,
@@ -168,14 +169,13 @@ export default {
 		const tempDir = rootStore.tempDir;
 		const persistentDir = rootStore.persistentDir;
 		let filename = '';
-
 		const project_ref = entriesAddScope.entryService.entry.projectRef;
 		const media = entriesAddScope.entryService.entry.media;
 
 		// Check whether we want to index the media object using the main entry uuid, or branch entry uuid
-		const entryUuid = !entriesAddState.isBranch
-			? entriesAddScope.entryService.entry.entryUuid
-			: entriesAddState.branchEntryService.entry.entryUuid;
+		const entryUuid = !entriesAddState.questionParams.isBranch
+			? entriesAddScope.entryService.entry.entryUuid //use entry_uuid
+			: entriesAddScope.branchEntryService.entry.entryUuid;//use branch entry_uuid 
 
 		media[entryUuid] = media[entryUuid] || {};
 
@@ -335,5 +335,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

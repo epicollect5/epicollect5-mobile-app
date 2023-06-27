@@ -23,8 +23,6 @@ export const branchEntryService = {
 
     //Initial function to set up the branch entry
     setUpNew (formRef, ownerInputRef, ownerInputUuid) {
-
-
         this.form = formModel;
         this.entry = branchEntryModel;
         this.action = PARAMETERS.ENTRY_ADD;
@@ -63,7 +61,7 @@ export const branchEntryService = {
             this.action = PARAMETERS.ENTRY_EDIT;
             // Replace entry model object with that supplied
             this.entry = entry;
-
+            //get branch inputs
             this.branchInputs = projectModel.getBranches(this.entry.formRef, this.entry.ownerInputRef);
 
             // Get inputs extra details
@@ -71,7 +69,6 @@ export const branchEntryService = {
             this.branchInput = inputsExtra[this.entry.ownerInputRef].data;
 
             if (Capacitor.isNativePlatform()) {
-                // This is a promise to be resolved BEFORE any directive is called
                 mediaService.getEntryStoredMedia(self.entry.entryUuid).then(function (response) {
                     self.entry.media = response;
                     resolve();
@@ -89,6 +86,7 @@ export const branchEntryService = {
 
         const self = this;
         self.form = formModel;
+
         self.entry = branchEntryModel;
 
         return new Promise((resolve, reject) => {
@@ -115,6 +113,7 @@ export const branchEntryService = {
                     console.log('Branch saved in temp table');
 
                     // If there are any media files for this entry, insert metadata into media table and save files
+
                     mediaService.saveMedia(self.entry, syncType).then(function () {
                         console.log('All media files saved ***************************');
                         resolve(res);

@@ -1,36 +1,50 @@
 <template>
 	<not-found v-if="notFound"></not-found>
-	<base-layout v-else
-				 :title="projectName"
-				 :id="pageId"
-				 @exit-app="quitEntry()">
+	<base-layout
+		v-else
+		:title="projectName"
+		:id="pageId"
+		@exit-app="quitEntry()"
+	>
 		<template #actions-start>
-			<ion-button v-if="!isPWA"
-						class="button-quit"
-						@click="quitEntry()">
-				<ion-icon slot="start"
-						  :icon="closeOutline">
+			<ion-button
+				v-if="!isPWA"
+				class="button-quit"
+				@click="quitEntry()"
+			>
+				<ion-icon
+					slot="start"
+					:icon="closeOutline"
+				>
 				</ion-icon>
 				{{ labels.quit }}
 			</ion-button>
 		</template>
 		<template #actions-end>
-			<ion-button v-if="isPWA"
-						class="button-quit"
-						@click="quitEntry()">
-				<ion-icon slot="start"
-						  :icon="power">
+			<ion-button
+				v-if="isPWA"
+				class="button-quit"
+				@click="quitEntry()"
+			>
+				<ion-icon
+					slot="start"
+					:icon="power"
+				>
 				</ion-icon>
 				{{ labels.exit }}
 			</ion-button>
 			<!-- spacers for native app, just to fix UI centering -->
-			<ion-button v-if="!isPWA"
-						disabled>
+			<ion-button
+				v-if="!isPWA"
+				disabled
+			>
 				<ion-icon slot="icon-only">
 				</ion-icon>
 			</ion-button>
-			<ion-button v-if="!isPWA"
-						disabled>
+			<ion-button
+				v-if="!isPWA"
+				disabled
+			>
 				<ion-icon slot="icon-only">
 				</ion-icon>
 			</ion-button>
@@ -38,163 +52,219 @@
 		</template>
 
 		<template #subheader>
-			<toolbar-entries-add-navigation :progressBarWidth="progressBarWidth"
-											:disablePrevious="state.disablePrevious"
-											:disableNext="state.disableNext"
-											@prev-clicked="prev()"
-											@next-clicked="next()">
+			<toolbar-entries-add-navigation
+				:progressBarWidth="progressBarWidth"
+				:disablePrevious="state.disablePrevious"
+				:disableNext="state.disableNext"
+				@prev-clicked="prev()"
+				@next-clicked="next()"
+			>
 			</toolbar-entries-add-navigation>
 		</template>
 
 		<template #content>
 			<div>
-				<item-divider-error v-if="isPWA && hasGlobalError"
-									:message="state.errorGlobal"></item-divider-error>
+				<item-divider-error
+					v-if="isPWA && hasGlobalError"
+					:message="state.errorGlobal"
+				></item-divider-error>
 
-				<ion-item-divider v-if="state.questionParams.type !== 'branch'"
-								  class="entry-name"
-								  color="light"
-								  sticky>
+				<ion-item-divider
+					v-if="state.questionParams.type !== 'branch'"
+					class="entry-name"
+					color="light"
+					sticky
+				>
 					<ion-label class="entry-name-label ion-text-center">
 						{{ parentEntryName }} {{ currentFormName }}
 					</ion-label>
 				</ion-item-divider>
 
-				<div v-if="state.isFetching"
-					 class="text-center">
-					<ion-spinner class="loader loader-questions"
-								 name="crescent"></ion-spinner>
+				<div
+					v-if="state.isFetching"
+					class="text-center"
+				>
+					<ion-spinner
+						class="loader loader-questions"
+						name="crescent"
+					></ion-spinner>
 				</div>
 
 				<ion-grid class="ion-no-padding">
 					<ion-row>
-						<ion-col size-md="10"
-								 offset-md="1"
-								 size-lg="8"
-								 offset-lg="2"
-								 size-xl="6"
-								 offset-xl="3">
+						<ion-col
+							size-md="10"
+							offset-md="1"
+							size-lg="8"
+							offset-lg="2"
+							size-xl="6"
+							offset-xl="3"
+						>
 
 							<div v-if="!state.showSave">
-								<question-text :type="state.questionParams.type"
-											   :inputRef="state.questionParams.currentInputRef"
-											   v-if="state.questionParams.type === 'text'"
-											   @question-mounted="onQuestionMounted"
-											   :isGroupInput="false"></question-text>
-								<question-integer :type="state.questionParams.type"
-												  :inputRef="state.questionParams.currentInputRef"
-												  v-if="state.questionParams.type === 'integer'"
-												  @question-mounted="onQuestionMounted"
-												  :isGroupInput="false"></question-integer>
-								<question-decimal :type="state.questionParams.type"
-												  :inputRef="state.questionParams.currentInputRef"
-												  v-if="state.questionParams.type === 'decimal'"
-												  @question-mounted="onQuestionMounted"
-												  :isGroupInput="false"></question-decimal>
-								<question-location :type="state.questionParams.type"
-												   :inputRef="state.questionParams.currentInputRef"
-												   v-if="state.questionParams.type === 'location'"
-												   @question-mounted="onQuestionMounted"
-												   :isGroupInput="false"></question-location>
-								<question-group :type="state.questionParams.type"
-												:inputRef="state.questionParams.currentInputRef"
-												v-if="state.questionParams.type === 'group'"
-												@question-mounted="onQuestionMounted"></question-group>
-								<question-photo :type="state.questionParams.type"
-												:inputRef="state.questionParams.currentInputRef"
-												v-if="state.questionParams.type === 'photo'"
-												@question-mounted="onQuestionMounted"
-												:isGroupInput="false"></question-photo>
-								<question-phone :type="state.questionParams.type"
-												:inputRef="state.questionParams.currentInputRef"
-												v-if="state.questionParams.type === 'phone'"
-												@question-mounted="onQuestionMounted"
-												:isGroupInput="false"></question-phone>
-								<question-barcode :type="state.questionParams.type"
-												  :inputRef="state.questionParams.currentInputRef"
-												  v-if="state.questionParams.type === 'barcode'"
-												  @question-mounted="onQuestionMounted"
-												  :isGroupInput="false"></question-barcode>
-								<question-audio :type="state.questionParams.type"
-												:inputRef="state.questionParams.currentInputRef"
-												v-if="state.questionParams.type === 'audio'"
-												@question-mounted="onQuestionMounted"
-												:isGroupInput="false"></question-audio>
-								<question-video :type="state.questionParams.type"
-												:inputRef="state.questionParams.currentInputRef"
-												v-if="state.questionParams.type === 'video'"
-												@question-mounted="onQuestionMounted"
-												:isGroupInput="false"></question-video>
-								<question-radio :type="state.questionParams.type"
-												:inputRef="state.questionParams.currentInputRef"
-												v-if="state.questionParams.type === 'radio'"
-												@question-mounted="onQuestionMounted"
-												:isGroupInput="false"></question-radio>
-								<question-dropdown :type="state.questionParams.type"
-												   :inputRef="state.questionParams.currentInputRef"
-												   v-if="state.questionParams.type === 'dropdown'"
-												   @question-mounted="onQuestionMounted"
-												   :isGroupInput="false"></question-dropdown>
-								<question-checkbox :type="state.questionParams.type"
-												   :inputRef="state.questionParams.currentInputRef"
-												   v-if="state.questionParams.type === 'checkbox'"
-												   @question-mounted="onQuestionMounted"
-												   :isGroupInput="false"></question-checkbox>
-								<question-branch :type="state.questionParams.type"
-												 :inputRef="state.questionParams.currentInputRef"
-												 v-if="state.questionParams.type === 'branch'"
-												 @question-mounted="onQuestionMounted"
-												 :parentEntryName="parentEntryName"
-												 :currentFormName="currentFormName"
-												 @save-branch-entry="saveEntry()"></question-branch>
-								<question-textarea :type="state.questionParams.type"
-												   :inputRef="state.questionParams.currentInputRef"
-												   v-if="state.questionParams.type === 'textarea'"
-												   @question-mounted="onQuestionMounted"
-												   :isGroupInput="false"></question-textarea>
-								<question-readme :type="state.questionParams.type"
-												 :inputRef="state.questionParams.currentInputRef"
-												 v-if="state.questionParams.type === 'readme'"
-												 @question-mounted="onQuestionMounted"
-												 :isGroupInput="false"></question-readme>
-								<question-date :type="state.questionParams.type"
-											   :inputRef="state.questionParams.currentInputRef"
-											   v-if="state.questionParams.type === 'date'"
-											   @question-mounted="onQuestionMounted"
-											   :isGroupInput="false"></question-date>
-								<question-time :type="state.questionParams.type"
-											   :inputRef="state.questionParams.currentInputRef"
-											   v-if="state.questionParams.type === 'time'"
-											   @question-mounted="onQuestionMounted"
-											   :isGroupInput="false"></question-time>
-								<question-search :type="state.questionParams.type"
-												 :inputRef="state.questionParams.currentInputRef"
-												 v-if="state.questionParams.type === 'searchsingle'"
-												 @question-mounted="onQuestionMounted"
-												 :isGroupInput="false"></question-search>
-								<question-search :type="state.questionParams.type"
-												 :inputRef="state.questionParams.currentInputRef"
-												 v-if="state.questionParams.type === 'searchmultiple'"
-												 @question-mounted="onQuestionMounted"
-												 :isGroupInput="false"></question-search>
+								<question-text
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'text'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-text>
+								<question-integer
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'integer'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-integer>
+								<question-decimal
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'decimal'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-decimal>
+								<question-location
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'location'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-location>
+								<question-group
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'group'"
+									@question-mounted="onQuestionMounted"
+								></question-group>
+								<question-photo
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'photo'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-photo>
+								<question-phone
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'phone'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-phone>
+								<question-barcode
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'barcode'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-barcode>
+								<question-audio
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'audio'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-audio>
+								<question-video
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'video'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-video>
+								<question-radio
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'radio'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-radio>
+								<question-dropdown
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'dropdown'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-dropdown>
+								<question-checkbox
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'checkbox'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-checkbox>
+								<question-branch
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'branch'"
+									@question-mounted="onQuestionMounted"
+									:parentEntryName="parentEntryName"
+									:currentFormName="currentFormName"
+									@save-branch-entry="saveEntry()"
+								></question-branch>
+								<question-textarea
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'textarea'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-textarea>
+								<question-readme
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'readme'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-readme>
+								<question-date
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'date'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-date>
+								<question-time
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'time'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-time>
+								<question-search
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'searchsingle'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-search>
+								<question-search
+									:type="state.questionParams.type"
+									:inputRef="state.questionParams.currentInputRef"
+									v-if="state.questionParams.type === 'searchmultiple'"
+									@question-mounted="onQuestionMounted"
+									:isGroupInput="false"
+								></question-search>
 
 							</div>
 
 							<div v-if="state.showSave && !state.isFetching">
-								<question-save type="save"
-											   @question-mounted="onQuestionMounted"
-											   @question-save="saveEntry()">
+								<question-save
+									type="save"
+									@question-mounted="onQuestionMounted"
+									@question-save="saveEntry()"
+								>
 								</question-save>
 							</div>
 
 							<div v-if="state.showSaved && !state.isFetching">
-								<question-saved type="saved"
-												:saved="state.entrySavedPWA"
-												:failed="state.entryFailedPWA"
-												:action="state.action"
-												@question-mounted="onQuestionMounted"
-												@add-entry-pwa="addEntryPWA()"
-												@go-back-pwa="prev()">
+								<question-saved
+									type="saved"
+									:saved="state.entrySavedPWA"
+									:failed="state.entryFailedPWA"
+									:action="state.action"
+									@question-mounted="onQuestionMounted"
+									@add-entry-pwa="addEntryPWA()"
+									@go-back-pwa="prev()"
+								>
 								</question-saved>
 							</div>
 
@@ -281,7 +351,7 @@ export default {
 		ItemDividerError,
 		ToolbarEntriesAddNavigation
 	},
-	setup (props) {
+	setup(props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -311,6 +381,7 @@ export default {
 			error: {
 				errors: {}
 			},
+
 			errorGlobal: '',
 			// Allow saving by default (via quit button)
 			//this is to allow saving halfway through
@@ -354,7 +425,7 @@ export default {
 			})
 		};
 
-		function showEntrySavedSuccessScreen () {
+		function showEntrySavedSuccessScreen() {
 			state.entrySavedPWA = true;
 			state.entryFailedPWA = false;
 			state.showSave = false;
@@ -365,7 +436,7 @@ export default {
 		}
 
 		const methods = {
-			async saveEntry (syncType) {
+			async saveEntry(syncType) {
 				if (rootStore.isPWA) {
 					await notificationService.showProgressDialog(labels.wait, labels.saving);
 
@@ -425,7 +496,7 @@ export default {
 				}
 			},
 			// Save the entry to the local database
-			async saveEntryToDatabase (syncType) {
+			async saveEntryToDatabase(syncType) {
 				// Determine the syncType
 				syncType = syncType ? syncType : PARAMETERS.SYNCED_CODES.UNSYNCED;
 
@@ -453,7 +524,7 @@ export default {
 					}
 				);
 			},
-			async addEntryPWA () {
+			async addEntryPWA() {
 				// Show loader
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 				// Set up a new entry based on URL params
@@ -496,7 +567,7 @@ export default {
 				//restart from first question
 				methods.prev();
 			},
-			async quitEntry () {
+			async quitEntry() {
 				//do quitting things
 				console.log('> Quit entry was called *************************************');
 				// By default, mark saved entries unsynced (native app only)
@@ -599,7 +670,7 @@ export default {
 						return false;
 				}
 			},
-			prev () {
+			prev() {
 				state.showSaved = false;
 				//if the user is on the first question, ask whether to quit the current entry
 				//if the user is on any other question, go back by one question
@@ -612,16 +683,16 @@ export default {
 			 * Validate and save answers
 			 * Go to next question/save entry (depending on where you are in the form)
 			 */
-			async next () {
+			async next() {
 				handleNext(state, rootStore.entriesAddScope);
 			},
-			onQuestionMounted () {
+			onQuestionMounted() {
 				state.isFetching = false;
 				notificationService.hideProgressDialog();
 			}
 		};
 
-		function quit (response) {
+		function quit(response) {
 			const formRef = rootStore.entriesAddScope.entryService.form.formRef;
 			const isBranch = rootStore.entriesAddScope.entryService.entry.isBranch;
 			const refreshEntriesView = response.routeName === PARAMETERS.ROUTES.ENTRIES_VIEW;
@@ -766,6 +837,7 @@ export default {
 
 		// Set up the question
 		initialSetup(state, rootStore.entriesAddScope);
+		rootStore.entriesAddScope.branchEntryService = branchEntryService;
 		provide('entriesAddState', state);
 
 		if (rootStore.isPWA) {

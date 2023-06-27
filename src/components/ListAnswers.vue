@@ -7,9 +7,9 @@
 		>
 			<div>
 				<ion-card-header
-					v-if="item.type!=='readme'"
+					v-if="item.type !== 'readme'"
 					class="answer-label force-no-padding"
-					:class="item.synced_error ? 'has-error' : '' "
+					:class="item.synced_error ? 'has-error' : ''"
 				>
 					<ion-card-title>
 						<ion-grid>
@@ -21,7 +21,7 @@
 									size-lg="11"
 									size-xl="11"
 								>
-									<div class="answer-label-question">{{item.question}}</div>
+									<div class="answer-label-question">{{ item.question }}</div>
 								</ion-col>
 								<ion-col
 									size-xs="2"
@@ -31,12 +31,12 @@
 									size-xl="1"
 								>
 									<div
-										v-show="item.can_edit !== 0 || item.type==='branch'"
+										v-show="item.can_edit !== 0 || item.type === 'branch'"
 										class="answer-button-edit ion-activatable ripple-parent ion-text-center"
 									>
 										<ion-icon
-											v-if="areGroupAnswers===false"
-											:icon="item.type==='branch' ? eye: create"
+											v-if="areGroupAnswers === false"
+											:icon="item.type === 'branch' ? eye : create"
 											@click="editAnswer(item.input_ref, item.input_index)"
 										></ion-icon>
 
@@ -52,7 +52,7 @@
 				</ion-card-header>
 
 				<ion-card-content
-					v-if="item.type==='group'"
+					v-if="item.type === 'group'"
 					class="answer-card-group"
 				>
 					<list-item-answer
@@ -176,7 +176,7 @@ export default {
 			},
 			async editAnswerBranch(inputRef, inputIndex) {
 				console.log('should open EntriesAdd component for editing branch entry');
-				const { entry, errors } = readonly(props);
+				const { entry, errors } = props;
 				// Show loader
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
