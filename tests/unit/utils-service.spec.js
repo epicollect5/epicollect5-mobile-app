@@ -193,6 +193,33 @@ describe('Time', () => {
 
         vi.useRealTimers();
     });
+
+    it('toISOStringLocale()', () => {
+        vi.useFakeTimers();
+
+        let date = new Date(2023, 4, 22, 14, 45, 56, 345);
+        vi.setSystemTime(date);
+
+        let result = utilsService.getISOTime(date);
+        expect(result).toBe('2023-05-22T14:45:56.000');
+
+        date = new Date(2023, 4, 22, 0, 45, 56, 345);
+        vi.setSystemTime(date);
+        result = utilsService.getISOTime(date);
+        expect(result).toBe('2023-05-22T00:45:56.000');
+
+        date = new Date(2023, 4, 22, 10, 45, 56, 345);
+        vi.setSystemTime(date);
+        result = utilsService.getISOTime(date);
+        expect(result).toBe('2023-05-22T10:45:56.000');
+
+        date = new Date(2023, 4, 22, 23, 59, 59, 999);
+        vi.setSystemTime(date);
+        result = utilsService.getISOTime(date);
+        expect(result).toBe('2023-05-22T23:59:59.000');
+
+        vi.useRealTimers();
+    });
 });
 
 describe('Filename', () => {
@@ -304,3 +331,6 @@ describe('isValidDecimalDegreesString', () => {
 
     });
 });
+
+
+
