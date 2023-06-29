@@ -150,7 +150,7 @@ export const initService = {
                         }
 
                         //Portuguese?
-                        if (language.value.toLowerCase().startsWith('pl')) {
+                        if (language.value.toLowerCase().startsWith('pt')) {
                             deviceLanguage = 'pt';
                         }
 
