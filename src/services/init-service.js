@@ -12,7 +12,7 @@ import axios from 'axios';
 
 export const initService = {
 
-    async getDeviceInfo () {
+    async getDeviceInfo() {
         const deviceInfo = await Device.getInfo();
         const deviceId = await Device.getId();
 
@@ -26,7 +26,7 @@ export const initService = {
         return { ...deviceInfo, ...deviceId };
     },
 
-    async getAppInfo () {
+    async getAppInfo() {
         const rootStore = useRootStore();
         if ([PARAMETERS.WEB, PARAMETERS.PWA].includes(rootStore.device.platform)) {
             return {
@@ -37,7 +37,7 @@ export const initService = {
         return await App.getInfo();
     },
 
-    async openDB (platform) {
+    async openDB(platform) {
         return new Promise((resolve) => {
             let db = {};
 
@@ -71,7 +71,7 @@ export const initService = {
         });
     },
 
-    async getDBVersion () {
+    async getDBVersion() {
 
         let version;
 
@@ -88,7 +88,7 @@ export const initService = {
         });
     },
 
-    async migrateDB () {
+    async migrateDB() {
         /**
         * Migrating altering tables, depending on stored version against latest version
         * See: http://stackoverflow.com/questions/989558/best-practices-for-in-app-database-migration-for-sqlite
@@ -119,7 +119,7 @@ export const initService = {
         });
     },
 
-    async getLanguage () {
+    async getLanguage() {
         let deviceLanguage = useRootStore().language;
 
         return new Promise((resolve, reject) => {
@@ -149,6 +149,11 @@ export const initService = {
                             deviceLanguage = 'pl';
                         }
 
+                        //Portuguese?
+                        if (language.value.toLowerCase().startsWith('pl')) {
+                            deviceLanguage = 'pt';
+                        }
+
                         //if language not supported, default to English
                         _getLanguageFile(deviceLanguage);
 
@@ -162,7 +167,7 @@ export const initService = {
                 _getLanguageFile(deviceLanguage);
             }
 
-            function _getLanguageFile (language) {
+            function _getLanguageFile(language) {
                 //get status codes files (json) from public folder
                 axios('./assets/ec5-status-codes/' + language + '.json')
                     .then((data) => {
@@ -179,7 +184,7 @@ export const initService = {
         });
     },
 
-    async getLanguagePWA () {
+    async getLanguagePWA() {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -209,7 +214,7 @@ export const initService = {
     },
 
     //Get the server url from the database, or default to ec5 production site
-    async getServerUrl () {
+    async getServerUrl() {
         return new Promise((resolve, reject) => {
             databaseSelectService.selectSetting('server_url').then(function (res) {
                 if (res.rows.length > 0 && res.rows.item(0).value !== '') {
@@ -225,7 +230,7 @@ export const initService = {
     },
 
     //clear temporary tables
-    async tidyTempTables () {
+    async tidyTempTables() {
 
         return new Promise((resolve, reject) => {
             databaseDeleteService.deleteTempBranchEntries().then(() => {
@@ -241,7 +246,7 @@ export const initService = {
     },
 
     //Get the default order for displaying entries
-    async getEntriesOrder () {
+    async getEntriesOrder() {
 
         return new Promise((resolve, reject) => {
 
@@ -261,9 +266,9 @@ export const initService = {
     },
 
     // Insert ec5 demo project
-    async insertDemoProject () {
+    async insertDemoProject() {
 
-        function _getDemoProjectFromLocalFile (filename) {
+        function _getDemoProjectFromLocalFile(filename) {
             return new Promise((resolve) => {
                 axios(filename)
                     .then((data) => {
@@ -308,7 +313,7 @@ export const initService = {
     },
 
     //Get the selected text size from database
-    async getSelectedTextSize () {
+    async getSelectedTextSize() {
 
         let selectedTextSize = PARAMETERS.DEFAULT_TEXT_SIZE;
 
@@ -325,7 +330,7 @@ export const initService = {
         });
     },
 
-    async getFiltersToggleStatus () {
+    async getFiltersToggleStatus() {
         return new Promise(function (resolve, reject) {
             databaseSelectService.selectSetting('filters_toggle').then(function (res) {
                 resolve(res.rows.length > 0 && res.rows.item(0).value === 'true');
@@ -335,7 +340,7 @@ export const initService = {
         });
     },
 
-    async retrieveJwtToken () {
+    async retrieveJwtToken() {
         const rootStore = useRootStore();
         return new Promise(function (resolve, reject) {
             databaseSelectService.getUser().then(async function (response) {

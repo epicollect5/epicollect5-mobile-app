@@ -322,5 +322,7 @@
   "ec5_387": "Apple Account email does not match!",
   "ec5_388": "Apple Account connected successfully.",
   "ec5_389": "Account cannot be verified",
-  "ec5_390": "Local account with the provided email already exists. <br/> Please enter password to confirm"
+  "ec5_390": "Local account with the provided email already exists. <br/> Please enter password to confirm",
+  "ec5_391": "Local account with the provided email already exists. <br/> Please login via email",
+  "ec5_392": "The regular expression is invalid or malformed."
 }
