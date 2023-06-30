@@ -118,7 +118,6 @@ export const webService = {
         return new Promise((resolve, reject) => {
             // Attempt to retrieve the jwt token
             self.getHeaders(true).then(function (headers) {
-
                 if (rootStore.device.platform !== PARAMETERS.WEB && parseInt(PARAMETERS.DEBUG) === 1) {
                     console.log(JSON.stringify(
                         {

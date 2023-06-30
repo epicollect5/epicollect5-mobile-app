@@ -10,7 +10,7 @@ import { utilsService } from '@/services/utilities/utils-service';
 * Make the json entry object
 * @returns {{type: *, id: *, attributes: {form: {ref: *, type: string}}, relationships: {parent: {}, branch: {}}}}
 */
-function _makeJsonEntry (entry) {
+function _makeJsonEntry(entry) {
 
     const rootStore = useRootStore();
 
@@ -79,7 +79,7 @@ function _makeJsonEntry (entry) {
 * Make the json file entry object
 * @returns {{type: string, id: *, entry_uuid: *, attributes: {form: {ref: *, type: string}}, relationships: {parent: {}, branch: {}}, file: {name: *, type: *, input_ref: *}, structure_last_updated: string}}
 */
-function _makeJsonFileEntry (file) {
+function _makeJsonFileEntry(file) {
 
     return {
         type: 'file_entry',
@@ -116,7 +116,7 @@ export const JSONTransformerService = {
      * Make the json entry object
      * @returns {{type: string, id: *, entry_uuid: *, attributes: {form: {ref: *, type: string}}, relationships: {parent: {}, branch: {}}, created_at: *, device_id: string, jwt: *}}
      */
-    makeJsonEntry (entryType, entry) {
+    makeJsonEntry(entryType, entry) {
 
         const rootStore = useRootStore();
         // Add extra properties needed by the json formatter
@@ -161,7 +161,7 @@ export const JSONTransformerService = {
      * @param file
      * @returns {{type: string, id: *, entry_uuid: *, attributes: {form: {ref: *, type: string}}, relationships: {parent: {}, branch: {}}, created_at: number, device_id: string, file: {name: *, type: *, input_ref: *}}}
      */
-    makeJsonFileEntry (file) {
+    makeJsonFileEntry(file) {
 
         const rootStore = useRootStore();
         // Add extra properties needed by the json formatter
@@ -193,7 +193,7 @@ export const JSONTransformerService = {
     /**
      * Create a flattened entry format
      */
-    flattenJsonEntry (entry, canEdit, isRemote) {
+    flattenJsonEntry(entry, canEdit, isRemote) {
         return {
             entryUuid: entry.id,
             parentEntryUuid: entry.relationships.parent.data ? entry.relationships.parent.data.parent_entry_uuid : '',
@@ -213,7 +213,7 @@ export const JSONTransformerService = {
         };
     },
 
-    getBranchCSVHeaders (branch, mappings) {
+    getBranchCSVHeaders(branch, mappings) {
 
         const projectExtra = projectModel.getProjectExtra();
         //remap branch here like it was a form object, to re-use getFormCSVHeaders()
@@ -245,7 +245,7 @@ export const JSONTransformerService = {
         return headers;
     },
 
-    getFormCSVHeaders (form, mappings, isGroup, formIndex, isBranch) {
+    getFormCSVHeaders(form, mappings, isGroup, formIndex, isBranch) {
 
         //console.log('mapping ->', JSON.stringify(mappings));
         const headers = isGroup ? form.headers : ['ec5_uuid', 'created_at', 'title'];
@@ -325,7 +325,7 @@ export const JSONTransformerService = {
     },
 
     //get group inputs headers
-    getGroupCSVHeaders (formRef, groupInputs, mappings, groupRef, headers) {
+    getGroupCSVHeaders(formRef, groupInputs, mappings, groupRef, headers) {
         //we can convert the group to a form-like object
         //and re-use getFormCSVHeaders();
         const form = {
@@ -341,7 +341,7 @@ export const JSONTransformerService = {
         return (this.getFormCSVHeaders(form, mappings, true, 1, false));
     },
 
-    async getFormCSVRow (entry, form, answers, isGroup) {
+    async getFormCSVRow(entry, form, answers, isGroup) {
 
         const row = isGroup ? form.row : [entry.entry_uuid, entry.created_at, entry.title];
         const branches = [];
@@ -511,7 +511,7 @@ export const JSONTransformerService = {
         return row;
     },
 
-    async getBranchCSVRow (entry, branch, answers, isGroup) {
+    async getBranchCSVRow(entry, branch, answers, isGroup) {
 
         const projectExtra = projectModel.getProjectExtra();
         const formRef = branch.formRef;
@@ -548,7 +548,7 @@ export const JSONTransformerService = {
         return branchRow;
     },
     //we pass "row" wich contains the row of answers so far
-    getGroupCSVRow (entry, groupInputs, answers, row) {
+    getGroupCSVRow(entry, groupInputs, answers, row) {
         const form = {
             details: {
                 inputs: groupInputs
@@ -562,9 +562,9 @@ export const JSONTransformerService = {
     //https://www.maptools.com/tutorials/utm/quick_guide
     //https://stackoverflow.com/questions/9186496/determining-utm-zone-to-convert-from-longitude-latitude
     // https://stackoverflow.com/questions/29655256/proj4js-can-you-convert-a-lat-long-to-utm-without-a-zone
-    utmConverter (lat, long) {
+    utmConverter(lat, long) {
         //get utm-zone from longitude degrees
-        function getUTMZone (lat, long) {
+        function getUTMZone(lat, long) {
             //Special Cases for Norway and Svalbard
             if (lat > 55 && lat < 64 && long > 2 && long < 6) {
                 return 32;
@@ -583,7 +583,7 @@ export const JSONTransformerService = {
             return parseInt(((long + 180) / 6) % 60) + 1;
         }
 
-        function proj4_setdef (lat, long) {
+        function proj4_setdef(lat, long) {
             //get UTM projection definition from longitude
             const utm_zone = getUTMZone(lat, long);
             const zdef = `+proj=utm +zone=${utm_zone} +datum=WGS84 +units=m +no_defs`;
@@ -637,7 +637,7 @@ export const JSONTransformerService = {
         };
     },
     //Create a json object used in the api uniqueness check
-    makeUniqueEntry (formRef, entry, inputRef, answer, projectVersion) {
+    makeUniqueEntry(formRef, entry, inputRef, answer, projectVersion) {
 
         const isBranch = entry.isBranch;
         const entryType = isBranch ? PARAMETERS.BRANCH_ENTRY : PARAMETERS.ENTRY;

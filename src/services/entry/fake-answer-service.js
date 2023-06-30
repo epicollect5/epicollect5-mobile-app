@@ -9,7 +9,7 @@ import wordsGerman from 'an-array-of-german-words';
 
 export const fakeAnswerService = {
 
-    async createFakeAnswer (inputDetails, entry, entryIndex) {
+    async createFakeAnswer(inputDetails, entry, entryIndex) {
         return new Promise((resolve) => {
             const rootStore = useRootStore();
             const answer = { was_jumped: false };
@@ -18,7 +18,7 @@ export const fakeAnswerService = {
             const min = 0.0200;
             const max = 10.120;
 
-            function randomDate (backTo) {
+            function randomDate(backTo) {
                 // var date = new Date(+start + Math.random() * (end - start));
                 // var hour = startHour + Math.random() * (endHour - startHour) | 0;
                 // date.setHours(hour);
@@ -29,7 +29,7 @@ export const fakeAnswerService = {
                 return d.toISOString();
             }
 
-            function randomIntegerInRange (min, max) {
+            function randomIntegerInRange(min, max) {
                 return Math.floor(Math.random() * (max - min + 1)) + min;
             }
 
@@ -41,7 +41,9 @@ export const fakeAnswerService = {
                 case 'text':
                 case 'textarea':
                     if (inputDetails.regex) {
+                        // if there is a regex, generate string that matches it
                         const randexp = new window.RandExp(inputDetails.regex);
+                        //remove invalid chars (for epicollect5 validation)
                         randexp.defaultRange.subtract(60, 62); // -> <, >, =
                         answer.answer = randexp.gen();
                         console.log('answer matching regex ->', answer.answer, inputDetails.regex);
@@ -165,7 +167,65 @@ export const fakeAnswerService = {
                                     type: 'photo'
                                 };
 
-                                databaseInsertService.insertMedia(entry, [media]).then(function (response) {
+                                databaseInsertService.insertMedia(entry, [media], PARAMETERS.SYNCED_CODES.UNSYNCED).then(function (response) {
+                                    console.log(response);
+                                    resolve(answer);
+                                });
+                            });
+                        }, 1000);
+                    }
+                    else {
+                        answer.answer = '';
+                        resolve(answer);
+                    }
+                    break;
+
+                case 'audio':
+                    if (rootStore.device.platform !== PARAMETERS.WEB) {
+                        window.setTimeout(function () {
+                            //generate a fake file and save it
+                            fakeFileService.createFile(entry, 'audio').then(function (filename) {
+                                answer.answer = filename;
+
+                                //save file metadata to media table
+                                const media = {
+                                    cached: '',
+                                    stored: filename,
+                                    entry_uuid: entry.entryUuid,
+                                    input_ref: inputDetails.ref,
+                                    type: 'audio'
+                                };
+
+                                databaseInsertService.insertMedia(entry, [media], PARAMETERS.SYNCED_CODES.UNSYNCED).then(function (response) {
+                                    console.log(response);
+                                    resolve(answer);
+                                });
+                            });
+                        }, 1000);
+                    }
+                    else {
+                        answer.answer = '';
+                        resolve(answer);
+                    }
+                    break;
+
+                case 'video':
+                    if (rootStore.device.platform !== PARAMETERS.WEB) {
+                        window.setTimeout(function () {
+                            //generate a fake file and save it
+                            fakeFileService.createFile(entry, 'video').then(function (filename) {
+                                answer.answer = filename;
+
+                                //save file metadata to media table
+                                const media = {
+                                    cached: '',
+                                    stored: filename,
+                                    entry_uuid: entry.entryUuid,
+                                    input_ref: inputDetails.ref,
+                                    type: 'video'
+                                };
+
+                                databaseInsertService.insertMedia(entry, [media], PARAMETERS.SYNCED_CODES.UNSYNCED).then(function (response) {
                                     console.log(response);
                                     resolve(answer);
                                 });
