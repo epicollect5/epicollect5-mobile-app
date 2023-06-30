@@ -108,7 +108,7 @@
 				:parentEntryUuid="state.parentEntryUuid"
 				:countWithFilters="state.countWithFilters"
 				:countNoFilters="state.countNoFilters"
-				:filters="{...state.filters}"
+				:filters="{ ...state.filters }"
 				@filters-params="applyFilters"
 			></toolbar-form-name>
 		</template>
@@ -183,6 +183,8 @@ import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { entryService } from '@/services/entry/entry-service';
+import { locationService } from '@/services/utilities/location-cordova-service';
+
 
 export default {
 	components: { ListEntries, ToolbarFormName },
@@ -326,8 +328,8 @@ export default {
 					state.parentFormName = projectModel.getFormName(state.parentFormRef);
 					state.backLabel = state.parentFormName;
 				} else {
-					//top parent form
-					state.backLabel = PARAMETERS.ROUTES.PROJECTS;
+					//top parent form goes bacxk to projects
+					state.backLabel = STRINGS[language].labels.projects;
 				}
 
 				//imp: Do we have this page bookmarked?
@@ -528,6 +530,7 @@ export default {
 				state.isAddingFakeEntries = true;
 				await addFakeEntries(params);
 				state.isAddingFakeEntries = false;
+				locationService.stopWatching();
 
 				setTimeout(function () {
 					router.replace({

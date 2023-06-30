@@ -1,20 +1,26 @@
 <template>
-	<ion-menu side="start"
-			  menu-id="left-drawer"
-			  content-id="main"
-			  swipe-gesture="false">
+	<ion-menu
+		side="start"
+		menu-id="left-drawer"
+		content-id="main"
+		swipe-gesture="false"
+	>
 		<ion-header class="ion-no-border">
-			<ion-toolbar color="primary"
-						 class="ion-text-center ion-text-uppercase">
+			<ion-toolbar
+				color="primary"
+				class="ion-text-center ion-text-uppercase"
+			>
 				{{ labels.menu }}
 			</ion-toolbar>
 		</ion-header>
 		<ion-content>
 			<ion-list>
 				<ion-item-group>
-					<div v-if="isLoggedIn"
-						 class="user-label"
-						 lines="none">
+					<div
+						v-if="isLoggedIn"
+						class="user-label"
+						lines="none"
+					>
 						<ion-label color="tertiary">
 							<strong>{{ labels.hi }}, {{ user.name }}</strong>
 						</ion-label>
@@ -24,49 +30,74 @@
 					</div>
 				</ion-item-group>
 
-				<ion-item @click="goToProjects()"
-						  lines="full">
+				<ion-item
+					@click="goToProjects()"
+					lines="full"
+				>
 					<ion-icon :icon="document"></ion-icon>
-					&nbsp;
-					{{ labels.projects }}
+					<ion-label>
+						&nbsp;
+						{{ labels.projects }}
+					</ion-label>
+
 				</ion-item>
-				<ion-item @click="goToSettings()"
-						  lines="full">
+				<ion-item
+					@click="goToSettings()"
+					lines="full"
+				>
 					<ion-icon :icon="settings"></ion-icon>
-					&nbsp;
-					{{ labels.settings }}
+					<ion-label>
+						&nbsp;
+						{{ labels.settings }}
+					</ion-label>
 				</ion-item>
-				<ion-item @click="goToCommunityPage()"
-						  lines="full">
+				<ion-item
+					@click="goToCommunityPage()"
+					lines="full"
+				>
 					<ion-icon :icon="people">
 					</ion-icon>
-					&nbsp;
-					{{ labels.help }}
+					<ion-label>
+						&nbsp;
+						{{ labels.help }}
+					</ion-label>
 				</ion-item>
-				<ion-item @click="goToUserGuide()"
-						  lines="full">
+				<ion-item
+					@click="goToUserGuide()"
+					lines="full"
+				>
 					<ion-icon :icon="book">
 					</ion-icon>
-					&nbsp;
-					{{ labels.user_guide }}
+					<ion-label>
+						&nbsp;
+						{{ labels.user_guide }}
+					</ion-label>
 				</ion-item>
-				<ion-item lines="full"
-						  @click="performAuthAction()">
+				<ion-item
+					lines="full"
+					@click="performAuthAction()"
+				>
 					<ion-icon :icon="personCircle">
 					</ion-icon>
-					&nbsp;
-					{{ authAction }}
+					<ion-label>
+						&nbsp;
+						{{ authAction }}
+					</ion-label>
 				</ion-item>
-				<ion-item-divider color="primary"
-								  class="ion-no-padding">
+				<ion-item-divider
+					color="primary"
+					class="ion-no-padding"
+				>
 					<ion-label class="item-divider-label-centered ion-text-uppercase">
 						{{ labels.my_bookmarks }}
 					</ion-label>
 				</ion-item-divider>
-				<ion-item v-for="(bookmarkItem, index) in state.bookmarks"
-						  :key="index"
-						  lines="full"
-						  @click="goToBookmark(bookmarkItem)">
+				<ion-item
+					v-for="(bookmarkItem, index) in state.bookmarks"
+					:key="index"
+					lines="full"
+					@click="goToBookmark(bookmarkItem)"
+				>
 					<ion-icon :icon="bookmark">
 					</ion-icon>
 					&nbsp;
@@ -74,8 +105,10 @@
 						{{ bookmarkItem.title }}
 					</ion-label>
 				</ion-item>
-				<ion-item v-if="state.bookmarks.length === 0"
-						  lines="full">
+				<ion-item
+					v-if="state.bookmarks.length === 0"
+					lines="full"
+				>
 					<ion-label class="ion-text-center">{{ labels.no_bookmarks_found }}</ion-label>
 				</ion-item>
 			</ion-list>
@@ -100,7 +133,7 @@ import { notificationService } from '@/services/notification-service';
 import { logout } from '@/use/logout';
 
 export default {
-	setup () {
+	setup() {
 		const rootStore = useRootStore();
 		const bookmarkStore = useBookmarkStore();
 		const language = rootStore.language;
@@ -112,7 +145,7 @@ export default {
 		});
 
 		const methods = {
-			performAuthAction () {
+			performAuthAction() {
 				//todo: check this with different languages...
 				if (rootStore.user.action === STRINGS[language].labels.login) {
 					methods.openModalLogin();
@@ -121,7 +154,7 @@ export default {
 					methods.logout(true, true);
 				}
 			},
-			goToProjects () {
+			goToProjects() {
 				//reset hierarchy navigation
 				rootStore.hierarchyNavigation = [];
 				//reset models
@@ -133,7 +166,7 @@ export default {
 				});
 				menuController.close();
 			},
-			goToSettings () {
+			goToSettings() {
 				rootStore.nextRoute = router.currentRoute.value.name;
 				//todo: check with back button android
 				router.replace({
@@ -141,14 +174,14 @@ export default {
 				});
 				menuController.close();
 			},
-			async goToCommunityPage () {
+			async goToCommunityPage() {
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
 					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
 				}
 				window.open(PARAMETERS.COMMUNITY_SUPPORT_URL, '_system', 'location=yes');
 			},
-			async goToUserGuide () {
+			async goToUserGuide() {
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
 					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
@@ -156,7 +189,7 @@ export default {
 				}
 				window.open(PARAMETERS.USER_GUIDE_URL, '_system', 'location=yes');
 			},
-			goToBookmark (bookmark) {
+			goToBookmark(bookmark) {
 
 				console.log(bookmark);
 				// Remove current project from the store
@@ -184,7 +217,7 @@ export default {
 				//hide menu
 				menuController.close();
 			},
-			async openModalLogin () {
+			async openModalLogin() {
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
 					notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
@@ -203,7 +236,7 @@ export default {
 					);
 				}
 			},
-			async logout (showToast, closeMenu) {
+			async logout(showToast, closeMenu) {
 				console.log('should log user out');
 				return new Promise((resolve) => {
 					logout().then(() => {
