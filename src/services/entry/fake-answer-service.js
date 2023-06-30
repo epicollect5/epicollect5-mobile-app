@@ -1,5 +1,7 @@
 import { databaseInsertService } from '@/services/database/database-insert-service';
-import { fakeFileService } from '@/services/filesystem/fake-file-service';
+import { fakeFilePhotoService } from '@/services/filesystem/fake-file-photo-service';
+import { fakeFileAudioService } from '@/services/filesystem/fake-file-audio-service';
+import { fakeFileVideoService } from '@/services/filesystem/fake-file-video-service';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { utilsService } from '@/services/utilities/utils-service';
@@ -155,7 +157,7 @@ export const fakeAnswerService = {
                     if (rootStore.device.platform !== PARAMETERS.WEB) {
                         window.setTimeout(function () {
                             //generate a fake file and save it
-                            fakeFileService.createFile(entry, 'photo').then(function (filename) {
+                            fakeFilePhotoService.createFile(entry, 'photo').then(function (filename) {
                                 answer.answer = filename;
 
                                 //save file metadata to media table
@@ -184,7 +186,7 @@ export const fakeAnswerService = {
                     if (rootStore.device.platform !== PARAMETERS.WEB) {
                         window.setTimeout(function () {
                             //generate a fake file and save it
-                            fakeFileService.createFile(entry, 'audio').then(function (filename) {
+                            fakeFileAudioService.createFile(entry, 'audio').then(function (filename) {
                                 answer.answer = filename;
 
                                 //save file metadata to media table
@@ -213,7 +215,7 @@ export const fakeAnswerService = {
                     if (rootStore.device.platform !== PARAMETERS.WEB) {
                         window.setTimeout(function () {
                             //generate a fake file and save it
-                            fakeFileService.createFile(entry, 'video').then(function (filename) {
+                            fakeFileVideoService.createFile(entry, 'video').then(function (filename) {
                                 answer.answer = filename;
 
                                 //save file metadata to media table
