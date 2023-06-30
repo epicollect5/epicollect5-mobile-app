@@ -120,14 +120,13 @@ export const initService = {
     },
 
     async getLanguage() {
-        let deviceLanguage = useRootStore().language;
+        const self = this;
+        let deviceLanguage = PARAMETERS.DEFAULT_LANGUAGE; //en
 
         return new Promise((resolve, reject) => {
-
             if (navigator.globalization) {
                 navigator.globalization.getPreferredLanguage(
                     function (language) {
-
                         //if the language translation exists, load it:
 
                         //Italian?
@@ -155,7 +154,13 @@ export const initService = {
                         }
 
                         //if language not supported, default to English
-                        _getLanguageFile(deviceLanguage);
+                        self.getLanguageFile(deviceLanguage).then((data) => {
+                            STRINGS[deviceLanguage].status_codes = data;
+                            resolve(deviceLanguage);
+                        }, (data) => {
+                            STRINGS[PARAMETERS.DEFAULT_LANGUAGE].status_codes = data;
+                            resolve(PARAMETERS.DEFAULT_LANGUAGE);
+                        });
 
                         console.log('language: ' + language.value + '\n');
                     }, () => {
@@ -164,23 +169,26 @@ export const initService = {
                 );
             }
             else {
-                _getLanguageFile(deviceLanguage);
+                self.getLanguageFile(PARAMETERS.DEFAULT_LANGUAGE).then((data) => {
+                    STRINGS[PARAMETERS.DEFAULT_LANGUAGE].status_codes = data;
+                    resolve(PARAMETERS.DEFAULT_LANGUAGE);
+                });
             }
+        });
+    },
 
-            function _getLanguageFile(language) {
-                //get status codes files (json) from public folder
-                axios('./assets/ec5-status-codes/' + language + '.json')
-                    .then((data) => {
-                        STRINGS[language].status_codes = data.data;
-                        resolve(language);
-                    }, () => {
-                        // Default to 'en' file
-                        axios('./assets/ec5-status-codes/en.json').then((data) => {
-                            STRINGS.en.status_codes = data.data;
-                            resolve(language);
-                        });
+    getLanguageFile(language) {
+        return new Promise((resolve, reject) => {
+            //get status codes files (json) from public folder
+            axios('./assets/ec5-status-codes/' + language + '.json')
+                .then((languageFileData) => {
+                    resolve(languageFileData.data);
+                }, () => {
+                    // Default to 'en' file
+                    axios('./assets/ec5-status-codes/en.json').then((defaultLanguageFileData) => {
+                        reject(defaultLanguageFileData.data);
                     });
-            }
+                });
         });
     },
 

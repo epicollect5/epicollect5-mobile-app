@@ -244,7 +244,6 @@ export default {
 				if (rootStore.device.platform !== PARAMETERS.WEB) {
 					if (rootStore.device.platform === PARAMETERS.ANDROID) {
 						//android permission
-						debugger;
 						console.log(cordova.plugins);
 						cordova.plugins.diagnostic.requestRuntimePermission(
 							(status) => {

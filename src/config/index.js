@@ -13,6 +13,7 @@ export const PARAMETERS = {
     HOW_MANY_BRANCH_ENTRIES: 2,
     ZOOM_LEVELS: 7,
     DEFAULT_LANGUAGE: 'en',
+    SUPPORTED_LANGUAGES: ['es', 'fr', 'it', 'pl', 'pt'],
 
     EASTER_EGG: {
         PROJECT_REF: '031ad19cdaf04dbb9cc9a1c2086bdcbd'
@@ -228,7 +229,7 @@ export const PARAMETERS = {
         to: null,
         oldest: null,
         newest: null,
-        get status () {
+        get status() {
             return PARAMETERS.STATUS.ALL;
         }
     },

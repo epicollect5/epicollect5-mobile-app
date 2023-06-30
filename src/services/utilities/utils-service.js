@@ -6,7 +6,8 @@ import { Network } from '@capacitor/network';
 import { projectModel } from '@/models/project-model.js';
 import slugify from 'slugify';
 import isValidCoords from 'is-valid-coords';
-
+import { initService } from '@/services/init-service';
+import { STRINGS } from '@/config/strings';
 
 export const utilsService = {
 
@@ -15,7 +16,7 @@ export const utilsService = {
      *
      * @returns {string}
      */
-    uuid () {
+    uuid() {
         //new method to generated uuid, much better -> https://goo.gl/82GDUJ
         let d = new Date().getTime();
         if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
@@ -30,12 +31,12 @@ export const utilsService = {
     },
 
     //get timezone based on device settings
-    getTimeZone () {
+    getTimeZone() {
         const offset = new Date().getTimezoneOffset(), o = Math.abs(offset);
         return (offset < 0 ? '+' : '-') + ('00' + Math.floor(o / 60)).slice(-2) + ':' + ('00' + (o % 60)).slice(-2);
     },
 
-    getInputFormattedDate (date) {
+    getInputFormattedDate(date) {
         const year = date.slice(0, 4);
         const month = date.slice(5, 7);
         const day = date.slice(8, 10);
@@ -43,7 +44,7 @@ export const utilsService = {
         return year + '-' + month + '-' + day;
     },
     //https://stackoverflow.com/questions/49330139/date-toisostring-but-local-time-instead-of-utc
-    toISOStringLocale (d) {
+    toISOStringLocale(d) {
         const z = (n) => ('0' + n).slice(-2);
         const zz = (n) => ('00' + n).slice(-3);
         let off = d.getTimezoneOffset();
@@ -62,7 +63,7 @@ export const utilsService = {
         return iso;
     },
 
-    getInputFormattedTime (input_date, format) {
+    getInputFormattedTime(input_date, format) {
 
 
         //"1970-01-01T01:03:00.000"
@@ -91,7 +92,7 @@ export const utilsService = {
     },
 
     //picker is shown on device when time format has seconds
-    getPickerFormattedTime (input_date, format) {
+    getPickerFormattedTime(input_date, format) {
 
         //"1970-01-01T01:03:00.000"
         const timepart = input_date.split('T')[1];
@@ -114,7 +115,7 @@ export const utilsService = {
         return formattedTime;
     },
 
-    getUserFormattedTime (dateISO, format) {
+    getUserFormattedTime(dateISO, format) {
 
         const timepart = dateISO.split('T')[1];
         const hours24 = timepart.slice(0, 2);
@@ -158,7 +159,7 @@ export const utilsService = {
         return formatted_time;
     },
 
-    getUserFormattedDate (dateISO, format) {
+    getUserFormattedDate(dateISO, format) {
 
         const year = dateISO.slice(0, 4);
         const month = dateISO.slice(5, 7);
@@ -195,7 +196,7 @@ export const utilsService = {
     /*
      Value for media is created like {input ref}_{YYYYMMDD}_{filename} where file name will be {timestamp}.{ext}
      */
-    generateMediaFilename (uuid, type) {
+    generateMediaFilename(uuid, type) {
 
         const rootStore = useRootStore();
         let ext;
@@ -222,12 +223,12 @@ export const utilsService = {
         return uuid + '_' + this.generateTimestamp() + ext;
     },
 
-    generateTimestamp () {
+    generateTimestamp() {
         return Math.floor(Date.now() / 1000);
     },
 
     //Get ISO8601 representation in UTC, removing timezone
-    getISODateTime (date) {
+    getISODateTime(date) {
 
         const self = this;
 
@@ -244,7 +245,7 @@ export const utilsService = {
     },
 
     //get ISO date with time set to 00:00:00.000
-    getISODateOnly (dateISO) {
+    getISODateOnly(dateISO) {
 
         const year = dateISO.slice(0, 4);
         const month = dateISO.slice(5, 7);
@@ -254,7 +255,7 @@ export const utilsService = {
     },
 
 
-    getTimezoneOffset (date) {
+    getTimezoneOffset(date) {
 
         const timezone_offset_min = date.getTimezoneOffset();
         let offset_hrs = parseInt(Math.abs(timezone_offset_min / 60));
@@ -289,7 +290,7 @@ export const utilsService = {
     },
 
     //get time in ISO format with milliseconds set to .000
-    getISOTime (dt) {
+    getISOTime(dt) {
 
         let date = dt.getDate();
         let month = dt.getMonth() + 1;
@@ -310,7 +311,7 @@ export const utilsService = {
     },
 
     //convert a local date to UTC date, so real date without the timezone offset added in
-    convertDateToUTC (date, removeMilliseconds) {
+    convertDateToUTC(date, removeMilliseconds) {
 
         if (removeMilliseconds) {
             return new Date(
@@ -336,7 +337,7 @@ export const utilsService = {
     },
 
     //add/remove the timezone offset from the local time to level out timezone differences and have the Date in GMT always
-    getDateWithCompensatedTimezone (date) {
+    getDateWithCompensatedTimezone(date) {
 
         //local date
         const compDate = new Date(
@@ -357,7 +358,7 @@ export const utilsService = {
      * @param entryMediaObj
      * @returns {Array}
      */
-    mapMediaObjectToArray (entryMediaObj) {
+    mapMediaObjectToArray(entryMediaObj) {
         console.log(entryMediaObj);
         const array = [];
 
@@ -393,7 +394,7 @@ export const utilsService = {
      * @param obj
      * @returns {string}
      */
-    serializeToUrl (obj) {
+    serializeToUrl(obj) {
         const str = [];
         for (const p in obj) {
             if (Object.prototype.hasOwnProperty.call(obj, p)) {
@@ -408,7 +409,7 @@ export const utilsService = {
      * @param str
      * @returns {*}
      */
-    stripTrailingSlash (str) {
+    stripTrailingSlash(str) {
         if (str.substr(-1) === '/') {
             return str.substr(0, str.length - 1).toLowerCase();
         }
@@ -420,7 +421,7 @@ export const utilsService = {
      * @param obj
      * @returns {string}
      */
-    serializeObj (obj) {
+    serializeObj(obj) {
         const result = [];
 
         Object.keys(obj).forEach(function (key, index) {
@@ -430,7 +431,7 @@ export const utilsService = {
         return result.join('&');
     },
 
-    htmlDecode (input) {
+    htmlDecode(input) {
 
         let html = '';
         let div;
@@ -465,7 +466,7 @@ export const utilsService = {
      * @see http://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript
      * @return Blob
      */
-    b64toBlob (b64Data, contentType, sliceSize) {
+    b64toBlob(b64Data, contentType, sliceSize) {
         contentType = contentType || '';
         sliceSize = sliceSize || 512;
 
@@ -487,7 +488,7 @@ export const utilsService = {
 
         return new Blob(byteArrays, { type: contentType });
     },
-    async hasInternetConnection () {
+    async hasInternetConnection() {
         const rootStore = useRootStore();
         if (rootStore.device.platform === PARAMETERS.WEB) {
             return window.navigator.onLine;
@@ -500,7 +501,7 @@ export const utilsService = {
     },
 
     //Open a barcode and return a result
-    async triggerBarcode () {
+    async triggerBarcode() {
         const rootStore = useRootStore();
         return new Promise((resolve, reject) => {
             //trigger call to barcode with a bit of delay to allow the spinner to appear
@@ -529,7 +530,7 @@ export const utilsService = {
      * Get app version name
      */
     //todo: not sure we still need this
-    async getAppVersion () {
+    async getAppVersion() {
         const rootStore = useRootStore();
         return new Promise((resolve) => {
 
@@ -544,7 +545,7 @@ export const utilsService = {
         });
     },
 
-    async getAppName () {
+    async getAppName() {
         const rootStore = useRootStore();
         return new Promise((resolve) => {
             if (rootStore.device.platform === PARAMETERS.WEB) {
@@ -554,7 +555,7 @@ export const utilsService = {
         });
     },
 
-    getFileType (filename) {
+    getFileType(filename) {
 
         const parts = filename.split('.');
         const ext = parts[parts.length - 1];
@@ -574,7 +575,7 @@ export const utilsService = {
         return type;
     },
 
-    getFilePath (file_type) {
+    getFilePath(file_type) {
 
         let path = '';
 
@@ -592,7 +593,7 @@ export const utilsService = {
         return path;
     },
 
-    getMIMEType (file_type) {
+    getMIMEType(file_type) {
 
         const rootStore = useRootStore();
         let mime_type;
@@ -615,7 +616,7 @@ export const utilsService = {
         return mime_type;
     },
 
-    getProjectNameMarkup (hideName) {
+    getProjectNameMarkup(hideName) {
 
         let appStoragePath = '';
         let markup = '';
@@ -651,10 +652,10 @@ export const utilsService = {
 
         return markup;
     },
-    trunc (str, desiredLength) {
+    trunc(str, desiredLength) {
         return (str.length > desiredLength) ? str.substr(0, desiredLength) + '...' : str;
     },
-    hasQuestionError (state) {
+    hasQuestionError(state) {
         if (Object.keys(state.error.errors).length > 0) {
             if (!state.error?.errors[state.currentInputRef]?.message) {
                 return false;
@@ -663,13 +664,13 @@ export const utilsService = {
         }
         return false;
     },
-    objectsMatch (obj, source) {
+    objectsMatch(obj, source) {
         return Object.keys(source).every(
             (key) => Object.prototype.hasOwnProperty.call(obj, key) && obj[key] === source[key]
         );
     },
     //get a hash map like hashMap[answer_ref] = answer for quicker lookups
-    buildPossibleAnswersHashMap (possibleAnswers) {
+    buildPossibleAnswersHashMap(possibleAnswers) {
         const hashMap = {};
 
         possibleAnswers.forEach((possibleAnswer) => {
@@ -678,7 +679,7 @@ export const utilsService = {
 
         return hashMap;
     },
-    getStepPrecision (precision) {
+    getStepPrecision(precision) {
         let inputStep = '0.';
         for (let i = 0; i < precision - 1; i++) {
             inputStep += '0';
@@ -687,7 +688,7 @@ export const utilsService = {
 
         return parseFloat(inputStep);
     },
-    questionHasError (questionState) {
+    questionHasError(questionState) {
 
         if (questionState.error?.errors?.[questionState.currentInputRef]?.message?.trim() === '') {
             //no error message , answer is valid
@@ -699,7 +700,7 @@ export const utilsService = {
         }
         return true;
     },
-    filterObjectsByUniqueKey (arrayOfObjects, keyname) {
+    filterObjectsByUniqueKey(arrayOfObjects, keyname) {
         const output = [], keys = [];
 
         arrayOfObjects.forEach((item) => {
@@ -711,17 +712,17 @@ export const utilsService = {
         });
         return output;
     },
-    getRandomInt (max) {
+    getRandomInt(max) {
         return Math.floor(Math.random() * max);
     },
-    getSanitisedAnswer (value) {
+    getSanitisedAnswer(value) {
         let answer = value.trim();
         //sanitise < and > replacing by unicode
         answer = answer.replaceAll('>', '\ufe65');
         answer = answer.replaceAll('<', '\ufe64');
         return answer;
     },
-    getPlatformDownloadFolder () {
+    getPlatformDownloadFolder() {
         const rootStore = useRootStore();
         let folder = '';
         switch (rootStore.device.platform) {
@@ -737,7 +738,7 @@ export const utilsService = {
         }
         return folder;
     },
-    generateFilenameForExport (prefix, body) {
+    generateFilenameForExport(prefix, body) {
         /**
          *  Truncate anything bigger than 100 chars
          *  to keep the filename unique, a prefix (with index) is passed
@@ -750,7 +751,7 @@ export const utilsService = {
 
         return prefix + '__' + slugify(this.trunc(body.toLowerCase(), 100));
     },
-    getHoursColumnPicker () {
+    getHoursColumnPicker() {
         const hours = Array.from({ length: 24 }, (_, index) => index);
         return hours.map((value) => {
             return {
@@ -758,7 +759,7 @@ export const utilsService = {
             };
         });
     },
-    getMinutesColumnPicker () {
+    getMinutesColumnPicker() {
         const minutes = Array.from({ length: 60 }, (_, index) => index);
         return minutes.map((value) => {
             return {
@@ -766,11 +767,11 @@ export const utilsService = {
             };
         });
     },
-    getSecondsColumnPicker () {
+    getSecondsColumnPicker() {
         return this.getMinutesColumnPicker();
     },
     //generate PHP type uniqid to be appended to form, inputs, branch and groups
-    generateUniqID (prefix, more_entropy) {
+    generateUniqID(prefix, more_entropy) {
         if (typeof prefix === 'undefined') {
             prefix = '';
         }
@@ -817,13 +818,13 @@ export const utilsService = {
 
         return retId;
     },
-    getRandomInRange (from, to, fixed) {
+    getRandomInRange(from, to, fixed) {
         return (Math.random() * (to - from) + from).toFixed(fixed) * 1;
         // .toFixed() returns string, so ' * 1' is a trick to convert to number
     },
-    getRandomLocation (lat, long) {
+    getRandomLocation(lat, long) {
 
-        function normish (mean, range) {
+        function normish(mean, range) {
             const num_out = ((Math.random() + Math.random() + Math.random() + Math.random() - 2) / 2) * range + mean;
             return num_out;
         }
@@ -832,7 +833,7 @@ export const utilsService = {
         const y = normish(0, 0.01);
         return { longitude: (((x * 0.1) + long)).toFixed(6), latitude: (((y * 0.1) + lat)).toFixed(6), accuracy: this.getRandomInRange(3, 100, 0) };
     },
-    getDataViewerURL (projectSlug) {
+    getDataViewerURL(projectSlug) {
         const rootStore = useRootStore();
 
         return rootStore.serverUrl
@@ -841,7 +842,7 @@ export const utilsService = {
             + PARAMETERS.API.ROUTES.PWA.DATA_VIEWER
             + PARAMETERS.API.PARAMS.DATA_VIEWER_RESTORE_QUERY_STRING;
     },
-    isValidLatitude (lat) {
+    isValidLatitude(lat) {
         if (!lat) {
             return false;
         }
@@ -853,7 +854,7 @@ export const utilsService = {
 
         return isValidCoords(lat, 0);
     },
-    isValidLongitude (long) {
+    isValidLongitude(long) {
         if (!long) {
             return false;
         }
@@ -865,12 +866,12 @@ export const utilsService = {
         return isValidCoords(0, long);
     },
     //accuracy must be a positive integer
-    isValidAccuracy (accuracy) {
+    isValidAccuracy(accuracy) {
         const num = Number(accuracy);
         return Number.isInteger(num) && num > 0;
     },
     //get base path from url, to be used by vue router and internal api requests
-    getBasepath () {
+    getBasepath() {
         const url = new URL(window.location.href);
         const pathname = url.pathname;
         const pathnameParts = pathname.split('/');
@@ -881,7 +882,7 @@ export const utilsService = {
 
         return pathnameParts.join('/');
     },
-    isValidDecimalDegreesString (str) {
+    isValidDecimalDegreesString(str) {
         if (!str.includes(',')) {
             return false;
         }
@@ -894,10 +895,42 @@ export const utilsService = {
         return utilsService.isValidLatitude(latitude) && utilsService.isValidLongitude(longitude);
 
     },
-    isObject (obj) {
+    isObject(obj) {
         return Object.prototype.toString.call(obj) === '[object Object]';
     },
-    arrayGroupBy (arr, cb) {
+    arrayGroupBy(arr, cb) {
         return arr.reduce((a, b, i) => ((a[cb(b, i, arr)] || (a[cb(b, i, arr)] = [])).push(b), a), {});
+    },
+    hasSameKeys(a, b) {
+        const aKeys = Object.keys(a);
+        const bKeys = Object.keys(b);
+
+        const missingKeysA = aKeys.filter((k) => !bKeys.includes(k));
+        const missingKeysB = bKeys.filter((k) => !aKeys.includes(k));
+
+        if (missingKeysA.length > 0) {
+            console.warn(`Missing keys in object 'b': ${missingKeysA.join(', ')}`);
+        }
+
+        if (missingKeysB.length > 0) {
+            console.warn(`Missing keys in object 'a': ${missingKeysB.join(', ')}`);
+        }
+
+        return aKeys.length === bKeys.length && missingKeysA.length === 0 && missingKeysB.length === 0;
+    },
+    //validate language files to check for missing keys
+    async validateLanguageFiles() {
+
+        const defaultLanguage = await initService.getLanguageFile(PARAMETERS.DEFAULT_LANGUAGE);
+
+        PARAMETERS.SUPPORTED_LANGUAGES.forEach(async (supportedLanguage) => {
+            const statusCodes = await initService.getLanguageFile(supportedLanguage);
+            if (!utilsService.hasSameKeys(defaultLanguage, statusCodes)) {
+                console.error('Missing keys in language files (status codes)', supportedLanguage);
+            }
+            if (!utilsService.hasSameKeys(STRINGS[PARAMETERS.DEFAULT_LANGUAGE].labels, STRINGS[supportedLanguage].labels)) {
+                console.error('Missing keys in language files (labels)', supportedLanguage);
+            }
+        });
     }
 };

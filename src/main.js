@@ -232,6 +232,11 @@ export const app = createApp(App)
     console.log('Device language -> ', rootStore.language);
     const labels = STRINGS[rootStore.language].labels;
 
+    //Validate language files at start up for consistency
+    if (PARAMETERS.DEBUG) {
+      await utilsService.validateLanguageFiles();
+    }
+
     //open db
     const db = await initService.openDB(deviceInfo.platform);
     //create db tables if needed
