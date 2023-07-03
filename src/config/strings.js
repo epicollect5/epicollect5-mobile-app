@@ -2,6 +2,13 @@ export const STRINGS = {
     en: {
         labels: {
             bookmarks_loading_error: 'Error loading bookmarks',
+            account_email_confirm_before: 'Please confirm you would like the account with email',
+            account_email_confirm_after: 'to be removed from our systems.',
+            account_deletion_team_will_contact: 'The Epicollect5 Team will contact you about the progress of the account deletion.',
+            account_deletion_request_sent: 'Account Deletion Request sent.',
+            danger: 'Danger',
+            delete_account: 'Delete Account',
+            profile: 'Profile',
             address: 'Address',
             exit: 'Exit',
             editing_branches_pwa: 'Please note: to edit existing branch entries you must use the Epicollect5 Data Viewer.',
@@ -227,6 +234,13 @@ export const STRINGS = {
     it: {
         labels: {
             bookmarks_loading_error: 'Errore caricando bookmarks',
+            account_email_confirm_before: 'Confermare che l\'account con email',
+            account_email_confirm_after: 'richiede di essere cancellato dai nostri sistemi',
+            account_deletion_team_will_contact: 'Il team di Epicollect5 ti contatterà in merito allo stato di avanzamento della cancellazione dell\'account.',
+            account_deletion_request_sent: 'Richiesta di cancellazione dell\'account inviata.',
+            danger: 'Pericolo',
+            delete_account: 'Cancella Account',
+            profile: 'Profilo',
             address: 'Indirizzo',
             exit: 'Esci',
             editing_branches_pwa: 'Nota: per visualizzare le voci BRANCH esistenti è possibile utilizzare Epicollect5 Data Viewer.',
@@ -452,6 +466,13 @@ export const STRINGS = {
     es: {
         labels: {
             bookmarks_loading_error: 'Error al cargar bookmarks',
+            account_email_confirm_before: 'Por favor, confirme que desea la cuenta con correo electrónico.',
+            account_email_confirm_after: 'ser eliminado de nuestros sistemas.',
+            account_deletion_team_will_contact: 'El equipo de Epicollect5 se comunicará con usted sobre el progreso de la eliminación de la cuenta.',
+            account_deletion_request_sent: 'Solicitud de eliminación de cuenta enviada.',
+            danger: 'Cuidado',
+            delete_account: 'Eliminar Account',
+            profile: 'Perfil',
             address: 'Dirección',
             exit: 'Terminar',
             editing_branches_pwa: 'Tenga en cuenta: para ver las entradas BRANCH existentes, puede usar Epicollect5 Data Viewer.',
@@ -677,6 +698,13 @@ export const STRINGS = {
     fr: {
         labels: {
             bookmarks_loading_error: 'Erreur lors du chargement bookmarks',
+            account_email_confirm_before: 'Veuillez confirmer que vous souhaitez le compte avec e-mail',
+            account_email_confirm_after: 'à supprimer de nos systèmes.',
+            account_deletion_team_will_contact: 'L\'équipe Epicollect5 vous contactera au sujet de l\'avancement de la suppression du compte.',
+            account_deletion_request_sent: 'Demande de suppression de compte envoyée.',
+            danger: 'Danger',
+            delete_account: 'Supprimer Account',
+            profile: 'Profil',
             address: 'Adresse',
             exit: 'Sortir',
             editing_branches_pwa: 'Remarque: pour afficher les entrées BRANCH existantes, vous pouvez utiliser Epicollect5 Data Viewer.',
@@ -902,6 +930,13 @@ export const STRINGS = {
     pl: {
         labels: {
             bookmarks_loading_error: 'Błąd ładowania bookmarks',
+            account_email_confirm_before: 'Potwierdź, że chcesz konto z e-mailem',
+            account_email_confirm_after: 'zostać usunięte z naszych systemów.',
+            account_deletion_team_will_contact: 'Zespół Epicollect5 skontaktuje się z Tobą w sprawie postępów w usuwaniu konta.',
+            account_deletion_request_sent: 'Wysłano prośbę o usunięcie konta.',
+            danger: 'Niebezpieczeństwo',
+            delete_account: 'Usunąć Account',
+            profile: 'Przekrój',
             address: 'Adress',
             exit: 'Exit',
             editing_branches_pwa: 'Uwaga: aby wyświetlić istniejące wpisy oddziałów, można użyć przeglądarki danych Epicollect5.',

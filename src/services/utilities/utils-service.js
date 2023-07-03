@@ -8,6 +8,7 @@ import slugify from 'slugify';
 import isValidCoords from 'is-valid-coords';
 import { initService } from '@/services/init-service';
 import { STRINGS } from '@/config/strings';
+import { databaseSelectService } from '@/services/database/database-select-service';
 
 export const utilsService = {
 
@@ -931,6 +932,24 @@ export const utilsService = {
             if (!utilsService.hasSameKeys(STRINGS[PARAMETERS.DEFAULT_LANGUAGE].labels, STRINGS[supportedLanguage].labels)) {
                 console.error('Missing keys in language files (labels)', supportedLanguage);
             }
+        });
+    },
+
+    async isJWTExpired() {
+        return new Promise(function (resolve) {
+            databaseSelectService.getUser().then(function (res) {
+                let jwt;
+                // Check if we have one
+                if (res.rows.length > 0) {
+                    jwt = res.rows.item(0).jwt;
+                    const jwtDecoded = JSON.parse(window.atob(jwt.split('.')[1]));
+                    resolve(jwtDecoded.exp < Date.now() / 1000);
+                }
+                else {
+                    //not found, send expired  so we get a new one
+                    resolve(true);
+                }
+            });
         });
     }
 };

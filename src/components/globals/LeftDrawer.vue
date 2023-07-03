@@ -30,6 +30,38 @@
 					</div>
 				</ion-item-group>
 
+				<ion-item-group
+					v-if="isLoggedIn"
+					class="profile"
+					@click="goToProfile()"
+				>
+					<ion-grid>
+						<ion-row>
+							<ion-col size="10">
+								<div
+									class="profile__label"
+									lines="none"
+								>
+									<ion-label color="tertiary">
+										<strong>{{ labels.hi }}, {{ user.name }}</strong>
+									</ion-label>
+									<ion-label color="dark">
+										<small>{{ user.email }}</small>
+									</ion-label>
+
+								</div>
+							</ion-col>
+							<ion-col>
+								<ion-icon
+									class="profile__icon"
+									:icon="enter"
+									size="large"
+								></ion-icon>
+							</ion-col>
+						</ion-row>
+					</ion-grid>
+				</ion-item-group>
+
 				<ion-item
 					@click="goToProjects()"
 					lines="full"
@@ -117,7 +149,7 @@
 </template>
 
 <script>
-import { document, bookmark, personCircle, book, people, settings } from 'ionicons/icons';
+import { enter, document, bookmark, personCircle, book, people, settings } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
@@ -153,6 +185,14 @@ export default {
 				if (rootStore.user.action === STRINGS[language].labels.logout) {
 					methods.logout(true, true);
 				}
+			},
+			goToProfile() {
+				rootStore.nextRoute = router.currentRoute.value.name;
+				router.replace({
+					name: PARAMETERS.ROUTES.PROFILE,
+					params: {}
+				});
+				menuController.close();
 			},
 			goToProjects() {
 				//reset hierarchy navigation
@@ -277,7 +317,8 @@ export default {
 			personCircle,
 			book,
 			people,
-			settings
+			settings,
+			enter
 			//************
 		};
 	}

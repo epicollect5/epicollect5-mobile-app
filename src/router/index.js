@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import Projects from '@/pages/Projects';
+import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound.vue';
 import { PARAMETERS } from '@/config';
 import EntriesAdd from '@/pages/EntriesAdd.vue';
@@ -57,6 +58,11 @@ else {
       path: '/projects',
       component: Projects,
       name: PARAMETERS.ROUTES.PROJECTS
+    },
+    {
+      path: '/profile',
+      component: Profile,
+      name: PARAMETERS.ROUTES.PROFILE
     },
     {
       path: '/projects/add',
