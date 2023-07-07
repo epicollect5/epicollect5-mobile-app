@@ -55,7 +55,7 @@
 			<grid-question-narrow v-if="!isPWA">
 				<template #content>
 					<ion-button
-						class="question-action-button"
+						class="question-action-button ion-margin-top"
 						color="secondary"
 						expand="block"
 						@click="takePicture('gallery')"

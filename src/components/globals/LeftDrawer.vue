@@ -15,20 +15,6 @@
 		</ion-header>
 		<ion-content>
 			<ion-list>
-				<ion-item-group>
-					<div
-						v-if="isLoggedIn"
-						class="user-label"
-						lines="none"
-					>
-						<ion-label color="tertiary">
-							<strong>{{ labels.hi }}, {{ user.name }}</strong>
-						</ion-label>
-						<ion-label color="dark">
-							<small>{{ user.email }}</small>
-						</ion-label>
-					</div>
-				</ion-item-group>
 
 				<ion-item-group
 					v-if="isLoggedIn"
@@ -187,7 +173,10 @@ export default {
 				}
 			},
 			goToProfile() {
-				rootStore.nextRoute = router.currentRoute.value.name;
+				//console.log(router.currentRoute.value.name);
+				//console.log(router.currentRoute._value?.name);
+				//rootStore.nextRoute = router.currentRoute.value.name;
+				console.log(rootStore.nextRoute);
 				router.replace({
 					name: PARAMETERS.ROUTES.PROFILE,
 					params: {}

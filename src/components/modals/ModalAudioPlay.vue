@@ -1,32 +1,44 @@
 <template>
 	<ion-header class="ion-no-border">
 		<ion-toolbar>
-			<ion-title class="ion-text-center"
-					   color="dark">{{ labels.playing_audio }}</ion-title>
+			<ion-title
+				class="ion-text-center"
+				color="dark"
+			>{{ labels.playing_audio }}</ion-title>
 		</ion-toolbar>
 	</ion-header>
 	<ion-content>
 		<div class="ion-text-center ion-padding">
-			<ion-icon color="dark"
-					  class="audio-note ion-text-center"
-					  :icon="musicalNote">
+			<ion-icon
+				color="dark"
+				class="audio-note ion-text-center"
+				:icon="musicalNote"
+			>
 			</ion-icon>
 		</div>
 		<div class="ion-text-center">
-			<ion-spinner class=""
-						 name="dots"></ion-spinner>
+			<ion-spinner
+				class=""
+				name="dots"
+			></ion-spinner>
 		</div>
 		<div class="ion-text-center ion-padding-top">
 			<ion-grid>
 				<ion-row>
-					<ion-col size="8"
-							 offset="2">
-						<ion-button @click="stop()"
-									class="question-action-button"
-									color="secondary"
-									expand="block">
-							<ion-icon slot="start"
-									  :icon="stopCircleSharp">
+					<ion-col
+						size="8"
+						offset="2"
+					>
+						<ion-button
+							@click="stop()"
+							class="question-action-button"
+							color="secondary"
+							expand="block"
+						>
+							<ion-icon
+								slot="start"
+								:icon="stopCircleSharp"
+							>
 							</ion-icon>
 							{{ labels.stop }}
 						</ion-button>
@@ -64,7 +76,7 @@ export default {
 			required: true
 		}
 	},
-	setup (props) {
+	setup(props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -74,7 +86,7 @@ export default {
 
 		let file_URI;
 		//callback when the audio finishes playing because it got to the end
-		function _onPlayStatusChange (status) {
+		function _onPlayStatusChange(status) {
 			console.log(status);
 			//close modal and release media object
 			if (status === 4) {
@@ -111,7 +123,7 @@ export default {
 		mediaPlayer.play();
 
 		const methods = {
-			stop () {
+			stop() {
 				mediaPlayer.stop();
 			}
 		};

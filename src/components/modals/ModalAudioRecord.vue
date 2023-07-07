@@ -1,32 +1,44 @@
 <template>
 	<ion-header class="ion-no-border">
 		<ion-toolbar>
-			<ion-title class="ion-text-center"
-					   color="dark">{{ labels.recording_audio }}</ion-title>
+			<ion-title
+				class="ion-text-center"
+				color="dark"
+			>{{ labels.recording_audio }}</ion-title>
 		</ion-toolbar>
 	</ion-header>
 	<ion-content>
 		<div class="ion-text-center ion-padding">
-			<ion-icon color="dark"
-					  class="audio-mic ion-text-center"
-					  :icon="micCircleOutline">
+			<ion-icon
+				color="dark"
+				class="audio-mic ion-text-center"
+				:icon="micCircleOutline"
+			>
 			</ion-icon>
 		</div>
 		<div class="ion-text-center">
-			<ion-spinner class=""
-						 name="dots"></ion-spinner>
+			<ion-spinner
+				class=""
+				name="dots"
+			></ion-spinner>
 		</div>
 		<div class="ion-text-center ion-padding-top">
 			<ion-grid>
 				<ion-row>
-					<ion-col size="8"
-							 offset="2">
-						<ion-button @click="stop()"
-									class="question-action-button"
-									color="secondary"
-									expand="block">
-							<ion-icon slot="start"
-									  :icon="stopCircleSharp">
+					<ion-col
+						size="8"
+						offset="2"
+					>
+						<ion-button
+							@click="stop()"
+							class="question-action-button"
+							color="secondary"
+							expand="block"
+						>
+							<ion-icon
+								slot="start"
+								:icon="stopCircleSharp"
+							>
 							</ion-icon>
 							{{ labels.stop }}
 						</ion-button>
@@ -62,7 +74,7 @@ export default {
 			required: true
 		}
 	},
-	setup (props) {
+	setup(props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -103,18 +115,18 @@ export default {
 						//if there is the 'file://' ios will give an error 'Failed to start recording using AVAudioRecorder'
 						mediaRecorder = new window.Media(
 							tempDir + filename,
-							function onRecordingSuccess () {
+							function onRecordingSuccess() {
 								console.log('recordAudio():Audio Success');
 								console.log('current_path: ' + tempDir + filename);
 							},
-							function onRecordingError (error) {
+							function onRecordingError(error) {
 								notificationService.showAlert(error.code, labels.error);
 								filename = '';
 								modalController.dismiss(filename);
 								console.log('recordAudio():Audio Error: ' + error.code);
 								console.log('recordAudio():Audio Error: ' + JSON.stringify(error));
 							},
-							function onStatusChange (status) {
+							function onStatusChange(status) {
 								console.log(status);
 							}
 						);
@@ -129,7 +141,7 @@ export default {
 		}
 
 		const methods = {
-			async stop () {
+			async stop() {
 				//stop recording
 				if (rootStore.device.platform !== PARAMETERS.WEB) {
 					await notificationService.showProgressDialog(labels.saving, labels.wait);

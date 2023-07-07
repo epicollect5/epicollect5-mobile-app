@@ -7,7 +7,7 @@ import { PushNotifications } from '@capacitor/push-notifications';
 
 export const notificationService = {
 
-    showToast (message, delay, position) {
+    showToast(message, delay, position) {
 
         const setDelay = delay || 0;
         const setPosition = position || 'bottom';
@@ -22,7 +22,7 @@ export const notificationService = {
             return toast.present();
         }, setDelay);
     },
-    showToastCenter (message, delay) {
+    showToastCenter(message, delay) {
 
         const set_delay = delay || 0;
 
@@ -36,7 +36,7 @@ export const notificationService = {
             return toast.present();
         }, set_delay);
     },
-    async showAlert (message, header) {
+    async showAlert(message, header) {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const alert = await alertController
@@ -47,7 +47,7 @@ export const notificationService = {
             });
         await alert.present();
     },
-    async confirmSingle (message, title) {
+    async confirmSingle(message, title) {
         const rootStore = useRootStore();
         const language = rootStore.language;
         return new Promise((resolve, reject) => {
@@ -77,7 +77,7 @@ export const notificationService = {
         });
     },
     //multiple options modal
-    async confirmMultiple (message, title, yesButton, noButton) {
+    async confirmMultiple(message, title, yesButton, noButton) {
 
         const rootStore = useRootStore();
         const platform = (rootStore.device.platform).toLowerCase();
@@ -126,7 +126,7 @@ export const notificationService = {
         });
     },
     //todo: test the web approach on slow devices
-    async showProgressDialog (message, title) {
+    async showProgressDialog(message, title) {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
@@ -164,12 +164,12 @@ export const notificationService = {
         await rootStore.ec5LoadingDialog.present();
     },
     //set progress in global state for modalUpload
-    setProgress (progress) {
+    setProgress(progress) {
         const rootStore = useRootStore();
         rootStore.progressTransfer = progress;
     },
     //Hide the progress dialog (global object)
-    hideProgressDialog (delay) {
+    hideProgressDialog(delay) {
         const rootStore = useRootStore();
         const set_delay = delay || PARAMETERS.DELAY_MEDIUM;
 
@@ -182,10 +182,15 @@ export const notificationService = {
     },
     //start a foreground service (with notification)
     //to avoid Android killing the app
-    async startForegroundService () {
+    async startForegroundService() {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
+
+        //skip for ios/web
+        if (rootStore.device.platform !== PARAMETERS.ANDROID) {
+            return;
+        }
 
         return new Promise((resolve) => {
             (async function () {
@@ -223,8 +228,13 @@ export const notificationService = {
             })();
         });
     },
-    async stopForegroundService () {
+    async stopForegroundService() {
+
         const rootStore = useRootStore();
+        //skip for ios/web
+        if (rootStore.device.platform !== PARAMETERS.ANDROID) {
+            return;
+        }
         if (rootStore.device.platform === PARAMETERS.ANDROID) {
             //only for api >= 28 (Android 9)
             //app might crash on Android 8

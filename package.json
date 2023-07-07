@@ -15,7 +15,7 @@
     "all-copy": "ionic cap copy --no-build",
     "android": "export VUE_APP_MODE=WEB && ionic cap copy android && ionic cap open android",
     "android-build": "export VUE_APP_MODE=WEB && ionic cap copy android",
-    "dev-build": "ionic build -- --mode development --source-maps",
+    "dev-build": "ionic build --mode development --source-maps",
     "ios": "ionic cap copy ios && ionic cap open ios",
     "ios-build": "ionic cap copy ios",
     "preprod": "vitest --run --silent",

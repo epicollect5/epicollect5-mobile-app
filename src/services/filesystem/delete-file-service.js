@@ -1,15 +1,18 @@
+import { PARAMETERS } from '@/config';
+import { useRootStore } from '@/stores/root-store';
+
 export const deleteFileService = {
 
     //use Cordova implementation for legacy reasons
     //since we need the same file paths as the old app
-    removeFiles (files) {
+    removeFiles(files) {
 
         return new Promise((resolve, reject) => {
-            function _onGetFileSuccess (file_entry) {
+            function _onGetFileSuccess(file_entry) {
                 file_entry.remove(_onRemoveSuccess, _onRemoveError);
             }
 
-            function _onGetFileError (error) {
+            function _onGetFileError(error) {
 
                 console.log('Error getting file: ' + JSON.stringify(error));
                 //id the error code is 1 (file not found), assume the deletion was ok
@@ -21,7 +24,7 @@ export const deleteFileService = {
                 }
             }
 
-            function _onRemoveSuccess () {
+            function _onRemoveSuccess() {
                 if (files.length > 0) {
                     _execute(files.pop());
                 }
@@ -30,21 +33,24 @@ export const deleteFileService = {
                 }
             }
 
-            function _onRemoveError (error) {
+            function _onRemoveError(error) {
                 console.log('Error: ' + JSON.stringify(error));
                 reject(error);
             }
 
-            function _execute (file) {
+            function _execute(file) {
+                const rootStore = useRootStore();
+                const protocol = rootStore.device.platform === PARAMETERS.IOS ? 'file://' : '';
+
                 console.log('Deleting file: n ' + file.file_path + file.project_ref + '/' + file.file_name);
-                window.resolveLocalFileSystemURL(file.file_path + file.project_ref + '/' + file.file_name, _onGetFileSuccess, _onGetFileError);
+                window.resolveLocalFileSystemURL(protocol + file.file_path + file.project_ref + '/' + file.file_name, _onGetFileSuccess, _onGetFileError);
             }
 
             _execute(files.pop());
         });
     },
 
-    removeFile (fileURI) {
+    removeFile(fileURI) {
         console.log('file to remove ->', fileURI);
         return new Promise((resolve, reject) => {
             window.resolveLocalFileSystemURL(fileURI, (fileEntry) => {
