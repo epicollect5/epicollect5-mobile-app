@@ -175,7 +175,7 @@ export default {
 			goToProfile() {
 				//console.log(router.currentRoute.value.name);
 				//console.log(router.currentRoute._value?.name);
-				//rootStore.nextRoute = router.currentRoute.value.name;
+				rootStore.nextRoute = router.currentRoute.value.name;
 				console.log(rootStore.nextRoute);
 				router.replace({
 					name: PARAMETERS.ROUTES.PROFILE,

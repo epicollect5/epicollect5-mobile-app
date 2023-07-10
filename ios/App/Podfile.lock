@@ -186,7 +186,7 @@ SPEC CHECKSUMS:
   CapacitorSplashScreen: 93a389d4f7673c08214ae25bb6f21d867d5305c5
   CapacitorStatusBar: 190e0321b8734f4244d0c81baa183a00d5806ddf
   CapacitorToast: fcc4329f01d06cf02f190f8f5ce7f16509a2263c
-  CordovaPlugins: 0bbf83a2d5e08e2f2c6974e2f36408b1a2588584
+  CordovaPlugins: 5a9172e0ec03e6e94907a6d92d0c8df72417df92
   CordovaPluginsResources: 1b3992e05cb6336d2850cd77dd5e3054f2f76f96
   CordovaPluginsStatic: d3307518c9852006c8c3815bd34144ddc7369c93
   GoogleSignIn: 7137d297ddc022a7e0aa4619c86d72c909fa7213
