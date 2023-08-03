@@ -1,7 +1,7 @@
 <template>
 	<ion-card
 		class="question-card"
-		:class="{'animate__animated animate__fadeIn' : !isGroupInput}"
+		:class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
 	>
 		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title>
@@ -19,15 +19,15 @@
 			>
 				{{ labels.pattern }}:
 				<span>
-					&nbsp;{{state.pattern}}
+					&nbsp;{{ state.pattern }}
 				</span>
 				>
 			</ion-card-subtitle>
 		</ion-card-header>
-		<ion-card-content :class="{'ion-margin' : isGroupInput}">
+		<ion-card-content :class="{ 'ion-margin': isGroupInput }">
 			<div
 				class="question-required"
-				:class="{'ion-padding-start' : isGroupInput}"
+				:class="{ 'ion-padding-start': isGroupInput }"
 				v-if="state.required"
 			>
 				{{ labels.required }}
@@ -35,7 +35,7 @@
 			<input
 				type="text"
 				class="question-input"
-				:class="{'has-error' : hasError}"
+				:class="{ 'has-error': hasError }"
 				:placeholder="labels.type_answer_here"
 				:value="state.answer.answer"
 				@input="onInputValueChange($event)"
@@ -44,14 +44,14 @@
 				class="question-error"
 				v-if="hasError"
 			>
-				{{errorMessage}}
+				{{ errorMessage }}
 			</div>
 			<div v-if="state.confirmAnswer.verify">
 				<hr>
 				<input
 					type="text"
 					class="question-input"
-					:class="{'has-error' : hasError}"
+					:class="{ 'has-error': hasError }"
 					:placeholder="labels.confirm_answer_here"
 					:value="state.confirmAnswer.answer"
 					@input="onInputValueChangeConfirm($event)"
@@ -201,5 +201,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

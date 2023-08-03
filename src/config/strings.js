@@ -1161,6 +1161,13 @@ export const STRINGS = {
     },
     pt: {
         labels: {
+            account_email_confirm_before: 'Por favor, confirme se deseja a conta com e-mail',
+            account_email_confirm_after: 'a ser removido de nossos sistemas.',
+            account_deletion_team_will_contact: 'A Equipe Epicollect5 entrará em contato com você sobre o andamento da exclusão da conta.',
+            account_deletion_request_sent: 'Solicitação de exclusão de conta enviada.',
+            danger: 'Perigo',
+            profile: 'Perfil',
+            delete_account: 'Excluir conta',
             bookmarks_loading_error: 'Erro ao carregar marcadores',
             address: 'Endereço',
             exit: 'Sair',
