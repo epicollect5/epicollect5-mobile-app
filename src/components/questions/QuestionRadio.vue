@@ -1,7 +1,7 @@
 <template>
 	<ion-card
 		class="question-card"
-		:class="{'animate__animated animate__fadeIn' : !isGroupInput}"
+		:class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
 	>
 		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title>
@@ -26,6 +26,7 @@
 				:possibleAnswers="state.inputDetails.possible_answers"
 				:selectedAnswers="state.selectedAnswers"
 				:isGroupInput="isGroupInput"
+				:isModal="false"
 				:hasError="hasError"
 				@on-selected-answers="onSelectedAnswers"
 			>
@@ -34,7 +35,7 @@
 				class="question-error half-padding-bottom"
 				v-if="hasError"
 			>
-				{{errorMessage}}
+				{{ errorMessage }}
 			</div>
 		</ion-card-content>
 	</ion-card>
@@ -155,5 +156,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

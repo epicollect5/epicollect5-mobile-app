@@ -1,8 +1,7 @@
 <template>
-
 	<ion-list
 		class="possible-answers-list ion-no-padding"
-		:class="{'has-error' : hasError}"
+		:class="{ 'has-error': hasError }"
 	>
 		<div
 			class="possible-answer-item animate__animated animate__fadeIn"
@@ -22,7 +21,7 @@
 						size-lg="11"
 						size-xl="11"
 					>
-						<ion-label class="possible-answer-label">{{possibleAnswer.answer}}</ion-label>
+						<ion-label class="possible-answer-label">{{ possibleAnswer.answer }}</ion-label>
 					</ion-col>
 
 					<ion-col
@@ -59,7 +58,6 @@
 		>
 		</ion-infinite-scroll-content>
 	</ion-infinite-scroll>
-
 </template>
 
 <script>
@@ -82,6 +80,10 @@ export default {
 			type: Boolean,
 			required: true
 		},
+		isModal: {
+			type: Boolean,
+			required: true
+		},
 		hasError: {
 			type: Boolean,
 			default: false
@@ -92,7 +94,7 @@ export default {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
-		const { possibleAnswers, isGroupInput } = readonly(props);
+		const { possibleAnswers, isGroupInput, isModal } = readonly(props);
 		const { selectedAnswers } = toRefs(props);
 
 		const state = reactive({
@@ -102,10 +104,16 @@ export default {
 		});
 
 		//do not use lazy loading for checkboxes within a GROUP
-		if (isGroupInput) {
-			state.possibleAnswersChunk = possibleAnswers.slice(0);
-		} else {
+		//imp: ONLY when NOT loading list in a modal (SEARCH or filtering)
+		if (isModal) {
 			state.possibleAnswersChunk = possibleAnswers.slice(0, PARAMETERS.POSSIBLE_ANSWERS_PER_PAGE);
+		}
+		else {
+			if (isGroupInput) {
+				state.possibleAnswersChunk = possibleAnswers.slice(0);
+			} else {
+				state.possibleAnswersChunk = possibleAnswers.slice(0, PARAMETERS.POSSIBLE_ANSWERS_PER_PAGE);
+			}
 		}
 
 		const methods = {
@@ -168,6 +176,9 @@ export default {
 				return state.possibleAnswersChunk.length < possibleAnswers.length;
 			}),
 			disableInfiniteLoader: computed(() => {
+				if (isModal) {
+					return false;
+				}
 				return isGroupInput || possibleAnswers.length <= PARAMETERS.POSSIBLE_ANSWERS_LAZY_THRESHOLD;
 			})
 		};
@@ -192,5 +203,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
