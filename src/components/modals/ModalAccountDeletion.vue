@@ -2,7 +2,10 @@
 	<header-modal @on-dismiss="dismiss()"></header-modal>
 	<ion-content>
 		<ion-toolbar color="danger">
-			<ion-title class="ion-text-center">{{ labels.delete_account }}</ion-title>
+			<ion-title
+				class="ion-text-center"
+				data-translate="delete_account"
+			>{{ labels.delete_account }}</ion-title>
 		</ion-toolbar>
 
 		<ion-card class="login-confirm-email">
@@ -16,15 +19,20 @@
 										<ion-label
 											color="dark"
 											class="ion-text-wrap"
+											data-translate="account_email_confirm_before"
 										>
 											{{ labels.account_email_confirm_before }}
 										</ion-label>
-										<ion-label color="dark">
+										<ion-label
+											color="dark"
+											data-test="email"
+										>
 											<strong>{{ email }}</strong>
 										</ion-label>
 										<ion-label
 											color="dark"
 											class="ion-text-wrap"
+											data-translate="account_email_confirm_after"
 										>
 											{{ labels.account_email_confirm_after }}
 										</ion-label>
@@ -32,7 +40,7 @@
 								</ion-card>
 
 								<ion-card color="light">
-									<ion-card-content>
+									<ion-card-content data-translate="account_deletion_team_will_contact">
 										{{ labels.account_deletion_team_will_contact }}
 									</ion-card-content>
 								</ion-card>
@@ -43,12 +51,15 @@
 											<ion-button
 												color="light"
 												@click="dismiss()"
+												data-translate="dismiss"
 											> {{ labels.dismiss }}</ion-button>
 										</ion-col>
 										<ion-col class="ion-text-right">
 											<ion-button
 												color="danger"
 												@click="onConfirm()"
+												data-translate="confirm"
+												data-test="confirm"
 											>{{ labels.confirm }}</ion-button>
 										</ion-col>
 									</ion-row>
@@ -106,17 +117,15 @@ export default {
 				if (!hasInternetConnection) {
 					//show error to user
 					notificationService.showAlert(STRINGS[language].status_codes['ec5_118']);
+					return false;
 				}
 				await notificationService.showProgressDialog(labels.wait);
+
 				try {
 					const response = await webService.requestAccountDeletion();
 					if (response.data.data.accepted) {
 						//show toast
 						notificationService.showAlert(labels.account_deletion_request_sent);
-						//redirect to projects page
-						router.replace({
-							name: PARAMETERS.ROUTES.PROJECTS
-						});
 						return;
 					}
 
@@ -125,10 +134,6 @@ export default {
 						await logout();
 						//show user confirmation		
 						notificationService.showAlert(STRINGS[language].status_codes.ec5_385);
-						// //redirect to projects page
-						// router.replace({
-						// 	name: PARAMETERS.ROUTES.PROJECTS
-						// });
 						return;
 					}
 					//show error

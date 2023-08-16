@@ -490,15 +490,19 @@ export const utilsService = {
         return new Blob(byteArrays, { type: contentType });
     },
     async hasInternetConnection() {
-        const rootStore = useRootStore();
-        if (rootStore.device.platform === PARAMETERS.WEB) {
-            return window.navigator.onLine;
-        }
-        else {
-            const networkState = await Network.getStatus();
-            console.log('Network connection type: ', networkState.connectionType);
-            return networkState.connected;
-        }
+        return new Promise((resolve) => {
+            (async function () {
+                const rootStore = useRootStore();
+                if (rootStore.device.platform === PARAMETERS.WEB) {
+                    resolve(window.navigator.onLine);
+                }
+                else {
+                    const networkState = await Network.getStatus();
+                    console.log('Network connection type: ', networkState.connectionType);
+                    resolve(networkState.connected);
+                }
+            }());
+        });
     },
 
     //Open a barcode and return a result

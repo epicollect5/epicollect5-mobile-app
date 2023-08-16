@@ -97,6 +97,7 @@
         }
     ],
     "editor.bracketPairColorization.enabled": false,
+    "prettier.singleAttributePerLine": true
     // "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
     // "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
     //"javascript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": false

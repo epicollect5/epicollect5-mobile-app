@@ -144,6 +144,17 @@ module.exports = {
             .type('javascript/auto')
             .include.add(/node_modules/)
             .end();
+
+        // config.module
+        //     .rule('vue')
+        //     .use('vue-loader')
+        //     .tap((options) => {
+        //         options.compilerOptions = {
+        //             ...options.compilerOptions,
+        //             isCustomElement: (tag) => tag.startsWith('ion-')
+        //         };
+        //         return options;
+        //     });
     },
     pwa: {
         //workboxPluginMode: 'GenerateSW',
