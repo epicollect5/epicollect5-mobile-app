@@ -41,7 +41,6 @@ vi.mock('@/use/show-modal-login', () => ({
 // });
 
 const routerReplaceMock = vi.fn();
-
 vi.mock('vue-router', () => ({
     useRouter: () => ({
         replace: routerReplaceMock
