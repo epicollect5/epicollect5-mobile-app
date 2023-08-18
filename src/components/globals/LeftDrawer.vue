@@ -63,6 +63,7 @@
 
 				</ion-item>
 				<ion-item
+					data-test="settings"
 					@click="goToSettings()"
 					lines="full"
 				>
@@ -123,6 +124,7 @@
 					v-for="(bookmarkItem, index) in state.bookmarks"
 					:key="index"
 					lines="full"
+					data-test="bookmarks"
 					@click="goToBookmark(bookmarkItem)"
 				>
 					<ion-icon :icon="bookmark">

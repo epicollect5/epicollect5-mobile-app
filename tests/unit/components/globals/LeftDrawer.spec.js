@@ -12,7 +12,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import flushPromises from 'flush-promises';
 import { createTestingPinia } from '@pinia/testing';
-import { webService } from '@/services/web-service';
+import { useBookmarkStore } from '@/stores/bookmark-store';
+
 
 vi.mock('@/components/modals/ModalLogin', () => ({
     name: 'ModalLogin',
@@ -40,8 +41,8 @@ vi.mock('vue-router', () => ({
 
 
 beforeEach(() => {
-    // const pinia = createPinia().use(createTestingPinia);
-    // app.use(pinia);
+    // tell vitest we use mocked time
+    vi.useFakeTimers();
     setActivePinia(createPinia());
     vi.resetAllMocks();
 });
@@ -61,7 +62,7 @@ describe('LeftDrawer component', () => {
 
         wrapper.findAll('[data-translate]').forEach((el) => {
             const key = el.attributes('data-translate');
-            console.log(`Testing translation for key: ${key}`);
+            // console.log(`Testing translation for key: ${key}`);
 
             // Check if the key exists in the STRINGS object
             const expectedTranslation = STRINGS[PARAMETERS.DEFAULT_LANGUAGE]?.labels;
@@ -100,7 +101,7 @@ describe('LeftDrawer component', () => {
 
             wrapper.findAll('[data-translate]').forEach((el) => {
                 const key = el.attributes('data-translate');
-                console.log(`Testing translation for key: ${key}`);
+                //  console.log(`Testing translation for key: ${key}`);
 
                 // Check if the key exists in the STRINGS object
                 const expectedTranslation = STRINGS[rootStore.language]?.labels;
@@ -301,6 +302,26 @@ describe('LeftDrawer component', () => {
         expect(menuController.close).toHaveBeenCalledOnce();
     });
 
+    it('should NOT show Profile button when user logged out', async () => {
+
+        const fakeStore = createTestingPinia({
+            fakeApp: true,
+            initialState: {
+                RootStore: {
+                    stubActions: false,
+                    createSpy: vi.fn,
+                    language: PARAMETERS.DEFAULT_LANGUAGE,
+                    user: { action: 'Login', email: '' }
+                }
+            }
+        });
+
+        const rootStore = useRootStore(); //use fakeStore
+        const wrapper = mount(LeftDrawer);
+        expect(wrapper.find('[data-test="profile"]').exists()).toBe(false);
+    });
+
+
     it('should go to Projects page', async () => {
 
         const wrapper = mount(LeftDrawer);
@@ -316,20 +337,96 @@ describe('LeftDrawer component', () => {
         });
         expect(menuController.close).toHaveBeenCalledOnce();
     });
-    it('should go to Bookmarks page', async () => {
+    it('should go to Settings page', async () => {
 
-        // const wrapper = mount(LeftDrawer);
+        const wrapper = mount(LeftDrawer);
 
-        // menuController.close = vi.fn().mockReturnValue(true);
+        menuController.close = vi.fn().mockReturnValue(true);
 
-        // await flushPromises();
-        // await wrapper.get('[data-test="bookmarks"]').trigger('click');
-        // await flushPromises();
-        // expect(routerReplaceMock).toHaveBeenCalledOnce();
-        // expect(routerReplaceMock).toHaveBeenCalledWith({
-        //     name: PARAMETERS.ROUTES.BOOKMSARKS
-        // });
-        // expect(menuController.close).toHaveBeenCalledOnce();
+        await flushPromises();
+        await wrapper.get('[data-test="settings"]').trigger('click');
+        await flushPromises();
+        expect(routerReplaceMock).toHaveBeenCalledOnce();
+        expect(routerReplaceMock).toHaveBeenCalledWith({
+            name: PARAMETERS.ROUTES.SETTINGS
+        });
+        expect(menuController.close).toHaveBeenCalledOnce();
+    });
+    it('should go to saved bookmark page', async () => {
+
+        const rootStore = useRootStore();//use fake
+        const language = rootStore.language;
+        const labels = STRINGS[language].labels;
+        const bookmarkStore = useBookmarkStore();//use fake
+        const fakeBookmark = {
+            bookmark: [],
+            formRef: '507372e7cdd546baa5df0b182cad4ebc_64d3954955dc1',
+            id: 1,
+            projectRef: '507372e7cdd546baa5df0b182cad4ebc',
+            title: 'Test bookmark'
+        };
+
+        const wrapper = mount(LeftDrawer, {
+            attachTo: document.body
+        });
+
+        //fake time later is needed
+        const date = new Date(2023, 1, 1, 13);
+        vi.setSystemTime(date);
+
+        //no bookmarks?
+        expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(false);
+        expect(wrapper.get('[data-translate="no_bookmarks_found"]').isVisible()).toBe(true);
+        expect(wrapper.get('[data-translate="no_bookmarks_found"]').text()).toBe(labels.no_bookmarks_found);
+
+        //add a bookmark then
+        bookmarkStore.bookmarkId = 1;
+        bookmarkStore.addBookmark(fakeBookmark);
+        await flushPromises();
+        expect(bookmarkStore.bookmarks.length).toBe(1);
+        await wrapper.vm.$nextTick();
+        await flushPromises();
+        //test it is showing in the dom
+        expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(true);
+        expect(wrapper.find('[data-translate="no_bookmarks_found"]').exists()).toBe(false);
+        let items = wrapper.findAll('[data-test="bookmarks"]');
+        expect(items).toHaveLength(1);
+        //add another one
+        fakeBookmark.id = 2;
+        fakeBookmark.title = 'Another Test bookmark';
+        bookmarkStore.addBookmark(fakeBookmark);
+        expect(bookmarkStore.bookmarks.length).toBe(2);
+        await wrapper.vm.$nextTick();
+        items = wrapper.findAll('[data-test="bookmarks"]');
+        expect(items).toHaveLength(2);
+
+        const elements = wrapper.findAll('[data-test="bookmarks"]');
+
+        // Loop through the elements and perform assertions
+        elements.forEach((element, index) => {
+            // Assert the presence of ion-icon component
+            const iconComponent = element.find('ion-icon');
+            expect(iconComponent.exists()).toBe(true);
+
+            // Assert the presence of ion-label component
+            const labelComponent = element.find('ion-label');
+            expect(labelComponent.exists()).toBe(true);
+            expect(labelComponent.text()).toBe(bookmarkStore.bookmarks[index].title);
+
+            element.trigger('click');
+
+            expect(rootStore.routeParams.projectRef).toBe(bookmarkStore.bookmarks[index].projectRef);
+            expect(rootStore.routeParams.formRef).toBe(bookmarkStore.bookmarks[index].formRef);
+            expect(routerReplaceMock).toHaveBeenCalled(elements.length);
+            expect(routerReplaceMock).toHaveBeenCalledWith({
+                name: PARAMETERS.ROUTES.ENTRIES,
+                query: {
+                    refreshEntries: 'true',
+                    timestamp: Date.now()
+                }
+            });
+            expect(menuController.close).toHaveBeenCalled(elements.length);
+        });
     });
     it('should open Community page', async () => {
 

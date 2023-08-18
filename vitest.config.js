@@ -23,6 +23,13 @@ export default defineConfig({
         //   conditions: process.env.VITEST ? ['node'] : []
     },
     clearScreen: true,
-    plugins: [vue(), viteCommonjs()]
+    plugins: [vue({
+        template: {
+            compilerOptions: {
+                // treat all tags with a dash as custom elements
+                isCustomElement: (tag) => tag.includes('-')
+            }
+        }
+    }), viteCommonjs()]
 
 });

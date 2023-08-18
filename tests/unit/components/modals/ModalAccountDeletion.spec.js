@@ -69,7 +69,7 @@ describe('ModalAccountDeletion component', () => {
 
         wrapper.findAll('[data-translate]').forEach((el) => {
             const key = el.attributes('data-translate');
-            console.log(`Testing translation for key: ${key}`);
+            // console.log(`Testing translation for key: ${key}`);
 
             // Check if the key exists in the STRINGS object
             const expectedTranslation = STRINGS[PARAMETERS.DEFAULT_LANGUAGE]?.labels;
@@ -103,7 +103,7 @@ describe('ModalAccountDeletion component', () => {
 
             wrapper.findAll('[data-translate]').forEach((el) => {
                 const key = el.attributes('data-translate');
-                console.log(`Testing translation for key: ${key}`);
+                // console.log(`Testing translation for key: ${key}`);
 
                 // Check if the key exists in the STRINGS object
                 const expectedTranslation = STRINGS[rootStore.language]?.labels;
