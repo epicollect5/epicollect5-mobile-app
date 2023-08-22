@@ -53,6 +53,7 @@
 				</ion-item> -->
 
 				<ion-item
+					data-test="bookmark-add"
 					v-if="!isBookmarked"
 					@click="openModalBookmarkAdd()"
 				>
@@ -61,6 +62,7 @@
 					<ion-label data-translate="bookmark_page">&nbsp;{{ labels.bookmark_page }}</ion-label>
 				</ion-item>
 				<ion-item
+					data-test="bookmark-remove"
 					v-else
 					@click="removeBookmark()"
 				>
@@ -394,7 +396,6 @@ export default {
 			async removeBookmark() {
 				// Retrieve bookmarkid from current bookmark
 				const bookmarkId = bookmarkStore.bookmarkId;
-
 				try {
 					await bookmarksService.deleteBookmark(bookmarkId);
 					// Remove this page as bookmarked

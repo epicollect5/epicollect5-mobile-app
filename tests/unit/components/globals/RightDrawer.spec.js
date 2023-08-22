@@ -14,6 +14,7 @@ import flushPromises from 'flush-promises';
 import { createTestingPinia } from '@pinia/testing';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { projectModel } from '@/models/project-model';
+import { formModel } from '@/models/form-model.js';
 import { useDBStore } from '@/stores/db-store';
 import { databaseUpdateService } from '@/services/database/database-update-service';
 import { databaseInsertService } from '@/services/database/database-insert-service';
@@ -22,6 +23,7 @@ import { databaseDeleteService } from '@/services/database/database-delete-servi
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import ModalProjectInfo from '@/components/modals/ModalProjectInfo';
+import ModalBookmarkAdd from '@/components/modals/ModalBookmarkAdd';
 
 const projectRef = 'test-ref';
 
@@ -38,8 +40,17 @@ vi.mock('@/components/modals/ModalProjectInfo', () => ({
 }));
 
 vi.mock('@/components/modals/ModalBookmarkAdd', () => ({
-    name: 'ModalBookmarkAdd',
-    template: '<div></div>'
+    default: {
+        name: 'ModalBookmarkAdd',
+        template: '<div></div>'
+    }
+}));
+
+vi.mock('@/components/modals/ModalBookmarkAdd', () => ({
+    default: {
+        name: 'ModalBookmarkAdd',
+        template: '<div></div>'
+    }
 }));
 
 vi.mock('@/use/logout', () => ({
@@ -55,8 +66,19 @@ vi.mock('@/models/project-model', () => {
     projectModel.getExtraInputs = vi.fn();
     projectModel.getFormGroups = vi.fn();
     projectModel.destroy = vi.fn();
+    projectModel.getProjectName = vi.fn();
     return { projectModel };
 });
+
+vi.mock('@/models/form-model', () => {
+    const formModel = {
+        formRef: 'mock-form-ref'
+    };
+
+    return { formModel };
+});
+
+
 vi.mock('@/services/database/database-update-service', () => {
     const databaseUpdateService = vi.fn();
     return { databaseUpdateService };
@@ -470,6 +492,71 @@ describe('RightDrawer component', () => {
         });
     });
 
+    it('should dismiss delete project modal if user dismiss', async () => {
+
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const dbStore = useDBStore();
+        const labels = STRINGS[rootStore.language].labels;
+        STRINGS[language].status_codes = {
+            ec5_113: '---',
+            ec5_114: '---'
+        };
+        const wrapper = mount(RightDrawer);
+
+        //mocks
+        menuController.close = vi.fn().mockReturnValue(true);
+        projectModel.getProjectRef = vi.fn().mockReturnValue(projectRef);
+        notificationService.showProgressDialog = vi.fn().mockResolvedValue(true);
+        dbStore.db.transaction = vi.fn();
+        databaseInsertService.insertSetting = vi.fn().mockResolvedValue(true);
+        notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
+        notificationService.showToast = vi.fn().mockResolvedValue(true);
+        notificationService.confirmSingle = vi.fn().mockResolvedValue(false);
+        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
+            audios: [],
+            photos: [],
+            videos: []
+        });
+        databaseDeleteService.deleteProject = vi.fn().mockResolvedValue(true);
+        bookmarksService.deleteBookmarks = vi.fn();
+        bookmarksService.getBookmarks = vi.fn();
+
+        await flushPromises();
+        await wrapper.get('[data-test="delete-project"]').trigger('click');
+        await flushPromises();
+        expect(notificationService.confirmSingle).toHaveBeenCalledWith(
+            STRINGS[language].status_codes.ec5_113,
+            labels.delete_project
+        );
+        await flushPromises();
+        expect(notificationService.showProgressDialog).not.toHaveBeenCalledWith(labels.deleting_project);
+        await flushPromises();
+        expect(databaseSelectService.selectProjectMedia).not.toHaveBeenCalledWith({
+            project_ref: projectRef,
+            synced: null,
+            entry_uuid: null
+        });
+        await flushPromises();
+        expect(databaseDeleteService.deleteProject).not.toHaveBeenCalledWith(projectRef);
+        await flushPromises();
+        expect(bookmarksService.deleteBookmarks).not.toHaveBeenCalledWith(projectRef);
+        await flushPromises();
+        expect(bookmarksService.getBookmarks).not.toHaveBeenCalled();
+        await flushPromises();
+        expect(notificationService.hideProgressDialog).not.toHaveBeenCalled();
+        await flushPromises();
+        expect(notificationService.showToast).not.toHaveBeenCalledWith(
+            STRINGS[language].status_codes.ec5_114
+        );
+
+        expect(routerReplaceMock).not.toHaveBeenCalledOnce();
+        expect(routerReplaceMock).not.toHaveBeenCalledWith({
+            name: PARAMETERS.ROUTES.PROJECTS,
+            query: { refresh: true }
+        });
+    });
+
     it('should delete project (with media files)', async () => {
 
         const rootStore = useRootStore();
@@ -760,6 +847,74 @@ describe('RightDrawer component', () => {
         expect(presentMock).toHaveBeenCalledOnce();
     });
 
+    it('should dismiss delete entries modal if user dismiss', async () => {
+
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const dbStore = useDBStore();
+        const labels = STRINGS[rootStore.language].labels;
+        STRINGS[language].status_codes = {
+            ec5_121: '---',
+            ec5_122: '---'
+        };
+        const wrapper = mount(RightDrawer);
+
+        //mocks
+        menuController.close = vi.fn().mockReturnValue(true);
+        projectModel.getProjectRef = vi.fn().mockReturnValue(projectRef);
+        notificationService.showProgressDialog = vi.fn().mockResolvedValue(true);
+        dbStore.db.transaction = vi.fn();
+        databaseInsertService.insertSetting = vi.fn().mockResolvedValue(true);
+        notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
+        notificationService.showToast = vi.fn().mockResolvedValue(true);
+        notificationService.confirmSingle = vi.fn().mockResolvedValue(false);
+        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
+            audios: [],
+            photos: [],
+            videos: []
+        });
+        databaseDeleteService.deleteEntries = vi.fn().mockResolvedValue(true);
+        bookmarksService.deleteBookmarks = vi.fn();
+        bookmarksService.getBookmarks = vi.fn();
+        deleteFileService.removeFiles = vi.fn().mockResolvedValue(true);
+
+        await flushPromises();
+        await wrapper.get('[data-test="delete-entries"]').trigger('click');
+        await flushPromises();
+        expect(notificationService.confirmSingle).toHaveBeenCalledWith(
+            STRINGS[language].status_codes.ec5_121,
+            labels.delete_all_entries
+        );
+        await flushPromises();
+        expect(notificationService.showProgressDialog).not.toHaveBeenCalledWith(labels.deleting_entries);
+        await flushPromises();
+        expect(databaseSelectService.selectProjectMedia).not.toHaveBeenCalledWith({
+            project_ref: projectRef,
+            synced: null,
+            entry_uuid: null
+        });
+        await flushPromises();
+        expect(deleteFileService.removeFiles).not.toHaveBeenCalled();
+        await flushPromises();
+        expect(databaseDeleteService.deleteEntries).not.toHaveBeenCalledWith(projectRef);
+        await flushPromises();
+        expect(bookmarksService.deleteBookmarks).not.toHaveBeenCalledWith(projectRef);
+        await flushPromises();
+        expect(bookmarksService.getBookmarks).not.toHaveBeenCalled();
+        await flushPromises();
+        expect(notificationService.hideProgressDialog).not.toHaveBeenCalled();
+        await flushPromises();
+        expect(notificationService.showToast).not.toHaveBeenCalledWith(
+            STRINGS[language].status_codes.ec5_122
+        );
+
+        expect(routerReplaceMock).not.toHaveBeenCalledOnce();
+        expect(routerReplaceMock).not.toHaveBeenCalledWith({
+            name: PARAMETERS.ROUTES.ENTRIES,
+            query: { refreshEntries: true }
+        });
+    });
+
     it('should delete entries (no media files)', async () => {
 
         const rootStore = useRootStore();
@@ -1039,5 +1194,137 @@ describe('RightDrawer component', () => {
             name: PARAMETERS.ROUTES.ENTRIES,
             query: { refreshEntries: true }
         });
+    });
+
+    it('should open ModalBookmarkAdd', async () => {
+
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const dbStore = useDBStore();
+        const labels = STRINGS[rootStore.language].labels;
+        STRINGS[language].status_codes = {
+            ec5_121: '---',
+            ec5_122: '---'
+        };
+        const wrapper = mount(RightDrawer);
+        const presentMock = vi.fn();
+        const onDidDismissMock = vi.fn().mockResolvedValue(true);
+        modalController.create = vi.fn().mockResolvedValue({
+            present: presentMock,
+            onDidDismiss: onDidDismissMock // Using the create mock function
+        });
+        const projectNameMock = 'Project name';
+        const bookmarkTitle = projectNameMock;
+
+        //mocks
+        menuController.close = vi.fn().mockReturnValue(true);
+        projectModel.getProjectRef = vi.fn().mockReturnValue(projectRef);
+        projectModel.getProjectName = vi.fn().mockReturnValue(projectNameMock);
+        notificationService.showProgressDialog = vi.fn().mockResolvedValue(true);
+        dbStore.db.transaction = vi.fn();
+        notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
+        notificationService.showToast = vi.fn().mockResolvedValue(true);
+
+        bookmarksService.deleteBookmarks = vi.fn();
+        bookmarksService.getBookmarks = vi.fn();
+
+        await flushPromises();
+        expect(wrapper.find('[data-test="bookmark-remove"]').exists()).toBe(false);
+        await wrapper.get('[data-test="bookmark-add"]').trigger('click');
+
+        expect(modalController.create).toHaveBeenCalledOnce();
+        expect(modalController.create).toHaveBeenCalledWith({
+            cssClass: 'modal-bookmark-add',
+            component: ModalBookmarkAdd,
+            showBackdrop: true,
+            backdropDismiss: false,
+            componentProps: {
+                bookmarkTitle,
+                formRef: formModel.formRef,
+                projectRef
+            }
+        });
+        expect(presentMock).toHaveBeenCalledOnce();
+    });
+
+    it('should remove current page from bookmarks', async () => {
+
+        const rootStore = useRootStore();
+        const bookmarkStore = useBookmarkStore();
+        const language = rootStore.language;
+        const dbStore = useDBStore();
+        const labels = STRINGS[rootStore.language].labels;
+        STRINGS[language].status_codes = {
+            ec5_127: '---',
+            ec5_104: '---'
+        };
+        const bookmarkId = 1;
+        bookmarkStore.bookmarkId = bookmarkId;//set current page as bookmarked
+        const wrapper = mount(RightDrawer);
+
+        const projectNameMock = 'Project name';
+
+        //mocks
+        menuController.close = vi.fn().mockReturnValue(true);
+        projectModel.getProjectRef = vi.fn().mockReturnValue(projectRef);
+        projectModel.getProjectName = vi.fn().mockReturnValue(projectNameMock);
+        notificationService.showProgressDialog = vi.fn().mockResolvedValue(true);
+        dbStore.db.transaction = vi.fn();
+        notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
+        notificationService.showToast = vi.fn().mockResolvedValue(true);
+
+        bookmarksService.deleteBookmarks = vi.fn();
+        bookmarksService.deleteBookmark = vi.fn().mockResolvedValue(true);
+        bookmarksService.getBookmarks = vi.fn();
+
+        await flushPromises();
+        expect(wrapper.find('[data-test="bookmark-add"]').exists()).toBe(false);
+        await wrapper.get('[data-test="bookmark-remove"]').trigger('click');
+        await flushPromises();
+        expect(bookmarksService.deleteBookmark).toHaveBeenCalledWith(bookmarkId);
+        expect(notificationService.showToast).toHaveBeenCalledWith(STRINGS[language].status_codes.ec5_127);
+        expect(menuController.close).toHaveBeenCalledOnce();
+    });
+
+    it('should catch bookmark remove error', async () => {
+
+        const rootStore = useRootStore();
+        const bookmarkStore = useBookmarkStore();
+        const language = rootStore.language;
+        const dbStore = useDBStore();
+        const labels = STRINGS[rootStore.language].labels;
+        STRINGS[language].status_codes = {
+            ec5_127: '---',
+            ec5_104: '---'
+        };
+        const bookmarkId = 1;
+        bookmarkStore.bookmarkId = bookmarkId;//set current page as bookmarked
+        const wrapper = mount(RightDrawer);
+
+        const projectNameMock = 'Project name';
+
+        //mocks
+        menuController.close = vi.fn().mockReturnValue(true);
+        projectModel.getProjectRef = vi.fn().mockReturnValue(projectRef);
+        projectModel.getProjectName = vi.fn().mockReturnValue(projectNameMock);
+        notificationService.showProgressDialog = vi.fn().mockResolvedValue(true);
+        dbStore.db.transaction = vi.fn();
+        notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
+        notificationService.showToast = vi.fn().mockResolvedValue(true);
+
+        bookmarksService.deleteBookmarks = vi.fn();
+        bookmarksService.deleteBookmark = vi.fn().mockImplementation(() => {
+            throw new Error('Mocked error');
+        });
+        bookmarksService.getBookmarks = vi.fn();
+
+        await flushPromises();
+        expect(wrapper.find('[data-test="bookmark-add"]').exists()).toBe(false);
+        await wrapper.get('[data-test="bookmark-remove"]').trigger('click');
+        await flushPromises();
+        expect(bookmarksService.deleteBookmark).toHaveBeenCalledWith(bookmarkId);
+        expect(notificationService.showAlert).toHaveBeenCalledWith(STRINGS[language].status_codes.ec5_104);
+        expect(notificationService.showToast).not.toHaveBeenCalledWith(STRINGS[language].status_codes.ec5_127);
+        expect(menuController.close).toHaveBeenCalledOnce();
     });
 });
