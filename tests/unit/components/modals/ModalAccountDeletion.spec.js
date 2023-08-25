@@ -31,15 +31,6 @@ vi.mock('@/use/show-modal-login', () => ({
     showModalLogin: vi.fn()
 }));
 
-
-// vi.mock('@/services/web-service', () => {
-//     const webService = vi.fn();
-
-//     webService.requestAccountDeletion = vi.fn().mockResolvedValue('asdfas');
-
-//     return { webService };
-// });
-
 const routerReplaceMock = vi.fn();
 vi.mock('vue-router', () => ({
     useRouter: () => ({
@@ -123,6 +114,10 @@ describe('ModalAccountDeletion component', () => {
     });
 
     it('should show user email', async () => {
+        const rootStore = useRootStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const email = 'joe@gmail.com';
         const wrapper = mount(ModalAccountDeletion, {
             props: {
@@ -141,6 +136,9 @@ describe('ModalAccountDeletion component', () => {
         const email = 'test@example.com';
         STRINGS[language].status_codes = {
             ec5_385: 'Account disconnected.'
+        };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
         };
 
         errorsService.handleWebError = vi.fn().mockResolvedValue('ok');
@@ -189,12 +187,13 @@ describe('ModalAccountDeletion component', () => {
 
     it('should perform deletion onConfirm()', async () => {
 
-        const dbStore = useDBStore();
         const rootStore = useRootStore();
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
         const email = 'test@example.com';
-        // dbStore.db.transaction = vi.fn();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
 
         STRINGS[language].status_codes = {
             ec5_385: 'Account disconnected.'
@@ -254,6 +253,9 @@ describe('ModalAccountDeletion component', () => {
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
         const email = 'test@example.com';
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
 
         STRINGS[language].status_codes = {
             ec5_118: 'Please connect to the internet to login.'
@@ -311,6 +313,9 @@ describe('ModalAccountDeletion component', () => {
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
         const email = 'test@example.com';
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
 
         STRINGS[language].status_codes = {
             ec5_116: 'Server error, please try again later.'
@@ -371,6 +376,9 @@ describe('ModalAccountDeletion component', () => {
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
         const email = 'test@example.com';
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
 
         STRINGS[language].status_codes = {
             ec5_116: 'Server error, please try again later.'
@@ -431,6 +439,9 @@ describe('ModalAccountDeletion component', () => {
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
         const email = 'test@example.com';
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
 
         STRINGS[language].status_codes = {
             ec5_116: 'Server error, please try again later.'
@@ -501,6 +512,9 @@ describe('ModalAccountDeletion component', () => {
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
         const email = 'test@example.com';
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
 
         STRINGS[language].status_codes = {
             ec5_103: 'Unknown error.'

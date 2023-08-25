@@ -121,8 +121,8 @@
 					</ion-label>
 				</ion-item-divider>
 				<ion-item
-					v-for="(bookmarkItem, index) in state.bookmarks"
-					:key="index"
+					v-for="(bookmarkItem) in state.bookmarks"
+					:key="bookmarkItem.id"
 					lines="full"
 					data-test="bookmarks"
 					@click="goToBookmark(bookmarkItem)"
@@ -172,7 +172,6 @@ export default {
 		const labels = STRINGS[language].labels;
 		const router = useRouter();
 		const state = reactive({
-			//todo: test this maybe is not reactive like the user?
 			bookmarks: bookmarkStore.bookmarks
 		});
 
@@ -241,7 +240,7 @@ export default {
 				rootStore.routeParams = {};
 				rootStore.hierarchyNavigation = [];
 				// Add this entry uuid as parent entry uuid to the history
-				rootStore.hierarchyNavigation = [...bookmark.bookmark.slice()];
+				rootStore.hierarchyNavigation = [...bookmark.hierarchyNavigation.slice()];
 
 				console.log(rootStore.hierarchyNavigation);
 				//navigate to saved bookmark
@@ -293,8 +292,6 @@ export default {
 				});
 			}
 		};
-
-		console.log(rootStore.user);
 
 		const computedScope = {
 			authAction: computed(() => {

@@ -2,6 +2,7 @@
 	<ion-header class="ion-no-border">
 		<ion-toolbar>
 			<ion-title
+				data-translate="recording_audio"
 				class="ion-text-center"
 				color="dark"
 			>{{ labels.recording_audio }}</ion-title>
@@ -30,6 +31,7 @@
 						offset="2"
 					>
 						<ion-button
+							data-translate="stop"
 							@click="stop()"
 							class="question-action-button"
 							color="secondary"

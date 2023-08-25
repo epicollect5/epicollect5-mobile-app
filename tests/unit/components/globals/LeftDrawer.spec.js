@@ -53,8 +53,10 @@ describe('LeftDrawer component', () => {
         const wrapper = shallowMount(LeftDrawer, {
             global: {
                 plugins: [createTestingPinia({
-                    initialState: {
-                        language: PARAMETERS.DEFAULT_LANGUAGE
+                    RootStore: {
+                        initialState: {
+                            language: PARAMETERS.DEFAULT_LANGUAGE
+                        }
                     }
                 })]
             }
@@ -129,17 +131,20 @@ describe('LeftDrawer component', () => {
                     stubActions: false,
                     createSpy: vi.fn,
                     language: PARAMETERS.DEFAULT_LANGUAGE,
-                    user: { action: 'Logout' }
+                    user: { action: 'Logout' },
+                    device: {
+                        platform: process.env.VITE_PLATFORM ?? 'web'
+                    }
                 }
             }
         });
 
         const wrapper = mount(LeftDrawer, { attachTo: document.body });
-
         const rootStore = useRootStore(); // uses the fakeStore pinia!
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
         expect(rootStore.language).toBe(PARAMETERS.DEFAULT_LANGUAGE);
+
 
         rootStore.user.action = STRINGS[language].labels.logout;
         expect(rootStore.user.action).toBe(STRINGS[language].labels.logout);
@@ -186,7 +191,8 @@ describe('LeftDrawer component', () => {
                     stubActions: false,
                     createSpy: vi.fn,
                     language: PARAMETERS.DEFAULT_LANGUAGE,
-                    user: { action: 'Logout' }
+                    user: { action: 'Logout' },
+                    device: { platform: process.env.VITE_PLATFORM ?? 'web' }
                 }
             }
         });
@@ -233,7 +239,8 @@ describe('LeftDrawer component', () => {
                     stubActions: false,
                     createSpy: vi.fn,
                     language: PARAMETERS.DEFAULT_LANGUAGE,
-                    user: { action: 'Logout' }
+                    user: { action: 'Logout' },
+                    device: { platform: process.env.VITE_PLATFORM ?? 'web' }
                 }
             }
         });
@@ -282,7 +289,8 @@ describe('LeftDrawer component', () => {
                     stubActions: false,
                     createSpy: vi.fn,
                     language: PARAMETERS.DEFAULT_LANGUAGE,
-                    user: { action: 'Logout', email: 'test@gmail.com' }
+                    user: { action: 'Logout', email: 'test@gmail.com' },
+                    device: { platform: process.env.VITE_PLATFORM ?? 'web' }
                 }
             }
         });
@@ -311,7 +319,8 @@ describe('LeftDrawer component', () => {
                     stubActions: false,
                     createSpy: vi.fn,
                     language: PARAMETERS.DEFAULT_LANGUAGE,
-                    user: { action: 'Login', email: '' }
+                    user: { action: 'Login', email: '' },
+                    device: { platform: process.env.VITE_PLATFORM ?? 'web' }
                 }
             }
         });
@@ -321,9 +330,12 @@ describe('LeftDrawer component', () => {
         expect(wrapper.find('[data-test="profile"]').exists()).toBe(false);
     });
 
-
     it('should go to Projects page', async () => {
 
+        const rootStore = useRootStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(LeftDrawer);
 
         menuController.close = vi.fn().mockReturnValue(true);
@@ -337,8 +349,13 @@ describe('LeftDrawer component', () => {
         });
         expect(menuController.close).toHaveBeenCalledOnce();
     });
+
     it('should go to Settings page', async () => {
 
+        const rootStore = useRootStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(LeftDrawer);
 
         menuController.close = vi.fn().mockReturnValue(true);
@@ -352,14 +369,18 @@ describe('LeftDrawer component', () => {
         });
         expect(menuController.close).toHaveBeenCalledOnce();
     });
+
     it('should go to saved bookmark page', async () => {
 
         const rootStore = useRootStore();//use fake
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
         const bookmarkStore = useBookmarkStore();//use fake
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const fakeBookmark = {
-            bookmark: [],
+            hierarchyNavigation: [],
             formRef: '507372e7cdd546baa5df0b182cad4ebc_64d3954955dc1',
             id: 1,
             projectRef: '507372e7cdd546baa5df0b182cad4ebc',
@@ -428,6 +449,116 @@ describe('LeftDrawer component', () => {
             expect(menuController.close).toHaveBeenCalled(elements.length);
         });
     });
+
+    it('should bookmarks list be updated when adding or removing bookmarks', async () => {
+
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const labels = STRINGS[language].labels;
+        const bookmarkStore = useBookmarkStore();
+        const projectRef = '5b71f16947c34ff49b3f24756d2e2ae6';
+        const formRef = '5b71f16947c34ff49b3f24756d2e2ae6_60817f551ce29';
+        const bookmarks = [
+            {
+                id: 11,
+                projectRef,
+                formRef,
+                title: 'The bookmark 1 title',
+                hierarchyNavigation: []
+            },
+            {
+                id: 22,
+                projectRef: projectRef + '-',
+                formRef: formRef + '-',
+                title: 'The bookmark 2 title',
+                hierarchyNavigation: []
+            },
+            {
+                id: 33,
+                projectRef: projectRef + '--',
+                formRef: formRef + '--',
+                title: 'The bookmark 3 title',
+                hierarchyNavigation: []
+            }
+        ];
+
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+
+        const wrapper = mount(LeftDrawer, {
+            attachTo: document.body
+        });
+
+        //fake time later is needed
+        const date = new Date(2023, 1, 1, 13);
+        vi.setSystemTime(date);
+
+        //no bookmarks?
+        expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(false);
+        expect(wrapper.get('[data-translate="no_bookmarks_found"]').isVisible()).toBe(true);
+        expect(wrapper.get('[data-translate="no_bookmarks_found"]').text()).toBe(labels.no_bookmarks_found);
+
+        //add a bookmark then
+        bookmarks.forEach((bookmark) => {
+            bookmarkStore.bookmarkId = bookmark.id;
+            bookmarkStore.addBookmark(bookmark);
+        });
+
+        await flushPromises();
+        expect(bookmarkStore.bookmarks.length).toBe(3);
+        await wrapper.vm.$nextTick();
+        await flushPromises();
+        //test it is showing in the dom
+        expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(true);
+        expect(wrapper.find('[data-translate="no_bookmarks_found"]').exists()).toBe(false);
+        let items = wrapper.findAll('[data-test="bookmarks"]');
+        expect(items).toHaveLength(3);
+
+        const elements = wrapper.findAll('[data-test="bookmarks"]');
+
+        // Loop through the elements and perform assertions
+        elements.forEach((element, index) => {
+            // Assert the presence of ion-icon component
+            const iconComponent = element.find('ion-icon');
+            expect(iconComponent.exists()).toBe(true);
+
+            // Assert the presence of ion-label component
+            const labelComponent = element.find('ion-label');
+            expect(labelComponent.exists()).toBe(true);
+            expect(labelComponent.text()).toBe(bookmarkStore.bookmarks[index].title);
+
+            element.trigger('click');
+
+            expect(rootStore.routeParams.projectRef).toBe(bookmarkStore.bookmarks[index].projectRef);
+            expect(rootStore.routeParams.formRef).toBe(bookmarkStore.bookmarks[index].formRef);
+            expect(routerReplaceMock).toHaveBeenCalled(elements.length);
+            expect(routerReplaceMock).toHaveBeenCalledWith({
+                name: PARAMETERS.ROUTES.ENTRIES,
+                query: {
+                    refreshEntries: 'true',
+                    timestamp: Date.now()
+                }
+            });
+            expect(menuController.close).toHaveBeenCalled(elements.length);
+        });
+
+        //delete one by one and test list
+        bookmarkStore.deleteBookmark(11);
+        await wrapper.vm.$nextTick();
+        items = wrapper.findAll('[data-test="bookmarks"]');
+        expect(items).toHaveLength(2);
+        bookmarkStore.deleteBookmark(22);
+        await wrapper.vm.$nextTick();
+        items = wrapper.findAll('[data-test="bookmarks"]');
+        expect(items).toHaveLength(1);
+        bookmarkStore.deleteBookmark(33);
+        await wrapper.vm.$nextTick();
+        items = wrapper.findAll('[data-test="bookmarks"]');
+        expect(items).toHaveLength(0);
+
+    });
+
     it('should open Community page', async () => {
 
         const fakeStore = createTestingPinia({
@@ -436,7 +567,8 @@ describe('LeftDrawer component', () => {
                 RootStore: {
                     stubActions: false,
                     createSpy: vi.fn,
-                    language: PARAMETERS.DEFAULT_LANGUAGE
+                    language: PARAMETERS.DEFAULT_LANGUAGE,
+                    device: { platform: process.env.VITE_PLATFORM ?? 'web' }
                 }
             }
         });
@@ -454,6 +586,7 @@ describe('LeftDrawer component', () => {
         expect(window.open).toHaveBeenCalledOnce();
         expect(window.open).toHaveBeenCalledWith(PARAMETERS.COMMUNITY_SUPPORT_URL, '_system', 'location=yes');
     });
+
     it('should open User Guide page', async () => {
 
         const fakeStore = createTestingPinia({
@@ -462,7 +595,8 @@ describe('LeftDrawer component', () => {
                 RootStore: {
                     stubActions: false,
                     createSpy: vi.fn,
-                    language: PARAMETERS.DEFAULT_LANGUAGE
+                    language: PARAMETERS.DEFAULT_LANGUAGE,
+                    device: { platform: process.env.VITE_PLATFORM ?? 'web' }
                 }
             }
         });
@@ -480,6 +614,7 @@ describe('LeftDrawer component', () => {
         expect(window.open).toHaveBeenCalledOnce();
         expect(window.open).toHaveBeenCalledWith(PARAMETERS.USER_GUIDE_URL, '_system', 'location=yes');
     });
+
     it('offline, should NOT open any external page', async () => {
 
         const rootStore = useRootStore();
@@ -491,6 +626,9 @@ describe('LeftDrawer component', () => {
             ec5_135: 'No Internet Connection.'
         };
 
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         window.open = vi.fn();
         utilsService.hasInternetConnection = vi.fn().mockResolvedValue(false);
         notificationService.showAlert = vi.fn().mockReturnValue(true);

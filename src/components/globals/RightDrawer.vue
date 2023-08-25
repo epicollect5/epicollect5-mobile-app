@@ -198,6 +198,7 @@ import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { STRINGS } from '@/config/strings';
+import { utilsService } from '@/services/utilities/utils-service';
 import {
 	cloudUpload,
 	cloudDownload,
@@ -242,6 +243,7 @@ export default {
 		const scope = {};
 		const computedScope = {
 			isBookmarked: computed(() => {
+				console.log('the bookmark ID is ', bookmarkStore.bookmarkId);
 				return bookmarkStore.bookmarkId !== null;
 			})
 		};
@@ -371,9 +373,13 @@ export default {
 
 				if (hierarchyNavigation.length > 0) {
 					bookmarkTitle = hierarchyNavigation[hierarchyNavigation.length - 1].parentEntryName;
+					bookmarkTitle += ' - ' + formModel.getName();
 				} else {
 					bookmarkTitle = projectModel.getProjectName();
 				}
+
+				//bookmark title max length is 50
+				bookmarkTitle = utilsService.trunc(bookmarkTitle, 50, false);
 
 				scope.ModalBookmarkAdd = await modalController.create({
 					cssClass: 'modal-bookmark-add',
