@@ -11,28 +11,37 @@
 				color="primary"
 				class="ion-text-center ion-text-uppercase"
 			>
-				<ion-label>{{ labels.project_options }}</ion-label>
+				<ion-label data-translate="project_options">{{ labels.project_options }}</ion-label>
 			</ion-toolbar>
 		</ion-header>
 		<ion-content ref="drawerContent">
 			<ion-list>
-				<ion-item @click="goToUploadPage()">
+				<ion-item
+					data-test="upload-page"
+					@click="goToUploadPage()"
+				>
 					<ion-icon :icon="cloudUpload">
 					</ion-icon>
-					<ion-label>
+					<ion-label data-translate="upload_entries">
 						&nbsp;{{ labels.upload_entries }}
 					</ion-label>
 				</ion-item>
-				<ion-item @click="goToDownloadPage()">
+				<ion-item
+					data-test="download-page"
+					@click="goToDownloadPage()"
+				>
 					<ion-icon :icon="cloudDownload">
 					</ion-icon>
-					<ion-label> &nbsp;{{ labels.download_entries }}</ion-label>
+					<ion-label data-translate="download_entries"> &nbsp;{{ labels.download_entries }}</ion-label>
 				</ion-item>
 
-				<ion-item @click="unsyncAllEntries()">
+				<ion-item
+					data-test="unsync-entries"
+					@click="unsyncAllEntries()"
+				>
 					<ion-icon :icon="unlink">
 					</ion-icon>
-					<ion-label>
+					<ion-label data-translate="unsync_all_entries">
 						&nbsp;{{ labels.unsync_all_entries }}
 					</ion-label>
 				</ion-item>
@@ -44,35 +53,46 @@
 				</ion-item> -->
 
 				<ion-item
+					data-test="bookmark-add"
 					v-if="!isBookmarked"
 					@click="openModalBookmarkAdd()"
 				>
 					<ion-icon :icon="bookmark">
 					</ion-icon>
-					<ion-label>&nbsp;{{ labels.bookmark_page }}</ion-label>
+					<ion-label data-translate="bookmark_page">&nbsp;{{ labels.bookmark_page }}</ion-label>
 				</ion-item>
 				<ion-item
+					data-test="bookmark-remove"
 					v-else
 					@click="removeBookmark()"
 				>
 					<ion-icon :icon="bookmark">
 					</ion-icon>
-					<ion-label>&nbsp;{{ labels.remove_bookmark }}</ion-label>
+					<ion-label data-translate="remove_bookmark">&nbsp;{{ labels.remove_bookmark }}</ion-label>
 				</ion-item>
-				<ion-item @click="showProjectInfo()">
+				<ion-item
+					data-test="project-info"
+					@click="showProjectInfo()"
+				>
 					<ion-icon :icon="informationCircle">
 					</ion-icon>
-					<ion-label>&nbsp;{{ labels.project_info }}</ion-label>
+					<ion-label data-translate="project_info">&nbsp;{{ labels.project_info }}</ion-label>
 				</ion-item>
 				<ion-item-divider
 					color="primary"
 					class="ion-no-padding"
 				>
-					<ion-label class="item-divider-label-centered ion-text-uppercase">
+					<ion-label
+						class="item-divider-label-centered ion-text-uppercase"
+						data-translate="sort"
+					>
 						{{ labels.sort }}
 					</ion-label>
 				</ion-item-divider>
-				<ion-item @click="sortBy('title', 'ASC')">
+				<ion-item
+					data-test="sort-by-az"
+					@click="sortBy('title', 'ASC')"
+				>
 					<ion-icon :icon="arrowUpCircle">
 					</ion-icon>
 					&nbsp;A-Z
@@ -83,7 +103,10 @@
 					>
 					</ion-icon>
 				</ion-item>
-				<ion-item @click="sortBy('title', 'DESC')">
+				<ion-item
+					data-test="sort-by-za"
+					@click="sortBy('title', 'DESC')"
+				>
 					<ion-icon :icon="arrowDownCircle">
 					</ion-icon>
 					&nbsp;Z-A
@@ -94,10 +117,13 @@
 					>
 					</ion-icon>
 				</ion-item>
-				<ion-item @click="sortBy('created_at', 'DESC')">
+				<ion-item
+					data-test="sort-by-newest"
+					@click="sortBy('created_at', 'DESC')"
+				>
 					<ion-icon :icon="timeOutline">
 					</ion-icon>
-					<ion-label>&nbsp;{{ labels.newest }}</ion-label>
+					<ion-label data-translate="newest">&nbsp;{{ labels.newest }}</ion-label>
 					<ion-icon
 						v-if="state.order.field === 'created_at' && state.order.sortType === 'DESC'"
 						:icon="checkmark"
@@ -105,10 +131,13 @@
 					>
 					</ion-icon>
 				</ion-item>
-				<ion-item @click="sortBy('created_at', 'ASC')">
+				<ion-item
+					data-test="sort-by-oldest"
+					@click="sortBy('created_at', 'ASC')"
+				>
 					<ion-icon :icon="timeOutline">
 					</ion-icon>
-					<ion-label>&nbsp;{{ labels.oldest }}</ion-label>
+					<ion-label data-translate="oldest">&nbsp;{{ labels.oldest }}</ion-label>
 					<ion-icon
 						v-if="state.order.field === 'created_at' && state.order.sortType === 'ASC'"
 						:icon="checkmark"
@@ -120,27 +149,42 @@
 					color="danger"
 					class="ion-no-padding"
 				>
-					<ion-label class="item-divider-label-centered ion-text-uppercase">
+					<ion-label
+						class="item-divider-label-centered ion-text-uppercase"
+						data-translate="delete"
+					>
 						{{ labels.delete }}
 					</ion-label>
 				</ion-item-divider>
-				<ion-item @click="deleteEntries()">
+				<ion-item
+					data-test="delete-entries"
+					@click="deleteEntries()"
+				>
 					<ion-icon
 						class="icon-danger"
 						:icon="trash"
 					>
 					</ion-icon>
-					<ion-label color="danger">
+					<ion-label
+						color="danger"
+						data-translate="delete_all_entries"
+					>
 						&nbsp;{{ labels.delete_all_entries }}
 					</ion-label>
 				</ion-item>
-				<ion-item @click="deleteProject()">
+				<ion-item
+					data-test="delete-project"
+					@click="deleteProject()"
+				>
 					<ion-icon
 						class="icon-danger"
 						:icon="trash"
 					>
 					</ion-icon>
-					<ion-label color="danger">
+					<ion-label
+						color="danger"
+						data-translate="delete_project"
+					>
 						&nbsp;{{ labels.delete_project }}
 					</ion-label>
 				</ion-item>
@@ -154,6 +198,7 @@ import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { STRINGS } from '@/config/strings';
+import { utilsService } from '@/services/utilities/utils-service';
 import {
 	cloudUpload,
 	cloudDownload,
@@ -198,6 +243,7 @@ export default {
 		const scope = {};
 		const computedScope = {
 			isBookmarked: computed(() => {
+				console.log('the bookmark ID is ', bookmarkStore.bookmarkId);
 				return bookmarkStore.bookmarkId !== null;
 			})
 		};
@@ -327,9 +373,13 @@ export default {
 
 				if (hierarchyNavigation.length > 0) {
 					bookmarkTitle = hierarchyNavigation[hierarchyNavigation.length - 1].parentEntryName;
+					bookmarkTitle += ' - ' + formModel.getName();
 				} else {
 					bookmarkTitle = projectModel.getProjectName();
 				}
+
+				//bookmark title max length is 50
+				bookmarkTitle = utilsService.trunc(bookmarkTitle, 50, false);
 
 				scope.ModalBookmarkAdd = await modalController.create({
 					cssClass: 'modal-bookmark-add',
@@ -352,7 +402,6 @@ export default {
 			async removeBookmark() {
 				// Retrieve bookmarkid from current bookmark
 				const bookmarkId = bookmarkStore.bookmarkId;
-
 				try {
 					await bookmarksService.deleteBookmark(bookmarkId);
 					// Remove this page as bookmarked

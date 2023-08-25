@@ -4,14 +4,14 @@ import { MIGRATIONS } from '@/config';
 
 export const databaseMigrateService = {
 
-    async execute (dbVersion) {
+    async execute(dbVersion) {
         const dbStore = useDBStore();
         const db = dbStore.db;
         let currentDbVersion = dbVersion;
 
         return new Promise((resolve, reject) => {
 
-            function _onError (tx, error) {
+            function _onError(tx, error) {
                 console.log(tx, error);
                 reject(error);
             }
@@ -32,6 +32,7 @@ export const databaseMigrateService = {
                             'ADD COLUMN form_ref text',
                             [],
                             function (res) {
+                                console.log('Migration to add column form_ref to unique_answers table');
                                 console.log('Migration tx done, db at version ->', 2);
                             }, _onError);
 
@@ -41,6 +42,7 @@ export const databaseMigrateService = {
                             'ADD COLUMN form_ref text',
                             [],
                             function (res) {
+                                console.log('Migration to add column form_ref to temp_unique_answers table');
                                 console.log('Migration tx done, db at version ->', 2);
                             }, _onError);
                     case 3:
@@ -51,6 +53,7 @@ export const databaseMigrateService = {
                             'ADD COLUMN name text',
                             [],
                             function (res) {
+                                console.log('Migration to add column name to users table');
                                 console.log('Migration tx done, db at version ->', 3);
                             }, _onError);
                     case 4:
@@ -61,6 +64,7 @@ export const databaseMigrateService = {
                             'ADD COLUMN email text',
                             [],
                             function (res) {
+                                console.log('Migration to add column email to users table');
                                 console.log('Migration tx done, db at version ->', 4);
                             }, _onError);
                     case 5:
@@ -71,6 +75,18 @@ export const databaseMigrateService = {
                             'ADD COLUMN mapping text',
                             [],
                             function (res) {
+                                console.log('Migration to add column mapping to projects table');
+                                console.log('Migration tx done, db at version ->', 5);
+                            }, _onError);
+                    case 6:
+                        currentDbVersion = 6;
+                        // rename bookmark column
+                        tx.executeSql(
+                            'ALTER TABLE bookmarks ' +
+                            'RENAME COLUMN bookmark TO hierarchy_navigation;',
+                            [],
+                            function (res) {
+                                console.log('Migration to rename column bookmark to hierarchy_navigation in bookmarks table');
                                 console.log('Migration tx done, db at version ->', 5);
                             }, _onError);
                     // More cases to be added here for next versions, omitting 'break'

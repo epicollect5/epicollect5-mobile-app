@@ -6,7 +6,7 @@
 			mode="md"
 			class="ion-text-center ion-text-uppercase"
 		>
-			<ion-title>{{labels.bookmark}}</ion-title>
+			<ion-title data-translate="bookmark">{{ labels.bookmark }}</ion-title>
 
 		</ion-toolbar>
 		<ion-grid>
@@ -21,8 +21,11 @@
 				>
 					<ion-card>
 						<ion-card-header class="settings-label">
-							<ion-card-title class="ion-text-center ion-text-uppercase">
-								{{labels.bookmark_title}}
+							<ion-card-title
+								data-translate="bookmark_title"
+								class="ion-text-center ion-text-uppercase"
+							>
+								{{ labels.bookmark_title }}
 							</ion-card-title>
 						</ion-card-header>
 						<ion-card-content>
@@ -36,10 +39,16 @@
 									maxlength="50"
 								/>
 							</div>
-							<div :class="bookmarkClass">
-								{{labels.invalid_value}}
+							<div
+								data-test="invalid_value"
+								data-translate="invalid_value"
+								:class="bookmarkClass"
+							>
+								{{ labels.invalid_value }}
 							</div>
 							<ion-button
+								data-test="bookmark-add"
+								data-translate="add_bookmark"
 								expand="block"
 								color="secondary"
 								:disabled="state.bookmarkTitle.length === 0 || !isValidTitle"
@@ -49,7 +58,7 @@
 									slot="start"
 									:icon="add"
 								></ion-icon>
-								{{labels.add_bookmark}}
+								{{ labels.add_bookmark }}
 							</ion-button>
 						</ion-card-content>
 					</ion-card>
@@ -58,7 +67,6 @@
 			</ion-row>
 		</ion-grid>
 	</ion-content>
-
 </template>
 
 <script>
@@ -152,5 +160,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

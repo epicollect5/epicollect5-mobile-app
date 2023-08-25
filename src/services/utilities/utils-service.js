@@ -653,8 +653,32 @@ export const utilsService = {
 
         return markup;
     },
-    trunc(str, desiredLength) {
-        return (str.length > desiredLength) ? str.substr(0, desiredLength) + '...' : str;
+    trunc(str, desiredLength, useEllipsis) {
+        if (str.length <= desiredLength) {
+            return str;
+        } else if (desiredLength >= 3) {
+            if (useEllipsis) {
+                const truncated = str.substr(0, desiredLength - 3); // Subtract 3 for the ellipsis
+                return truncated + '...';
+            }
+            else {
+                const truncated = str.substr(0, desiredLength);
+                return truncated;
+            }
+        } else {
+            return str.substr(0, desiredLength);
+        }
+    },
+    generateRandomString(length) {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let randomString = '';
+
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            randomString += characters.charAt(randomIndex);
+        }
+
+        return randomString;
     },
     hasQuestionError(state) {
         if (Object.keys(state.error.errors).length > 0) {

@@ -22,8 +22,10 @@
     "prod": "export VUE_APP_DEBUG= && ionic cap copy",
     "open-android": "ionic cap open android",
     "vitest": "vitest",
+    "britest": "vitest --browser.name=chrome",
+    "coverage": "vitest --coverage",
     "vitest-ui": "vitest --ui",
-    "web": "export VUE_APP_MODE=WEB && ionic serve --no-open",
+    "web": "export VUE_APP_MODE=WEB && ionic serve --no-open --external",
     "pwa": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG=1 && ionic serve --no-open -p 1234",
     "pwa-build-prod": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG= && VUE_APP_BYPASS_UNIQUENESS= && ionic build",
     "pwa-build-dev": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG=1 && ionic build"
