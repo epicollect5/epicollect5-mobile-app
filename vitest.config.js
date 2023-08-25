@@ -6,7 +6,7 @@ import vue from '@vitejs/plugin-vue';
 export default defineConfig({
     test: {
         globals: true,
-        environment: 'jsdom',//to make "import" work
+        environment: 'happy-dom',//to make "import" work
         reporters: 'verbose',
         silent: true,
         coverage: {
