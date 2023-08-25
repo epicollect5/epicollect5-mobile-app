@@ -192,7 +192,11 @@ describe('RightDrawer component', () => {
 
     it('should go to Upload page', async () => {
 
-        // const rootStore = useRootStore(); //use fakeStore
+        const rootStore = useRootStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+
         const wrapper = mount(RightDrawer);
 
         menuController.close = vi.fn().mockReturnValue(true);
@@ -209,17 +213,10 @@ describe('RightDrawer component', () => {
 
     it('should go to Download page', async () => {
 
-        // const fakeStore = createTestingPinia({
-        //     fakeApp: true,
-        //     initialState: {
-        //         RootStore: {
-        //             stubActions: false,
-        //             createSpy: vi.fn,
-        //             language: PARAMETERS.DEFAULT_LANGUAGE,
-        //             user: { action: 'Logout', email: 'test@gmail.com' }
-        //         }
-        //     }
-        // });
+        const rootStore = useRootStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
 
         // const rootStore = useRootStore(); //use fakeStore
         const wrapper = mount(RightDrawer);
@@ -241,6 +238,9 @@ describe('RightDrawer component', () => {
         const rootStore = useRootStore();
         const dbStore = useDBStore();
         const labels = STRINGS[rootStore.language].labels;
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
 
         //mocks
@@ -289,6 +289,9 @@ describe('RightDrawer component', () => {
         const dbStore = useDBStore();
         const labels = STRINGS[rootStore.language].labels;
         const wrapper = mount(RightDrawer);
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
 
         //mocks
         menuController.close = vi.fn().mockReturnValue(true);
@@ -324,6 +327,9 @@ describe('RightDrawer component', () => {
         const rootStore = useRootStore();
         const dbStore = useDBStore();
         const labels = STRINGS[rootStore.language].labels;
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
 
         //mocks
@@ -360,6 +366,9 @@ describe('RightDrawer component', () => {
         const rootStore = useRootStore();
         const dbStore = useDBStore();
         const labels = STRINGS[rootStore.language].labels;
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
 
         //mocks
@@ -396,6 +405,9 @@ describe('RightDrawer component', () => {
         const rootStore = useRootStore();
         const dbStore = useDBStore();
         const labels = STRINGS[rootStore.language].labels;
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
 
         //mocks
@@ -436,6 +448,9 @@ describe('RightDrawer component', () => {
         STRINGS[language].status_codes = {
             ec5_113: '---',
             ec5_114: '---'
+        };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
         };
         const wrapper = mount(RightDrawer);
 
@@ -502,6 +517,9 @@ describe('RightDrawer component', () => {
             ec5_113: '---',
             ec5_114: '---'
         };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
 
         //mocks
@@ -566,6 +584,9 @@ describe('RightDrawer component', () => {
         STRINGS[language].status_codes = {
             ec5_113: '---',
             ec5_114: '---'
+        };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
         };
         const wrapper = mount(RightDrawer);
 
@@ -635,6 +656,9 @@ describe('RightDrawer component', () => {
             ec5_113: '---',
             ec5_114: '---'
         };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
 
         //mocks
@@ -700,6 +724,9 @@ describe('RightDrawer component', () => {
         STRINGS[language].status_codes = {
             ec5_113: '---',
             ec5_114: '---'
+        };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
         };
         const wrapper = mount(RightDrawer);
 
@@ -769,6 +796,9 @@ describe('RightDrawer component', () => {
             ec5_113: '---',
             ec5_114: '---'
         };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
 
         //mocks
@@ -828,6 +858,10 @@ describe('RightDrawer component', () => {
     });
 
     it('should open ProjectInfo modal', async () => {
+        const rootStore = useRootStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
         const presentMock = vi.fn();
         modalController.create = vi.fn().mockResolvedValue({
@@ -856,6 +890,9 @@ describe('RightDrawer component', () => {
         STRINGS[language].status_codes = {
             ec5_121: '---',
             ec5_122: '---'
+        };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
         };
         const wrapper = mount(RightDrawer);
 
@@ -925,6 +962,9 @@ describe('RightDrawer component', () => {
             ec5_121: '---',
             ec5_122: '---'
         };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
 
         //mocks
@@ -993,6 +1033,9 @@ describe('RightDrawer component', () => {
             ec5_121: '---',
             ec5_122: '---'
         };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
 
         //mocks
@@ -1060,6 +1103,9 @@ describe('RightDrawer component', () => {
         STRINGS[language].status_codes = {
             ec5_121: '---',
             ec5_122: '---'
+        };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
         };
         const wrapper = mount(RightDrawer);
 
@@ -1135,6 +1181,9 @@ describe('RightDrawer component', () => {
             ec5_121: '---',
             ec5_122: '---'
         };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
 
         //mocks
@@ -1206,6 +1255,9 @@ describe('RightDrawer component', () => {
             ec5_121: '---',
             ec5_122: '---'
         };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
         const wrapper = mount(RightDrawer);
         const presentMock = vi.fn();
         const onDidDismissMock = vi.fn().mockResolvedValue(true);
@@ -1247,6 +1299,61 @@ describe('RightDrawer component', () => {
         expect(presentMock).toHaveBeenCalledOnce();
     });
 
+    it('should change bookmark title with navigation', async () => {
+
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const dbStore = useDBStore();
+        STRINGS[language].status_codes = {
+            ec5_121: '---',
+            ec5_122: '---'
+        };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+        const wrapper = mount(RightDrawer);
+        const presentMock = vi.fn();
+        const onDidDismissMock = vi.fn().mockResolvedValue(true);
+        modalController.create = vi.fn().mockResolvedValue({
+            present: presentMock,
+            onDidDismiss: onDidDismissMock // Using the create mock function
+        });
+        const projectNameMock = 'Project name';
+        const formNameMock = 'Form Name';
+
+        //mocks
+        menuController.close = vi.fn().mockReturnValue(true);
+        projectModel.getProjectRef = vi.fn().mockReturnValue(projectRef);
+        projectModel.getProjectName = vi.fn().mockReturnValue(projectNameMock);
+        formModel.getName = vi.fn().mockReturnValue(formNameMock);
+        notificationService.showProgressDialog = vi.fn().mockResolvedValue(true);
+        dbStore.db.transaction = vi.fn();
+        notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
+        notificationService.showToast = vi.fn().mockResolvedValue(true);
+        utilsService.trunc = vi.fn().mockReturnValue('Bookmark Title');
+
+        bookmarksService.deleteBookmarks = vi.fn();
+        bookmarksService.getBookmarks = vi.fn();
+        rootStore.hierarchyNavigation = [];
+        await flushPromises();
+        expect(wrapper.find('[data-test="bookmark-remove"]').exists()).toBe(false);
+        await wrapper.get('[data-test="bookmark-add"]').trigger('click');
+
+        expect(projectModel.getProjectName).toHaveBeenCalledOnce();
+        expect(formModel.getName).not.toHaveBeenCalled();
+        expect(utilsService.trunc).toHaveBeenCalledWith(projectNameMock, 50, false);
+
+        rootStore.hierarchyNavigation = [{ parentEntryName: 'Parent' }];
+        await flushPromises();
+        await wrapper.get('[data-test="bookmark-add"]').trigger('click');
+        expect(projectModel.getProjectName).toHaveBeenCalledOnce();
+        expect(formModel.getName).toHaveBeenCalledOnce();
+        expect(utilsService.trunc).toHaveBeenCalledWith(
+            'Parent' + ' - ' + formNameMock,
+            50, false
+        );
+    });
+
     it('should remove current page from bookmarks', async () => {
 
         const rootStore = useRootStore();
@@ -1257,6 +1364,9 @@ describe('RightDrawer component', () => {
         STRINGS[language].status_codes = {
             ec5_127: '---',
             ec5_104: '---'
+        };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
         };
         const bookmarkId = 1;
         bookmarkStore.bookmarkId = bookmarkId;//set current page as bookmarked
@@ -1296,6 +1406,9 @@ describe('RightDrawer component', () => {
         STRINGS[language].status_codes = {
             ec5_127: '---',
             ec5_104: '---'
+        };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
         };
         const bookmarkId = 1;
         bookmarkStore.bookmarkId = bookmarkId;//set current page as bookmarked

@@ -558,6 +558,57 @@ describe('isJWTExpired', () => {
     });
 });
 
+describe('trunc', () => {
+    it('should truncate string to desired length with ...', () => {
+
+        // Call the function to get the minutes column picker
+        let result = utilsService.trunc('This is a long string', 5, true);
+        // Assert the generated minutes column picker
+        expect(result).toEqual('Th...');
+
+        for (let i = 51; i < 100; i++) {
+            const str = utilsService.generateRandomString(i);
+            result = utilsService.trunc(str, 50, true);
+            expect(result.length).toBe(50);
+            expect(result.endsWith('...')).toBe(true);
+        }
+        for (let i = 0; i < 50; i++) {
+            const randomStringLength = Math.floor(Math.random() * 100) + 1;
+            const truncatedLength = Math.floor(Math.random() * 100) + 1;
+
+            const randomString = utilsService.generateRandomString(randomStringLength);
+            const truncatedString = utilsService.trunc(randomString, truncatedLength, true);
+
+            expect(truncatedString.length).toBeLessThanOrEqual(truncatedLength);
+            expect(truncatedString.endsWith('...')).toBe(truncatedLength < randomStringLength && truncatedLength >= 3);
+        }
+    });
+
+    it('should truncate string to desired length without ...', () => {
+
+        // Call the function to get the minutes column picker
+        let result = utilsService.trunc('This is a long string', 5, false);
+        // Assert the generated minutes column picker
+        expect(result).toEqual('This ');
+
+        for (let i = 51; i < 100; i++) {
+            const str = utilsService.generateRandomString(i);
+            result = utilsService.trunc(str, 50, false);
+            expect(result.length).toBe(50);
+            expect(result.endsWith('...')).toBe(false);
+        }
+        for (let i = 0; i < 50; i++) {
+            const randomStringLength = Math.floor(Math.random() * 100) + 1;
+            const truncatedLength = Math.floor(Math.random() * 100) + 1;
+
+            const randomString = utilsService.generateRandomString(randomStringLength);
+            const truncatedString = utilsService.trunc(randomString, truncatedLength, false);
+
+            expect(truncatedString.length).toBeLessThanOrEqual(truncatedLength);
+            expect(truncatedString.endsWith('...')).toBe(false);
+        }
+    });
+});
 
 
 

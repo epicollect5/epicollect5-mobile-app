@@ -8,7 +8,7 @@ import { databaseSelectService } from '@/services/database/database-select-servi
 export const bookmarksService = {
 
     //Check whether a page is bookmarked already 
-    getBookmarkId (projectRef, formRef, parentEntryUuid) {
+    getBookmarkId(projectRef, formRef, parentEntryUuid) {
 
         const bookmarkStore = useBookmarkStore();
         const bookmarks = bookmarkStore.bookmarks;
@@ -20,8 +20,8 @@ export const bookmarksService = {
 
                 // Then check that parent entry uuid is that same as the last object in the 'bookmark' array
                 // If the bookmark array is empty, then we are at the top of a navigation
-                if (bookmark.bookmark.length === 0 ||
-                    bookmark.bookmark[bookmark.bookmark.length - 1].parentEntryUuid === parentEntryUuid) {
+                if (bookmark.hierarchyNavigation.length === 0 ||
+                    bookmark.hierarchyNavigation[bookmark.hierarchyNavigation.length - 1].parentEntryUuid === parentEntryUuid) {
                     bookmarkId = bookmark.id;
                 }
             }
@@ -29,13 +29,15 @@ export const bookmarksService = {
 
         return bookmarkId;
     },
-    async insertBookmark (projectRef, formRef, title) {
+    async insertBookmark(projectRef, formRef, title) {
 
         const rootStore = useRootStore();
         const bookmarkStore = useBookmarkStore();
         // Check if we have a parent entry uuid and retrieve the most recent one
         let parentEntryUuid = '';
+
         const hierarchyNavigation = rootStore.hierarchyNavigation;
+        console.log(JSON.stringify(hierarchyNavigation));
 
         const lastBookmark = hierarchyNavigation[hierarchyNavigation.length - 1];
         if (lastBookmark) {
@@ -52,7 +54,7 @@ export const bookmarksService = {
                     projectRef: projectRef,
                     formRef: formRef,
                     title: title,
-                    bookmark: hierarchyNavigation.slice()
+                    hierarchyNavigation: hierarchyNavigation.slice()
                 });
                 resolve(res.insertId);
             }, function (error) {
@@ -60,7 +62,7 @@ export const bookmarksService = {
             });
         });
     },
-    async deleteBookmark (bookmarkId) {
+    async deleteBookmark(bookmarkId) {
 
         const bookmarkStore = useBookmarkStore();
 
@@ -76,8 +78,7 @@ export const bookmarksService = {
             });
         });
     },
-    //todo: this could be an action in the bookmarks vuex store to be fair
-    async getBookmarks () {
+    async getBookmarks() {
 
         const bookmarks = [];
 
@@ -95,7 +96,7 @@ export const bookmarksService = {
                                 projectRef: currentRow.project_ref,
                                 formRef: currentRow.form_ref,
                                 title: currentRow.title,
-                                bookmark: JSON.parse(currentRow.bookmark)
+                                hierarchyNavigation: JSON.parse(currentRow.hierarchy_navigation)
                             });
                         }
                     }
@@ -110,8 +111,8 @@ export const bookmarksService = {
     },
 
     //delete all bookmarks of a project
-    //used whe deletign a project or all its entries
-    async deleteBookmarks (projectRef) {
+    //used whe deleting a project or all its entries
+    async deleteBookmarks(projectRef) {
 
         const bookmarkStore = useBookmarkStore();
         const bookmarks = bookmarkStore.bookmarks;
@@ -125,14 +126,14 @@ export const bookmarksService = {
         });
     },
     //delete all bookmarks related to a single entry
-    async deleteBookmarksForEntry (entryUuid) {
+    async deleteBookmarksForEntry(entryUuid) {
 
         const bookmarkStore = useBookmarkStore();
         const bookmarks = bookmarkStore.bookmarks;
 
         bookmarks.forEach(async (bookmark) => {
             // Check that the project ref and form ref are the same
-            bookmark.bookmark.forEach(async (obj) => {
+            bookmark.hierarchyNavigation.forEach(async (obj) => {
                 if (obj.parentEntryUuid === entryUuid) {
                     //delete this bookmark
                     await this.deleteBookmark(bookmark.id);

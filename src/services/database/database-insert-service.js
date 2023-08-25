@@ -4,11 +4,11 @@ import { useDBStore } from '@/stores/db-store';
 
 export const databaseInsertService = {
 
-    async insertRows (query, params) {
+    async insertRows(query, params) {
         const dbStore = useDBStore();
         return new Promise((resolve, reject) => {
 
-            function _onError (tx, error) {
+            function _onError(tx, error) {
                 console.log('*** ' + query + '--------------------***');
                 console.log(error);
                 reject(error);
@@ -22,7 +22,7 @@ export const databaseInsertService = {
         });
     },
 
-    async insertProject (projectSlug, projectName, projectRef, jsonExtra, serverUrl, lastUpdated, mapping) {
+    async insertProject(projectSlug, projectName, projectRef, jsonExtra, serverUrl, lastUpdated, mapping) {
 
         const query = 'INSERT INTO projects (slug, name, project_ref, json_extra, server_url, last_updated, mapping) VALUES (?,?,?,?,?,?,?)';
         const params = [
@@ -40,7 +40,7 @@ export const databaseInsertService = {
 
     // Function to save a jwt token and user name
 
-    async insertUser (jwt, name, email) {
+    async insertUser(jwt, name, email) {
 
         const query = 'INSERT INTO users (jwt, name, email) VALUES (?,?,?)';
         const params = [jwt, name, email];
@@ -50,7 +50,7 @@ export const databaseInsertService = {
 
     //Function to save a complete entry
 
-    async insertEntry (entry, syncType) {
+    async insertEntry(entry, syncType) {
 
         let params = [];
         let query = '';
@@ -89,7 +89,7 @@ export const databaseInsertService = {
         return await this.insertRows(query, params);
     },
 
-    async insertMedia (entry, files, syncType) {
+    async insertMedia(entry, files, syncType) {
 
         const dbStore = useDBStore();
         let query = '';
@@ -185,7 +185,7 @@ export const databaseInsertService = {
     /**
      * Function to move branch entries from the temporary table to the main one
      */
-    async moveBranchEntries () {
+    async moveBranchEntries() {
 
         let query = '';
         query += 'INSERT OR REPLACE INTO branch_entries (';
@@ -232,7 +232,7 @@ export const databaseInsertService = {
     },
 
     //Function to temporarily save a branch entry
-    async insertTempBranchEntry (branchEntry, syncType) {
+    async insertTempBranchEntry(branchEntry, syncType) {
 
         let params = [];
         let query = '';
@@ -272,7 +272,7 @@ export const databaseInsertService = {
     },
 
     //Function to save unique answers for an entry
-    async insertUniqueAnswers (entry, useTemporaryTable) {
+    async insertUniqueAnswers(entry, useTemporaryTable) {
 
         const dbStore = useDBStore();
         const table = useTemporaryTable ? 'temp_unique_answers' : 'unique_answers';
@@ -319,7 +319,7 @@ export const databaseInsertService = {
     },
 
     //Function to move branch entries from the temporary table to the main one
-    async moveUniqueAnswers () {
+    async moveUniqueAnswers() {
 
         let query = '';
         query += 'INSERT OR REPLACE INTO unique_answers (';
@@ -353,23 +353,20 @@ export const databaseInsertService = {
     },
 
     //Function to insert a setting field-value
-    async insertSetting (field, value) {
+    async insertSetting(field, value) {
         const query = 'INSERT OR REPLACE INTO settings (field, value) VALUES (?,?)';
         const params = [field, value];
-
-
-
         return await this.insertRows(query, params);
     },
 
-    async insertBookmark (projectRef, formRef, title, bookmark, parentEntryUuid) {
+    async insertBookmark(projectRef, formRef, title, hierarchy_navigation, parentEntryUuid) {
 
         if (!parentEntryUuid) {
             parentEntryUuid = '';
         }
 
-        const query = 'INSERT OR REPLACE INTO bookmarks (project_ref, form_ref, parent_entry_uuid, title, bookmark) VALUES (?,?,?,?,?)';
-        const params = [projectRef, formRef, parentEntryUuid, title, bookmark];
+        const query = 'INSERT OR REPLACE INTO bookmarks (project_ref, form_ref, parent_entry_uuid, title, hierarchy_navigation) VALUES (?,?,?,?,?)';
+        const params = [projectRef, formRef, parentEntryUuid, title, hierarchy_navigation];
 
         return await this.insertRows(query, params);
     }
