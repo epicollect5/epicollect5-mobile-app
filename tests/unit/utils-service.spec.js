@@ -538,7 +538,6 @@ describe('getMinutesColumnPicker', () => {
 
 describe('isJWTExpired', () => {
     it('should resolve to true if no JWT is found', async () => {
-
         databaseSelectService.getUser = vi.fn().mockResolvedValue(
             {
                 rows: { length: 0 }

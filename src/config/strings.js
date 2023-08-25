@@ -359,7 +359,7 @@ export const STRINGS = {
             location_not_available: 'Gelocalizzazione non disponibile, Epicollect5 non può  localizzarti.',
             min: 'Min',
             max: 'Max',
-            no_answer_given: 'Nessuna risposta fornita ',
+            no_answer_given: 'Nessuna risposta fornita',
             error: 'Errore',
             delete_project: 'Elimina progetto',
             delete_entry: 'Elimina voce',

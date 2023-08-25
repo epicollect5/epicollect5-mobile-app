@@ -127,41 +127,42 @@ export const notificationService = {
     },
     //todo: test the web approach on slow devices
     async showProgressDialog(message, title) {
-        const rootStore = useRootStore();
-        const language = rootStore.language;
-        const labels = STRINGS[language].labels;
+        return new Promise((resolve) => {
+            (async function () {
+                const rootStore = useRootStore();
+                const language = rootStore.language;
+                const labels = STRINGS[language].labels;
 
-        let ec5LoadingDialogMessage = '';
+                let ec5LoadingDialogMessage = '';
 
-        if (title) {
-            ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + title + '</strong><br/><br/>' + message;
-        }
-        else {
-            if (message) {
-                ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + message + '</strong>';
-            }
-            else {
-                ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + labels.wait + '</strong>';
-            }
-        }
-        //remove any existing instance
-        if (rootStore.ec5LoadingDialog) {
-            await rootStore.ec5LoadingDialog.dismiss();
-            rootStore.ec5LoadingDialog = null;
-        }
-        //create a global instance for the dialog
-        rootStore.ec5LoadingDialog = await loadingController
-            .create({
-                cssClass: 'ec5LoadingDialog',
-                message: ec5LoadingDialogMessage,
-                duration: parseInt(Number.POSITIVE_INFINITY)
-            });
+                if (title) {
+                    ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + title + '</strong><br/><br/>' + message;
+                }
+                else {
+                    if (message) {
+                        ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + message + '</strong>';
+                    }
+                    else {
+                        ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + labels.wait + '</strong>';
+                    }
+                }
+                //remove any existing instance
+                if (rootStore.ec5LoadingDialog) {
+                    rootStore.ec5LoadingDialog.dismiss();
+                    rootStore.ec5LoadingDialog = null;
+                }
+                //create a global instance for the dialog
+                rootStore.ec5LoadingDialog = await loadingController
+                    .create({
+                        cssClass: 'ec5LoadingDialog',
+                        message: ec5LoadingDialogMessage,
+                        duration: parseInt(Number.POSITIVE_INFINITY)
+                    });
 
-        // rootStore.ec5LoadingDialog.onDidDismiss(() => {
-        //     console.log('progressDialog dismissed', title);
-        // });
-
-        await rootStore.ec5LoadingDialog.present();
+                await rootStore.ec5LoadingDialog.present();
+                resolve();
+            }());
+        });
     },
     //set progress in global state for modalUpload
     setProgress(progress) {

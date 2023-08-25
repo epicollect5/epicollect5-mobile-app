@@ -8,7 +8,7 @@ import { webService } from '@/services/web-service';
 import { modalsHandlerService } from '@/services/modals/modals-handler-service';
 
 
-export function showModalLogin () {
+export function showModalLogin() {
     const rootStore = useRootStore();
     const language = rootStore.language;
     const labels = STRINGS[language].labels;

@@ -3,14 +3,13 @@ import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
 
-
-export async function logout () {
+export async function logout() {
 
     const rootStore = useRootStore();
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
 
-    function _resetStoredUser () {
+    function _resetStoredUser() {
         rootStore.user = {
             action: labels.login,
             name: '',
@@ -34,7 +33,6 @@ export async function logout () {
                         resolve();
                     }
                 );
-
                 //todo: logout apple user?
             } else {
                 _resetStoredUser();
@@ -42,6 +40,4 @@ export async function logout () {
             }
         });
     });
-
-
 }

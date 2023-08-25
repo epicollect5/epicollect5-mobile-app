@@ -9,6 +9,7 @@
 			<ion-toolbar
 				color="primary"
 				class="ion-text-center ion-text-uppercase"
+				data-translate="menu"
 			>
 				{{ labels.menu }}
 			</ion-toolbar>
@@ -19,6 +20,7 @@
 				<ion-item-group
 					v-if="isLoggedIn"
 					class="profile"
+					data-test="profile"
 					@click="goToProfile()"
 				>
 					<ion-grid>
@@ -50,49 +52,54 @@
 
 				<ion-item
 					@click="goToProjects()"
+					data-test="projects"
 					lines="full"
 				>
 					<ion-icon :icon="document"></ion-icon>
-					<ion-label>
+					<ion-label data-translate="projects">
 						&nbsp;
 						{{ labels.projects }}
 					</ion-label>
 
 				</ion-item>
 				<ion-item
+					data-test="settings"
 					@click="goToSettings()"
 					lines="full"
 				>
 					<ion-icon :icon="settings"></ion-icon>
-					<ion-label>
+					<ion-label data-translate="settings">
 						&nbsp;
 						{{ labels.settings }}
 					</ion-label>
 				</ion-item>
 				<ion-item
 					@click="goToCommunityPage()"
+					data-test="community"
 					lines="full"
 				>
 					<ion-icon :icon="people">
 					</ion-icon>
-					<ion-label>
+					<ion-label data-translate="help">
 						&nbsp;
 						{{ labels.help }}
 					</ion-label>
 				</ion-item>
 				<ion-item
+					data-test="user-guide"
 					@click="goToUserGuide()"
 					lines="full"
 				>
 					<ion-icon :icon="book">
 					</ion-icon>
-					<ion-label>
+					<ion-label data-translate="user_guide">
 						&nbsp;
 						{{ labels.user_guide }}
 					</ion-label>
 				</ion-item>
 				<ion-item
 					lines="full"
+					data-test="performAuthAction"
 					@click="performAuthAction()"
 				>
 					<ion-icon :icon="personCircle">
@@ -106,14 +113,18 @@
 					color="primary"
 					class="ion-no-padding"
 				>
-					<ion-label class="item-divider-label-centered ion-text-uppercase">
+					<ion-label
+						class="item-divider-label-centered ion-text-uppercase"
+						data-translate="my_bookmarks"
+					>
 						{{ labels.my_bookmarks }}
 					</ion-label>
 				</ion-item-divider>
 				<ion-item
-					v-for="(bookmarkItem, index) in state.bookmarks"
-					:key="index"
+					v-for="(bookmarkItem) in state.bookmarks"
+					:key="bookmarkItem.id"
 					lines="full"
+					data-test="bookmarks"
 					@click="goToBookmark(bookmarkItem)"
 				>
 					<ion-icon :icon="bookmark">
@@ -127,7 +138,10 @@
 					v-if="state.bookmarks.length === 0"
 					lines="full"
 				>
-					<ion-label class="ion-text-center">{{ labels.no_bookmarks_found }}</ion-label>
+					<ion-label
+						class="ion-text-center"
+						data-translate="no_bookmarks_found"
+					>{{ labels.no_bookmarks_found }}</ion-label>
 				</ion-item>
 			</ion-list>
 		</ion-content>
@@ -158,7 +172,6 @@ export default {
 		const labels = STRINGS[language].labels;
 		const router = useRouter();
 		const state = reactive({
-			//todo: test this maybe is not reactive like the user?
 			bookmarks: bookmarkStore.bookmarks
 		});
 
@@ -178,8 +191,7 @@ export default {
 				rootStore.nextRoute = router.currentRoute.value.name;
 				console.log(rootStore.nextRoute);
 				router.replace({
-					name: PARAMETERS.ROUTES.PROFILE,
-					params: {}
+					name: PARAMETERS.ROUTES.PROFILE
 				});
 				menuController.close();
 			},
@@ -207,6 +219,7 @@ export default {
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
 					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
+					return false;
 				}
 				window.open(PARAMETERS.COMMUNITY_SUPPORT_URL, '_system', 'location=yes');
 			},
@@ -214,7 +227,7 @@ export default {
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
 					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
-					return;
+					return false;
 				}
 				window.open(PARAMETERS.USER_GUIDE_URL, '_system', 'location=yes');
 			},
@@ -227,7 +240,7 @@ export default {
 				rootStore.routeParams = {};
 				rootStore.hierarchyNavigation = [];
 				// Add this entry uuid as parent entry uuid to the history
-				rootStore.hierarchyNavigation = [...bookmark.bookmark.slice()];
+				rootStore.hierarchyNavigation = [...bookmark.hierarchyNavigation.slice()];
 
 				console.log(rootStore.hierarchyNavigation);
 				//navigate to saved bookmark
@@ -252,8 +265,7 @@ export default {
 					notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
 				} else {
 					await notificationService.showProgressDialog();
-
-					// Call logout first
+					//Call logout first
 					methods.logout(false, true).then(
 						() => {
 							showModalLogin();
@@ -280,8 +292,6 @@ export default {
 				});
 			}
 		};
-
-		console.log(rootStore.user);
 
 		const computedScope = {
 			authAction: computed(() => {

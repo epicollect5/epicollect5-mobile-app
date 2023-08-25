@@ -10,9 +10,8 @@ import { downloadFileService } from '@/services/download-file-service';
 import { webService } from '@/services/web-service';
 import { logout } from '@/use/logout';
 
-
 //imp: router gets passed because is available only in setup()
-export async function addProject (project, router) {
+export async function addProject(project, router) {
 
     let noInputs;
     const authErrors = PARAMETERS.AUTH_ERROR_CODES;

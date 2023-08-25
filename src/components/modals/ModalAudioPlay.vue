@@ -2,6 +2,7 @@
 	<ion-header class="ion-no-border">
 		<ion-toolbar>
 			<ion-title
+				data-translate="playing_audio"
 				class="ion-text-center"
 				color="dark"
 			>{{ labels.playing_audio }}</ion-title>
@@ -30,6 +31,8 @@
 						offset="2"
 					>
 						<ion-button
+							data-translate="stop"
+							data-test="stop"
 							@click="stop()"
 							class="question-action-button"
 							color="secondary"
@@ -56,6 +59,7 @@ import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
+import { Capacitor } from '@capacitor/core';
 
 export default {
 	props: {
@@ -83,6 +87,10 @@ export default {
 		const tempDir = rootStore.tempDir;
 		const persistentDir = rootStore.persistentDir;
 		const { entryUuid, media, inputRef, projectRef } = readonly(props);
+		let mediaPlayer = {
+			play: () => { return true; },
+			stop: () => { return true; }
+		};
 
 		let file_URI;
 		//callback when the audio finishes playing because it got to the end
@@ -110,17 +118,19 @@ export default {
 			}
 		}
 
-		const mediaPlayer = new window.Media(
-			file_URI,
-			(success) => {
-				console.log(success);
-			},
-			(error) => {
-				console.log(error);
-			},
-			_onPlayStatusChange
-		);
-		mediaPlayer.play();
+		if (Capacitor.isNativePlatform()) {
+			mediaPlayer = new window.Media(
+				file_URI,
+				(success) => {
+					console.log(success);
+				},
+				(error) => {
+					console.log(error);
+				},
+				_onPlayStatusChange
+			);
+			mediaPlayer.play();
+		}
 
 		const methods = {
 			stop() {
