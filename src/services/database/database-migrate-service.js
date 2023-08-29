@@ -83,7 +83,7 @@ export const databaseMigrateService = {
                         // rename bookmark column
                         tx.executeSql(
                             'ALTER TABLE bookmarks ' +
-                            'RENAME COLUMN bookmark TO hierarchy_navigation;',
+                            'RENAME COLUMN bookmark TO hierarchy_navigation',
                             [],
                             function (res) {
                                 console.log('Migration to rename column bookmark to hierarchy_navigation in bookmarks table');

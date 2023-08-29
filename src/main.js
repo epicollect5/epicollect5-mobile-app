@@ -247,9 +247,14 @@ export const app = createApp(App)
     console.log('Database version ->  ', dbStore.dbVersion);
 
     //do migrations if needed
-    const dbVersion = await initService.migrateDB();
-    dbStore.dbVersion = dbVersion;
-    console.log('Database version migrated to ->  ', dbStore.dbVersion);
+    try {
+      const dbVersion = await initService.migrateDB();
+      dbStore.dbVersion = dbVersion;
+      console.log('Database version migrated to ->  ', dbStore.dbVersion);
+    } catch (error) {
+      console.log(error);
+      notificationService.showAlert(JSON.stringify(error));
+    }
 
     //create media dirs (only on devices)
     if (Capacitor.isNativePlatform()) {
