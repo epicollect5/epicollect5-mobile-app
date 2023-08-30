@@ -2,7 +2,10 @@
 	<header-modal @on-dismiss="dismiss()"></header-modal>
 	<ion-content>
 		<ion-toolbar color="dark">
-			<ion-title class="ion-text-center">{{labels.account_exists}}</ion-title>
+			<ion-title
+				data-translate="account_exists"
+				class="ion-text-center"
+			>{{ labels.account_exists }}</ion-title>
 		</ion-toolbar>
 
 		<ion-card class="login-passowrd-confirm">
@@ -14,10 +17,13 @@
 							<ion-item-group>
 								<div class="center-item-content-wrapper">
 									<ion-label color="dark">
-										<strong>{{email}}</strong>
+										<strong data-test="email">{{ email }}</strong>
 									</ion-label>
-									<ion-label color="dark">
-										{{labels.enter_password}}
+									<ion-label
+										data-translate="enter_password"
+										color="dark"
+									>
+										{{ labels.enter_password }}
 									</ion-label>
 								</div>
 							</ion-item-group>
@@ -25,6 +31,7 @@
 							<form>
 								<ion-item lines="full">
 									<ion-input
+										data-test="input-type"
 										slot="start"
 										:type="state.authLocalInputPasswordType"
 										:placeholder="labels.password"
@@ -32,6 +39,7 @@
 										v-model.trim="state.password"
 									></ion-input>
 									<ion-icon
+										data-test="toggle-input-type"
 										slot="end"
 										:icon="state.eyeIcon"
 										@click="toggleInputType()"
@@ -47,14 +55,16 @@
 										slot="end"
 									>
 										<ion-button
+											data-test="login"
+											data-translate="login"
 											class="passwordless-send-btn"
 											mode="md"
 											size="default"
 											color="secondary"
-											:disabled="state.password.length  === 0"
+											:disabled="state.password.length === 0"
 											@click="performLoginLocal()"
 										>
-											{{labels.login}}
+											{{ labels.login }}
 										</ion-button>
 									</div>
 								</ion-item>
@@ -131,5 +141,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
