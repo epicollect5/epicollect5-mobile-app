@@ -131,10 +131,8 @@ describe('LeftDrawer component', () => {
                     stubActions: false,
                     createSpy: vi.fn,
                     language: PARAMETERS.DEFAULT_LANGUAGE,
-                    user: { action: 'Logout' },
-                    device: {
-                        platform: process.env.VITE_PLATFORM ?? 'web'
-                    }
+                    user: { action: 'Logout' }
+
                 }
             }
         });

@@ -2,7 +2,10 @@
 	<header-modal @on-dismiss="dismiss()"></header-modal>
 	<ion-content>
 		<ion-toolbar color="dark">
-			<ion-title class="ion-text-center">{{labels.check_email}}</ion-title>
+			<ion-title
+				data-translate="check_email"
+				class="ion-text-center"
+			>{{ labels.check_email }}</ion-title>
 		</ion-toolbar>
 
 		<ion-card class="login-confirm-email">
@@ -12,14 +15,20 @@
 						<ion-col>
 							<ion-item-group>
 								<div class="center-item-content-wrapper">
-									<ion-label color="dark">
-										{{labels.account_exists}}
+									<ion-label
+										data-translate="account_exists"
+										color="dark"
+									>
+										{{ labels.account_exists }}
 									</ion-label>
 									<ion-label color="dark">
-										<strong>{{account.email}}</strong>
+										<strong>{{ account.email }}</strong>
 									</ion-label>
-									<ion-label color="dark">
-										{{labels.code_was_sent}}
+									<ion-label
+										data-translate="code_was_sent"
+										color="dark"
+									>
+										{{ labels.code_was_sent }}
 									</ion-label>
 								</div>
 							</ion-item-group>
@@ -46,14 +55,16 @@
 										slot="end"
 									>
 										<ion-button
+											data-test="login"
+											data-translate="login"
 											class="email-confirm-btn"
 											mode="md"
 											size="default"
 											color="secondary"
-											:disabled="state.code.length  !== 6"
+											:disabled="state.code.length !== 6"
 											@click="performUserVerification()"
 										>
-											{{labels.login}}
+											{{ labels.login }}
 										</ion-button>
 									</div>
 								</ion-item>
@@ -154,5 +165,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
