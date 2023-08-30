@@ -1,4 +1,4 @@
-import ModalLocationHelp from '@/components/modals/ModalLocationHelp.vue';
+import ModalLocationEdit from '@/components/modals/ModalLocationEdit.vue';
 import { mount, shallowMount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
@@ -39,12 +39,14 @@ beforeEach(() => {
     vi.resetAllMocks();
 });
 
-describe('ModalLocationHelp component', () => {
+describe('ModalLocationEdit component', () => {
 
     it('should be in default language', async () => {
 
-        const wrapper = mount(ModalLocationHelp, {
+        const wrapper = mount(ModalLocationEdit, {
             props: {
+                latitude: '',
+                longitude: ''
             }
         });
 
@@ -78,8 +80,10 @@ describe('ModalLocationHelp component', () => {
         PARAMETERS.SUPPORTED_LANGUAGES.forEach((language) => {
             rootStore.language = language;
 
-            const wrapper = mount(ModalLocationHelp, {
+            const wrapper = mount(ModalLocationEdit, {
                 props: {
+                    latitude: '',
+                    longitude: ''
                 }
             });
 
@@ -102,5 +106,51 @@ describe('ModalLocationHelp component', () => {
                 expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
             });
         });
+    });
+
+    it('should update location on dismiss modal', () => {
+
+        const latitude = '37.774911';
+        const longitude = '-122.419111';
+        const wrapper = mount(ModalLocationEdit, {
+            props: {
+                latitude,
+                longitude
+            }
+        });
+
+        modalController.dismiss = vi.fn().mockReturnValue(true);
+        notificationService.showAlert = vi.fn().mockResolvedValue(true);
+
+        const updateLocationButton = wrapper.find('[data-test="update-location"]');
+
+        updateLocationButton.trigger('click');
+        expect(modalController.dismiss).toHaveBeenCalledWith({
+            latitude,
+            longitude
+        });
+        expect(notificationService.showAlert).not.toHaveBeenCalled();
+    });
+
+    it('should catch invalid lat and long', () => {
+
+        const labels = STRINGS[PARAMETERS.DEFAULT_LANGUAGE].labels;
+        const latitude = '';
+        const longitude = '';
+        const wrapper = mount(ModalLocationEdit, {
+            props: {
+                latitude,
+                longitude
+            }
+        });
+
+        modalController.dismiss = vi.fn().mockReturnValue(true);
+        notificationService.showAlert = vi.fn().mockResolvedValue(true);
+
+        const updateLocationButton = wrapper.find('[data-test="update-location"]');
+
+        updateLocationButton.trigger('click');
+        expect(modalController.dismiss).not.toHaveBeenCalled();
+        expect(notificationService.showAlert).toHaveBeenCalledWith(labels.invalid_value);
     });
 });

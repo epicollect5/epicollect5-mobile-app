@@ -7,13 +7,16 @@
 			mode="md"
 			class="ion-text-center ion-text-uppercase"
 		>
-			<ion-title>{{labels.update_location}}</ion-title>
+			<ion-subtitle data-translate="update_location">
+				{{ labels.update_location }}
+			</ion-subtitle>
 		</ion-toolbar>
 
 		<ion-card class="ion-margin">
 			<ion-card-header class="question-label ion-margin-bottom">
 				<ion-card-subtitle class="ion-text-left">
-					{{labels.format}}:&nbsp;lat, long</ion-card-subtitle>
+					<span data-translate="format">{{ labels.format }}</span>:&nbsp;lat, long
+				</ion-card-subtitle>
 			</ion-card-header>
 			<ion-card-content class="ion-text-center">
 				<ion-item fill="outline">
@@ -26,20 +29,20 @@
 					/>
 				</ion-item>
 				<grid-question-wide class="ion-margin-top">
-					<template #content>
-						<ion-button
-							class="question-action-button"
-							color="secondary"
-							expand="block"
-							@click="updateLocation()"
-						>
-							<ion-icon
-								slot="start"
-								:icon="locate"
-							></ion-icon>
-							{{labels.update_location}}
-						</ion-button>
-					</template>
+					<ion-button
+						data-test="update-location"
+						data-translate="update_location"
+						class="question-action-button"
+						color="secondary"
+						expand="block"
+						@click="updateLocation()"
+					>
+						<ion-icon
+							slot="start"
+							:icon="locate"
+						></ion-icon>
+						{{ labels.update_location }}
+					</ion-button>
 				</grid-question-wide>
 			</ion-card-content>
 		</ion-card>
@@ -53,7 +56,7 @@ import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 import HeaderModal from '@/components/HeaderModal.vue';
-import GridQuestionWide from '@/components/GridQuestionWide';
+import GridQuestionWide from '@/components/GridQuestionWide.vue';
 import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
 
@@ -87,8 +90,8 @@ export default {
 			updateLocation() {
 				if (utilsService.isValidDecimalDegreesString(state.value)) {
 					modalController.dismiss({
-						latitude: state.value.split(',')[0],
-						longitude: state.value.split(',')[1]
+						latitude: state.value.split(',')[0].trim(),
+						longitude: state.value.split(',')[1].trim()
 					});
 				} else {
 					notificationService.showAlert(labels.invalid_value);
