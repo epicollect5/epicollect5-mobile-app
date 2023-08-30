@@ -36,37 +36,33 @@
 			></dropzone>
 
 			<grid-question-narrow v-if="!isPWA">
-				<template #content>
-					<ion-button
-						class="question-action-button"
-						color="secondary"
-						expand="block"
-						@click="takePicture('camera')"
-					>
-						<ion-icon
-							slot="start"
-							:icon="camera"
-						></ion-icon>
-						{{ labels.take }}
-					</ion-button>
-				</template>
+				<ion-button
+					class="question-action-button"
+					color="secondary"
+					expand="block"
+					@click="takePicture('camera')"
+				>
+					<ion-icon
+						slot="start"
+						:icon="camera"
+					></ion-icon>
+					{{ labels.take }}
+				</ion-button>
 			</grid-question-narrow>
 
 			<grid-question-narrow v-if="!isPWA">
-				<template #content>
-					<ion-button
-						class="question-action-button ion-margin-top"
-						color="secondary"
-						expand="block"
-						@click="takePicture('gallery')"
-					>
-						<ion-icon
-							slot="start"
-							:icon="images"
-						></ion-icon>
-						{{ labels.pick }}
-					</ion-button>
-				</template>
+				<ion-button
+					class="question-action-button ion-margin-top"
+					color="secondary"
+					expand="block"
+					@click="takePicture('gallery')"
+				>
+					<ion-icon
+						slot="start"
+						:icon="images"
+					></ion-icon>
+					{{ labels.pick }}
+				</ion-button>
 			</grid-question-narrow>
 
 			<!-- Photo thumbail -->
@@ -98,7 +94,7 @@ import { inject } from 'vue';
 import { Capacitor } from '@capacitor/core';
 import ModalPhoto from '@/components/modals/ModalPhoto';
 import { photoTake } from '@/use/questions/photo-take';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow';
+import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
 import Dropzone from '@/components/Dropzone';
 import { notificationService } from '@/services/notification-service';

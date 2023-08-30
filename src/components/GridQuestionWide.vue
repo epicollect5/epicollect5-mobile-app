@@ -12,7 +12,7 @@
 				offset-lg="3"
 				class="ion-align-self-center"
 			>
-				<slot name="content"></slot>
+				<slot></slot>
 			</ion-col>
 		</ion-row>
 	</ion-grid>
@@ -26,5 +26,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

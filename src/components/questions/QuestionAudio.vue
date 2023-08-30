@@ -34,41 +34,37 @@
 			></dropzone>
 
 			<grid-question-narrow v-if="!isPWA">
-				<template #content>
-					<ion-button
-						class="question-action-button"
-						color="secondary"
-						expand="block"
-						@click="record()"
-					>
-						<ion-icon
-							slot="start"
-							:icon="mic"
-						></ion-icon>
-						{{ labels.record }}
-					</ion-button>
-				</template>
+				<ion-button
+					class="question-action-button"
+					color="secondary"
+					expand="block"
+					@click="record()"
+				>
+					<ion-icon
+						slot="start"
+						:icon="mic"
+					></ion-icon>
+					{{ labels.record }}
+				</ion-button>
 			</grid-question-narrow>
 
 			<grid-question-narrow
 				v-if="!isPWA"
 				class="ion-margin-top"
 			>
-				<template #content>
-					<ion-button
-						:disabled="!isFileAvailable"
-						class="question-action-button"
-						color="secondary"
-						expand="block"
-						@click="play()"
-					>
-						<ion-icon
-							slot="start"
-							:icon="playSharp"
-						></ion-icon>
-						{{ labels.play }}
-					</ion-button>
-				</template>
+				<ion-button
+					:disabled="!isFileAvailable"
+					class="question-action-button"
+					color="secondary"
+					expand="block"
+					@click="play()"
+				>
+					<ion-icon
+						slot="start"
+						:icon="playSharp"
+					></ion-icon>
+					{{ labels.play }}
+				</ion-button>
 			</grid-question-narrow>
 		</ion-card-content>
 	</ion-card>
@@ -85,7 +81,7 @@ import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import ModalAudioPlay from '@/components/modals/ModalAudioPlay';
 import ModalAudioRecord from '@/components/modals/ModalAudioRecord';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow';
+import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
 import { popoverMediaHandler } from '@/use/questions/popover-media-handler';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
 import Dropzone from '@/components/Dropzone';

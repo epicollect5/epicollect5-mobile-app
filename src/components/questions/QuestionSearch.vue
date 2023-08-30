@@ -1,16 +1,16 @@
 <template>
 	<ion-card
 		class="question-card"
-		:class="{'animate__animated animate__fadeIn' : !isGroupInput}"
+		:class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
 	>
 		<ion-card-header class="question-label">
 			<ion-card-title>
-				{{state.question}}
+				{{ state.question }}
 			</ion-card-title>
 		</ion-card-header>
 		<ion-card-content
 			class="ion-text-center"
-			:class="{'ion-margin' : isGroupInput}"
+			:class="{ 'ion-margin': isGroupInput }"
 		>
 			<div
 				class="question-required"
@@ -22,24 +22,22 @@
 				class="question-error"
 				v-if="hasError"
 			>
-				{{errorMessage}}
+				{{ errorMessage }}
 			</div>
 
 			<grid-question-narrow>
-				<template #content>
-					<ion-button
-						class="question-action-button"
-						color="secondary"
-						expand="block"
-						@click="openSearch()"
-					>
-						<ion-icon
-							slot="start"
-							:icon="search"
-						></ion-icon>
-						{{labels.search}}
-					</ion-button>
-				</template>
+				<ion-button
+					class="question-action-button"
+					color="secondary"
+					expand="block"
+					@click="openSearch()"
+				>
+					<ion-icon
+						slot="start"
+						:icon="search"
+					></ion-icon>
+					{{ labels.search }}
+				</ion-button>
 			</grid-question-narrow>
 
 			<ion-grid class="ion-no-padding">
@@ -63,7 +61,7 @@
 							:key="pick.ref"
 						>
 							<ion-label>
-								{{pick.answer}}
+								{{ pick.answer }}
 							</ion-label>
 							<div class="ion-activatable ripple-parent">
 								<ion-icon
@@ -94,7 +92,7 @@ import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject } from 'vue';
 import { modalController } from '@ionic/vue';
 import ModalPossibleAnswers from '@/components/modals/ModalPossibleAnswers';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow';
+import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
@@ -183,7 +181,7 @@ export default {
 		};
 
 		const methods = {
-			test() {},
+			test() { },
 			async openSearch() {
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
@@ -251,5 +249,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

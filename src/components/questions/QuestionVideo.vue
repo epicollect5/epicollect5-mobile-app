@@ -34,33 +34,29 @@
 			></dropzone>
 
 			<grid-question-narrow v-if="!isPWA">
-				<template #content>
-					<ion-button
-						class="question-action-button"
-						color="secondary"
-						expand="block"
-						@click="shoot()"
-					>
-						<ion-icon
-							slot="start"
-							:icon="videocam"
-						></ion-icon>
-						{{ labels.shoot }}
-					</ion-button>
-				</template>
+				<ion-button
+					class="question-action-button"
+					color="secondary"
+					expand="block"
+					@click="shoot()"
+				>
+					<ion-icon
+						slot="start"
+						:icon="videocam"
+					></ion-icon>
+					{{ labels.shoot }}
+				</ion-button>
 			</grid-question-narrow>
 
 			<!-- Video Preview -->
 			<grid-question-narrow v-if="!isPWA">
-				<template #content>
-					<video
-						v-show="state.fileSource !== ''"
-						class="question-video-player"
-						:src="state.fileSource"
-						controls
-					>
-					</video>
-				</template>
+				<video
+					v-show="state.fileSource !== ''"
+					class="question-video-player"
+					:src="state.fileSource"
+					controls
+				>
+				</video>
 			</grid-question-narrow>
 
 		</ion-card-content>
@@ -78,7 +74,7 @@ import { inject } from 'vue';
 import { Capacitor } from '@capacitor/core';
 import { videoShoot } from '@/use/questions/video-shoot';
 import { popoverMediaHandler } from '@/use/questions/popover-media-handler';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow';
+import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
 import Dropzone from '@/components/Dropzone';
 import { questionCommonService } from '@/services/entry/question-common-service';

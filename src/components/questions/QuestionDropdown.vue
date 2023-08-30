@@ -1,14 +1,14 @@
 <template>
 	<ion-card
 		class="question-card"
-		:class="{'animate__animated animate__fadeIn' : !isGroupInput}"
+		:class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
 	>
 		<ion-card-header class="question-label">
 			<ion-card-title>
-				{{state.question}}
+				{{ state.question }}
 			</ion-card-title>
 		</ion-card-header>
-		<ion-card-content :class="{'ion-margin' : isGroupInput}">
+		<ion-card-content :class="{ 'ion-margin': isGroupInput }">
 			<div
 				class="question-required"
 				v-if="state.required"
@@ -17,30 +17,28 @@
 			</div>
 
 			<grid-question-wide>
-				<template #content>
-					<ion-item
-						button
-						class="question-dropdown-item"
-						:class="{'has-error' : hasError}"
-						@click="openModalPossibleAnswers()"
-						color="secondary"
-					>
-						<ion-icon
-							slot="end"
-							:icon="caretDown"
-						></ion-icon>
+				<ion-item
+					button
+					class="question-dropdown-item"
+					:class="{ 'has-error': hasError }"
+					@click="openModalPossibleAnswers()"
+					color="secondary"
+				>
+					<ion-icon
+						slot="end"
+						:icon="caretDown"
+					></ion-icon>
 
-						<ion-label>
-							{{dropdownButtonLabel}}
-						</ion-label>
-					</ion-item>
-					<div
-						class="question-error"
-						v-if="hasError"
-					>
-						{{errorMessage}}
-					</div>
-				</template>
+					<ion-label>
+						{{ dropdownButtonLabel }}
+					</ion-label>
+				</ion-item>
+				<div
+					class="question-error"
+					v-if="hasError"
+				>
+					{{ errorMessage }}
+				</div>
 			</grid-question-wide>
 		</ion-card-content>
 	</ion-card>
@@ -57,7 +55,7 @@ import { inject } from 'vue';
 import { PARAMETERS } from '@/config';
 import { modalController } from '@ionic/vue';
 import ModalPossibleAnswers from '@/components/modals/ModalPossibleAnswers';
-import GridQuestionWide from '@/components/GridQuestionWide';
+import GridQuestionWide from '@/components/GridQuestionWide.vue';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
@@ -199,5 +197,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

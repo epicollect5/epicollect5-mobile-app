@@ -1,7 +1,7 @@
 <template>
 	<ion-card
 		class="question-card"
-		:class="{'animate__animated animate__fadeIn' : !isGroupInput}"
+		:class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
 	>
 		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title v-if="isPWA">
@@ -23,7 +23,7 @@
 		</ion-card-header>
 		<ion-card-content
 			class="ion-text-center"
-			:class="{'ion-margin' : isGroupInput}"
+			:class="{ 'ion-margin': isGroupInput }"
 		>
 			<location-pwa
 				v-if="isPWA"
@@ -35,20 +35,18 @@
 			></location-pwa>
 
 			<grid-question-wide v-if=!isPWA>
-				<template #content>
-					<ion-button
-						class="question-action-button"
-						color="secondary"
-						expand="block"
-						@click="updateLocation()"
-					>
-						<ion-icon
-							slot="start"
-							:icon="locate"
-						></ion-icon>
-						{{labels.update_location}}
-					</ion-button>
-				</template>
+				<ion-button
+					class="question-action-button"
+					color="secondary"
+					expand="block"
+					@click="updateLocation()"
+				>
+					<ion-icon
+						slot="start"
+						:icon="locate"
+					></ion-icon>
+					{{ labels.update_location }}
+				</ion-button>
 			</grid-question-wide>
 
 			<ion-grid
@@ -58,36 +56,36 @@
 				<ion-row class="ion-align-items-center border-bottom">
 					<ion-col>
 						<div class="ion-text-end">
-							<strong>{{labels.latitude}}&nbsp;</strong>
+							<strong>{{ labels.latitude }}&nbsp;</strong>
 						</div>
 					</ion-col>
 					<ion-col>
 						<div class="ion-text-start">
-							&nbsp;{{latitude}}
+							&nbsp;{{ latitude }}
 						</div>
 					</ion-col>
 				</ion-row>
 				<ion-row class="ion-align-items-center border-bottom">
 					<ion-col>
 						<div class="ion-text-end">
-							<strong>{{labels.longitude}}&nbsp;</strong>
+							<strong>{{ labels.longitude }}&nbsp;</strong>
 						</div>
 					</ion-col>
 					<ion-col>
 						<div class="ion-text-start">
-							&nbsp;{{longitude}}
+							&nbsp;{{ longitude }}
 						</div>
 					</ion-col>
 				</ion-row>
 				<ion-row class="ion-align-items-center border-bottom">
 					<ion-col>
 						<div class="ion-text-end">
-							<strong>{{labels.accuracy}}&nbsp;</strong>
+							<strong>{{ labels.accuracy }}&nbsp;</strong>
 						</div>
 					</ion-col>
 					<ion-col>
 						<div class="ion-text-start">
-							&nbsp;{{accuracy}}
+							&nbsp;{{ accuracy }}
 						</div>
 					</ion-col>
 				</ion-row>
@@ -97,7 +95,7 @@
 				class="question-error"
 				v-if="hasError"
 			>
-				{{errorMessage}}
+				{{ errorMessage }}
 			</div>
 		</ion-card-content>
 	</ion-card>
@@ -112,9 +110,9 @@ import { useRootStore } from '@/stores/root-store';
 import { locate } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
-import GridQuestionWide from '@/components/GridQuestionWide';
-import LocationPwa from '@/components/LocationPwa';
-import QuestionLabelAction from '@/components/QuestionLabelAction';
+import GridQuestionWide from '@/components/GridQuestionWide.vue';
+import LocationPwa from '@/components/LocationPwa.vue';
+import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
 import ModalLocationHelp from '@/components/modals/ModalLocationHelp.vue';
 import ModalLocationEdit from '@/components/modals/ModalLocationEdit.vue';
 import { notificationService } from '@/services/notification-service';
@@ -426,5 +424,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
