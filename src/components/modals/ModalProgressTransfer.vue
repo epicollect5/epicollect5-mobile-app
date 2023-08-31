@@ -1,20 +1,29 @@
 <template>
 	<ion-header class="ion-no-border">
 		<ion-toolbar>
-			<ion-title class="ion-text-center"
-					   color="dark">{{ header }}
+			<ion-title
+				data-test="header"
+				class="ion-text-center"
+				color="dark"
+			>{{ header }}
 			</ion-title>
 		</ion-toolbar>
 	</ion-header>
 	<ion-content class="ion-text-center">
-		<ion-spinner class="spinner-transfer"
-					 name="crescent"></ion-spinner>
-		<div v-if="total > 0"
-			 class="progress-transfer animate__animated animate__fadeIn">
-			<ion-progress-bar color="primary"
-							  :value="progress"></ion-progress-bar>
+		<ion-spinner
+			class="spinner-transfer"
+			name="crescent"
+		></ion-spinner>
+		<div
+			v-if="total > 0"
+			class="progress-transfer animate__animated animate__fadeIn"
+		>
+			<ion-progress-bar
+				color="primary"
+				:value="progress"
+			></ion-progress-bar>
 			<strong>
-				<p>{{ done }}/{{ total }}</p>
+				<p data-test="progress">{{ done }}/{{ total }}</p>
 			</strong>
 		</div>
 	</ion-content>
@@ -32,7 +41,7 @@ export default {
 			required: true
 		}
 	},
-	setup (props) {
+	setup(props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
