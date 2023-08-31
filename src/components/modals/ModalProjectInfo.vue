@@ -2,21 +2,33 @@
 	<ion-header class="ion-no-border">
 		<ion-toolbar color="primary">
 			<ion-buttons slot="start">
-				<ion-button class="button-close"
-							@click="dismiss()">
-					<ion-icon slot="start"
-							  :icon="closeOutline">
+				<ion-button
+					data-translate="close"
+					class="button-close"
+					@click="dismiss()"
+				>
+					<ion-icon
+						slot="start"
+						:icon="closeOutline"
+					>
 					</ion-icon>
 					{{ labels.close }}
 				</ion-button>
 			</ion-buttons>
-			<ion-title class="project-header ion-text-center"
-					   v-html="getProjectNameMarkup()"></ion-title>
+			<ion-title
+				class="project-header ion-text-center"
+				v-html="getProjectNameMarkup()"
+			></ion-title>
 			<ion-buttons slot="end">
-				<ion-button class="button-open"
-							@click="goToProjectHomePage()">
-					<ion-icon slot="end"
-							  :icon="open">
+				<ion-button
+					data-test="goto-project-home-page"
+					class="button-open"
+					@click="goToProjectHomePage()"
+				>
+					<ion-icon
+						slot="end"
+						:icon="open"
+					>
 					</ion-icon>
 				</ion-button>
 			</ion-buttons>
@@ -27,7 +39,10 @@
 
 		<ion-card>
 			<ion-card-header class="settings-label">
-				<ion-card-title class="ion-text-center ion-text-uppercase">
+				<ion-card-title
+					data-translate="project_info"
+					class="ion-text-center ion-text-uppercase"
+				>
 					{{ labels.project_info }}
 				</ion-card-title>
 			</ion-card-header>
@@ -40,7 +55,10 @@
 
 		<ion-card>
 			<ion-card-header class="settings-label">
-				<ion-card-title class="ion-text-center ion-text-uppercase">
+				<ion-card-title
+					data-translate="small_description"
+					class="ion-text-center ion-text-uppercase"
+				>
 					{{ labels.small_description }}
 				</ion-card-title>
 			</ion-card-header>
@@ -53,7 +71,10 @@
 
 		<ion-card>
 			<ion-card-header class="settings-label">
-				<ion-card-title class="ion-text-center ion-text-uppercase">
+				<ion-card-title
+					data-translate="description"
+					class="ion-text-center ion-text-uppercase"
+				>
 					{{ labels.description }}
 				</ion-card-title>
 			</ion-card-header>
@@ -70,7 +91,6 @@
 import { open, closeOutline } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
-
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
@@ -79,7 +99,7 @@ import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
 
 export default {
-	setup (props) {
+	setup(props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -91,13 +111,13 @@ export default {
 		});
 
 		const methods = {
-			dismiss () {
+			dismiss() {
 				modalController.dismiss();
 			},
-			getProjectNameMarkup () {
+			getProjectNameMarkup() {
 				return utilsService.getProjectNameMarkup(true);
 			},
-			async goToProjectHomePage () {
+			async goToProjectHomePage() {
 				const slug = projectModel.getSlug();
 				const homepage = PARAMETERS.DEFAULT_SERVER_URL + PARAMETERS.API.ROUTES.PROJECT + slug;
 
