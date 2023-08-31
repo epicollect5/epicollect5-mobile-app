@@ -3,37 +3,48 @@
 		<ion-toolbar>
 			<ion-buttons slot="start">
 				<ion-button @click="dismiss()">
-					<ion-icon slot="icon-only"
-							  :icon="closeOutline">
+					<ion-icon
+						slot="icon-only"
+						:icon="closeOutline"
+					>
 					</ion-icon>
 				</ion-button>
 			</ion-buttons>
 			<ion-buttons slot="end">
-				<ion-button v-if="!isPWA"
-							@click="share()">
-					<ion-icon slot="icon-only"
-							  :icon="shareSocialSharp">
+				<ion-button
+					data-test="share"
+					v-if="!isPWA"
+					@click="share()"
+				>
+					<ion-icon
+						slot="icon-only"
+						:icon="shareSocialSharp"
+					>
 					</ion-icon>
 				</ion-button>
 			</ion-buttons>
 		</ion-toolbar>
 	</ion-header>
 	<ion-content>
-
-		<swiper :modules="sliderModules"
-				:zoom="true">
+		<swiper
+			:modules="sliderModules"
+			:zoom="true"
+		>
 			<swiper-slide>
 				<div class="swiper-zoom-container">
-					<ion-spinner class="spinner ion-margin-top"
-								 v-show="!state.imageLoaded"
-								 name="crescent"></ion-spinner>
-					<img :src="imageSource"
-						 @load="onImageLoad()">
+					<ion-spinner
+						data-test="spinner"
+						class="spinner ion-margin-top"
+						v-show="!state.imageLoaded"
+						name="crescent"
+					></ion-spinner>
+					<img
+						:src="imageSource"
+						@load="onImageLoad()"
+					>
 				</div>
 			</swiper-slide>
-
 		</swiper>
-
 	</ion-content>
 </template>
 
@@ -65,16 +76,16 @@ export default {
 			required: true
 		}
 	},
-	setup (props) {
+	setup(props) {
 		const sliderModules = [Zoom, IonicSlides];
 		const state = reactive({
 			imageLoaded: false
 		});
 		const methods = {
-			dismiss () {
+			dismiss() {
 				modalController.dismiss();
 			},
-			share () {
+			share() {
 				Share.share({
 					title: '',
 					text: '',
@@ -83,7 +94,7 @@ export default {
 					dialogTitle: ''
 				});
 			},
-			onImageLoad () {
+			onImageLoad() {
 				state.imageLoaded = true;
 			}
 		};
