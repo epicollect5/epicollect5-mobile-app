@@ -365,7 +365,8 @@ export const databaseInsertService = {
             parentEntryUuid = '';
         }
 
-        const query = 'INSERT OR REPLACE INTO bookmarks (project_ref, form_ref, parent_entry_uuid, title, hierarchy_navigation) VALUES (?,?,?,?,?)';
+        //imp: column "bookmark" should be called "hierarchy_navigation" but alter table command not working in Android <11
+        const query = 'INSERT OR REPLACE INTO bookmarks (project_ref, form_ref, parent_entry_uuid, title, bookmark) VALUES (?,?,?,?,?)';
         const params = [projectRef, formRef, parentEntryUuid, title, hierarchy_navigation];
 
         return await this.insertRows(query, params);

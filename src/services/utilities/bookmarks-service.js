@@ -96,7 +96,7 @@ export const bookmarksService = {
                                 projectRef: currentRow.project_ref,
                                 formRef: currentRow.form_ref,
                                 title: currentRow.title,
-                                hierarchyNavigation: JSON.parse(currentRow.hierarchy_navigation)
+                                hierarchyNavigation: JSON.parse(currentRow.bookmark)
                             });
                         }
                     }

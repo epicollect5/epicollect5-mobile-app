@@ -78,17 +78,6 @@ export const databaseMigrateService = {
                                 console.log('Migration to add column mapping to projects table');
                                 console.log('Migration tx done, db at version ->', 5);
                             }, _onError);
-                    case 6:
-                        currentDbVersion = 6;
-                        // rename bookmark column
-                        tx.executeSql(
-                            'ALTER TABLE bookmarks ' +
-                            'RENAME COLUMN bookmark TO hierarchy_navigation',
-                            [],
-                            function (res) {
-                                console.log('Migration to rename column bookmark to hierarchy_navigation in bookmarks table');
-                                console.log('Migration tx done, db at version ->', 5);
-                            }, _onError);
                     // More cases to be added here for next versions, omitting 'break'
                 }
             }, _onError, (res) => {

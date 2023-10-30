@@ -615,7 +615,7 @@ describe('bookmarksService getBookmarks', () => {
                 project_ref: projectRef,
                 form_ref: formRef,
                 title: 'Bookmark 1',
-                hierarchy_navigation: JSON.stringify([
+                bookmark: JSON.stringify([
                     {
                         parentEntryUuid: '777e6745-d4d5-4277-ad89-2664be644f2c',
                         parentEntryName: 'history'
@@ -658,7 +658,7 @@ describe('bookmarksService getBookmarks', () => {
                 project_ref: projectRef + 0,
                 form_ref: formRef + 0,
                 title: 'Bookmark 2',
-                hierarchy_navigation: JSON.stringify([
+                bookmark: JSON.stringify([
                     {
                         parentEntryUuid: '877e6745-d4d5-4277-ad89-2664be644f2c',
                         parentEntryName: 'biology'
