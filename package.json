@@ -21,6 +21,7 @@
     "preprod": "vitest --run --silent",
     "prod": "export VUE_APP_DEBUG= && ionic cap copy",
     "open-android": "ionic cap open android",
+    "open-ios": "ionic cap open ios",
     "britest": "vitest --browser.name=chrome",
     "coverage": "vitest --coverage",
     "vitest-ui": "vitest --ui",
