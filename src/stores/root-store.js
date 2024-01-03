@@ -13,7 +13,6 @@ export const useRootStore = defineStore('RootStore', {
             persistentDir: '',
             hierarchyNavigation: [],
             selectedTextSize: PARAMETERS.DEFAULT_TEXT_SIZE,
-            filtersToggle: false,
             continueProjectVersionUpdate: false,
             user: {
                 jwt: null,

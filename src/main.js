@@ -232,9 +232,15 @@ export const app = createApp(App)
     console.log('Device language -> ', rootStore.language);
     const labels = STRINGS[rootStore.language].labels;
 
-    //Validate language files at start up for consistency
+    //Validate language files at start up for consistency, when debugging
     if (PARAMETERS.DEBUG) {
       await utilsService.validateLanguageFiles();
+    }
+
+    //in production, make sure we use the production server
+    if (!PARAMETERS.DEBUG) {
+      //set default url to production when not debugging
+      PARAMETERS.DEFAULT_SERVER_URL = PARAMETERS.PRODUCTION_SERVER_URL;
     }
 
     //open db
@@ -307,10 +313,6 @@ export const app = createApp(App)
     //text size preferences
     const selectedTextSize = await initService.getSelectedTextSize();
     rootStore.selectedTextSize = selectedTextSize;
-
-    // filter entries preferences
-    const filtersToggle = await initService.getFiltersToggleStatus();
-    rootStore.filtersToggle = filtersToggle;
 
     // Attempt to retrieve the jwt token
     const user = await initService.retrieveJwtToken();

@@ -6,10 +6,14 @@
 		</template>
 
 		<template #actions-end>
-			<ion-button fill="clear"
-						@click="saveSettings()">
-				<ion-icon slot="start"
-						  :icon="checkmark"></ion-icon>
+			<ion-button
+				fill="clear"
+				@click="saveSettings()"
+			>
+				<ion-icon
+					slot="start"
+					:icon="checkmark"
+				></ion-icon>
 				{{ labels.save }}
 			</ion-button>
 		</template>
@@ -18,17 +22,23 @@
 			<ion-toolbar color="dark">
 				<ion-buttons slot="start">
 					<ion-button @click="goBack()">
-						<ion-icon slot="start"
-								  :icon="chevronBackOutline">
+						<ion-icon
+							slot="start"
+							:icon="chevronBackOutline"
+						>
 						</ion-icon>
 						{{ labels.back }}
 					</ion-button>
 				</ion-buttons>
-				<ion-buttons class="toolbar-spacer"
-							 slot="end">
+				<ion-buttons
+					class="toolbar-spacer"
+					slot="end"
+				>
 					<ion-button>
-						<ion-icon slot="end"
-								  :icon="chevronBackOutline">
+						<ion-icon
+							slot="end"
+							:icon="chevronBackOutline"
+						>
 						</ion-icon>
 						{{ labels.back }}
 					</ion-button>
@@ -37,9 +47,11 @@
 		</template>
 
 		<template #content>
-			<ion-toolbar color="light"
-						 mode="ios"
-						 class="animate__animated animate__fadeIn">
+			<ion-toolbar
+				color="light"
+				mode="ios"
+				class="animate__animated animate__fadeIn"
+			>
 				<div class="center-item-content-wrapper">
 					<ion-label class="ion-text-center ion-text-uppercase ">
 						{{ labels.settings }}
@@ -53,23 +65,31 @@
 					</ion-card-title>
 				</ion-card-header>
 				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item lines="full"
-							  class="ion-text-left">
+					<ion-item
+						lines="full"
+						class="ion-text-left"
+					>
 						<ion-label>{{ labels.text_size }}</ion-label>
 					</ion-item>
 					<ion-item lines="none">
-						<ion-range min="0"
-								   :max="zoomLevels"
-								   step="1"
-								   debounce="500"
-								   snaps="true"
-								   ticks="true"
-								   :value="state.selectedTextSize"
-								   @ionChange="updateSelectedTextSize($event)">
-							<ion-icon slot="start"
-									  :icon="remove"></ion-icon>
-							<ion-icon slot="end"
-									  :icon="add"></ion-icon>
+						<ion-range
+							min="0"
+							:max="zoomLevels"
+							step="1"
+							debounce="500"
+							snaps="true"
+							ticks="true"
+							:value="state.selectedTextSize"
+							@ionChange="updateSelectedTextSize($event)"
+						>
+							<ion-icon
+								slot="start"
+								:icon="remove"
+							></ion-icon>
+							<ion-icon
+								slot="end"
+								:icon="add"
+							></ion-icon>
 						</ion-range>
 					</ion-item>
 				</ion-card-content>
@@ -82,8 +102,10 @@
 					</ion-card-title>
 				</ion-card-header>
 				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item lines="none"
-							  class="ion-text-left">
+					<ion-item
+						lines="none"
+						class="ion-text-left"
+					>
 						<ion-label>{{ appVersion }}</ion-label>
 					</ion-item>
 				</ion-card-content>
@@ -101,9 +123,11 @@
 						</ion-label>
 					</ion-item>
 					<ion-item lines="none">
-						<input class="full-width"
-							   type="text"
-							   v-model="state.serverUrl" />
+						<input
+							class="full-width"
+							type="text"
+							v-model="state.serverUrl"
+						/>
 					</ion-item>
 				</ion-card-content>
 			</ion-card>
@@ -126,13 +150,12 @@ import { notificationService } from '@/services/notification-service';
 
 export default {
 	components: {},
-	setup () {
+	setup() {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
 		const router = useRouter();
 		const state = reactive({
-			filtersToggle: rootStore.filtersToggle,
 			serverUrl: rootStore.serverUrl,
 			selectedTextSize: rootStore.selectedTextSize,
 			isSaving: false
@@ -152,13 +175,13 @@ export default {
 		};
 
 		const methods = {
-			goBack () {
+			goBack() {
 				router.replace({
 					name: rootStore.nextRoute,
 					query: { ...rootStore.routeParams }
 				});
 			},
-			async saveSettings () {
+			async saveSettings() {
 				let failed = false;
 				await notificationService.showProgressDialog();
 				state.isSaving = true;
@@ -193,16 +216,6 @@ export default {
 								failed = true;
 							}
 							break;
-						case PARAMETERS.SETTINGS_KEYS.FILTERS_TOGGLE:
-							//imp: filters_toggle is saved as string
-							try {
-								await databaseInsertService.insertSetting(key, state.filtersToggle);
-								rootStore.filtersToggle = state.filtersToggle;
-							} catch (error) {
-								console.log(error);
-								failed = true;
-							}
-							break;
 					}
 				});
 
@@ -214,12 +227,9 @@ export default {
 					notificationService.showToast(STRINGS[language].status_codes.ec5_123);
 				}
 			},
-			updateSelectedTextSize (e) {
+			updateSelectedTextSize(e) {
 				state.selectedTextSize = e.detail.value;
 				rootStore.selectedTextSize = state.selectedTextSize;
-			},
-			onFiltersToggleChange () {
-				state.filtersToggle = !state.filtersToggle;
 			}
 		};
 

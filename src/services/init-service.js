@@ -338,16 +338,6 @@ export const initService = {
         });
     },
 
-    async getFiltersToggleStatus() {
-        return new Promise(function (resolve, reject) {
-            databaseSelectService.selectSetting('filters_toggle').then(function (res) {
-                resolve(res.rows.length > 0 && res.rows.item(0).value === 'true');
-            }, function (error) {
-                reject(error);
-            });
-        });
-    },
-
     async retrieveJwtToken() {
         const rootStore = useRootStore();
         return new Promise(function (resolve, reject) {

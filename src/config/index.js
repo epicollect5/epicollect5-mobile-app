@@ -2,7 +2,7 @@ export const PARAMETERS = {
     APP_NAME: 'Epicollect5',
     USER_GUIDE_URL: 'https://docs.epicollect.net',
     COMMUNITY_SUPPORT_URL: 'https://community.epicollect.net',
-
+    PRODUCTION_SERVER_URL: 'https://five.epicollect.net',
     DEBUG: process.env.VUE_APP_DEBUG,
     IS_LOCALHOST: process.env.NODE_ENV === 'production' ? 0 : 1, //for debugging outside of Laravel(production), it is set to 1
     BYPASS_UNIQUENESS: process.env.VUE_APP_BYPASS_UNIQUENESS,
@@ -317,8 +317,7 @@ export const PARAMETERS = {
     },
     SETTINGS_KEYS: {
         SERVER_URL: 'server_url',
-        SELECTED_TEXT_SIZE: 'selected_text_size',
-        FILTERS_TOGGLE: 'filters_toggle'
+        SELECTED_TEXT_SIZE: 'selected_text_size'
     },
     PWA_MIMETYPES: {
         PHOTO: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'],
