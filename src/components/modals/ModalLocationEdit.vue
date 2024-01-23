@@ -7,13 +7,13 @@
 			mode="md"
 			class="ion-text-center ion-text-uppercase"
 		>
-			<ion-title>{{labels.update_location}}</ion-title>
+			<ion-title>{{ labels.update_location }}</ion-title>
 		</ion-toolbar>
 
 		<ion-card class="ion-margin">
 			<ion-card-header class="question-label ion-margin-bottom">
 				<ion-card-subtitle class="ion-text-left">
-					{{labels.format}}:&nbsp;lat, long</ion-card-subtitle>
+					{{ labels.format }}:&nbsp;lat, long</ion-card-subtitle>
 			</ion-card-header>
 			<ion-card-content class="ion-text-center">
 				<ion-item fill="outline">
@@ -37,7 +37,7 @@
 								slot="start"
 								:icon="locate"
 							></ion-icon>
-							{{labels.update_location}}
+							{{ labels.update_location }}
 						</ion-button>
 					</template>
 				</grid-question-wide>
@@ -86,9 +86,12 @@ export default {
 			},
 			updateLocation() {
 				if (utilsService.isValidDecimalDegreesString(state.value)) {
+					//round coords to 6 decimal places
+					const latitude = parseFloat(state.value.split(',')[0], 10).toFixed(6);
+					const longitude = parseFloat(state.value.split(',')[1], 10).toFixed(6);
 					modalController.dismiss({
-						latitude: state.value.split(',')[0],
-						longitude: state.value.split(',')[1]
+						latitude,
+						longitude
 					});
 				} else {
 					notificationService.showAlert(labels.invalid_value);

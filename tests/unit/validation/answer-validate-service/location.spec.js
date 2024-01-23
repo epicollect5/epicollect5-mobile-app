@@ -107,6 +107,32 @@ describe('answerValidateService', () => {
         };
         await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
         expect(answerValidateService.getErrors()).toMatchObject({});
+
+
+        params.answer.answer = {
+            latitude: '45.9006781',//must be <= 6 decimals, will be rounded by the app
+            longitude: '12.0048568',//must be <= 6 decimals, will be rounded by the app
+            accuracy: 8
+        };
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+
+        params.answer.answer = {
+            latitude: '45.900679768', //must be 6 decimal, will be rounded
+            longitude: '12.04856',
+            accuracy: 4
+        };
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+
+        params.answer.answer = {
+            latitude: '45.900679',
+            longitude: '12.04856966', //must be 6 decimal, will be eounded
+            accuracy: 7
+        };
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+
     });
     it('LOCATION answer missing latitude', async () => {
 
@@ -153,42 +179,9 @@ describe('answerValidateService', () => {
     it('LOCATION answer object invalid', async () => {
 
         params.answer.answer = {
-            latitude: '45.9006787',//must be <= 6 decimals
-            longitude: '12.004856',
-            accuracy: 8
-        };
-        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
-        expect(answerValidateService.getErrors()).toMatchObject({
-            //"ec5_30": "Location data not valid"
-            [inputRef]: ['ec5_30']
-        });
-
-        params.answer.answer = {
             latitude: '45.900679',
             longitude: '12.04856',
             accuracy: -89//must be positive
-        };
-        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
-        expect(answerValidateService.getErrors()).toMatchObject({
-            //"ec5_30": "Location data not valid"
-            [inputRef]: ['ec5_30']
-        });
-
-        params.answer.answer = {
-            latitude: '45.900679768', //must be 6 decimal
-            longitude: '12.04856',
-            accuracy: 4
-        };
-        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
-        expect(answerValidateService.getErrors()).toMatchObject({
-            //"ec5_30": "Location data not valid"
-            [inputRef]: ['ec5_30']
-        });
-
-        params.answer.answer = {
-            latitude: '45.900679',
-            longitude: '12.04856966', //must be 6 decimal
-            accuracy: 7
         };
         await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
         expect(answerValidateService.getErrors()).toMatchObject({

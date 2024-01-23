@@ -289,6 +289,10 @@ describe('isValidDecimalDegreesString', () => {
         coords = '-77, 164';
         expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
 
+        //valid, will be rounded to 6 decinmal places
+        coords = '-77.5083633, 164.754167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+
         for (let i = 0; i < 500; i++) {
 
             const lat = utilsService.getRandomInRange(-90, 90, 5);
@@ -315,8 +319,7 @@ describe('isValidDecimalDegreesString', () => {
         coords = '-77.508333 - 164.754167';
         expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
 
-        coords = '-77.5083633, 164.754167';
-        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
 
         coords = ',-77.508333 ,164.754167';
         expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);

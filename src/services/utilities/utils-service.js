@@ -875,23 +875,14 @@ export const utilsService = {
         if (!lat) {
             return false;
         }
-        if (lat.includes('.')) {
-            if (lat.split('.')[1].length > 6) {
-                return false;
-            }
-        }
-
+        ///validate the latitude using third-party library
         return isValidCoords(lat, 0);
     },
     isValidLongitude(long) {
         if (!long) {
             return false;
         }
-        if (long.includes('.')) {
-            if (long.split('.')[1].length > 6) {
-                return false;
-            }
-        }
+        ///validate the longitude using third-party library
         return isValidCoords(0, long);
     },
     //accuracy must be a positive integer
