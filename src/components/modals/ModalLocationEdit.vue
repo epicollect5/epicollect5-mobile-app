@@ -86,12 +86,11 @@ export default {
 			},
 			updateLocation() {
 				if (utilsService.isValidDecimalDegreesString(state.value)) {
-					//round coords to 6 decimal places
-					const latitude = parseFloat(state.value.split(',')[0], 10).toFixed(6);
-					const longitude = parseFloat(state.value.split(',')[1], 10).toFixed(6);
+					//sanitise (decimal commas instead of dot in some regions, etc)
+					const coords = utilsService.extractCoordinates(state.value);
 					modalController.dismiss({
-						latitude,
-						longitude
+						latitude: coords.latitude,
+						longitude: coords.longitude
 					});
 				} else {
 					notificationService.showAlert(labels.invalid_value);

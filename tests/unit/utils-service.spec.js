@@ -294,10 +294,33 @@ describe('isValidDecimalDegreesString', () => {
         expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
 
         for (let i = 0; i < 500; i++) {
-
             const lat = utilsService.getRandomInRange(-90, 90, 5);
             const long = utilsService.getRandomInRange(-180, 180, 5);
             coords = lat + ',' + long;
+            expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+        }
+
+        //lat is integer, long decimal with dot
+        for (let i = 0; i < 500; i++) {
+            const lat = 1;
+            const long = utilsService.getRandomInRange(-180, 180, 5);
+            coords = lat + ',' + long;
+            expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+        }
+
+        //lat is decimal with dot, long is integer
+        for (let i = 0; i < 500; i++) {
+            const lat = utilsService.getRandomInRange(-90, 90, 5);
+            const long = 1;
+            coords = lat + ',' + long;
+            expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+        }
+
+        //use format with commas
+        for (let i = 0; i < 500; i++) {
+            const lat = utilsService.getRandomInRange(-90, 90, 5);
+            const long = utilsService.getRandomInRange(-180, 180, 5);
+            coords = lat.toString().replace('.', ',') + ',' + long.toString().replace('.', ',');
             expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
         }
     });
@@ -319,7 +342,20 @@ describe('isValidDecimalDegreesString', () => {
         coords = '-77.508333 - 164.754167';
         expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
 
+        coords = '-77,5083,33, 164,754167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
 
+        coords = '-77.508333 164,754167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = '-77.508333 164.754167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = '-77,508333. 164,754167';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = ',-77.508,333, 164.754,16,7';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
 
         coords = ',-77.508333 ,164.754167';
         expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
@@ -333,6 +369,11 @@ describe('isValidDecimalDegreesString', () => {
         coords = '-77.508333 ,164.#54167';
         expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
 
+        coords = '56,89...';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        coords = '56..,89.';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
     });
 });
 
@@ -603,6 +644,31 @@ describe('trunc', () => {
 
             expect(truncatedString.length).toBeLessThanOrEqual(truncatedLength);
             expect(truncatedString.endsWith('...')).toBe(false);
+        }
+    });
+
+    it('should format coords with dot', () => {
+        //use format with dot
+        for (let i = 0; i < 500; i++) {
+            const lat = utilsService.getRandomInRange(-90, 90, 5);
+            const long = utilsService.getRandomInRange(-180, 180, 5);
+            const coordsString = lat + ',' + long;
+
+            expect(utilsService.extractCoordinates(coordsString)).toEqual({
+                latitude: lat.toFixed(6),
+                longitude: long.toFixed(6)
+            });
+        }
+        //use format with commas
+        for (let i = 0; i < 500; i++) {
+            const lat = utilsService.getRandomInRange(-90, 90, 5);
+            const long = utilsService.getRandomInRange(-180, 180, 5);
+            const coordsString = lat.toString().replace('.', ',') + ',' + long.toString().replace('.', ',');
+
+            expect(utilsService.extractCoordinates(coordsString)).toEqual({
+                latitude: lat.toFixed(6),
+                longitude: long.toFixed(6)
+            });
         }
     });
 });

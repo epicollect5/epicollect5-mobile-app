@@ -107,8 +107,9 @@ describe('answerValidateService', () => {
         };
         await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
         expect(answerValidateService.getErrors()).toMatchObject({});
+    });
 
-
+    it('LOCATION precision is rounded to fixed(6)', async () => {
         params.answer.answer = {
             latitude: '45.9006781',//must be <= 6 decimals, will be rounded by the app
             longitude: '12.0048568',//must be <= 6 decimals, will be rounded by the app
@@ -132,8 +133,8 @@ describe('answerValidateService', () => {
         };
         await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
         expect(answerValidateService.getErrors()).toMatchObject({});
-
     });
+
     it('LOCATION answer missing latitude', async () => {
 
         params.answer.answer = {

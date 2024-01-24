@@ -903,17 +903,32 @@ export const utilsService = {
         return pathnameParts.join('/');
     },
     isValidDecimalDegreesString(str) {
-        if (!str.includes(',')) {
+        const coords = this.extractCoordinates(str);
+        if (coords === null) {
             return false;
         }
+        return utilsService.isValidLatitude(coords.latitude) && utilsService.isValidLongitude(coords.longitude);
+    },
 
-        //validate coords
-        const parts = str.split(',');
-        const latitude = parts[0].trim();
-        const longitude = parts[1].trim();
+    extractCoordinates(input) {
+        const regex = /^([-+]?\d*[.,]?\d+),\s*([-+]?\d*[.,]?\d+)$/;
+        const match = input.match(regex);
 
-        return utilsService.isValidLatitude(latitude) && utilsService.isValidLongitude(longitude);
+        // Check if there are more than three commas or exactly two commas
+        //would be impossible to detect which one is lat, which one is long
+        // if (input.split(',').length > 3 || input.split(',').length === 2) {
+        //     // Handle the case where it's ambiguous
+        //     return null;
+        // }
 
+        if (match) {
+            const lat = (parseFloat(match[1].replace(',', '.')) || 0).toFixed(6);
+            const long = (parseFloat(match[2].replace(',', '.')) || 0).toFixed(6);
+            return { latitude: lat, longitude: long };
+        } else {
+            // Handle invalid input or return default values
+            return null;
+        }
     },
     isObject(obj) {
         return Object.prototype.toString.call(obj) === '[object Object]';
