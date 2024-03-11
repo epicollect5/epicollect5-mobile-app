@@ -1,16 +1,19 @@
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
 import { PARAMETERS } from '@/config';
+import { projectModel } from '@/models/project-model.js';
+import * as Sentry from '@sentry/capacitor';
 
 export const databaseSelectService = {
 
-    async getRows (query, params) {
+    async getRows(query, params) {
         const dbStore = useDBStore();
         return new Promise((resolve, reject) => {
 
-            function _onError (tx, error) {
+            function _onError(tx, error) {
                 console.log('*** ' + query + '--------------------***');
                 console.log(error);
+                Sentry.captureMessage('DB.SS - ' + projectModel.getProjectName(), error);
                 reject(error);
             }
 
@@ -23,19 +26,19 @@ export const databaseSelectService = {
     },
 
     //Select a value based on a supplied key, from the settings table
-    async selectSetting (field) {
+    async selectSetting(field) {
         const query = 'SELECT value FROM settings WHERE field=?';
         const params = [field];
 
         return await this.getRows(query, params);
     },
 
-    async getUser () {
+    async getUser() {
         const query = 'SELECT * FROM users';
         return await this.getRows(query, []);
     },
 
-    async selectProject (projectRef) {
+    async selectProject(projectRef) {
         const query = 'SELECT * FROM projects WHERE project_ref = ?';
         const params = [projectRef];
 
@@ -44,12 +47,12 @@ export const databaseSelectService = {
 
     // Function to get all stored projects
 
-    async selectProjects () {
+    async selectProjects() {
         const query = 'SELECT project_ref, name FROM projects';
         return await this.getRows(query, []);
     },
     //Get one entry for a given form ref or parent entry uuid
-    async selectOneEntry (projectRef, formRef, parentEntryUuid, synced, offset) {
+    async selectOneEntry(projectRef, formRef, parentEntryUuid, synced, offset) {
 
         let query = 'SELECT entry_uuid, parent_entry_uuid, answers, form_ref, parent_form_ref, created_at, title, synced, can_edit, is_remote FROM entries WHERE project_ref = ?';
         const params = [projectRef];
@@ -88,7 +91,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
 
-    async selectOneBranchEntry (projectRef, ownerEntryUuid, synced) {
+    async selectOneBranchEntry(projectRef, ownerEntryUuid, synced) {
 
         let query = '';
         query += 'SELECT entry_uuid, ';
@@ -119,7 +122,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
 
-    async selectOneBranchEntryForExport (projectRef, ownerInputRef, offset) {
+    async selectOneBranchEntryForExport(projectRef, ownerInputRef, offset) {
 
         let query = '';
         query += 'SELECT entry_uuid, ';
@@ -144,7 +147,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
 
-    async selectBranchEntry (entryUuid) {
+    async selectBranchEntry(entryUuid) {
 
         let query = '';
         query += 'SELECT * ';
@@ -161,7 +164,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     // Count unsynced entries (entries+ branch entries) for a project
-    async countUnsyncedEntries (projectRef) {
+    async countUnsyncedEntries(projectRef) {
 
         let query = '';
         //total_number_of_entries
@@ -239,7 +242,7 @@ export const databaseSelectService = {
 
         return await this.getRows(query, params);
     },
-    async countUnsyncedBranchEntries (projectRef, ownerEntryUuid) {
+    async countUnsyncedBranchEntries(projectRef, ownerEntryUuid) {
 
         let query = '';
         query += 'SELECT COUNT(entry_uuid) as count ';
@@ -256,7 +259,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //Count unsynced media entries for a project
-    async countUnsyncedMediaEntries (projectRef) {
+    async countUnsyncedMediaEntries(projectRef) {
 
         let query = '';
         query += 'SELECT (SELECT COUNT(entry_uuid) ';
@@ -292,7 +295,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //Function to get an entry
-    async selectEntry (entryUuid, parentEntryUuid) {
+    async selectEntry(entryUuid, parentEntryUuid) {
 
         const params = [entryUuid];
         let query = '';
@@ -321,7 +324,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //get entries for a project
-    async selectEntries (projectRef, formRef, parentEntryUuid, order, limit, offset, filters, status) {
+    async selectEntries(projectRef, formRef, parentEntryUuid, order, limit, offset, filters, status) {
 
         let query = 'SELECT id, entry_uuid, title, synced, can_edit, is_remote, answers, created_at FROM entries WHERE project_ref = ?';
         const params = [projectRef];
@@ -399,7 +402,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //count entries unsynced for a project (entries + branch_entries)
-    async countEntriesUnsynced (projectRef) {
+    async countEntriesUnsynced(projectRef) {
         let query = 'SELECT SUM(total) as total from ( ';
         query += ' SELECT count(id) as total FROM entries ';
         query += ' WHERE project_ref = ? AND (synced = ? OR synced = ? OR synced = ? ) ';
@@ -421,7 +424,7 @@ export const databaseSelectService = {
 
         return await this.getRows(query, params);
     },
-    async countMediaUnsynced (projectRef) {
+    async countMediaUnsynced(projectRef) {
         const query = 'SELECT count(id) as total FROM media WHERE project_ref = ? AND (synced = ? OR synced = ?  OR synced = ?)';
         const params = [
             projectRef,
@@ -433,9 +436,9 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //Function to count entries for a project/form/parent entry uuid
-    async countEntries (projectRef, formRef, parentEntryUuid, filters, status) {
+    async countEntries(projectRef, formRef, parentEntryUuid, filters, status) {
 
-        let query = 'SELECT COUNT(*) as total, MAX(created_at) as newest, MIN(created_at) as oldest FROM entries WHERE project_ref = ?';
+        let query = 'SELCT COUNT(*) as total, MAX(created_at) as newest, MIN(created_at) as oldest FROM entries WHERE project_ref = ?';
         const params = [projectRef];
 
         if (formRef) {
@@ -482,7 +485,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //Function to get entries for a project
-    async selectBranchEntries (projectRef, formRef, ownerInputRef, order) {
+    async selectBranchEntries(projectRef, formRef, ownerInputRef, order) {
 
         const rootStore = useRootStore();
         let query = 'SELECT id, entry_uuid, title, synced, can_edit, answers FROM branch_entries WHERE project_ref = ?';
@@ -516,7 +519,7 @@ export const databaseSelectService = {
 
         return await this.getRows(query, params);
     },
-    async selectBranches (ownerEntryUuids) {
+    async selectBranches(ownerEntryUuids) {
 
         let query = '';
         query += 'SELECT ';
@@ -564,7 +567,7 @@ export const databaseSelectService = {
         }
         return await this.getRows(query, params);
     },
-    async selectTempBranches (ownerEntryUuid) {
+    async selectTempBranches(ownerEntryUuid) {
 
         const query = 'SELECT entry_uuid FROM temp_branch_entries WHERE owner_entry_uuid = ?';
         const params = [ownerEntryUuid];
@@ -572,7 +575,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //this select from both branch _entries and temp_branch_entries
-    async selectBranchesForQuestion (ownerEntryUuid, ownerInputRef, limit, offset, filters, status) {
+    async selectBranchesForQuestion(ownerEntryUuid, ownerInputRef, limit, offset, filters, status) {
 
         let query = '';
         const params = [ownerEntryUuid, ownerInputRef, ownerEntryUuid, ownerInputRef];
@@ -676,7 +679,7 @@ export const databaseSelectService = {
 
         return await this.getRows(query, params);
     },
-    async countBranchesForQuestion (ownerEntryUuid, ownerInputRef, filters, status) {
+    async countBranchesForQuestion(ownerEntryUuid, ownerInputRef, filters, status) {
 
         const params = [ownerEntryUuid, ownerInputRef, ownerEntryUuid, ownerInputRef];
         let query = '';
@@ -776,7 +779,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //Select all the media files belonging to an entry (hierarchy or branch)
-    async selectEntryMedia (projectRef, entryUuid) {
+    async selectEntryMedia(projectRef, entryUuid) {
 
         const dbStore = useDBStore();
         const query = 'SELECT file_name, input_ref, file_type, file_path, entry_uuid, branch_entry_uuid FROM media WHERE project_ref=? AND entry_uuid=?';
@@ -785,7 +788,7 @@ export const databaseSelectService = {
         const media = [];
 
         return new Promise((resolve, reject) => {
-            function _onError (error) {
+            function _onError(error) {
                 console.log(error);
                 reject();
             }
@@ -800,7 +803,7 @@ export const databaseSelectService = {
             }, _onError);
         });
     },
-    async selectEntryMediaErrors (entryUuids, limit) {
+    async selectEntryMediaErrors(entryUuids, limit) {
 
         let query = 'SELECT entry_uuid, input_ref, synced_error FROM media WHERE (entry_uuid=? ';
 
@@ -840,7 +843,7 @@ export const databaseSelectService = {
     * Count the media errors for branches passing the owner_input_ref
     * which is the ref of the branch
     */
-    async countCurrentBranchMediaErrors (owner_input_ref) {
+    async countCurrentBranchMediaErrors(owner_input_ref) {
 
         let query = 'SELECT count(*) as total, input_ref, synced_error FROM media WHERE input_ref LIKE "' + owner_input_ref + '%" ';
 
@@ -851,7 +854,7 @@ export const databaseSelectService = {
         return await this.getRows(query);
     },
     // Select all the media files belonging to a project, grouping them by file type i.e. audio, video, photo
-    async selectProjectMedia (options) {
+    async selectProjectMedia(options) {
 
         const dbStore = useDBStore();
         let query = 'SELECT * FROM media WHERE project_ref=? ';
@@ -875,7 +878,7 @@ export const databaseSelectService = {
 
         //return an object with an array per each file type
         return new Promise((resolve, reject) => {
-            function _onSuccess () {
+            function _onSuccess() {
                 resolve({
                     audios: audios,
                     photos: photos,
@@ -883,7 +886,7 @@ export const databaseSelectService = {
                 });
             }
 
-            function _onError (error) {
+            function _onError(error) {
                 console.log(error);
                 reject();
             }
@@ -908,7 +911,7 @@ export const databaseSelectService = {
         });
     },
     // Check if an answer is unique, Check against type of uniqueness
-    async isUnique (entry, inputDetails, answer) {
+    async isUnique(entry, inputDetails, answer) {
         // Check uniqueness against input_ref and answer (by default, 'form' uniqueness)
         // Ignoring a unique answer for the same entry_uuid
         // for DATE & TIME question type, the check is a LIKE %needle%
@@ -999,7 +1002,7 @@ export const databaseSelectService = {
     },
     //get saved answers, one at a time, for a form
     //imp: loaded one at a time to keep memory footprint low
-    async getSavedAnswers (projectRef, formRef, isBranch, offset) {
+    async getSavedAnswers(projectRef, formRef, isBranch, offset) {
 
         const table = isBranch ? 'branch_entries' : 'entries';
         const query = 'SELECT answers FROM ' + table + ' WHERE project_ref=? AND form_ref=? ORDER BY created_at DESC LIMIT ? OFFSET ' + offset;
@@ -1008,7 +1011,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //Retrieve all unique answers for an entry
-    async selectUniqueAnswers (entryUuid) {
+    async selectUniqueAnswers(entryUuid) {
         // Check uniqueness against input_ref and answer (by default, 'form' uniqueness)
         const query = 'SELECT answer FROM unique_answers WHERE entry_uuid=?';
         const params = [entryUuid];
@@ -1016,7 +1019,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //Retrieve parent entry uuid for an entry
-    async selectParentEntry (entryUuid) {
+    async selectParentEntry(entryUuid) {
 
         const query = 'SELECT parent_entry_uuid FROM entries WHERE entry_uuid=? LIMIT 1';
         const params = [entryUuid];
@@ -1024,7 +1027,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //Select bookmarks
-    async selectBookmarks () {
+    async selectBookmarks() {
 
         const query = 'Select * FROM bookmarks';
 
@@ -1035,7 +1038,7 @@ export const databaseSelectService = {
          * We also need to collect the branch entries for current entry and each child entry,
          * to delete any media: branch entries are delete directly passing the uuid as branch_owner_uuid
          */
-    async getHierarchyEntries (entryUuid) {
+    async getHierarchyEntries(entryUuid) {
 
         const self = this;
         let childIndex;
@@ -1048,7 +1051,7 @@ export const databaseSelectService = {
 
         return new Promise((resolve, reject) => {
 
-            function _select (entryUuids) {
+            function _select(entryUuids) {
 
                 //get all child entries and branch entries for the current child entry
                 //todo: test this response, migrating from $q
@@ -1104,7 +1107,7 @@ export const databaseSelectService = {
             _select([entryUuid]);
         });
     },
-    async selectChildEntries (entryUuids) {
+    async selectChildEntries(entryUuids) {
 
         //SELECT IN never worked, so concat passed array of uuids
         let query = 'SELECT entry_uuid FROM entries WHERE parent_entry_uuid=?';
@@ -1126,7 +1129,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //Get entries with errors
-    async selectErrorEntries (table, projectRef) {
+    async selectErrorEntries(table, projectRef) {
 
         switch (table) {
             case 'branch_entries':
@@ -1141,7 +1144,7 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
     //Get entries with errors
-    async selectInvalidEntries (table, projectRef) {
+    async selectInvalidEntries(table, projectRef) {
 
         switch (table) {
             case 'branch_entries':
@@ -1161,7 +1164,7 @@ export const databaseSelectService = {
     },
     //Function to get ownerInputRef with entries
     //useful to know only the branches that have entries
-    async selectDistinctBranchRefs (projectRef) {
+    async selectDistinctBranchRefs(projectRef) {
         const query = 'SELECT DISTINCT(owner_input_ref), form_ref FROM branch_entries WHERE project_ref = ?';
         const params = [projectRef];
         return await this.getRows(query, params);

@@ -1,15 +1,18 @@
 import { useDBStore } from '@/stores/db-store';
 import { PARAMETERS } from '@/config';
+import { projectModel } from '@/models/project-model.js';
+import * as Sentry from '@sentry/capacitor';
 
 export const databaseUpdateService = {
 
-    updateRows (query, params) {
+    updateRows(query, params) {
         const dbStore = useDBStore();
         return new Promise((resolve, reject) => {
 
-            function _onError (tx, error) {
+            function _onError(tx, error) {
                 console.log('*** ' + query + '--------------------***');
                 console.log(error);
+                Sentry.captureMessage('DB.US - ' + projectModel.getProjectName(), error);
                 reject(error);
             }
 
@@ -21,7 +24,7 @@ export const databaseUpdateService = {
         });
     },
 
-    async updateSynced (type, entryUuid, sync, syncedError) {
+    async updateSynced(type, entryUuid, sync, syncedError) {
 
         let table = 'entries';
         if (type === PARAMETERS.BRANCH_ENTRY) {
@@ -40,7 +43,7 @@ export const databaseUpdateService = {
 
         return await this.updateRows(query, params);
     },
-    async updateEntrySynced (entryUuid, sync, syncedError) {
+    async updateEntrySynced(entryUuid, sync, syncedError) {
 
         let query = 'UPDATE entries SET synced=?';
         const params = [sync];
@@ -55,7 +58,7 @@ export const databaseUpdateService = {
 
         return await this.updateRows(query, params);
     },
-    async updateBranchEntrySynced (entryUuid, sync, syncedError) {
+    async updateBranchEntrySynced(entryUuid, sync, syncedError) {
 
         let query = 'UPDATE branch_entries SET synced=?';
         const params = [sync];
@@ -70,7 +73,7 @@ export const databaseUpdateService = {
 
         return await this.updateRows(query, params);
     },
-    async updateFileEntrySynced (fileId, sync, syncedError) {
+    async updateFileEntrySynced(fileId, sync, syncedError) {
 
         let query = 'UPDATE media SET synced=?';
         const params = [sync];
@@ -91,7 +94,7 @@ export const databaseUpdateService = {
 
         return await this.updateRows(query, params);
     },
-    async updateFileEntryIncomplete (uuid) {
+    async updateFileEntryIncomplete(uuid) {
 
         let query = 'UPDATE media SET synced=?';
         const params = [PARAMETERS.SYNCED_CODES.UNSYNCED];
@@ -102,14 +105,14 @@ export const databaseUpdateService = {
         return await this.updateRows(query, params);
     },
     //Unsync all entries (that aren't incomplete)
-    async unsyncAllEntries (projectRef) {
+    async unsyncAllEntries(projectRef) {
 
         const query = 'UPDATE entries SET synced=?, synced_error=? WHERE project_ref=? AND synced <?';
         const params = [0, '', projectRef, PARAMETERS.SYNCED_CODES.INCOMPLETE];
 
         return await this.updateRows(query, params);
     },
-    async unsyncAllFileEntries (projectRef) {
+    async unsyncAllFileEntries(projectRef) {
 
         const query = 'UPDATE media SET synced=?, synced_error=? WHERE project_ref=?';
         const params = [0, '', projectRef];
@@ -120,7 +123,7 @@ export const databaseUpdateService = {
      * Synced status will actually be set to HAS_UNSYNCED_CHILD_ENTRIES if already synced
      * Otherwise ignored
      */
-    async unsyncParentEntry (projectRef, parentEntryUuid) {
+    async unsyncParentEntry(projectRef, parentEntryUuid) {
         // We only want to update the parent synced flag if it is SYNCED
         // All other statuses need to be resolved (incomplete, error) and if it is already UNSYNCED, we can ignore
         const query = 'UPDATE entries SET synced=?, synced_error=? WHERE project_ref=? AND entry_uuid=? AND synced =?';
@@ -128,7 +131,7 @@ export const databaseUpdateService = {
 
         return await this.updateRows(query, params);
     },
-    async unsyncAllBranchEntries (projectRef) {
+    async unsyncAllBranchEntries(projectRef) {
 
         const query = 'UPDATE branch_entries SET synced=?, synced_error=? WHERE project_ref=? AND synced <?';
         const params = [0, '', projectRef, PARAMETERS.SYNCED_CODES.INCOMPLETE];
@@ -136,7 +139,7 @@ export const databaseUpdateService = {
         return await this.updateRows(query, params);
     },
 
-    async updateProject (projectRef, jsonExtra, mapping, lastUpdated) {
+    async updateProject(projectRef, jsonExtra, mapping, lastUpdated) {
 
         const query = 'UPDATE projects SET json_extra=?, mapping=?, last_updated=? WHERE project_ref=?';
 
@@ -149,7 +152,7 @@ export const databaseUpdateService = {
         return await this.updateRows(query, params);
     },
 
-    async updateEntryAnswers (table, entryId, entryAnswers) {
+    async updateEntryAnswers(table, entryId, entryAnswers) {
 
         switch (table) {
             case PARAMETERS.BRANCH_ENTRIES_TABLE:

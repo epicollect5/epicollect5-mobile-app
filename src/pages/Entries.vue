@@ -184,8 +184,6 @@ import { utilsService } from '@/services/utilities/utils-service';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { entryService } from '@/services/entry/entry-service';
 import { locationService } from '@/services/utilities/location-cordova-service';
-import * as Sentry from '@sentry/capacitor';
-
 
 export default {
 	components: { ListEntries, ToolbarFormName },
@@ -234,30 +232,48 @@ export default {
 			let oldestDateISO;
 			let newestDateISO;
 
-			return new Promise((resolve) => {
+			return new Promise((resolve, reject) => {
 				(async () => {
 					//get count without filters to have the total reference in the UI
 					//i.e "Found 6/50 entries"
 					//imp: not the most optimised solution, for now it will do
-					const resultWithoutFilters = await databaseSelectService.countEntries(
-						scope.projectRef,
-						state.formRef,
-						state.parentEntryUuid,
-						PARAMETERS.FILTERS_DEFAULT,
-						PARAMETERS.STATUS.ALL
-					);
+					let resultWithoutFilters;
+					try {
+						resultWithoutFilters = await databaseSelectService.countEntries(
+							scope.projectRef,
+							state.formRef,
+							state.parentEntryUuid,
+							PARAMETERS.FILTERS_DEFAULT,
+							PARAMETERS.STATUS.ALL
+						);
+					} catch (error) {
+						reject(error);
+						notificationService.showAlert(
+							JSON.stringify(error),
+							STRINGS[rootStore.language].labels.unknown_error);
+						return false;
+					}
 
 					//set entries counter without any filter
-
 					state.countNoFilters = resultWithoutFilters.rows.item(0).total;
 
-					const result = await databaseSelectService.countEntries(
-						scope.projectRef,
-						state.formRef,
-						state.parentEntryUuid,
-						state.filters,
-						state.filters.status
-					);
+					let result;
+					try {
+						result = await databaseSelectService.countEntries(
+							scope.projectRef,
+							state.formRef,
+							state.parentEntryUuid,
+							state.filters,
+							state.filters.status
+						);
+					}
+					catch (error) {
+						notificationService.showAlert(
+							JSON.stringify(error),
+							STRINGS[rootStore.language].labels.unknown_error);
+						reject(error);
+						return false;
+					}
 
 					if (result.rows.length > 0) {
 						//any entries found?
@@ -351,7 +367,7 @@ export default {
 
 				_loadForm();
 
-				_updateEntriesFilterByDates().then(function (total) {
+				_updateEntriesFilterByDates().then((total) => {
 					console.log('Total unfiltered entries: ' + total);
 					//no entries at all yet so disable filters controls
 
@@ -381,11 +397,19 @@ export default {
 							}, PARAMETERS.DELAY_MEDIUM);
 						});
 					}, 0);
+				}, (error) => {
+					console.log(error);
+					state.isFetching = false;
+					setTimeout(function () {
+						notificationService.hideProgressDialog();
+						notificationService.showAlert(
+							JSON.stringify(error),
+							STRINGS[rootStore.language].labels.unknown_error);
+					}, PARAMETERS.DELAY_MEDIUM);
 				});
 			}
 
 			// Check if the project is not already loaded
-
 			console.log('project store ->', projectModel.getProjectRef());
 			if (!projectModel.hasInitialised()) {
 				const result = await databaseSelectService.selectProject(
@@ -399,7 +423,6 @@ export default {
 				_loadFormEntries();
 
 				// Check and update project version (background check) if needed
-
 				updateLocalProject(scope).then((updated) => {
 					if (updated) {
 						notificationService.hideProgressDialog();
@@ -415,12 +438,7 @@ export default {
 		onMounted(async () => {
 			console.log('Component Entries is mounted!');
 			// Retrieve the project and entries
-			try {
-				scope.getProjectAndEntries();
-			}
-			catch (error) {
-				Sentry.captureException(JSON.stringify(error));
-			}
+			scope.getProjectAndEntries();
 		});
 
 		const methods = {
@@ -440,9 +458,6 @@ export default {
 
 					router.replace({
 						name: PARAMETERS.ROUTES.PROJECTS
-						// query: {
-						// 	projectName: state.projectName
-						// }
 					});
 				} else {
 					// Remove last parent object from the history

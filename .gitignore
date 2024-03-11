@@ -48,3 +48,5 @@ ios/App/Epicollect5/env.xcconfig
 .env.local
 .nvmrc
 git-commits.csv
+# Sentry Config File
+.sentryclirc

@@ -1,6 +1,7 @@
 /* eslint-disable  no-fallthrough */
 import { useDBStore } from '@/stores/db-store';
 import { MIGRATIONS } from '@/config';
+import * as Sentry from '@sentry/capacitor';
 
 export const databaseMigrateService = {
 
@@ -13,6 +14,7 @@ export const databaseMigrateService = {
 
             function _onError(tx, error) {
                 console.log(tx, error);
+                Sentry.captureMessage('DB.MS', error);
                 reject(error);
             }
 

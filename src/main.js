@@ -287,18 +287,15 @@ export const app = createApp(App)
       rootStore.persistentDir = persistentDir;
       console.log('Device persistent directory ->  ', rootStore.persistentDir);
 
+      console.log(process.env.VUE_APP_SENTRY_DNS);
       Sentry.init({
-        dsn: process.env.SENTRY_DNS,
+        dsn: process.env.VUE_APP_SENTRY_DNS,
         enableNative: false,
-        release: rootStore.app.name + '@' + rootStore.app.version,
-        dist: rootStore.app.build,
-        tracesSampleRate: 1.0,
-        tracePropagationTargets: [
-          'localhost'
-        ]
-      }, // Forward the init method to the sibling Framework.
-        SentrySibling.init
-      );
+        // Set your release version, such as "getsentry@1.0.0"
+        release: rootStore.app.name + ' v ' + rootStore.app.version,
+        // Set your dist version, such as "1"
+        dist: rootStore.app.build
+      });
     }
 
     //set server URL

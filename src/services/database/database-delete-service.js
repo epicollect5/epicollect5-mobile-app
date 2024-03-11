@@ -1,16 +1,18 @@
 
 import { useDBStore } from '@/stores/db-store';
-
+import { projectModel } from '@/models/project-model.js';
+import * as Sentry from '@sentry/capacitor';
 
 export const databaseDeleteService = {
 
-    async deleteRowsFromMultipleTables (query, options, tables) {
+    async deleteRowsFromMultipleTables(query, options, tables) {
         const dbStore = useDBStore();
         return new Promise((resolve, reject) => {
 
-            function _onError (tx, error) {
+            function _onError(tx, error) {
                 console.log('*** ' + query + '--------------------***');
                 console.log(error);
+                Sentry.captureMessage('DB.DS - ' + projectModel.getProjectName(), error);
                 reject(error);
             }
 
@@ -53,11 +55,11 @@ export const databaseDeleteService = {
         });
     },
 
-    async deleteRows (query, params) {
+    async deleteRows(query, params) {
         const dbStore = useDBStore();
         return new Promise((resolve, reject) => {
 
-            function _onError (tx, error) {
+            function _onError(tx, error) {
                 console.log('*** ' + query + '--------------------***');
                 console.log(error);
                 reject(error);
@@ -71,7 +73,7 @@ export const databaseDeleteService = {
         });
     },
     //delete a project and all its entries
-    async deleteProject (projectRef) {
+    async deleteProject(projectRef) {
 
         const query = '';
         const tables = [
@@ -94,7 +96,7 @@ export const databaseDeleteService = {
         return await this.deleteRowsFromMultipleTables(query, options, tables);
     },
     //remove all entries for a project
-    async deleteEntries (projectRef) {
+    async deleteEntries(projectRef) {
 
         const query = '';
         const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'media', 'bookmarks'];
@@ -109,7 +111,7 @@ export const databaseDeleteService = {
     },
 
     //Function to remove all entries for the given array of forms
-    async deleteFormEntries (projectRef, formRefs) {
+    async deleteFormEntries(projectRef, formRefs) {
 
         const query = '';
         const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'media', 'bookmarks'];
@@ -122,7 +124,7 @@ export const databaseDeleteService = {
 
         return new Promise(function (resolve, reject) {
 
-            function _deleteFormEntries (formRef) {
+            function _deleteFormEntries(formRef) {
 
                 if (!formRef) {
                     console.log('no form refs left');
@@ -149,12 +151,12 @@ export const databaseDeleteService = {
         });
     },
 
-    async deleteSyncedEntries (projectRef) {
+    async deleteSyncedEntries(projectRef) {
         //todo: call deleteEntry recursively
     },
 
     //remove a single entry
-    async deleteEntry (entryUuid) {
+    async deleteEntry(entryUuid) {
 
         const dbStore = useDBStore();
         let query = '';
@@ -198,7 +200,7 @@ export const databaseDeleteService = {
     },
 
     //remove a single branch entry
-    async deleteBranchEntry (entryUuid) {
+    async deleteBranchEntry(entryUuid) {
 
         const query = '';
         const tables = ['branch_entries', 'temp_branch_entries', 'unique_answers', 'temp_unique_answers'];
@@ -212,14 +214,14 @@ export const databaseDeleteService = {
     },
 
     // Function to remove stored jwt
-    async deleteToken () {
+    async deleteToken() {
 
         const query = 'DELETE FROM users';
 
         return await this.deleteRows(query, []);
     },
 
-    async removeUniqueAnswers (entries) {
+    async removeUniqueAnswers(entries) {
 
         const dbStore = useDBStore();
 
@@ -271,21 +273,21 @@ export const databaseDeleteService = {
         });
     },
 
-    async deleteTempBranchEntries () {
+    async deleteTempBranchEntries() {
 
         const query = 'DELETE FROM temp_branch_entries';
 
         return await this.deleteRows(query, []);
     },
 
-    async deleteTempUniqueAnswers () {
+    async deleteTempUniqueAnswers() {
 
         const query = 'DELETE FROM temp_unique_answers';
 
         return await this.deleteRows(query, []);
     },
 
-    async deleteBookmark (bookmarkId) {
+    async deleteBookmark(bookmarkId) {
 
         const query = 'DELETE FROM bookmarks WHERE id=?';
         const params = [bookmarkId];
@@ -293,7 +295,7 @@ export const databaseDeleteService = {
         return await this.deleteRows(query, params);
     },
 
-    async deleteEntryMedia (entryUuid) {
+    async deleteEntryMedia(entryUuid) {
 
         const query = 'DELETE FROM media WHERE entry_uuid=?';
         const params = [entryUuid];
@@ -301,7 +303,7 @@ export const databaseDeleteService = {
         return await this.deleteRows(query, params);
     },
 
-    async deleteMediaFile (entryUuid, fileName) {
+    async deleteMediaFile(entryUuid, fileName) {
 
         const query = 'DELETE FROM media WHERE entry_uuid=? AND file_name=?';
         const params = [entryUuid, fileName];
@@ -309,7 +311,7 @@ export const databaseDeleteService = {
         return await this.deleteRows(query, params);
     },
 
-    async deleteMediaFiles (entryUuid, fileNames) {
+    async deleteMediaFiles(entryUuid, fileNames) {
 
         const query = 'DELETE FROM media WHERE entry_uuid=? AND file_name IN (' + fileNames.join(',') + ')';
         const params = [entryUuid];

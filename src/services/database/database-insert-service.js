@@ -1,6 +1,8 @@
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
+import { projectModel } from '@/models/project-model.js';
+import * as Sentry from '@sentry/capacitor';
 
 export const databaseInsertService = {
 
@@ -11,6 +13,7 @@ export const databaseInsertService = {
             function _onError(tx, error) {
                 console.log('*** ' + query + '--------------------***');
                 console.log(error);
+                Sentry.captureMessage('DB.IS - ' + projectModel.getProjectName(), error);
                 reject(error);
             }
 

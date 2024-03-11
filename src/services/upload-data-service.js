@@ -143,7 +143,7 @@ export const uploadDataService = {
                                                     });
                                             }
                                             catch (error) {
-                                                Sentry.captureException(JSON.stringify(error));
+                                                Sentry.captureException(error);
                                                 //reject (nothing passed,server default error)
                                                 reject();
                                             }
@@ -288,7 +288,7 @@ export const uploadDataService = {
                     }
                     else {
                         //response.data is null or undefined
-                        Sentry.captureException(JSON.stringify(errorResponse));
+                        Sentry.captureException(errorResponse);
                     }
 
                     // Check if we have an authentication error
@@ -310,7 +310,7 @@ export const uploadDataService = {
                             },
                             function (error) {
                                 console.log(error);
-                                Sentry.captureException(JSON.stringify(error));
+                                Sentry.captureException(error);
                                 reject();
                             });
                     }
