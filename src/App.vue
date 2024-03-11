@@ -7,11 +7,20 @@
 </template>
 
 <script>
+import { STRINGS } from '@/config/strings';
 import { IonApp, IonRouterOutlet } from '@ionic/vue';
 import { useRootStore } from '@/stores/root-store';
+import { useRouter } from 'vue-router';
 import { computed } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 import { onMounted } from 'vue';
+import { App as CapacitorApp } from '@capacitor/app'; // Alias the Capacitor App module as CapacitorApp
+import { addProject } from '@/use/add-project';
+import { utilsService } from '@/services/utilities/utils-service';
+import { webService } from '@/services/web-service';
+import { SplashScreen } from '@capacitor/splash-screen';
+import { notificationService } from '@/services/notification-service';
+import { errorsService } from '@/services/errors-service';
 
 export default {
 	name: 'App',
@@ -21,11 +30,83 @@ export default {
 	},
 	setup() {
 		const rootStore = useRootStore();
+		const router = useRouter();
 		const computedScope = {
 			needsDrawers: computed(() => {
 				return rootStore.device.platform !== PARAMETERS.PWA;
 			})
 		};
+
+		CapacitorApp.addListener('appUrlOpen', async (data) => {
+
+			await SplashScreen.hide();
+			router.replace({
+				name: PARAMETERS.ROUTES.PROJECTS_ADD,
+				query: { refresh: true }
+			});
+			await notificationService.showProgressDialog(
+				STRINGS[rootStore.language].labels.wait,
+				STRINGS[rootStore.language].labels.loading_project
+			);
+
+			console.log('App opened with URL:', data.url);
+
+			// Create a new URL object
+			const parsedUrl = new URL(data.url);
+			const pattern = /^https:\/\/(five|dev)\.epicollect\.net\/open\/project\/[^/]+\/?$/;
+
+			//check if the project url is a valid one
+			if (pattern.test(data.url)) {
+
+				// Get the pathname from the URL object
+				const pathname = parsedUrl.pathname;
+				// Split the pathname by '/'
+				const parts = pathname.split('/');
+				// Extract the last part
+				const projectSlug = parts[parts.length - 1];
+
+				if (projectSlug) {
+
+					const projectName = utilsService.inverseSlug(projectSlug);
+
+					webService.searchForProject(projectName)
+						.then((response) => {
+							const project = {
+								slug: response.data.data[0].project.slug,
+								name: response.data.data[0].project.name,
+								ref: response.data.data[0].project.ref
+							};
+							//try to load the project in
+							addProject(project, router);
+						}, (error) => {
+							errorsService.handleWebError(error);
+							// No projects?
+							try {
+								if (error?.data === null) {
+									// Show no projects found message
+									notificationService.showAlert(STRINGS[rootStore.language].labels.no_projects_found);
+								}
+							} catch (error) {
+								notificationService.showAlert(STRINGS[rootStore.language].labels.unknown_error);
+								alert(error);
+							}
+
+							//just launch app
+							router.replace({
+								name: PARAMETERS.ROUTES.PROJECTS,
+								query: { refresh: true }
+							});
+						});
+				}
+			}
+			else {
+				//otherwise just project list
+				router.replace({
+					name: PARAMETERS.ROUTES.PROJECTS,
+					query: { refresh: true }
+				});
+			}
+		});
 
 		onMounted(async () => {
 			console.log('App mounted');

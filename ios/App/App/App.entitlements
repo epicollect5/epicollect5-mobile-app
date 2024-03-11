@@ -6,5 +6,10 @@
 	<array>
 		<string>Default</string>
 	</array>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:five.epicollect.net</string>
+		<string>applinks:dev.epicollect.net</string>
+	</array>
 </dict>
 </plist>

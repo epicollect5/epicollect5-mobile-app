@@ -985,5 +985,10 @@ export const utilsService = {
                 }
             });
         });
+    },
+
+    inverseSlug(slug) {
+        // Replace hyphens with spaces using a regular expression
+        return slug.replace(/-/g, ' ');
     }
 };
