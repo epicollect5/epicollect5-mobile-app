@@ -17,6 +17,7 @@
 		<ion-content ref="drawerContent">
 			<ion-list>
 				<ion-item
+					button
 					data-test="upload-page"
 					@click="goToUploadPage()"
 				>
@@ -27,6 +28,7 @@
 					</ion-label>
 				</ion-item>
 				<ion-item
+					button
 					data-test="download-page"
 					@click="goToDownloadPage()"
 				>
@@ -36,6 +38,7 @@
 				</ion-item>
 
 				<ion-item
+					button
 					data-test="unsync-entries"
 					@click="unsyncAllEntries()"
 				>
@@ -53,6 +56,7 @@
 				</ion-item> -->
 
 				<ion-item
+					button
 					data-test="bookmark-add"
 					v-if="!isBookmarked"
 					@click="openModalBookmarkAdd()"
@@ -62,6 +66,7 @@
 					<ion-label data-translate="bookmark_page">&nbsp;{{ labels.bookmark_page }}</ion-label>
 				</ion-item>
 				<ion-item
+					button
 					data-test="bookmark-remove"
 					v-else
 					@click="removeBookmark()"
@@ -71,12 +76,31 @@
 					<ion-label data-translate="remove_bookmark">&nbsp;{{ labels.remove_bookmark }}</ion-label>
 				</ion-item>
 				<ion-item
+					button
 					data-test="project-info"
 					@click="showProjectInfo()"
 				>
 					<ion-icon :icon="informationCircle">
 					</ion-icon>
 					<ion-label data-translate="project_info">&nbsp;{{ labels.project_info }}</ion-label>
+				</ion-item>
+				<ion-item
+					button
+					data-test="project-info"
+					@click="editRemoteEntries()"
+				>
+					<ion-icon :icon="desktopOutline">
+					</ion-icon>
+					<ion-label data-translate="edit_remote_entries">&nbsp;{{ labels.edit_remote_entries }}</ion-label>
+				</ion-item>
+				<ion-item
+					button
+					data-test="project-info"
+					@click="invite()"
+				>
+					<ion-icon :icon="people">
+					</ion-icon>
+					<ion-label data-translate="edit_remote_entries">&nbsp;{{ labels.invite }}</ion-label>
 				</ion-item>
 				<ion-item-divider
 					color="primary"
@@ -90,6 +114,7 @@
 					</ion-label>
 				</ion-item-divider>
 				<ion-item
+					button
 					data-test="sort-by-az"
 					@click="sortBy('title', 'ASC')"
 				>
@@ -104,6 +129,7 @@
 					</ion-icon>
 				</ion-item>
 				<ion-item
+					button
 					data-test="sort-by-za"
 					@click="sortBy('title', 'DESC')"
 				>
@@ -118,6 +144,7 @@
 					</ion-icon>
 				</ion-item>
 				<ion-item
+					button
 					data-test="sort-by-newest"
 					@click="sortBy('created_at', 'DESC')"
 				>
@@ -132,6 +159,7 @@
 					</ion-icon>
 				</ion-item>
 				<ion-item
+					button
 					data-test="sort-by-oldest"
 					@click="sortBy('created_at', 'ASC')"
 				>
@@ -157,6 +185,7 @@
 					</ion-label>
 				</ion-item-divider>
 				<ion-item
+					button
 					data-test="delete-entries"
 					@click="deleteEntries()"
 				>
@@ -173,6 +202,7 @@
 					</ion-label>
 				</ion-item>
 				<ion-item
+					button
 					data-test="delete-project"
 					@click="deleteProject()"
 				>
@@ -199,6 +229,8 @@ import { useDBStore } from '@/stores/db-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { STRINGS } from '@/config/strings';
 import { utilsService } from '@/services/utilities/utils-service';
+import { Share } from '@capacitor/share';
+
 import {
 	cloudUpload,
 	cloudDownload,
@@ -206,10 +238,13 @@ import {
 	bookmark,
 	informationCircle,
 	trash,
+	people,
 	checkmark,
 	arrowUpCircle,
 	arrowDownCircle,
-	timeOutline
+	timeOutline,
+	logoChrome,
+	desktopOutline
 } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { PARAMETERS } from '@/config';
@@ -337,6 +372,20 @@ export default {
 
 				return scope.ModalProjectInfo.present();
 			},
+
+			async editRemoteEntries() {
+				const slug = projectModel.getSlug();
+				const datapage = rootStore.serverUrl + PARAMETERS.API.ROUTES.PROJECT + slug + '/data';
+
+				const hasInternetConnection = await utilsService.hasInternetConnection();
+				if (!hasInternetConnection) {
+					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
+					state.isFetching = false;
+					return;
+				}
+				window.open(datapage, '_system', 'location=yes');
+			},
+
 			async sortBy(field, sortType) {
 				const dbStore = useDBStore();
 				// Sanitise the field and sort type, as they will be used in db queries
@@ -425,6 +474,14 @@ export default {
 					name: PARAMETERS.ROUTES.ENTRIES_UPLOAD
 				});
 				menuController.close();
+			},
+			invite() {
+				Share.share({
+					title: 'Join ' + projectModel.getProjectName() + ' on Epicollect5',
+					text: 'Tap the link on your Android or iOS device to join',
+					url: rootStore.serverUrl + '/open/project/' + projectModel.getSlug(),
+					dialogTitle: 'Join ' + projectModel.getProjectName() + ' on Epicollect5'
+				});
 			}
 		};
 
@@ -442,10 +499,13 @@ export default {
 			bookmark,
 			informationCircle,
 			trash,
+			people,
 			checkmark,
 			arrowUpCircle,
 			arrowDownCircle,
-			timeOutline
+			timeOutline,
+			logoChrome,
+			desktopOutline
 			//*****************
 		};
 	}
