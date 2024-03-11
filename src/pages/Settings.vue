@@ -200,8 +200,10 @@ export default {
 					switch (key) {
 						case PARAMETERS.SETTINGS_KEYS.SERVER_URL:
 							try {
-								await databaseInsertService.insertSetting(key, state.serverUrl);
-								rootStore.serverUrl = state.serverUrl;
+								// Remove trailing slash
+								const trimmedUrl = state.serverUrl.replace(/\/$/, '');
+								await databaseInsertService.insertSetting(key, trimmedUrl);
+								rootStore.serverUrl = trimmedUrl;
 							} catch (error) {
 								console.log(error);
 								failed = true;
