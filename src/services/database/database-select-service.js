@@ -438,7 +438,7 @@ export const databaseSelectService = {
     //Function to count entries for a project/form/parent entry uuid
     async countEntries(projectRef, formRef, parentEntryUuid, filters, status) {
 
-        let query = 'SELCT COUNT(*) as total, MAX(created_at) as newest, MIN(created_at) as oldest FROM entries WHERE project_ref = ?';
+        let query = 'SELECT COUNT(*) as total, MAX(created_at) as newest, MIN(created_at) as oldest FROM entries WHERE project_ref = ?';
         const params = [projectRef];
 
         if (formRef) {
