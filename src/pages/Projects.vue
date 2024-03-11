@@ -1,39 +1,53 @@
 <template>
-	<base-layout title=""
-				 :class="state.zoom"
-				 v-show="state.show">
+	<base-layout
+		title=""
+		:class="state.zoom"
+		v-show="state.show"
+	>
 		<template #actions-start>
 			<ion-menu-button></ion-menu-button>
 		</template>
 
 		<template #actions-end>
-			<ion-button fill="clear"
-						@click="addProject()">
-				<ion-icon slot="start"
-						  :icon="add"></ion-icon>
+			<ion-button
+				fill="clear"
+				@click="addProject()"
+			>
+				<ion-icon
+					slot="start"
+					:icon="add"
+				></ion-icon>
 				{{ labels.add_project }}
 			</ion-button>
 		</template>
 
 		<template #subheader>
 			<ion-toolbar color="dark">
-				<ion-title size="small"
-						   class="ion-text-center ion-text-uppercase">{{ labels.projects }}</ion-title>
+				<ion-title
+					size="small"
+					class="ion-text-center ion-text-uppercase"
+				>{{ labels.projects }}</ion-title>
 			</ion-toolbar>
 		</template>
 
 		<template #content>
-			<ion-spinner v-if="state.isFetching"
-						 class="loader"
-						 name="crescent"></ion-spinner>
+			<ion-spinner
+				v-if="state.isFetching"
+				class="loader"
+				name="crescent"
+			></ion-spinner>
 
 			<div v-else>
-				<div v-show="!state.isFetching && state.projects.length > 0"
-					 class="projects-list">
+				<div
+					v-show="!state.isFetching && state.projects.length > 0"
+					class="projects-list"
+				>
 					<ion-list lines="none">
-						<list-item-projects :projects="state.projects"
-											page="projects"
-											@project-selected="onProjectSelected"></list-item-projects>
+						<list-item-projects
+							:projects="state.projects"
+							page="projects"
+							@project-selected="onProjectSelected"
+						></list-item-projects>
 					</ion-list>
 				</div>
 				<div v-show="!state.isFetching && state.projects.length === 0">
@@ -67,7 +81,7 @@ export default {
 	components: {
 		ListItemProjects
 	},
-	setup () {
+	setup() {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -87,14 +101,14 @@ export default {
 		});
 
 		const methods = {
-			addProject () {
+			addProject() {
 				console.log('should open add project page');
 				router.replace({
-					name: 'projects-add'
+					name: PARAMETERS.ROUTES.PROJECTS_ADD
 				});
 			},
 
-			async onProjectSelected (project) {
+			async onProjectSelected(project) {
 				//set route parameters
 				rootStore.routeParams = {
 					projectRef: project.ref,

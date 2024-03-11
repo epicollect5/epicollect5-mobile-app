@@ -6,12 +6,16 @@
 		</template>
 
 		<template #subheader>
-			<ion-toolbar color="dark"
-						 mode="md">
+			<ion-toolbar
+				color="dark"
+				mode="md"
+			>
 				<ion-buttons slot="start">
 					<ion-button @click="goToProjectsList()">
-						<ion-icon slot="start"
-								  :icon="chevronBackOutline">
+						<ion-icon
+							slot="start"
+							:icon="chevronBackOutline"
+						>
 						</ion-icon>
 						{{ labels.projects }}
 					</ion-button>
@@ -20,25 +24,37 @@
 		</template>
 
 		<template #content>
-			<ion-searchbar animated
-						   debounce="500"
-						   :placeholder="labels.search_for_project"
-						   @ionInput="fetchProjects"></ion-searchbar>
+			<ion-searchbar
+				animated
+				debounce="500"
+				:placeholder="labels.search_for_project"
+				@ionInput="fetchProjects"
+			></ion-searchbar>
 
-			<div v-if="state.isFetching"
-				 class="ion-text-center ion-margin">
-				<ion-spinner class="spinner-fetch-projects "
-							 name="crescent"></ion-spinner>
+			<div
+				v-if="state.isFetching"
+				class="ion-text-center ion-margin"
+			>
+				<ion-spinner
+					class="spinner-fetch-projects "
+					name="crescent"
+				></ion-spinner>
 			</div>
 
-			<div v-else
-				 class="animate__animated animate__fadeIn">
-				<div v-show="!state.isFetching && state.projects.length > 0"
-					 class="projects-list">
+			<div
+				v-else
+				class="animate__animated animate__fadeIn"
+			>
+				<div
+					v-show="!state.isFetching && state.projects.length > 0"
+					class="projects-list"
+				>
 					<ion-list lines="none">
-						<list-item-projects :projects="state.projects"
-											page="add-project"
-											@project-selected="onProjectSelected"></list-item-projects>
+						<list-item-projects
+							:projects="state.projects"
+							page="add-project"
+							@project-selected="onProjectSelected"
+						></list-item-projects>
 					</ion-list>
 				</div>
 				<div v-show="!state.isFetching && state.projects.length === 0 && state.searchTerm !== ''">
@@ -57,6 +73,7 @@
 import ListItemProjects from '@/components/ListItemProjects';
 import { chevronBackOutline } from 'ionicons/icons';
 import { reactive, readonly } from '@vue/reactivity';
+import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { useRouter } from 'vue-router';
@@ -71,7 +88,7 @@ export default {
 	components: {
 		ListItemProjects
 	},
-	setup () {
+	setup() {
 		const rootStore = useRootStore();
 		const router = useRouter();
 		const state = reactive({
@@ -82,15 +99,15 @@ export default {
 
 		const methods = {
 			//redirect to projects list
-			goToProjectsList () {
+			goToProjectsList() {
 				router.replace({
-					name: 'projects'
+					name: PARAMETERS.ROUTES.PROJECTS
 				});
 			},
-			onProjectSelected (project) {
+			onProjectSelected(project) {
 				addProject(project, router);
 			},
-			async fetchProjects (e) {
+			async fetchProjects(e) {
 				state.searchTerm = e.target.value.trimStart();
 
 				//search string too short, bail out
