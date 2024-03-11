@@ -8,7 +8,7 @@
 				size-lg="11"
 				size-xl="11"
 			>
-				<div class="">{{questionText}}</div>
+				<div class="">{{ questionText }}</div>
 			</ion-col>
 			<ion-col
 				size-xs="2"
@@ -73,6 +73,8 @@ export default {
 				switch (action) {
 					case 'media':
 						return ellipsisVertical;
+					case 'location':
+						return ellipsisVertical;
 					case 'search':
 						return search;
 					case 'filter':
@@ -96,5 +98,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

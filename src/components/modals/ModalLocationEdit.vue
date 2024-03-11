@@ -16,7 +16,10 @@
 					{{ labels.format }}:&nbsp;lat, long</ion-card-subtitle>
 			</ion-card-header>
 			<ion-card-content class="ion-text-center">
-				<ion-item fill="outline">
+				<ion-item
+					lines="none"
+					class="item-question-location-edit"
+				>
 					<ion-input
 						inputmode="text"
 						class="question-input"
@@ -47,7 +50,7 @@
 </template>
 
 <script>
-import { closeOutline, locate } from 'ionicons/icons';
+import { closeOutline, locate, mapSharp } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
@@ -104,7 +107,8 @@ export default {
 			...methods,
 			//icons
 			closeOutline,
-			locate
+			locate,
+			mapSharp
 		};
 	}
 };
