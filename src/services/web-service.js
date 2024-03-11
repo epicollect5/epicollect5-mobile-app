@@ -91,7 +91,6 @@ export const webService = {
 
         return new Promise(function (resolve, reject) {
             // Attempt to retrieve the jwt token
-            console.log('api projects endpoint: ', self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.PROJECTS + searchTerm);
 
             self.getHeaders().then(function (headers) {
                 axios({

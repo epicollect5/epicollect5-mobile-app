@@ -16,8 +16,8 @@
     "preferences": {
       "webviewbounce": "false",
       "DisallowOverscroll": "true",
-      "android-minSdkVersion": "21",
-      "android-targetSdkVersion": "30",
+      "android-minSdkVersion": "29",
+      "android-targetSdkVersion": "33",
       "BackupWebStorage": "none",
       "ShowSplashScreenSpinner": "false",
       "AutoHideSplashScreen": "false",

@@ -9,7 +9,7 @@ export const PARAMETERS = {
     // url production
     DEFAULT_SERVER_URL: 'https://five.epicollect.net',
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',
-    HOW_MANY_ENTRIES: 5,
+    HOW_MANY_ENTRIES: 2000,
     HOW_MANY_BRANCH_ENTRIES: 2,
     ZOOM_LEVELS: 7,
     DEFAULT_LANGUAGE: 'en',
@@ -97,6 +97,12 @@ export const PARAMETERS = {
             GOOGLE_CODE: 'code',
             DATA_VIEWER_RESTORE_QUERY_STRING: '?restore=1'
         }
+    },
+
+    MAPS_ENDPOINT: {
+        OM: 'https://omaps.app/map?v=1&ll=',
+        GM: 'https://www.google.com/maps?q=',
+        HM: 'https://share.here.com/l/'
     },
 
     PHOTO_EXT: '.jpg',
