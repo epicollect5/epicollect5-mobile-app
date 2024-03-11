@@ -184,6 +184,7 @@ import { utilsService } from '@/services/utilities/utils-service';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { entryService } from '@/services/entry/entry-service';
 import { locationService } from '@/services/utilities/location-cordova-service';
+import * as Sentry from '@sentry/capacitor';
 
 
 export default {
@@ -414,7 +415,12 @@ export default {
 		onMounted(async () => {
 			console.log('Component Entries is mounted!');
 			// Retrieve the project and entries
-			scope.getProjectAndEntries();
+			try {
+				scope.getProjectAndEntries();
+			}
+			catch (error) {
+				Sentry.captureException(JSON.stringify(error));
+			}
 		});
 
 		const methods = {

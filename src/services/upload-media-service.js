@@ -17,14 +17,14 @@ export const uploadMediaService = {
     // 'Uncaught SyntaxError: Unexpected token u'
 
     //Function to upload media
-    execute (files, total, currentEntryIndex) {
+    execute(files, total, currentEntryIndex) {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
         let jwt;
 
         //update progress counter
-        function _updateProgress (count) {
+        function _updateProgress(count) {
             count ? currentEntryIndex += count : currentEntryIndex++;
             notificationService.setProgress({ total, done: currentEntryIndex });
         }
@@ -53,7 +53,7 @@ export const uploadMediaService = {
                     }]
                 };
 
-                function _uploadOneFile (file, total, currentEntryIndex) {
+                function _uploadOneFile(file, total, currentEntryIndex) {
 
                     let media_dir;
 
@@ -72,7 +72,7 @@ export const uploadMediaService = {
                         //do nothing
                     }
 
-                    function _onSuccess (r) {
+                    function _onSuccess(r) {
                         console.log('Code = ' + r.responseCode);
                         console.log('Response = ' + r.response);
                         console.log('Sent = ' + r.bytesSent);
@@ -89,7 +89,7 @@ export const uploadMediaService = {
                         }
                     }
 
-                    function _onError (error) {
+                    function _onError(error) {
                         console.log(error);
                         notificationService.hideProgressDialog();
                         // Store reference to this error
@@ -111,6 +111,8 @@ export const uploadMediaService = {
                                             }
                                         });
                                         return false;
+                                    } else {
+                                        reject({ data: errorObj });
                                     }
                                 }
                                 catch (e) {
@@ -140,7 +142,7 @@ export const uploadMediaService = {
                         }
                     }
 
-                    function _uploadNext (synced, error) {
+                    function _uploadNext(synced, error) {
                         // Update synced via main entry_uuid column
                         databaseUpdateService.updateFileEntrySynced(file.id, synced, error).then(function (res) {
                             console.log('Syncing');

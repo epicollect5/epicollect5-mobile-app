@@ -18,6 +18,10 @@ import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { initService } from '@/services/init-service';
 import { webService } from '@/services/web-service';
 import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
+import { Directory } from '@capacitor/filesystem';
+
+import * as Sentry from '@sentry/capacitor';
+import * as SentrySibling from '@sentry/vue';
 
 /* Basic CSS for apps built with Ionic */
 import '@ionic/vue/css/normalize.css';
@@ -54,6 +58,8 @@ import { persistentDirsService } from '@/services/filesystem/persistent-dirs-ser
 import { createDatabaseService } from '@/services/database/database-create-service';
 import { PARAMETERS } from '@/config';
 import * as IonComponents from '@ionic/vue';
+import { App as CapacitorApp } from '@capacitor/app'; // Alias the Capacitor App module as CapacitorApp
+import { addProject } from '@/use/add-project';
 //import '@/registerServiceWorker';
 
 const pinia = createPinia();
@@ -280,6 +286,19 @@ export const app = createApp(App)
       const persistentDir = await persistentDirsService.execute();
       rootStore.persistentDir = persistentDir;
       console.log('Device persistent directory ->  ', rootStore.persistentDir);
+
+      Sentry.init({
+        dsn: process.env.SENTRY_DNS,
+        enableNative: false,
+        release: rootStore.app.name + '@' + rootStore.app.version,
+        dist: rootStore.app.build,
+        tracesSampleRate: 1.0,
+        tracePropagationTargets: [
+          'localhost'
+        ]
+      }, // Forward the init method to the sibling Framework.
+        SentrySibling.init
+      );
     }
 
     //set server URL

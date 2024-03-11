@@ -1,6 +1,6 @@
 {
   "name": "uk.ac.imperial.epicollect.five",
-  "version": "5.1.0",
+  "version": "5.3.0",
   "private": true,
   "description": "Free and easy-to-use mobile data-gathering platform",
   "scripts": {
@@ -57,6 +57,9 @@
     "@ionic/core": "^7.0.13",
     "@ionic/vue": "^7.0.13",
     "@ionic/vue-router": "^7.0.13",
+    "@sentry/browser": "^7.106.0",
+    "@sentry/capacitor": "^0.16.0",
+    "@sentry/vue": "^7.93.0",
     "axios": "^1.2.2",
     "cordova-plugin-file": "^6.0.2",
     "cordova-plugin-file-transfer": "git+https://github.com/sitewaerts/cordova-plugin-file-transfer.git",

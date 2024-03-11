@@ -7,6 +7,7 @@ import { databaseUpdateService } from '@/services/database/database-update-servi
 import { notificationService } from '@/services/notification-service';
 import { webService } from '@/services/web-service';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
+import * as Sentry from '@sentry/capacitor';
 
 export const uploadDataService = {
 
@@ -124,7 +125,7 @@ export const uploadDataService = {
                                                 reject();
                                             }
                                             try {
-                                                _uploadError(PARAMETERS.ENTRY, response.data, res.rows.item(0).entry_uuid).then(
+                                                _uploadError(PARAMETERS.ENTRY, response, res.rows.item(0).entry_uuid).then(
                                                     function () {
                                                         _updateProgress();
                                                         // Continue - try to upload the next child
@@ -142,6 +143,7 @@ export const uploadDataService = {
                                                     });
                                             }
                                             catch (error) {
+                                                Sentry.captureException(JSON.stringify(error));
                                                 //reject (nothing passed,server default error)
                                                 reject();
                                             }
@@ -224,7 +226,7 @@ export const uploadDataService = {
                                     }, function (response) {
 
                                         //catch drop connection error here
-                                        _uploadError(PARAMETERS.BRANCH_ENTRY, response.data, res.rows.item(0).entry_uuid).then(
+                                        _uploadError(PARAMETERS.BRANCH_ENTRY, response, res.rows.item(0).entry_uuid).then(
                                             function () {
 
 
@@ -281,8 +283,12 @@ export const uploadDataService = {
 
                 return new Promise(function (resolve, reject) {
 
-                    if (errorResponse) {
+                    if (errorResponse.data) {
                         errorObj = errorResponse;
+                    }
+                    else {
+                        //response.data is null or undefined
+                        Sentry.captureException(JSON.stringify(errorResponse));
                     }
 
                     // Check if we have an authentication error
@@ -292,7 +298,7 @@ export const uploadDataService = {
                         // Don't show error text
                         errors = false;
                         // Send back the error code
-                        reject({ data: errorResponse });
+                        reject({ data: errorResponse.data });
 
                     } else {
 
@@ -300,16 +306,15 @@ export const uploadDataService = {
                         databaseUpdateService.updateSynced(type, entryUuid, PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR, errorObj).then(
                             function () {
                                 console.log('Syncing error');
-
                                 resolve();
                             },
                             function (error) {
                                 console.log(error);
+                                Sentry.captureException(JSON.stringify(error));
                                 reject();
                             });
                     }
                 });
-
             }
             // Start upload from parent form
             _uploadEntry(topLevelFormRef);
