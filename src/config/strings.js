@@ -1,6 +1,10 @@
 export const STRINGS = {
     en: {
         labels: {
+            view_on: 'View on',
+            edit: 'Edit',
+            invite: 'Invite',
+            edit_remote_entries: 'Edit Remote Entries',
             bookmarks_loading_error: 'Error loading bookmarks',
             account_email_confirm_before: 'Please confirm you would like the account with email',
             account_email_confirm_after: 'to be removed from our systems.',
@@ -233,6 +237,10 @@ export const STRINGS = {
     },
     it: {
         labels: {
+            view_on: 'Apri con',
+            edit: 'Modifica',
+            invite: 'Invita',
+            edit_remote_entries: 'Modifica voci remote',
             bookmarks_loading_error: 'Errore caricando bookmarks',
             account_email_confirm_before: 'Confermare che l\'account con email',
             account_email_confirm_after: 'richiede di essere cancellato dai nostri sistemi',
@@ -465,6 +473,10 @@ export const STRINGS = {
     },
     es: {
         labels: {
+            view_on: 'Ver en',
+            edit: 'Editar',
+            invite: 'Invitar',
+            edit_remote_entries: 'Editar entradas remotas',
             bookmarks_loading_error: 'Error al cargar bookmarks',
             account_email_confirm_before: 'Por favor, confirme que desea la cuenta con correo electrónico.',
             account_email_confirm_after: 'ser eliminado de nuestros sistemas.',
@@ -697,6 +709,10 @@ export const STRINGS = {
     },
     fr: {
         labels: {
+            view_on: 'Afficher sur',
+            edit: 'Modifier',
+            invite: 'Inviter',
+            edit_remote_entries: 'Modifier web entrées',
             bookmarks_loading_error: 'Erreur lors du chargement bookmarks',
             account_email_confirm_before: 'Veuillez confirmer que vous souhaitez le compte avec e-mail',
             account_email_confirm_after: 'à supprimer de nos systèmes.',
@@ -929,6 +945,10 @@ export const STRINGS = {
     },
     pl: {
         labels: {
+            view_on: 'Wyświetl włączone',
+            edit: 'Edytuj',
+            invite: 'Zaproś',
+            edit_remote_entries: 'Edytuj wpisy zdalne',
             bookmarks_loading_error: 'Błąd ładowania bookmarks',
             account_email_confirm_before: 'Potwierdź, że chcesz konto z e-mailem',
             account_email_confirm_after: 'zostać usunięte z naszych systemów.',
@@ -1161,6 +1181,10 @@ export const STRINGS = {
     },
     pt: {
         labels: {
+            view_on: 'Abrir em',
+            edit: 'Editar',
+            invite: 'Convidar',
+            edit_remote_entries: 'Editar entradas remotas',
             account_email_confirm_before: 'Por favor, confirme se deseja a conta com e-mail',
             account_email_confirm_after: 'a ser removido de nossos sistemas.',
             account_deletion_team_will_contact: 'A Equipe Epicollect5 entrará em contato com você sobre o andamento da exclusão da conta.',
