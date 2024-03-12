@@ -93,15 +93,15 @@
 					</ion-icon>
 					<ion-label data-translate="edit_remote_entries">&nbsp;{{ labels.edit_remote_entries }}</ion-label>
 				</ion-item>
-				<ion-item
+				<!-- <ion-item
 					button
-					data-test="project-info"
+					data-test="invite"
 					@click="invite()"
 				>
 					<ion-icon :icon="people">
 					</ion-icon>
-					<ion-label data-translate="edit_remote_entries">&nbsp;{{ labels.invite }}</ion-label>
-				</ion-item>
+					<ion-label data-translate="invite">&nbsp;{{ labels.invite }}</ion-label>
+				</ion-item> -->
 				<ion-item-divider
 					color="primary"
 					class="ion-no-padding"
@@ -512,4 +512,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>
