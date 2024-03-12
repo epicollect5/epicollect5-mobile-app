@@ -1,7 +1,5 @@
 import { useDBStore } from '@/stores/db-store';
 import { PARAMETERS } from '@/config';
-import { projectModel } from '@/models/project-model.js';
-import * as Sentry from '@sentry/capacitor';
 
 export const databaseUpdateService = {
 
@@ -12,7 +10,6 @@ export const databaseUpdateService = {
             function _onError(tx, error) {
                 console.log('*** ' + query + '--------------------***');
                 console.log(error);
-                Sentry.captureMessage('DB.US - ' + projectModel.getProjectName(), error);
                 reject(error);
             }
 

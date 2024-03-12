@@ -27,10 +27,9 @@
     "vitest-ui": "vitest --ui",
     "vitest": "vitest",
     "web": "export VUE_APP_MODE=WEB && ionic serve --no-open --external",
-    "pwa": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG=1 && ionic serve --no-open -p 1234",
+    "pwa": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG=1 && ionic serve --no-open -p 1234 --external",
     "pwa-build-prod": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG= && VUE_APP_BYPASS_UNIQUENESS= && ionic build",
-    "pwa-build-dev": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG=1 && ionic build",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org cgps-group --project epicollect5-mobile-app ./dist && sentry-cli sourcemaps upload --org cgps-group --project epicollect5-mobile-app ./dist"
+    "pwa-build-dev": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG=1 && ionic build"
   },
   "dependencies": {
     "@awesome-cordova-plugins/wheel-selector": "^5.44.0",
@@ -58,10 +57,6 @@
     "@ionic/core": "^7.0.13",
     "@ionic/vue": "^7.0.13",
     "@ionic/vue-router": "^7.0.13",
-    "@sentry/browser": "^7.106.0",
-    "@sentry/capacitor": "^0.16.0",
-    "@sentry/cli": "^2.30.0",
-    "@sentry/vue": "^7.93.0",
     "axios": "^1.2.2",
     "cordova-plugin-file": "^6.0.2",
     "cordova-plugin-file-transfer": "git+https://github.com/sitewaerts/cordova-plugin-file-transfer.git",
@@ -86,6 +81,7 @@
     "pinia-logger": "^1.3.12",
     "proj4": "^2.8.0",
     "register-service-worker": "^1.7.2",
+    "rollbar": "^2.26.3",
     "slugify": "^1.6.5",
     "swiper": "^8.4.6",
     "uuid": "^8.3.2",

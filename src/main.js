@@ -18,10 +18,6 @@ import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { initService } from '@/services/init-service';
 import { webService } from '@/services/web-service';
 import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
-import { Directory } from '@capacitor/filesystem';
-
-import * as Sentry from '@sentry/capacitor';
-import * as SentrySibling from '@sentry/vue';
 
 /* Basic CSS for apps built with Ionic */
 import '@ionic/vue/css/normalize.css';
@@ -58,15 +54,15 @@ import { persistentDirsService } from '@/services/filesystem/persistent-dirs-ser
 import { createDatabaseService } from '@/services/database/database-create-service';
 import { PARAMETERS } from '@/config';
 import * as IonComponents from '@ionic/vue';
-import { App as CapacitorApp } from '@capacitor/app'; // Alias the Capacitor App module as CapacitorApp
-import { addProject } from '@/use/add-project';
 //import '@/registerServiceWorker';
+import rollbarService from '@/services/utilities/rollbar-service';
 
 const pinia = createPinia();
 pinia.use(PiniaLogger({
   expanded: true,
   disabled: process.env.NODE_ENV === 'production'
 }));
+
 
 export const app = createApp(App)
   .use(IonicVue, {
@@ -286,16 +282,6 @@ export const app = createApp(App)
       const persistentDir = await persistentDirsService.execute();
       rootStore.persistentDir = persistentDir;
       console.log('Device persistent directory ->  ', rootStore.persistentDir);
-
-      console.log(process.env.VUE_APP_SENTRY_DNS);
-      Sentry.init({
-        dsn: process.env.VUE_APP_SENTRY_DNS,
-        enableNative: false,
-        // Set your release version, such as "getsentry@1.0.0"
-        release: rootStore.app.name + ' v ' + rootStore.app.version,
-        // Set your dist version, such as "1"
-        dist: rootStore.app.build
-      });
     }
 
     //set server URL
@@ -355,12 +341,34 @@ export const app = createApp(App)
   //mount app
   router.isReady().then(() => {
 
+    console.log(process.env.VUE_APP_ROLLBAR_TOKEN);
+    //set rollbar version for payloads
+    // For example, to change the environment:
+    const transformer = function (payload) {
+      payload.client = {
+        javascript: {
+          code_version: rootStore.app.version
+        }
+      };
+    };
+    rollbarService.configure({ transform: transformer });
+
+    debugger;
+    if (!Capacitor.DEBUG) {
+      app.use(rollbarService);
+    }
+    else {
+      rollbarService.configure({ enabled: false });
+    }
+
+
     console.log('mounting app');
     app.mount('#app');
 
     if (!rootStore.isPWA) {
       setTimeout(async () => {
         await SplashScreen.hide();
+        alert(Capacitor.DEBUG);
       }, PARAMETERS.DELAY_EXTRA_LONG
       );
     }

@@ -1,5 +1,4 @@
 import { MIGRATIONS } from '@/config';
-import * as Sentry from '@sentry/capacitor';
 
 /**
  * Create database tables
@@ -11,7 +10,6 @@ export const createDatabaseService = {
 
             const _onError = (error) => {
                 console.log(error);
-                Sentry.captureMessage('DB.CS', error);
                 reject(error);
             };
 

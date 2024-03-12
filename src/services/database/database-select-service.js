@@ -2,7 +2,6 @@ import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
-import * as Sentry from '@sentry/capacitor';
 
 export const databaseSelectService = {
 
@@ -13,7 +12,6 @@ export const databaseSelectService = {
             function _onError(tx, error) {
                 console.log('*** ' + query + '--------------------***');
                 console.log(error);
-                Sentry.captureMessage('DB.SS - ' + projectModel.getProjectName(), error);
                 reject(error);
             }
 

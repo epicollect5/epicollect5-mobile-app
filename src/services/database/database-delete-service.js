@@ -1,7 +1,5 @@
 
 import { useDBStore } from '@/stores/db-store';
-import { projectModel } from '@/models/project-model.js';
-import * as Sentry from '@sentry/capacitor';
 
 export const databaseDeleteService = {
 
@@ -12,7 +10,6 @@ export const databaseDeleteService = {
             function _onError(tx, error) {
                 console.log('*** ' + query + '--------------------***');
                 console.log(error);
-                Sentry.captureMessage('DB.DS - ' + projectModel.getProjectName(), error);
                 reject(error);
             }
 

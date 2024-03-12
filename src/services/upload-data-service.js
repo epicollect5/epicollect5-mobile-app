@@ -7,7 +7,6 @@ import { databaseUpdateService } from '@/services/database/database-update-servi
 import { notificationService } from '@/services/notification-service';
 import { webService } from '@/services/web-service';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
-import * as Sentry from '@sentry/capacitor';
 
 export const uploadDataService = {
 
@@ -143,7 +142,6 @@ export const uploadDataService = {
                                                     });
                                             }
                                             catch (error) {
-                                                Sentry.captureException(error);
                                                 //reject (nothing passed,server default error)
                                                 reject();
                                             }
@@ -288,7 +286,7 @@ export const uploadDataService = {
                     }
                     else {
                         //response.data is null or undefined
-                        Sentry.captureException(errorResponse);
+                        reject();
                     }
 
                     // Check if we have an authentication error
@@ -310,7 +308,6 @@ export const uploadDataService = {
                             },
                             function (error) {
                                 console.log(error);
-                                Sentry.captureException(error);
                                 reject();
                             });
                     }
