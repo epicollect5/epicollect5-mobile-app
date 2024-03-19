@@ -38,9 +38,6 @@
                 <data android:host="five.epicollect.net"/>
                 <data android:pathPattern="/open/project/.*"/>
 
-                <data android:scheme="https"/>
-                <data android:host="dev.epicollect.net"/>
-                <data android:pathPattern="/open/project/.*"/>
             </intent-filter>
         </activity>
 

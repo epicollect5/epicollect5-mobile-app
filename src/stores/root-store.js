@@ -13,6 +13,8 @@ export const useRootStore = defineStore('RootStore', {
             persistentDir: '',
             hierarchyNavigation: [],
             selectedTextSize: PARAMETERS.DEFAULT_TEXT_SIZE,
+            //by default, we collect WebView errors in production
+            collectErrors: true,
             continueProjectVersionUpdate: false,
             user: {
                 jwt: null,

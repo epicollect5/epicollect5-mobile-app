@@ -1,7 +1,6 @@
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
 import { PARAMETERS } from '@/config';
-import { projectModel } from '@/models/project-model.js';
 
 export const databaseSelectService = {
 

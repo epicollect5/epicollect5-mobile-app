@@ -43,7 +43,9 @@ module.exports = {
             if (process.env.VUE_APP_MODE === 'WEB') {
                 // // See available sourcemaps:
                 // // https://webpack.js.org/configuration/devtool/#devtool
-                config.devtool = 'eval-source-map';
+                config.devtool = 'source-map';
+
+                //config.devtool = 'eval-source-map';
                 // console.log(`NOTICE: vue.config.js directive: ${config.devtool}`)
 
                 config.output.devtoolModuleFilenameTemplate = (info) => {
@@ -60,6 +62,63 @@ module.exports = {
                 config.output.devtoolFallbackModuleFilenameTemplate =
                     'webpack:///[resource-path]?[hash]';
 
+                config.plugins = [
+                    ...config.plugins
+                    //how many files in the builds, 1 for single file
+                    // new webpack.optimize.LimitChunkCountPlugin({
+                    //     maxChunks: 7
+                    // })
+                ];
+
+                config.optimization = {
+                    splitChunks: {
+                        //minSize: 100000,
+                        //maxSize: 500000,
+                        cacheGroups: {
+                            default: false,// disable the built-in groups, default & vendors (vendors is overwritten below)
+
+                            // components: {
+                            //     test: /[\\/]src[\\/]components[\\/]/,
+                            //     name: 'components',
+                            //     chunks: 'all',
+                            //     priority: 95
+                            // },
+
+                            app: {
+                                test: /[\\/]src[\\/]/,
+                                name: 'app',
+                                chunks: 'all',
+                                priority: 90
+                            },
+
+                            capacitor: {
+                                test: /[\\/]node_modules[\\/]@capacitor[\\/]/,
+                                name: 'vendor-capacitor',
+                                chunks: 'all',
+                                priority: 80
+                            },
+                            vue: {
+                                test: /[\\/]node_modules[\\/]@vue[\\/]/,
+                                name: 'vendor-vue',
+                                chunks: 'all',
+                                priority: 70
+                            },
+                            ionic: {
+                                test: /[\\/]node_modules[\\/](@ionic|@ionic-native)[\\/]/,
+                                name: 'vendor-ionic',
+                                chunks: 'all',
+                                priority: 60
+                            },
+                            vendor: {
+                                test: /[\\/]node_modules[\\/]/,
+                                name: 'vendor-common',
+                                //enforce: true,
+                                chunks: 'all',
+                                priority: 50
+                            }
+                        }
+                    }
+                };
             }
 
             if (process.env.VUE_APP_MODE === 'PWA') {

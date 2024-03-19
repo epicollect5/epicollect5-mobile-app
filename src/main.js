@@ -55,7 +55,7 @@ import { createDatabaseService } from '@/services/database/database-create-servi
 import { PARAMETERS } from '@/config';
 import * as IonComponents from '@ionic/vue';
 //import '@/registerServiceWorker';
-import rollbarService from '@/services/utilities/rollbar-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 const pinia = createPinia();
 pinia.use(PiniaLogger({
@@ -316,6 +316,10 @@ export const app = createApp(App)
     const selectedTextSize = await initService.getSelectedTextSize();
     rootStore.selectedTextSize = selectedTextSize;
 
+    //collect errors preferences
+    const collectErrors = await initService.getCollectErrorsPreference();
+    rootStore.collectErrors = collectErrors;
+
     // Attempt to retrieve the jwt token
     const user = await initService.retrieveJwtToken();
     rootStore.user = user;
@@ -341,26 +345,8 @@ export const app = createApp(App)
   //mount app
   router.isReady().then(() => {
 
-    console.log(process.env.VUE_APP_ROLLBAR_TOKEN);
-    //set rollbar version for payloads
-    // For example, to change the environment:
-    const transformer = function (payload) {
-      payload.client = {
-        javascript: {
-          code_version: rootStore.app.version
-        }
-      };
-    };
-    rollbarService.configure({ transform: transformer });
-
-    debugger;
-    if (!Capacitor.DEBUG) {
-      app.use(rollbarService);
-    }
-    else {
-      rollbarService.configure({ enabled: false });
-    }
-
+    //init error reporting
+    rollbarService.init(app);
 
     console.log('mounting app');
     app.mount('#app');
@@ -368,7 +354,6 @@ export const app = createApp(App)
     if (!rootStore.isPWA) {
       setTimeout(async () => {
         await SplashScreen.hide();
-        alert(Capacitor.DEBUG);
       }, PARAMETERS.DELAY_EXTRA_LONG
       );
     }

@@ -83,8 +83,8 @@
 				lines="full"
 			>
 				<ion-label class="ion-text-uppercase ion-text-start">{{
-					labels.unsynced_entries
-				}}</ion-label>
+			labels.unsynced_entries
+		}}</ion-label>
 				<ion-button
 					color="warning"
 					size="default"
@@ -291,6 +291,7 @@ export default {
 
 		//Retrieve the project and entries
 		scope.getProjectAndEntries = async function () {
+
 			await notificationService.showProgressDialog(
 				STRINGS[language].labels.wait,
 				STRINGS[language].labels.loading_entries
@@ -633,4 +634,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

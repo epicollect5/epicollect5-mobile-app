@@ -1,6 +1,8 @@
 export const STRINGS = {
     en: {
         labels: {
+            collect_errors: 'Collect errors',
+            help_us_improve: 'Help us improve our app',
             view_on: 'View on',
             edit: 'Edit',
             invite: 'Invite',
@@ -237,6 +239,8 @@ export const STRINGS = {
     },
     it: {
         labels: {
+            collect_errors: 'Raccogli errori',
+            help_us_improve: 'Aiutaci a migliorare',
             view_on: 'Apri con',
             edit: 'Modifica',
             invite: 'Invita',
@@ -473,6 +477,8 @@ export const STRINGS = {
     },
     es: {
         labels: {
+            collect_errors: 'Recoger errores',
+            help_us_improve: 'Ayúdanos a mejorar nuestra app',
             view_on: 'Ver en',
             edit: 'Editar',
             invite: 'Invitar',
@@ -709,6 +715,8 @@ export const STRINGS = {
     },
     fr: {
         labels: {
+            collect_errors: 'Collecter les erreurs',
+            help_us_improve: 'Aidez-nous à améliorer notre app',
             view_on: 'Afficher sur',
             edit: 'Modifier',
             invite: 'Inviter',
@@ -945,6 +953,8 @@ export const STRINGS = {
     },
     pl: {
         labels: {
+            collect_errors: 'Zbieraj błędy',
+            help_us_improve: 'Pomóż nam ulepszyć naszą app',
             view_on: 'Wyświetl włączone',
             edit: 'Edytuj',
             invite: 'Zaproś',
@@ -1181,6 +1191,8 @@ export const STRINGS = {
     },
     pt: {
         labels: {
+            collect_errors: 'Coletar erros',
+            help_us_improve: 'Ajude-nos a melhorar nosso app',
             view_on: 'Abrir em',
             edit: 'Editar',
             invite: 'Convidar',

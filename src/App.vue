@@ -66,18 +66,30 @@ export default {
 				const projectSlug = parts[parts.length - 1];
 
 				if (projectSlug) {
-
+					//get project name from slug	
 					const projectName = utilsService.inverseSlug(projectSlug);
 
 					webService.searchForProject(projectName)
 						.then((response) => {
-							const project = {
-								slug: response.data.data[0].project.slug,
-								name: response.data.data[0].project.name,
-								ref: response.data.data[0].project.ref
-							};
-							//try to load the project in
-							addProject(project, router);
+							//if Project does not exist, error out
+							if (response.data.data.length === 0) {
+								// Show 'Project does not exist' message
+								notificationService.showAlert(STRINGS[rootStore.language].status_codes.ec5_11);
+								//go back to projects list
+								router.replace({
+									name: PARAMETERS.ROUTES.PROJECTS,
+									query: { refresh: true }
+								});
+							}
+							else {
+								const project = {
+									slug: response.data.data[0].project.slug,
+									name: response.data.data[0].project.name,
+									ref: response.data.data[0].project.ref
+								};
+								//try to load the project in
+								addProject(project, router);
+							}
 						}, (error) => {
 							errorsService.handleWebError(error);
 							// No projects?
@@ -87,8 +99,7 @@ export default {
 									notificationService.showAlert(STRINGS[rootStore.language].labels.no_projects_found);
 								}
 							} catch (error) {
-								notificationService.showAlert(STRINGS[rootStore.language].labels.unknown_error);
-								alert(error);
+								notificationService.showAlert(JSON.stringify(error), STRINGS[rootStore.language].labels.unknown_error);
 							}
 
 							//just launch app

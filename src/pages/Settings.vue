@@ -111,6 +111,33 @@
 				</ion-card-content>
 			</ion-card>
 
+			<ion-card>
+				<ion-card-header class="settings-label">
+					<ion-card-title
+						data-translate="help_us_improve"
+						class="ion-text-center ion-text-uppercase"
+					>
+						{{ labels.help_us_improve }}
+					</ion-card-title>
+				</ion-card-header>
+				<ion-card-content class="ion-text-left ion-no-padding">
+					<ion-item
+						lines="none"
+						class="ion-text-left"
+					>
+						<ion-toggle
+							data-translate="collect_errors"
+							@ionChange="updateCollectErrors($event)"
+							class="ion-text-wrap"
+							color="secondary"
+							:checked="state.collectErrors"
+						>
+							{{ labels.collect_errors }}
+						</ion-toggle>
+					</ion-item>
+				</ion-card-content>
+			</ion-card>
+
 			<ion-card v-if="isDebug || hasEasterEggProject">
 				<ion-card-header class="settings-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
@@ -147,6 +174,7 @@ import { PARAMETERS } from '@/config';
 import { useBackButton } from '@ionic/vue';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { notificationService } from '@/services/notification-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 export default {
 	components: {},
@@ -158,6 +186,7 @@ export default {
 		const state = reactive({
 			serverUrl: rootStore.serverUrl,
 			selectedTextSize: rootStore.selectedTextSize,
+			collectErrors: rootStore.collectErrors,
 			isSaving: false
 		});
 		const zoomLevels = PARAMETERS.ZOOM_LEVELS;
@@ -218,6 +247,16 @@ export default {
 								failed = true;
 							}
 							break;
+						case PARAMETERS.SETTINGS_KEYS.COLLECT_ERRORS:
+
+							try {
+								await databaseInsertService.insertSetting(key, state.collectErrors);
+								rootStore.collectErrors = state.collectErrors;
+							} catch (error) {
+								console.log(error);
+								failed = true;
+							}
+							break;
 					}
 				});
 
@@ -232,6 +271,12 @@ export default {
 			updateSelectedTextSize(e) {
 				state.selectedTextSize = e.detail.value;
 				rootStore.selectedTextSize = state.selectedTextSize;
+			},
+			updateCollectErrors(e) {
+				state.collectErrors = e.detail.checked;
+				rootStore.collectErrors = state.collectErrors;
+				console.log('Rollbar reporting ->', rootStore.collectErrors);
+				rollbarService.configure({ enabled: Boolean(rootStore.collectErrors) });
 			}
 		};
 
@@ -263,4 +308,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

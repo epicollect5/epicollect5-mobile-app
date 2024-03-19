@@ -623,7 +623,7 @@ describe('LeftDrawer component', () => {
         const labels = STRINGS[language].labels;
         //imp: before mounting
         STRINGS[language].status_codes = {
-            ec5_135: 'No Internet Connection.'
+            ec5_135: 'No Internet Connection'
         };
 
         rootStore.device = {
@@ -636,7 +636,7 @@ describe('LeftDrawer component', () => {
         await wrapper.get('[data-test="community"]').trigger('click');
         await flushPromises();
         expect(rootStore.language).toBe(PARAMETERS.DEFAULT_LANGUAGE);
-        expect(STRINGS[rootStore.language].status_codes.ec5_135).toBe('No Internet Connection.');
+        expect(STRINGS[rootStore.language].status_codes.ec5_135).toBe('No Internet Connection');
         expect(utilsService.hasInternetConnection).toHaveBeenCalledOnce();
         await flushPromises();
         expect(notificationService.showAlert).toHaveBeenCalledWith(STRINGS[language].status_codes.ec5_135 + '!', labels.error);

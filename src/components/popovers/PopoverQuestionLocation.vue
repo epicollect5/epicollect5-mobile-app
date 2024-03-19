@@ -49,13 +49,13 @@
 				button
 				:disabled="!hasLatLong"
 				lines="full"
-				@click="viewOnHereMaps()"
+				@click="viewOnHereWeGoMaps()"
 			>
 				<ion-icon
 					slot="start"
 					:icon="navigateCircleOutline"
 				></ion-icon>
-				<ion-label>{{ labels.view_on }} Here Maps
+				<ion-label>{{ labels.view_on }} Here WeGo Maps
 					<sup>
 						<small>Beta</small>
 					</sup>
@@ -143,7 +143,7 @@ export default {
 				popoverController.dismiss(null);
 				window.open(gmURL, '_system', 'location="yes"');
 			},
-			viewOnHereMaps() {
+			viewOnHereWeGoMaps() {
 				state.visible = false;
 				const latitude = props.parentState.answer.answer.latitude;
 				const longitude = props.parentState.answer.answer.longitude;
@@ -187,4 +187,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

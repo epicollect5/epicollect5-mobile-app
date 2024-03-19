@@ -323,7 +323,8 @@ export const PARAMETERS = {
     },
     SETTINGS_KEYS: {
         SERVER_URL: 'server_url',
-        SELECTED_TEXT_SIZE: 'selected_text_size'
+        SELECTED_TEXT_SIZE: 'selected_text_size',
+        COLLECT_ERRORS: 'collect_errors'
     },
     PWA_MIMETYPES: {
         PHOTO: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'],

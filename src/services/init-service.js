@@ -338,6 +338,25 @@ export const initService = {
         });
     },
 
+    //Get the collect errors flag
+    async getCollectErrorsPreference() {
+        return new Promise((resolve, reject) => {
+            databaseSelectService.selectSetting(PARAMETERS.SETTINGS_KEYS.COLLECT_ERRORS).then(function (res) {
+
+                //if not found, the user has left the default
+                if (res.rows.length === 0) {
+                    resolve(true);
+                    return;
+                }
+
+                //if we have a row, user made changes, check status
+                resolve(res.rows.item(0).value === 'true' ? true : false);
+            }, function (error) {
+                reject(error);
+            });
+        });
+    },
+
     async retrieveJwtToken() {
         const rootStore = useRootStore();
         return new Promise(function (resolve, reject) {
