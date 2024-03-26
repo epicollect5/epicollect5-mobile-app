@@ -282,7 +282,7 @@ export const uploadDataService = {
                 return new Promise(function (resolve, reject) {
 
                     if (errorResponse.data) {
-                        errorObj = errorResponse;
+                        errorObj = errorResponse.data;
                     }
                     else {
                         //response.data is null or undefined
