@@ -10,6 +10,16 @@ import { JSONTransformerService } from '@/services/utilities/json-transformer-se
 
 export const uploadDataService = {
 
+    showErrors: false,
+    // Default error object
+    errorPayload: {
+        errors: [{
+            code: 'ec5_103',
+            source: '',
+            title: ''
+        }]
+    },
+
     // need to handle server errors/unexpected errors etc
     // check file uploads, cordova errors:
     // 'Uncaught SyntaxError: Unexpected token o'
@@ -27,6 +37,8 @@ export const uploadDataService = {
      */
     execute(total) {
 
+        const self = this;
+
         return new Promise(function (resolve, reject) {
             const rootStore = useRootStore();
             const language = rootStore.language;
@@ -39,16 +51,16 @@ export const uploadDataService = {
             const slug = projectModel.getSlug();
             let parentUuid;
             let ownerEntryUuid;
-            let errors = false;
-            // List of error codes to be handled by the web error service, which will stop the upload process
-            const uploadStoppingErrorCodes = PARAMETERS.UPLOAD_STOPPING_ERROR_CODES;
 
-            // Default error object
-            let errorObj = {
+
+            self.showErrors = false;
+
+            // Default error object in locale language
+            self.errorPayload = {
                 errors: [{
-                    code: 'ec5_116',
+                    code: 'ec5_103',
                     source: '',
-                    title: STRINGS[language].status_codes.ec5_116
+                    title: STRINGS[language].status_codes.ec5_103
                 }]
             };
 
@@ -71,7 +83,6 @@ export const uploadDataService = {
                 } else {
                     // Get unsynced entries, one at a time, based on supplied parent entry uuid
                     // If a formRef is supplied, we are attempting to retrieve a parent
-
                     if (entries.length > 0) {
                         parentUuid = entries[entries.length - 1];
                     }
@@ -124,7 +135,7 @@ export const uploadDataService = {
                                                 reject();
                                             }
                                             try {
-                                                _uploadError(PARAMETERS.ENTRY, response, res.rows.item(0).entry_uuid).then(
+                                                self.handleUploadError(PARAMETERS.ENTRY, response, res.rows.item(0).entry_uuid).then(
                                                     function () {
                                                         _updateProgress();
                                                         // Continue - try to upload the next child
@@ -132,11 +143,11 @@ export const uploadDataService = {
                                                             _uploadEntry(null);
                                                         }, PARAMETERS.DELAY_FAST);
                                                     }, function (error) {
-                                                        if (errors) {
-                                                            // Show stopping error, resolve with errors
-                                                            resolve(errors);
+                                                        if (self.showErrors) {
+                                                            // Show stopping error, resolve with entries errors
+                                                            resolve(error);
                                                         } else {
-                                                            // Show stopping error, reject, show no errors
+                                                            // Show stopping error, reject, show no entries errors
                                                             reject(error);
                                                         }
                                                     });
@@ -152,7 +163,7 @@ export const uploadDataService = {
                                 console.log('Finished uploading');
                                 // If we have a form ref and no entries left
                                 // Finished!
-                                resolve(errors);
+                                resolve();
 
                             } else {
                                 // If we have entries, set the parentUuid as the most recent uuid in the entries array
@@ -172,7 +183,6 @@ export const uploadDataService = {
                                         }, PARAMETERS.DELAY_FAST);
                                     });
                             }
-
                         }
                     );
                 }
@@ -224,19 +234,17 @@ export const uploadDataService = {
                                     }, function (response) {
 
                                         //catch drop connection error here
-                                        _uploadError(PARAMETERS.BRANCH_ENTRY, response, res.rows.item(0).entry_uuid).then(
+                                        self.handleUploadError(PARAMETERS.BRANCH_ENTRY, response, res.rows.item(0).entry_uuid).then(
                                             function () {
-
-
                                                 _updateProgress();
                                                 // Continue - upload the next branch
                                                 window.setTimeout(function () {
                                                     _uploadBranch();
                                                 }, PARAMETERS.DELAY_FAST);
                                             }, function (error) {
-                                                if (errors) {
+                                                if (self.showErrors) {
                                                     // Show stopping error, resolve with errors
-                                                    resolve(errors);
+                                                    resolve(error);
                                                 } else {
                                                     // Show stopping error, reject, show no errors
                                                     reject(error);
@@ -244,8 +252,6 @@ export const uploadDataService = {
                                             });
                                     });
                             } else {
-
-
                                 _updateProgress();
                                 // Can't edit, so move onto next branch
                                 window.setTimeout(function () {
@@ -271,50 +277,53 @@ export const uploadDataService = {
                 notificationService.setProgress({ total, done: currentEntryIndex });
             }
 
-            /**
-             * Handle an upload error
-             * May be show stopping, or may allow the rest of the upload to continue
-             */
-            function _uploadError(type, errorResponse, entryUuid) {
 
-                errors = true;
-
-                return new Promise(function (resolve, reject) {
-
-                    if (errorResponse.data) {
-                        errorObj = errorResponse.data;
-                    }
-                    else {
-                        //response.data is null or undefined
-                        reject();
-                    }
-
-                    // Check if we have an authentication error
-                    if (errorObj.errors && uploadStoppingErrorCodes.indexOf(errorObj.errors[0].code) >= 0) {
-                        console.log('web error code hit');
-                        // We don't want to alarm the user there is an error with the entry (because the error is related to permissions)
-                        // Don't show error text
-                        errors = false;
-                        // Send back the error code
-                        reject({ data: errorResponse.data });
-
-                    } else {
-
-                        // Update synced_error field then allow upload to continue
-                        databaseUpdateService.updateSynced(type, entryUuid, PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR, errorObj).then(
-                            function () {
-                                console.log('Syncing error');
-                                resolve();
-                            },
-                            function (error) {
-                                console.log(error);
-                                reject();
-                            });
-                    }
-                });
-            }
             // Start upload from parent form
             _uploadEntry(topLevelFormRef);
+        });
+    },
+    /**
+    * Handle an upload error
+    * May be show stopping, or may allow the rest of the upload to continue
+    */
+    handleUploadError(type, errorResponse, entryUuid) {
+
+        const self = this;
+
+        // imp:List of error codes to be handled by the web error service, which will stop the upload process
+        // imp: PARAMETERS.UPLOAD_STOPPING_ERROR_CODES;
+        self.showErrors = true;
+
+        return new Promise(function (resolve, reject) {
+
+            if (!errorResponse.data) {
+                //response.data is null or undefined
+                reject();
+                return false;
+            }
+
+            self.errorPayload = errorResponse.data;
+
+            // Check if we have an authentication error
+            if (self.errorPayload.errors && PARAMETERS.UPLOAD_STOPPING_ERROR_CODES.indexOf(self.errorPayload.errors[0].code) >= 0) {
+                console.log('Permission error code hit -> ', self.errorPayload.errors[0].code);
+                // We don't want to alarm the user there is an error with the entry (because the error is related to permissions)
+                // Don't show error text
+                self.showErrors = false;
+                // Send back the error code
+                reject({ data: errorResponse.data });
+                return false;
+            }
+            // Update synced_error field then allow upload to continue
+            databaseUpdateService
+                .updateSynced(type, entryUuid, PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR, self.errorPayload)
+                .then(() => {
+                    console.log('Syncing error');
+                    resolve();
+                }, (error) => {
+                    console.log(error);
+                    reject();
+                });
         });
     }
 };

@@ -3,11 +3,11 @@ import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
-
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 export const errorsService = {
 
-    getEC5Errors (errors) {
+    getEC5Errors(errors) {
         // Check we were given an array of errors
         if (errors && errors.constructor === Array && errors.length > 0) {
             // Show all errors
@@ -20,7 +20,7 @@ export const errorsService = {
         }
     },
 
-    getStatusError (status) {
+    getStatusError(status) {
         switch (status) {
             case 0:
                 // Unknown error, warn user
@@ -34,7 +34,7 @@ export const errorsService = {
         }
     },
 
-    getWebErrorCode (response) {
+    getWebErrorCode(response) {
 
         if (response) {
             // Check for an ec5 error
@@ -50,7 +50,7 @@ export const errorsService = {
         // Default error code
         return 'ec5_116';
     },
-    async handleWebError (response) {
+    async handleWebError(response) {
         const rootStore = useRootStore();
         const language = rootStore.language;
         let errorCode;
@@ -61,19 +61,27 @@ export const errorsService = {
         } else {
             errorCode = this.getWebErrorCode(response);
         }
-        notificationService.showAlert(STRINGS[language].status_codes[errorCode], STRINGS[language].labels.error);
+
+        if (response instanceof TypeError) {
+            //show error to user and send it to Rollbar as well
+            rollbarService.critical(response);
+            notificationService.showAlert(response, STRINGS[language].labels.error);
+        }
+        else {
+            notificationService.showAlert(STRINGS[language].status_codes[errorCode], STRINGS[language].labels.error);
+        }
         return STRINGS[language].status_codes[errorCode];
     },
 
 
-    handleAuthError (error) {
+    handleAuthError(error) {
         //show modal asking user to enter six digit code to confirm login
 
         //if code correct log user in (server adds both passwordless and apple provider to same email)
     },
 
     // Handle errors received when moving between questions
-    handleEntryErrors (errors, scopeErrors, inputRefs) {
+    handleEntryErrors(errors, scopeErrors, inputRefs) {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -97,7 +105,7 @@ export const errorsService = {
         }
     },
 
-    resetEntryErrors (scopeErrors, inputRefs) {
+    resetEntryErrors(scopeErrors, inputRefs) {
 
         let inputRef;
         // Assume we have no errors
@@ -121,7 +129,7 @@ export const errorsService = {
         }
     },
 
-    needsToLogin (errorCode) {
+    needsToLogin(errorCode) {
         // Check for error authentication error codes (private project, user needs to login)
         // If we find one, we know the user will need to log in
         return PARAMETERS.AUTH_ERROR_CODES.indexOf(errorCode) > -1;

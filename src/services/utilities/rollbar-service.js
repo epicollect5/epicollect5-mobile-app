@@ -19,7 +19,7 @@ const rollbar = new Rollbar({
         guess_uncaught_frames: true,
         client: {
             javascript: {
-                code_version: '6.0.1'
+                code_version: ''//defined at run time, see init() below
             }
         }
     },

@@ -143,8 +143,9 @@ export const PARAMETERS = {
         'ec5_77', // private project, log in
         'ec5_78', // private project, need permission
         'ec5_116', // server error
+        'ec5_103', //unkwon error
         'ec5_201', // project version out of date
-        'ec5_202', // project inactive
+        'ec5_202', // project locked
         'ec5_255' // too many attempts
     ],
 
