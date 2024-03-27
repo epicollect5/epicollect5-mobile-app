@@ -577,7 +577,7 @@ export default {
 				}
 			],
 			async (changes) => {
-				console.log('WATCH ROUTING CALLED WITH ->', route);
+				console.log('WATCH ROUTING CALLED WITH ->', route.name);
 				// Indicator as to whether a project update can take place
 				// eg if the user goes to a different page, then this must be set to false;
 				rootStore.continueProjectVersionUpdate = false;
