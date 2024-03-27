@@ -145,7 +145,7 @@ export const uploadDataService = {
                                                     }, function (error) {
                                                         if (self.showErrors) {
                                                             // Show stopping error, resolve with entries errors
-                                                            resolve(error);
+                                                            resolve(true);
                                                         } else {
                                                             // Show stopping error, reject, show no entries errors
                                                             reject(error);
@@ -163,7 +163,7 @@ export const uploadDataService = {
                                 console.log('Finished uploading');
                                 // If we have a form ref and no entries left
                                 // Finished!
-                                resolve();
+                                resolve(self.showErrors);
 
                             } else {
                                 // If we have entries, set the parentUuid as the most recent uuid in the entries array
@@ -244,7 +244,7 @@ export const uploadDataService = {
                                             }, function (error) {
                                                 if (self.showErrors) {
                                                     // Show stopping error, resolve with errors
-                                                    resolve(error);
+                                                    resolve(true);
                                                 } else {
                                                     // Show stopping error, reject, show no errors
                                                     reject(error);

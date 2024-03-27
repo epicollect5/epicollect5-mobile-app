@@ -74,7 +74,7 @@
 				</ion-row>
 
 				<ion-row
-					v-if="state.totalEntries > 0 && state.errors"
+					v-if="state.totalEntries > 0 && state.hasErrors"
 					class="ion-margin-top"
 				>
 					<ion-col
@@ -258,7 +258,7 @@ export default {
 			photos: [],
 			videos: [],
 			audios: [],
-			errors: false,
+			hasErrors: false,
 			canUploadData: false,
 			isUploading: false
 		});
@@ -307,13 +307,13 @@ export default {
 					if (state.totalEntriesUnsynced > 0 && state.totalEntriesWithErrors === 0) {
 						state.canUploadData = true;
 						if (state.totalEntriesWithErrors > 0) {
-							state.errors = true;
+							state.hasErrors = true;
 						}
 						resolve();
 					} else {
 						state.canUploadData = false;
 						if (state.totalEntriesWithErrors > 0) {
-							state.errors = true;
+							state.hasErrors = true;
 							resolve();
 						} else {
 							// If we have no unsynced data, check if we have any media unsynced
@@ -409,17 +409,17 @@ export default {
 					await _showModalProgressTransfer(labels.uploading_entries, state.totalEntriesUnsynced);
 
 					uploadDataService.execute(state.totalEntriesUnsynced).then(
-						async function (errors) {
+						async function (hasEntriesUploadErrors) {
 							// Check the state of the data/media left to upload
 							await _checkData();
 							// Finished!
 							//dismiss the upload modal
 							modalController.dismiss();
 							state.isUploading = false;
-							state.errors = errors;
+							state.hasErrors = hasEntriesUploadErrors;
 
 							// If we have any errors
-							if (state.errors || state.totalEntriesWithErrors > 0) {
+							if (state.hasErrors || state.totalEntriesWithErrors > 0) {
 								//some entriers has errors (uniqueness, required, etc)
 								notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
 							} else if (state.totalEntriesIncomplete > 0) {
@@ -476,9 +476,9 @@ export default {
 						//dismiss the upload modal
 						modalController.dismiss();
 						state.isUploading = false;
-						state.errors = errors;
+						state.hasErrors = errors;
 
-						if (state.errors) {
+						if (state.hasErrors) {
 							//some errors occurred
 							notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
 						} else {
@@ -533,7 +533,7 @@ export default {
 					state.totalEntriesIncomplete === 0 &&
 					state.totalEntries > 0 &&
 					!state.canUploadData &&
-					!state.errors &&
+					!state.hasErrors &&
 					state.photos.length === 0 &&
 					state.videos.length === 0 &&
 					state.audios.length === 0 &&
