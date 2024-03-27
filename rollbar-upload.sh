@@ -18,4 +18,4 @@ code_version=$(extract_version)
 #url-prefix for a capacitor app is localhost by default, see https://capacitorjs.com/docs/config
 
 # Execute rollbar-cli command with the extracted code version
-rollbar-cli upload-sourcemaps ./dist/js --verbose --access-token="$VUE_APP_ROLLBAR_POST_TOKEN" --url-prefix "http://localhost" --code-version "$code_version"
+rollbar-cli upload-sourcemaps ./dist/js/ --verbose --access-token="$VUE_APP_ROLLBAR_POST_TOKEN" --url-prefix "http://localhost" --code-version "$code_version"
