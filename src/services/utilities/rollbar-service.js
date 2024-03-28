@@ -14,7 +14,7 @@ const rollbar = new Rollbar({
     timeout: 3000,
     maxRetries: 3,
     payload: {
-        environment: 'production',
+        environment: '',//to be set at run time,
         source_map_enabled: true,
         guess_uncaught_frames: true,
         client: {
@@ -63,16 +63,21 @@ export const rollbarService = {
     },
     init(app) {
         const rootStore = useRootStore();
+        let environment = rootStore.device.operatingSystem + ' ' + rootStore.device.osVersion;
+        environment += ' - ' + rootStore.device.model;
+        environment += ' - WebView ' + rootStore.device.webViewVersion;
+        console.log('Environment -> ', environment);
 
-        //set rollbar version for payloads
-        // For example, to change the environment:
+        //set rollbar version & environment for payloads
         const transformer = function (payload) {
             payload.client = {
                 javascript: {
                     code_version: rootStore.app.version
                 }
             };
+            payload.environment = environment;
         };
+
         rollbar.configure({ transform: transformer });
 
         if (!Capacitor.DEBUG && Capacitor.isNativePlatform()) {
