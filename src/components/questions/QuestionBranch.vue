@@ -14,7 +14,7 @@
 				:icon="archive"
 				slot="start"
 			></ion-icon>
-			{{labels.save}}
+			{{ labels.save }}
 		</ion-button>
 	</ion-item>
 
@@ -45,7 +45,8 @@
 				<ion-row v-if="isPWA && isPWAEntryEdit">
 					<ion-col>
 						<ion-item color="warning">
-							<ion-label class="item-divider-label-centered ion-text-wrap">{{pwaEntryEditWarning}}</ion-label>
+							<ion-label class="item-divider-label-centered ion-text-wrap">{{ pwaEntryEditWarning
+								}}</ion-label>
 						</ion-item>
 					</ion-col>
 				</ion-row>
@@ -72,13 +73,13 @@
 								slot="start"
 								:icon="add"
 							></ion-icon>
-							{{labels.add_branch}}
+							{{ labels.add_branch }}
 						</ion-button>
 						<ion-label
 							v-if="isEntriesLimitReached"
 							color="warning"
 							class="ion-text-wrap"
-						>{{ warningEntriesLimitReached}}</ion-label>
+						>{{ warningEntriesLimitReached }}</ion-label>
 					</ion-col>
 				</ion-row>
 
@@ -145,7 +146,7 @@
 
 							<ion-infinite-scroll
 								:disabled="state.branchEntries.length <= PARAMETERS.ENTRIES_PER_PAGE"
-								v-show="state.branchEntries.length >0"
+								v-show="state.branchEntries.length > 0"
 								@ionInfinite="loadEntriesChunk($event)"
 								threshold="100px"
 								class="ion-padding-top"
@@ -203,7 +204,7 @@
 										<ion-row>
 											<ion-col>
 												<small class="text-left collected-on">
-													{{labels.collected_on + utcToLocal(entry.created_at)}}
+													{{ labels.collected_on + utcToLocal(entry.created_at) }}
 												</small>
 											</ion-col>
 										</ion-row>
@@ -213,7 +214,7 @@
 
 							<ion-infinite-scroll
 								:disabled="state.countNoFilters <= PARAMETERS.ENTRIES_PER_PAGE"
-								v-show="state.countWithFilters >0"
+								v-show="state.countWithFilters > 0"
 								@ionInfinite="loadEntriesChunk($event)"
 								threshold="100px"
 								class="ion-padding-top"
@@ -244,7 +245,7 @@
 							class="ion-text-center ion-margin-bottom"
 							lines="none"
 						>
-							<ion-label>{{labels.no_entries_found}}</ion-label>
+							<ion-label>{{ labels.no_entries_found }}</ion-label>
 						</ion-item>
 
 					</ion-col>
@@ -508,7 +509,10 @@ export default {
 
 						const { entriesOffset, filters } = state;
 						const uuid = entriesAddScope.entryService.entry.entryUuid;
+						const formRef = entriesAddScope.entryService.entry.formRef;
 						const fetchParams = {
+							projectRef,
+							formRef,
 							inputRef,
 							uuid,
 							entriesOffset,
@@ -533,7 +537,10 @@ export default {
 				_updateEntriesFilterBranchByDates().then(() => {
 					const { entriesOffset, filters } = state;
 					const uuid = entriesAddScope.entryService.entry.entryUuid;
+					const formRef = entriesAddScope.entryService.entry.formRef;
 					const fetchParams = {
+						projectRef,
+						formRef,
 						inputRef,
 						uuid,
 						entriesOffset,
@@ -556,7 +563,10 @@ export default {
 
 						const { filters } = state;
 						const uuid = entriesAddScope.entryService.entry.entryUuid;
+						const formRef = entriesAddScope.entryService.entry.formRef;
 						const fetchParams = {
+							projectRef,
+							formRef,
 							inputRef,
 							uuid,
 							entriesOffset: min,
@@ -651,7 +661,10 @@ export default {
 		function getBranchEntries() {
 			const { entriesOffset, filters } = state;
 			const uuid = entriesAddScope.entryService.entry.entryUuid;
+			const formRef = entriesAddScope.entryService.entry.formRef;
 			const fetchParams = {
+				projectRef,
+				formRef,
 				inputRef,
 				uuid,
 				entriesOffset,
@@ -692,7 +705,10 @@ export default {
 					window.setTimeout(async function () {
 						const { entriesOffset, filters } = state;
 						const uuid = entriesAddScope.entryService.entry.entryUuid;
+						const formRef = entriesAddScope.entryService.entry.formRef;
 						const fetchParams = {
+							projectRef,
+							formRef,
 							inputRef,
 							uuid,
 							entriesOffset,
@@ -729,5 +745,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style
+	lang="scss"
+	scoped
+></style>
