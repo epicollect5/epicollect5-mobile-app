@@ -39,10 +39,14 @@ export const notificationService = {
     async showAlert(message, header) {
         const rootStore = useRootStore();
         const language = rootStore.language;
+
+        // Convert message to string to avoid showing [object, object] for uncaught errors
+        const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+
         const alert = await alertController
             .create({
                 header,
-                message,
+                messageStr,
                 buttons: [STRINGS[language].labels.ok]
             });
         await alert.present();
