@@ -1,38 +1,54 @@
 <template>
 	<header-modal @on-dismiss="dismiss()"></header-modal>
 	<ion-content>
-		<ion-item-divider sticky
-						  color="dark"
-						  class="saved-answers-serchbar-wrapper">
-			<ion-searchbar animated
-						   debounce="500"
-						   :placeholder="labels.type_hint"
-						   @ionInput="filterSavedAnswers"></ion-searchbar>
+		<ion-item-divider
+			sticky
+			color="dark"
+			class="saved-answers-serchbar-wrapper"
+		>
+			<ion-searchbar
+				animated
+				debounce="500"
+				:placeholder="labels.type_hint"
+				@ionInput="filterSavedAnswers"
+			></ion-searchbar>
 		</ion-item-divider>
 
-		<ion-spinner v-if="state.isFetching"
-					 class="spinner-search-saved-answers"
-					 name="crescent"></ion-spinner>
+		<ion-spinner
+			v-if="state.isFetching"
+			class="spinner-search-saved-answers"
+			name="crescent"
+		></ion-spinner>
 
-		<div v-if="!state.isFetching && state.hits.length > 0"
-			 class="saved-answers-list">
-			<list-saved-answers :savedAnswers="state.hits"
-								@on-selected-answer="onSelectedAnswer">
+		<div
+			v-if="!state.isFetching && state.hits.length > 0"
+			class="saved-answers-list"
+		>
+			<list-saved-answers
+				:savedAnswers="state.hits"
+				@on-selected-answer="onSelectedAnswer"
+			>
 			</list-saved-answers>
 
 		</div>
-		<div v-if="!state.isFetching && state.hits.length === 0 && state.searchTerm.length >= 3"
-			 class="animate__animated animate__fadeIn">
+		<div
+			v-if="!state.isFetching && state.hits.length === 0 && state.searchTerm.length >= 3"
+			class="animate__animated animate__fadeIn"
+		>
 			<ion-card class="ion-text-center">
 				<ion-card-header>
 					<ion-card-title>{{ labels.no_hits_found }}</ion-card-title>
 				</ion-card-header>
 			</ion-card>
 		</div>
-		<div v-if="!state.isFetching && state.hits.length === 0 && state.searchTerm.length === 0"
-			 class="animate__animated animate__fadeIn">
-			<ion-item class="ion-text-center ion-margin-bottom"
-					  lines="none">
+		<div
+			v-if="!state.isFetching && state.hits.length === 0 && state.searchTerm.length === 0"
+			class="animate__animated animate__fadeIn"
+		>
+			<ion-item
+				class="ion-text-center ion-margin-bottom"
+				lines="none"
+			>
 				<ion-label>{{ labels.no_entries_found }}</ion-label>
 			</ion-item>
 		</div>
@@ -71,7 +87,7 @@ export default {
 			required: true
 		}
 	},
-	setup (props) {
+	setup(props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -86,13 +102,13 @@ export default {
 		});
 
 		const methods = {
-			onSelectedAnswer (answer) {
+			onSelectedAnswer(answer) {
 				state.selectedAnswer = answer;
 			},
-			dismiss () {
+			dismiss() {
 				modalController.dismiss(state.selectedAnswer);
 			},
-			filterSavedAnswers (e) {
+			filterSavedAnswers(e) {
 				state.searchTerm = e.target.value.toLowerCase().trim();
 
 				if (state.searchTerm.length < 3) {
@@ -124,7 +140,7 @@ export default {
 
 					let offset = -PARAMETERS.MAX_SAVED_ANSWERS;
 
-					function searchNeedle () {
+					function searchNeedle() {
 						offset += PARAMETERS.MAX_SAVED_ANSWERS;
 
 						if (state.hits >= PARAMETERS.MAX_SAVED_ANSWERS) {
@@ -149,7 +165,7 @@ export default {
 										const answer = answers[inputRef];
 
 										//show only matching answers
-										if (answer.answer.toLowerCase().includes(state.searchTerm)) {
+										if (answer?.answer?.toLowerCase().includes(state.searchTerm)) {
 											//skip duplicates
 											if (!state.hits.includes(answer.answer)) {
 												state.hits.push(answer.answer);
@@ -168,9 +184,9 @@ export default {
 			//imp: this works by assuming on the mobile app users will not have
 			//imp: thousand of entries saved. We do limit to a set of latest 50,
 			//imp: no reasons to load more than that
-			loadSavedAnswers () {
+			loadSavedAnswers() {
 				let offset = -PARAMETERS.MAX_SAVED_ANSWERS;
-				function loadSavedAnswer () {
+				function loadSavedAnswer() {
 					offset += PARAMETERS.MAX_SAVED_ANSWERS;
 
 					//if we have already MAX_SAVED_ANSWERS, bail out
@@ -195,7 +211,7 @@ export default {
 									const answers = JSON.parse(result.rows.item(i).answers);
 									const answer = answers[inputRef];
 									//if an answer is found, show it
-									if (answer.answer.trim() !== '') {
+									if (answer?.answer?.trim() !== '') {
 										//skip duplicates
 										if (!state.hits.includes(answer.answer)) {
 											state.hits.push(answer.answer);
@@ -230,4 +246,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>
