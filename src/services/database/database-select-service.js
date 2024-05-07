@@ -557,10 +557,6 @@ export const databaseSelectService = {
                 params.push(uuid);
                 query += ' OR owner_entry_uuid = ?';
             });
-            // angular.forEach(ownerEntryUuidsCopy, function (uuid) {
-            //     params.push(uuid);
-            //     query += ' OR owner_entry_uuid = ?';
-            // });
         }
         return await this.getRows(query, params);
     },
@@ -834,6 +830,15 @@ export const databaseSelectService = {
         //    console.log(query);
 
         return await this.getRows(query, entryUuids);
+    },
+
+    async selectEntryMediaErrorsByForm(projectRef, formRef) {
+
+        let query = 'SELECT entry_uuid, input_ref, synced_error ';
+        query += 'FROM media WHERE project_ref=? and form_ref=? ';
+        query += 'AND (ifnull(length(synced_error), 0) > 0)';
+        console.log(query);
+        return await this.getRows(query, [projectRef, formRef]);
     },
     /**
     *

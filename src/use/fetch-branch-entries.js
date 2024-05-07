@@ -2,10 +2,10 @@ import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { databaseSelectService } from '@/services/database/database-select-service';
 
-export async function fetchBranchEntries (params) {
+export async function fetchBranchEntries(params) {
 
     const rootStore = useRootStore();
-    const { inputRef, uuid, entriesOffset, filters } = params;
+    const { projectRef, formRef, inputRef, uuid, entriesOffset, filters } = params;
     const branchEntries = [];
     const uuids = [];
     let hasUnsavedBranches = false;
@@ -60,8 +60,8 @@ export async function fetchBranchEntries (params) {
             }
         }
         //check if any entry has some media file sync failure (i.e file not saved or missing)
-        const mediaResult = await databaseSelectService.selectEntryMediaErrors(
-            uuids
+        const mediaResult = await databaseSelectService.selectEntryMediaErrorsByForm(
+            projectRef, formRef
         );
 
         if (branchEntries.length > 0) {

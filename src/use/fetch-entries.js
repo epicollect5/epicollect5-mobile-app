@@ -5,7 +5,7 @@ import { projectModel } from '@/models/project-model.js';
 import { databaseSelectService } from '@/services/database/database-select-service';
 
 //get entries for a form
-export async function fetchEntries (params) {
+export async function fetchEntries(params) {
 
     const dbStore = useDBStore();
     const entries = [];
@@ -77,7 +77,7 @@ export async function fetchEntries (params) {
     }
 
     //find all media errors and also count hierarchy entries (the latter for pagination)
-    const mediaErrors = await databaseSelectService.selectEntryMediaErrors(allMediaUuids);
+    const mediaErrors = await databaseSelectService.selectEntryMediaErrorsByForm(projectRef, formRef);
     const entriesCount = await databaseSelectService.countEntries(
         projectRef,
         formRef,
