@@ -41,6 +41,38 @@ export const fakeAnswerService = {
 
             switch (inputDetails.type) {
                 case 'text':
+                    if (inputDetails.regex) {
+                        // if there is a regex, generate string that matches it
+                        const randexp = new window.RandExp(inputDetails.regex);
+                        //remove invalid chars (for epicollect5 validation)
+                        randexp.defaultRange.subtract(60, 62); // -> <, >, =
+                        answer.answer = randexp.gen();
+                        console.log('answer matching regex ->', answer.answer, inputDetails.regex);
+                    } else {
+
+                        const numberOfWords = utilsService.getRandomInt(10);
+                        let randomPhrase = '';
+
+                        //add random words
+                        for (let i = 0; i < numberOfWords; i++) {
+                            const language = languagesArrays[utilsService.getRandomInt(languagesArrays.length - 1)];
+                            randomPhrase += ' ' + language[utilsService.getRandomInt(language.length - 1)] + '';
+                        }
+
+                        randomPhrase += ' ' + symbolsArray[utilsService.getRandomInt(symbolsArray.length)];
+
+                        //sanitise < and > replacing by unicode (this is here for testing)
+                        randomPhrase = randomPhrase.replaceAll('>', '\ufe65');
+                        randomPhrase = randomPhrase.replaceAll('<', '\ufe64');
+                        //"\ufe64 \ufe65", < >
+
+                        answer.answer = (entryIndex + randomPhrase).trim();
+                    }
+
+                    //imp: truncate to 255 as per epicollect limits
+                    answer.answer = utilsService.trunc(answer.answer, 255, false);
+                    resolve(answer);
+                    break;
                 case 'textarea':
                     if (inputDetails.regex) {
                         // if there is a regex, generate string that matches it
