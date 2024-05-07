@@ -12,21 +12,20 @@ export const projectModel = {
     },
 
     //data coming from DB
-    initialise (data) {
+    initialise(data) {
 
         this.data = data;
-        // Attempt to load in the extra structure
-        console.log(JSON.parse(this.data.json_extra));
         try {
             this.project_extra = JSON.parse(this.data.json_extra);
             this.mapping = JSON.parse(this.data.mapping);
+            console.log('Initialised project -> ', this.project_extra.project.details.name);
         } catch (e) {
             console.log(e);
             // Failed
         }
     },
     //data coming from server
-    initialisePWA (data) {
+    initialisePWA(data) {
         this.data = data;
         try {
             this.project_extra = this.data.json_extra;
@@ -37,61 +36,61 @@ export const projectModel = {
         }
     },
     //Load in the project extra structure only
-    loadExtraStructure (projectExtra) {
+    loadExtraStructure(projectExtra) {
         this.project_extra = projectExtra;
     },
-    hasInitialised () {
+    hasInitialised() {
         return (this.project_extra.project ? true : false);
     },
-    getProjectExtra () {
+    getProjectExtra() {
         return this.project_extra;
     },
-    getProjectMappings () {
+    getProjectMappings() {
         return this.mapping;
     },
     //Destroy this project model by resetting the attributes
-    destroy () {
+    destroy() {
         this.project_extra = {};
         this.data = {};
         this.mapping = {};
     },
-    getProjectName () {
+    getProjectName() {
         return this.project_extra.project.details.name;
     },
-    getSmallDescription () {
+    getSmallDescription() {
         return this.project_extra.project.details.small_description;
     },
-    getDescription () {
+    getDescription() {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
         return this.project_extra.project.details.description || labels.not_available;
     },
-    getSlug () {
+    getSlug() {
         return this.project_extra.project.details.slug;
     },
-    getProjectRef () {
+    getProjectRef() {
         return (this.project_extra.project ? this.project_extra.project.details.ref : '');
     },
-    getInputs (formRef) {
+    getInputs(formRef) {
         return (this.project_extra.forms[formRef].inputs) ? this.project_extra.forms[formRef].inputs : {};
     },
-    getExtraStructure () {
+    getExtraStructure() {
         return (this.project_extra) ? this.project_extra : {};
     },
-    getExtraForms () {
+    getExtraForms() {
         return (this.project_extra.forms) ? this.project_extra.forms : {};
     },
-    getExtraForm (formRef) {
+    getExtraForm(formRef) {
         return (this.project_extra.forms[formRef]) ? this.project_extra.forms[formRef] : {};
     },
-    getFirstFormRef () {
+    getFirstFormRef() {
         return (this.project_extra.project.forms[0]) ? this.project_extra.project.forms[0] : '';
     },
-    getLastFormRef () {
+    getLastFormRef() {
         return (this.project_extra.project.forms[this.project_extra.project.forms.length - 1]) ? this.project_extra.project.forms[this.project_extra.project.forms.length - 1] : '';
     },
-    getNextFormRef (formRef) {
+    getNextFormRef(formRef) {
         // Loop round forms to get position of current form
         for (let i = 0; i < this.project_extra.project.forms.length; i++) {
             // Return next form in the array
@@ -100,7 +99,7 @@ export const projectModel = {
             }
         }
     },
-    getParentFormRef (formRef) {
+    getParentFormRef(formRef) {
         // Loop round forms to get position of current form
         for (let i = 0; i < this.project_extra.project.forms.length; i++) {
             // return next form in the array
@@ -109,7 +108,7 @@ export const projectModel = {
             }
         }
     },
-    getFormIndex (formRef) {
+    getFormIndex(formRef) {
         // loop round forms to get position of current form
         for (let i = 0; i < this.project_extra.project.forms.length; i++) {
             // return next form in the array
@@ -119,32 +118,32 @@ export const projectModel = {
         }
         return 0;
     },
-    getFirstForm () {
+    getFirstForm() {
         return this.project_extra.forms[this.getFirstFormRef()];
     },
-    getFirstFormName () {
+    getFirstFormName() {
         return this.project_extra.forms[this.getFirstFormRef()].details.name;
     },
-    getFormName (formRef) {
+    getFormName(formRef) {
         return this.project_extra.forms[formRef].details.name;
     },
-    addFormToExtra (ref, data) {
+    addFormToExtra(ref, data) {
         const details = 'branch_entry';
         this.project_extra.forms[ref] = { details: details, inputs: [], cntinputs: 0 };
     },
-    getExtraInputs () {
+    getExtraInputs() {
         return this.project_extra.inputs ? this.project_extra.inputs : {};
     },
-    getFormInputs (formRef) {
+    getFormInputs(formRef) {
         return (this.project_extra.forms[formRef].inputs) ? this.project_extra.forms[formRef].inputs : {};
     },
-    getInput (inputRef) {
+    getInput(inputRef) {
         return this.project_extra.inputs[inputRef] ? this.project_extra.inputs[inputRef].data : {};
     },
-    inputExists (inputRef) {
+    inputExists(inputRef) {
         return this.project_extra.inputs[inputRef] ? true : false;
     },
-    getInputIndexFromRef (formRef, inputRef) {
+    getInputIndexFromRef(formRef, inputRef) {
 
         for (let i = 0; i < this.project_extra.forms[formRef].inputs.length; i++) {
 
@@ -155,7 +154,7 @@ export const projectModel = {
         // Otherwise return the end-of-the-form index
         return this.project_extra.forms[formRef].inputs.length;
     },
-    getBranchInputIndexFromRef (formRef, ownerInputRef, inputRef) {
+    getBranchInputIndexFromRef(formRef, ownerInputRef, inputRef) {
 
         for (let i = 0; i < this.project_extra.forms[formRef].branch[ownerInputRef].length; i++) {
 
@@ -166,27 +165,27 @@ export const projectModel = {
         // Otherwise return the end of the form index
         return this.project_extra.forms[formRef].branch[ownerInputRef].length;
     },
-    getInputRefFromIndex (formRef, inputIndex) {
+    getInputRefFromIndex(formRef, inputIndex) {
         return (this.project_extra.forms[formRef].inputs[inputIndex] ? this.project_extra.forms[formRef].inputs[inputIndex] : null);
     },
-    getBranchInputRefFromIndex (formRef, ownerInputRef, inputIndex) {
+    getBranchInputRefFromIndex(formRef, ownerInputRef, inputIndex) {
         return (this.project_extra.forms[formRef].branch[ownerInputRef][inputIndex] ? this.project_extra.forms[formRef].branch[ownerInputRef][inputIndex] : null);
     },
     // BRANCHES
-    getFormBranches (formRef) {
+    getFormBranches(formRef) {
         return (this.project_extra.forms[formRef].branch) ? this.project_extra.forms[formRef].branch : {};
     },
-    getBranches (formRef, inputRef) {
+    getBranches(formRef, inputRef) {
         return (this.project_extra.forms[formRef].branch[inputRef]) ? this.project_extra.forms[formRef].branch[inputRef] : {};
     },
-    formHasBranches (formRef) {
+    formHasBranches(formRef) {
         // TODO
     },
     // GROUPS
-    getFormGroups (formRef) {
+    getFormGroups(formRef) {
         return (this.project_extra.forms[formRef].group) ? this.project_extra.forms[formRef].group : {};
     },
-    getGroupInputs (formRef, inputRef) {
+    getGroupInputs(formRef, inputRef) {
 
         const out = [];
         let i;
@@ -202,26 +201,26 @@ export const projectModel = {
 
         return out;
     },
-    getListForms () {
+    getListForms() {
         return (this.project_extra.listForms) ? this.project_extra.listForms : [];
     },
-    getForms () {
+    getForms() {
         return (this.project_extra.forms) ? this.project_extra.forms : [];
     },
-    hasLocation (form_ref) {
+    hasLocation(form_ref) {
         return this.project_extra.forms[form_ref].details.has_location;
     },
-    getEntriesLimit (ref) {
+    getEntriesLimit(ref) {
         const refLookUp = ref || this.getFirstFormRef();
         return this.project_extra.project.entries_limits && this.project_extra.project.entries_limits[refLookUp] ? this.project_extra.project.entries_limits[refLookUp] : null;
     },
-    getLastUpdated () {
+    getLastUpdated() {
         return this.data.last_updated;
     },
-    setLastUpdated (lastUpdated) {
+    setLastUpdated(lastUpdated) {
         this.data.last_updated = lastUpdated;
     },
-    getServerUrl () {
+    getServerUrl() {
         return this.data.server_url;
     }
 };
