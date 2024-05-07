@@ -132,8 +132,7 @@ export const databaseInsertService = {
                     //so do not save any rows where the filename already exists
                     tx.executeSql(find_file_query, [entry.projectRef, entry.entryUuid, filename], function (tx, res) {
 
-                        //if the filename is not found, insert, otherwise update ans set unsynced
-
+                        //if the filename is not found, insert, otherwise update and set unsynced
                         if (res.rows.item(0).count === 0) {
                             tx.executeSql(query, [
                                 entry.entryUuid,

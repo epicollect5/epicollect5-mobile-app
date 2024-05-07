@@ -183,9 +183,7 @@ export default {
 		});
 
 		const routeParams = rootStore.routeParams;
-
 		state.entry = entryModel;
-
 		state.entryUuid = routeParams.entryUuid;
 		state.parentEntryUuid = routeParams.parentEntryUuid;
 		state.formRef = routeParams.formRef;
@@ -612,17 +610,6 @@ export default {
 
 			//get markup to show project logo in page header
 			state.projectName = utilsService.getProjectNameMarkup();
-
-			// return {
-			// 	labels,
-			// 	...methods,
-			// 	state,
-			// 	desktopOutline,
-			// 	cloudUpload,
-			// 	trash,
-			// 	removeCircle,
-			// 	chevronBackOutline
-			// };
 		}
 
 		fetchAnswers();

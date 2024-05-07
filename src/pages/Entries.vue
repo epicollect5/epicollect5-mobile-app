@@ -385,8 +385,7 @@ export default {
 			}
 
 			// Check if the project is not already loaded
-
-			console.log('project store ->', projectModel.getProjectRef());
+			console.log('project store ->', projectModel.getProjectRef() || 'n/a');
 			if (!projectModel.hasInitialised()) {
 				const result = await databaseSelectService.selectProject(
 					scope.projectRef

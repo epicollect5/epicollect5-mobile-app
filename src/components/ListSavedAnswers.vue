@@ -16,7 +16,7 @@
 						size-lg="11"
 						size-xl="11"
 					>
-						<ion-label class="saved-answer-label">{{savedAnswer}}</ion-label>
+						<ion-label class="saved-answer-label">{{ savedAnswer }}</ion-label>
 					</ion-col>
 
 					<ion-col
@@ -82,6 +82,11 @@ export default {
 
 		const methods = {
 			toggleCheckbox(answer) {
+				//this is a safety net to avoid double taps
+				if (answer === null || answer === undefined) {
+					return;
+				}
+
 				if (state.selectedAnswer === answer) {
 					state.selectedAnswer = '';
 				} else {
@@ -139,5 +144,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style
+	lang="scss"
+	scoped
+></style>
