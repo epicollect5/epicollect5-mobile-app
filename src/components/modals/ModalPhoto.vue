@@ -3,16 +3,22 @@
 		<ion-toolbar>
 			<ion-buttons slot="start">
 				<ion-button @click="dismiss()">
-					<ion-icon slot="icon-only"
-							  :icon="closeOutline">
+					<ion-icon
+						slot="icon-only"
+						:icon="closeOutline"
+					>
 					</ion-icon>
 				</ion-button>
 			</ion-buttons>
 			<ion-buttons slot="end">
-				<ion-button v-if="!isPWA"
-							@click="share()">
-					<ion-icon slot="icon-only"
-							  :icon="shareSocialSharp">
+				<ion-button
+					v-if="!isPWA"
+					@click="share()"
+				>
+					<ion-icon
+						slot="icon-only"
+						:icon="shareSocialSharp"
+					>
 					</ion-icon>
 				</ion-button>
 			</ion-buttons>
@@ -20,15 +26,21 @@
 	</ion-header>
 	<ion-content>
 
-		<swiper :modules="sliderModules"
-				:zoom="true">
+		<swiper
+			:modules="sliderModules"
+			:zoom="true"
+		>
 			<swiper-slide>
 				<div class="swiper-zoom-container">
-					<ion-spinner class="spinner ion-margin-top"
-								 v-show="!state.imageLoaded"
-								 name="crescent"></ion-spinner>
-					<img :src="imageSource"
-						 @load="onImageLoad()">
+					<ion-spinner
+						class="spinner ion-margin-top"
+						v-show="!state.imageLoaded"
+						name="crescent"
+					></ion-spinner>
+					<img
+						:src="imageSource"
+						@load="onImageLoad()"
+					>
 				</div>
 			</swiper-slide>
 
@@ -65,25 +77,30 @@ export default {
 			required: true
 		}
 	},
-	setup (props) {
+	setup(props) {
 		const sliderModules = [Zoom, IonicSlides];
 		const state = reactive({
 			imageLoaded: false
 		});
 		const methods = {
-			dismiss () {
+			dismiss() {
 				modalController.dismiss();
 			},
-			share () {
-				Share.share({
-					title: '',
-					text: '',
-					//this works in ios 14+
-					url: 'file://' + props.fileSource,
-					dialogTitle: ''
-				});
+			async share() {
+				try {
+					await Share.share({
+						title: '',
+						text: '',
+						//this works in ios 14+
+						url: 'file://' + props.fileSource,
+						dialogTitle: ''
+					});
+				}
+				catch (error) {
+					console.log('User cancelled shared action');
+				}
 			},
-			onImageLoad () {
+			onImageLoad() {
 				state.imageLoaded = true;
 			}
 		};
@@ -101,4 +118,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

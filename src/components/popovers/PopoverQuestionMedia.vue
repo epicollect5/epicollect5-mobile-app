@@ -10,7 +10,7 @@
 					slot="start"
 					:icon="shareSocial"
 				></ion-icon>
-				<ion-label>{{labels.share}}</ion-label>
+				<ion-label>{{ labels.share }}</ion-label>
 			</ion-item>
 			<ion-item
 				lines="full"
@@ -21,7 +21,7 @@
 					:icon="trash"
 					color="danger"
 				></ion-icon>
-				<ion-label color="danger">{{labels.delete}}</ion-label>
+				<ion-label color="danger">{{ labels.delete }}</ion-label>
 			</ion-item>
 		</ion-list>
 	</ion-content>
@@ -116,15 +116,20 @@ export default {
 		}
 
 		const methods = {
-			share() {
-				Share.share({
-					title: '',
-					text: '',
-					//this works in ios 14
-					url: 'file://' + getFileURI(),
-					dialogTitle: ''
-				});
-				popoverController.dismiss();
+			async share() {
+				try {
+					await Share.share({
+						title: '',
+						text: '',
+						//this works in ios 14
+						url: 'file://' + getFileURI(),
+						dialogTitle: ''
+					});
+					popoverController.dismiss();
+				}
+				catch (error) {
+					console.log('User cancelled shared action');
+				}
 			},
 			async removePWA() {
 				//we only delete the temp files directly (cached)
@@ -265,5 +270,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style
+	lang="scss"
+	scoped
+></style>

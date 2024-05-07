@@ -475,13 +475,18 @@ export default {
 				});
 				menuController.close();
 			},
-			invite() {
-				Share.share({
-					title: 'Join ' + projectModel.getProjectName() + ' on Epicollect5',
-					text: 'Tap the link on your Android or iOS device to join',
-					url: rootStore.serverUrl + '/open/project/' + projectModel.getSlug(),
-					dialogTitle: 'Join ' + projectModel.getProjectName() + ' on Epicollect5'
-				});
+			async invite() {
+				try {
+					await Share.share({
+						title: 'Join ' + projectModel.getProjectName() + ' on Epicollect5',
+						text: 'Tap the link on your Android or iOS device to join',
+						url: rootStore.serverUrl + '/open/project/' + projectModel.getSlug(),
+						dialogTitle: 'Join ' + projectModel.getProjectName() + ' on Epicollect5'
+					});
+				}
+				catch (error) {
+					console.log('User cancelled shared action');
+				}
 			}
 		};
 
