@@ -1,6 +1,6 @@
 {
   "name": "uk.ac.imperial.epicollect.five",
-  "version": "6.0.2",
+  "version": "6.0.3",
   "private": true,
   "description": "Free and easy-to-use mobile data-gathering platform",
   "scripts": {
@@ -11,6 +11,7 @@
     "lint": "vue-cli-service lint",
     "all-build": "ionic cap copy",
     "preall-build-prod": "vitest --run --silent",
+    "all-build-debug": "export VUE_APP_MODE=WEB && ionic cap copy --inline",
     "all-build-prod": "export VUE_APP_MODE=WEB && export VUE_APP_DEBUG= && VUE_APP_BYPASS_UNIQUENESS= && ionic cap copy --prod --inline",
     "all-copy": "ionic cap copy --no-build",
     "android": "export VUE_APP_MODE=WEB && ionic cap copy android && ionic cap open android",
