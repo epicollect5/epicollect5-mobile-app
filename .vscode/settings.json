@@ -7,8 +7,8 @@
     "editor.fontSize": 14,
     "editor.autoClosingQuotes": "never",
     "workbench.colorCustomizations": {
-        "titleBar.activeBackground": "#0c8ae4",
-        "titleBar.activeForeground": "#f4f4f4",
+        "titleBar.activeBackground": "#87C7A6",
+        "titleBar.activeForeground": "#000000",
         "[Idea intellij light theme]": {
             "editor.background": "#f4f4f4",
             // "editor.background": "#fff",
