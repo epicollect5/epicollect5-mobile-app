@@ -654,3 +654,14 @@ textarea {
 .pwa-margin-fix {
     margin-top: -15px !important;
 }
+.unwrap-fix {
+    text-wrap: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+// hack: Fix for lack of padding  in date and time inputs on the ios platform
+.plt-ios {
+    .datetime-value {
+        padding: 6px 0;
+    }
+}

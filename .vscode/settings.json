@@ -79,7 +79,7 @@
     "todohighlight.keywords": [
         {
             "text": "HACK:",
-            "color": "#ffffff",
+            "color": "#000000",
             "backgroundColor": "Orange",
             "isWholeLine": true
         },

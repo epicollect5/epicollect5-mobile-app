@@ -26,5 +26,24 @@
 			"AndroidPersistentFileLocation": "Compatibility",
 			"cordova.plugins.diagnostic.modules": "LOCATION WIFI CAMERA NOTIFICATIONS MICROPHONE EXTERNAL_STORAGE"
 		}
-	}
+	},
+	"packageClassList": [
+		"ActionSheetPlugin",
+		"AppPlugin",
+		"CAPCameraPlugin",
+		"DevicePlugin",
+		"DialogPlugin",
+		"FilesystemPlugin",
+		"GeolocationPlugin",
+		"HapticsPlugin",
+		"KeyboardPlugin",
+		"LocalNotificationsPlugin",
+		"CAPNetworkPlugin",
+		"PushNotificationsPlugin",
+		"SharePlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin",
+		"ToastPlugin",
+		"CDVPlugin"
+	]
 }

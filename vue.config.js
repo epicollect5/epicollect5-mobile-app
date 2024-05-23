@@ -206,7 +206,7 @@ module.exports = {
     },
     pwa: {
         //workboxPluginMode: 'GenerateSW',
-        assetsVersion: '6.0.3',
+        assetsVersion: '7.0.0',
         themeColor: '#673C90',
         msTileColor: '#FFFFFF'
     }

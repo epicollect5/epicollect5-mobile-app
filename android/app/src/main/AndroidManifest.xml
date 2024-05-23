@@ -48,6 +48,14 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <service
+            android:name="com.davidbriglio.foreground.ForegroundService"
+            android:label="Service"
+            android:foregroundServiceType="specialUse" />
+
+        <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+            android:value="Avoid the OS from killing the app when it goes in the background while taking a photo, recording a video or scanning a barcode"/>/>
     </application>
 
     <!-- Permissions -->
@@ -70,4 +78,6 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
 </manifest>

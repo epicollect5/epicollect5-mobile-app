@@ -58,8 +58,6 @@
 	<string>Epicollect5 requires constant access to your location in order to
         track your position, even when the screen is off or the app is in the
         background.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Epicollect5 requires constant access to your location in order to track your position, even when the screen is off or the app is in the background.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Epicollect5 requires access to your location when the screen is on and the app is displayed.</string>
 	<key>NSMicrophoneUsageDescription</key>
