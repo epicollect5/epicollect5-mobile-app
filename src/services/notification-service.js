@@ -42,11 +42,12 @@ export const notificationService = {
 
         // Convert message to string to avoid showing [object, object] for uncaught errors
         const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+        const headerStr = header || [STRINGS[language].labels.error];
 
         const alert = await alertController
             .create({
-                header,
-                messageStr,
+                header: headerStr,
+                message: messageStr,
                 buttons: [STRINGS[language].labels.ok]
             });
         await alert.present();
