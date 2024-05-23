@@ -654,3 +654,8 @@ textarea {
 .pwa-margin-fix {
     margin-top: -15px !important;
 }
+.unwrap-fix {
+    text-wrap: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
