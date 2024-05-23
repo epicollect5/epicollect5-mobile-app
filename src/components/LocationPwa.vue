@@ -1,8 +1,9 @@
 <template>
 	<div>
 		<ion-item class="lat-long-controls ion-hide-sm-up">
-			<ion-label position="stacked">Lat:</ion-label>
 			<ion-input
+				label="Lat:"
+				label-placement="stacked"
 				type="number"
 				inputmode="decimal"
 				placeholder="###.######"
@@ -10,8 +11,9 @@
 				:value="state.latitude"
 				@keyup="onLatValueChange($event)"
 			></ion-input>
-			<ion-label position="stacked">Long:</ion-label>
 			<ion-input
+				label="Long:"
+				label-placement="stacked"
 				type="number"
 				inputmode="decimal"
 				placeholder="###.######"
@@ -29,8 +31,9 @@
 			</ion-button>
 		</ion-item>
 		<ion-item class="lat-long-controls ion-hide-sm-down">
-			<ion-label>Lat:</ion-label>
 			<ion-input
+				label="Lat:"
+				label-placement="stacked"
 				type="number"
 				inputmode="decimal"
 				placeholder="###.######"
@@ -38,8 +41,9 @@
 				:value="state.latitude"
 				@keyup="onLatValueChange($event)"
 			></ion-input>
-			<ion-label>Long:</ion-label>
 			<ion-input
+				label="Long:"
+				label-placement="stacked"
 				type="number"
 				inputmode="decimal"
 				placeholder="###.######"
@@ -54,12 +58,12 @@
 			>
 				<ion-icon :icon="locate"></ion-icon>
 				&nbsp;
-				{{labels.update_location}}
+				{{ labels.update_location }}
 			</ion-button>
 		</ion-item>
 		<ion-item class="address-controls">
-			<ion-label>{{labels.address}}</ion-label>
 			<ion-input
+				:label="labels.address"
 				v-model="state.address"
 				placeholder="i.e. London"
 			></ion-input>
@@ -72,7 +76,7 @@
 			>
 				<ion-icon :icon="search"></ion-icon>
 				&nbsp;
-				<span>{{labels.search}}</span>
+				<span>{{ labels.search }}</span>
 			</ion-button>
 			<ion-button
 				class="ion-hide-sm-up"
