@@ -15,12 +15,16 @@
 		</template>
 
 		<template #subheader>
-			<ion-toolbar color="dark"
-						 mode="md">
+			<ion-toolbar
+				color="dark"
+				mode="md"
+			>
 				<ion-buttons slot="start">
 					<ion-button @click="goBack()">
-						<ion-icon slot="start"
-								  :icon="chevronBackOutline">
+						<ion-icon
+							slot="start"
+							:icon="chevronBackOutline"
+						>
 						</ion-icon>
 						{{ labels.back }}
 					</ion-button>
@@ -30,17 +34,24 @@
 
 		<template #content>
 			<ion-list>
-				<ion-item v-for="form in state.forms"
-						  :key="form.ref"
-						  lines="none">
+				<ion-item
+					v-for="form in state.forms"
+					:key="form.ref"
+					lines="none"
+				>
 					<div class="center-item-content-wrapper">
-						<ion-button @click="downloadEntries(form.formRef)"
-									:disabled="!state.enabledButtons[form.formRef] || state.entriesDownloaded[form.formRef] || state.noEntriesFound || state.completed"
-									size="default"
-									color="secondary"
-									expand="block">
-							<ion-icon slot="start"
-									  :icon="documentText"></ion-icon>
+						<ion-button
+							class="ion-text-nowrap"
+							@click="downloadEntries(form.formRef)"
+							:disabled="!state.enabledButtons[form.formRef] || state.entriesDownloaded[form.formRef] || state.noEntriesFound || state.completed"
+							size="default"
+							color="secondary"
+							expand="block"
+						>
+							<ion-icon
+								slot="start"
+								:icon="documentText"
+							></ion-icon>
 							&nbsp;{{ form.name }}
 						</ion-button>
 					</div>
@@ -71,7 +82,7 @@ import { downloadService } from '@/services/utilities/download-service';
 import { logout } from '@/use/logout';
 
 export default {
-	setup () {
+	setup() {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
@@ -93,7 +104,7 @@ export default {
 		state.projectName = utilsService.getProjectNameMarkup();
 
 		// Get all the forms for the form download buttons
-		function _getFormButtons () {
+		function _getFormButtons() {
 			const forms = projectModel.getExtraForms();
 			let formIndex = 0;
 
@@ -112,7 +123,7 @@ export default {
 		}
 
 		const methods = {
-			goBack () {
+			goBack() {
 				const currentRouteName = router.currentRoute.value.name;
 				if (!state.wasAttemptedDownload) {
 					//if next route not specified or itself, default back to entries
@@ -140,8 +151,8 @@ export default {
 					});
 				}
 			},
-			downloadEntries (formRef) {
-				async function _showModalUploadProgress () {
+			downloadEntries(formRef) {
+				async function _showModalUploadProgress() {
 					rootStore.progressTransfer = { total: 0, done: 0 };
 					const modal = await modalController.create({
 						cssClass: 'modal-progress-transfer',
@@ -176,7 +187,7 @@ export default {
 					startDownload();
 				}
 
-				function startDownload () {
+				function startDownload() {
 					_showModalUploadProgress();
 
 					// Start downloading for this form
@@ -271,4 +282,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

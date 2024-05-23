@@ -31,7 +31,7 @@
 				<grid-question-wide class="ion-margin-top">
 					<template #content>
 						<ion-button
-							class="question-action-button"
+							class="question-action-button ion-text-nowrap"
 							color="secondary"
 							expand="block"
 							@click="updateLocation()"

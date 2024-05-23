@@ -5,7 +5,7 @@
 	>
 		<ion-button
 			v-show="countWithFilters !== countNoFilters"
-			class="filters-clear"
+			class="filters-clear ion-text-nowrap"
 			fill="clear"
 			color="primary"
 			@click="filtersClear()"
@@ -67,4 +67,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

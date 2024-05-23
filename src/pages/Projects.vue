@@ -10,6 +10,7 @@
 
 		<template #actions-end>
 			<ion-button
+				class="ion-text-nowrap"
 				fill="clear"
 				@click="addProject()"
 			>
@@ -193,4 +194,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

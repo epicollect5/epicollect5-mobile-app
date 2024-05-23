@@ -47,6 +47,7 @@
 								{{ labels.invalid_value }}
 							</div>
 							<ion-button
+								class="ion-text-nowrap"
 								data-test="bookmark-add"
 								data-translate="add_bookmark"
 								expand="block"
@@ -160,4 +161,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

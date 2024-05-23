@@ -29,7 +29,7 @@
 				<ion-row v-if="(isPasswordlessAuthEnabled && (isAppleAuthEnabled || isGoogleAuthEnabled)) || isDebug">
 					<ion-col>
 						<div class="hr-divider-wrapper">
-							<span class="hr-divider">{{labels.or}}</span>
+							<span class="hr-divider">{{ labels.or }}</span>
 						</div>
 					</ion-col>
 				</ion-row>
@@ -37,7 +37,7 @@
 					<ion-col>
 						<div class="ion-text-center">
 							<ion-button
-								class="email-login-btn"
+								class="email-login-btn ion-text-nowrap"
 								mode="md"
 								fill="outline"
 								size="default"
@@ -51,7 +51,7 @@
 									height="24"
 								/>
 								&nbsp;
-								{{labels.login_with_email}}
+								{{ labels.login_with_email }}
 							</ion-button>
 						</div>
 					</ion-col>
@@ -178,7 +178,10 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style
+	lang="scss"
+	scoped
+>
 .hr-divider {
 	display: flex;
 	flex-basis: 100%;
@@ -186,6 +189,7 @@ export default {
 	color: #333;
 	margin: 8px 0px;
 }
+
 .hr-divider:before,
 .hr-divider:after {
 	content: "";
@@ -196,6 +200,7 @@ export default {
 	line-height: 0px;
 	margin: 0px 8px;
 }
+
 .hr-divider-wrapper {
 	max-width: 210px;
 	margin: 0 auto;

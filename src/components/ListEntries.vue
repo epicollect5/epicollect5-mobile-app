@@ -48,7 +48,7 @@
 							</ion-item>
 
 							<ion-button
-								class="child-entries-item-button-only ion-hide-sm-up"
+								class="child-entries-item-button-only ion-hide-sm-up ion-text-nowrap"
 								color="secondary"
 								size="default"
 								@click.stop="goToChildEntriesPage(entry.entry_uuid, entry.title)"

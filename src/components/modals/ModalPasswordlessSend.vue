@@ -2,7 +2,7 @@
 	<header-modal @on-dismiss="dismiss()"></header-modal>
 	<ion-content>
 		<ion-toolbar color="dark">
-			<ion-title class="ion-text-center">{{labels.login_with_email}}</ion-title>
+			<ion-title class="ion-text-center">{{ labels.login_with_email }}</ion-title>
 		</ion-toolbar>
 
 		<ion-card class="login-passwordless">
@@ -23,7 +23,7 @@
 								<ion-item lines="none">
 									<div class="center-item-content-wrapper">
 										<ion-label>
-											<small>{{labels.passwordless_teaser}}</small>
+											<small>{{ labels.passwordless_teaser }}</small>
 										</ion-label>
 									</div>
 								</ion-item>
@@ -36,14 +36,14 @@
 										slot="end"
 									>
 										<ion-button
-											class="passwordless-send-btn"
+											class="passwordless-send-btn ion-text-nowrap"
 											mode="md"
 											size="default"
 											color="secondary"
 											:disabled="state.authPasswordlessCredentials.email === ''"
 											@click="requestPasswordlessCode()"
 										>
-											{{labels.send}}
+											{{ labels.send }}
 										</ion-button>
 									</div>
 								</ion-item>
@@ -137,5 +137,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style
+	lang="scss"
+	scoped
+></style>

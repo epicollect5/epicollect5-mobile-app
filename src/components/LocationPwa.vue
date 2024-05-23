@@ -22,6 +22,7 @@
 				@keyup="onLongValueChange($event)"
 			></ion-input>
 			<ion-button
+				class="ion-text-nowrap"
 				size="default"
 				color="secondary"
 				slot="end"
@@ -52,6 +53,7 @@
 				@keyup="onLongValueChange($event)"
 			></ion-input>
 			<ion-button
+				class="ion-text-nowrap"
 				color="secondary"
 				slot="end"
 				@click="updateLocation(true)"
@@ -69,7 +71,7 @@
 			></ion-input>
 
 			<ion-button
-				class="ion-hide-sm-down"
+				class="ion-hide-sm-down ion-text-nowrap"
 				color="secondary"
 				slot="end"
 				@click="geocodeAddress"
@@ -79,7 +81,7 @@
 				<span>{{ labels.search }}</span>
 			</ion-button>
 			<ion-button
-				class="ion-hide-sm-up"
+				class="ion-hide-sm-up ion-text-nowrap"
 				color="secondary"
 				slot="end"
 				size="default"

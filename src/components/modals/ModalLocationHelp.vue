@@ -2,10 +2,14 @@
 	<ion-header class="ion-no-border">
 		<ion-toolbar color="primary">
 			<ion-buttons slot="end">
-				<ion-button class="button-close"
-							@click="dismiss()">
-					<ion-icon slot="start"
-							  :icon="closeOutline">
+				<ion-button
+					class="button-close"
+					@click="dismiss()"
+				>
+					<ion-icon
+						slot="start"
+						:icon="closeOutline"
+					>
 					</ion-icon>
 					{{ labels.close }}
 				</ion-button>
@@ -15,18 +19,23 @@
 	</ion-header>
 	<ion-content class="animate__animated animate__fadeIn">
 
-		<ion-toolbar color="dark"
-					 mode="md"
-					 class="ion-text-center ion-text-uppercase">
+		<ion-toolbar
+			color="dark"
+			mode="md"
+			class="ion-text-center ion-text-uppercase"
+		>
 			<ion-title>How to get a location</ion-title>
 		</ion-toolbar>
 
 		<ion-card class="ion-margin">
 			<ion-card-content class="ion-text-center">
 				<h2>Type in any address and click &nbsp;</h2>
-				<ion-button size="small"
-							color="secondary"
-							slot="end">
+				<ion-button
+					class="ion-text-nowrap"
+					size="small"
+					color="secondary"
+					slot="end"
+				>
 					<ion-icon :icon="locate"></ion-icon>
 					&nbsp;
 					{{ labels.update_location }}
@@ -36,9 +45,12 @@
 		<ion-card class="ion-margin">
 			<ion-card-content class="ion-text-center">
 				<h2>Type in a latitude and longitude value and click &nbsp;</h2>
-				<ion-button size="small"
-							color="secondary"
-							slot="end">
+				<ion-button
+					class="ion-text-nowrap"
+					size="small"
+					color="secondary"
+					slot="end"
+				>
 					<ion-icon :icon="locate"></ion-icon>
 					&nbsp;
 					{{ labels.update_location }}
@@ -48,19 +60,23 @@
 		<ion-card class="ion-margin">
 			<ion-card-content class="ion-text-center">
 				<h2>Click the target icon pon the map to locate your current position</h2>
-				<img class="locate-me-icon"
-					 alt="target"
-					 src="@/leaflet/images/locate-me@2x.png" />
+				<img
+					class="locate-me-icon"
+					alt="target"
+					src="@/leaflet/images/locate-me@2x.png"
+				/>
 
 			</ion-card-content>
 		</ion-card>
 		<ion-card class="ion-margin">
 			<ion-card-content class="ion-text-center">
 				<h2>Drag the marker anywhere you want </h2>
-				<img width="20"
-					 class="marker-icon"
-					 alt="target"
-					 src="@/leaflet/images/marker-icon@2x.png" />
+				<img
+					width="20"
+					class="marker-icon"
+					alt="target"
+					src="@/leaflet/images/marker-icon@2x.png"
+				/>
 			</ion-card-content>
 		</ion-card>
 	</ion-content>
@@ -74,14 +90,14 @@ import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 
 export default {
-	setup (props) {
+	setup(props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
 		const state = reactive({});
 
 		const methods = {
-			dismiss () {
+			dismiss() {
 				modalController.dismiss();
 			}
 		};
@@ -101,4 +117,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

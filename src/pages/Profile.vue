@@ -14,7 +14,7 @@
 							:icon="chevronBackOutline"
 						>
 						</ion-icon>
-						{{labels.back}}
+						{{ labels.back }}
 					</ion-button>
 				</ion-buttons>
 				<ion-buttons
@@ -27,7 +27,7 @@
 							:icon="chevronBackOutline"
 						>
 						</ion-icon>
-						{{labels.back}}
+						{{ labels.back }}
 					</ion-button>
 				</ion-buttons>
 			</ion-toolbar>
@@ -41,14 +41,14 @@
 			>
 				<div class="center-item-content-wrapper">
 					<ion-label class="ion-text-center ion-text-uppercase ">
-						{{labels.profile}}
+						{{ labels.profile }}
 					</ion-label>
 				</div>
 			</ion-toolbar>
 			<ion-card>
 				<ion-card-header class="settings-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{labels.name}}
+						{{ labels.name }}
 					</ion-card-title>
 				</ion-card-header>
 				<ion-card-content class="ion-text-left ion-no-padding">
@@ -56,14 +56,14 @@
 						lines="none"
 						class="ion-text-left"
 					>
-						<ion-label>{{user.name}}</ion-label>
+						<ion-label>{{ user.name }}</ion-label>
 					</ion-item>
 				</ion-card-content>
 			</ion-card>
 			<ion-card>
 				<ion-card-header class="settings-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{labels.email}}
+						{{ labels.email }}
 					</ion-card-title>
 				</ion-card-header>
 				<ion-card-content class="ion-text-left ion-no-padding">
@@ -71,14 +71,14 @@
 						lines="none"
 						class="ion-text-left"
 					>
-						<ion-label>{{user.email}}</ion-label>
+						<ion-label>{{ user.email }}</ion-label>
 					</ion-item>
 				</ion-card-content>
 			</ion-card>
 			<ion-card>
 				<ion-card-header class="danger-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{labels.danger}}
+						{{ labels.danger }}
 					</ion-card-title>
 				</ion-card-header>
 				<ion-card-content class="ion-text-center ion-no-padding">
@@ -89,13 +89,14 @@
 						<ion-label>
 
 							<ion-button
+								class="ion-text-nowrap"
 								size="default"
 								color="danger"
 								@click="openModalAccountDeletion()"
 							>
 								<ion-icon :icon="nuclear"></ion-icon>
 								&nbsp;
-								{{labels.delete_account}}
+								{{ labels.delete_account }}
 							</ion-button>
 						</ion-label>
 					</ion-item>
@@ -152,7 +153,7 @@ export default {
 					}
 				});
 
-				scope.ModalAccountDeletion.onDidDismiss().then((response) => {});
+				scope.ModalAccountDeletion.onDidDismiss().then((response) => { });
 				return scope.ModalAccountDeletion.present();
 			}
 		};
@@ -182,5 +183,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style
+	lang="scss"
+	scoped
+></style>

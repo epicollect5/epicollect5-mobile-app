@@ -37,7 +37,7 @@
 			<grid-question-wide v-if=!isPWA>
 				<template #content>
 					<ion-button
-						class="question-action-button"
+						class="question-action-button ion-text-nowrap"
 						color="secondary"
 						expand="block"
 						@click="updateLocation()"
@@ -432,4 +432,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>
