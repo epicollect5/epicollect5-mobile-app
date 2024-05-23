@@ -1,16 +1,16 @@
 <template>
 	<ion-card
 		class="question-card"
-		:class="{'animate__animated animate__fadeIn' : !isGroupInput}"
+		:class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
 	>
 		<ion-card-header class="question-label">
 			<ion-card-title>
-				{{state.question}}
+				{{ state.question }}
 			</ion-card-title>
 		</ion-card-header>
 		<ion-card-content
 			class="ion-text-center"
-			:class="{'ion-margin' : isGroupInput}"
+			:class="{ 'ion-margin': isGroupInput }"
 		>
 			<div
 				class="question-required"
@@ -22,13 +22,13 @@
 				class="question-error"
 				v-if="hasError"
 			>
-				{{errorMessage}}
+				{{ errorMessage }}
 			</div>
 
 			<grid-question-narrow>
 				<template #content>
 					<ion-button
-						class="question-action-button"
+						class="question-action-button ion-text-nowrap"
 						color="secondary"
 						expand="block"
 						@click="openSearch()"
@@ -37,7 +37,7 @@
 							slot="start"
 							:icon="search"
 						></ion-icon>
-						{{labels.search}}
+						{{ labels.search }}
 					</ion-button>
 				</template>
 			</grid-question-narrow>
@@ -63,7 +63,7 @@
 							:key="pick.ref"
 						>
 							<ion-label>
-								{{pick.answer}}
+								{{ pick.answer }}
 							</ion-label>
 							<div class="ion-activatable ripple-parent">
 								<ion-icon
@@ -183,7 +183,7 @@ export default {
 		};
 
 		const methods = {
-			test() {},
+			test() { },
 			async openSearch() {
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
@@ -251,5 +251,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style
+	lang="scss"
+	scoped
+></style>

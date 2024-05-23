@@ -16,29 +16,29 @@
 					>
 						<ion-button
 							v-if="!entriesAddState.questionParams.isBranch"
-							class="question-action-button"
+							class="question-action-button ion-text-nowrap"
 							color="secondary"
 							expand="block"
 							@click="save()"
 						>
 							<ion-icon
 								slot="start"
-								:icon="isPWA ? cloudUpload :  archive"
+								:icon="isPWA ? cloudUpload : archive"
 							></ion-icon>
-							{{labels.save_entry}}
+							{{ labels.save_entry }}
 						</ion-button>
 						<ion-button
 							v-if="entriesAddState.questionParams.isBranch"
-							class="question-action-button"
+							class="question-action-button ion-text-nowrap"
 							color="secondary"
 							expand="block"
 							@click="save()"
 						>
 							<ion-icon
 								slot="start"
-								:icon="isPWA ? cloudUpload :  archive"
+								:icon="isPWA ? cloudUpload : archive"
 							></ion-icon>
-							{{labels.save_branch_entry}}
+							{{ labels.save_branch_entry }}
 						</ion-button>
 					</ion-col>
 				</ion-row>
@@ -119,5 +119,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style
+	lang="scss"
+	scoped
+></style>

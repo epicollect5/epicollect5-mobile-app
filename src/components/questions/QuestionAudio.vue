@@ -36,7 +36,7 @@
 			<grid-question-narrow v-if="!isPWA">
 				<template #content>
 					<ion-button
-						class="question-action-button"
+						class="question-action-button ion-text-nowrap"
 						color="secondary"
 						expand="block"
 						@click="record()"
@@ -57,7 +57,7 @@
 				<template #content>
 					<ion-button
 						:disabled="!isFileAvailable"
-						class="question-action-button"
+						class="question-action-button ion-text-nowrap"
 						color="secondary"
 						expand="block"
 						@click="play()"
@@ -359,4 +359,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

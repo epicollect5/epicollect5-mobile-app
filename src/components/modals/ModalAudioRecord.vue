@@ -33,7 +33,7 @@
 						<ion-button
 							data-translate="stop"
 							@click="stop()"
-							class="question-action-button"
+							class="question-action-button ion-text-nowrap"
 							color="secondary"
 							expand="block"
 						>
@@ -175,4 +175,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

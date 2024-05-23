@@ -6,6 +6,7 @@
 	>
 		<ion-label class="ion-text-uppercase ion-text-start">{{ labels.unsaved_branch_entries }}</ion-label>
 		<ion-button
+			class="ion-text-nowrap"
 			color="warning"
 			size="default"
 			@click="saveBranchEntry()"
@@ -64,7 +65,7 @@
 					>
 						<ion-button
 							:disabled="isEntriesLimitReached"
-							class="question-action-button"
+							class="question-action-button ion-text-nowrap"
 							color="secondary"
 							expand="block"
 							@click="addBranch()"

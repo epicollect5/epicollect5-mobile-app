@@ -86,6 +86,7 @@
 				>
 					<ion-label class="ion-text-uppercase ion-text-start">{{ labels.unsynced_entry }}</ion-label>
 					<ion-button
+						class="ion-text-nowrap"
 						color="warning"
 						size="default"
 						@click="goToUploadPage()"

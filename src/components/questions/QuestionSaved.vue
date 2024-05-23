@@ -1,8 +1,8 @@
 <template>
 	<ion-card class="question-card animate__animated animate__fadeIn">
 		<ion-card-header class="ion-text-center">
-			<ion-card-title v-if="state.saved">{{labels.entry_completed}}</ion-card-title>
-			<ion-card-title v-if="state.failed">{{labels.has_errors}}</ion-card-title>
+			<ion-card-title v-if="state.saved">{{ labels.entry_completed }}</ion-card-title>
+			<ion-card-title v-if="state.failed">{{ labels.has_errors }}</ion-card-title>
 		</ion-card-header>
 		<ion-card-content
 			v-if="showAddEntryButton || state.failed"
@@ -24,7 +24,7 @@
 
 						<ion-button
 							v-if="state.saved"
-							class="question-action-button"
+							class="question-action-button ion-text-nowrap"
 							color="secondary"
 							expand="block"
 							@click="addEntry()"
@@ -33,12 +33,12 @@
 								slot="start"
 								:icon="addOutline"
 							></ion-icon>
-							{{labels.add_entry}}
+							{{ labels.add_entry }}
 						</ion-button>
 
 						<ion-button
 							v-if="state.failed"
-							class="question-action-button"
+							class="question-action-button ion-text-nowrap"
 							color="danger"
 							expand="block"
 							@click="goBack()"
@@ -47,7 +47,7 @@
 								slot="start"
 								:icon="arrowBackOutline"
 							></ion-icon>
-							{{labels.back}}
+							{{ labels.back }}
 						</ion-button>
 
 					</ion-col>
@@ -132,5 +132,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style
+	lang="scss"
+	scoped
+></style>

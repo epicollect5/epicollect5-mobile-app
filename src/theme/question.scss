@@ -120,6 +120,7 @@ ion-chip.has-error {
         padding: 8px;
     }
     .chip-numeric {
+        padding: 0 16px;
         .chip-numeric--icon-left {
             margin-right: 16px;
         }
@@ -128,7 +129,13 @@ ion-chip.has-error {
         }
         input {
             padding: 12px;
+            border-top: none;
+            border-bottom: none;
+            border-width: 1px;
+            border-left: 1px solid;
+            border-color: var(--ion-color-medium-tint);
             &.has-error {
+                border: 1px solid var(--ion-color-danger) !important;
                 padding: 10px !important;
             }
         }
@@ -160,9 +167,6 @@ ion-chip.has-error {
     margin: 16px 0;
     max-height: 200px;
 }
-textarea {
-    //resize: none;
-}
 
 //render smaller date & time pickers in GROUP(s)
 .question-group {
@@ -178,7 +182,7 @@ textarea {
 }
 
 .chip-datetimepicker {
-    padding: 20px 10px 20px 0px;
+    padding: 0 16px 0 0;
     &.entries-filters {
         padding-right: 0px !important;
         .datetime-value {
@@ -200,7 +204,7 @@ textarea {
         width: 200px;
         background-color: var(--ion-color-secondary);
         //  border-radius: 8px;
-        padding: 10px 0;
+        // padding: 10px 0; -> added for ios in core.css
         ion-datetime {
             font-size: 16px;
             font-weight: 400;

@@ -5,45 +5,45 @@ PODS:
   - AppAuth/Core (1.6.2)
   - AppAuth/ExternalUserAgent (1.6.2):
     - AppAuth/Core
-  - Capacitor (5.0.5):
+  - Capacitor (6.0.0):
     - CapacitorCordova
-  - CapacitorActionSheet (5.0.4):
+  - CapacitorActionSheet (6.0.0):
     - Capacitor
-  - CapacitorApp (5.0.3):
+  - CapacitorApp (6.0.0):
     - Capacitor
-  - CapacitorCamera (5.0.4):
+  - CapacitorCamera (6.0.0):
     - Capacitor
-  - CapacitorCordova (5.0.5)
-  - CapacitorDevice (5.0.4):
+  - CapacitorCordova (6.0.0)
+  - CapacitorDevice (6.0.0):
     - Capacitor
-  - CapacitorDialog (5.0.4):
+  - CapacitorDialog (6.0.0):
     - Capacitor
-  - CapacitorFilesystem (5.0.4):
+  - CapacitorFilesystem (6.0.0):
     - Capacitor
-  - CapacitorGeolocation (5.0.4):
+  - CapacitorGeolocation (6.0.0):
     - Capacitor
-  - CapacitorHaptics (5.0.4):
+  - CapacitorHaptics (6.0.0):
     - Capacitor
-  - CapacitorKeyboard (5.0.4):
+  - CapacitorKeyboard (6.0.0):
     - Capacitor
-  - CapacitorLocalNotifications (5.0.4):
+  - CapacitorLocalNotifications (6.0.0):
     - Capacitor
-  - CapacitorNetwork (5.0.4):
+  - CapacitorNetwork (6.0.0):
     - Capacitor
-  - CapacitorPushNotifications (5.0.4):
+  - CapacitorPushNotifications (6.0.0):
     - Capacitor
-  - CapacitorShare (5.0.4):
+  - CapacitorShare (6.0.0):
     - Capacitor
-  - CapacitorSplashScreen (5.0.4):
+  - CapacitorSplashScreen (6.0.0):
     - Capacitor
-  - CapacitorStatusBar (5.0.4):
+  - CapacitorStatusBar (6.0.0):
     - Capacitor
-  - CapacitorToast (5.0.4):
+  - CapacitorToast (6.0.0):
     - Capacitor
-  - CordovaPlugins (5.0.5):
+  - CordovaPlugins (6.0.0):
     - CapacitorCordova
   - CordovaPluginsResources (0.0.105)
-  - CordovaPluginsStatic (5.0.5):
+  - CordovaPluginsStatic (6.0.0):
     - CapacitorCordova
     - GoogleSignIn (~> 5.0.2)
     - GoogleUtilities (~> 7.2.2)
@@ -168,27 +168,27 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   AppAuth: 3bb1d1cd9340bd09f5ed189fb00b1cc28e1e8570
-  Capacitor: b1248915663add1bd6567e2b67c1c1fa3abcf5e8
-  CapacitorActionSheet: 0bed77a015817ac656469b4c7491a3371295baa5
-  CapacitorApp: 7a5dec8b33573707164b293475d5c89ba684364a
-  CapacitorCamera: 9b5c8e809c1042f263994f97ba846aa37e974f12
-  CapacitorCordova: f8c06b897c74ee8f7701fe10e6443b40822bc83a
-  CapacitorDevice: eb4b5e3b42ac35d2527f20aad296b59e0785dc8d
-  CapacitorDialog: fe8b913cdf8c73cabe556974565fc44f2a09c75f
-  CapacitorFilesystem: e1bdfab09b95b181c844c16abcfda45ec8e8ed6b
-  CapacitorGeolocation: 33015be1ef496585a60da9efa1c5642ff8624db3
-  CapacitorHaptics: e36653b37326d71bb35ae42b944124037dbc3d97
-  CapacitorKeyboard: d1b25fde6f19744ad09c890862aefc6e2a7ded3d
-  CapacitorLocalNotifications: 2c95d27ccf9cc28ecc59d69b54d29074c1740172
-  CapacitorNetwork: e2bd0bf1614aca34bb976f125a756a8a3df1c81a
-  CapacitorPushNotifications: 3704ac3dac68a9bfc669fb384cbc7beec9b1f100
-  CapacitorShare: 427bba238a1e3f116b2b349019aec6ea7f42cebd
-  CapacitorSplashScreen: 93a389d4f7673c08214ae25bb6f21d867d5305c5
-  CapacitorStatusBar: 190e0321b8734f4244d0c81baa183a00d5806ddf
-  CapacitorToast: fcc4329f01d06cf02f190f8f5ce7f16509a2263c
-  CordovaPlugins: 5a9172e0ec03e6e94907a6d92d0c8df72417df92
+  Capacitor: 559d073c4ca6c27f8e7002c807eea94c3ba435a9
+  CapacitorActionSheet: de123f478f394373f84a96614ce2b1a6c30253e4
+  CapacitorApp: 9d53aec7101f7b030a950c5bdc4df8612576b279
+  CapacitorCamera: b61f125d92a0ef75d7becb7956fed7dd13187ee0
+  CapacitorCordova: 8c4bfdf69368512e85b1d8b724dd7546abeb30af
+  CapacitorDevice: f8fd88f9edd1261c55a109f32015b09bbbfdc4a0
+  CapacitorDialog: 64aa82840ee5e9c066f9e1a49c1e186afd3f24d2
+  CapacitorFilesystem: 60e59ba274c234a979e7a3be2552feaadcee4263
+  CapacitorGeolocation: 1f12bbe372b65116e851bd8e3a94cf0ef9bacebb
+  CapacitorHaptics: 9ebc9363f0e9b8eb4295088a0b474530acf1859b
+  CapacitorKeyboard: deacbd09d8d1029c3681197fb05d206b721d5f73
+  CapacitorLocalNotifications: 4ab68f0be5f697a579558fadd307d823a9ec1c26
+  CapacitorNetwork: f15a94c16a33cba7c47a17814cb6bcfe3ea34ded
+  CapacitorPushNotifications: e18636e8a96f1d70b4c669e21c730e995bf5e5c9
+  CapacitorShare: a771200d3b924a5d7ad9d9fecbac517e4c0aa74f
+  CapacitorSplashScreen: 5431ab8d19c1c6e95777d53bfaa7a36a6c3d94c7
+  CapacitorStatusBar: 2e4369f99166125435641b1908d05f561eaba6f6
+  CapacitorToast: ba573a7bc5dfd622e78d5be126a84ee221da4180
+  CordovaPlugins: c6cca6b7d1d323852c22a8e84df638a5934ff712
   CordovaPluginsResources: 1b3992e05cb6336d2850cd77dd5e3054f2f76f96
-  CordovaPluginsStatic: d3307518c9852006c8c3815bd34144ddc7369c93
+  CordovaPluginsStatic: b74b006d16f3863ec7fd712ee86371ed66971ca1
   GoogleSignIn: 7137d297ddc022a7e0aa4619c86d72c909fa7213
   GoogleUtilities: 31c5b01f978a70c6cff2afc6272b3f1921614b43
   GTMAppAuth: 0ff230db599948a9ad7470ca667337803b3fc4dd

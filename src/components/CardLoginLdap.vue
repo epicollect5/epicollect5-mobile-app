@@ -28,14 +28,14 @@
 							<ion-item lines="none">
 								<div class="center-item-content-wrapper ion-padding-top ion-padding-bottom">
 									<ion-button
-										class="local-login-btn"
+										class="local-login-btn ion-text-nowrap"
 										expand="full"
 										mode="md"
 										size="default"
 										color="secondary"
 										type="submit"
 									>
-										{{labels.login}}
+										{{ labels.login }}
 									</ion-button>
 								</div>
 							</ion-item>
@@ -87,5 +87,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style
+	lang="scss"
+	scoped
+></style>

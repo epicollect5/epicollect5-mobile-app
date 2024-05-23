@@ -1,69 +1,95 @@
 <template>
-  <ion-card class="question-card"
-            :class="{ 'animate__animated animate__fadeIn': !isGroupInput }">
+  <ion-card
+    class="question-card"
+    :class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
+  >
     <ion-card-header class="question-label">
       <ion-card-title>
         {{ state.question }}
       </ion-card-title>
-      <ion-card-subtitle v-if="hasPattern"
-                         class="question-properties ion-text-right ion-padding">
+      <ion-card-subtitle
+        v-if="hasPattern"
+        class="question-properties ion-text-right ion-padding"
+      >
         {{ labels.pattern }}:
         <span> &nbsp;{{ state.pattern }} </span>
       </ion-card-subtitle>
     </ion-card-header>
-    <ion-card-content class="ion-text-center"
-                      :class="{ 'ion-margin': isGroupInput }">
-      <div class="question-required"
-           v-if="state.required">
+    <ion-card-content
+      class="ion-text-center"
+      :class="{ 'ion-margin': isGroupInput }"
+    >
+      <div
+        class="question-required"
+        v-if="state.required"
+      >
         {{ labels.required }}
       </div>
-      <div class="question-error"
-           v-if="hasError">
+      <div
+        class="question-error"
+        v-if="hasError"
+      >
         {{ errorMessage }}
       </div>
-      <ion-grid v-if="!isPWA"
-                class="ion-no-padding">
+      <ion-grid
+        v-if="!isPWA"
+        class="ion-no-padding"
+      >
         <ion-row>
-          <ion-col size-xs="8"
-                   offset-xs="2"
-                   size-sm="6"
-                   offset-sm="3"
-                   size-md="4"
-                   offset-md="4"
-                   size-lg="4"
-                   offset-lg="4"
-                   class="ion-align-self-center">
-            <ion-button class="question-action-button"
-                        color="secondary"
-                        expand="block"
-                        @click="scan()">
-              <ion-icon slot="start"
-                        :icon="scanSharp"></ion-icon>
+          <ion-col
+            size-xs="8"
+            offset-xs="2"
+            size-sm="6"
+            offset-sm="3"
+            size-md="4"
+            offset-md="4"
+            size-lg="4"
+            offset-lg="4"
+            class="ion-align-self-center"
+          >
+            <ion-button
+              class="question-action-button ion-text-nowrap"
+              color="secondary"
+              expand="block"
+              @click="scan()"
+            >
+              <ion-icon
+                slot="start"
+                :icon="scanSharp"
+              ></ion-icon>
               {{ labels.scan }}
             </ion-button>
           </ion-col>
         </ion-row>
       </ion-grid>
-      <ion-grid class="ion-no-padding"
-                :class="{ 'pwa-margin-fix': isPWA }">
+      <ion-grid
+        class="ion-no-padding"
+        :class="{ 'pwa-margin-fix': isPWA }"
+      >
         <ion-row>
-          <ion-col size-xs="12"
-                   offset-xs="0"
-                   size-sm="8"
-                   offset-sm="2"
-                   size-md="6"
-                   offset-md="3"
-                   size-lg="6"
-                   offset-lg="3"
-                   class="ion-align-self-center">
+          <ion-col
+            size-xs="12"
+            offset-xs="0"
+            size-sm="8"
+            offset-sm="2"
+            size-md="6"
+            offset-md="3"
+            size-lg="6"
+            offset-lg="3"
+            class="ion-align-self-center"
+          >
             <div class="ion-margin-top">
-              <input type="text"
-                     class="question-input"
-                     :class="{ 'has-error': hasError }"
-                     :value="state.answer.answer"
-                     @input="onInputValueChange($event)" />
-              <div class="question-error"
-                   v-if="hasError">
+              <input
+                type="text"
+                class="question-input"
+                :class="{ 'has-error': hasError }"
+                :value="state.answer.answer"
+                @input="onInputValueChange($event)"
+              />
+              <div
+                class="question-error"
+                v-if="hasError"
+              >
                 {{ errorMessage }}
               </div>
             </div>
@@ -100,7 +126,7 @@ export default {
     }
   },
   emits: ['question-mounted'],
-  setup (props, context) {
+  setup(props, context) {
     const rootStore = useRootStore();
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
@@ -160,12 +186,12 @@ export default {
     };
 
     const methods = {
-      onInputValueChange (event) {
+      onInputValueChange(event) {
         const value = event.target.value;
         state.answer.answer = utilsService.getSanitisedAnswer(value);
       },
 
-      async scan () {
+      async scan() {
         //show spinner and hide it immediately
         await notificationService.showProgressDialog(
           STRINGS[language].labels.preparing_scanner,
@@ -292,4 +318,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+  lang="scss"
+  scoped
+></style>

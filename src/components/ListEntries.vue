@@ -31,7 +31,7 @@
 						<!-- Two columns layout to be shown for projects with multiple forms -->
 						<ion-col
 							size="3"
-							class="list-entries-item-child ion-text-end"
+							class="list-entries-item-child ion-text-end unwrap-fix"
 							v-if="nextFormRef"
 						>
 							<ion-item
@@ -48,7 +48,7 @@
 							</ion-item>
 
 							<ion-button
-								class="child-entries-item-button-only ion-hide-sm-up"
+								class="child-entries-item-button-only ion-hide-sm-up ion-text-nowrap"
 								color="secondary"
 								size="default"
 								@click.stop="goToChildEntriesPage(entry.entry_uuid, entry.title)"

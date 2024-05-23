@@ -89,6 +89,7 @@
 						class="ion-align-self-center"
 					>
 						<ion-button
+							class="ion-text-nowrap"
 							color="danger"
 							expand="block"
 							@click="goToEntriesErrors()"
@@ -111,6 +112,7 @@
 						class="ion-align-self-center"
 					>
 						<ion-button
+							class="ion-text-nowrap"
 							:disabled="!state.canUploadData"
 							color="secondary"
 							expand="block"
@@ -138,6 +140,7 @@
 						class="ion-align-self-center"
 					>
 						<ion-button
+							class="ion-text-nowrap"
 							:disabled="state.photos.length === 0"
 							color="secondary"
 							expand="block"
@@ -165,6 +168,7 @@
 						class="ion-align-self-center"
 					>
 						<ion-button
+							class="ion-text-nowrap"
 							:disabled="state.audios.length === 0"
 							color="secondary"
 							expand="block"
@@ -192,6 +196,7 @@
 						class="ion-align-self-center"
 					>
 						<ion-button
+							class="ion-text-nowrap"
 							:disabled="state.videos.length === 0"
 							color="secondary"
 							expand="block"
