@@ -10,7 +10,7 @@
 					slot="start"
 					:icon="create"
 				></ion-icon>
-				<ion-label>{{ labels.edit }}</ion-label>
+				<ion-label class="ion-text-nowrap">{{ labels.edit }}</ion-label>
 			</ion-item>
 			<ion-item
 				button
@@ -22,7 +22,7 @@
 					slot="start"
 					:icon="location"
 				></ion-icon>
-				<ion-label>
+				<ion-label class="ion-text-nowrap">
 					{{ labels.view_on }} Organic Maps
 					<sup>
 						<small>Beta</small>
@@ -39,7 +39,7 @@
 					slot="start"
 					:icon="mapOutline"
 				></ion-icon>
-				<ion-label>{{ labels.view_on }} Google Maps
+				<ion-label class="ion-text-nowrap">{{ labels.view_on }} Google Maps
 					<sup>
 						<small>Beta</small>
 					</sup>
@@ -55,7 +55,7 @@
 					slot="start"
 					:icon="navigateCircleOutline"
 				></ion-icon>
-				<ion-label>{{ labels.view_on }} Here WeGo Maps
+				<ion-label class="ion-text-nowrap">{{ labels.view_on }} Here WeGo Maps
 					<sup>
 						<small>Beta</small>
 					</sup>

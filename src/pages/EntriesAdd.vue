@@ -75,7 +75,7 @@
 					color="light"
 					sticky
 				>
-					<ion-label class="entry-name-label ion-text-center">
+					<ion-label class="entry-name-label ion-text-center ion-text-nowrap">
 						{{ parentEntryName }} {{ currentFormName }}
 					</ion-label>
 				</ion-item-divider>
@@ -897,4 +897,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>

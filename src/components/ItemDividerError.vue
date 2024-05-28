@@ -1,12 +1,11 @@
-
 <template>
 	<ion-item-divider
 		color="danger"
 		class="entry-error-global ion-text-center"
 		sticky
 	>
-		<ion-label class="entry-title-label ion-text-center ion-text-wrap">
-			{{props.message}}
+		<ion-label class="entry-title-label ion-text-center">
+			{{ props.message }}
 		</ion-label>
 	</ion-item-divider>
 </template>
@@ -27,5 +26,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style
+	lang="scss"
+	scoped
+></style>

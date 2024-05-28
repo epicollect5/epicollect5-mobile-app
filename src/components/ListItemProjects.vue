@@ -17,8 +17,8 @@
 			>
 		</ion-avatar>
 
-		<ion-label>
-			<p>{{project.name}}</p>
+		<ion-label class="ion-text-nowrap">
+			<p>{{ project.name }}</p>
 		</ion-label>
 	</ion-item>
 </template>
@@ -91,7 +91,10 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style
+	lang="scss"
+	scoped
+>
 .spinner {
 	position: absolute;
 	top: 15px;

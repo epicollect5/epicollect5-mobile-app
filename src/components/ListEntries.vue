@@ -40,7 +40,7 @@
 								class="child-entries-item-button ion-hide-sm-down"
 								@click.stop="goToChildEntriesPage(entry.entry_uuid, entry.title)"
 							>
-								<ion-label> {{ formName }} </ion-label>
+								<ion-label class="ion-text-nowrap"> {{ formName }} </ion-label>
 								<ion-icon
 									:icon="enter"
 									slot="end"
