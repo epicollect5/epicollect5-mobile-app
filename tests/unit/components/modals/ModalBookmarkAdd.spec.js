@@ -7,12 +7,7 @@ import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { useBookmarkStore } from '@/stores/bookmark-store';
-import { createTestingPinia } from '@pinia/testing';
 import { notificationService } from '@/services/notification-service';
-import { webService } from '@/services/web-service';
-import { utilsService } from '@/services/utilities/utils-service';
-import { errorsService } from '@/services/errors-service';
-import { useDBStore } from '@/stores/db-store';
 import flushPromises from 'flush-promises';
 import { modalController, loadingController } from '@ionic/vue';
 
