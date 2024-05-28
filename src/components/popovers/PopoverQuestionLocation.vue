@@ -23,7 +23,7 @@
 					:icon="location"
 				></ion-icon>
 				<ion-label class="ion-text-nowrap">
-					{{ labels.view_on }} Organic Maps
+					{{ labels.view_on }}: <br /> Organic Maps
 					<sup>
 						<small>Beta</small>
 					</sup>
@@ -39,7 +39,7 @@
 					slot="start"
 					:icon="mapOutline"
 				></ion-icon>
-				<ion-label class="ion-text-nowrap">{{ labels.view_on }} Google Maps
+				<ion-label class="ion-text-nowrap">{{ labels.view_on }}: <br /> Google Maps
 					<sup>
 						<small>Beta</small>
 					</sup>
@@ -55,7 +55,7 @@
 					slot="start"
 					:icon="navigateCircleOutline"
 				></ion-icon>
-				<ion-label class="ion-text-nowrap">{{ labels.view_on }} Here WeGo Maps
+				<ion-label class="ion-text-nowrap">{{ labels.view_on }}: <br />Here WeGo Maps
 					<sup>
 						<small>Beta</small>
 					</sup>

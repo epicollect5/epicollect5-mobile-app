@@ -12,7 +12,7 @@ export async function popoverLocationHandler({ state }) {
         cssClass: 'popover-question-location',
         animated: false,
         reference: 'trigger',
-        side: 'left'
+        side: 'center'
     });
     popover.onDidDismiss().then((response) => {
         if (response.data) {
