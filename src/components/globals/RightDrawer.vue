@@ -11,7 +11,10 @@
 				color="primary"
 				class="ion-text-center ion-text-uppercase"
 			>
-				<ion-label data-translate="project_options">{{ labels.project_options }}</ion-label>
+				<ion-label
+					data-translate="project_options"
+					class="ion-text-nowrap"
+				>{{ labels.project_options }}</ion-label>
 			</ion-toolbar>
 		</ion-header>
 		<ion-content ref="drawerContent">
@@ -23,7 +26,10 @@
 				>
 					<ion-icon :icon="cloudUpload">
 					</ion-icon>
-					<ion-label data-translate="upload_entries">
+					<ion-label
+						data-translate="upload_entries"
+						class="ion-text-nowrap"
+					>
 						&nbsp;{{ labels.upload_entries }}
 					</ion-label>
 				</ion-item>
@@ -34,7 +40,10 @@
 				>
 					<ion-icon :icon="cloudDownload">
 					</ion-icon>
-					<ion-label data-translate="download_entries"> &nbsp;{{ labels.download_entries }}</ion-label>
+					<ion-label
+						data-translate="download_entries"
+						class="ion-text-nowrap"
+					> &nbsp;{{ labels.download_entries }}</ion-label>
 				</ion-item>
 
 				<ion-item
@@ -44,7 +53,10 @@
 				>
 					<ion-icon :icon="unlink">
 					</ion-icon>
-					<ion-label data-translate="unsync_all_entries">
+					<ion-label
+						data-translate="unsync_all_entries"
+						class="ion-text-nowrap"
+					>
 						&nbsp;{{ labels.unsync_all_entries }}
 					</ion-label>
 				</ion-item>
@@ -63,7 +75,10 @@
 				>
 					<ion-icon :icon="bookmark">
 					</ion-icon>
-					<ion-label data-translate="bookmark_page">&nbsp;{{ labels.bookmark_page }}</ion-label>
+					<ion-label
+						data-translate="bookmark_page"
+						class="ion-text-nowrap"
+					>&nbsp;{{ labels.bookmark_page }}</ion-label>
 				</ion-item>
 				<ion-item
 					button
@@ -73,7 +88,10 @@
 				>
 					<ion-icon :icon="bookmark">
 					</ion-icon>
-					<ion-label data-translate="remove_bookmark">&nbsp;{{ labels.remove_bookmark }}</ion-label>
+					<ion-label
+						data-translate="remove_bookmark"
+						class="ion-text-nowrap"
+					>&nbsp;{{ labels.remove_bookmark }}</ion-label>
 				</ion-item>
 				<ion-item
 					button
@@ -82,7 +100,10 @@
 				>
 					<ion-icon :icon="informationCircle">
 					</ion-icon>
-					<ion-label data-translate="project_info">&nbsp;{{ labels.project_info }}</ion-label>
+					<ion-label
+						data-translate="project_info"
+						class="ion-text-nowrap"
+					>&nbsp;{{ labels.project_info }}</ion-label>
 				</ion-item>
 				<ion-item
 					button
@@ -91,7 +112,10 @@
 				>
 					<ion-icon :icon="desktopOutline">
 					</ion-icon>
-					<ion-label data-translate="edit_remote_entries">&nbsp;{{ labels.edit_remote_entries }}</ion-label>
+					<ion-label
+						data-translate="edit_remote_entries"
+						class="ion-text-nowrap"
+					>&nbsp;{{ labels.edit_remote_entries }}</ion-label>
 				</ion-item>
 				<!-- <ion-item
 					button
@@ -100,14 +124,14 @@
 				>
 					<ion-icon :icon="people">
 					</ion-icon>
-					<ion-label data-translate="invite">&nbsp;{{ labels.invite }}</ion-label>
+					<ion-label data-translate="invite" class="ion-text-nowrap">&nbsp;{{ labels.invite }}</ion-label>
 				</ion-item> -->
 				<ion-item-divider
 					color="primary"
 					class="ion-no-padding"
 				>
 					<ion-label
-						class="item-divider-label-centered ion-text-uppercase"
+						class="item-divider-label-centered ion-text-uppercase ion-text-nowrap"
 						data-translate="sort"
 					>
 						{{ labels.sort }}
@@ -150,7 +174,10 @@
 				>
 					<ion-icon :icon="timeOutline">
 					</ion-icon>
-					<ion-label data-translate="newest">&nbsp;{{ labels.newest }}</ion-label>
+					<ion-label
+						data-translate="newest"
+						class="ion-text-nowrap"
+					>&nbsp;{{ labels.newest }}</ion-label>
 					<ion-icon
 						v-if="state.order.field === 'created_at' && state.order.sortType === 'DESC'"
 						:icon="checkmark"
@@ -165,7 +192,10 @@
 				>
 					<ion-icon :icon="timeOutline">
 					</ion-icon>
-					<ion-label data-translate="oldest">&nbsp;{{ labels.oldest }}</ion-label>
+					<ion-label
+						data-translate="oldest"
+						class="ion-text-nowrap"
+					>&nbsp;{{ labels.oldest }}</ion-label>
 					<ion-icon
 						v-if="state.order.field === 'created_at' && state.order.sortType === 'ASC'"
 						:icon="checkmark"
@@ -178,7 +208,7 @@
 					class="ion-no-padding"
 				>
 					<ion-label
-						class="item-divider-label-centered ion-text-uppercase"
+						class="item-divider-label-centered ion-text-uppercase ion-text-nowrap"
 						data-translate="delete"
 					>
 						{{ labels.delete }}
@@ -197,6 +227,7 @@
 					<ion-label
 						color="danger"
 						data-translate="delete_all_entries"
+						class="ion-text-nowrap"
 					>
 						&nbsp;{{ labels.delete_all_entries }}
 					</ion-label>
@@ -214,6 +245,7 @@
 					<ion-label
 						color="danger"
 						data-translate="delete_project"
+						class="ion-text-nowrap"
 					>
 						&nbsp;{{ labels.delete_project }}
 					</ion-label>

@@ -3,6 +3,8 @@ http://ionicframework.com/docs/theming/ */
 
 /** Ionic CSS Variables **/
 :root {
+   /* hack: disable dynamic font scaling since we are using our own implementation */
+  --ion-dynamic-font: initial;
   --ion-color-primary: #673C90;
   --ion-color-primary-rgb: 103,60,144;
   --ion-color-primary-contrast: #ffffff;

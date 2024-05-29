@@ -25,21 +25,30 @@
 				>
 					<ion-grid>
 						<ion-row>
-							<ion-col size="10">
+							<ion-col size="9">
 								<div
 									class="profile__label"
 									lines="none"
 								>
-									<ion-label color="tertiary">
+									<ion-label
+										color="tertiary"
+										class="ion-text-nowrap"
+									>
 										<strong>{{ labels.hi }}, {{ user.name }}</strong>
 									</ion-label>
-									<ion-label color="dark">
+									<ion-label
+										color="dark"
+										class="ion-text-nowrap"
+									>
 										<small>{{ user.email }}</small>
 									</ion-label>
 
 								</div>
 							</ion-col>
-							<ion-col>
+							<ion-col
+								size="3"
+								class="ion-text-end"
+							>
 								<ion-icon
 									class="profile__icon"
 									:icon="enter"
@@ -56,7 +65,10 @@
 					lines="full"
 				>
 					<ion-icon :icon="document"></ion-icon>
-					<ion-label data-translate="projects">
+					<ion-label
+						data-translate="projects"
+						class="ion-text-nowrap"
+					>
 						&nbsp;
 						{{ labels.projects }}
 					</ion-label>
@@ -68,7 +80,10 @@
 					lines="full"
 				>
 					<ion-icon :icon="settings"></ion-icon>
-					<ion-label data-translate="settings">
+					<ion-label
+						data-translate="settings"
+						class="ion-text-nowrap"
+					>
 						&nbsp;
 						{{ labels.settings }}
 					</ion-label>
@@ -80,7 +95,10 @@
 				>
 					<ion-icon :icon="people">
 					</ion-icon>
-					<ion-label data-translate="help">
+					<ion-label
+						data-translate="help"
+						class="ion-text-nowrap"
+					>
 						&nbsp;
 						{{ labels.help }}
 					</ion-label>
@@ -92,7 +110,10 @@
 				>
 					<ion-icon :icon="book">
 					</ion-icon>
-					<ion-label data-translate="user_guide">
+					<ion-label
+						data-translate="user_guide"
+						class="ion-text-nowrap"
+					>
 						&nbsp;
 						{{ labels.user_guide }}
 					</ion-label>
@@ -104,7 +125,7 @@
 				>
 					<ion-icon :icon="personCircle">
 					</ion-icon>
-					<ion-label>
+					<ion-label class="ion-text-nowrap">
 						&nbsp;
 						{{ authAction }}
 					</ion-label>
@@ -130,7 +151,7 @@
 					<ion-icon :icon="bookmark">
 					</ion-icon>
 					&nbsp;
-					<ion-label>
+					<ion-label class="ion-text-nowrap">
 						{{ bookmarkItem.title }}
 					</ion-label>
 				</ion-item>
@@ -139,7 +160,7 @@
 					lines="full"
 				>
 					<ion-label
-						class="ion-text-center"
+						class="ion-text-center ion-text-nowrap"
 						data-translate="no_bookmarks_found"
 					>{{ labels.no_bookmarks_found }}</ion-label>
 				</ion-item>
@@ -324,4 +345,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+	lang="scss"
+	scoped
+></style>
