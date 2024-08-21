@@ -71,7 +71,7 @@
     "cordova-plugin-sign-in-with-apple": "^0.1.2",
     "cordova-sqlite-storage": "^2.6.0",
     "cordova-wheel-selector-plugin": "^1.1.7",
-    "cordova.plugins.diagnostic": "^7.1.2",
+    "cordova.plugins.diagnostic": "github:epicollect5/cordova-diagnostic-plugin",
     "core-js": "^3.6.5",
     "date-fns": "^2.25.0",
     "flush-promises": "^1.0.2",

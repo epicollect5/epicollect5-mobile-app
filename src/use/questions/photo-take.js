@@ -7,7 +7,7 @@ import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { moveFileService } from '@/services/filesystem/move-file-service';
 
-export async function photoTake ({ media, entryUuid, state, filename, action }) {
+export async function photoTake({ media, entryUuid, state, filename, action }) {
 
     const rootStore = useRootStore();
     const language = rootStore.language;
@@ -16,7 +16,7 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
     let cameraOptions = {};
     let sourceType = '';
 
-    function _loadImageOnView (source) {
+    function _loadImageOnView(source) {
         const timestamp = utilsService.generateTimestamp();
         state.fileSource = source;
         //fix for WKWebView and Android 11+ as well
@@ -27,7 +27,7 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
 
     await notificationService.showProgressDialog(labels.wait);
 
-    async function _openCamera () {
+    async function _openCamera() {
 
         await notificationService.startForegroundService();
 
@@ -90,7 +90,7 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
             correctOrientation: true
         };
 
-        //check permission IMPORTANT: we are using a fork of the cordova camera plugin due to an issue on MM
+        //check permission imp: we are using a fork of the cordova camera plugin due to an issue on MM
         // see https://goo.gl/WwNMSh
         window.cordova.plugins.diagnostic.isCameraAuthorized(
             function (response) {
@@ -99,6 +99,7 @@ export async function photoTake ({ media, entryUuid, state, filename, action }) 
                     _openCamera();
                 } else {
                     //request permission
+                    //imp: we are using a fork to ask permsission on api <32
                     cordova.plugins.diagnostic.requestCameraAuthorization(
                         function (permission) {
 
