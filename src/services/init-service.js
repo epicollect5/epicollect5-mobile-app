@@ -138,6 +138,11 @@ export const initService = {
                             deviceLanguage = 'es';
                         }
 
+                        //Catalan?
+                        if (language.value.toLowerCase().startsWith('ca')) {
+                            deviceLanguage = 'ca';
+                        }
+
                         //French?
                         if (language.value.toLowerCase().startsWith('fr')) {
                             deviceLanguage = 'fr';

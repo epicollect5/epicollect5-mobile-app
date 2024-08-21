@@ -957,16 +957,26 @@ export const utilsService = {
     async validateLanguageFiles() {
 
         const defaultLanguage = await initService.getLanguageFile(PARAMETERS.DEFAULT_LANGUAGE);
+        let validFiles = true;
 
         PARAMETERS.SUPPORTED_LANGUAGES.forEach(async (supportedLanguage) => {
             const statusCodes = await initService.getLanguageFile(supportedLanguage);
             if (!utilsService.hasSameKeys(defaultLanguage, statusCodes)) {
                 console.error('Missing keys in language files (status codes)', supportedLanguage);
+                validFiles = false;
             }
             if (!utilsService.hasSameKeys(STRINGS[PARAMETERS.DEFAULT_LANGUAGE].labels, STRINGS[supportedLanguage].labels)) {
                 console.error('Missing keys in language files (labels)', supportedLanguage);
+                validFiles = false;
             }
         });
+
+        if (!validFiles) {
+            throw new Error('Language files invalid');
+        }
+        else {
+            console.log('%cLanguage files validated correctly', 'color: green; font-weight: bold;');
+        }
     },
 
     async isJWTExpired() {
