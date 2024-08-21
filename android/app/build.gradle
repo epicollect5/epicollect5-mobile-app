@@ -7,8 +7,8 @@ android {
         applicationId "uk.ac.imperial.epicollect.five"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7030
-        versionName "7.0.3"
+        versionCode 7040
+        versionName "7.0.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
