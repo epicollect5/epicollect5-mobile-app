@@ -143,16 +143,18 @@ export const PARAMETERS = {
         'ec5_77', // private project, log in
         'ec5_78', // private project, need permission
         'ec5_116', // server error
-        'ec5_103', //unkwon error
+        'ec5_103', //unknown error
         'ec5_201', // project version out of date
         'ec5_202', // project locked
-        'ec5_255' // too many attempts
+        'ec5_255', // too many attempts,
+        'ec5_252' // maintenance mode is on
     ],
 
     ENTRY: 'entry',
     ENTRIES_TABLE: 'entries',
     BRANCH_ENTRY: 'branch_entry',
     BRANCH_ENTRIES_TABLE: 'branch_entries',
+
 
     // Jumps
     JUMPS: {

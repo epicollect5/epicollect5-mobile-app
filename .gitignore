@@ -37,7 +37,6 @@ npm-debug.log*
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries
-.DS_Store
 /build
 /captures
 .externalNativeBuild
@@ -48,3 +47,4 @@ ios/App/Epicollect5/env.xcconfig
 .env.local
 .nvmrc
 git-commits.csv
+.vscode

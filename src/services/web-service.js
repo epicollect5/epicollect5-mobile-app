@@ -1,9 +1,9 @@
-import { PARAMETERS } from '@/config';
-import { databaseSelectService } from '@/services/database/database-select-service';
-import { projectModel } from '@/models/project-model';
+import {PARAMETERS} from '@/config';
+import {databaseSelectService} from '@/services/database/database-select-service';
+import {projectModel} from '@/models/project-model';
 import axios from 'axios';
 
-import { useRootStore } from '@/stores/root-store';
+import {useRootStore} from '@/stores/root-store';
 
 export const webService = {
 
@@ -30,7 +30,11 @@ export const webService = {
             // Attempt to retrieve the jwt token
             self.getHeaders(true).then(function (headers) {
 
-                const url = self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.PROJECT + slug;
+                let url = self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.PROJECT + slug;
+                if (PARAMETERS.DEBUG) {
+                    url += '?XDEBUG_SESSION_START=phpstorm';
+                }
+
                 axios({
                     method: 'GET',
                     url,
@@ -54,8 +58,7 @@ export const webService = {
             let url = '';
             if (process.env.NODE_ENV === 'production') {
                 url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
-            }
-            else {
+            } else {
                 //in development mode use open endpoint
                 url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
             }
@@ -109,7 +112,7 @@ export const webService = {
     /**
      * Upload an entry to the server
      */
-    uploadEntry(slug, data) {
+    uploadEntry(slug, payload) {
 
         const self = this;
         const rootStore = useRootStore();
@@ -117,23 +120,31 @@ export const webService = {
         return new Promise((resolve, reject) => {
             // Attempt to retrieve the jwt token
             self.getHeaders(true).then(function (headers) {
+
                 if (rootStore.device.platform !== PARAMETERS.WEB && parseInt(PARAMETERS.DEBUG) === 1) {
                     console.log(JSON.stringify(
                         {
                             method: 'POST',
                             url: self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.UPLOAD + slug,
                             headers: headers,
-                            data: { data: data }
+                            data: {data: payload}
                         }
                     ));
                     //do not remove, useful for debugging in the browser
                 }
 
+                const params = {
+                    XDEBUG_SESSION: 'phpstorm'
+                };
+
                 axios({
                     method: 'POST',
                     url: self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.UPLOAD + slug,
                     headers: headers,
-                    data: { data: data }
+                    params: PARAMETERS.DEBUG ? params : {},
+                    data: {
+                        data: payload
+                    }
                 }).then(function (response) {
                     resolve(response);
                 }, function (error) {
@@ -144,7 +155,7 @@ export const webService = {
         });
     },
 
-    uploadEntryPWA(slug, data) {
+    uploadEntryPWA(slug, payload) {
 
         const self = this;
 
@@ -157,7 +168,7 @@ export const webService = {
             if (PARAMETERS.DEBUG) {
                 //use debug endpoint (no csrf)
                 postURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_DEBUG + slug;
-                console.log('post data', JSON.stringify(data));
+                console.log('post data', JSON.stringify(payload));
             } else {
                 postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD + slug;
             }
@@ -165,7 +176,7 @@ export const webService = {
             axios({
                 method: 'POST',
                 url: postURL,
-                data: { data: data }
+                data: {data: payload}
             }).then(function (response) {
                 resolve(response);
             }, function (error) {
@@ -343,7 +354,7 @@ export const webService = {
             axios({
                 method: 'POST',
                 url: postURL,
-                data: { data: data }
+                data: {data: data}
             }).then(function (response) {
                 resolve(response);
             }, function (error) {
@@ -406,8 +417,7 @@ export const webService = {
                         accuracy: PARAMETERS.GEOLOCATION_DEFAULT_ACCURACY
                     };
                     resolve(coords);
-                }
-                else {
+                } else {
                     reject();
                 }
             }, function (error) {
@@ -446,7 +456,7 @@ export const webService = {
     /**
      * Upload a media entry to the server
      */
-    uploadMediaEntry(slug, data) {
+    uploadMediaEntry(slug, payload) {
 
         const self = this;
 
@@ -457,7 +467,7 @@ export const webService = {
                     method: 'POST',
                     url: self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.UPLOAD + slug,
                     headers: headers,
-                    data: { data: data }
+                    data: {data: payload}
                 }).then(function (response) {
                     resolve(response);
                 }, function (error) {
@@ -481,7 +491,7 @@ export const webService = {
                     method: 'POST',
                     url: self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.LOGIN + type,
                     headers: headers,
-                    data: { username: data.email, password: data.password }
+                    data: {username: data.email, password: data.password}
                 }).then(function (response) {
                     resolve(response);
                 }, function (error) {
@@ -601,7 +611,11 @@ export const webService = {
     //imp: only the latest is valid, all the others do not work anymore.
     getHeaders(getJwt) {
 
-        const headers = { 'Content-Type': 'application/vnd.api+json' };
+        const headers = {
+
+            'Content-Type': 'application/vnd.api+json'
+        };
+
 
         return new Promise(function (resolve, reject) {
 
@@ -663,6 +677,10 @@ export const webService = {
 
         return new Promise(function (resolve, reject) {
 
+            const params = {
+                XDEBUG_SESSION: 'phpstorm'
+            }; // URL parameter to start Xdebug session
+
             // Attempt to retrieve the jwt token
             self.getHeaders().then(function (headers) {
                 //for ajax only request
@@ -671,9 +689,9 @@ export const webService = {
                     method: 'POST',
                     url: self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.LOGIN + 'passwordless',
                     headers: headers,
-                    data: { email: credentials.email, code: credentials.code }
+                    params: PARAMETERS.DEBUG ? params : {},
+                    data: {email: credentials.email, code: credentials.code}
                 }).then(function (response) {
-
                     resolve(response);
                 }, function (error) {
                     reject(error.response);
@@ -689,11 +707,15 @@ export const webService = {
         return new Promise(function (resolve, reject) {
             // Attempt to retrieve the jwt token
             self.getHeaders().then(function (headers) {
+
+                const params = {};
+
                 axios({
                     method: 'POST',
                     url: self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.PASSWORDLESS_CODE,
                     headers: headers,
-                    data: { email }
+                    data: {email},
+                    params: PARAMETERS.DEBUG ? params : {}
                 }).then(function (response) {
                     resolve(response);
                 }, function (error) {
@@ -714,7 +736,7 @@ export const webService = {
                     method: 'POST',
                     url: self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.PASSWORDLESS_CODE,
                     headers: headers,
-                    data: { email: email }
+                    data: {email}
                 }).then(function (response) {
                     resolve(response);
                 }, function (error) {
