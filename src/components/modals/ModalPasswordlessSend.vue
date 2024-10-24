@@ -111,12 +111,12 @@ export default {
 							}
 						});
 
-						modalsHandlerService.passwordlessLogin.onDidDismiss().then((response) => {
+						modalsHandlerService.passwordlessLogin.onDidDismiss().then(async (response) => {
 							console.log('is', response.data);
 							//when user is logged in, close all modals
 							if (response?.data?.closeAllModals) {
 								//todo:
-								modalController.dismiss({ closeAllModals: true });
+								await modalController.dismiss({ closeAllModals: true });
 							}
 						});
 						modalsHandlerService.passwordlessLogin.present();
