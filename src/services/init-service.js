@@ -38,7 +38,7 @@ export const initService = {
     },
 
     async openDB(platform) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             let db = {};
 
             if (platform === PARAMETERS.WEB) {
@@ -63,8 +63,17 @@ export const initService = {
                         db = window.sqlitePlugin.openDatabase({
                             name: 'epicollect5.db',
                             iosDatabaseLocation: 'Documents'
+                        }, ()=>{
+                            console.log('Database opened correctly, using Documents as location');
+                            setTimeout(()=>{
+                                resolve(db);
+                            }, PARAMETERS.DELAY_LONG);
+                        }, (error) =>{
+                            console.error('Error opening database -> ', error);
+                            reject(error);
                         });
-                        resolve(db);
+
+
                     }
                 });
             }
