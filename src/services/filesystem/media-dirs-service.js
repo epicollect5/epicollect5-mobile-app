@@ -1,8 +1,8 @@
-import { useRootStore } from '@/stores/root-store';
-import { PARAMETERS } from '@/config';
-import { STRINGS } from '@/config/strings';
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { utilsService } from '@/services/utilities/utils-service';
+import {useRootStore} from '@/stores/root-store';
+import {PARAMETERS} from '@/config';
+import {STRINGS} from '@/config/strings';
+import {Filesystem, Directory} from '@capacitor/filesystem';
+import {utilsService} from '@/services/utilities/utils-service';
 
 export const mediaDirsService = {
 
@@ -56,14 +56,15 @@ export const mediaDirsService = {
     // },
 
     //uses Cordova filesystem plugin
-    createDirsLegacy () {
+    createDirsLegacy() {
         const rootStore = useRootStore();
         const device = rootStore.device;
         const dirs = [
             PARAMETERS.PHOTO_DIR,
             PARAMETERS.AUDIO_DIR,
             PARAMETERS.VIDEO_DIR,
-            PARAMETERS.LOGOS_DIR
+            PARAMETERS.LOGOS_DIR,
+            PARAMETERS.TEMP_DIR
         ];
 
         if (device.platform === PARAMETERS.WEB) {
@@ -76,52 +77,50 @@ export const mediaDirsService = {
 
             let entry;
 
-            function _onCreateSuccess () {
+            function _onCreateSuccess(dir) {
+                if (dir.isDirectory) {
+                    console.log('Folder ' + dir.name+' already exists, skipping.');
+                } else {
+                    console.log('Folder ' + dir.name+' created.');
+                }
                 _createMediaDir();
             }
 
-            function _createMediaDir () {
-                let media_dir;
+            function _createMediaDir() {
+                let mediaDir;
                 if (dirs.length > 0) {
 
-                    media_dir = dirs.shift();
+                    mediaDir = dirs.shift();
 
-                    //create a media folder: images, audios, videos
-                    entry.getDirectory(media_dir, {
+                    //create a media folder: images, audios, videos, logo, cache
+                    entry.getDirectory(mediaDir, {
                         create: true,
                         exclusive: false
                     }, _onCreateSuccess, _onError);
-                }
-                else {
-                    console.log('Media folders created');
+                } else {
+                    console.log('All media folders created (or skipped)');
                     resolve();
                 }
             }
 
-            function _onSuccess (fileSystem) {
+            function _onSuccess(fileSystem) {
                 entry = fileSystem;
                 //create media folders recursively
                 _createMediaDir();
             }
 
-            function _onError (error) {
+            function _onError(error) {
                 console.log(error);
                 reject();
             }
 
-            //if folders are already created, resolve immediately
-            if (window.localStorage.is_app_already_installed) {
-                console.log('---App already installed -> skip media dir creation');
-                resolve();
-            }
-            else {
-                //get handle of 'data/data/<package_name>/files/' on Android, or Library folder on iOS
-                console.log('Persistent Storage: ' + cordova.file.dataDirectory);
-                window.resolveLocalFileSystemURL(cordova.file.dataDirectory, _onSuccess, _onError);
-            }
+            //get handle of 'data/data/<package_name>/files/' on Android, or Library folder on iOS
+            console.log('Persistent Storage: ' + cordova.file.dataDirectory);
+            window.resolveLocalFileSystemURL(cordova.file.dataDirectory, _onSuccess, _onError);
         });
     },
-    async removeExternalMediaDirs (projectSlug) {
+
+    async removeExternalMediaDirs(projectSlug) {
 
         const self = this;
         const rootStore = useRootStore();
@@ -175,16 +174,16 @@ export const mediaDirsService = {
                         });
                     }
                     resolve();
-                }
-                catch (error) {
+                } catch (error) {
                     console.log(error);
                     resolve();
                 }
             }());
         });
     },
+
     //check if a directory exists
-    async dirExists (absolutePath) {
+    async dirExists(absolutePath) {
         return new Promise((resolve) => {
             window.resolveLocalFileSystemURL(
                 absolutePath,

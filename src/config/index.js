@@ -271,6 +271,7 @@ export const PARAMETERS = {
     AUDIO_DIR: 'audios/',
     VIDEO_DIR: 'videos/',
     LOGOS_DIR: 'logos/',
+    TEMP_DIR: 'temp/',
 
     ROUTES: {
         PWA_QUIT: 'pwa-quit',

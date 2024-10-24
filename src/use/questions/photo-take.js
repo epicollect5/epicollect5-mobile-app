@@ -57,19 +57,20 @@ export async function photoTake({ media, entryUuid, state, filename, action }) {
             }
 
             state.answer.answer = filename;
-            console.log('Photo URI: ' + imageURI.path);
+            console.log('Photo URI (original filename): ' + imageURI.path);
+            console.log('Filename to be copied to: ' + filename);
 
+            //Rename photo file by moving it
             moveFileService
                 .moveToAppTemporaryDir(imageURI.path, filename)
                 .then(function () {
                     _loadImageOnView(tempDir + filename);
                 });
-            console.log(imageURI.path);
         } catch (error) {
             console.log(error);
             notificationService.stopForegroundService();
             notificationService.hideProgressDialog();
-            notificationService.showToast(error);
+            await notificationService.showAlert(error);
         }
     }
 
@@ -94,7 +95,6 @@ export async function photoTake({ media, entryUuid, state, filename, action }) {
         // see https://goo.gl/WwNMSh
         window.cordova.plugins.diagnostic.isCameraAuthorized(
             function (response) {
-
                 if (response) {
                     _openCamera();
                 } else {

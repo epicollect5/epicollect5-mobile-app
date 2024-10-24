@@ -65,7 +65,7 @@ export const mediaService = {
                                 //if we have a stored filename, overwrite that, otherwise create new file
                                 filename = (file.stored === '') ? file.cached : file.stored;
 
-                                moveFileService.moveToAppPrivateDir(
+                                moveFileService.moveToAppProjectDir(
                                     rootStore.tempDir + file.cached,
                                     filename,
                                     file.type,

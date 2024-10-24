@@ -16,8 +16,7 @@ export const tempDirsService = {
             }
 
             if (device.platform === PARAMETERS.IOS) {
-                window.resolveLocalFileSystemURL(cordova.file.tempDirectory, function (the_file_system) {
-
+                window.resolveLocalFileSystemURL(cordova.file.dataDirectory + PARAMETERS.TEMP_DIR, function (the_file_system) {
                     path = the_file_system.nativeURL;
 
                     console.log(path);
@@ -37,12 +36,10 @@ export const tempDirsService = {
                     console.log(JSON.stringify(error));
                     reject();
                 });
-
             }
 
             if (device.platform === PARAMETERS.ANDROID) {
-                //Android only getting private cache directory (Android 11 fix) 
-                window.resolveLocalFileSystemURL(cordova.file.cacheDirectory, function (the_file_system) {
+                window.resolveLocalFileSystemURL(cordova.file.dataDirectory + PARAMETERS.TEMP_DIR, function (the_file_system) {
                     path = the_file_system.nativeURL;
                     resolve(path);
                 }, function (error) {
