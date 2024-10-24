@@ -222,7 +222,7 @@ export default {
 		const routeParams = rootStore.routeParams;
 
 		// Attempt to get project/form refs from state params or Models, if already initialised
-		scope.projectRef = routeParams.projectRef
+    scope.projectRef = routeParams.projectRef
 			? routeParams.projectRef
 			: projectModel.getProjectRef();
 
@@ -387,6 +387,7 @@ export default {
 			// Check if the project is not already loaded
 			console.log('project store ->', projectModel.getProjectRef() || 'n/a');
 			if (!projectModel.hasInitialised()) {
+        console.log('Project not initialized, scope.projectRef ->', scope.projectRef);
 				const result = await databaseSelectService.selectProject(
 					scope.projectRef
 				);
@@ -398,7 +399,6 @@ export default {
 				_loadFormEntries();
 
 				// Check and update project version (background check) if needed
-
 				updateLocalProject(scope).then((updated) => {
 					if (updated) {
 						notificationService.hideProgressDialog();

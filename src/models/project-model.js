@@ -21,7 +21,7 @@ export const projectModel = {
             console.log('Initialised project -> ', this.project_extra.project.details.name);
         } catch (e) {
             console.log(e);
-            // Failed
+            console.error('Failed to initialize project with -> ', JSON.stringify(data));
         }
     },
     //data coming from server

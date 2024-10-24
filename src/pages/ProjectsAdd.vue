@@ -127,7 +127,6 @@ export default {
 				state.isFetching = true;
 				fetchServerProjects(readonly(state.searchTerm)).then(
 					(projects) => {
-						console.log(projects);
 						if (projects.length > 0) {
 							state.projects = projects;
 						} else {
