@@ -3,6 +3,7 @@ import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { loadingController, toastController, alertController } from '@ionic/vue';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { Toast } from '@capacitor/toast';
 
 
 export const notificationService = {
@@ -12,29 +13,18 @@ export const notificationService = {
         const setDelay = delay || 0;
         const setPosition = position || 'bottom';
 
+        const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+
         setTimeout(async () => {
-            const toast = await toastController
-                .create({
-                    message,
-                    position: setPosition,
-                    duration: 3000
-                });
-            return toast.present();
+            await Toast.show({
+                text: messageStr,
+                duration: 'long',
+                position: setPosition
+            });
         }, setDelay);
     },
     showToastCenter(message, delay) {
-
-        const set_delay = delay || 0;
-
-        setTimeout(async () => {
-            const toast = await toastController
-                .create({
-                    message,
-                    position: 'middle',
-                    duration: 2000
-                });
-            return toast.present();
-        }, set_delay);
+        this.showToast(message, delay, 'center');
     },
     async showAlert(message, header) {
         const rootStore = useRootStore();
