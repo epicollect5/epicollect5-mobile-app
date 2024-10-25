@@ -41,19 +41,14 @@ export async function videoShoot({media, entryUuid, state, filename}) {
     function _onCaptureVideoError(error) {
         console.log(error);
         notificationService.stopForegroundService();
-
-        //reset media object to avoid saving a file that does not exist...
-        //imp: if we do not do this and no file exists, error 1 is thrown when saving entry at the end
-        media[entryUuid][state.inputDetails.ref].cached = '';
-        // Reset answer
-        state.answer.answer = '';
-
-        //if not canceled by the user, show alert
+        //if not canceled by the user, show alert and reset media object
         if (error.code !== 3) {
+            //reset media object to avoid saving a file that does not exist...
+            //imp: if we do not do this and no file exists, error 1 is thrown when saving entry at the end
+            media[entryUuid][state.inputDetails.ref].cached = '';
+            // Reset answer
+            state.answer.answer = '';
             notificationService.showAlert(error);
-        } else {
-            //otherwise just a toast
-            notificationService.showToast(error.message);
         }
         notificationService.hideProgressDialog();
     }
