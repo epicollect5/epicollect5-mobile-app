@@ -1,13 +1,13 @@
-import { PARAMETERS } from '@/config';
-import { useRootStore } from '@/stores/root-store';
-import { STRINGS } from '@/config/strings.js';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { Capacitor } from '@capacitor/core';
-import { notificationService } from '@/services/notification-service';
-import { utilsService } from '@/services/utilities/utils-service';
-import { moveFileService } from '@/services/filesystem/move-file-service';
+import {PARAMETERS} from '@/config';
+import {useRootStore} from '@/stores/root-store';
+import {STRINGS} from '@/config/strings.js';
+import {Camera, CameraResultType, CameraSource} from '@capacitor/camera';
+import {Capacitor} from '@capacitor/core';
+import {notificationService} from '@/services/notification-service';
+import {utilsService} from '@/services/utilities/utils-service';
+import {moveFileService} from '@/services/filesystem/move-file-service';
 
-export async function photoTake({ media, entryUuid, state, filename, action }) {
+export async function photoTake({media, entryUuid, state, filename, action}) {
 
     const rootStore = useRootStore();
     const language = rootStore.language;
@@ -70,16 +70,14 @@ export async function photoTake({ media, entryUuid, state, filename, action }) {
             console.log(error);
             notificationService.stopForegroundService();
             notificationService.hideProgressDialog();
-            await notificationService.showAlert(error);
+            if (!(typeof error.message === 'string' && error.message.toLowerCase().includes('user cancelled photos app'))) {
+                await notificationService.showAlert(error);
+            }
         }
     }
 
     if (rootStore.device.platform !== PARAMETERS.WEB) {
-        if (action === 'gallery') {
-            sourceType = CameraSource.Photos;
-        } else {
-            sourceType = CameraSource.Camera;
-        }
+        sourceType = action === 'gallery' ? CameraSource.Photos : CameraSource.Camera;
 
         cameraOptions = {
             quality: 50,
@@ -111,8 +109,7 @@ export async function photoTake({ media, entryUuid, state, filename, action }) {
                                     permission === cordova.plugins.diagnostic.permissionStatus.GRANTED
                                 ) {
                                     _openCamera();
-                                }
-                                else {
+                                } else {
                                     //warn user camera permssion is compulsory
                                     notificationService.hideProgressDialog();
                                     notificationService.showAlert(labels.missing_permission);

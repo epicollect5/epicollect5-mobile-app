@@ -384,9 +384,6 @@ export default {
 					if (res.rows.length > 0) {
 						// Initialise the entry model
 						data = res.rows.item(0);
-
-						console.log(JSON.stringify(data));
-
 						state.entry.initialise(data);
 						state.title = state.entry.title;
 						state.synced = state.entry.synced;

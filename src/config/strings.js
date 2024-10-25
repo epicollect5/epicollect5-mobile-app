@@ -1,6 +1,7 @@
 export const STRINGS = {
     en: {
         labels: {
+            temp_deletion_error: 'Error deleting temp files',
             collect_errors: 'Collect errors',
             help_us_improve: 'Help us improve our app',
             view_on: 'View on',
@@ -239,6 +240,7 @@ export const STRINGS = {
     },
     it: {
         labels: {
+            temp_deletion_error: 'Errore rimozione files temporanei',
             collect_errors: 'Raccogli errori',
             help_us_improve: 'Aiutaci a migliorare',
             view_on: 'Apri con',
@@ -477,6 +479,7 @@ export const STRINGS = {
     },
     es: {
         labels: {
+            temp_deletion_error: 'Error al eliminar archivos temporales',
             collect_errors: 'Recoger errores',
             help_us_improve: 'Ayúdanos a mejorar nuestra app',
             view_on: 'Ver en',
@@ -715,6 +718,7 @@ export const STRINGS = {
     },
     fr: {
         labels: {
+            temp_deletion_error: 'Erreur lors de la suppression des fichiers temporaires',
             collect_errors: 'Collecter les erreurs',
             help_us_improve: 'Aidez-nous à améliorer notre app',
             view_on: 'Afficher sur',
@@ -953,6 +957,7 @@ export const STRINGS = {
     },
     pl: {
         labels: {
+            temp_deletion_error: 'Błąd podczas usuwania plików tymczasowych',
             collect_errors: 'Zbieraj błędy',
             help_us_improve: 'Pomóż nam ulepszyć naszą app',
             view_on: 'Wyświetl włączone',
@@ -1191,6 +1196,7 @@ export const STRINGS = {
     },
     pt: {
         labels: {
+            temp_deletion_error: 'Erro ao remover ficheiros temporários',
             collect_errors: 'Coletar erros',
             help_us_improve: 'Ajude-nos a melhorar nosso app',
             view_on: 'Abrir em',
@@ -1429,6 +1435,7 @@ export const STRINGS = {
     },
     ca: {
         labels: {
+            temp_deletion_error: 'S\'ha produït un error en eliminar els fitxers temporals',
             collect_errors: 'Recull errors',
             help_us_improve: 'Ajudeu-nos a millorar la nostra aplicació',
             view_on: 'Visualitza a',

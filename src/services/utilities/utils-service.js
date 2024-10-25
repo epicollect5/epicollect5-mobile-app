@@ -1000,5 +1000,9 @@ export const utilsService = {
     inverseSlug(slug) {
         // Replace hyphens with spaces using a regular expression
         return slug.replace(/-/g, ' ');
+    },
+    //add 'file://' protocol if it is missing in the URI
+    getProtocol(uri) {
+        return uri.includes('file://') ? '' : 'file://';
     }
 };

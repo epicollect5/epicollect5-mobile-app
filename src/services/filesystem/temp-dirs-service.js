@@ -1,10 +1,11 @@
-
-import { useRootStore } from '@/stores/root-store';
-import { PARAMETERS } from '@/config';
+import {useRootStore} from '@/stores/root-store';
+import {PARAMETERS} from '@/config';
+import {utilsService} from '@/services/utilities/utils-service';
+import {moveFileService} from '@/services/filesystem/move-file-service';
 
 export const tempDirsService = {
 
-    execute () {
+    createTemporaryDir() {
         const rootStore = useRootStore();
         const device = rootStore.device;
         let path = '';
@@ -48,5 +49,43 @@ export const tempDirsService = {
                 });
             }
         });
+    },
+
+    async clearTemporaryDir() {
+        return new Promise((resolve, reject) => {
+
+                function _onError(error) {
+                    console.error(error);
+                    reject(error);
+                }
+
+                const rootStore = useRootStore();
+                const device = rootStore.device;
+                const tempFolderPath = rootStore.tempDir;
+
+                if (device.platform === PARAMETERS.WEB) {
+                    resolve();
+                }
+
+                console.log('Clearing temp folder at ->', tempFolderPath);
+                //imp: ios needs the file:// protocol
+                const protocol = (rootStore.device.platform === PARAMETERS.IOS) ? utilsService.getProtocol(tempFolderPath) : '';
+                window.resolveLocalFileSystemURL(protocol + tempFolderPath, function (tempFolder) {
+                    const reader = tempFolder.createReader();
+                    reader.readEntries(function (entries) {
+                        if (entries.length === 0) {
+                            console.log('No files to delete in the temporary folder.');
+                        } else {
+                            entries.forEach(function (entry) {
+                                entry.remove(function () {
+                                    console.log('File removed: ' + entry.fullPath);
+                                }, _onError);
+                            });
+                        }
+                        resolve();
+                    }, _onError);
+                }, _onError);
+            }
+        );
     }
 };

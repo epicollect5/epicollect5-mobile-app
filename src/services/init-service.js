@@ -56,7 +56,10 @@ export const initService = {
                             androidDatabaseProvider: 'system',
                             androidLockWorkaround: 1//to be tested if this makes problems
                         });
-                        resolve(db);
+                        console.log('Database opened correctly, using default location');
+                        setTimeout(()=>{
+                            resolve(db);
+                        }, PARAMETERS.DELAY_LONG);
                     }
 
                     if (platform === PARAMETERS.IOS) {
@@ -72,8 +75,6 @@ export const initService = {
                             console.error('Error opening database -> ', error);
                             reject(error);
                         });
-
-
                     }
                 });
             }

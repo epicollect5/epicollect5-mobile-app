@@ -4,6 +4,7 @@ import {PiniaLogger} from 'pinia-logger';
 import App from '@/App.vue';
 import router from '@/router';
 import {Capacitor} from '@capacitor/core';
+import * as IonComponents from '@ionic/vue';
 import {IonicVue} from '@ionic/vue';
 import {SplashScreen} from '@capacitor/splash-screen';
 import {projectModel} from '@/models/project-model.js';
@@ -53,7 +54,6 @@ import {tempDirsService} from '@/services/filesystem/temp-dirs-service';
 import {persistentDirsService} from '@/services/filesystem/persistent-dirs-service';
 import {createDatabaseService} from '@/services/database/database-create-service';
 import {PARAMETERS} from '@/config';
-import * as IonComponents from '@ionic/vue';
 //import '@/registerServiceWorker';
 import {rollbarService} from '@/services/utilities/rollbar-service';
 
@@ -123,8 +123,7 @@ export const app = createApp(App)
             const url = new URL(window.location.href);
             rootStore.serverUrl = url.origin + utilsService.getBasepath();
         } else {
-            const serverUrl = utilsService.stripTrailingSlash(process.env.VUE_APP_PWA_DEVELOPMENT_SERVER);
-            rootStore.serverUrl = serverUrl;
+            rootStore.serverUrl = utilsService.stripTrailingSlash(process.env.VUE_APP_PWA_DEVELOPMENT_SERVER);
         }
         console.log('Server URL -> ', rootStore.serverUrl);
 
@@ -203,10 +202,10 @@ export const app = createApp(App)
             } catch (error) {
                 console.log(error);
                 if (error) {
-                    notificationService
+                   await notificationService
                         .showAlert(error.statusText, error.status);
                 } else {
-                    notificationService
+                  await  notificationService
                         .showAlert(STRINGS[rootStore.language].labels.unknown_error);
                 }
                 rootStore.notFound = true;
@@ -216,13 +215,10 @@ export const app = createApp(App)
         //start mobile app
         const dbStore = useDBStore();
         const bookmarkStore = useBookmarkStore();
-        const appInfo = await initService.getAppInfo();
         //make appInfo global
-        rootStore.app = appInfo;
-
+        rootStore.app = await initService.getAppInfo();
         //get device language
-        const language = await initService.getLanguage();
-        rootStore.language = language;
+        rootStore.language = await initService.getLanguage();
         console.log('Device language -> ', rootStore.language);
         const labels = STRINGS[rootStore.language].labels;
 
@@ -255,8 +251,7 @@ export const app = createApp(App)
 
         //do migrations if needed
         try {
-            const dbVersion = await initService.migrateDB();
-            dbStore.dbVersion = dbVersion;
+            dbStore.dbVersion = await initService.migrateDB();
             console.log('Database version migrated to ->  ', dbStore.dbVersion);
         } catch (error) {
             console.log(error);
@@ -273,19 +268,26 @@ export const app = createApp(App)
             await mediaDirsService.createDirsLegacy();
 
             //get temp dirs path
-            const tempDir = await tempDirsService.execute();
-            rootStore.tempDir = tempDir;
+            rootStore.tempDir = await tempDirsService.createTemporaryDir();
             console.log('Device temp directory ->  ', rootStore.tempDir);
 
             //get persistent dirs path
-            const persistentDir = await persistentDirsService.execute();
-            rootStore.persistentDir = persistentDir;
+            rootStore.persistentDir = await persistentDirsService.execute();
             console.log('Device persistent directory ->  ', rootStore.persistentDir);
+
+            //clear temp folder at start up, just in case there are some leftovers
+            try {
+                await tempDirsService.clearTemporaryDir();
+            } catch (error) {
+                await notificationService.showAlert(
+                    STRINGS[rootStore.language].label.temp_deletion_error,
+                    STRINGS[rootStore.language].status_codes.ec5_103
+                );
+            }
         }
 
         //set server URL
-        const serverUrl = await initService.getServerUrl();
-        rootStore.serverUrl = serverUrl;
+        rootStore.serverUrl = await initService.getServerUrl();
         console.log('Server URL -> ', rootStore.serverUrl);
 
         //set bookmarks in pinia store
@@ -311,16 +313,13 @@ export const app = createApp(App)
         await initService.insertDemoProject();
 
         //text size preferences
-        const selectedTextSize = await initService.getSelectedTextSize();
-        rootStore.selectedTextSize = selectedTextSize;
+        rootStore.selectedTextSize = await initService.getSelectedTextSize();
 
         //collect errors preferences
-        const collectErrors = await initService.getCollectErrorsPreference();
-        rootStore.collectErrors = collectErrors;
+        rootStore.collectErrors = await initService.getCollectErrorsPreference();
 
         // Attempt to retrieve the jwt token
-        const user = await initService.retrieveJwtToken();
-        rootStore.user = user;
+        rootStore.user = await initService.retrieveJwtToken();
     }
 
     /**

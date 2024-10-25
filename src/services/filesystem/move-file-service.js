@@ -12,11 +12,6 @@ import {Capacitor} from '@capacitor/core';
 import {notificationService} from '@/services/notification-service';
 
 export const moveFileService = {
-    //add 'file://' protocol if it is missing in the URI
-    getProtocol(uri) {
-        return uri.includes('file://') ? '' : 'file://';
-    },
-
     moveToAppTemporaryDir(sourcePathURL, filename) {
         const rootStore = useRootStore();
         return new Promise((resolve, reject) => {
@@ -40,7 +35,7 @@ export const moveFileService = {
             }
 
             //imp: ios needs the file:// protocol
-            const protocol = (rootStore.device.platform === PARAMETERS.IOS) ? this.getProtocol(sourcePathURL) : '';
+            const protocol = (rootStore.device.platform === PARAMETERS.IOS) ? utilsService.getProtocol(sourcePathURL) : '';
             window.resolveLocalFileSystemURL(protocol + sourcePathURL, _onSuccess, _onError);
         });
     },
@@ -78,7 +73,7 @@ export const moveFileService = {
             }
 
             //ios needs the protocol to resolve a local file
-            const protocol = (rootStore.device.platform === PARAMETERS.IOS) ? this.getProtocol(file_URI) : '';
+            const protocol = (rootStore.device.platform === PARAMETERS.IOS) ? utilsService.getProtocol(file_URI) : '';
             //get file entry resolving file full path (wherever it was saved)
             window.resolveLocalFileSystemURL(protocol + file_URI, _onSuccess, _onError);
         });
@@ -124,19 +119,13 @@ export const moveFileService = {
                 //todo: check this
                 let logo_img_URI = cordova.file.applicationDirectory + 'www/assets/images';
                 const protocol = '';
-
-                //ios needs the protocol to resolve a local file
-                //   protocol = (rootStore.device.platform === PARAMETERS.IOS) ? this.getProtocol(logo_img_URI) : '';
-
                 //get file entry resolving file full path (wherever is was saved)
                 if (rootStore.device.platform === PARAMETERS.IOS) {
                     //Capacitor.convertFileSrc
 
                     console.log('capacitor -> ' + Capacitor.convertFileSrc(protocol + logo_img_URI + filename));
                     // logo_img_URI = logo_img_URI.replace('file://', 'cdvfile://');
-
                     logo_img_URI = Capacitor.convertFileSrc(logo_img_URI);
-
                     window.resolveLocalFileSystemURL((logo_img_URI + filename), _onSuccess, _onError);
                 } else {
                     window.resolveLocalFileSystemURL(protocol + logo_img_URI + filename, _onSuccess, _onError);
