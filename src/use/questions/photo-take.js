@@ -68,6 +68,12 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                 });
         } catch (error) {
             console.log(error);
+            //reset media object to avoid trying to save a file that does not exist...
+            //imp: if we do not do this and no file exists, error 1 is thrown when saving entry at the end
+            media[entryUuid][state.inputDetails.ref].cached = '';
+            // Reset answer
+            state.answer.answer = '';
+
             notificationService.stopForegroundService();
             notificationService.hideProgressDialog();
             if (!(typeof error.message === 'string' && error.message.toLowerCase().includes('user cancelled photos app'))) {

@@ -1,20 +1,19 @@
+import {useRootStore} from '@/stores/root-store';
+import {PARAMETERS} from '@/config';
+import {STRINGS} from '@/config/strings';
+import {Capacitor} from '@capacitor/core';
+import {notificationService} from '@/services/notification-service';
+import {utilsService} from '@/services/utilities/utils-service';
+import {moveFileService} from '@/services/filesystem/move-file-service';
 
-import { useRootStore } from '@/stores/root-store';
-import { PARAMETERS } from '@/config';
-import { STRINGS } from '@/config/strings';
-import { Capacitor } from '@capacitor/core';
-import { notificationService } from '@/services/notification-service';
-import { utilsService } from '@/services/utilities/utils-service';
-import { moveFileService } from '@/services/filesystem/move-file-service';
-
-export async function videoShoot ({ media, entryUuid, state, filename }) {
+export async function videoShoot({media, entryUuid, state, filename}) {
 
     const rootStore = useRootStore();
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
     const tempDir = rootStore.tempDir;
 
-    function _onCaptureVideoSuccess (media_object) {
+    function _onCaptureVideoSuccess(media_object) {
         const video_URI = media_object[0].fullPath;
         console.log(media_object[0]);
         console.log(video_URI);
@@ -39,17 +38,23 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
         );
     }
 
-    function _onCaptureVideoError (error) {
+    function _onCaptureVideoError(error) {
         console.log(error);
         notificationService.stopForegroundService();
-        //if not canceled by the user, reset media object
+
+        //reset media object to avoid saving a file that does not exist...
+        //imp: if we do not do this and no file exists, error 1 is thrown when saving entry at the end
+        media[entryUuid][state.inputDetails.ref].cached = '';
+        // Reset answer
+        state.answer.answer = '';
+
+        //if not canceled by the user, show alert
         if (error.code !== 3) {
-            //reset media object to avoid saving a file that does not exist...
-            media[entryUuid][state.inputDetails.ref].cached = '';
-            // Reset answer
-            state.answer.answer = '';
+            notificationService.showAlert(error);
+        } else {
+            //otherwise just a toast
+            notificationService.showToast(error.message);
         }
-        notificationService.showToast(error.message);
         notificationService.hideProgressDialog();
     }
 
@@ -96,8 +101,7 @@ export async function videoShoot ({ media, entryUuid, state, filename }) {
                             _onCaptureVideoError,
                             options
                         );
-                    }
-                    else {
+                    } else {
                         //warn user camera permission is compulsory
                         notificationService.showAlert(labels.missing_permission);
                         notificationService.stopForegroundService();
