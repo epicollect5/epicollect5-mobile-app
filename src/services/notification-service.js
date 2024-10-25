@@ -18,7 +18,7 @@ export const notificationService = {
         setTimeout(async () => {
             await Toast.show({
                 text: messageStr,
-                duration: 'long',
+                duration: 'short',
                 position: setPosition
             });
         }, setDelay);
