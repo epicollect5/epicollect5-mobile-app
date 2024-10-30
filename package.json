@@ -59,7 +59,7 @@
     "@ionic/core": "^8.2.0",
     "@ionic/vue": "^8.2.0",
     "@ionic/vue-router": "^8.2.0",
-    "axios": "^1.2.2",
+    "axios": "1.7.4",
     "cordova-plugin-file": "^6.0.2",
     "cordova-plugin-file-transfer": "git+https://github.com/sitewaerts/cordova-plugin-file-transfer.git",
     "cordova-plugin-foreground-service": "git+https://mirko77@bitbucket.org/epicollect/cordova-foreground-plugin.git",
