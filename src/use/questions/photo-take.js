@@ -27,7 +27,7 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
 
     await notificationService.showProgressDialog(labels.wait);
 
-    async function _openCamera() {
+    async function openCamera() {
 
         await notificationService.startForegroundService();
 
@@ -94,50 +94,7 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
             correctOrientation: true
         };
 
-        //check permission imp: we are using a fork of the cordova camera plugin due to an issue on MM
-        // see https://goo.gl/WwNMSh
-        window.cordova.plugins.diagnostic.isCameraAuthorized(
-            function (response) {
-                if (response) {
-                    _openCamera();
-                } else {
-                    //request permission
-                    //imp: we are using a fork to ask permsission on api <32
-                    cordova.plugins.diagnostic.requestCameraAuthorization(
-                        function (permission) {
-
-                            console.log(permission);
-
-                            //check permission status android
-                            if (rootStore.device.platform === PARAMETERS.ANDROID) {
-                                if (
-                                    permission === cordova.plugins.diagnostic.permissionStatus.GRANTED
-                                ) {
-                                    _openCamera();
-                                } else {
-                                    //warn user camera permssion is compulsory
-                                    notificationService.hideProgressDialog();
-                                    notificationService.showAlert(labels.missing_permission);
-                                }
-                            } else {
-                                //on iOS permission is true or false only
-                                if (permission) {
-                                    _openCamera();
-                                }
-                            }
-                        },
-                        function (error) {
-                            notificationService.hideProgressDialog();
-                            notificationService.showAlert(error);
-                        }
-                    );
-                }
-            },
-            function (error) {
-                notificationService.hideProgressDialog();
-                notificationService.showAlert(error);
-            }
-        );
+        await openCamera();
     } else {
         notificationService.hideProgressDialog();
     }
