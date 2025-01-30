@@ -58,7 +58,7 @@ describe('notificationService tests', () => {
         await notificationService.showAlert(message);
 
         expect(alertController.create).toHaveBeenCalledWith({
-            header: [STRINGS[language].labels.error],
+            header: '',
             message: message,
             buttons: [STRINGS[language].labels.ok]
         });
