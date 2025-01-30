@@ -3,13 +3,14 @@ export const PARAMETERS = {
     USER_GUIDE_URL: 'https://docs.epicollect.net',
     COMMUNITY_SUPPORT_URL: 'https://community.epicollect.net',
     PRODUCTION_SERVER_URL: 'https://five.epicollect.net',
+    ADD_PROJECTS_DOCS_URL: 'https://docs.epicollect.net/mobile-application/add-projects',
     DEBUG: process.env.VUE_APP_DEBUG,
     IS_LOCALHOST: process.env.NODE_ENV === 'production' ? 0 : 1, //for debugging outside of Laravel(production), it is set to 1
     BYPASS_UNIQUENESS: process.env.VUE_APP_BYPASS_UNIQUENESS,
     // url production
     DEFAULT_SERVER_URL: 'https://five.epicollect.net',
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',
-    HOW_MANY_ENTRIES: 5,
+    HOW_MANY_ENTRIES: 50,
     HOW_MANY_BRANCH_ENTRIES: 2,
     ZOOM_LEVELS: 7,
     DEFAULT_LANGUAGE: 'en',
@@ -79,7 +80,7 @@ export const PARAMETERS = {
                 UPLOAD: '/web-upload/', //same as bulk upload
                 UPLOAD_DEBUG: '/pwa-upload/',//for debugging
                 UPLOAD_FILE: '/web-upload-file/',
-                UPLOAD_FILE_DEBUG: '/pwa-upload-file/',//for debugging 
+                UPLOAD_FILE_DEBUG: '/pwa-upload-file/',//for debugging
                 TEMP_MEDIA: '/temp-media/',
                 TEMP_MEDIA_DELETE: '/temp-media-delete/',
                 TEMP_MEDIA_DELETE_DEBUG: '/pwa-temp-media-delete/',
