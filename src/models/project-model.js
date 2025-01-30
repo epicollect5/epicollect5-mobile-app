@@ -75,11 +75,13 @@ export const projectModel = {
     getInputs(formRef) {
         return (this.project_extra.forms[formRef].inputs) ? this.project_extra.forms[formRef].inputs : {};
     },
-    getExtraStructure() {
-        return (this.project_extra) ? this.project_extra : {};
-    },
-    getExtraForms() {
-        return (this.project_extra.forms) ? this.project_extra.forms : {};
+    getFormsInOrder() {
+        const forms = this.project_extra.forms ? this.project_extra.forms : {};
+        const formRefsInOrder = this.getFormRefsInOrder();
+        return formRefsInOrder.map((formRef) => ({
+            name: forms[formRef].details.name,
+            formRef
+        }));
     },
     getExtraForm(formRef) {
         return (this.project_extra.forms[formRef]) ? this.project_extra.forms[formRef] : {};
@@ -126,10 +128,6 @@ export const projectModel = {
     },
     getFormName(formRef) {
         return this.project_extra.forms[formRef].details.name;
-    },
-    addFormToExtra(ref, data) {
-        const details = 'branch_entry';
-        this.project_extra.forms[ref] = { details: details, inputs: [], cntinputs: 0 };
     },
     getExtraInputs() {
         return this.project_extra.inputs ? this.project_extra.inputs : {};
@@ -178,15 +176,12 @@ export const projectModel = {
     getBranches(formRef, inputRef) {
         return (this.project_extra.forms[formRef].branch[inputRef]) ? this.project_extra.forms[formRef].branch[inputRef] : {};
     },
-    formHasBranches(formRef) {
-        // TODO
-    },
+
     // GROUPS
     getFormGroups(formRef) {
         return (this.project_extra.forms[formRef].group) ? this.project_extra.forms[formRef].group : {};
     },
     getGroupInputs(formRef, inputRef) {
-
         const out = [];
         let i;
         let group;
@@ -201,11 +196,11 @@ export const projectModel = {
 
         return out;
     },
-    getListForms() {
-        return (this.project_extra.listForms) ? this.project_extra.listForms : [];
-    },
     getForms() {
         return (this.project_extra.forms) ? this.project_extra.forms : [];
+    },
+    getFormRefsInOrder() {
+        return (this.project_extra.project.forms) ? this.project_extra.project.forms : [];
     },
     hasLocation(form_ref) {
         return this.project_extra.forms[form_ref].details.has_location;

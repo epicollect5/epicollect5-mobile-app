@@ -41,7 +41,6 @@
 				>
 					<div class="center-item-content-wrapper">
 						<ion-button
-							class="ion-text-nowrap"
 							@click="downloadEntries(form.formRef)"
 							:disabled="!state.enabledButtons[form.formRef] || state.entriesDownloaded[form.formRef] || state.noEntriesFound || state.completed"
 							size="default"
@@ -103,23 +102,17 @@ export default {
 		//get markup to show project logo in page header
 		state.projectName = utilsService.getProjectNameMarkup();
 
-		// Get all the forms for the form download buttons
+		// Get all the forms (in order) for the form download buttons
 		function _getFormButtons() {
-			const forms = projectModel.getExtraForms();
-			let formIndex = 0;
+      const orderedForms = projectModel.getFormsInOrder();
 
-			for (const [formRef, form] of Object.entries(forms)) {
-				// Only enable the first form button initially
-				if (formIndex === 0) {
-					state.enabledButtons[formRef] = true;
-				}
-				formIndex++;
-
-				state.forms.push({
-					name: form.details.name,
-					formRef
-				});
-			}
+      orderedForms.forEach((form, formIndex) => {
+        // Only enable the first form button initially
+        if (formIndex === 0) {
+          state.enabledButtons[form.formRef] = true;
+        }
+        state.forms.push(form);
+      });
 		}
 
 		const methods = {
