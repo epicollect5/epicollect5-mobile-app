@@ -1,3 +1,5 @@
+// noinspection SqlNoDataSourceInspection,SqlResolve
+
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
@@ -49,9 +51,7 @@ export const databaseInsertService = {
     },
 
     //Function to save a complete entry
-
     async insertEntry(entry, syncType) {
-
         let params = [];
         let query = '';
         query += 'INSERT OR REPLACE INTO entries (';
@@ -93,6 +93,7 @@ export const databaseInsertService = {
 
         const dbStore = useDBStore();
         let query = '';
+
         query += 'INSERT OR REPLACE INTO media (';
         query += 'entry_uuid, ';
         query += 'branch_entry_uuid, ';

@@ -168,6 +168,11 @@ export const initService = {
                             deviceLanguage = 'pt';
                         }
 
+                        //Slovenian?
+                        if (language.value.toLowerCase().startsWith('sl')) {
+                            deviceLanguage = 'sl';
+                        }
+
                         //if language not supported, default to English
                         self.getLanguageFile(deviceLanguage).then((data) => {
                             STRINGS[deviceLanguage].status_codes = data;
