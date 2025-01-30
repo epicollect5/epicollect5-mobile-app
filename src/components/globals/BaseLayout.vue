@@ -1,19 +1,6 @@
 <template>
 	<ion-page :id="id">
 		<ion-header class="ion-no-border">
-			<ion-toolbar v-if=showBetaToolbarAndroid
-						 color="warning"
-						 class="beta-toolbar">
-				<ion-title slot="start">Beta</ion-title>
-				<ion-buttons slot="end">
-					<ion-button size="small"
-								@click="reportBug()">
-						Report a bug&nbsp;
-						<ion-icon :icon="chatbubbleEllipses"></ion-icon>
-					</ion-button>
-				</ion-buttons>
-
-			</ion-toolbar>
 			<ion-toolbar>
 				<ion-buttons slot="start">
 					<slot name="actions-start"></slot>
@@ -25,19 +12,6 @@
 				<ion-buttons slot="end">
 					<slot name="actions-end"></slot>
 				</ion-buttons>
-			</ion-toolbar>
-			<ion-toolbar v-if="showBetaToolbariOS"
-						 color="warning"
-						 class="beta-toolbar">
-				<ion-title slot="start">Beta</ion-title>
-				<ion-buttons slot="end">
-					<ion-button size="small"
-								@click="reportBug()">
-						Report a bug&nbsp;
-						<ion-icon :icon="chatbubbleEllipses"></ion-icon>
-					</ion-button>
-				</ion-buttons>
-
 			</ion-toolbar>
 			<slot name="subheader"></slot>
 		</ion-header>
@@ -52,10 +26,7 @@ import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { useRoute } from 'vue-router';
-import { chatbubbleEllipses } from 'ionicons/icons';
 import { computed } from '@vue/reactivity';
-import { utilsService } from '@/services/utilities/utils-service';
-import { notificationService } from '@/services/notification-service';
 
 export default {
 	props: {
@@ -74,13 +45,6 @@ export default {
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
 		const methods = {
-			async reportBug () {
-				const hasInternetConnection = await utilsService.hasInternetConnection();
-				if (!hasInternetConnection) {
-					notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
-				}
-				window.open(PARAMETERS.COMMUNITY_SUPPORT_URL, '_system', 'location=yes');
-			},
 			//emit event to exit app and go back to dataviewer
 			// PWA in production only
 			exitApp (e) {
@@ -104,23 +68,12 @@ export default {
 		};
 
 		const computedScope = {
-			showBetaToolbarAndroid: computed(() => {
-				if (rootStore.device.platform === PARAMETERS.ANDROID) {
-					return rootStore.app.id.includes('beta');
-				}
-			}),
-			showBetaToolbariOS: computed(() => {
-				if (rootStore.device.platform === PARAMETERS.IOS) {
-					return rootStore.app.id.includes('beta');
-				}
-			}),
 			isPWA: computed(() => {
 				return rootStore.isPWA;
 			})
 		};
 
 		return {
-			chatbubbleEllipses,
 			...methods,
 			...computedScope
 		};
