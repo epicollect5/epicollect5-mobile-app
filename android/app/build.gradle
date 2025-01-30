@@ -1,14 +1,20 @@
 apply plugin: 'com.android.application'
 
 android {
+
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/NOTICE', 'META-INF/LICENSE']
+        }
+    }
     namespace "uk.ac.imperial.epicollect.five"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "uk.ac.imperial.epicollect.five"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7610
-        versionName "76.1.0"
+        versionCode 8621
+        versionName "86.2.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
