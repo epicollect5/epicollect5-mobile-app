@@ -57,6 +57,15 @@ import {PARAMETERS} from '@/config';
 //import '@/registerServiceWorker';
 import {rollbarService} from '@/services/utilities/rollbar-service';
 
+// Override console.info to use bold blue
+const originalInfo = console.info;
+console.info = function (...args) {
+    originalInfo.apply(console, [
+        '%c' + args.join(' '),
+        'color: blue; font-weight: bold;'
+    ]);
+};
+
 const pinia = createPinia();
 pinia.use(PiniaLogger({
     expanded: true,
