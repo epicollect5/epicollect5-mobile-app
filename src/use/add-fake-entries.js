@@ -39,6 +39,14 @@ export async function addFakeEntries (params) {
                 // Add fake answers for all questions in this entry
                 console.log(i + '. - adding fake entry for ' + entryService.entry.entryUuid);
 
+                // Randomly decide whether to override `created_at` with the epoch time
+                if (Math.random() < 0.5) { // Adjust the probability by changing `0.5`
+                    entryService.entry.createdAt = '1970-01-01T12:24:27.000Z';
+                    console.warn(
+                        `${i}. - created_at is epoch for entry: ${entryService.entry.entryUuid}`
+                    );
+                }
+
                 entryCommonService
                     .addFakeAnswers(
                         entryService.entry,
@@ -63,6 +71,14 @@ export async function addFakeEntries (params) {
                                     formModel.formRef,
                                     branches[currentBranchIndex]
                                 );
+
+                                // Randomly decide whether to override `created_at` with the epoch time
+                                if (Math.random() < 0.5) { // Adjust the probability by changing `0.5`
+                                    branchEntryService.entry.createdAt = '1970-01-01T12:24:27.000Z';
+                                    console.warn(
+                                        `${i}. - created_at is epoch for BRANCH entry: ${branchEntryService.entry.entryUuid}`
+                                    );
+                                }
 
                                 // Add fake answers for all questions in this branch entry
                                 entryCommonService
