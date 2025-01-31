@@ -59,16 +59,20 @@
             </ion-card-header>
           </ion-card>
         </div>
-        <div v-show="needsAddProjectsHelperText">
-          <ion-card>
-            <ion-card-content class="ion-text-center">
-              <p><strong>{{labels.project_addition_help_text}}</strong></p>
-              <ion-button color="secondary" @click="openAddProjectsDocs()">
-                 {{labels.learn_more}}
-              </ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
+
+      </div>
+    </template>
+
+    <template #footer>
+      <div v-show="showAddProjectsHelperText">
+        <ion-card>
+          <ion-card-content class="ion-text-center">
+            <p><strong>{{labels.project_addition_help_text}}</strong></p>
+            <ion-button color="secondary" @click="openAddProjectsDocs()">
+              {{labels.learn_more}}
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
       </div>
     </template>
 
@@ -115,7 +119,7 @@ export default {
     });
 
     const computedScope = {
-      needsAddProjectsHelperText: computed(() => {
+      showAddProjectsHelperText: computed(() => {
         return !state.isFetching && state.projects.length === 1 && state.projects[0].ref === DEMO_PROJECT.PROJECT_REF;
       })
     };

@@ -18,6 +18,9 @@
 		<ion-content>
 			<slot name="content"></slot>
 		</ion-content>
+    <ion-footer v-if="isProjectsPage">
+      <slot name="footer"></slot>
+    </ion-footer>
 	</ion-page>
 </template>
 
@@ -70,7 +73,10 @@ export default {
 		const computedScope = {
 			isPWA: computed(() => {
 				return rootStore.isPWA;
-			})
+			}),
+      isProjectsPage: computed(() => {
+        return route.name === PARAMETERS.ROUTES.PROJECTS;
+      })
 		};
 
 		return {
