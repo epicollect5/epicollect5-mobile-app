@@ -1,5 +1,8 @@
 # Release Notes
 
+## 86.2.2 - build 8622
+- Using exact match when searching for projects opened by an App Link
+
 ## 86.2.1 - build 8621
 - Updated build number to match Ionic 8 - Capacitor 6 versions
 - Fixed wrong sorting of forms on the download entries page
