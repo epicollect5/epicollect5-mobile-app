@@ -37,17 +37,20 @@ export default {
       })
     };
 
+    // noinspection JSDeprecatedSymbols
     CapacitorApp.addListener('appUrlOpen', async (data) => {
 
-      await SplashScreen.hide();
-      router.replace({
-        name: PARAMETERS.ROUTES.PROJECTS_ADD,
-        query: {refresh: true}
-      });
       await notificationService.showProgressDialog(
           STRINGS[rootStore.language].labels.wait,
           STRINGS[rootStore.language].labels.loading_project
       );
+
+      //Send app to add project page to re-use everything
+      //like we are adding a project manually
+      router.replace({
+        name: PARAMETERS.ROUTES.PROJECTS_ADD,
+        query: {refresh: true}
+      });
 
       console.log('App opened with URL:', data.url);
 
