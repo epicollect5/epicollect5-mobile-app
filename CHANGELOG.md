@@ -2,10 +2,10 @@
 
 ## 86.2.1 - build 8621
 - Updated build number to match Ionic 8 - Capacitor 6 versions
-- Fixed wrong sorting of forms on download entries page
+- Fixed wrong sorting of forms on the download entries page
 - Fixed header for alert notification
 - Added Slovenian translation
-- Added warning about manual project addition on projects page
+- Added warning about manual project addition on the projects page
 - Fixed bugs and stability improvements
 
 
