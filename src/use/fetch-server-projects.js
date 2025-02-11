@@ -15,7 +15,7 @@ export function fetchServerProjects (searchTerm) {
             let projects = [];
 
             // Search for project
-            webService.searchForProject(searchTerm).then(
+            webService.searchForProject(searchTerm, false).then(
                 function (response) {
                     // Loop round and add to projects array
                     if (response.data.data.length > 0) {

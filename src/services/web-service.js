@@ -88,13 +88,16 @@ export const webService = {
     },
 
     //Search for a project
-    searchForProject(searchTerm) {
+    searchForProject(searchTerm, exact) {
 
         const self = this;
 
+        if(exact) {
+            searchTerm += '?exact=true';
+        }
+
         return new Promise(function (resolve, reject) {
             // Attempt to retrieve the jwt token
-
             self.getHeaders().then(function (headers) {
                 axios({
                     method: 'GET',
@@ -279,7 +282,7 @@ export const webService = {
                 postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_FILE + slug;
             }
 
-            //todo: check -> data: formData 
+            //todo: check -> data: formData
             axios({
                 method: 'POST',
                 url: postURL,

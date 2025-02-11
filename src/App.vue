@@ -69,7 +69,7 @@ export default {
           //get project name from slug
           const projectName = utilsService.inverseSlug(projectSlug);
 
-          webService.searchForProject(projectName)
+          webService.searchForProject(projectName, true)
               .then((response) => {
                 //if Project does not exist, error out
                 if (response.data.data.length === 0) {
@@ -81,6 +81,7 @@ export default {
                     query: {refresh: true}
                   });
                 } else {
+                  //we only have a single match since we passed the exact query parameter
                   const project = {
                     slug: response.data.data[0].project.slug,
                     name: response.data.data[0].project.name,
