@@ -355,10 +355,6 @@ export const app = createApp(App)
     router.isReady().then(async () => {
         //init error reporting
         rollbarService.init(app);
-
-       // await EdgeToEdge.setBackgroundColor({ color: '#5b357f' });
-        //await StatusBar.setStyle({ style: Style.Light });
-
         console.log('Mounting app');
         app.mount('#app');
 

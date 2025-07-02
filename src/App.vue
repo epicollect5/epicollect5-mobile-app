@@ -40,7 +40,7 @@ export default {
 
 
     // noinspection JSDeprecatedSymbols
-    CapacitorApp.addListener('URLOpenListenerEvent', async (data) => {
+    CapacitorApp.addListener('appUrlOpen', async (data) => {
 
       await notificationService.showProgressDialog(
           STRINGS[rootStore.language].labels.wait,
