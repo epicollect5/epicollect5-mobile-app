@@ -90,9 +90,7 @@ import {fetchLocalProjects} from '@/use/fetch-local-projects';
 import {useRouter, useRoute} from 'vue-router';
 import {DEMO_PROJECT, PARAMETERS} from '@/config';
 import {notificationService} from '@/services/notification-service';
-import {Plugins} from '@capacitor/core';
-
-const {App} = Plugins;
+import { App } from '@capacitor/app';
 import {onIonViewWillEnter, onIonViewWillLeave, useBackButton} from '@ionic/vue';
 
 export default {

@@ -5,7 +5,7 @@ import { Capacitor } from '@capacitor/core';
 import { Network } from '@capacitor/network';
 import { projectModel } from '@/models/project-model.js';
 import slugify from 'slugify';
-import isValidCoords from 'is-valid-coords';
+import { isValidCoordsService } from '@/services/utilities/is-valid-coords-service';
 import { initService } from '@/services/init-service';
 import { STRINGS } from '@/config/strings';
 import { databaseSelectService } from '@/services/database/database-select-service';
@@ -109,7 +109,7 @@ export const utilsService = {
                 formattedTime = minutes + ':' + seconds;
                 break;
             default:
-                //HH::mm::ss (24 hr) OR hh:mm:ss (12 hr) 
+                //HH::mm::ss (24 hr) OR hh:mm:ss (12 hr)
                 formattedTime = hours + ':' + minutes + ':' + seconds;
         }
 
@@ -774,7 +774,7 @@ export const utilsService = {
          *
          *  We do this as we might have filename too long (i.e branch question of 255,
          *  then adding prefix we go over the max filename length (255)
-         * 
+         *
          * then slugify() will take of foreign chars, spaces, symbols, ect..
          */
 
@@ -876,14 +876,14 @@ export const utilsService = {
             return false;
         }
         ///validate the latitude using third-party library
-        return isValidCoords(lat, 0);
+        return isValidCoordsService.isValidCoords(lat, 0);
     },
     isValidLongitude(long) {
         if (!long) {
             return false;
         }
         ///validate the longitude using third-party library
-        return isValidCoords(0, long);
+        return isValidCoordsService.isValidCoords(0, long);
     },
     //accuracy must be a positive integer
     isValidAccuracy(accuracy) {

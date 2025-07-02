@@ -57,6 +57,9 @@ import {PARAMETERS} from '@/config';
 //import '@/registerServiceWorker';
 import {rollbarService} from '@/services/utilities/rollbar-service';
 
+import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
+import { StatusBar, Style } from '@capacitor/status-bar';
+
 // Override console.info to use bold blue
 const originalInfo = console.info;
 console.info = function (...args) {
@@ -349,9 +352,12 @@ export const app = createApp(App)
     }
 
     //mount app
-    router.isReady().then(() => {
+    router.isReady().then(async () => {
         //init error reporting
         rollbarService.init(app);
+
+       // await EdgeToEdge.setBackgroundColor({ color: '#5b357f' });
+        //await StatusBar.setStyle({ style: Style.Light });
 
         console.log('Mounting app');
         app.mount('#app');

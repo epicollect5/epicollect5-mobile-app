@@ -53,6 +53,7 @@ ion-toolbar.toolbar-title {
 }
 //hack:
 ion-card-content {
+    padding-top: 16px;
     .half-padding-start.radio-padding,
     .half-padding.checkbox-padding {
         ion-col {
@@ -639,4 +640,7 @@ textarea {
     .datetime-value {
         padding: 6px 0;
     }
+}
+.card-content-md{
+    padding-top: 16px !important;
 }

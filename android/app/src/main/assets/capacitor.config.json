@@ -10,6 +10,9 @@
 			"splashFullScreen": true,
 			"splashImmersive": false,
 			"backgroundColor": "#ffffff"
+		},
+		"EdgeToEdge": {
+			"backgroundColor": "#5b357f"
 		}
 	},
 	"cordova": {
