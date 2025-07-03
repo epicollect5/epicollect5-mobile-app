@@ -125,7 +125,7 @@ export const notificationService = {
                 const language = rootStore.language;
                 const labels = STRINGS[language].labels;
 
-                let ec5LoadingDialogMessage;
+                let ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + labels.wait + '</strong>';
 
                 if (title) {
                     ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + title + '</strong><br/><br/>' + message;
@@ -133,9 +133,6 @@ export const notificationService = {
                 else {
                     if (message) {
                         ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + message + '</strong>';
-                    }
-                    else {
-                        ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + labels.wait + '</strong>';
                     }
                 }
                 //remove any existing instance
