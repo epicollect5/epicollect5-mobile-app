@@ -57,9 +57,6 @@ import {PARAMETERS} from '@/config';
 //import '@/registerServiceWorker';
 import {rollbarService} from '@/services/utilities/rollbar-service';
 
-import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
-import { StatusBar, Style } from '@capacitor/status-bar';
-
 // Override console.info to use bold blue
 const originalInfo = console.info;
 console.info = function (...args) {
@@ -99,7 +96,7 @@ export const app = createApp(App)
     //register global components (any platform)
     app.component('base-layout', BaseLayout);
     //global components for mobile app
-    //loaded for pwa as well since thery are referenced
+    //loaded for pwa as well since they are referenced
     app.component('left-drawer', LeftDrawer);
     app.component('right-drawer', RightDrawer);
     app.component('list-answers', ListAnswers);
@@ -114,7 +111,6 @@ export const app = createApp(App)
     rootStore.isPWA = (rootStore.device.platform === PARAMETERS.PWA);
 
     if (rootStore.isPWA) {
-
         const searchParams = new URLSearchParams(window.location.search);
         rootStore.searchParams = searchParams;
         const urlSegments = window.location.pathname.split('/');
@@ -267,7 +263,7 @@ export const app = createApp(App)
             console.log('Database version migrated to ->  ', dbStore.dbVersion);
         } catch (error) {
             console.log(error);
-            notificationService.showAlert(JSON.stringify(error));
+            await notificationService.showAlert(JSON.stringify(error));
         }
 
         //create media dirs (only on devices)
@@ -307,7 +303,7 @@ export const app = createApp(App)
             const bookmarks = await bookmarksService.getBookmarks();
             bookmarkStore.setBookmarks(bookmarks);
         } catch (error) {
-            notificationService.showAlert(labels.bookmarks_loading_error);
+            await notificationService.showAlert(labels.bookmarks_loading_error);
             bookmarkStore.setBookmarks([]);
         }
 

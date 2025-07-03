@@ -4,6 +4,9 @@
   "npmClient": "npm",
   "webDir": "dist",
   "plugins": {
+    "StatusBar": {
+      "style": "LIGHT"
+    },
     "SplashScreen": {
       "androidScaleType": "CENTER_CROP",
       "launchAutoHide": false,

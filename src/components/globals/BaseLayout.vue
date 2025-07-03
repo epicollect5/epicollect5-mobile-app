@@ -25,7 +25,6 @@
 </template>
 
 <script>
-import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { useRoute } from 'vue-router';
@@ -45,8 +44,6 @@ export default {
 	setup (props, context) {
 		const rootStore = useRootStore();
 		const route = useRoute();
-		const language = rootStore.language;
-		const labels = STRINGS[language].labels;
 		const methods = {
 			//emit event to exit app and go back to dataviewer
 			// PWA in production only

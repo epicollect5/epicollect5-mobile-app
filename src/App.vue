@@ -11,14 +11,13 @@ import {STRINGS} from '@/config/strings';
 import {IonApp, IonRouterOutlet} from '@ionic/vue';
 import {useRootStore} from '@/stores/root-store';
 import {useRouter} from 'vue-router';
-import {computed, reactive} from '@vue/reactivity';
+import {computed} from '@vue/reactivity';
 import {PARAMETERS} from '@/config';
 import {onMounted} from 'vue';
 import {App as CapacitorApp} from '@capacitor/app'; // Alias the Capacitor App module as CapacitorApp
 import {addProject} from '@/use/add-project';
 import {utilsService} from '@/services/utilities/utils-service';
 import {webService} from '@/services/web-service';
-import {SplashScreen} from '@capacitor/splash-screen';
 import {notificationService} from '@/services/notification-service';
 import {errorsService} from '@/services/errors-service';
 
@@ -49,7 +48,7 @@ export default {
 
       //Send app to add project page to re-use everything
       //like we are adding a project manually
-      router.replace({
+      await router.replace({
         name: PARAMETERS.ROUTES.PROJECTS_ADD,
         query: {refresh: true}
       });
@@ -116,7 +115,7 @@ export default {
         }
       } else {
         //otherwise just project list
-        router.replace({
+        await router.replace({
           name: PARAMETERS.ROUTES.PROJECTS,
           query: {refresh: true}
         });

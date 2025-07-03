@@ -1,7 +1,7 @@
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
-import { loadingController, toastController, alertController } from '@ionic/vue';
+import { loadingController, alertController } from '@ionic/vue';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { Toast } from '@capacitor/toast';
 
@@ -23,9 +23,6 @@ export const notificationService = {
             });
         }, setDelay);
     },
-    showToastCenter(message, delay) {
-        this.showToast(message, delay, 'center');
-    },
     async showAlert(message, header) {
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -45,7 +42,7 @@ export const notificationService = {
     async confirmSingle(message, title) {
         const rootStore = useRootStore();
         const language = rootStore.language;
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             (async () => {
                 const alert = await alertController
                     .create({
@@ -128,7 +125,7 @@ export const notificationService = {
                 const language = rootStore.language;
                 const labels = STRINGS[language].labels;
 
-                let ec5LoadingDialogMessage = '';
+                let ec5LoadingDialogMessage;
 
                 if (title) {
                     ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + title + '</strong><br/><br/>' + message;
