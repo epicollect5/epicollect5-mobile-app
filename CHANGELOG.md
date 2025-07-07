@@ -1,5 +1,12 @@
 # Release Notes
 
+## 87.0.0 - build 8700
+
+- Upgraded to Capacitor 7 to target API 35 (Android 15)
+- Fixed edge to edge issue on Android 15 using new plugin
+- Fixed bugs and stability improvements
+- Fixed regression bugs
+
 ## 86.2.2 - build 8622
 - Using exact match when searching for projects opened by an App Link
 
