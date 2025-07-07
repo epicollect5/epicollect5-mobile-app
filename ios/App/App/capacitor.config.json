@@ -5,7 +5,7 @@
 	"webDir": "dist",
 	"plugins": {
 		"StatusBar": {
-			"style": "LIGHT"
+			"style": "DARK"
 		},
 		"SplashScreen": {
 			"androidScaleType": "CENTER_CROP",
