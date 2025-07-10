@@ -524,7 +524,8 @@ export const utilsService = {
                     (error) => {
                         //do not show error if the user cancelled the scan
                         if(error.code === 'OS-PLUG-BARC-0006'){
-                            reject(null);
+                            //we resolve() with a user cancelled flag
+                            resolve({cancelled: true});
                         }
                         reject(error);
                     }
