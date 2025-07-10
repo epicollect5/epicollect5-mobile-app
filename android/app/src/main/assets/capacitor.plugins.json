@@ -8,6 +8,10 @@
 		"classpath": "com.capacitorjs.plugins.app.AppPlugin"
 	},
 	{
+		"pkg": "@capacitor/barcode-scanner",
+		"classpath": "com.capacitorjs.barcodescanner.CapacitorBarcodeScannerPlugin"
+	},
+	{
 		"pkg": "@capacitor/camera",
 		"classpath": "com.capacitorjs.plugins.camera.CameraPlugin"
 	},

@@ -9,6 +9,7 @@ import { isValidCoordsService } from '@/services/utilities/is-valid-coords-servi
 import { initService } from '@/services/init-service';
 import { STRINGS } from '@/config/strings';
 import { databaseSelectService } from '@/services/database/database-select-service';
+import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
 
 export const utilsService = {
 
@@ -510,23 +511,24 @@ export const utilsService = {
         const rootStore = useRootStore();
         return new Promise((resolve, reject) => {
             //trigger call to barcode with a bit of delay to allow the spinner to appear
-            window.setTimeout(function () {
+            window.setTimeout(function async () {
+
                 if (rootStore.device.platform === PARAMETERS.WEB) {
                     resolve('');
                 }
 
-                window.cordova.plugins.barcodeScanner.scan(function (result) {
-                    console.log(result);
-                    //do not override value if the scan action is cancelled by the user
-                    if (!result.cancelled) {
-                        resolve(result);
+                CapacitorBarcodeScanner.scanBarcode({}).then(
+                    (result) => {
+                            resolve({text: result.ScanResult});
+                    },
+                    (error) => {
+                        //do not show error if the user cancelled the scan
+                        if(error.code === 'OS-PLUG-BARC-0006'){
+                            reject(null);
+                        }
+                        reject(error);
                     }
-                    else {
-                        reject(null);
-                    }
-                }, function (error) {
-                    reject(error);
-                });
+                );
             }, 250);
         });
     },

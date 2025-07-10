@@ -36,6 +36,7 @@
 	"packageClassList": [
 		"ActionSheetPlugin",
 		"AppPlugin",
+		"CapacitorBarcodeScannerPlugin",
 		"CAPCameraPlugin",
 		"DevicePlugin",
 		"DialogPlugin",

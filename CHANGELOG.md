@@ -1,5 +1,14 @@
 # Release Notes
 
+## 87.2.0 - build 8720
+
+ - Replace barcode plugin with Capacitor one
+ - Fixed bugs and stability improvements
+
+## 87.1.0 - build 8710
+
+ - Upgraded cordova sqlite storage plugin to support 16kb page size devices
+
 ## 87.0.0 - build 8700
 
 - Upgraded to Capacitor 7 to target API 35 (Android 15)
