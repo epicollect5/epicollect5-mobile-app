@@ -485,7 +485,7 @@ export const STRINGS = {
     },
     es: {
         labels: {
-            copy_to_clipboard: 'Copiar en el portapapeles',
+            copied_to_clipboard: 'Copiar en el portapapeles',
             project_addition_help_text: 'Los proyectos deben agregarse manualmente',
             learn_more: 'Aprende más',
             temp_deletion_error: 'Error al eliminar archivos temporales',
@@ -727,7 +727,7 @@ export const STRINGS = {
     },
     fr: {
         labels: {
-            copy_to_clipboard: 'Copier dans le presse-papiers',
+            copied_to_clipboard: 'Copier dans le presse-papiers',
             project_addition_help_text: 'Les projets doivent être ajoutés manuellement',
             learn_more: 'En savoir plus',
             temp_deletion_error: 'Erreur lors de la suppression des fichiers temporaires',
@@ -969,7 +969,7 @@ export const STRINGS = {
     },
     pl: {
         labels: {
-            copy_to_clipboard: 'Kopiuj do schowka',
+            copied_to_clipboard: 'Kopiuj do schowka',
             project_addition_help_text: 'Projekty muszą być dodawane ręcznie',
             learn_more: 'Dowiedz się więcej',
             temp_deletion_error: 'Błąd podczas usuwania plików tymczasowych',
@@ -1211,7 +1211,7 @@ export const STRINGS = {
     },
     pt: {
         labels: {
-            copy_to_clipboard: 'Copiar para a área de transferência',
+            copied_to_clipboard: 'Copiar para a área de transferência',
             project_addition_help_text: 'Os projetos devem ser adicionados manualmente',
             learn_more: 'Saiba mais',
             temp_deletion_error: 'Erro ao remover ficheiros temporários',
@@ -1453,7 +1453,7 @@ export const STRINGS = {
     },
     ca: {
         labels: {
-            copy_to_clipboard: 'Copia al porta-retalls',
+            copied_to_clipboard: 'Copia al porta-retalls',
             project_addition_help_text: 'Els projectes s\'han d\'afegir manualment',
             learn_more: 'Aprèn més',
             temp_deletion_error: 'S\'ha produït un error en eliminar els fitxers temporals',
@@ -1695,7 +1695,7 @@ export const STRINGS = {
     },
     sl:{
         labels: {
-            copy_to_clipboard: 'Kopiraj v odložišče',
+            copied_to_clipboard: 'Kopiraj v odložišče',
             project_addition_help_text: 'Projekti morajo biti dodani ročno',
             learn_more: 'Več o tem',
             temp_deletion_error: 'Napaka pri brisanju začasnih datotek.',

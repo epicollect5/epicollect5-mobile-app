@@ -10,8 +10,8 @@ export const notificationService = {
 
     showToast(message, delay, position) {
 
-        const setDelay = delay ? delay : 0;
-        const setPosition = position ? position : 'bottom';
+        const setDelay = delay || 0;
+        const setPosition = position || 'bottom';
 
         const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
 
