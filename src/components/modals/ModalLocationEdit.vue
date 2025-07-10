@@ -11,9 +11,15 @@
 		</ion-toolbar>
 
 		<ion-card class="ion-margin">
-			<ion-card-header class="question-label ion-margin-bottom">
-				<ion-card-subtitle class="ion-text-left">
-					{{ labels.format }}:&nbsp;lat, long</ion-card-subtitle>
+			<ion-card-header class="question-label force-no-padding">
+        <ion-card-title>
+        <question-label-action
+            :disabled="state.value === ''"
+            action="clipboard"
+            :questionText="`${labels.format}: lat, long`"
+            @on-label-button-click="copyToClipboard"
+        />
+        </ion-card-title>
 			</ion-card-header>
 			<ion-card-content class="ion-text-center">
 				<ion-item
@@ -59,9 +65,12 @@ import HeaderModal from '@/components/HeaderModal.vue';
 import GridQuestionWide from '@/components/GridQuestionWide';
 import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
+import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
+import { PARAMETERS } from '@/config';
+import { Clipboard } from '@capacitor/clipboard';
 
 export default {
-	components: { HeaderModal, GridQuestionWide },
+	components: {QuestionLabelAction, HeaderModal, GridQuestionWide },
 	props: {
 		latitude: {
 			type: String,
@@ -98,7 +107,25 @@ export default {
 				} else {
 					notificationService.showAlert(labels.invalid_value);
 				}
-			}
+			},
+      async copyToClipboard() {
+        await Clipboard.write({
+          string: state.value
+        });
+
+        //show toast on iOS
+        if (rootStore.device.platform === PARAMETERS.IOS) {
+          await notificationService.showToast(labels.copied_to_clipboard + ': ' + state.value , null, 'top');
+          return;
+        }
+
+        //show toast on older android versions
+        if (rootStore.device.platform === PARAMETERS.ANDROID) {
+          if (parseInt(rootStore.device.osVersion) <= 12) {
+            await notificationService.showToast(labels.copied_to_clipboard + ': ' + state.value , null, 'top');
+          }
+        }
+      }
 		};
 
 		return {

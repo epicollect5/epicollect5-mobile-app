@@ -38,6 +38,7 @@
 		"AppPlugin",
 		"CapacitorBarcodeScannerPlugin",
 		"CAPCameraPlugin",
+		"ClipboardPlugin",
 		"DevicePlugin",
 		"DialogPlugin",
 		"FilesystemPlugin",

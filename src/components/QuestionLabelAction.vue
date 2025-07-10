@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { ellipsisVertical, search, filter, helpCircle, create } from 'ionicons/icons';
+import { ellipsisVertical, search, filter, helpCircle, create, copyOutline } from 'ionicons/icons';
 import { computed } from '@vue/reactivity';
 
 export default {
@@ -83,6 +83,8 @@ export default {
 						return helpCircle;
 					case 'edit':
 						return create;
+          case 'clipboard':
+            return copyOutline;
 					default:
 						return filter;
 				}
