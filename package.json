@@ -1,6 +1,6 @@
 {
   "name": "uk.ac.imperial.epicollect.five",
-  "version": "87.2.1",
+  "version": "87.2.2",
   "private": true,
   "description": "Free and easy-to-use mobile data-gathering platform",
   "scripts": {

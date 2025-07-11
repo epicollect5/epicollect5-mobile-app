@@ -1,5 +1,9 @@
 # Release Notes
 
+## 87.2.2 - build 8722
+
+ - Added warning card on entries upload page to inform users media must be uploaded separately
+
 ## 87.2.1 - build 8721
 
 - Added copy button to location edit panel to copy lat, long to clipboard
