@@ -68,7 +68,11 @@
         <ion-card>
           <ion-card-content class="ion-text-center">
             <p><strong>{{labels.project_addition_help_text}}</strong></p>
-            <ion-button color="secondary" @click="openAddProjectsDocs()">
+            <ion-button color="warning" @click="openAddProjectsDocs()">
+              <ion-icon
+                  slot="start"
+                  :icon="openOutline"
+              ></ion-icon>
               {{labels.learn_more}}
             </ion-button>
           </ion-card-content>
@@ -81,7 +85,7 @@
 
 <script>
 import ListItemProjects from '@/components/ListItemProjects';
-import {add} from 'ionicons/icons';
+import {add, openOutline} from 'ionicons/icons';
 import {reactive, computed} from '@vue/reactivity';
 import {onMounted, onActivated, watch, onRenderTriggered} from 'vue';
 import {STRINGS} from '@/config/strings';
@@ -212,7 +216,8 @@ export default {
       ...methods,
       state,
       //icons
-      add
+      add,
+      openOutline
     };
   }
 };

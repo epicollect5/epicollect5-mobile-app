@@ -7,7 +7,7 @@
 
 		<template #actions-end>
 			<!-- imp: Added only as spacer to center project name -->
-			<ion-button disabled="true">
+			<ion-button disabled>
 				<ion-icon>
 				</ion-icon>
 			</ion-button>
@@ -38,7 +38,7 @@
 			<ion-grid class="ion-no-padding">
 				<ion-row
 					v-cloak
-					v-show="areAllEntrieUploaded"
+					v-show="areAllEntriesUploaded"
 					class="animate__animated animate__fadeIn"
 				>
 					<ion-col class="subheader-success">
@@ -214,6 +214,23 @@
 			</ion-grid>
 
 		</template>
+
+    <template #footer>
+      <div>
+        <ion-card>
+          <ion-card-content class="ion-text-center">
+            <p><strong>{{labels.upload_media_help_text}}</strong></p>
+            <ion-button color="warning" @click="openUploadMediaDocs()">
+              <ion-icon
+                  slot="start"
+                  :icon="openOutline"
+              ></ion-icon>
+              {{labels.learn_more}}
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </template>
 	</base-layout>
 </template>
 
@@ -225,7 +242,8 @@ import {
 	images,
 	musicalNotes,
 	alertCircle,
-	documentText
+	documentText,
+  openOutline
 } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
@@ -270,7 +288,7 @@ export default {
 
 		//Check if we have any media to upload
 		function _checkMedia() {
-			return new Promise((resolve, reject) => {
+			return new Promise((resolve) => {
 				(async function () {
 					const response = await mediaService.getProjectStoredMedia({
 						project_ref: projectModel.getProjectRef(),
@@ -425,7 +443,7 @@ export default {
 
 							// If we have any errors
 							if (state.hasErrors || state.totalEntriesWithErrors > 0) {
-								//some entriers has errors (uniqueness, required, etc)
+								//some entries has errors (uniqueness, required, etc)
 								notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
 							} else if (state.totalEntriesIncomplete > 0) {
 								//Some entries are incomplete
@@ -528,12 +546,15 @@ export default {
 						timestamp: Date.now()
 					}
 				});
-			}
+			},
+      openUploadMediaDocs(){
+        window.open(PARAMETERS.UPLOAD_MEDIA_DOCS_URL, '_system', 'location=yes');
+      }
 		};
 
 		const computedScope = {
 			projectName: utilsService.getProjectNameMarkup(),
-			areAllEntrieUploaded: computed(() => {
+			areAllEntriesUploaded: computed(() => {
 				return (
 					state.totalEntriesIncomplete === 0 &&
 					state.totalEntries > 0 &&
@@ -570,7 +591,8 @@ export default {
 			images,
 			musicalNotes,
 			alertCircle,
-			documentText
+			documentText,
+      openOutline
 		};
 	}
 };

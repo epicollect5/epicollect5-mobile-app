@@ -18,7 +18,7 @@
 		<ion-content>
 			<slot name="content"></slot>
 		</ion-content>
-    <ion-footer v-if="isProjectsPage">
+    <ion-footer v-if="isProjectsPage || isEntriesUploadPage">
       <slot name="footer"></slot>
     </ion-footer>
 	</ion-page>
@@ -73,6 +73,9 @@ export default {
 			}),
       isProjectsPage: computed(() => {
         return route.name === PARAMETERS.ROUTES.PROJECTS;
+      }),
+      isEntriesUploadPage: computed(() => {
+        return route.name === PARAMETERS.ROUTES.ENTRIES_UPLOAD;
       })
 		};
 

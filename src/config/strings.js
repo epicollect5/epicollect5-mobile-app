@@ -3,6 +3,7 @@ export const STRINGS = {
         labels: {
             copied_to_clipboard: 'Copied to clipboard',
             project_addition_help_text: 'Projects must be added manually',
+            upload_media_help_text: 'Media files must be uploaded separately',
             learn_more:'Learn More',
             temp_deletion_error: 'Error deleting temp files',
             collect_errors: 'Collect errors',
@@ -244,6 +245,7 @@ export const STRINGS = {
     it: {
         labels: {
             copied_to_clipboard: 'Copiato nella clipboard',
+            upload_media_help_text: 'Media files devono essere caricati separatamente',
             project_addition_help_text: 'I progetti devono essere aggiunti manualmente',
             learn_more: 'Scopri di più',
             temp_deletion_error: 'Errore rimozione files temporanei',
@@ -486,6 +488,7 @@ export const STRINGS = {
     es: {
         labels: {
             copied_to_clipboard: 'Copiar en el portapapeles',
+            upload_media_help_text: 'Los media deben cargarse por separado',
             project_addition_help_text: 'Los proyectos deben agregarse manualmente',
             learn_more: 'Aprende más',
             temp_deletion_error: 'Error al eliminar archivos temporales',
@@ -728,6 +731,7 @@ export const STRINGS = {
     fr: {
         labels: {
             copied_to_clipboard: 'Copier dans le presse-papiers',
+            upload_media_help_text: 'Les fichiers multimédias doivent être téléchargés séparément',
             project_addition_help_text: 'Les projets doivent être ajoutés manuellement',
             learn_more: 'En savoir plus',
             temp_deletion_error: 'Erreur lors de la suppression des fichiers temporaires',
@@ -970,6 +974,7 @@ export const STRINGS = {
     pl: {
         labels: {
             copied_to_clipboard: 'Kopiuj do schowka',
+            upload_media_help_text: 'Pliki multimedialne muszą zostać przesłane osobno',
             project_addition_help_text: 'Projekty muszą być dodawane ręcznie',
             learn_more: 'Dowiedz się więcej',
             temp_deletion_error: 'Błąd podczas usuwania plików tymczasowych',
@@ -1212,6 +1217,7 @@ export const STRINGS = {
     pt: {
         labels: {
             copied_to_clipboard: 'Copiar para a área de transferência',
+            upload_media_help_text: 'Os ficheiros de media devem ser enviados separadamente',
             project_addition_help_text: 'Os projetos devem ser adicionados manualmente',
             learn_more: 'Saiba mais',
             temp_deletion_error: 'Erro ao remover ficheiros temporários',
@@ -1454,6 +1460,7 @@ export const STRINGS = {
     ca: {
         labels: {
             copied_to_clipboard: 'Copia al porta-retalls',
+            upload_media_help_text: 'Els fitxers multimèdia s\'han de pujar per separat',
             project_addition_help_text: 'Els projectes s\'han d\'afegir manualment',
             learn_more: 'Aprèn més',
             temp_deletion_error: 'S\'ha produït un error en eliminar els fitxers temporals',
@@ -1696,6 +1703,7 @@ export const STRINGS = {
     sl:{
         labels: {
             copied_to_clipboard: 'Kopiraj v odložišče',
+            upload_media_help_text: 'Predstavnostne datoteke je treba naložiti ločeno',
             project_addition_help_text: 'Projekti morajo biti dodani ročno',
             learn_more: 'Več o tem',
             temp_deletion_error: 'Napaka pri brisanju začasnih datotek.',
