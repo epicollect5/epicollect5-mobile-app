@@ -511,7 +511,7 @@ export const utilsService = {
         const rootStore = useRootStore();
         return new Promise((resolve, reject) => {
             //trigger call to barcode with a bit of delay to allow the spinner to appear
-            window.setTimeout(function async () {
+            window.setTimeout( async function () {
 
                 if (rootStore.device.platform === PARAMETERS.WEB) {
                     resolve('');
