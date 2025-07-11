@@ -1,5 +1,10 @@
 # Release Notes
 
+## 87.2.1 - build 8721
+
+- Added copy button to location edit panel to copy lat, long to clipboard
+- Fixed toast not showing on Android 12 and below when copying to clipboard
+
 ## 87.2.0 - build 8720
 
  - Replace barcode plugin with Capacitor one
