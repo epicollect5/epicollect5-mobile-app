@@ -68,7 +68,7 @@
     "cordova-plugin-foreground-service": "git+https://mirko77@bitbucket.org/epicollect/cordova-foreground-plugin.git",
     "cordova-plugin-geolocation": "^4.1.0",
     "cordova-plugin-globalization": "^1.11.0",
-    "cordova-plugin-googleplus": "git+https://github.com/epicollect5/cordova-plugin-googleplus.git#fix-signout",
+    "cordova-plugin-googleplus": "github:epicollect5/cordova-plugin-googleplus#fix-signout",
     "cordova-plugin-media": "github:epicollect5/cordova-plugin-media",
     "cordova-plugin-media-capture": "github:epicollect5/cordova-plugin-media-capture",
     "cordova-plugin-sign-in-with-apple": "^0.1.2",
