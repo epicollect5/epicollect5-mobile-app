@@ -5,45 +5,52 @@ PODS:
   - AppAuth/Core (1.6.2)
   - AppAuth/ExternalUserAgent (1.6.2):
     - AppAuth/Core
-  - Capacitor (6.0.0):
+  - Capacitor (7.4.0):
     - CapacitorCordova
-  - CapacitorActionSheet (6.0.0):
+  - CapacitorActionSheet (7.0.1):
     - Capacitor
-  - CapacitorApp (6.0.0):
+  - CapacitorApp (7.0.1):
     - Capacitor
-  - CapacitorCamera (6.0.0):
+  - CapacitorBarcodeScanner (2.0.3):
     - Capacitor
-  - CapacitorCordova (6.0.0)
-  - CapacitorDevice (6.0.0):
+    - OSBarcodeLib (~> 1.1.3)
+  - CapacitorCamera (7.0.1):
     - Capacitor
-  - CapacitorDialog (6.0.0):
+  - CapacitorClipboard (7.0.1):
     - Capacitor
-  - CapacitorFilesystem (6.0.0):
+  - CapacitorCordova (7.4.0)
+  - CapacitorDevice (7.0.1):
     - Capacitor
-  - CapacitorGeolocation (6.0.0):
+  - CapacitorDialog (7.0.1):
     - Capacitor
-  - CapacitorHaptics (6.0.0):
+  - CapacitorFilesystem (7.1.1):
     - Capacitor
-  - CapacitorKeyboard (6.0.0):
+    - IONFilesystemLib (~> 1.0)
+  - CapacitorGeolocation (7.1.2):
     - Capacitor
-  - CapacitorLocalNotifications (6.0.0):
+    - IONGeolocationLib (~> 1.0)
+  - CapacitorHaptics (7.0.1):
     - Capacitor
-  - CapacitorNetwork (6.0.0):
+  - CapacitorKeyboard (7.0.1):
     - Capacitor
-  - CapacitorPushNotifications (6.0.0):
+  - CapacitorLocalNotifications (7.0.1):
     - Capacitor
-  - CapacitorShare (6.0.0):
+  - CapacitorNetwork (7.0.1):
     - Capacitor
-  - CapacitorSplashScreen (6.0.0):
+  - CapacitorPushNotifications (7.0.1):
     - Capacitor
-  - CapacitorStatusBar (6.0.0):
+  - CapacitorShare (7.0.1):
     - Capacitor
-  - CapacitorToast (6.0.0):
+  - CapacitorSplashScreen (7.0.1):
     - Capacitor
-  - CordovaPlugins (6.0.0):
+  - CapacitorStatusBar (7.0.1):
+    - Capacitor
+  - CapacitorToast (7.0.1):
+    - Capacitor
+  - CordovaPlugins (7.4.0):
     - CapacitorCordova
   - CordovaPluginsResources (0.0.105)
-  - CordovaPluginsStatic (6.0.0):
+  - CordovaPluginsStatic (7.4.0):
     - CapacitorCordova
     - GoogleSignIn (~> 5.0.2)
     - GoogleUtilities (~> 7.2.2)
@@ -88,13 +95,18 @@ PODS:
     - AppAuth/Core (~> 1.6)
     - GTMSessionFetcher/Core (< 3.0, >= 1.5)
   - GTMSessionFetcher/Core (1.7.2)
+  - IONFilesystemLib (1.0.0)
+  - IONGeolocationLib (1.0.0)
+  - OSBarcodeLib (1.1.3)
   - PromisesObjC (1.2.12)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorActionSheet (from `../../node_modules/@capacitor/action-sheet`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorBarcodeScanner (from `../../node_modules/@capacitor/barcode-scanner`)"
   - "CapacitorCamera (from `../../node_modules/@capacitor/camera`)"
+  - "CapacitorClipboard (from `../../node_modules/@capacitor/clipboard`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorDevice (from `../../node_modules/@capacitor/device`)"
   - "CapacitorDialog (from `../../node_modules/@capacitor/dialog`)"
@@ -120,6 +132,9 @@ SPEC REPOS:
     - GoogleUtilities
     - GTMAppAuth
     - GTMSessionFetcher
+    - IONFilesystemLib
+    - IONGeolocationLib
+    - OSBarcodeLib
     - PromisesObjC
 
 EXTERNAL SOURCES:
@@ -129,8 +144,12 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/action-sheet"
   CapacitorApp:
     :path: "../../node_modules/@capacitor/app"
+  CapacitorBarcodeScanner:
+    :path: "../../node_modules/@capacitor/barcode-scanner"
   CapacitorCamera:
     :path: "../../node_modules/@capacitor/camera"
+  CapacitorClipboard:
+    :path: "../../node_modules/@capacitor/clipboard"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorDevice:
@@ -168,33 +187,38 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   AppAuth: 3bb1d1cd9340bd09f5ed189fb00b1cc28e1e8570
-  Capacitor: 559d073c4ca6c27f8e7002c807eea94c3ba435a9
-  CapacitorActionSheet: de123f478f394373f84a96614ce2b1a6c30253e4
-  CapacitorApp: 9d53aec7101f7b030a950c5bdc4df8612576b279
-  CapacitorCamera: b61f125d92a0ef75d7becb7956fed7dd13187ee0
-  CapacitorCordova: 8c4bfdf69368512e85b1d8b724dd7546abeb30af
-  CapacitorDevice: f8fd88f9edd1261c55a109f32015b09bbbfdc4a0
-  CapacitorDialog: 64aa82840ee5e9c066f9e1a49c1e186afd3f24d2
-  CapacitorFilesystem: 60e59ba274c234a979e7a3be2552feaadcee4263
-  CapacitorGeolocation: 1f12bbe372b65116e851bd8e3a94cf0ef9bacebb
-  CapacitorHaptics: 9ebc9363f0e9b8eb4295088a0b474530acf1859b
-  CapacitorKeyboard: deacbd09d8d1029c3681197fb05d206b721d5f73
-  CapacitorLocalNotifications: 4ab68f0be5f697a579558fadd307d823a9ec1c26
-  CapacitorNetwork: f15a94c16a33cba7c47a17814cb6bcfe3ea34ded
-  CapacitorPushNotifications: e18636e8a96f1d70b4c669e21c730e995bf5e5c9
-  CapacitorShare: a771200d3b924a5d7ad9d9fecbac517e4c0aa74f
-  CapacitorSplashScreen: 5431ab8d19c1c6e95777d53bfaa7a36a6c3d94c7
-  CapacitorStatusBar: 2e4369f99166125435641b1908d05f561eaba6f6
-  CapacitorToast: ba573a7bc5dfd622e78d5be126a84ee221da4180
-  CordovaPlugins: c6cca6b7d1d323852c22a8e84df638a5934ff712
-  CordovaPluginsResources: 1b3992e05cb6336d2850cd77dd5e3054f2f76f96
-  CordovaPluginsStatic: b74b006d16f3863ec7fd712ee86371ed66971ca1
+  Capacitor: 10feab36396883c55373328124a677f118cd4b5f
+  CapacitorActionSheet: 4213427449132ae4135674d93010cb011725647e
+  CapacitorApp: febecbb9582cb353aed037e18ec765141f880fe9
+  CapacitorBarcodeScanner: 29c88bf098adb0830975d4f14c107a6bb7722e3d
+  CapacitorCamera: 6e73f1fc6c629a672658705a02409b60854bc0f1
+  CapacitorClipboard: 70bfdb42b877b320a6e511ab94fa7a6a55d57ecb
+  CapacitorCordova: 723e017d8a80ab2ede9959fbe37556c35ac860d5
+  CapacitorDevice: c6f6d587dd310527f8a48bf09c4e7b4a4cf14329
+  CapacitorDialog: 0e09f242f6c3f5e82e4dc76b20f2a056be57a579
+  CapacitorFilesystem: 39173fe5a0e77851119998d0d8c61c70551a412a
+  CapacitorGeolocation: b005744861676af9abd19a0682f0b1af32cc2c99
+  CapacitorHaptics: 1f1e17041f435d8ead9ff2a34edd592c6aa6a8d6
+  CapacitorKeyboard: 09fd91dcde4f8a37313e7f11bde553ad1ed52036
+  CapacitorLocalNotifications: c2212755b33d2513b8bb325096ce3a64d4039ae3
+  CapacitorNetwork: 15cb4385f0913a8ceb5e9a4d7af1ec554bdb8de8
+  CapacitorPushNotifications: 6a2794788c583dd89215f1805ca4bced1b13dbdf
+  CapacitorShare: e573823f511f260f598d0423c33b1e3d7bbe5fd1
+  CapacitorSplashScreen: 1d67815a422a9b61539c94f283c08ed56667c0fc
+  CapacitorStatusBar: 6e7af040d8fc4dd655999819625cae9c2d74c36f
+  CapacitorToast: ddfc4b36080dbe3634c9faf510b20f6ddcff9330
+  CordovaPlugins: 49b070a00cace4172b9c19b22e476630998fe2c4
+  CordovaPluginsResources: da93847212bf7b16ba770e4d6c3e7dba820174c7
+  CordovaPluginsStatic: 372cc99d56216f2475312ff5ab4c0c27e490940b
   GoogleSignIn: 7137d297ddc022a7e0aa4619c86d72c909fa7213
   GoogleUtilities: 31c5b01f978a70c6cff2afc6272b3f1921614b43
   GTMAppAuth: 0ff230db599948a9ad7470ca667337803b3fc4dd
   GTMSessionFetcher: 5595ec75acf5be50814f81e9189490412bad82ba
+  IONFilesystemLib: ceacae793975039530458eabab0c495c70515a0d
+  IONGeolocationLib: 81f33f88d025846946de2cf63b0c7628e7c6bc9d
+  OSBarcodeLib: f2e981270a64faf476cb790864262b29ab8cd68a
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
 
-PODFILE CHECKSUM: 7743ba205741afb7157f215442075c2f35fa47d0
+PODFILE CHECKSUM: f26d446e4e94eadaf2010ab2cb63c77ecd47edf8
 
-COCOAPODS: 1.12.1
+COCOAPODS: 1.16.2
