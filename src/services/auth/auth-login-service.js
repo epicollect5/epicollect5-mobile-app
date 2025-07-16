@@ -72,7 +72,10 @@ export const authLoginService = {
                     email: email,
                     action: STRINGS[language].labels.logout
                 };
-                resolve();
+                resolve({
+                    name: name,
+                    email: email
+                });
             }, () => {
                 reject('ec5_12');
             });

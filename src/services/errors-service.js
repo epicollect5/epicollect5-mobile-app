@@ -65,23 +65,23 @@ export const errorsService = {
         if (response instanceof TypeError) {
             //show error to user and send it to Rollbar as well
             rollbarService.critical(response);
-            notificationService.showAlert(response, STRINGS[language].labels.error);
+            await notificationService.showAlert(response, STRINGS[language].labels.error);
         }
         else {
-            notificationService.showAlert(STRINGS[language].status_codes[errorCode], STRINGS[language].labels.error);
+            await notificationService.showAlert(STRINGS[language].status_codes[errorCode], STRINGS[language].labels.error);
         }
         return STRINGS[language].status_codes[errorCode];
     },
 
 
     handleAuthError(error) {
-        //show modal asking user to enter six digit code to confirm login
+        //show modal asking user to enter six-digit code to confirm login
 
         //if code correct log user in (server adds both passwordless and apple provider to same email)
     },
 
     // Handle errors received when moving between questions
-    handleEntryErrors(errors, scopeErrors, inputRefs) {
+    async handleEntryErrors(errors, scopeErrors, inputRefs) {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -92,12 +92,12 @@ export const errorsService = {
         // If we have any new errors, notify user
         for (inputRef in errors) {
             if (Object.prototype.hasOwnProperty.call(errors, inputRef)) {
-                // Add first non empty error to $scope.error object
+                // Add first non-empty error to $scope.error object
                 if (errors[inputRef].message !== '') {
                     scopeErrors.hasError = true;
                     scopeErrors.errors[inputRef] = errors[inputRef];
                     // Show error notification
-                    notificationService.showAlert(scopeErrors.errors[inputRef].message, STRINGS[language].labels.error);
+                    await notificationService.showAlert(scopeErrors.errors[inputRef].message, STRINGS[language].labels.error);
                     // Break after first error
                     break;
                 }
@@ -120,7 +120,7 @@ export const errorsService = {
                     scopeErrors.errors[inputRef].message = '';
                 }
 
-                // Check if we still have non empty errors
+                // Check if we still have non-empty errors
                 if (scopeErrors.errors[inputRef].message !== '') {
                     // Then we must still have errors
                     scopeErrors.hasError = true;

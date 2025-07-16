@@ -10,34 +10,41 @@ import { errorsService } from '@/services/errors-service';
 import { webService } from '@/services/web-service';
 import { authLoginService } from '@/services/auth/auth-login-service';
 import { modalsHandlerService } from '@/services/modals/modals-handler-service';
+import { SocialLogin } from '@capgo/capacitor-social-login';
 
 export const authGoogleService = {
 
     //Native login using cordova https://goo.gl/vRuudH
-    getGoogleCodeNatively (authIds) {
+    async getGoogleCodeNatively (authIds) {
+
+        await SocialLogin.initialize({
+            google: {
+                webClientId: authIds.google.CLIENT_ID,
+                iOSClientId: authIds.google.IOS_CLIENT_ID,
+                iOSServerClientId: authIds.google.CLIENT_ID,//same as webClientId
+                mode: 'offline' // <-- important, we need serverAuthCode
+            }
+        });
+
         return new Promise(function (resolve, reject) {
 
-            // Cordova googleplus plugin
-            window.plugins.googleplus.login(
-                {
-                    webClientId: authIds.google.CLIENT_ID, // optional clientId of your Web application from Credentials settings of your project - On Android, this MUST be included to get an idToken. On iOS, it is not required.
-                    offline: true // optional, but requires the webClientId - if set to true the plugin will also return a serverAuthCode, which can be used to grant offline access to a non-Google server
-                },
-                function (response) {
+            SocialLogin.login({
+                provider: 'google',
+                mode: 'offline',
+                options: {}
+            }).then(
+                (response) => {
                     console.log(response);
                     //Post google access code to server and retrieve jwt
-                    if (response.serverAuthCode) {
+                    if (response.result.serverAuthCode) {
                         resolve({
-                            code: response.serverAuthCode,
-                            email: response.email,
-                            family_name: response.familyName,
-                            given_name: response.givenName
+                            code: response.result.serverAuthCode
                         });
                     } else {
                         reject();
                     }
                 },
-                function (error) {
+                (error) => {
                     console.log(error);
                     reject(error);
                 }
@@ -54,19 +61,15 @@ export const authGoogleService = {
         // Check if we have a connection
         const hasInternetConnection = await utilsService.hasInternetConnection();
         if (!hasInternetConnection) {
-            notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
+            await notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
         } else {
 
             await notificationService.showProgressDialog(labels.sign_in + '...');
 
             this.getGoogleCodeNatively(authIds).then(
                 function (googleResponse) {
-                    account.email = googleResponse.email;
-                    account.provider = PARAMETERS.PROVIDERS.GOOGLE;
-                    account.user = {
-                        given_name: googleResponse.given_name,
-                        family_name: googleResponse.family_name
-                    };
+                    console.log('googleResponse', googleResponse);
+                    account.code = googleResponse.code;
 
                     webService.authGoogleUser(googleResponse.code).then(
                         async function (response) {
@@ -74,7 +77,10 @@ export const authGoogleService = {
 
                             //Google user is authenticated, save to store
                             try {
-                                await authLoginService.loginUser(response);
+                                const user = await authLoginService.loginUser(response);
+                                account.email = user.email;
+                                account.provider = PARAMETERS.PROVIDERS.GOOGLE;
+                                account.name = user.name;
                                 modalsHandlerService.dismissAll();
                                 notificationService.showToast(STRINGS[language].status_codes.ec5_115);
 
@@ -95,7 +101,7 @@ export const authGoogleService = {
                                     notificationService.hideProgressDialog();
                                 }
                             } catch (errorCode) {
-                                notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
+                                await notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
                                 notificationService.hideProgressDialog();
                             }
                         },
@@ -157,13 +163,12 @@ export const authGoogleService = {
                                 // hide any modals
                                 modalsHandlerService.dismissAll();
                                 notificationService.hideProgressDialog();
-                                errorsService.handleWebError(error);
+                                await errorsService.handleWebError(error);
                             }
-
                         });
                 }, function (error) {
                     //t.ly/wlpO => SIGN IN CANCELLED gets code 12501
-                    if (error != '12501') {
+                    if (error !== '12501') {
                         notificationService.showAlert(STRINGS[language].status_codes.ec5_103, labels.error + ' ' + error);
                     }
                     notificationService.hideProgressDialog();

@@ -2,9 +2,9 @@ import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
+import { SocialLogin } from '@capgo/capacitor-social-login';
 
 export async function logout() {
-
     const rootStore = useRootStore();
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
@@ -18,22 +18,27 @@ export async function logout() {
     }
 
     return new Promise((resolve) => {
-        // Delete the current token
-        databaseDeleteService.deleteToken().then(function () {
+        databaseDeleteService.deleteToken().then(() => {
             if (rootStore.device.platform !== PARAMETERS.WEB) {
-                // Attempt to logout google user
-                window.plugins.googleplus.logout(
-                    async function () {
+                // Logout from all social providers in parallel
+                const logoutPromises = [
+                    SocialLogin.logout({ provider: 'google' }),
+                    SocialLogin.logout({ provider: 'apple' })
+                ];
+
+                Promise.allSettled(logoutPromises)
+                    .then((results) => {
+                        results.forEach((result) => {
+                            if (result.status === 'fulfilled') {
+                                console.log('Logout success:', result.value);
+                            } else {
+                                console.error('Logout error:', result.reason);
+                            }
+                        });
+
                         _resetStoredUser();
                         resolve();
-                    },
-                    function (error) {
-                        _resetStoredUser();
-                        // If it failed, they weren't logged in to Google, so just call afterLogout and resolve
-                        resolve();
-                    }
-                );
-                //todo: logout apple user?
+                    });
             } else {
                 _resetStoredUser();
                 resolve();
@@ -41,3 +46,4 @@ export async function logout() {
         });
     });
 }
+

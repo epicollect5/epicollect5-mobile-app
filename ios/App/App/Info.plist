@@ -28,26 +28,38 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>com.getcapacitor.capacitor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>capacitor</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>REVERSED_CLIENT_ID</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>$(REVERSED_CLIENT_ID)</string>
-			</array>
-		</dict>
-	</array>
+    <array>
+    	<!-- Google Sign-In scheme -->
+    	<dict>
+    		<key>CFBundleURLSchemes</key>
+    		<array>
+    			<string>$(REVERSED_CLIENT_ID)</string>
+    		</array>
+    	</dict>
+
+    	<!-- Capacitor scheme -->
+    	<dict>
+    		<key>CFBundleURLName</key>
+    		<string>com.getcapacitor.capacitor</string>
+    		<key>CFBundleURLSchemes</key>
+    		<array>
+    			<string>capacitor</string>
+    		</array>
+    	</dict>
+
+    	<!-- Optional: Firebase REVERSED_CLIENT_ID -->
+    	<dict>
+    		<key>CFBundleTypeRole</key>
+    		<string>Editor</string>
+    		<key>CFBundleURLName</key>
+    		<string>REVERSED_CLIENT_ID</string>
+    		<key>CFBundleURLSchemes</key>
+    		<array>
+    			<string>$(REVERSED_CLIENT_ID)</string>
+    		</array>
+    	</dict>
+    </array>
+
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -95,5 +107,6 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+
 </dict>
 </plist>

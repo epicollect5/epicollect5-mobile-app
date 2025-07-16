@@ -52,6 +52,7 @@
 		"SplashScreenPlugin",
 		"StatusBarPlugin",
 		"ToastPlugin",
+		"SocialLoginPlugin",
 		"CDVPlugin"
 	]
 }
