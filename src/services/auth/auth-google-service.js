@@ -12,6 +12,10 @@ import { authLoginService } from '@/services/auth/auth-login-service';
 import { modalsHandlerService } from '@/services/modals/modals-handler-service';
 import { SocialLogin } from '@capgo/capacitor-social-login';
 
+const CANCELLED = 'User cancelled the auth flow';
+const CANCELLED_IOS_NATIVE_RESPONSE = 'The user canceled the sign-in flow.';
+const CANCELLED_ANDROID_NATIVE_RESPONSE = 'Google Sign-In failed: [16] Cancelled by user';
+
 export const authGoogleService = {
 
     //Native login using cordova https://goo.gl/vRuudH
@@ -46,7 +50,17 @@ export const authGoogleService = {
                 },
                 (error) => {
                     console.log(error);
-                    reject(error);
+
+                    if (
+                        typeof error?.message === 'string' &&
+                        (error.message.includes(CANCELLED_ANDROID_NATIVE_RESPONSE) || //Android
+                        error.message.includes(CANCELLED_IOS_NATIVE_RESPONSE)) //iOS
+                    ) {
+                        // Ignore this error silently
+                        reject(CANCELLED);
+                    } else {
+                        reject(error);
+                    }
                 }
             );
         });
@@ -168,7 +182,7 @@ export const authGoogleService = {
                         });
                 }, function (error) {
                     //t.ly/wlpO => SIGN IN CANCELLED gets code 12501
-                    if (error !== '12501') {
+                    if (error !== CANCELLED) {
                         notificationService.showAlert(STRINGS[language].status_codes.ec5_103, labels.error + ' ' + error);
                     }
                     notificationService.hideProgressDialog();
