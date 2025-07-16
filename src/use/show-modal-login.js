@@ -26,6 +26,8 @@ export function showModalLogin() {
             const authIds = {
                 google: {
                     CLIENT_ID: process.env.VUE_APP_GOOGLE_CLIENT_ID_WEB,
+                    IOS_CLIENT_ID: process.env.VUE_APP_IOS_GOOGLE_CLIENT_ID,
+                    REVERSED_CLIENT_ID: process.env.VUE_APP_REVERSED_CLIENT_ID,
                     SCOPE: process.env.VUE_APP_GOOGLE_SIGNIN_SCOPE
                 }
             };
