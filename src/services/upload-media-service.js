@@ -11,7 +11,7 @@ import { JSONTransformerService } from '@/services/utilities/json-transformer-se
 
 export const uploadMediaService = {
 
-    // need to handle server errors/unexpected errors etc
+    // need to handle server errors/unexpected errors etc.
     // check file uploads, cordova errors:
     // 'Uncaught SyntaxError: Unexpected token o'
     // 'Uncaught SyntaxError: Unexpected token u'
@@ -168,7 +168,7 @@ export const uploadMediaService = {
                                         //connection is good, go on even if there is an error
                                         _uploadOneFile(files.pop(), total, currentEntryIndex);
                                     }
-                                }, PARAMETERS.DELAY_FAST);
+                                }, PARAMETERS.DELAY_LONG);
                             }
                         }, function (error) {
                             resolve(error);
@@ -216,10 +216,10 @@ export const uploadMediaService = {
                     uploader.upload(file_URI, upload_URL, _onSuccess, _onError, options);
                 }
                 if (files.length > 0) {
-                    // Begin file upload (throttle to 250ms wait between each upload)
+                    // Begin file upload (throttle to wait between each upload)
                     window.setTimeout(function () {
                         _uploadOneFile(files.pop(), total, currentEntryIndex);
-                    }, PARAMETERS.DELAY_FAST);
+                    }, PARAMETERS.DELAY_LONG);
                 }
             });
         });

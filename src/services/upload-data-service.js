@@ -20,14 +20,14 @@ export const uploadDataService = {
         }]
     },
 
-    // need to handle server errors/unexpected errors etc
+    // need to handle server errors/unexpected errors etc.
     // check file uploads, cordova errors:
     // 'Uncaught SyntaxError: Unexpected token o'
     // 'Uncaught SyntaxError: Unexpected token u'
 
     /**
      * Function to upload all entries one at a time
-     * Will first upload parent>branches>child>branches>child>branches....etc
+     * Will first upload parent>branches>child>branches>child>branches....etc.
      * Working through the hierarchy
      *
      * When we reach the bottom, we then start syncing each entry in the database until we reach
@@ -79,7 +79,7 @@ export const uploadDataService = {
                     // Go to next top level entry upload
                     window.setTimeout(function () {
                         _uploadEntry(topLevelFormRef);
-                    }, PARAMETERS.DELAY_FAST);
+                    }, PARAMETERS.DELAY_LONG);
                 } else {
                     // Get unsynced entries, one at a time, based on supplied parent entry uuid
                     // If a formRef is supplied, we are attempting to retrieve a parent
@@ -102,7 +102,7 @@ export const uploadDataService = {
                                     // Upload branches for this entry
                                     window.setTimeout(function () {
                                         _uploadBranch();
-                                    }, PARAMETERS.DELAY_FAST);
+                                    }, PARAMETERS.DELAY_LONG);
                                 } else {
                                     entry = JSONTransformerService.makeJsonEntry(PARAMETERS.ENTRY, res.rows.item(0));
                                     webService.uploadEntry(slug, entry).then(
@@ -114,7 +114,7 @@ export const uploadDataService = {
                                             // Upload branches for this entry
                                             window.setTimeout(function () {
                                                 _uploadBranch();
-                                            }, PARAMETERS.DELAY_FAST);
+                                            }, PARAMETERS.DELAY_LONG);
 
                                         }, async function (response) {
 
@@ -125,7 +125,7 @@ export const uploadDataService = {
                                             const ownerEntryUuid = entry.entry.entry_uuid;
                                             const entryBranchesCount = await databaseSelectService.countUnsyncedBranchEntries(projectRef, ownerEntryUuid);
 
-                                            //add branche to upload counter (if any)
+                                            //add branches to upload counter (if any)
                                             if (entryBranchesCount.rows.item(0).count > 0) {
                                                 _updateProgress(entryBranchesCount.rows.item(0).count);
                                             }
@@ -141,7 +141,7 @@ export const uploadDataService = {
                                                         // Continue - try to upload the next child
                                                         window.setTimeout(function () {
                                                             _uploadEntry(null);
-                                                        }, PARAMETERS.DELAY_FAST);
+                                                        }, PARAMETERS.DELAY_LONG);
                                                     }, function (error) {
                                                         if (self.showErrors) {
                                                             // Show stopping error, resolve with entries errors
@@ -180,7 +180,7 @@ export const uploadDataService = {
                                         entries.pop();
                                         window.setTimeout(function () {
                                             _uploadEntry(null);
-                                        }, PARAMETERS.DELAY_FAST);
+                                        }, PARAMETERS.DELAY_LONG);
                                     });
                             }
                         }
@@ -221,16 +221,13 @@ export const uploadDataService = {
                                         databaseUpdateService.updateSynced(PARAMETERS.BRANCH_ENTRY, res.rows.item(0).entry_uuid, PARAMETERS.SYNCED_CODES.SYNCED).then(
                                             function () {
                                                 console.log('Syncing branch');
-
-
                                                 _updateProgress();
                                                 console.log('uploaded branch entry: ' + res.rows.item(0).entry_uuid);
                                                 // Upload the next branch
                                                 window.setTimeout(function () {
                                                     _uploadBranch();
-                                                }, PARAMETERS.DELAY_FAST);
+                                                }, PARAMETERS.DELAY_LONG);
                                             });
-
                                     }, function (response) {
 
                                         //catch drop connection error here
@@ -240,7 +237,7 @@ export const uploadDataService = {
                                                 // Continue - upload the next branch
                                                 window.setTimeout(function () {
                                                     _uploadBranch();
-                                                }, PARAMETERS.DELAY_FAST);
+                                                }, PARAMETERS.DELAY_LONG);
                                             }, function (error) {
                                                 if (self.showErrors) {
                                                     // Show stopping error, resolve with errors
@@ -256,19 +253,16 @@ export const uploadDataService = {
                                 // Can't edit, so move onto next branch
                                 window.setTimeout(function () {
                                     _uploadBranch();
-                                }, PARAMETERS.DELAY_FAST);
+                                }, PARAMETERS.DELAY_LONG);
                             }
-
                         } else {
                             // If no more branches to upload, go back to previous entry and attempt to upload its next child
                             window.setTimeout(function () {
                                 _uploadEntry(null);
-                            }, PARAMETERS.DELAY_FAST);
-
+                            }, PARAMETERS.DELAY_LONG);
                         }
                     });
             }
-
             /**
              * Update the progress counter
              */
@@ -276,8 +270,6 @@ export const uploadDataService = {
                 count ? currentEntryIndex += count : currentEntryIndex++;
                 notificationService.setProgress({ total, done: currentEntryIndex });
             }
-
-
             // Start upload from parent form
             _uploadEntry(topLevelFormRef);
         });
