@@ -155,6 +155,7 @@ export const uploadMediaService = {
                                 resolve(errors);
                             } else {
                                 // Call _uploadOneFile(), popping off one file from files array
+                                //Throw in a delay to avoid server overload
                                 window.setTimeout(async function () {
 
                                     //if the error was caused by a dropped internet connection, stop here.
@@ -168,7 +169,7 @@ export const uploadMediaService = {
                                         //connection is good, go on even if there is an error
                                         _uploadOneFile(files.pop(), total, currentEntryIndex);
                                     }
-                                }, PARAMETERS.DELAY_LONG);
+                                }, 2 * PARAMETERS.DELAY_LONG);
                             }
                         }, function (error) {
                             resolve(error);
@@ -219,7 +220,7 @@ export const uploadMediaService = {
                     // Begin file upload (throttle to wait between each upload)
                     window.setTimeout(function () {
                         _uploadOneFile(files.pop(), total, currentEntryIndex);
-                    }, PARAMETERS.DELAY_LONG);
+                    }, 2 * PARAMETERS.DELAY_LONG);
                 }
             });
         });
