@@ -1,5 +1,9 @@
 # Release Notes
 
+## 87.2.3 - build 8723
+
+ - Increased delay for uploads, both data and media, to avoid server overload
+
 ## 87.2.2 - build 8722
 
  - Added warning card on entries upload page to inform users media must be uploaded separately
