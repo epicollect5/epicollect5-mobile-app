@@ -1,0 +1,56 @@
+name: Generate Release Notes
+on:
+  push:
+    tags:
+      - '*.*.*'  # Triggers the workflow when a tag matching the version pattern is pushed (e.g., 12.0.1)
+
+permissions:
+  contents: write  # Required for creating releases
+
+jobs:
+  generate-release-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper changelog extraction
+
+      - name: Extract release notes from CHANGELOG.md
+        id: changelog
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+          echo "Extracting release notes for version: $TAG_VERSION"
+          
+          # Extract release notes using awk
+          RELEASE_NOTES=$(awk -v version="$TAG_VERSION" '
+          $0 ~ "^# " version {flag=1; next}
+          $0 ~ "^# " && flag {exit}
+          flag {print}
+          ' CHANGELOG.md)
+          
+          # Guard against missing or empty release notes
+          if [ -z "$RELEASE_NOTES" ]; then
+            echo "Error: No release notes found for version $TAG_VERSION" >&2
+            exit 1
+          fi
+          
+          # Save to file for use in create-release step
+          echo "$RELEASE_NOTES" > RELEASE_NOTES.md
+          
+          # Pass release notes to GitHub Actions output as multiline
+          {
+            echo "release_notes<<EOF"
+            echo "$RELEASE_NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2.4.2
+        with:
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+          name: Release ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
