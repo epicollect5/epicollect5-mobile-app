@@ -10,26 +10,17 @@ import { initService } from '@/services/init-service';
 import { STRINGS } from '@/config/strings';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
+import { v4 as uuidv4 } from 'uuid';
 
 export const utilsService = {
 
     /**
-     * Helper method to create a uuid
-     *
-     * @returns {string}
+     * Generate a UUID v4 (cryptographically strong if possible)
+     * Works in browsers, React Native, Node.js
+     * @returns {string} UUID v4
      */
     uuid() {
-        //new method to generated uuid, much better -> https://goo.gl/82GDUJ
-        let d = new Date().getTime();
-        if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
-            //console.log(performance.now());
-            d += performance.now(); //use high-precision timer if available
-        }
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            const r = (d + Math.random() * 16) % 16 | 0;
-            d = Math.floor(d / 16);
-            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-        });
+       return uuidv4();
     },
 
     //get timezone based on device settings
@@ -749,7 +740,7 @@ export const utilsService = {
     },
     getSanitisedAnswer(value) {
         let answer = value.trim();
-        //sanitise < and > replacing by unicode
+        //sanitise < and > replacing by Unicode
         answer = answer.replaceAll('>', '\ufe65');
         answer = answer.replaceAll('<', '\ufe64');
         return answer;
@@ -775,7 +766,7 @@ export const utilsService = {
          *  Truncate anything bigger than 100 chars
          *  to keep the filename unique, a prefix (with index) is passed
          *
-         *  We do this as we might have filename too long (i.e branch question of 255,
+         *  We do this as we might have filename too long (i.e. branch question of 255),
          *  then adding prefix we go over the max filename length (255)
          *
          * then slugify() will take of foreign chars, spaces, symbols, ect..
@@ -962,7 +953,7 @@ export const utilsService = {
         const defaultLanguage = await initService.getLanguageFile(PARAMETERS.DEFAULT_LANGUAGE);
         let validFiles = true;
 
-        PARAMETERS.SUPPORTED_LANGUAGES.forEach(async (supportedLanguage) => {
+        for (const supportedLanguage of PARAMETERS.SUPPORTED_LANGUAGES) {
             const statusCodes = await initService.getLanguageFile(supportedLanguage);
             if (!utilsService.hasSameKeys(defaultLanguage, statusCodes)) {
                 console.error('Missing keys in language files (status codes)', supportedLanguage);
@@ -972,7 +963,7 @@ export const utilsService = {
                 console.error('Missing keys in language files (labels)', supportedLanguage);
                 validFiles = false;
             }
-        });
+        }
 
         if (!validFiles) {
             throw new Error('Language files invalid');
