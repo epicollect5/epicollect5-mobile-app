@@ -87,7 +87,6 @@ describe('utilsService date helpers by Copilot', () => {
         expect(utilsService.getISODateOnlySafeEmpty('')).toBe('');
         expect(utilsService.getISODateOnlySafeEmpty(null)).toBe('');
         expect(utilsService.getISODateOnlySafeEmpty(undefined)).toBe('');
-        expect(utilsService.getISODateOnlySafeEmpty(undefined)).toBe('');
     });
 
     it('getISODateOnlySafeEmpty() - accepts Date objects and produces canonical UTC-midnight string', () => {
@@ -98,7 +97,7 @@ describe('utilsService date helpers by Copilot', () => {
         expect(utilsService.getISODateOnlySafeEmpty(d2)).toBe('1987-12-29T00:00:00.000');
 
         const d3 = new Date(Date.UTC(1977, 11, 31)); // 1977-12-31 UTC
-        expect(utilsService.getISODateOnlySafeEmpty(d2)).toBe('1977-12-31T00:00:00.000');
+        expect(utilsService.getISODateOnlySafeEmpty(d3)).toBe('1977-12-31T00:00:00.000');
     });
 
     it('normalizeToISODateOnlyEmpty() - direct normalization of strings', () => {
@@ -107,6 +106,8 @@ describe('utilsService date helpers by Copilot', () => {
         expect(utilsService.normalizeToISODateOnlyEmpty('2024-11-9T01:02:03')).toBe('2024-11-09T00:00:00.000');
 
         // invalid forms yield empty string per requirement
+        expect(utilsService.normalizeToISODateOnlyEmpty('2024-07-34T01:02:03')).toBe('');
+        expect(utilsService.normalizeToISODateOnlyEmpty('2024-14-09T01:02:03')).toBe('');
         expect(utilsService.normalizeToISODateOnlyEmpty('invalid-date')).toBe('');
         expect(utilsService.normalizeToISODateOnlyEmpty('')).toBe('');
         expect(utilsService.normalizeToISODateOnlyEmpty(null)).toBe('');
