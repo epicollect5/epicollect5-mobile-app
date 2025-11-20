@@ -1,16 +1,15 @@
-
-import { useRootStore } from '@/stores/root-store';
-import { PARAMETERS, DEMO_PROJECT } from '@/config';
-import { Capacitor } from '@capacitor/core';
-import { Network } from '@capacitor/network';
-import { projectModel } from '@/models/project-model.js';
+import {useRootStore} from '@/stores/root-store';
+import {DEMO_PROJECT, PARAMETERS} from '@/config';
+import {Capacitor} from '@capacitor/core';
+import {Network} from '@capacitor/network';
+import {projectModel} from '@/models/project-model.js';
 import slugify from 'slugify';
-import { isValidCoordsService } from '@/services/utilities/is-valid-coords-service';
-import { initService } from '@/services/init-service';
-import { STRINGS } from '@/config/strings';
-import { databaseSelectService } from '@/services/database/database-select-service';
-import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
-import { v4 as uuidv4 } from 'uuid';
+import {isValidCoordsService} from '@/services/utilities/is-valid-coords-service';
+import {initService} from '@/services/init-service';
+import {STRINGS} from '@/config/strings';
+import {databaseSelectService} from '@/services/database/database-select-service';
+import {CapacitorBarcodeScanner} from '@capacitor/barcode-scanner';
+import {v4 as uuidv4} from 'uuid';
 
 export const utilsService = {
 
@@ -20,7 +19,7 @@ export const utilsService = {
      * @returns {string} UUID v4
      */
     uuid() {
-       return uuidv4();
+        return uuidv4();
     },
 
     //get timezone based on device settings
@@ -57,7 +56,6 @@ export const utilsService = {
     },
 
     getInputFormattedTime(input_date, format) {
-
 
         //"1970-01-01T01:03:00.000"
         const timepart = input_date.split('T')[1];
@@ -202,8 +200,7 @@ export const utilsService = {
                 if (rootStore.device.platform === PARAMETERS.IOS) {
                     //ios will record only .wav format
                     ext = PARAMETERS.AUDIO_EXT_IOS;
-                }
-                else {
+                } else {
                     //android is ok with .mp4
                     ext = PARAMETERS.AUDIO_EXT;
                 }
@@ -239,14 +236,57 @@ export const utilsService = {
 
     //get ISO date with time set to 00:00:00.000
     getISODateOnly(dateISO) {
-
-        const year = dateISO.slice(0, 4);
-        const month = dateISO.slice(5, 7);
-        const day = dateISO.slice(8, 10);
-        // String such as 2016-07-16T00:00:00.000
-        return year + '-' + month + '-' + day + 'T00:00:00.000';
+        return this.getISODateOnlySafeEmpty(dateISO);
     },
 
+    // normalize and return canonical "YYYY-MM-DDT00:00:00.000" or "" on invalid
+    normalizeToISODateOnlyEmpty(input) {
+        // treat null/undefined/empty-string as invalid -> return empty string
+        if (input === null || input === undefined || input === '') return '';
+
+        // ensure string
+        if (typeof input !== 'string') input = String(input);
+
+        // match YYYY-M-D optionally followed by T...
+        const m = input.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:T.*)?$/);
+        if (!m) return '';
+
+        const year = Number(m[1]);
+        const month = Number(m[2]);
+        const day = Number(m[3]);
+
+        if (month < 1 || month > 12) return '';
+
+        // max days for the given month/year using UTC to avoid timezone issues
+        const maxDays = new Date(Date.UTC(year, month, 0)).getUTCDate();
+        if (day < 1 || day > maxDays) return '';
+
+        const mm = String(month).padStart(2, '0');
+        const dd = String(day).padStart(2, '0');
+
+        return `${year}-${mm}-${dd}T00:00:00.000`;
+    },
+
+    // robust replacement for getISODateOnly that returns "" for invalid inputs
+    getISODateOnlySafeEmpty(input) {
+        // explicit handling: null or empty string -> return empty string (per your requirement)
+        if (input === null || input === '' || input === undefined) return '';
+
+        if (typeof input === 'string') {
+            // try to normalize string formats like "2024-5-4" -> "2024-05-04T00:00:00.000"
+            return this.normalizeToISODateOnlyEmpty(input); // "" on invalid, canonical string on success
+        }
+
+        // Non-string path (Date object or timestamp)
+        const d = new Date(input || Date.now());
+        if (isNaN(d.getTime())) return ''; // invalid date -> empty string
+
+        const y = d.getUTCFullYear();
+        const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
+
+        return `${y}-${m}-${day}T00:00:00.000`;
+    },
 
     getTimezoneOffset(date) {
 
@@ -267,11 +307,9 @@ export const utilsService = {
         // If offset is 0, it means timezone is UTC
         if (timezone_offset_min < 0) {
             timezone_standard = '+' + offset_hrs + ':' + offset_min;
-        }
-        else if (timezone_offset_min > 0) {
+        } else if (timezone_offset_min > 0) {
             timezone_standard = '-' + offset_hrs + ':' + offset_min;
-        }
-        else if (timezone_offset_min === 0) {
+        } else if (timezone_offset_min === 0) {
             timezone_standard = 'Z';
         }
 
@@ -315,8 +353,7 @@ export const utilsService = {
                 date.getUTCMinutes(),
                 date.getUTCSeconds()
             );
-        }
-        else {
+        } else {
             return new Date(
                 date.getUTCFullYear(),
                 date.getUTCMonth(),
@@ -479,7 +516,7 @@ export const utilsService = {
             byteArrays.push(byteArray);
         }
 
-        return new Blob(byteArrays, { type: contentType });
+        return new Blob(byteArrays, {type: contentType});
     },
     async hasInternetConnection() {
         return new Promise((resolve) => {
@@ -487,8 +524,7 @@ export const utilsService = {
                 const rootStore = useRootStore();
                 if (rootStore.device.platform === PARAMETERS.WEB) {
                     resolve(window.navigator.onLine);
-                }
-                else {
+                } else {
                     const networkState = await Network.getStatus();
                     console.log('Network connection type: ', networkState.connectionType);
                     resolve(networkState.connected);
@@ -502,7 +538,7 @@ export const utilsService = {
         const rootStore = useRootStore();
         return new Promise((resolve, reject) => {
             //trigger call to barcode with a bit of delay to allow the spinner to appear
-            window.setTimeout( async function () {
+            window.setTimeout(async function () {
 
                 if (rootStore.device.platform === PARAMETERS.WEB) {
                     resolve('');
@@ -510,11 +546,11 @@ export const utilsService = {
 
                 CapacitorBarcodeScanner.scanBarcode({}).then(
                     (result) => {
-                            resolve({text: result.ScanResult});
+                        resolve({text: result.ScanResult});
                     },
                     (error) => {
                         //do not show error if the user cancelled the scan
-                        if(error.code === 'OS-PLUG-BARC-0006'){
+                        if (error.code === 'OS-PLUG-BARC-0006') {
                             //we resolve() with a user cancelled flag
                             resolve({cancelled: true});
                         }
@@ -537,9 +573,9 @@ export const utilsService = {
                 resolve('');
             }
             /**
-            * Android - android/app/build.gradle (you're looking for the versionName variable)
-            * iOS - ios/App/App/Info.plist *(you're looking for the CFBundleShortVersionString key)
-            */
+             * Android - android/app/build.gradle (you're looking for the versionName variable)
+             * iOS - ios/App/App/Info.plist *(you're looking for the CFBundleShortVersionString key)
+             */
             resolve(rootStore.app.version);
         });
     },
@@ -639,8 +675,7 @@ export const utilsService = {
                 appStoragePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectModel.getProjectRef() + '/mobile-logo.jpg?' + new Date().getTime();
                 markup = '<img class="project-logo" width="32" height="32" src="' + appStoragePath + '" onError="this.src = \'assets/images/ec5-demo-project-logo.jpg\'"/>';
                 markup += hideName ? '' : '<span>&nbsp;' + projectModel.getProjectName().toUpperCase() + '</span>';
-            }
-            else {
+            } else {
                 appStoragePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectModel.getProjectRef() + '/mobile-logo.jpg?' + new Date().getTime();
                 //fix for WKWebView
                 appStoragePath = Capacitor.convertFileSrc(appStoragePath);
@@ -658,8 +693,7 @@ export const utilsService = {
             if (useEllipsis) {
                 const truncated = str.substr(0, desiredLength - 3); // Subtract 3 for the ellipsis
                 return truncated + '...';
-            }
-            else {
+            } else {
                 const truncated = str.substr(0, desiredLength);
                 return truncated;
             }
@@ -775,7 +809,7 @@ export const utilsService = {
         return prefix + '__' + slugify(this.trunc(body.toLowerCase(), 100));
     },
     getHoursColumnPicker() {
-        const hours = Array.from({ length: 24 }, (_, index) => index);
+        const hours = Array.from({length: 24}, (_, index) => index);
         return hours.map((value) => {
             return {
                 description: value > 9 ? value.toString() : '0' + value.toString()
@@ -783,7 +817,7 @@ export const utilsService = {
         });
     },
     getMinutesColumnPicker() {
-        const minutes = Array.from({ length: 60 }, (_, index) => index);
+        const minutes = Array.from({length: 60}, (_, index) => index);
         return minutes.map((value) => {
             return {
                 description: value > 9 ? value.toString() : '0' + value.toString()
@@ -854,7 +888,11 @@ export const utilsService = {
 
         const x = normish(0, 0.01);
         const y = normish(0, 0.01);
-        return { longitude: (((x * 0.1) + long)).toFixed(6), latitude: (((y * 0.1) + lat)).toFixed(6), accuracy: this.getRandomInRange(3, 100, 0) };
+        return {
+            longitude: (((x * 0.1) + long)).toFixed(6),
+            latitude: (((y * 0.1) + lat)).toFixed(6),
+            accuracy: this.getRandomInRange(3, 100, 0)
+        };
     },
     getDataViewerURL(projectSlug) {
         const rootStore = useRootStore();
@@ -918,7 +956,7 @@ export const utilsService = {
         if (match) {
             const lat = (parseFloat(match[1].replace(',', '.')) || 0).toFixed(6);
             const long = (parseFloat(match[2].replace(',', '.')) || 0).toFixed(6);
-            return { latitude: lat, longitude: long };
+            return {latitude: lat, longitude: long};
         } else {
             // Handle invalid input or return default values
             return null;
@@ -967,8 +1005,7 @@ export const utilsService = {
 
         if (!validFiles) {
             throw new Error('Language files invalid');
-        }
-        else {
+        } else {
             console.log('%cLanguage files validated correctly', 'color: green; font-weight: bold;');
         }
     },
@@ -982,8 +1019,7 @@ export const utilsService = {
                     jwt = res.rows.item(0).jwt;
                     const jwtDecoded = JSON.parse(window.atob(jwt.split('.')[1]));
                     resolve(jwtDecoded.exp < Date.now() / 1000);
-                }
-                else {
+                } else {
                     //not found, send expired  so we get a new one
                     resolve(true);
                 }

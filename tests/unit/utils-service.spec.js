@@ -71,6 +71,48 @@ describe('Date', () => {
     });
 });
 
+// Jest tests for date normalization / formatting in utilsService
+describe('utilsService date helpers by Copilot', () => {
+    it('getISODateOnlySafeEmpty() - normalizes malformed ISO strings into zero-padded date-only ISO', () => {
+        expect(utilsService.getISODateOnlySafeEmpty('2024-05-4T00:00:00.000')).toBe('2024-05-04T00:00:00.000');
+        expect(utilsService.getISODateOnlySafeEmpty('2024-5-04T00:00:00.000')).toBe('2024-05-04T00:00:00.000');
+        expect(utilsService.getISODateOnlySafeEmpty('2024-5-4T12:34:56')).toBe('2024-05-04T00:00:00.000');
+        expect(utilsService.getISODateOnlySafeEmpty('2024-05-04')).toBe('2024-05-04T00:00:00.000');
+        expect(utilsService.getISODateOnlySafeEmpty('2024-5-4')).toBe('2024-05-04T00:00:00.000');
+        expect(utilsService.getISODateOnlySafeEmpty('2024-11-9T01:02:03')).toBe('2024-11-09T00:00:00.000');
+    });
+
+    it('getISODateOnlySafeEmpty() - invalid inputs return empty string', () => {
+        expect(utilsService.getISODateOnlySafeEmpty('invalid-date')).toBe('');
+        expect(utilsService.getISODateOnlySafeEmpty('')).toBe('');
+        expect(utilsService.getISODateOnlySafeEmpty(null)).toBe('');
+        expect(utilsService.getISODateOnlySafeEmpty(undefined)).toBe('');
+        expect(utilsService.getISODateOnlySafeEmpty(undefined)).toBe('');
+    });
+
+    it('getISODateOnlySafeEmpty() - accepts Date objects and produces canonical UTC-midnight string', () => {
+        const d1 = new Date(Date.UTC(2024, 4, 4)); // 2024-05-04 UTC
+        expect(utilsService.getISODateOnlySafeEmpty(d1)).toBe('2024-05-04T00:00:00.000');
+
+        const d2 = new Date(Date.UTC(1987, 11, 29)); // 1987-12-29 UTC
+        expect(utilsService.getISODateOnlySafeEmpty(d2)).toBe('1987-12-29T00:00:00.000');
+
+        const d3 = new Date(Date.UTC(1977, 11, 31)); // 1977-12-31 UTC
+        expect(utilsService.getISODateOnlySafeEmpty(d2)).toBe('1977-12-31T00:00:00.000');
+    });
+
+    it('normalizeToISODateOnlyEmpty() - direct normalization of strings', () => {
+        expect(utilsService.normalizeToISODateOnlyEmpty('2024-05-4T00:00:00.000')).toBe('2024-05-04T00:00:00.000');
+        expect(utilsService.normalizeToISODateOnlyEmpty('2024-5-4')).toBe('2024-05-04T00:00:00.000');
+        expect(utilsService.normalizeToISODateOnlyEmpty('2024-11-9T01:02:03')).toBe('2024-11-09T00:00:00.000');
+
+        // invalid forms yield empty string per requirement
+        expect(utilsService.normalizeToISODateOnlyEmpty('invalid-date')).toBe('');
+        expect(utilsService.normalizeToISODateOnlyEmpty('')).toBe('');
+        expect(utilsService.normalizeToISODateOnlyEmpty(null)).toBe('');
+    });
+});
+
 describe('Time', () => {
     it('getInputFormattedTime()', () => {
         //"1970-01-01T01:03:00.000"
