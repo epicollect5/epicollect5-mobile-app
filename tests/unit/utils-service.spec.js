@@ -332,7 +332,7 @@ describe('isValidDecimalDegreesString', () => {
         coords = '-77, 164';
         expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
 
-        //valid, will be rounded to 6 decinmal places
+        //valid, will be rounded to 6 decimal places
         coords = '-77.5083633, 164.754167';
         expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
 

@@ -1,5 +1,10 @@
 # Release Notes
 
+## 87.2.4 - build 8724
+
+- Better uuid v4 generation
+- Better DATE sanitization for DATE questions
+
 ## 87.2.3 - build 8723
 
  - Increased delay for uploads, both data and media, to avoid server overload
