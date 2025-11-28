@@ -500,7 +500,10 @@ export const utilsService = {
         contentType = contentType || '';
         sliceSize = sliceSize || 512;
 
-        const byteCharacters = atob(b64Data);
+        // Strip the prefix if present
+        const base64 = b64Data.includes(',') ? b64Data.split(',')[1] : b64Data;
+
+        const byteCharacters = atob(base64);
         const byteArrays = [];
 
         for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
@@ -512,11 +515,10 @@ export const utilsService = {
             }
 
             const byteArray = new Uint8Array(byteNumbers);
-
             byteArrays.push(byteArray);
         }
 
-        return new Blob(byteArrays, {type: contentType});
+        return new Blob(byteArrays, { type: contentType });
     },
     async hasInternetConnection() {
         return new Promise((resolve) => {
