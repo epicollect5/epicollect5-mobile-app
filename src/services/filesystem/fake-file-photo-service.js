@@ -21,7 +21,7 @@ const generateRandomImage = (width = 1024, height = 768) => {
     const ctx = canvas.getContext('2d');
 
     // Fill background with random color
-    ctx.fillStyle = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
+    ctx.fillStyle = `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;
     ctx.fillRect(0, 0, width, height);
 
     // Draw random shapes
@@ -39,26 +39,26 @@ const generateRandomImage = (width = 1024, height = 768) => {
         ctx.rotate(angle);
 
         // Random color
-        ctx.fillStyle = `rgba(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255}, ${Math.random()})`;
-        ctx.strokeStyle = `rgba(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255}, ${Math.random()})`;
+        ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, ${Math.random()})`;
+        ctx.strokeStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, ${Math.random()})`;
         ctx.lineWidth = Math.random() * 5 + 1;
 
         // Random shape type
         const shapeType = Math.floor(Math.random() * 3);
-        switch(shapeType) {
+        switch (shapeType) {
             case 0: // Rectangle
-                ctx.fillRect(-20, -20, Math.random()*40, Math.random()*40);
+                ctx.fillRect(-20, -20, Math.random() * 40, Math.random() * 40);
                 break;
             case 1: // Circle
                 ctx.beginPath();
-                ctx.arc(0, 0, Math.random()*30, 0, 2*Math.PI);
+                ctx.arc(0, 0, Math.random() * 30, 0, 2 * Math.PI);
                 ctx.fill();
                 ctx.stroke();
                 break;
             case 2: // Line
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
-                ctx.lineTo(Math.random()*50 - 25, Math.random()*50 - 25);
+                ctx.lineTo(Math.random() * 50 - 25, Math.random() * 50 - 25);
                 ctx.stroke();
                 break;
         }
@@ -67,7 +67,7 @@ const generateRandomImage = (width = 1024, height = 768) => {
     }
 
     // Return as Base64 PNG
-    return canvas.toDataURL('image/png');
+    return canvas.toDataURL('image/jpeg');
 };
 
 export const fakeFilePhotoService = {
@@ -80,7 +80,7 @@ export const fakeFilePhotoService = {
 
         const self = this;
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
 
             const rootStore = useRootStore();
             const media_dir = utilsService.getFilePath(media_type);
@@ -91,17 +91,26 @@ export const fakeFilePhotoService = {
             function _gotFS(filesystem) {
                 //create new project directory (if not exits)
                 filesystem.getDirectory(projectRef, {
-                    create: true,
-                    exclusive: false
-                }, _onCreateProjectDirectorySuccess, self.onError);
+                        create: true,
+                        exclusive: false
+                    }, _onCreateProjectDirectorySuccess,
+                    function (error) {
+                        console.log(error);
+                        reject(error);
+                    });
 
                 function _onCreateProjectDirectorySuccess(dir) {
 
                     // write file
-                    dir.getFile(filename, { create: true }, function (file) {
+                    dir.getFile(filename, {create: true}, function (file) {
                         console.log('got the file', file);
 
                         file.createWriter(function (fileWriter) {
+                            fileWriter.onerror = function (err) {
+                                self.onError(err);
+                                reject(err);
+                            };
+
                             fileWriter.onwritestart = function () {
                                 console.log('Start writing file');
                             };
@@ -131,8 +140,12 @@ export const fakeFilePhotoService = {
                     });
                 }
             }
+
             //get handle to app private data folder for the media type requested
-            window.resolveLocalFileSystemURL(cordova.file.dataDirectory + media_dir, _gotFS, self.onError);
+            window.resolveLocalFileSystemURL(cordova.file.dataDirectory + media_dir, _gotFS, function (error) {
+                console.log(error);
+                reject(error);
+            });
         });
     }
 };

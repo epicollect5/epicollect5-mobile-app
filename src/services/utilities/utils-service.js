@@ -489,6 +489,7 @@ export const utilsService = {
 
     /**
      * Convert a base64 string in a Blob according to the data and contentType.
+     * Strip the prefix if present
      *
      * @param b64Data {String} Pure base64 string without contentType
      * @param contentType {String} the content type of the file i.e (image/jpeg - image/png - text/plain)
@@ -501,7 +502,7 @@ export const utilsService = {
         sliceSize = sliceSize || 512;
 
         // Strip the prefix if present
-        const base64 = b64Data.includes(',') ? b64Data.split(',')[1] : b64Data;
+        const base64 = String(b64Data).includes(',') ? b64Data.split(',')[1] : b64Data;
 
         const byteCharacters = atob(base64);
         const byteArrays = [];
