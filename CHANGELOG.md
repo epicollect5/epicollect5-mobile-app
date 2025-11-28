@@ -1,5 +1,12 @@
 ## Release Notes
 
+# 87.2.5 - build 8725
+
+- Updated several dependency versions.
+- Fake photos now use dynamically generated test images.
+- Improved handling of data-URL/base64 image inputs.
+- Enhanced error handling and propagation for fake photo creation.
+
 # 87.2.4 - build 8724
 
 - Better uuid v4 generation
