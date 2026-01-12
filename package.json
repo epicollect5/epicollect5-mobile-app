@@ -65,7 +65,7 @@
     "axios": "1.12.0",
     "cordova-plugin-file": "^6.0.2",
     "cordova-plugin-file-transfer": "git+https://github.com/sitewaerts/cordova-plugin-file-transfer.git",
-    "cordova-plugin-foreground-service": "git+https://mirko77@bitbucket.org/epicollect/cordova-foreground-plugin.git",
+    "cordova-plugin-foreground-service": "git+https://github.com/epicollect5/cordova-foreground-plugin.git",
     "cordova-plugin-geolocation": "^4.1.0",
     "cordova-plugin-globalization": "^1.11.0",
     "cordova-plugin-googleplus": "github:epicollect5/cordova-plugin-googleplus#fix-signout",

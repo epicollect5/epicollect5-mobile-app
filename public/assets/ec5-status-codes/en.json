@@ -278,7 +278,7 @@
   "ec5_343": "All :role users removed from project.",
   "ec5_344": "Cannot switch manager role",
   "ec5_345": "Users with :role role added!",
-  "ec5_346": "Email addresses limit excedeed: :limit",
+  "ec5_346": "Email addresses limit exceeded: :limit",
   "ec5_347": "No email address found",
   "ec5_348": "Project avatar could not be created.",
   "ec5_349": "Project name must be at least :min chars long!",
