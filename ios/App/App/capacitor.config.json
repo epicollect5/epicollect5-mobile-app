@@ -3,9 +3,19 @@
 	"appName": "Epicollect5",
 	"npmClient": "npm",
 	"webDir": "dist",
+	"android": {
+		"adjustMarginsForEdgeToEdge": "disable"
+	},
 	"plugins": {
 		"StatusBar": {
 			"style": "DARK"
+		},
+		"SystemBars": {
+			"insetsHandling": "disable",
+			"style": "DARK"
+		},
+		"EdgeToEdge": {
+			"backgroundColor": "#5b357f"
 		},
 		"SplashScreen": {
 			"androidScaleType": "CENTER_CROP",
@@ -13,9 +23,6 @@
 			"splashFullScreen": true,
 			"splashImmersive": false,
 			"backgroundColor": "#ffffff"
-		},
-		"EdgeToEdge": {
-			"backgroundColor": "#5b357f"
 		}
 	},
 	"cordova": {
