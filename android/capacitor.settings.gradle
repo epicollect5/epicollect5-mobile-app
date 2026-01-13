@@ -58,3 +58,6 @@ project(':capacitor-toast').projectDir = new File('../node_modules/@capacitor/to
 
 include ':capawesome-capacitor-android-edge-to-edge-support'
 project(':capawesome-capacitor-android-edge-to-edge-support').projectDir = new File('../node_modules/@capawesome/capacitor-android-edge-to-edge-support/android')
+
+include ':capgo-capacitor-ffmpeg'
+project(':capgo-capacitor-ffmpeg').projectDir = new File('../node_modules/@capgo/capacitor-ffmpeg/android')

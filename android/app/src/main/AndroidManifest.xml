@@ -57,7 +57,7 @@
             android:foregroundServiceType="specialUse" />
 
         <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-            android:value="Avoid the OS from killing the app when it goes in the background while taking a photo, recording a video or scanning a barcode"/>/>
+            android:value="Avoid the OS from killing the app when it goes in the background while taking a photo, recording a video or scanning a barcode"/>
     </application>
 
     <!-- Permissions -->

@@ -28,6 +28,7 @@ dependencies {
     implementation project(':capacitor-status-bar')
     implementation project(':capacitor-toast')
     implementation project(':capawesome-capacitor-android-edge-to-edge-support')
+    implementation project(':capgo-capacitor-ffmpeg')
     implementation "com.google.android.gms:play-services-auth:15.0.1"
     implementation "com.google.android.gms:play-services-identity:15.0.1"
     implementation "com.android.support:support-v4:27.+"

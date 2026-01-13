@@ -59,6 +59,7 @@
 		"SplashScreenPlugin",
 		"StatusBarPlugin",
 		"ToastPlugin",
+		"CapacitorFFmpegPlugin",
 		"CDVPlugin"
 	]
 }

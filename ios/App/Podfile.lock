@@ -47,6 +47,8 @@ PODS:
     - Capacitor
   - CapacitorToast (8.0.0):
     - Capacitor
+  - CapgoCapacitorFfmpeg (0.0.8):
+    - Capacitor
   - CordovaPlugins (8.0.0):
     - CapacitorCordova
   - CordovaPluginsResources (0.0.105)
@@ -121,6 +123,7 @@ DEPENDENCIES:
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapacitorToast (from `../../node_modules/@capacitor/toast`)"
+  - "CapgoCapacitorFfmpeg (from `../../node_modules/@capgo/capacitor-ffmpeg`)"
   - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
   - CordovaPluginsResources (from `../capacitor-cordova-ios-plugins`)
   - CordovaPluginsStatic (from `../capacitor-cordova-ios-plugins`)
@@ -178,6 +181,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/status-bar"
   CapacitorToast:
     :path: "../../node_modules/@capacitor/toast"
+  CapgoCapacitorFfmpeg:
+    :path: "../../node_modules/@capgo/capacitor-ffmpeg"
   CordovaPlugins:
     :path: "../capacitor-cordova-ios-plugins"
   CordovaPluginsResources:
@@ -207,6 +212,7 @@ SPEC CHECKSUMS:
   CapacitorSplashScreen: 422880d7117605c30699eb4b21644b62db42e86c
   CapacitorStatusBar: 312e2e67928dfe9514c4a8916a1fd610552f5f35
   CapacitorToast: aefebcd4cead9f44a04ace80c66a7eb4031751e7
+  CapgoCapacitorFfmpeg: 23e173e3f3dfcf9fbd1f6862bf6751d816c7f767
   CordovaPlugins: 7a62f889f16755d6b203786baf68ea310e01e864
   CordovaPluginsResources: da93847212bf7b16ba770e4d6c3e7dba820174c7
   CordovaPluginsStatic: 869547174ba264f2db12d177a260f92886cfde0f
@@ -219,6 +225,6 @@ SPEC CHECKSUMS:
   OSBarcodeLib: 57987d2eb1f916f701f4554e20e349b3cb83f023
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
 
-PODFILE CHECKSUM: a9263fa56f649a214e87abebb34e6f9d29bb4c96
+PODFILE CHECKSUM: e4b6b9823c4e690d4ced5b61ff66b2b324e291fb
 
 COCOAPODS: 1.16.2
