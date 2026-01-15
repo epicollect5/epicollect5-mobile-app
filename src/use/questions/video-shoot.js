@@ -21,7 +21,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
     }
 
     async function _showModalProgressEncoding(header) {
-        rootStore.progressTransfer = {done: 0};
+        rootStore.progressEncoding = {done: 0};
         const modal = await modalController.create({
             cssClass: 'modal-progress-encoding',
             component: ModalProgressEncoding,
@@ -78,7 +78,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             // 6. Cleanup - This runs on both Success AND Error
             notificationService.hideProgressDialog();
             await notificationService.stopForegroundService();
-            modalController.dismiss();
+            await modalController.dismiss();
 
             if (progressListener) {
                 progressListener.remove();

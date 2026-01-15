@@ -245,7 +245,7 @@ export const STRINGS = {
     },
     it: {
         labels: {
-            encoding_video: 'Decodifica Video...',
+            encoding_video: 'Codifica Video...',
             copied_to_clipboard: 'Copiato nella clipboard',
             upload_media_help_text: 'Media files devono essere caricati separatamente',
             project_addition_help_text: 'I progetti devono essere aggiunti manualmente',

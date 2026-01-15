@@ -153,12 +153,12 @@ export const notificationService = {
             }());
         });
     },
-    //set progress in global state for modalUpload
+    //set progress in global state for modalProgressTransfer
     setProgressTransfer(progress) {
         const rootStore = useRootStore();
         rootStore.progressTransfer = progress;
     },
-    //set progress in global state for modalUpload
+    //set progress in global state for modalProgressEncoding
     setProgressEncoding(progress) {
         const rootStore = useRootStore();
         rootStore.progressEncoding = progress;

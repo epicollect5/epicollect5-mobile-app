@@ -3,9 +3,6 @@
 	"appName": "Epicollect5",
 	"npmClient": "npm",
 	"webDir": "dist",
-	"android": {
-		"adjustMarginsForEdgeToEdge": "disable"
-	},
 	"plugins": {
 		"StatusBar": {
 			"style": "DARK"

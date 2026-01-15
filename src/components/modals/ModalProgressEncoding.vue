@@ -31,7 +31,6 @@
 <script>
 import { computed } from '@vue/reactivity';
 import { useRootStore } from '@/stores/root-store';
-import { STRINGS } from '@/config/strings';
 
 export default {
 	props: {
@@ -42,8 +41,6 @@ export default {
 	},
 	setup (props) {
 		const rootStore = useRootStore();
-		const language = rootStore.language;
-		const labels = STRINGS[language].labels;
 
 		const computedScope = {
 			progress: computed(() => {
@@ -57,7 +54,6 @@ export default {
 			header: props.header
 		};
 		return {
-			labels,
 			...computedScope
 		};
 	}

@@ -65,15 +65,7 @@
         transform: translate(-50%, -50%);
         margin-top: -16px;
     }
-    .progress-transfer {
-        bottom: 0;
-        position: absolute;
-        width: 100%;
-        ion-progress-bar {
-            height: 10px;
-        }
-    }
-    .progress-encoding {
+    .progress-transfer, .progress-encoding {
         bottom: 0;
         position: absolute;
         width: 100%;
