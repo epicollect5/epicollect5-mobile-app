@@ -4,6 +4,7 @@
   "private": true,
   "description": "Free and easy-to-use mobile data-gathering platform",
   "scripts": {
+    "postinstall": "jetifier",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",

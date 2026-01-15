@@ -8,7 +8,7 @@
 	</ion-header>
 	<ion-content class="ion-text-center">
 		<ion-spinner
-        class="spinner-transfer"
+        class="spinner-encoding"
         name="crescent">
     </ion-spinner>
 		<div
