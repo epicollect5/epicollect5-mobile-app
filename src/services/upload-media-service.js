@@ -26,7 +26,7 @@ export const uploadMediaService = {
         //update progress counter
         function _updateProgress(count) {
             count ? currentEntryIndex += count : currentEntryIndex++;
-            notificationService.setProgress({ total, done: currentEntryIndex });
+            notificationService.setProgressTransfer({ total, done: currentEntryIndex });
         }
 
         return new Promise(function (resolve, reject) {
@@ -148,7 +148,7 @@ export const uploadMediaService = {
                             console.log('Syncing');
                             currentEntryIndex++;
 
-                            notificationService.setProgress({ total, done: currentEntryIndex });
+                            notificationService.setProgressTransfer({ total, done: currentEntryIndex });
 
                             // If no more files left to upload
                             if (files.length === 0) {

@@ -268,7 +268,7 @@ export const uploadDataService = {
              */
             function _updateProgress(count) {
                 count ? currentEntryIndex += count : currentEntryIndex++;
-                notificationService.setProgress({ total, done: currentEntryIndex });
+                notificationService.setProgressTransfer({ total, done: currentEntryIndex });
             }
             // Start upload from parent form
             _uploadEntry(topLevelFormRef);

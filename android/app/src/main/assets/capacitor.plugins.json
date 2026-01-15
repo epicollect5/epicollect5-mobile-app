@@ -76,7 +76,7 @@
 		"classpath": "io.capawesome.capacitorjs.plugins.androidedgetoedgesupport.EdgeToEdgePlugin"
 	},
 	{
-		"pkg": "@capgo/capacitor-ffmpeg",
-		"classpath": "ee.forgr.capacitor_ffmpeg.CapacitorFFmpegPlugin"
+		"pkg": "@whiteguru/capacitor-plugin-video-editor",
+		"classpath": "com.whiteguru.capacitor.plugin.videoeditor.VideoEditorPlugin"
 	}
 ]

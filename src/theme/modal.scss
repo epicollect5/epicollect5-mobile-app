@@ -13,7 +13,6 @@
         }
     }
     &::part(content) {
-        position: absolute;
         width: 75%;
         height: 52%;
         position: fixed;
@@ -44,7 +43,7 @@
     }
 }
 
-.modal-progress-transfer {
+.modal-progress-transfer, .modal-progress-encoding {
     --border-radius: 5px;
     --max-height: 200px;
     @media only screen and (max-width: 480px) {
@@ -67,6 +66,14 @@
         margin-top: -16px;
     }
     .progress-transfer {
+        bottom: 0;
+        position: absolute;
+        width: 100%;
+        ion-progress-bar {
+            height: 10px;
+        }
+    }
+    .progress-encoding {
         bottom: 0;
         position: absolute;
         width: 100%;
@@ -112,6 +119,7 @@
     }
 }
 .modal-progress-transfer,
+.modal-progress-encoding,
 .modal-barcode,
 .modal-bookmark-add,
 .modal-entries-branch-filter,
@@ -133,15 +141,7 @@
     ion-content {
         --background: transparent;
     }
-    ion-header {
-        // ion-toolbar {
-        //     --background: transparent;
-        //     ion-button,
-        //     ion-icon {
-        //         color: #333;
-        //     }
-        // }
-    }
+
     .swiper {
         .swiper-slide {
             width: 100% !important;

@@ -47,8 +47,6 @@ PODS:
     - Capacitor
   - CapacitorToast (8.0.0):
     - Capacitor
-  - CapgoCapacitorFfmpeg (0.0.8):
-    - Capacitor
   - CordovaPlugins (8.0.0):
     - CapacitorCordova
   - CordovaPluginsResources (0.0.105)
@@ -101,6 +99,8 @@ PODS:
   - IONGeolocationLib (2.0.0)
   - OSBarcodeLib (2.0.1)
   - PromisesObjC (1.2.12)
+  - WhiteguruCapacitorPluginVideoEditor (7.1.0):
+    - Capacitor
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
@@ -123,10 +123,10 @@ DEPENDENCIES:
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapacitorToast (from `../../node_modules/@capacitor/toast`)"
-  - "CapgoCapacitorFfmpeg (from `../../node_modules/@capgo/capacitor-ffmpeg`)"
   - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
   - CordovaPluginsResources (from `../capacitor-cordova-ios-plugins`)
   - CordovaPluginsStatic (from `../capacitor-cordova-ios-plugins`)
+  - "WhiteguruCapacitorPluginVideoEditor (from `../../node_modules/@whiteguru/capacitor-plugin-video-editor`)"
 
 SPEC REPOS:
   trunk:
@@ -181,14 +181,14 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/status-bar"
   CapacitorToast:
     :path: "../../node_modules/@capacitor/toast"
-  CapgoCapacitorFfmpeg:
-    :path: "../../node_modules/@capgo/capacitor-ffmpeg"
   CordovaPlugins:
     :path: "../capacitor-cordova-ios-plugins"
   CordovaPluginsResources:
     :path: "../capacitor-cordova-ios-plugins"
   CordovaPluginsStatic:
     :path: "../capacitor-cordova-ios-plugins"
+  WhiteguruCapacitorPluginVideoEditor:
+    :path: "../../node_modules/@whiteguru/capacitor-plugin-video-editor"
 
 SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
@@ -212,7 +212,6 @@ SPEC CHECKSUMS:
   CapacitorSplashScreen: 422880d7117605c30699eb4b21644b62db42e86c
   CapacitorStatusBar: 312e2e67928dfe9514c4a8916a1fd610552f5f35
   CapacitorToast: aefebcd4cead9f44a04ace80c66a7eb4031751e7
-  CapgoCapacitorFfmpeg: 23e173e3f3dfcf9fbd1f6862bf6751d816c7f767
   CordovaPlugins: 7a62f889f16755d6b203786baf68ea310e01e864
   CordovaPluginsResources: da93847212bf7b16ba770e4d6c3e7dba820174c7
   CordovaPluginsStatic: 869547174ba264f2db12d177a260f92886cfde0f
@@ -224,7 +223,8 @@ SPEC CHECKSUMS:
   IONGeolocationLib: a5e40b54edc2ee9902036eda5aaa41ddf07bb68d
   OSBarcodeLib: 57987d2eb1f916f701f4554e20e349b3cb83f023
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
+  WhiteguruCapacitorPluginVideoEditor: 1a56d775023055c927da6fc08161b2b97b14e5b1
 
-PODFILE CHECKSUM: e4b6b9823c4e690d4ced5b61ff66b2b324e291fb
+PODFILE CHECKSUM: 65b0fa184517247aebda965a056f47e5e95f75b6
 
 COCOAPODS: 1.16.2

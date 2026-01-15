@@ -92,7 +92,7 @@ export const downloadService = {
 
             //Update the progress counter
             function _updateProgress (entryNumber) {
-                notificationService.setProgress({ total: totalEntries, done: entryNumber });
+                notificationService.setProgressTransfer({ total: totalEntries, done: entryNumber });
             }
 
             // Start the first download

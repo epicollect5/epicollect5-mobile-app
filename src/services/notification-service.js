@@ -154,9 +154,14 @@ export const notificationService = {
         });
     },
     //set progress in global state for modalUpload
-    setProgress(progress) {
+    setProgressTransfer(progress) {
         const rootStore = useRootStore();
         rootStore.progressTransfer = progress;
+    },
+    //set progress in global state for modalUpload
+    setProgressEncoding(progress) {
+        const rootStore = useRootStore();
+        rootStore.progressEncoding = progress;
     },
     //Hide the progress dialog (global object)
     hideProgressDialog(delay) {

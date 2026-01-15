@@ -38,6 +38,9 @@ export const useRootStore = defineStore('RootStore', {
                 total: 0,
                 done: 0
             },
+            progressEncoding: {
+                done: 0
+            },
             modalLogin: {},
             afterUserIsLoggedIn: {
                 callback: null,

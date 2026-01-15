@@ -1,6 +1,7 @@
 export const STRINGS = {
     en: {
         labels: {
+            encoding_video: 'Encoding Video...',
             copied_to_clipboard: 'Copied to clipboard',
             project_addition_help_text: 'Projects must be added manually',
             upload_media_help_text: 'Media files must be uploaded separately',
@@ -244,6 +245,7 @@ export const STRINGS = {
     },
     it: {
         labels: {
+            encoding_video: 'Decodifica Video...',
             copied_to_clipboard: 'Copiato nella clipboard',
             upload_media_help_text: 'Media files devono essere caricati separatamente',
             project_addition_help_text: 'I progetti devono essere aggiunti manualmente',
@@ -487,6 +489,7 @@ export const STRINGS = {
     },
     es: {
         labels: {
+            encoding_video: 'Codificando Video...',
             copied_to_clipboard: 'Copiar en el portapapeles',
             upload_media_help_text: 'Los media deben cargarse por separado',
             project_addition_help_text: 'Los proyectos deben agregarse manualmente',
@@ -730,6 +733,7 @@ export const STRINGS = {
     },
     fr: {
         labels: {
+            encoding_video: 'Encodage Video...',
             copied_to_clipboard: 'Copier dans le presse-papiers',
             upload_media_help_text: 'Les fichiers multimédias doivent être téléchargés séparément',
             project_addition_help_text: 'Les projets doivent être ajoutés manuellement',
@@ -973,6 +977,7 @@ export const STRINGS = {
     },
     pl: {
         labels: {
+            encoding_video: 'Kodowanie Video...',
             copied_to_clipboard: 'Kopiuj do schowka',
             upload_media_help_text: 'Pliki multimedialne muszą zostać przesłane osobno',
             project_addition_help_text: 'Projekty muszą być dodawane ręcznie',
@@ -1216,6 +1221,7 @@ export const STRINGS = {
     },
     pt: {
         labels: {
+            encoding_video: 'Codificando Video...',
             copied_to_clipboard: 'Copiar para a área de transferência',
             upload_media_help_text: 'Os ficheiros de media devem ser enviados separadamente',
             project_addition_help_text: 'Os projetos devem ser adicionados manualmente',
@@ -1459,6 +1465,7 @@ export const STRINGS = {
     },
     ca: {
         labels: {
+            encoding_video: 'Codificant Video...',
             copied_to_clipboard: 'Copia al porta-retalls',
             upload_media_help_text: 'Els fitxers multimèdia s\'han de pujar per separat',
             project_addition_help_text: 'Els projectes s\'han d\'afegir manualment',
@@ -1702,6 +1709,7 @@ export const STRINGS = {
     },
     sl:{
         labels: {
+            encoding_video: 'Kodiranje Video...',
             copied_to_clipboard: 'Kopiraj v odložišče',
             upload_media_help_text: 'Predstavnostne datoteke je treba naložiti ločeno',
             project_addition_help_text: 'Projekti morajo biti dodani ročno',

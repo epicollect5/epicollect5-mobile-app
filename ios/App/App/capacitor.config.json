@@ -30,7 +30,7 @@
 			"webviewbounce": "false",
 			"DisallowOverscroll": "true",
 			"android-minSdkVersion": "29",
-			"android-targetSdkVersion": "33",
+			"android-targetSdkVersion": "36",
 			"BackupWebStorage": "none",
 			"ShowSplashScreenSpinner": "false",
 			"AutoHideSplashScreen": "false",
@@ -59,7 +59,7 @@
 		"SplashScreenPlugin",
 		"StatusBarPlugin",
 		"ToastPlugin",
-		"CapacitorFFmpegPlugin",
+		"VideoEditorPlugin",
 		"CDVPlugin"
 	]
 }
