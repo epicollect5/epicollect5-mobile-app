@@ -48,6 +48,7 @@ export const useRootStore = defineStore('RootStore', {
             },
             isAudioModalActive: false,
             isLocationModalActive: false,
+            isVideoEncodingModalActive: false,
             ec5LoadingDialog: null,
             hasGoogleServices: true,
             entriesAddScope: {},

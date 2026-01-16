@@ -109,7 +109,6 @@ export const PARAMETERS = {
 
     PHOTO_EXT: '.jpg',
     AUDIO_EXT: '.mp4',
-    AUDIO_EXT_IOS: '.wav',//ios audio recording is only wav
     VIDEO_EXT: '.mp4',
 
     ALLOWED_ORDERING_COLUMNS: ['title', 'created_at'],

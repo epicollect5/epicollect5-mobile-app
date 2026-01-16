@@ -857,27 +857,27 @@ export default {
 		useBackButton(10, () => {
 			console.log(window.history);
 			console.log('useBackButton EntriesAdd');
+
+      //ignore back button while fetching
 			if (state.isFetching) {
 				return false;
 			}
 
-			switch (state.questionParams.type) {
-				case PARAMETERS.QUESTION_TYPES.AUDIO:
-					//do nothing while recording audio
-					if (!rootStore.isAudioModalActive) {
-						methods.prev();
-					}
-					break;
-				case PARAMETERS.QUESTION_TYPES.LOCATION:
-					//do nothing while getting location
-					if (!rootStore.isLocationModalActive) {
-						methods.prev();
-					}
-					break;
-				default:
-					//any other cases go back
-					methods.prev();
-			}
+      //ignore back button while recording audio
+      if (rootStore.isAudioModalActive) {
+        return false;
+      }
+
+      //ignore back button while encoding video
+      if (rootStore.isVideoEncodingModalActive) {
+        return false;
+      }
+      //ignore back button while getting location
+      if (rootStore.isLocationModalActive) {
+        return false;
+      }
+
+			methods.prev();
 		});
 
 		return {

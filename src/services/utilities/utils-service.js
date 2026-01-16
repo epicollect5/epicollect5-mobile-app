@@ -8,7 +8,7 @@ import {isValidCoordsService} from '@/services/utilities/is-valid-coords-service
 import {initService} from '@/services/init-service';
 import {STRINGS} from '@/config/strings';
 import {databaseSelectService} from '@/services/database/database-select-service';
-import {CapacitorBarcodeScanner} from '@capacitor/barcode-scanner';
+import {CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint} from '@capacitor/barcode-scanner';
 import {v4 as uuidv4} from 'uuid';
 
 export const utilsService = {
@@ -197,13 +197,7 @@ export const utilsService = {
                 ext = PARAMETERS.PHOTO_EXT;
                 break;
             case PARAMETERS.QUESTION_TYPES.AUDIO:
-                if (rootStore.device.platform === PARAMETERS.IOS) {
-                    //ios will record only .wav format
-                    ext = PARAMETERS.AUDIO_EXT_IOS;
-                } else {
-                    //android is ok with .mp4
-                    ext = PARAMETERS.AUDIO_EXT;
-                }
+                ext = PARAMETERS.AUDIO_EXT;
                 break;
             case PARAMETERS.QUESTION_TYPES.VIDEO:
                 ext = PARAMETERS.VIDEO_EXT;
@@ -547,7 +541,9 @@ export const utilsService = {
                     resolve('');
                 }
 
-                CapacitorBarcodeScanner.scanBarcode({}).then(
+                CapacitorBarcodeScanner.scanBarcode({
+                    hint: CapacitorBarcodeScannerTypeHint.ALL
+                }).then(
                     (result) => {
                         resolve({text: result.ScanResult});
                     },
@@ -638,12 +634,7 @@ export const utilsService = {
 
         switch (file_type) {
             case PARAMETERS.EC5_AUDIO_TYPE:
-                if (rootStore.device.platform === PARAMETERS.IOS) {
-                    mime_type = 'audio/wav';
-                }
-                if (rootStore.device.platform === PARAMETERS.ANDROID) {
-                    mime_type = 'audio/mp4';
-                }
+                mime_type = 'audio/mp4';
                 break;
             case PARAMETERS.EC5_VIDEO_TYPE:
                 mime_type = 'video/mp4';

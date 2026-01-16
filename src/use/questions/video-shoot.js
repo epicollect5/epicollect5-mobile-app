@@ -15,12 +15,14 @@ export async function videoShoot({media, entryUuid, state, filename}) {
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
     const tempDir = rootStore.tempDir;
+    rootStore.isVideoEncodingModalActive = false;
 
     if (rootStore.device.platform === PARAMETERS.WEB) {
         return;
     }
 
     async function _showModalProgressEncoding(header) {
+        rootStore.isVideoEncodingModalActive =true;
         rootStore.progressEncoding = {done: 0};
         const modal = await modalController.create({
             cssClass: 'modal-progress-encoding',
@@ -87,6 +89,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             // Reset progress with a slight delay so the user doesn't see the bar snap to 0
             window.setTimeout(() => {
                 rootStore.progressEncoding = {done: 0};
+                rootStore.isVideoEncodingModalActive =false;
             }, PARAMETERS.DELAY_LONG);
         }
     }

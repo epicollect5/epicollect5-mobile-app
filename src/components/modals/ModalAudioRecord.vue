@@ -81,16 +81,15 @@ export default {
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
 		const tempDir = rootStore.tempDir;
-		const protocol = '';
 		let mediaRecorder = {};
 		const { entryUuid, media, inputRef } = readonly(props);
 		let filename;
 
 		//if we do not have done any recording yet, generate a new file name
 		if (media[entryUuid][inputRef].cached === '') {
-			//check if we have a stored filename, i.e user is replacing the photo for the entry
+			//check if we have a stored filename, i.e. user is replacing the photo for the entry
 			if (media[entryUuid][inputRef].stored === '') {
-				//generate new file name, this is a brand new file
+				//generate new file name, this is a brand-new file
 				filename = utilsService.generateMediaFilename(entryUuid, PARAMETERS.QUESTION_TYPES.AUDIO);
 			} else {
 				//use stored filename
