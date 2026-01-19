@@ -80,7 +80,7 @@
 # 7.0.3
 
 - UI improvements
-- Disabled Ionic 8 dynamic fonts as css zoom is used
+- Disabled Ionic 8 dynamic fonts as CSS zoom is used
 
 # 7.0.1
 
