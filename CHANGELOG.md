@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 88.8.1
+
+- Enhanced Slovenian translation
+
 # 88.8.0 - build 8880
 
 - Capacitor 8 update
