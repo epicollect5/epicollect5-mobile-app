@@ -308,8 +308,8 @@ describe('Filename', () => {
         ext = PARAMETERS.AUDIO_EXT;
         filename = utilsService.generateMediaFilename(uuid, type);
         expect(filename.startsWith(uuid + '_')).toBe(true);
-        expect(filename.endsWith(ext)).toBe(false);
-        expect(filename.endsWith(PARAMETERS.AUDIO_EXT_IOS)).toBe(true);
+        expect(filename.endsWith(ext)).toBe(true);
+        expect(filename.endsWith(PARAMETERS.AUDIO_EXT)).toBe(true);
     });
 });
 

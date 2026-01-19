@@ -189,7 +189,6 @@ export const utilsService = {
      */
     generateMediaFilename(uuid, type) {
 
-        const rootStore = useRootStore();
         let ext;
 
         switch (type) {

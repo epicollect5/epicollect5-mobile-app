@@ -1,5 +1,15 @@
 ## Release Notes
 
+# 88.8.0 - build 8880
+
+- Capacitor 8 update
+- Fixed navigation to prevent accidental back-button dismissal while audio, video encoding, or location modals are open.
+- Enhanced barcode scanner with improved hint detection for better scanning accuracy.
+- Audio is recorded as AAC with mp4 extension and 64kbps bitrate on both Android and iOS. 
+- Video is encoded as AAC/H264 with mp4 extension, 30fps and ~2Mbps bitrate on both Android and iOS.
+- Android Target SDK updated to 36 (Android 15)
+
+
 # 87.2.5 - build 8725
 
 - Updated several dependency versions.

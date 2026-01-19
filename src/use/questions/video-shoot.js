@@ -61,6 +61,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
                 transcode: {
                     width: 1280,
                     height: 720,
+                    fps: 30,
                     keepAspectRatio: true
                 }
             });
