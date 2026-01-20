@@ -39,6 +39,7 @@ vi.mock('vue-router', () => ({
     })
 }));
 
+let wrapper = null;
 
 beforeEach(() => {
     // tell vitest we use mocked time
@@ -47,10 +48,17 @@ beforeEach(() => {
     vi.resetAllMocks();
 });
 
+afterEach(() => {
+    // Manually destroy the wrapper to trigger cleanup immediately
+    if (wrapper) {
+        wrapper.unmount();
+    }
+});
+
 describe('LeftDrawer component', () => {
 
     it('should be in default language', async () => {
-        const wrapper = shallowMount(LeftDrawer, {
+         wrapper = shallowMount(LeftDrawer, {
             global: {
                 plugins: [createTestingPinia({
                     RootStore: {
@@ -85,7 +93,7 @@ describe('LeftDrawer component', () => {
     it('should be translated', async () => {
 
         PARAMETERS.SUPPORTED_LANGUAGES.forEach((language) => {
-            const wrapper = shallowMount(LeftDrawer, {
+             wrapper = shallowMount(LeftDrawer, {
                 global: {
                     plugins: [createTestingPinia({
                         fakeApp: true,
@@ -139,7 +147,7 @@ describe('LeftDrawer component', () => {
             }
         });
 
-        const wrapper = mount(LeftDrawer, { attachTo: document.body });
+         wrapper = mount(LeftDrawer, { attachTo: document.body });
         const rootStore = useRootStore(); // uses the fakeStore pinia!
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
@@ -212,9 +220,9 @@ describe('LeftDrawer component', () => {
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         menuController.close = vi.fn().mockReturnValue(true);
 
-        const wrapper = shallowMount(LeftDrawer);
+         wrapper = shallowMount(LeftDrawer);
 
-        //switch state to login action
+        //switch state to log in action
         rootStore.user.action = labels.login;
         expect(rootStore.user.action).toBe(labels.login);
         await wrapper.vm.$nextTick();
@@ -260,9 +268,9 @@ describe('LeftDrawer component', () => {
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         menuController.close = vi.fn().mockReturnValue(true);
 
-        const wrapper = shallowMount(LeftDrawer);
+         wrapper = shallowMount(LeftDrawer);
 
-        //switch state to login action
+        //switch state to log in action
         rootStore.user.action = labels.login;
         expect(rootStore.user.action).toBe(labels.login);
         await wrapper.vm.$nextTick();
@@ -296,7 +304,7 @@ describe('LeftDrawer component', () => {
         });
 
         const rootStore = useRootStore(); //use fakeStore
-        const wrapper = mount(LeftDrawer);
+         wrapper = mount(LeftDrawer);
 
         menuController.close = vi.fn().mockReturnValue(true);
 
@@ -326,7 +334,7 @@ describe('LeftDrawer component', () => {
         });
 
         const rootStore = useRootStore(); //use fakeStore
-        const wrapper = mount(LeftDrawer);
+         wrapper = mount(LeftDrawer);
         expect(wrapper.find('[data-test="profile"]').exists()).toBe(false);
     });
 
@@ -336,7 +344,7 @@ describe('LeftDrawer component', () => {
         rootStore.device = {
             platform: PARAMETERS.WEB
         };
-        const wrapper = mount(LeftDrawer);
+         wrapper = mount(LeftDrawer);
 
         menuController.close = vi.fn().mockReturnValue(true);
 
@@ -356,7 +364,7 @@ describe('LeftDrawer component', () => {
         rootStore.device = {
             platform: PARAMETERS.WEB
         };
-        const wrapper = mount(LeftDrawer);
+         wrapper = mount(LeftDrawer);
 
         menuController.close = vi.fn().mockReturnValue(true);
 
@@ -387,7 +395,7 @@ describe('LeftDrawer component', () => {
             title: 'Test bookmark'
         };
 
-        const wrapper = mount(LeftDrawer, {
+         wrapper = mount(LeftDrawer, {
             attachTo: document.body
         });
 
@@ -486,7 +494,7 @@ describe('LeftDrawer component', () => {
             platform: PARAMETERS.WEB
         };
 
-        const wrapper = mount(LeftDrawer, {
+         wrapper = mount(LeftDrawer, {
             attachTo: document.body
         });
 
@@ -574,7 +582,7 @@ describe('LeftDrawer component', () => {
         });
 
         const rootStore = useRootStore();
-        const wrapper = mount(LeftDrawer);
+         wrapper = mount(LeftDrawer);
 
         utilsService.hasInternetConnection = vi.fn().mockResolvedValue(true);
         window.open = vi.fn();
@@ -602,7 +610,7 @@ describe('LeftDrawer component', () => {
         });
 
         const rootStore = useRootStore();
-        const wrapper = mount(LeftDrawer);
+         wrapper = mount(LeftDrawer);
 
         utilsService.hasInternetConnection = vi.fn().mockResolvedValue(true);
         window.open = vi.fn();
@@ -618,7 +626,7 @@ describe('LeftDrawer component', () => {
     it('offline, should NOT open any external page', async () => {
 
         const rootStore = useRootStore();
-        const wrapper = mount(LeftDrawer);
+         wrapper = mount(LeftDrawer);
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
         //imp: before mounting
