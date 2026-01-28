@@ -171,6 +171,7 @@ export const projectModel = {
     },
     // BRANCHES
     getFormBranches(formRef) {
+        console.log('branches for formRef -> ', JSON.stringify(this.project_extra.forms[formRef].branch));
         return (this.project_extra.forms[formRef].branch) ? this.project_extra.forms[formRef].branch : {};
     },
     getBranches(formRef, inputRef) {
@@ -217,5 +218,16 @@ export const projectModel = {
     },
     getServerUrl() {
         return this.data.server_url;
+    },
+    getMediaQuestions(){
+
+        const mediaQuestions = [];
+        Object.values(this.project_extra.inputs).forEach((input) => {
+            if (['photo', 'audio', 'video'].includes(input.data.type)) {
+                mediaQuestions.push(input.data.ref);
+            }
+        });
+        console.log('mediaQuestions -> ', JSON.stringify(mediaQuestions));
+        return mediaQuestions;
     }
 };

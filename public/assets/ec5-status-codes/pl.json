@@ -324,5 +324,6 @@
   "ec5_389": "Nie można zweryfikować konta",
   "ec5_390": "Lokalne konto o podanym adresie e-mail już istnieje. <br/> Proszę podać hasło, aby potwierdzić",
   "ec5_391": "Lokalne konto o podanym adresie e-mail już istnieje. <br/> Proszę zaloguj się za pomocą e-maila",
-  "ec5_392": "Nieprawidłowy lub niekompletny wyrażenie regularne."
+  "ec5_392": "Nieprawidłowy lub niekompletny wyrażenie regularne.",
+  "ec5_393": "Czy na pewno chcesz sklonować ten wpis?"
 }

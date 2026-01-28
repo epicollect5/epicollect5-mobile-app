@@ -324,5 +324,6 @@
   "ec5_389": "No se puede verificar la cuenta",
   "ec5_390": "Ya existe una cuenta local con el correo electrónico proporcionado. <br/> Por favor, ingresa la contraseña para confirmar",
   "ec5_391": "Ya existe una cuenta local con el correo electrónico proporcionado. <br/> Por favor, inicia sesión por correo electrónico",
-  "ec5_392": "La expresión regular no es válida o está mal formada"
+  "ec5_392": "La expresión regular no es válida o está mal formada",
+  "ec5_393": "¿Estás seguro de que quieres clonar esta entrada?"
 }

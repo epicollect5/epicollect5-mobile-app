@@ -10,6 +10,8 @@ import {STRINGS} from '@/config/strings';
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint} from '@capacitor/barcode-scanner';
 import {v4 as uuidv4} from 'uuid';
+import {entryCommonService} from '@/services/entry/entry-common-service';
+
 
 export const utilsService = {
 
@@ -1027,5 +1029,56 @@ export const utilsService = {
     //add 'file://' protocol if it is missing in the URI
     getProtocol(uri) {
         return uri.includes('file://') ? '' : 'file://';
+    },
+    generateClonedEntry(sourceEntry){
+
+        console.log(JSON.stringify(sourceEntry));
+
+
+        const clonedEntry = JSON.parse(JSON.stringify(sourceEntry));
+        clonedEntry.entryUuid = utilsService.uuid();
+        clonedEntry.createdAt = utilsService.getISODateTime();
+        clonedEntry.updatedAt = utilsService.getISODateTime();
+        clonedEntry.synced = PARAMETERS.SYNCED_CODES.UNSYNCED;
+        clonedEntry.canEdit = PARAMETERS.EDIT_CODES.CAN;
+        clonedEntry.isRemote = PARAMETERS.REMOTE_CODES.ISNT;
+        clonedEntry.syncedError = '';
+
+        console.log(JSON.stringify(projectModel.getExtraForm(clonedEntry.formRef)));
+        console.log(JSON.stringify(projectModel.getExtraInputs()));
+        console.log(JSON.stringify(projectModel.getMediaQuestions(clonedEntry.formRef)));
+        console.log(JSON.stringify(projectModel.getFormBranches(clonedEntry.formRef)));
+
+        //set title
+        entryCommonService.setEntryTitle(
+            projectModel.getExtraForm(
+                clonedEntry.formRef
+            ),
+            projectModel.getExtraInputs(),
+            clonedEntry,
+            false
+        );
+
+        //get a clone of the existing answers (NOT reactive, otherwise it will change behind the scenes)
+        const newAnswers = clonedEntry.answers;
+
+        //we do not clone media files so find the media questions input_ref from project definition
+        const mediaQuestionsInputRefs = projectModel.getMediaQuestions(clonedEntry.formRef);
+
+        //loop newAnswers and set media files to empty string
+        mediaQuestionsInputRefs.forEach((mediaQuestionInputRef) => {
+            if (newAnswers[mediaQuestionInputRef]) {
+                newAnswers[mediaQuestionInputRef].answer = '';
+            }
+        });
+
+        //we do not clone branches so set branch question to 0
+        const branchQuestionsInputRefs = projectModel.getFormBranches(clonedEntry.formRef);
+
+        Object.keys(branchQuestionsInputRefs).forEach((branchQuestionInputRef) => {
+            newAnswers[branchQuestionInputRef] = 0;
+        });
+
+        return clonedEntry;
     }
 };

@@ -324,5 +324,6 @@
   "ec5_389": "No s'ha pogut verificar el compte",
   "ec5_390": "El compte local amb el correu electrònic proporcionat ja existeix. <br/> Introduïu la contrasenya per confirmar",
   "ec5_391": "El compte local amb el correu electrònic proporcionat ja existeix. <br/> Si us plau, inicieu la sessió per correu electrònic",
-  "ec5_392": "L'expressió regular no és vàlida o està mal formada."
+  "ec5_392": "L'expressió regular no és vàlida o està mal formada.",
+  "ec5_393": "Segur que voleu clonar aquesta entrada?"
 }

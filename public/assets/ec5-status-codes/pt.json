@@ -324,5 +324,6 @@
   "ec5_389": "A conta não pode ser verificada",
   "ec5_390": "Já existe uma conta local com o e-mail fornecido. <br/> Insira a senha para confirmar",
   "ec5_391": "Já existe uma conta local com o e-mail fornecido. <br/> Por favor, faça o login via e-mail",
-  "ec5_392": "A expressão regular é inválida ou malformada."
+  "ec5_392": "A expressão regular é inválida ou malformada.",
+  "ec5_393": "Tem certeza de que deseja clonar esta entrada?"
 }

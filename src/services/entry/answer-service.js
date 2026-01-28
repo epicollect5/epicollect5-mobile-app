@@ -387,7 +387,7 @@ export const answerService = {
                 //get answers from server
                 //todo: check entries permission and filtering i.e for collectors
                 const slug = projectModel.getSlug();
-                //get branchRef 
+                //get branchRef
                 let branchRef = null;
                 if (isBranch) {
                     branchRef = branchEntryService.branchInput.ref;
