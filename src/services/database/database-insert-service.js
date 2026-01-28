@@ -3,6 +3,9 @@
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
+import { projectModel} from '@/models/project-model';
+import { PARAMETERS } from '@/config';
+import {entryCommonService} from '@/services/entry/entry-common-service';
 
 export const databaseInsertService = {
 
@@ -368,6 +371,46 @@ export const databaseInsertService = {
         //imp: column "bookmark" should be called "hierarchy_navigation" but alter table command not working in Android <11
         const query = 'INSERT OR REPLACE INTO bookmarks (project_ref, form_ref, parent_entry_uuid, title, bookmark) VALUES (?,?,?,?,?)';
         const params = [projectRef, formRef, parentEntryUuid, title, hierarchy_navigation];
+
+        return await this.insertRows(query, params);
+    },
+
+    async cloneEntry(clonedEntry) {
+        console.log('cloning entry: ' + clonedEntry.entryUuid);
+
+        let query = '';
+        query += 'INSERT OR REPLACE INTO entries (';
+        query += 'entry_uuid, ';
+        query += 'parent_entry_uuid, ';
+        query += 'project_ref, ';
+        query += 'form_ref, ';
+        query += 'parent_form_ref, ';
+        query += 'answers, ';
+        query += 'synced, ';
+        query += 'synced_error, ';
+        query += 'can_edit, ';
+        query += 'is_remote, ';
+        query += 'created_at, ';
+        query += 'updated_at, ';
+        query += 'title) ';
+        query += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)';
+
+        const params = [
+            clonedEntry.entryUuid,
+            clonedEntry.parentEntryUuid,
+            clonedEntry.projectRef,
+            clonedEntry.formRef,
+            clonedEntry.parentFormRef,
+            JSON.stringify(clonedEntry.answers),
+            clonedEntry.synced,
+            clonedEntry.syncedError,
+            clonedEntry.canEdit,
+            clonedEntry.isRemote,
+            clonedEntry.createdAt,
+            clonedEntry.updatedAt,
+            clonedEntry.title
+        ];
+
 
         return await this.insertRows(query, params);
     }

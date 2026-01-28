@@ -324,5 +324,6 @@
   "ec5_389": "Impossible de vérifier le compte.",
   "ec5_390": "Un compte local avec l'adresse e-mail fournie existe déjà. <br/> Veuillez entrer le mot de passe pour confirmer.",
   "ec5_391": "Un compte local avec l'adresse e-mail fournie existe déjà. <br/> Veuillez vous connecter par e-mail.",
-  "ec5_392": "L'expression régulière est invalide ou malformée."
+  "ec5_392": "L'expression régulière est invalide ou malformée.",
+  "ec5_393": "Êtes-vous sûr de vouloir cloner cette entrée ?"
 }
