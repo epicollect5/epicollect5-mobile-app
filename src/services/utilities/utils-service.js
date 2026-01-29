@@ -1031,7 +1031,6 @@ export const utilsService = {
         return uri.includes('file://') ? '' : 'file://';
     },
     generateClonedEntry(sourceEntry){
-
         console.log(JSON.stringify(sourceEntry));
 
 
@@ -1046,7 +1045,6 @@ export const utilsService = {
 
         console.log(JSON.stringify(projectModel.getExtraForm(clonedEntry.formRef)));
         console.log(JSON.stringify(projectModel.getExtraInputs()));
-        console.log(JSON.stringify(projectModel.getMediaQuestions(clonedEntry.formRef)));
         console.log(JSON.stringify(projectModel.getFormBranches(clonedEntry.formRef)));
 
         //set title
@@ -1062,8 +1060,8 @@ export const utilsService = {
         //get a clone of the existing answers (NOT reactive, otherwise it will change behind the scenes)
         const newAnswers = clonedEntry.answers;
 
-        //we do not clone media files so find the media questions input_ref from project definition
-        const mediaQuestionsInputRefs = projectModel.getMediaQuestions(clonedEntry.formRef);
+        //we do not clone media files so find the media questions input_ref from project extra
+        const mediaQuestionsInputRefs = projectModel.getMediaQuestions();
 
         //loop newAnswers and set media files to empty string
         mediaQuestionsInputRefs.forEach((mediaQuestionInputRef) => {
@@ -1072,11 +1070,13 @@ export const utilsService = {
             }
         });
 
-        //we do not clone branches so set branch question to 0
+        //we do not clone branches so set branch question to empty
         const branchQuestionsInputRefs = projectModel.getFormBranches(clonedEntry.formRef);
-
         Object.keys(branchQuestionsInputRefs).forEach((branchQuestionInputRef) => {
-            newAnswers[branchQuestionInputRef] = 0;
+            newAnswers[branchQuestionInputRef] =  {
+                was_jumped: false,
+                answer: ''
+            };
         });
 
         return clonedEntry;

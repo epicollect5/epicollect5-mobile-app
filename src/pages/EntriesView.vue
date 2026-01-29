@@ -278,7 +278,7 @@ export default {
             state.isFetching = true;
             await notificationService.showProgressDialog(labels.wait, labels.loading_entry);
             setTimeout(async () => {
-              await fetchAnswers();
+              await fetchAnswers(state, language, labels);
             }, PARAMETERS.DELAY_LONG);
           }
         }

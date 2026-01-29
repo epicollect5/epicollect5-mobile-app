@@ -86,4 +86,20 @@ describe('cloneEntry', () => {
         });
         expect(notificationService.showToast).toHaveBeenCalledWith(labels.entry_cloned);
     });
+
+    it('should show error alert when cloning fails', async () => {
+        projectModel.getExtraForm = vi.fn().mockReturnValue({});
+        projectModel.getExtraInputs = vi.fn().mockReturnValue({});
+        entryCommonService.setEntryTitle = vi.fn().mockReturnValue(null);
+        projectModel.getMediaQuestions = vi.fn().mockReturnValue([]);
+        projectModel.getFormBranches = vi.fn().mockReturnValue([]);
+
+        notificationService.confirmSingle.mockResolvedValue(true);
+        databaseInsertService.cloneEntry.mockRejectedValue(new Error('DB error'));
+
+        await cloneEntry(state, router, rootStore, 'en', labels);
+
+        expect(notificationService.showAlert).toHaveBeenCalled();
+        expect(router.replace).not.toHaveBeenCalled();
+    });
 });

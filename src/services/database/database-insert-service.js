@@ -3,9 +3,6 @@
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
-import { projectModel} from '@/models/project-model';
-import { PARAMETERS } from '@/config';
-import {entryCommonService} from '@/services/entry/entry-common-service';
 
 export const databaseInsertService = {
 
@@ -160,7 +157,7 @@ export const databaseInsertService = {
                             });
                         }
                         else {
-                            //file exists but it was updated: set as unsynced for upload
+                            //file exists, but it was updated: set as unsynced for upload
                             tx.executeSql(set_file_unsynced_query, [0, '', filename], function (tx, res) {
                                 //unsynced ok
                                 // inserted ok

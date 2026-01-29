@@ -1237,7 +1237,7 @@ export const STRINGS = {
     pt: {
         labels: {
             cannot_clone_incomplete_entry: 'Não é possível clonar uma entrada incompleta',
-            entry_cloned: 'Wpis sklonowany',
+            entry_cloned: 'Entrada clonada',
             clone: 'Clonar',
             encoding_video: 'Codificando Video...',
             copied_to_clipboard: 'Copiar para a área de transferência',

@@ -80,51 +80,40 @@ export async function deleteEntry(state, router, bookmarkStore, rootStore, langu
 
     if (confirmed) {
         // Get an array of all the child entries related to this entry (if any)
-        databaseSelectService
+        return databaseSelectService
             .getHierarchyEntries(state.entryUuid)
             .then(function (relatedEntries) {
-                //get all media files names for this entry, child entries and branch entries
+                // get all media files names for this entry, child entries and branch entries
                 allEntries = relatedEntries.entries
                     .concat(relatedEntries.branchEntries)
                     .concat([state.entryUuid]);
 
                 // Now grab the media entries if any
-                Promise.all(
+                return Promise.all(
                     allEntries.map(function (uuid) {
                         return databaseSelectService.selectEntryMedia(projectRef, uuid);
                     })
                 ).then(function (mediaRows) {
-                    //mediaRows is an array of arrays, flat it to a single array of uuids
-                    //also a flat array of file objects for deletion
-                    mediaRows.forEach((rows) => {
-                        rows.forEach((entry) => {
-                            uuids.push(entry.entry_uuid);
-                            files.push({
-                                file_name: entry.file_name,
-                                file_path: entry.file_path,
-                                project_ref: projectRef
-                            });
-                        });
-                    });
-
-                    //if any, delete all media files for this entry, child entries and branch entries
                     if (files.length > 0) {
-                        deleteFileService.removeFiles(files).then(function () {
-                            //then delete media entries in media table
-                            Promise.all(
+                        return deleteFileService.removeFiles(files).then(function () {
+                            // then delete media entries in media table
+                            return Promise.all(
                                 uuids.map(function (uuid) {
                                     return databaseDeleteService.deleteEntryMedia(uuid);
                                 })
                             ).then(function () {
                                 // Now delete all the entries
-                                _deleteAllEntries(allEntries);
+                                return _deleteAllEntries(allEntries);
                             });
                         });
-                    } else {
-                        // No files, just delete all the entries
-                        _deleteAllEntries(allEntries);
                     }
+                    // No files, just delete all the entries
+                    return _deleteAllEntries(allEntries);
                 });
+            })
+            .catch(async (error) => {
+                console.log(error);
+                await notificationService.showAlert(labels.unknown_error);
             });
     }
 }
