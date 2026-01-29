@@ -1731,7 +1731,7 @@ export const STRINGS = {
     sl:{
         labels: {
             cannot_clone_incomplete_entry: 'Ni mogoče klonirati nepopolnega vnosa',
-            entry_cloned: 'Vnos je bil uspešno kloniran.',
+            entry_cloned: 'Vnos kloniran.',
             clone: 'Kloniraj',
             encoding_video: 'Kodiranje Video...',
             copied_to_clipboard: 'Kopiraj v odložišče',

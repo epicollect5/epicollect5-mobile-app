@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { cloneEntry } from '@/use/clone-entry';
+import { cloneEntryBranch } from '@/use/clone-entry-branch';
 import { notificationService } from '@/services/notification-service';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { PARAMETERS } from '@/config';
@@ -25,7 +26,7 @@ vi.mock('@/config/strings', () => ({
 }));
 
 describe('cloneEntry', () => {
-    let state, router, rootStore, labels;
+    let state, router, rootStore, labels, goBack;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -41,6 +42,7 @@ describe('cloneEntry', () => {
             cannot_clone_incomplete_entry: 'Cannot clone incomplete entry',
             entry_cloned: 'Entry cloned'
         };
+        goBack = vi.fn();
     });
 
     it('should show alert and bail if entry is incomplete', async () => {
@@ -49,7 +51,7 @@ describe('cloneEntry', () => {
         await cloneEntry(state, router, rootStore, 'en', labels);
 
         expect(notificationService.showAlert).toHaveBeenCalledWith(labels.cannot_clone_incomplete_entry);
-        expect(databaseInsertService.cloneEntry).not.toHaveBeenCalled();
+        expect(databaseInsertService.insertCloneEntry).not.toHaveBeenCalled();
     });
 
     it('should NOT clone if user cancels the confirmation', async () => {
@@ -57,7 +59,7 @@ describe('cloneEntry', () => {
 
         await cloneEntry(state, router, rootStore, 'en', labels);
 
-        expect(databaseInsertService.cloneEntry).not.toHaveBeenCalled();
+        expect(databaseInsertService.insertCloneEntry).not.toHaveBeenCalled();
     });
 
     it('should clone entry when confirmed', async () => {
@@ -70,13 +72,13 @@ describe('cloneEntry', () => {
 
         // 3. Your existing setup
         notificationService.confirmSingle.mockResolvedValue(true);
-        databaseInsertService.cloneEntry.mockResolvedValue(true);
+        databaseInsertService.insertCloneEntry.mockResolvedValue(true);
 
         // 4. Run the test
         await cloneEntry(state, router, rootStore, 'en', labels);
 
         // Assertions
-        expect(databaseInsertService.cloneEntry).toHaveBeenCalled();
+        expect(databaseInsertService.insertCloneEntry).toHaveBeenCalled();
         expect(router.replace).toHaveBeenCalledWith({
             name: PARAMETERS.ROUTES.ENTRIES,
             query: {
@@ -87,6 +89,28 @@ describe('cloneEntry', () => {
         expect(notificationService.showToast).toHaveBeenCalledWith(labels.entry_cloned);
     });
 
+    it('should clone branch entry when confirmed', async () => {
+
+        projectModel.getExtraForm = vi.fn().mockReturnValue({});
+        projectModel.getExtraInputs = vi.fn().mockReturnValue({});
+        entryCommonService.setEntryTitle = vi.fn().mockReturnValue(null);
+        projectModel.getMediaQuestions = vi.fn().mockReturnValue([]);
+        projectModel.getFormBranches = vi.fn().mockReturnValue([]);
+
+        // 3. Your existing setup
+        notificationService.confirmSingle.mockResolvedValue(true);
+        databaseInsertService.insertCloneEntryBranch.mockResolvedValue(true);
+
+        // 4. Run the test
+        await cloneEntryBranch(state, router, rootStore, 'en', labels, goBack);
+
+        // Assertions
+        expect(databaseInsertService.insertCloneEntryBranch).toHaveBeenCalled();
+        expect(goBack).toHaveBeenCalled();
+        expect(notificationService.showToast).toHaveBeenCalledWith(labels.entry_cloned);
+    });
+
+
     it('should show error alert when cloning fails', async () => {
         projectModel.getExtraForm = vi.fn().mockReturnValue({});
         projectModel.getExtraInputs = vi.fn().mockReturnValue({});
@@ -95,7 +119,7 @@ describe('cloneEntry', () => {
         projectModel.getFormBranches = vi.fn().mockReturnValue([]);
 
         notificationService.confirmSingle.mockResolvedValue(true);
-        databaseInsertService.cloneEntry.mockRejectedValue(new Error('DB error'));
+        databaseInsertService.insertCloneEntry.mockRejectedValue(new Error('DB error'));
 
         await cloneEntry(state, router, rootStore, 'en', labels);
 

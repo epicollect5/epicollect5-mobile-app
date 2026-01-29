@@ -4,7 +4,7 @@ import {setActivePinia, createPinia} from 'pinia';
 import {vi} from 'vitest';
 import {projectModel} from '@/models/project-model';
 
-describe('generateClonedEntry', () => {
+describe('generateCloneEntryBranch', () => {
     beforeEach(() => {
         // creates a fresh pinia and make it active so it's automatically picked
         // up by any useStore() call without having to pass it to it:
@@ -12,7 +12,7 @@ describe('generateClonedEntry', () => {
         setActivePinia(createPinia());
     });
 
-    it('should generate a valid cloned entry', () => {
+    it('should generate a valid cloned branch entry', () => {
 
         const uuid = utilsService.uuid();
         const sourceEntry = {
@@ -345,7 +345,6 @@ describe('generateClonedEntry', () => {
                 }
             }
         });
-
         projectModel.getProjectRef = vi.fn().mockReturnValue('71bf7f354d9149e69841432e06fed1ee');
         projectModel.getFormIndex = vi.fn().mockReturnValue(0);
         projectModel.getMediaQuestions = vi.fn().mockReturnValue(
@@ -360,7 +359,7 @@ describe('generateClonedEntry', () => {
             ]);
         projectModel.getFormName = vi.fn().mockReturnValue('Form One');
 
-        const clonedEntry = utilsService.generateClonedEntry(sourceEntry);
+        const clonedEntry = utilsService.generateCloneEntryBranch(sourceEntry);
 
         expect(clonedEntry.entryUuid).not.toEqual(sourceEntry.entryUuid);
         expect(clonedEntry.createdAt).not.toEqual(sourceEntry.createdAt);
@@ -377,5 +376,8 @@ describe('generateClonedEntry', () => {
 
         //assert branch entries are empty
         expect(clonedEntry.branchEntries).toEqual({});
+
+        //assert media object is empty
+        expect(clonedEntry.media).toEqual({});
     });
 });

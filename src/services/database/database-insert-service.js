@@ -372,7 +372,7 @@ export const databaseInsertService = {
         return await this.insertRows(query, params);
     },
 
-    async cloneEntry(clonedEntry) {
+    async insertCloneEntry(clonedEntry) {
         console.log('cloning entry: ' + clonedEntry.entryUuid);
 
         let query = '';
@@ -408,6 +408,46 @@ export const databaseInsertService = {
             clonedEntry.title
         ];
 
+
+        return await this.insertRows(query, params);
+    },
+
+    async insertCloneEntryBranch(clonedEntryBranch) {
+        console.log('cloning entry: ' + clonedEntryBranch.entryUuid);
+
+        let params = [];
+        let query = '';
+        query += 'INSERT OR REPLACE INTO temp_branch_entries (';
+        query += 'entry_uuid, ';
+        query += 'owner_entry_uuid, ';
+        query += 'owner_input_ref, ';
+        query += 'project_ref, ';
+        query += 'form_ref, ';
+        query += 'answers, ';
+        query += 'synced, ';
+        query += 'synced_error, ';
+        query += 'can_edit, ';
+        query += 'is_remote, ';
+        query += 'created_at, ';
+        query += 'updated_at, ';
+        query += 'title) ';
+        query += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)';
+
+        params = [
+            clonedEntryBranch.entryUuid,
+            clonedEntryBranch.ownerEntryUuid,
+            clonedEntryBranch.ownerInputRef,
+            clonedEntryBranch.projectRef,
+            clonedEntryBranch.formRef,
+            JSON.stringify(clonedEntryBranch.answers),
+            clonedEntryBranch.synced,
+            clonedEntryBranch.syncedError,
+            clonedEntryBranch.canEdit,
+            clonedEntryBranch.isRemote,
+            clonedEntryBranch.createdAt,
+            clonedEntryBranch.updatedAt,
+            clonedEntryBranch.title
+        ];
 
         return await this.insertRows(query, params);
     }

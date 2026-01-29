@@ -4,9 +4,10 @@ import {STRINGS} from '@/config/strings';
 import {databaseInsertService} from '@/services/database/database-insert-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {rollbarService} from '@/services/utilities/rollbar-service';
+import {databaseSelectService} from '@/services/database/database-select-service';
 
-export async function cloneEntry(state, router, rootStore, language, labels) {
-    //if entry is incomplete, bail out
+export async function cloneEntryBranch(state, router, rootStore, language, labels, goBack) {
+    //if branch entry is incomplete bail out
     if (state.entry.synced === PARAMETERS.SYNCED_CODES.INCOMPLETE) {
         await notificationService.showAlert(labels.cannot_clone_incomplete_entry);
         return;
@@ -17,23 +18,16 @@ export async function cloneEntry(state, router, rootStore, language, labels) {
     );
 
     if (confirmed) {
-        // Clone the entry
-        const clonedEntry = utilsService.generateCloneEntry(state.entry);
+        // Clone the branch entry
+        const clonedEntry = utilsService.generateCloneEntryBranch(state.entry);
 
         try {
-            await databaseInsertService.insertCloneEntry(clonedEntry);
+            await databaseInsertService.insertCloneEntryBranch(clonedEntry);
             notificationService.showToast(labels.entry_cloned);
-            router.replace({
-                name: PARAMETERS.ROUTES.ENTRIES,
-                query: {
-                    refreshEntries: true,
-                    timestamp: Date.now()
-                }
-            });
+            goBack();
         } catch (error) {
             // Handle error if the insert fails
             console.error(error);
-            rollbarService.critical(error);
             await notificationService.showAlert(
                 error?.message || labels.unknown_error
             );

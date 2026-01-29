@@ -514,7 +514,7 @@ export const utilsService = {
             byteArrays.push(byteArray);
         }
 
-        return new Blob(byteArrays, { type: contentType });
+        return new Blob(byteArrays, {type: contentType});
     },
     async hasInternetConnection() {
         return new Promise((resolve) => {
@@ -1030,9 +1030,12 @@ export const utilsService = {
     getProtocol(uri) {
         return uri.includes('file://') ? '' : 'file://';
     },
-    generateClonedEntry(sourceEntry){
-        console.log(JSON.stringify(sourceEntry));
 
+    generateCloneEntryBranch(sourceEntry) {
+        return this.generateCloneEntry(sourceEntry);
+    },
+    generateCloneEntry(sourceEntry) {
+        console.log(JSON.stringify(sourceEntry));
 
         const clonedEntry = JSON.parse(JSON.stringify(sourceEntry));
         clonedEntry.entryUuid = utilsService.uuid();
@@ -1042,20 +1045,14 @@ export const utilsService = {
         clonedEntry.canEdit = PARAMETERS.EDIT_CODES.CAN;
         clonedEntry.isRemote = PARAMETERS.REMOTE_CODES.ISNT;
         clonedEntry.syncedError = '';
+        clonedEntry.media = {};
+        clonedEntry.branchEntries = {};
+        clonedEntry.uniqueAnswers = {};
+
 
         console.log(JSON.stringify(projectModel.getExtraForm(clonedEntry.formRef)));
         console.log(JSON.stringify(projectModel.getExtraInputs()));
         console.log(JSON.stringify(projectModel.getFormBranches(clonedEntry.formRef)));
-
-        //set title
-        entryCommonService.setEntryTitle(
-            projectModel.getExtraForm(
-                clonedEntry.formRef
-            ),
-            projectModel.getExtraInputs(),
-            clonedEntry,
-            false
-        );
 
         //get a clone of the existing answers (NOT reactive, otherwise it will change behind the scenes)
         const newAnswers = clonedEntry.answers;
@@ -1070,14 +1067,16 @@ export const utilsService = {
             }
         });
 
-        //we do not clone branches so set branch question to empty
-        const branchQuestionsInputRefs = projectModel.getFormBranches(clonedEntry.formRef);
-        Object.keys(branchQuestionsInputRefs).forEach((branchQuestionInputRef) => {
-            newAnswers[branchQuestionInputRef] =  {
-                was_jumped: false,
-                answer: ''
-            };
-        });
+        if (!sourceEntry.isBranch) {
+            //we do not clone branches so set branch question to empty
+            const branchQuestionsInputRefs = projectModel.getFormBranches(clonedEntry.formRef);
+            Object.keys(branchQuestionsInputRefs).forEach((branchQuestionInputRef) => {
+                newAnswers[branchQuestionInputRef] = {
+                    was_jumped: false,
+                    answer: ''
+                };
+            });
+        }
 
         return clonedEntry;
     }

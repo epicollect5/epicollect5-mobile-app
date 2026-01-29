@@ -158,10 +158,7 @@ import {useRouter, useRoute} from 'vue-router';
 import {watch} from 'vue';
 import ListAnswers from '@/components/ListAnswers';
 import {useBackButton} from '@ionic/vue';
-import {databaseSelectService} from '@/services/database/database-select-service';
 import {notificationService} from '@/services/notification-service';
-import {utilsService} from '@/services/utilities/utils-service';
-import {answerService} from '@/services/entry/answer-service';
 import ItemDividerError from '@/components/ItemDividerError.vue';
 import {useBookmarkStore} from '@/stores/bookmark-store';
 
@@ -207,7 +204,10 @@ export default {
     state.synced = state.entry.synced;
 
     // Retrieve the answers
-    fetchAnswers(state, language, labels);
+    fetchAnswers(state, language, labels).catch((error) => {
+      console.error('Failed to fetch answers:', error);
+       state.isFetching = false;
+    });
 
     const methods = {
       goBack() {
