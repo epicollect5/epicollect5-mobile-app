@@ -278,7 +278,10 @@ export default {
             state.isFetching = true;
             await notificationService.showProgressDialog(labels.wait, labels.loading_entry);
             setTimeout(async () => {
-              await fetchAnswers(state, language, labels);
+              fetchAnswers(state, language, labels).catch((error) => {
+                console.error('Failed to fetch answers:', error);
+                state.isFetching = false;
+              });
             }, PARAMETERS.DELAY_LONG);
           }
         }

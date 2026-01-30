@@ -3,10 +3,8 @@ import {PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
 import {databaseInsertService} from '@/services/database/database-insert-service';
 import {utilsService} from '@/services/utilities/utils-service';
-import {rollbarService} from '@/services/utilities/rollbar-service';
-import {databaseSelectService} from '@/services/database/database-select-service';
 
-export async function cloneEntryBranch(state, router, rootStore, language, labels, goBack) {
+export async function cloneEntryBranch(state, language, labels, goBack) {
     //if branch entry is incomplete bail out
     if (state.entry.synced === PARAMETERS.SYNCED_CODES.INCOMPLETE) {
         await notificationService.showAlert(labels.cannot_clone_incomplete_entry);

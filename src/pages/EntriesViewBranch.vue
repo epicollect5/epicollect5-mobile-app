@@ -231,8 +231,6 @@ export default {
       async cloneEntryBranch() {
         await cloneEntryBranch(
             state,
-            router,
-            rootStore,
             language,
             labels,
             methods.goBack
@@ -469,12 +467,6 @@ export default {
           can_edit: state.entry.canEdit
         };
       }
-
-      //get markup to show project logo in page header
-      state.projectName = utilsService.getProjectNameMarkup();
-
-      const routeParams = rootStore.routeParams;
-      console.log(routeParams);
     }
 
     fetchBranchAnswers();

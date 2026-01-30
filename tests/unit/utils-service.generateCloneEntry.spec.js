@@ -354,9 +354,9 @@ describe('generateCloneEntry', () => {
                 '71bf7f354d9149e69841432e06fed1ee_697a4a3975521_697a4a4cb992e'
             ]);
         projectModel.getFormBranches = vi.fn().mockReturnValue(
-            [
+            {
                 '71bf7f354d9149e69841432e06fed1ee_697a4a3975521_697a4a4db992f'
-            ]);
+            });
         projectModel.getFormName = vi.fn().mockReturnValue('Form One');
 
         const clonedEntry = utilsService.generateCloneEntry(sourceEntry);

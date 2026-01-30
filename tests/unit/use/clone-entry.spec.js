@@ -80,7 +80,7 @@ describe('cloneEntry', () => {
         projectModel.getExtraInputs = vi.fn().mockReturnValue({});
         entryCommonService.setEntryTitle = vi.fn().mockReturnValue(null);
         projectModel.getMediaQuestions = vi.fn().mockReturnValue([]);
-        projectModel.getFormBranches = vi.fn().mockReturnValue([]);
+        projectModel.getFormBranches = vi.fn().mockReturnValue({});
 
         // 3. Your existing setup
         notificationService.confirmSingle.mockResolvedValue(true);
@@ -107,14 +107,14 @@ describe('cloneEntry', () => {
         projectModel.getExtraInputs = vi.fn().mockReturnValue({});
         entryCommonService.setEntryTitle = vi.fn().mockReturnValue(null);
         projectModel.getMediaQuestions = vi.fn().mockReturnValue([]);
-        projectModel.getFormBranches = vi.fn().mockReturnValue([]);
+        projectModel.getFormBranches = vi.fn().mockReturnValue({});
 
         // 3. Your existing setup
         notificationService.confirmSingle.mockResolvedValue(true);
         databaseInsertService.insertCloneEntryBranch.mockResolvedValue(true);
 
         // 4. Run the test
-        await cloneEntryBranch(state, router, rootStore, 'en', labels, goBack);
+        await cloneEntryBranch(state,  'en', labels, goBack);
 
         // Assertions
         expect(databaseInsertService.insertCloneEntryBranch).toHaveBeenCalled();
@@ -128,7 +128,7 @@ describe('cloneEntry', () => {
         projectModel.getExtraInputs = vi.fn().mockReturnValue({});
         entryCommonService.setEntryTitle = vi.fn().mockReturnValue(null);
         projectModel.getMediaQuestions = vi.fn().mockReturnValue([]);
-        projectModel.getFormBranches = vi.fn().mockReturnValue([]);
+        projectModel.getFormBranches = vi.fn().mockReturnValue({});
 
         notificationService.confirmSingle.mockResolvedValue(true);
         databaseInsertService.insertCloneEntry.mockRejectedValue(new Error('DB error'));

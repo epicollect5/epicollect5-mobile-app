@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 import {utilsService} from '@/services/utilities/utils-service';
 import {PARAMETERS} from '@/config';
 import {setActivePinia, createPinia} from 'pinia';
@@ -47,7 +49,7 @@ describe('generateCloneEntryBranch', () => {
                 },
                 '71bf7f354d9149e69841432e06fed1ee_697a4a3975521_697a4a4cb992e': {
                     was_jumped: false,
-                    answer: utilsService.generateMediaFilename(uuid , PARAMETERS.QUESTION_TYPES.VIDEO)
+                    answer: utilsService.generateMediaFilename(uuid, PARAMETERS.QUESTION_TYPES.VIDEO)
                 },
                 '71bf7f354d9149e69841432e06fed1ee_697a4a3975521_697a4a4db992f': {
                     was_jumped: false,
@@ -353,10 +355,9 @@ describe('generateCloneEntryBranch', () => {
                 '71bf7f354d9149e69841432e06fed1ee_697a4a3975521_697a4a4ab992d',
                 '71bf7f354d9149e69841432e06fed1ee_697a4a3975521_697a4a4cb992e'
             ]);
-        projectModel.getFormBranches = vi.fn().mockReturnValue(
-            [
-                '71bf7f354d9149e69841432e06fed1ee_697a4a3975521_697a4a4db992f'
-            ]);
+        projectModel.getFormBranches = vi.fn().mockReturnValue({
+            '71bf7f354d9149e69841432e06fed1ee_697a4a3975521_697a4a4db992f':[]
+        });
         projectModel.getFormName = vi.fn().mockReturnValue('Form One');
 
         const clonedEntry = utilsService.generateCloneEntryBranch(sourceEntry);
