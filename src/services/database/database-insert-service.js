@@ -157,7 +157,7 @@ export const databaseInsertService = {
                             });
                         }
                         else {
-                            //file exists but it was updated: set as unsynced for upload
+                            //file exists, but it was updated: set as unsynced for upload
                             tx.executeSql(set_file_unsynced_query, [0, '', filename], function (tx, res) {
                                 //unsynced ok
                                 // inserted ok
@@ -368,6 +368,86 @@ export const databaseInsertService = {
         //imp: column "bookmark" should be called "hierarchy_navigation" but alter table command not working in Android <11
         const query = 'INSERT OR REPLACE INTO bookmarks (project_ref, form_ref, parent_entry_uuid, title, bookmark) VALUES (?,?,?,?,?)';
         const params = [projectRef, formRef, parentEntryUuid, title, hierarchy_navigation];
+
+        return await this.insertRows(query, params);
+    },
+
+    async insertCloneEntry(clonedEntry) {
+        console.log('cloning entry: ' + clonedEntry.entryUuid);
+
+        let query = '';
+        query += 'INSERT OR REPLACE INTO entries (';
+        query += 'entry_uuid, ';
+        query += 'parent_entry_uuid, ';
+        query += 'project_ref, ';
+        query += 'form_ref, ';
+        query += 'parent_form_ref, ';
+        query += 'answers, ';
+        query += 'synced, ';
+        query += 'synced_error, ';
+        query += 'can_edit, ';
+        query += 'is_remote, ';
+        query += 'created_at, ';
+        query += 'updated_at, ';
+        query += 'title) ';
+        query += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)';
+
+        const params = [
+            clonedEntry.entryUuid,
+            clonedEntry.parentEntryUuid,
+            clonedEntry.projectRef,
+            clonedEntry.formRef,
+            clonedEntry.parentFormRef,
+            JSON.stringify(clonedEntry.answers),
+            clonedEntry.synced,
+            clonedEntry.syncedError,
+            clonedEntry.canEdit,
+            clonedEntry.isRemote,
+            clonedEntry.createdAt,
+            clonedEntry.updatedAt,
+            clonedEntry.title
+        ];
+
+
+        return await this.insertRows(query, params);
+    },
+
+    async insertCloneEntryBranch(clonedEntryBranch) {
+        console.log('cloning entry: ' + clonedEntryBranch.entryUuid);
+
+        let params = [];
+        let query = '';
+        query += 'INSERT OR REPLACE INTO temp_branch_entries (';
+        query += 'entry_uuid, ';
+        query += 'owner_entry_uuid, ';
+        query += 'owner_input_ref, ';
+        query += 'project_ref, ';
+        query += 'form_ref, ';
+        query += 'answers, ';
+        query += 'synced, ';
+        query += 'synced_error, ';
+        query += 'can_edit, ';
+        query += 'is_remote, ';
+        query += 'created_at, ';
+        query += 'updated_at, ';
+        query += 'title) ';
+        query += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)';
+
+        params = [
+            clonedEntryBranch.entryUuid,
+            clonedEntryBranch.ownerEntryUuid,
+            clonedEntryBranch.ownerInputRef,
+            clonedEntryBranch.projectRef,
+            clonedEntryBranch.formRef,
+            JSON.stringify(clonedEntryBranch.answers),
+            clonedEntryBranch.synced,
+            clonedEntryBranch.syncedError,
+            clonedEntryBranch.canEdit,
+            clonedEntryBranch.isRemote,
+            clonedEntryBranch.createdAt,
+            clonedEntryBranch.updatedAt,
+            clonedEntryBranch.title
+        ];
 
         return await this.insertRows(query, params);
     }

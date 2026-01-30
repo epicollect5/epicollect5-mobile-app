@@ -324,5 +324,6 @@
   "ec5_389": "Account cannot be verified",
   "ec5_390": "Local account with the provided email already exists. <br/> Please enter password to confirm",
   "ec5_391": "Local account with the provided email already exists. <br/> Please login via email",
-  "ec5_392": "The regular expression is invalid or malformed."
+  "ec5_392": "The regular expression is invalid or malformed.",
+  "ec5_393": "Are you sure you want to clone this entry?"
 }

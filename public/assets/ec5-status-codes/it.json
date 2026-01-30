@@ -324,5 +324,6 @@
   "ec5_389": "Impossibile verificare l'account",
   "ec5_390": "Esiste già un account locale con l'indirizzo email fornito. <br/> Inserisci la password per confermare",
   "ec5_391": "Esiste già un account locale con l'indirizzo email fornito. <br/> Effettua il login tramite email",
-  "ec5_392": "L'espressione regolare è invalida o non corretta."
+  "ec5_392": "L'espressione regolare è invalida o non corretta.",
+  "ec5_393": "Sei sicuro di voler clonare questa voce?"
 }

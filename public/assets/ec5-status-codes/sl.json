@@ -324,5 +324,6 @@
   "ec5_389": "Računa ni mogoče preveriti",
   "ec5_390": "Lokalni račun z navedenim e-poštnim naslovom že obstaja. <br/> Za potrditev vnesite geslo",
   "ec5_391": "Lokalni račun z navedenim e-poštnim naslovom že obstaja. <br/> Prijavite se preko e-poštnega naslova",
-  "ec5_392": "Regularni izraz je neveljaven ali napačno oblikovan."
+  "ec5_392": "Regularni izraz je neveljaven ali napačno oblikovan.",
+  "ec5_393": "Ali ste prepričani, da želite klonirati ta vnos?"
 }

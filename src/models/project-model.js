@@ -217,5 +217,14 @@ export const projectModel = {
     },
     getServerUrl() {
         return this.data.server_url;
+    },
+    getMediaQuestions(){
+        const mediaQuestions = [];
+        Object.values(this.project_extra.inputs).forEach((input) => {
+            if (['photo', 'audio', 'video'].includes(input.data.type)) {
+                mediaQuestions.push(input.data.ref);
+            }
+        });
+        return mediaQuestions;
     }
 };

@@ -10,6 +10,8 @@ import {STRINGS} from '@/config/strings';
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint} from '@capacitor/barcode-scanner';
 import {v4 as uuidv4} from 'uuid';
+import {entryCommonService} from '@/services/entry/entry-common-service';
+
 
 export const utilsService = {
 
@@ -512,7 +514,7 @@ export const utilsService = {
             byteArrays.push(byteArray);
         }
 
-        return new Blob(byteArrays, { type: contentType });
+        return new Blob(byteArrays, {type: contentType});
     },
     async hasInternetConnection() {
         return new Promise((resolve) => {
@@ -1027,5 +1029,55 @@ export const utilsService = {
     //add 'file://' protocol if it is missing in the URI
     getProtocol(uri) {
         return uri.includes('file://') ? '' : 'file://';
+    },
+
+    generateCloneEntryBranch(sourceEntry) {
+        return this.generateCloneEntry(sourceEntry);
+    },
+    generateCloneEntry(sourceEntry) {
+        console.log(JSON.stringify(sourceEntry));
+
+        const clonedEntry = JSON.parse(JSON.stringify(sourceEntry));
+        clonedEntry.entryUuid = utilsService.uuid();
+        clonedEntry.createdAt = utilsService.getISODateTime();
+        clonedEntry.updatedAt = utilsService.getISODateTime();
+        clonedEntry.synced = PARAMETERS.SYNCED_CODES.UNSYNCED;
+        clonedEntry.canEdit = PARAMETERS.EDIT_CODES.CAN;
+        clonedEntry.isRemote = PARAMETERS.REMOTE_CODES.ISNT;
+        clonedEntry.syncedError = '';
+        clonedEntry.media = {};
+        clonedEntry.branchEntries = {};
+        clonedEntry.uniqueAnswers = {};
+
+
+        console.log(JSON.stringify(projectModel.getExtraForm(clonedEntry.formRef)));
+        console.log(JSON.stringify(projectModel.getExtraInputs()));
+        console.log(JSON.stringify(projectModel.getFormBranches(clonedEntry.formRef)));
+
+        //get a clone of the existing answers (NOT reactive, otherwise it will change behind the scenes)
+        const newAnswers = clonedEntry.answers;
+
+        //we do not clone media files so find the media questions input_ref from project extra
+        const mediaQuestionsInputRefs = projectModel.getMediaQuestions();
+
+        //loop newAnswers and set media files to empty string
+        mediaQuestionsInputRefs.forEach((mediaQuestionInputRef) => {
+            if (newAnswers[mediaQuestionInputRef]) {
+                newAnswers[mediaQuestionInputRef].answer = '';
+            }
+        });
+
+        if (!sourceEntry.isBranch) {
+            //we do not clone branches so set branch question to empty
+            const branchQuestionsInputRefs = projectModel.getFormBranches(clonedEntry.formRef);
+            Object.keys(branchQuestionsInputRefs).forEach((branchQuestionInputRef) => {
+                newAnswers[branchQuestionInputRef] = {
+                    was_jumped: false,
+                    answer: ''
+                };
+            });
+        }
+
+        return clonedEntry;
     }
 };
