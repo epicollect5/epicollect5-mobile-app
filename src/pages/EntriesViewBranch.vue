@@ -104,12 +104,11 @@
 import {useRootStore} from '@/stores/root-store';
 import {STRINGS} from '@/config/strings';
 import {chevronBackOutline, trash, copyOutline} from 'ionicons/icons';
-import {reactive} from '@vue/reactivity';
 import {PARAMETERS} from '@/config';
 import {projectModel} from '@/models/project-model.js';
 import {branchEntryModel} from '@/models/branch-entry-model.js';
 import {useRouter, useRoute} from 'vue-router';
-import {watch} from 'vue';
+import {watch, reactive} from 'vue';
 import ListAnswers from '@/components/ListAnswers';
 import {useBackButton} from '@ionic/vue';
 import {databaseSelectService} from '@/services/database/database-select-service';

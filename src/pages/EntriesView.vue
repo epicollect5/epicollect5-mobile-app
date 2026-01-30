@@ -150,12 +150,11 @@ import {
   chevronBackOutline,
   copyOutline
 } from 'ionicons/icons';
-import {reactive} from '@vue/reactivity';
 import {PARAMETERS} from '@/config';
 import {projectModel} from '@/models/project-model.js';
 import {entryModel} from '@/models/entry-model';
 import {useRouter, useRoute} from 'vue-router';
-import {watch} from 'vue';
+import {watch, reactive} from 'vue';
 import ListAnswers from '@/components/ListAnswers';
 import {useBackButton} from '@ionic/vue';
 import {notificationService} from '@/services/notification-service';

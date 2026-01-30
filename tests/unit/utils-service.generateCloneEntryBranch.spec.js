@@ -32,7 +32,7 @@ describe('generateCloneEntryBranch', () => {
             media: {},
             uniqueAnswers: {},
             syncedError: '',
-            isBranch: false,
+            isBranch: true,
             verifyAnswers: {},
             answers: {
                 '71bf7f354d9149e69841432e06fed1ee_697a4a3975521_697a4a42b992b': {

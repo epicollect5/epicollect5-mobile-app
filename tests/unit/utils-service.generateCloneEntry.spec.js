@@ -22,6 +22,7 @@ describe('generateCloneEntry', () => {
             synced: 0,
             canEdit: 1,
             createdAt: '2026-01-28T17:45:04.000Z',
+            updatedAt: '2026-01-28T17:45:04.000Z',
             title: 'Mirko',
             formRef: '71bf7f354d9149e69841432e06fed1ee_697a4a3975521',
             parentFormRef: '',
@@ -355,7 +356,7 @@ describe('generateCloneEntry', () => {
             ]);
         projectModel.getFormBranches = vi.fn().mockReturnValue(
             {
-                '71bf7f354d9149e69841432e06fed1ee_697a4a3975521_697a4a4db992f'
+                '71bf7f354d9149e69841432e06fed1ee_697a4a3975521_697a4a4db992f':[]
             });
         projectModel.getFormName = vi.fn().mockReturnValue('Form One');
 

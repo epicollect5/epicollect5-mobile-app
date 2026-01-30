@@ -22,6 +22,7 @@ export async function deleteEntry(state, router, bookmarkStore, rootStore, langu
         } catch (error) {
             console.log(error);
             await notificationService.showAlert(labels.unknown_error);
+            return;
         }
 
         //delete any bookmarks related to current entry uuid
@@ -30,6 +31,7 @@ export async function deleteEntry(state, router, bookmarkStore, rootStore, langu
         } catch (error) {
             console.log(error);
             await notificationService.showAlert(labels.bookmarks_loading_error);
+            return;
         }
 
         // Refresh bookmarks after deletion
@@ -39,6 +41,7 @@ export async function deleteEntry(state, router, bookmarkStore, rootStore, langu
         } catch (error) {
             await notificationService.showAlert(labels.bookmarks_loading_error);
             bookmarkStore.setBookmarks([]);
+            return;
         }
 
         //back to entries list with refresh
