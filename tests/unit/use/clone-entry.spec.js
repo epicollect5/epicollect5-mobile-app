@@ -24,6 +24,18 @@ vi.mock('@/config/strings', () => ({
         }
     }
 }));
+vi.mock('rollbar', () => {
+    return {
+        // Wrapping default in quotes fixes the "Reserved word" error
+        'default': class {
+            error() {}
+            info() {}
+            warn() {}
+            critical() {}
+            configure() {}
+        }
+    };
+});
 
 describe('cloneEntry', () => {
     let state, router, rootStore, labels, goBack;

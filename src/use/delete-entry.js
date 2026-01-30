@@ -9,19 +9,20 @@ import {deleteFileService} from '@/services/filesystem/delete-file-service';
 
 export async function deleteEntry(state, router, bookmarkStore, rootStore, language, labels) {
     const projectRef = projectModel.getProjectRef();
-    const formRef = state.formRef;
     let allEntries = [];
-    const uuids = [];
-    const files = [];
 
-    //todo: should probably catch errors...
     async function _deleteAllEntries(uuids) {
         //map all the uuids to promises
-        await Promise.all(
-            uuids.map((uuid) => {
-                return databaseDeleteService.deleteEntry(uuid);
-            })
-        );
+        try {
+            await Promise.all(
+                uuids.map((uuid) => {
+                    return databaseDeleteService.deleteEntry(uuid);
+                })
+            );
+        } catch (error) {
+            console.log(error);
+            await notificationService.showAlert(labels.unknown_error);
+        }
 
         //delete any bookmarks related to current entry uuid
         try {
@@ -94,6 +95,14 @@ export async function deleteEntry(state, router, bookmarkStore, rootStore, langu
                         return databaseSelectService.selectEntryMedia(projectRef, uuid);
                     })
                 ).then(function (mediaRows) {
+                    console.log(mediaRows);
+                    //media rows is an array of arrays, so we need to flatten it
+                    const files = mediaRows.flat();
+                    //get all uuids
+                    const uuids = allEntries.map(function (uuid) {
+                        return uuid;
+                    });
+
                     if (files.length > 0) {
                         return deleteFileService.removeFiles(files).then(function () {
                             // then delete media entries in media table

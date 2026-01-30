@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
 import { PARAMETERS } from '@/config';
@@ -255,42 +257,6 @@ export const databaseSelectService = {
 
         return await this.getRows(query, params);
     },
-    //Count unsynced media entries for a project
-    async countUnsyncedMediaEntries(projectRef) {
-
-        let query = '';
-        query += 'SELECT (SELECT COUNT(entry_uuid) ';
-        query += 'FROM media ';
-        query += 'WHERE project_ref = ? ';
-        query += 'AND synced = ? ';
-        query += 'AND file_type = ?) ';
-        query += 'as total_number_of_photos,';
-        query += '(SELECT COUNT(entry_uuid) ';
-        query += 'FROM media ';
-        query += 'WHERE project_ref = ? ';
-        query += 'AND synced = ? AND file_type = ?) ';
-        query += 'as total_number_of_videos,';
-        query += '(SELECT COUNT(entry_uuid) ';
-        query += 'FROM media ';
-        query += 'WHERE project_ref = ? ';
-        query += 'AND synced = ? ';
-        query += 'AND file_type = ?) ';
-        query += 'as total_number_of_audio';
-
-        const params = [
-            projectRef,
-            0,
-            'photo',
-            projectRef,
-            0,
-            'video',
-            projectRef,
-            0,
-            'audio'
-        ];
-
-        return await this.getRows(query, params);
-    },
     //Function to get an entry
     async selectEntry(entryUuid, parentEntryUuid) {
 
@@ -371,7 +337,7 @@ export const databaseSelectService = {
         }
 
         if (order) {
-            // Sanitise the field and sort type, as they will be used in db queries
+            // Sanitize the field and sort type, as they will be used in db queries
             dbField = PARAMETERS.ALLOWED_ORDERING_COLUMNS.indexOf(order.field) > -1 ? order.field : PARAMETERS.DEFAULT_ORDERING_COLUMN;
             dbSortType = PARAMETERS.ALLOWED_ORDERING.indexOf(order.sortType) > -1 ? order.sortType : PARAMETERS.DEFAULT_ORDERING;
 
@@ -501,7 +467,7 @@ export const databaseSelectService = {
         }
 
         if (order) {
-            // Sanitise the field and sort type, as they will be used in db queries
+            // Sanitize the field and sort type, as they will be used in db queries
             dbField = PARAMETERS.ALLOWED_ORDERING_COLUMNS.indexOf(order.field) > -1 ? order.field : PARAMETERS.DEFAULT_ORDERING_COLUMN;
             dbSortType = PARAMETERS.ALLOWED_ORDERING.indexOf(order.sortType) > -1 ? order.sortType : PARAMETERS.DEFAULT_ORDERING;
             if (rootStore.device.platform !== PARAMETERS.WEB) {
@@ -676,7 +642,7 @@ export const databaseSelectService = {
 
         const params = [ownerEntryUuid, ownerInputRef, ownerEntryUuid, ownerInputRef];
         let query = '';
-        //imp: COUNT(DISTINCT(entry_uuid)) since we can have a temp branch with the 
+        //imp: COUNT(DISTINCT(entry_uuid)) since we can have a temp branch with the
         //imp: same uuid when editing an existing branch
         query += 'SELECT COUNT(DISTINCT(entry_uuid)) as total, MAX(created_at) as newest, MIN(created_at) as oldest FROM ( ';
         query += 'SELECT * ';
@@ -790,6 +756,8 @@ export const databaseSelectService = {
                 tx.executeSql(query, params, function (tx, res) {
                     for (i = 0; i < res.rows.length; i++) {
                         media.push(res.rows.item(i));
+                        //add project ref to the media object
+                        media[i].project_ref = projectRef;
                     }
                     resolve(media);
                 }, _onError);
@@ -826,9 +794,6 @@ export const databaseSelectService = {
         if (limit) {
             query += ' LIMIT ' + limit;
         }
-
-        //    console.log(query);
-
         return await this.getRows(query, entryUuids);
     },
 
@@ -925,7 +890,7 @@ export const databaseSelectService = {
             case PARAMETERS.QUESTION_TYPES.DATE:
                 //get date part only
                 answer = answer.substring(0, 11);
-                //amswer is now is now like "2011-10-05T"
+                //answer is now like "2011-10-05T"
 
                 switch (inputDetails.datetime_format) {
                     // DATE_FORMAT_4: 'MM/YYYY',
@@ -1012,14 +977,7 @@ export const databaseSelectService = {
 
         return await this.getRows(query, params);
     },
-    //Retrieve all unique answers for an entry
-    async selectUniqueAnswers(entryUuid) {
-        // Check uniqueness against input_ref and answer (by default, 'form' uniqueness)
-        const query = 'SELECT answer FROM unique_answers WHERE entry_uuid=?';
-        const params = [entryUuid];
 
-        return await this.getRows(query, params);
-    },
     //Retrieve parent entry uuid for an entry
     async selectParentEntry(entryUuid) {
 
@@ -1051,7 +1009,7 @@ export const databaseSelectService = {
         let childEntryUuid;
         let branchEntryUuid;
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
 
             function _select(entryUuids) {
 
@@ -1092,8 +1050,8 @@ export const databaseSelectService = {
 
                             //todo this would resolve too early.....
 
-                            //no more children down the hierarchy, resolve
-                            // Resolve with complete array of entries
+                            //no more children down the hierarchy,
+                            //resolve with complete array of entries
                             resolve({
                                 entries: allEntriesUuids,
                                 branchEntries: branchEntriesUuids
@@ -1119,7 +1077,7 @@ export const databaseSelectService = {
         const params = [entryUuidsCopy[0]];
 
         if (entryUuidsCopy.length > 1) {
-            //remove first uuuid
+            //remove first uuid
             entryUuidsCopy.shift();
 
             entryUuidsCopy.forEach((uuid) => {
@@ -1130,21 +1088,7 @@ export const databaseSelectService = {
         }
         return await this.getRows(query, params);
     },
-    //Get entries with errors
-    async selectErrorEntries(table, projectRef) {
 
-        switch (table) {
-            case 'branch_entries':
-                table = 'branch_entries';
-                break;
-            default:
-                table = 'entries';
-        }
-        const query = 'SELECT * FROM ' + table + ' WHERE project_ref=? AND synced=?';
-        const params = [projectRef, -1];
-
-        return await this.getRows(query, params);
-    },
     //Get entries with errors
     async selectInvalidEntries(table, projectRef) {
 
