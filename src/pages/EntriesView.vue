@@ -280,6 +280,7 @@ export default {
               fetchAnswers(state, language, labels).catch((error) => {
                 console.error('Failed to fetch answers:', error);
                 state.isFetching = false;
+                notificationService.hideProgressDialog();
               });
             }, PARAMETERS.DELAY_LONG);
           }

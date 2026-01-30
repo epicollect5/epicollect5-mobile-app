@@ -102,9 +102,7 @@ export async function deleteEntry(state, router, bookmarkStore, rootStore, langu
                     //media rows is an array of arrays, so we need to flatten it
                     const files = mediaRows.flat();
                     //get all uuids
-                    const uuids = allEntries.map(function (uuid) {
-                        return uuid;
-                    });
+                    const uuids = allEntries;
 
                     if (files.length > 0) {
                         return deleteFileService.removeFiles(files).then(function () {

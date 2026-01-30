@@ -4,6 +4,8 @@ import {STRINGS} from '@/config/strings';
 import {databaseInsertService} from '@/services/database/database-insert-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {rollbarService} from '@/services/utilities/rollbar-service';
+import {projectModel} from '@/models/project-model';
+import {databaseSelectService} from '@/services/database/database-select-service';
 
 export async function cloneEntry(state, router, rootStore, language, labels) {
     //if entry is incomplete, bail out

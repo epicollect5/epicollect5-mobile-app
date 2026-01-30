@@ -17,6 +17,7 @@ export async function cloneEntryBranch(state, language, labels, goBack) {
 
     if (confirmed) {
         // Clone the branch entry
+        await notificationService.showProgressDialog(labels.wait);
         const clonedEntry = utilsService.generateCloneEntryBranch(state.entry);
 
         try {
@@ -29,6 +30,7 @@ export async function cloneEntryBranch(state, language, labels, goBack) {
             await notificationService.showAlert(
                 error?.message || labels.unknown_error
             );
+            notificationService.hideProgressDialog();
         }
     }
 }
