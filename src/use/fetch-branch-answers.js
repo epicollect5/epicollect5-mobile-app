@@ -8,7 +8,7 @@ import {utilsService} from '@/services/utilities/utils-service';
 
 export async function fetchBranchAnswers (state, language, labels) {
 
-    function _addAnswerToItems(inputDetails, index) {
+    async function _addAnswerToItems(inputDetails, index) {
         let error = '';
         let scopeError;
         let groupIndex;
@@ -78,42 +78,41 @@ export async function fetchBranchAnswers (state, language, labels) {
                 _renderErrors();
                 _renderAnswers();
                 break;
-            case PARAMETERS.QUESTION_TYPES.BRANCH:
+            case PARAMETERS.QUESTION_TYPES.BRANCH: {
                 // Get number of branches for this input
                 //also find if there are media errors for this branch
 
                 answer = _getAnswer(inputDetails, state.branches);
 
                 //any media errors on branches?
-                databaseSelectService
-                    .countCurrentBranchMediaErrors(inputDetails.ref)
-                    .then(function (response) {
-                        //set up generic branch error
-                        const branch_synced_error = {
-                            errors: [
-                                {
-                                    code: 'ec5_231',
-                                    title: STRINGS[language].entries_errors,
-                                    source: inputDetails.ref
-                                }
-                            ]
-                        };
+                const branchMediaErrors = databaseSelectService.countCurrentBranchMediaErrors(inputDetails.ref);
 
-                        //set branch entry media error( to show bug icon next to branch input)
-                        state.branchesMediaErrors[inputDetails.ref] = response.rows.item(0).total > 0;
-
-                        //add generic media error so it appears at the top in the view
-                        if (state.branchesMediaErrors[inputDetails.ref]) {
-                            if (Object.keys(state.errors).length === 0) {
-                                state.errors = branch_synced_error;
-                            } else {
-                                state.errors.errors = state.errors.errors.concat(branch_synced_error);
-                            }
+                //set up generic branch error
+                const branch_synced_error = {
+                    errors: [
+                        {
+                            code: 'ec5_231',
+                            title: STRINGS[language].entries_errors,
+                            source: inputDetails.ref
                         }
-                        _renderErrors();
-                        _renderAnswers();
-                    });
+                    ]
+                };
+
+                //set branch entry media error( to show bug icon next to branch input)
+                state.branchesMediaErrors[inputDetails.ref] = branchMediaErrors.rows.item(0).total > 0;
+
+                //add generic media error so it appears at the top in the view
+                if (state.branchesMediaErrors[inputDetails.ref]) {
+                    if (Object.keys(state.errors).length === 0) {
+                        state.errors = branch_synced_error;
+                    } else {
+                        state.errors.errors = state.errors.errors.concat(branch_synced_error);
+                    }
+                }
+                _renderErrors();
+                _renderAnswers();
                 break;
+            }
             default:
                 // Default show answer
                 answer = _getAnswer(inputDetails, state.entry.answers[inputDetails.ref].answer);
@@ -178,7 +177,7 @@ export async function fetchBranchAnswers (state, language, labels) {
     // Show loader
     await notificationService.showProgressDialog(labels.wait, labels.loading_entry);
 
-    Promise.all([
+    return Promise.all([
         databaseSelectService.selectBranchEntry(state.entryUuid),
         databaseSelectService.selectEntryMediaErrors([state.entryUuid])
     ]).then((response) => {

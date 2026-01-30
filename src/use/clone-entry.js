@@ -4,8 +4,6 @@ import {STRINGS} from '@/config/strings';
 import {databaseInsertService} from '@/services/database/database-insert-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {rollbarService} from '@/services/utilities/rollbar-service';
-import {projectModel} from '@/models/project-model';
-import {databaseSelectService} from '@/services/database/database-select-service';
 
 export async function cloneEntry(state, router, rootStore, language, labels) {
     //if entry is incomplete, bail out
@@ -20,6 +18,7 @@ export async function cloneEntry(state, router, rootStore, language, labels) {
 
     if (confirmed) {
         // Clone the entry
+        await notificationService.showProgressDialog(labels.wait);
         const clonedEntry = utilsService.generateCloneEntry(state.entry);
 
         try {
@@ -39,6 +38,7 @@ export async function cloneEntry(state, router, rootStore, language, labels) {
             await notificationService.showAlert(
                 error?.message || labels.unknown_error
             );
+            notificationService.hideProgressDialog();
         }
     }
 }

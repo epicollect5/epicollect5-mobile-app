@@ -31,7 +31,6 @@ export async function deleteEntryBranch(state, language, labels, goBack) {
             // Go back
             notificationService.showToast(labels.entry_deleted);
             goBack();
-            return false;
         }
 
         try {
