@@ -98,7 +98,7 @@ import { useRootStore } from '@/stores/root-store';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { chevronForward, enter } from 'ionicons/icons';
-import { reactive, computed, readonly, toRefs, ref } from '@vue/reactivity';
+import { reactive, computed, readonly, toRefs } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 import { useRouter } from 'vue-router';
 import { format } from 'date-fns';
@@ -162,6 +162,8 @@ export default {
 		const methods = {
 			viewEntry(entry) {
 				// Project update cannot take place if navigating away
+        rootStore.continueProjectVersionUpdate = false;
+        rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES;
 				rootStore.routeParams = {
 					entryUuid: entry.entry_uuid,
 					parentEntryUuid: parentEntryUuid,
@@ -243,7 +245,7 @@ export default {
 				//reset all filters
 				entriesState.filters = { ...PARAMETERS.FILTERS_DEFAULT };
 
-				//reload page to re-fecth entries
+				//reload page to re-fetch entries
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES,
 					query: {
