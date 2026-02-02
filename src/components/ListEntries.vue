@@ -98,14 +98,13 @@ import { useRootStore } from '@/stores/root-store';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { chevronForward, enter } from 'ionicons/icons';
-import { reactive, computed, readonly, toRefs } from '@vue/reactivity';
+import { reactive, computed, readonly, toRefs, inject } from 'vue';
 import { PARAMETERS } from '@/config';
 import { useRouter } from 'vue-router';
 import { format } from 'date-fns';
 import { fetchEntries } from '@/use/fetch-entries.js';
 import { projectModel } from '@/models/project-model.js';
 import ToolbarEntriesFilters from '@/components/ToolbarEntriesFilters';
-import { inject } from 'vue';
 import IconEntry from '@/components/IconEntry';
 
 export default {
