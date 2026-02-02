@@ -85,7 +85,7 @@ export async function fetchBranchAnswers (state, language, labels) {
                 answer = _getAnswer(inputDetails, state.branches);
 
                 //any media errors on branches?
-                const branchMediaErrors = databaseSelectService.countCurrentBranchMediaErrors(inputDetails.ref);
+                const branchMediaErrors = await databaseSelectService.countCurrentBranchMediaErrors(inputDetails.ref);
 
                 //set up generic branch error
                 const branch_synced_error = {
@@ -106,7 +106,7 @@ export async function fetchBranchAnswers (state, language, labels) {
                     if (Object.keys(state.errors).length === 0) {
                         state.errors = branch_synced_error;
                     } else {
-                        state.errors.errors = state.errors.errors.concat(branch_synced_error);
+                        state.errors.errors = state.errors.errors.concat(branch_synced_error.errors);
                     }
                 }
                 _renderErrors();

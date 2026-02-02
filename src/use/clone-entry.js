@@ -19,9 +19,8 @@ export async function cloneEntry(state, router, rootStore, language, labels) {
     if (confirmed) {
         // Clone the entry
         await notificationService.showProgressDialog(labels.wait);
-        const clonedEntry = utilsService.generateCloneEntry(state.entry);
-
         try {
+            const clonedEntry = utilsService.generateCloneEntry(state.entry);
             await databaseInsertService.insertCloneEntry(clonedEntry);
             notificationService.showToast(labels.entry_cloned);
             router.replace({

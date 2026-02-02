@@ -4,6 +4,7 @@ import {notificationService} from '@/services/notification-service';
 import {STRINGS} from '@/config/strings';
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {deleteFileService} from '@/services/filesystem/delete-file-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 export async function deleteEntryBranch(state, language, labels, goBack) {
     const confirmed = await notificationService.confirmSingle(
@@ -13,27 +14,28 @@ export async function deleteEntryBranch(state, language, labels, goBack) {
 
     if (confirmed) {
         await notificationService.showProgressDialog(labels.wait);
-        await databaseDeleteService.deleteBranchEntry(state.entryUuid);
-
-        // Delete all the media related to this entry
-        const mediaFiles = await databaseSelectService.selectProjectMedia({
-            project_ref: projectModel.getProjectRef(),
-            synced: null,
-            entry_uuid: [state.entryUuid]
-        });
-
-        // If any media files
-        const allMediaFiles = mediaFiles.audios
-            .concat(mediaFiles.videos)
-            .concat(mediaFiles.photos);
-
-        if (allMediaFiles.length === 0) {
-            // Go back
-            notificationService.showToast(labels.entry_deleted);
-            goBack();
-        }
-
         try {
+            await databaseDeleteService.deleteBranchEntry(state.entryUuid);
+
+            // Delete all the media related to this entry
+            const mediaFiles = await databaseSelectService.selectProjectMedia({
+                project_ref: projectModel.getProjectRef(),
+                synced: null,
+                entry_uuid: [state.entryUuid]
+            });
+
+            // If any media files
+            const allMediaFiles = mediaFiles.audios
+                .concat(mediaFiles.videos)
+                .concat(mediaFiles.photos);
+
+            if (allMediaFiles.length === 0) {
+                // Go back
+                notificationService.showToast(labels.entry_deleted);
+                goBack();
+                return;
+            }
+
             await deleteFileService.removeFiles(allMediaFiles);
             //remove all related rows from media table
             await databaseDeleteService.deleteEntryMedia(state.entryUuid);
@@ -42,6 +44,7 @@ export async function deleteEntryBranch(state, language, labels, goBack) {
             goBack();
         } catch (error) {
             console.log(error);
+            rollbarService.critical(error);
             await notificationService.showAlert(labels.unknown_error);
             notificationService.hideProgressDialog();
         }
