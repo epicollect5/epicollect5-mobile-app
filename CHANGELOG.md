@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 89.9.1 - build 8991
+
+- Added German translation
+
 # 88.9.0 - build 8890
 
  - Added feature to clone a single entry or branch entry
