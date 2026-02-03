@@ -173,6 +173,11 @@ export const initService = {
                             deviceLanguage = 'sl';
                         }
 
+                        //German?
+                        if (language.value.toLowerCase().startsWith('de')) {
+                            deviceLanguage = 'de';
+                        }
+
                         //if language not supported, default to English
                         self.getLanguageFile(deviceLanguage).then((data) => {
                             STRINGS[deviceLanguage].status_codes = data;

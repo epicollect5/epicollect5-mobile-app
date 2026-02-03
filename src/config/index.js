@@ -15,7 +15,16 @@ export const PARAMETERS = {
     HOW_MANY_BRANCH_ENTRIES: 2,
     ZOOM_LEVELS: 7,
     DEFAULT_LANGUAGE: 'en',
-    SUPPORTED_LANGUAGES: ['es', 'fr', 'it', 'pl', 'pt'],
+    SUPPORTED_LANGUAGES: [
+        'es',
+        'fr',
+        'it',
+        'pl',
+        'pt',
+        'ca',
+        'de',
+        'sl'
+    ],
 
     EASTER_EGG: {
         PROJECT_REF: '031ad19cdaf04dbb9cc9a1c2086bdcbd'
