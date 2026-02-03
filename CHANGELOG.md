@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 88.9.0 - build 8890
+
+ - Added feature to clone a single entry or branch entry
+
 # 88.8.1
 
 - Enhanced Slovenian translation
