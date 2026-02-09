@@ -1,6 +1,12 @@
 ## Release Notes
 
-# 89.9.1 - build 8991
+# 88.9.2 - build 8992
+
+- Fixed incomplete entry banner in the branch entries view.
+- Stronger language files validation
+- Fixed Catalan translation
+
+# 88.9.1 - build 8891
 
 - Added German translation
 
