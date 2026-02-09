@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import {describe, it, expect} from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import {PARAMETERS} from '@/config';
@@ -53,14 +53,15 @@ describe('I18N Build Validation', () => {
 
         SUPPORTED_LANGUAGES.forEach((lang) => {
             it(`should match all keys between [${DEFAULT_LANG}] and [${lang}]`, () => {
-                const targetLabels = STRINGS[lang].labels;
 
                 // 1. Check if the language actually exists in the object
-                expect(targetLabels, `Language "${lang}" is missing from STRINGS object!`).toBeDefined();
+                expect(STRINGS[lang], `Language "${lang}" is missing from STRINGS object!`).toBeDefined();
+                const targetLabels = STRINGS[lang].labels;
+                expect(targetLabels, `Language "${lang}" has no labels!`).toBeDefined();
 
                 // 2. Use your improved hasSameKeys logic
                 // This will trigger the console.warn logs we wrote earlier
-                utilsService.hasSameKeys(masterLabels, targetLabels);
+                expect(utilsService.hasSameKeys(masterLabels, targetLabels)).toBe(true);
 
                 // 3. Detailed Vitest assertion for the report
                 const targetKeys = Object.keys(targetLabels);

@@ -105,7 +105,7 @@
 <script>
 import {useRootStore} from '@/stores/root-store';
 import {STRINGS} from '@/config/strings';
-import {chevronBackOutline, trash, copyOutline, removeCircle, desktopOutline, cloudUpload} from 'ionicons/icons';
+import {chevronBackOutline, trash, copyOutline, removeCircle} from 'ionicons/icons';
 import {PARAMETERS} from '@/config';
 import {projectModel} from '@/models/project-model.js';
 import {branchEntryModel} from '@/models/branch-entry-model.js';
@@ -243,8 +243,6 @@ export default {
       statusCodes,
       ...methods,
       //icons
-      desktopOutline,
-      cloudUpload,
       trash,
       removeCircle,
       chevronBackOutline,
