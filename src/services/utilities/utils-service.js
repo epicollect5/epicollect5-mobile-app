@@ -10,8 +10,7 @@ import {STRINGS} from '@/config/strings';
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint} from '@capacitor/barcode-scanner';
 import {v4 as uuidv4} from 'uuid';
-import {entryCommonService} from '@/services/entry/entry-common-service';
-
+import {notificationService} from '@/services/notification-service';
 
 export const utilsService = {
 
@@ -964,21 +963,41 @@ export const utilsService = {
         return arr.reduce((a, b, i) => ((a[cb(b, i, arr)] || (a[cb(b, i, arr)] = [])).push(b), a), {});
     },
     hasSameKeys(a, b) {
+        // 1. Guard clause for null/non-object types
+        if (!a || !b || typeof a !== 'object' || typeof b !== 'object') {
+            console.error('Invalid input: both arguments must be non-null objects.');
+            return false;
+        }
+
         const aKeys = Object.keys(a);
         const bKeys = Object.keys(b);
 
-        const missingKeysA = aKeys.filter((k) => !bKeys.includes(k));
-        const missingKeysB = bKeys.filter((k) => !aKeys.includes(k));
+        // 2. Optimization: Use Sets for O(1) lookups
+        const setA = new Set(aKeys);
+        const setB = new Set(bKeys);
 
-        if (missingKeysA.length > 0) {
-            console.warn(`Missing keys in object 'b': ${missingKeysA.join(', ')}`);
+        // Find what's in A, but not in B
+        const missingInB = aKeys.filter((key) => !setB.has(key));
+        // Find what's in B, but not in A
+        const missingInA = bKeys.filter((key) => !setA.has(key));
+
+        // 3. Logging with more context
+        if (missingInB.length > 0) {
+            console.error(`Object 'b' is missing keys: [${missingInB.join(', ')}]`);
+            missingInB.forEach((key) => {
+               console.error('Missing label for ', a[key]);
+            });
         }
 
-        if (missingKeysB.length > 0) {
-            console.warn(`Missing keys in object 'a': ${missingKeysB.join(', ')}`);
+        if (missingInA.length > 0) {
+            console.error(`Object 'a' is missing keys: [${missingInA.join(', ')}]`);
+            missingInA.forEach((key) => {
+                console.error('Missing label for ', b[key]);
+            });
         }
 
-        return aKeys.length === bKeys.length && missingKeysA.length === 0 && missingKeysB.length === 0;
+        // 4. Final check
+        return missingInA.length === 0 && missingInB.length === 0;
     },
     //validate language files to check for missing keys
     async validateLanguageFiles() {
@@ -999,6 +1018,9 @@ export const utilsService = {
         }
 
         if (!validFiles) {
+            if (PARAMETERS.DEBUG) {
+                await notificationService.showAlert('Language files invalid');
+            }
             throw new Error('Language files invalid');
         } else {
             console.log('%cLanguage files validated correctly', 'color: green; font-weight: bold;');

@@ -75,15 +75,17 @@
 
         <!-- Incomplete entry banner--------------------------------->
         <div v-if="state.synced === 2">
-          <ion-item-divider
-              color="warning"
-              class="entry-incomplete"
-              sticky
+          <ion-item
+              class="item-warning animate__animated animate__fadeIn"
+              lines="full"
+              mode="md"
           >
-            <ion-label class="entry-title-label ion-text-center">
-              {{ labels.incomplete_entry }}
-            </ion-label>
-          </ion-item-divider>
+            <ion-icon
+                slot="end"
+                :icon="removeCircle"
+            ></ion-icon>
+            <ion-label class="ion-text-uppercase"> {{ labels.incomplete_entry }}</ion-label>
+          </ion-item>
         </div>
         <!-- ------------------------------------------------------ -->
 
@@ -103,7 +105,7 @@
 <script>
 import {useRootStore} from '@/stores/root-store';
 import {STRINGS} from '@/config/strings';
-import {chevronBackOutline, trash, copyOutline} from 'ionicons/icons';
+import {chevronBackOutline, trash, copyOutline, removeCircle, desktopOutline, cloudUpload} from 'ionicons/icons';
 import {PARAMETERS} from '@/config';
 import {projectModel} from '@/models/project-model.js';
 import {branchEntryModel} from '@/models/branch-entry-model.js';
@@ -241,8 +243,11 @@ export default {
       statusCodes,
       ...methods,
       //icons
-      chevronBackOutline,
+      desktopOutline,
+      cloudUpload,
       trash,
+      removeCircle,
+      chevronBackOutline,
       copyOutline
     };
   }
