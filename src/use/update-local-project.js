@@ -14,7 +14,7 @@ export function updateLocalProject () {
     const language = rootStore.language;
 
     return new Promise((resolve) => {
-        function updateProject () {
+        async function updateProject () {
             /**
              * Common function used to start off the update process
              * Handles errors from updating the project, like setting a login callback
@@ -22,21 +22,21 @@ export function updateLocalProject () {
             const authErrors = PARAMETERS.AUTH_ERROR_CODES;
 
             // Show loader
-            notificationService.showProgressDialog(
+            await notificationService.showProgressDialog(
                 STRINGS[language].labels.wait,
                 STRINGS[language].labels.updating_project
             );
 
             versioningService.updateProject().then(
-                function (changeMade) {
+                async function (changeMade) {
 
                     // If new questions have been added, notify user
                     if (changeMade) {
-                        notificationService.showAlert(
+                        await notificationService.showAlert(
                             STRINGS[language].status_codes.ec5_137
                         );
                     } else {
-                        notificationService.showAlert(
+                        await notificationService.showAlert(
                             STRINGS[language].status_codes.ec5_136
                         );
                     }
@@ -44,7 +44,7 @@ export function updateLocalProject () {
                     notificationService.hideProgressDialog();
 
                     // Show loader
-                    notificationService.showProgressDialog(
+                    await notificationService.showProgressDialog(
                         STRINGS[language].labels.wait,
                         STRINGS[language].labels.loading_entries
                     );
@@ -79,7 +79,7 @@ export function updateLocalProject () {
                         showModalLogin();
                     } else {
                         // Other error
-                        errorsService.handleWebError(error);
+                        await errorsService.handleWebError(error);
                     }
                     //project was not updated
                     resolve(false);
@@ -102,7 +102,9 @@ export function updateLocalProject () {
                         .then((response) => {
                             // Update if user wants to
                             if (response) {
-                                updateProject();
+                                updateProject().then((updated) => {
+                                    resolve(updated);
+                                });
                             }
                         }, (error) => {
                             //do not update
