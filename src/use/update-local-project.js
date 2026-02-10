@@ -74,7 +74,7 @@ export function updateLocalProject () {
                             callback: updateProject,
                             params: null
                         };
-                        //2- Clear any token and dsk user to login again
+                        //2- Clear any token and ask user to login again
                         await logout();
                         showModalLogin();
                     } else {

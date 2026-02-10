@@ -197,7 +197,6 @@ export default {
       nextFormRef: '',
       parentEntryUuid: '',
       hasUnsyncedEntries: false,
-      limit: Infinity,
       status: PARAMETERS.STATUS.ALL,
       backLabel: STRINGS[language].labels.projects,
       allMediaUuids: [],

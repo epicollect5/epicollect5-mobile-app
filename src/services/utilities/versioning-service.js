@@ -180,7 +180,6 @@ export const versioningService = {
     selectAndUpdateEntries (formRef) {
 
         const self = this;
-
         const form = projectModel.getExtraForm(formRef);
         const groupInputs = form.group;
         const branchInputs = self.getBranchInputs(form);

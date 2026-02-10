@@ -324,7 +324,6 @@ export default {
 			countNoFilters: 0,
 			countWithFilters: 0,
 			entriesOffset: 0,
-			limit: Infinity,
 			filters: { ...PARAMETERS.FILTERS_DEFAULT },
 			isInfiniteScrollDisabled: false
 		});
