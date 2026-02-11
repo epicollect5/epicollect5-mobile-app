@@ -46,7 +46,6 @@ export async function updateLocalProject() {
             // Hide loader
             notificationService.hideProgressDialog();
             // Web error
-            console.log('fail');
             if (authErrors.indexOf(error?.data?.errors?.[0]?.code) < 0) {
                 // Other error
                 await errorsService.handleWebError(error);

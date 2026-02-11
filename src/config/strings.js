@@ -1,6 +1,8 @@
 export const STRINGS = {
     en: {
         labels: {
+            media_exported: 'Media exported',
+            export_media: 'Export Media',
             cannot_clone_incomplete_entry: 'Cannot clone incomplete entry',
             entry_cloned: 'Entry cloned',
             clone: 'Clone',
@@ -248,6 +250,8 @@ export const STRINGS = {
     },
     it: {
         labels: {
+            media_exported: 'Media Esportati',
+            export_media: 'Esporta Media',
             cannot_clone_incomplete_entry: 'Impossibile clonare una voce incompleta',
             entry_cloned: 'Voce clonata',
             clone: 'Clona',
@@ -495,6 +499,8 @@ export const STRINGS = {
     },
     es: {
         labels: {
+            media_exported: 'Media exportada',
+            export_media: 'Exportar Media',
             cannot_clone_incomplete_entry: 'No se puede clonar una entrada incompleta',
             entry_cloned: 'Entrada clonada',
             clone: 'Clonar',
@@ -742,6 +748,8 @@ export const STRINGS = {
     },
     fr: {
         labels: {
+            media_exported: 'Médias exportés',
+            export_media: 'Exporter Médias',
             cannot_clone_incomplete_entry: 'Impossible de cloner une entrée incomplète',
             entry_cloned: 'Entrée clonée',
             clone: 'Cloner',
@@ -989,6 +997,8 @@ export const STRINGS = {
     },
     pl: {
         labels: {
+            media_exported: 'Media eksportowane',
+            export_media: 'Eksportuj Media',
             cannot_clone_incomplete_entry: 'Nie można sklonować niekompletnej wpisu',
             entry_cloned: 'Wpis sklonowany',
             clone: 'Klonuj',
@@ -1236,6 +1246,8 @@ export const STRINGS = {
     },
     pt: {
         labels: {
+            media_exported: 'Multimídia exportada',
+            export_media: 'Exportar Multimídia',
             cannot_clone_incomplete_entry: 'Não é possível clonar uma entrada incompleta',
             entry_cloned: 'Entrada clonada',
             clone: 'Clonar',
@@ -1483,6 +1495,8 @@ export const STRINGS = {
     },
     ca: {
         labels: {
+            media_exported: 'Mídia exportada',
+            export_media: 'Exportar Mídia',
             cannot_clone_incomplete_entry: 'No es pot clonar una entrada incompleta',
             entry_cloned: 'Entrada clonada',
             clone: 'Clonar',
@@ -1730,6 +1744,8 @@ export const STRINGS = {
     },
     sl:{
         labels: {
+            media_exported: 'Mediji so izvozni',
+            export_media: 'Izvozi Medije',
             cannot_clone_incomplete_entry: 'Ni mogoče klonirati nepopolnega vnosa',
             entry_cloned: 'Vnos kloniran.',
             clone: 'Kloniraj',
@@ -1977,6 +1993,8 @@ export const STRINGS = {
     },
     de: {
         labels: {
+            media_exported: 'Medien exportiert',
+            export_media: 'Exportieren Medien',
             cannot_clone_incomplete_entry: 'Kann unvollständige Einträge nicht klonen',
             entry_cloned: 'Eintrag geklont',
             clone: 'Klonen',

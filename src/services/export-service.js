@@ -7,11 +7,11 @@ import { JSONTransformerService } from '@/services/utilities/json-transformer-se
 import { exportMediaService } from '@/services/filesystem/export-media-service';
 import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
 import { writeFileService } from '@/services/filesystem/write-file-service';
+import {exportMediaServiceCordova} from '@/services/filesystem/export-media-service-cordova';
 
 export const exportService = {
 
     async exportHierarchyEntries (projectRef, projectSlug) {
-
 
         const rootStore = useRootStore();
         const language = rootStore.language;

@@ -8,6 +8,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:requestLegacyExternalStorage="true"
         android:theme="@style/AppTheme">
 
         <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true" />
@@ -59,6 +60,7 @@
         <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
             android:value="Avoid the OS from killing the app when it goes in the background while taking a photo, recording a video or scanning a barcode"/>
     </application>
+
 
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET"/>

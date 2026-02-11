@@ -121,65 +121,41 @@ export const mediaDirsService = {
     },
 
     async removeExternalMediaDirs(projectSlug) {
+        const documentsFolder = utilsService.getPlatformDocumentsFolder();
 
-        const self = this;
-        const rootStore = useRootStore();
-        const language = rootStore.language;
-        const labels = STRINGS[language].language;
-        const downloadFolder = utilsService.getPlatformDownloadFolder();
-        const photoDirDestination =
-            downloadFolder + projectSlug + '/' + PARAMETERS.PHOTO_DIR;
-        const audioDirDestination =
-            downloadFolder + projectSlug + '/' + PARAMETERS.AUDIO_DIR;
-        const videoDirDestination =
-            downloadFolder + projectSlug + '/' + PARAMETERS.VIDEO_DIR;
+        // 1. Sanitize the slug: No leading OR trailing slashes
+        const slug = projectSlug.replace(/^\/|\/$/g, '');
 
-        //find out if folders exist
-        const externalStorage = cordova.file.externalRootDirectory;
-        const dirExistsPhoto = await self.dirExists(externalStorage + photoDirDestination);
-        const dirExistsAudio = await self.dirExists(externalStorage + audioDirDestination);
-        const dirExistsVideo = await self.dirExists(externalStorage + videoDirDestination);
+        const mediaDirs = [
+            PARAMETERS.PHOTO_DIR,
+            PARAMETERS.AUDIO_DIR,
+            PARAMETERS.VIDEO_DIR
+        ];
 
-        return new Promise((resolve, reject) => {
-            (async function () {
+        for (const dir of mediaDirs) {
+            try {
+                // 2. Sanitize the subdirectory: No slashes at all
+                const cleanDir = dir.replace(/\//g, '');
 
-                //any errors bail out
-                if (dirExistsPhoto === null || dirExistsAudio === null || dirExistsVideo === null) {
-                    reject(labels.unknown_error);
-                }
+                // Construct path manually to ensure a single clean slash
+                const fullPath = slug + '/' + cleanDir;
 
-                try {
-                    //remove photo dir (if exists)
-                    if (dirExistsPhoto) {
-                        await Filesystem.rmdir({
-                            path: photoDirDestination,
-                            directory: Directory.ExternalStorage,
-                            recursive: true
-                        });
-                    }
-                    //remove audio dir (if exists)
-                    if (dirExistsAudio) {
-                        await Filesystem.rmdir({
-                            path: audioDirDestination,
-                            directory: Directory.ExternalStorage,
-                            recursive: true
-                        });
-                    }
-                    //remove video dir (if exists)
-                    if (dirExistsVideo) {
-                        await Filesystem.rmdir({
-                            path: videoDirDestination,
-                            directory: Directory.ExternalStorage,
-                            recursive: true
-                        });
-                    }
-                    resolve();
-                } catch (error) {
-                    console.log(error);
-                    resolve();
-                }
-            }());
-        });
+                await Filesystem.rmdir({
+                    path: fullPath,
+                    directory: documentsFolder,
+                    recursive: true
+                });
+
+                console.log('Successfully removed: ' + fullPath);
+            } catch (error) {
+                // iOS 0013 usually means the path was malformed
+                // OR the folder really isn't there.
+                // We log the specific error code for debugging.
+                console.log('Folder skip logic triggered for: ' + dir, error.code);
+            }
+        }
+
+        return true;
     },
 
     //check if a directory exists
@@ -196,5 +172,32 @@ export const mediaDirsService = {
                     error.code === 1 ? resolve(false) : resolve(null);
                 });
         });
+    },
+
+    getRelativeDataDirectoryForCapacitorFilesystem() {
+        const rootStore = useRootStore();
+
+        /**
+         * ANDROID MAPPING:
+         * In Cordova, 'cordova.file.dataDirectory' points to the internal
+         * app-specific folder (usually /data/user/0/package/files).
+         * In Capacitor, 'Directory.Data' is the direct equivalent.
+         */
+        if (rootStore.device.platform === PARAMETERS.ANDROID) {
+            return Directory.Data;
+        }
+
+        /**
+         * IOS MAPPING:
+         * This is where the platforms diverge.
+         * In Cordova, 'cordova.file.dataDirectory' typically points to 'Library/NoCloud'.
+         * In Capacitor, using 'Directory.Data' would incorrectly point to 'Documents'.
+         * 'Directory.LibraryNoCloud' is the precise match for the old Cordova storage
+         * location, ensuring the Filesystem plugin looks in the private Library
+         * sandbox instead of the public Documents sandbox.
+         */
+        else if (rootStore.device.platform === PARAMETERS.IOS) {
+            return Directory.LibraryNoCloud;
+        }
     }
 };

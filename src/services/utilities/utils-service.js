@@ -11,6 +11,7 @@ import {databaseSelectService} from '@/services/database/database-select-service
 import {CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint} from '@capacitor/barcode-scanner';
 import {v4 as uuidv4} from 'uuid';
 import {notificationService} from '@/services/notification-service';
+import {Filesystem, Directory} from '@capacitor/filesystem';
 
 export const utilsService = {
 
@@ -773,21 +774,18 @@ export const utilsService = {
         answer = answer.replaceAll('<', '\ufe64');
         return answer;
     },
-    getPlatformDownloadFolder() {
+    getPlatformDocumentsFolder() {
         const rootStore = useRootStore();
-        let folder = '';
+
         switch (rootStore.device.platform) {
             case PARAMETERS.ANDROID:
-                folder = PARAMETERS.ANDROID_APP_DOWNLOAD_FOLDER;
-                break;
+                // Use Documents for Scoped Storage compatibility
+                return Directory.Documents;
             case PARAMETERS.IOS:
-                //todo:
-                break;
+                return Directory.Documents;
             default:
-            //
-
+                return null;
         }
-        return folder;
     },
     generateFilenameForExport(prefix, body) {
         /**

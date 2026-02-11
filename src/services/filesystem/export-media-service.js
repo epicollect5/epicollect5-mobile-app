@@ -1,80 +1,105 @@
 /*
 Export media files by copying them for the app private folders
 to a user accessible folder on the device
-Android - Download/epicollect5/{projectSlug} folder
-iOS - todo:
+Android - Documents/{projectSlug}
+iOS - Documents/{projectSlug}
 Web - N/A
 */
 
-import { useRootStore } from '@/stores/root-store';
-import { PARAMETERS } from '@/config';
-import { STRINGS } from '@/config/strings';
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { utilsService } from '@/services/utilities/utils-service';
-import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
-
+import {useRootStore} from '@/stores/root-store';
+import {PARAMETERS} from '@/config';
+import {STRINGS} from '@/config/strings';
+import {Filesystem, Directory} from '@capacitor/filesystem';
+import {mediaDirsService} from '@/services/filesystem/media-dirs-service';
 
 export const exportMediaService = {
 
-    async execute (projectRef, projectSlug) {
+    async execute(projectRef, projectSlug) {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
-        const downloadFolder = utilsService.getPlatformDownloadFolder();
-        const persistentDir = rootStore.persistentDir;
-        const photoDirSource = persistentDir + PARAMETERS.PHOTO_DIR + projectRef;
-        const audioDirSource = persistentDir + PARAMETERS.AUDIO_DIR + projectRef;
-        const videoDirSource = persistentDir + PARAMETERS.VIDEO_DIR + projectRef;
 
-        const photosDirDestination =
-            downloadFolder + projectSlug + '/' + PARAMETERS.PHOTO_DIR;
-        const audioDirDestination =
-            downloadFolder + projectSlug + '/' + PARAMETERS.AUDIO_DIR;
-        const videoDirDestination =
-            downloadFolder + projectSlug + '/' + PARAMETERS.VIDEO_DIR;
+        await Filesystem.requestPermissions();
 
-        return new Promise((resolve, reject) => {
-            (async function () {
-                //find out what folders exists
-                const dirExistsPhoto = await mediaDirsService.dirExists(photoDirSource);
-                const dirExistsAudio = await mediaDirsService.dirExists(audioDirSource);
-                const dirExistsVideo = await mediaDirsService.dirExists(videoDirSource);
+        const destinationFolder = Directory.Documents; // Standard for both Android and iOS visibility
+        const sourceFolder = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
 
-                //any errors bail out
-                if (dirExistsPhoto === null || dirExistsAudio === null || dirExistsVideo === null) {
-                    reject(labels.unknown_error);
-                }
+        // SANITIZE: Remove leading/trailing slashes to prevent Code 5 iOS
+        const cleanProjectSlug = projectSlug.replace(/^\/|\/$/g, '');
+        const cleanPhotoDir = PARAMETERS.PHOTO_DIR.replace(/^\/|\/$/g, '');
+        const cleanAudioDir = PARAMETERS.AUDIO_DIR.replace(/^\/|\/$/g, '');
+        const cleanVideoDir = PARAMETERS.VIDEO_DIR.replace(/^\/|\/$/g, '');
 
-                //copy the existing folders to external storage
-                try {
-                    if (dirExistsPhoto) {
-                        await Filesystem.copy({
-                            from: photoDirSource,
-                            to: photosDirDestination,
-                            toDirectory: Directory.ExternalStorage
-                        });
-                    }
-                    if (dirExistsAudio) {
-                        await Filesystem.copy({
-                            from: audioDirSource,
-                            to: audioDirDestination,
-                            toDirectory: Directory.ExternalStorage
-                        });
-                    }
-                    if (dirExistsVideo) {
-                        await Filesystem.copy({
-                            from: videoDirSource,
-                            to: videoDirDestination,
-                            toDirectory: Directory.ExternalStorage
-                        });
-                    }
-                    //all done
-                    resolve();
-                } catch (error) {
-                    console.log(error);
-                    reject(error);
-                }
-            }());
-        });
+        // Construct relative paths WITHOUT leading slashes
+        const photoFrom = cleanPhotoDir + '/' + projectRef;
+        const audioFrom = cleanAudioDir + '/' + projectRef;
+        const videoFrom = cleanVideoDir + '/' + projectRef;
+
+        try {
+            // 1. Check existence explicitly
+            let folderExists = false;
+            try {
+                await Filesystem.stat({
+                    path: cleanProjectSlug,
+                    directory: destinationFolder
+                });
+                folderExists = true;
+            } catch (e) {
+                // If stat fails, it's just not there. We don't need to check the message.
+                folderExists = false;
+            }
+
+            // 2. Act only if needed
+            if (!folderExists) {
+                await Filesystem.mkdir({
+                    path: cleanProjectSlug,
+                    directory: destinationFolder,
+                    recursive: true
+                });
+                console.log('Clean mkdir performed.');
+            }
+            // 3. Perform Copies
+            // PHOTOS
+            try {
+                await Filesystem.copy({
+                    from: photoFrom,
+                    directory: sourceFolder,
+                    to: cleanProjectSlug + '/' + cleanPhotoDir,
+                    toDirectory: destinationFolder
+                });
+            } catch (e) {
+                console.log('No photos found or copy failed', e);
+            }
+
+            // AUDIOS
+            try {
+                await Filesystem.copy({
+                    from: audioFrom,
+                    directory: sourceFolder,
+                    to: cleanProjectSlug + '/' + cleanAudioDir,
+                    toDirectory: destinationFolder
+                });
+            } catch (e) {
+                console.log('No audios found', e);
+            }
+
+            // VIDEOS
+            try {
+                await Filesystem.copy({
+                    from: videoFrom,
+                    directory: sourceFolder,
+                    to: cleanProjectSlug + '/' + cleanVideoDir,
+                    toDirectory: destinationFolder
+                });
+            } catch (e) {
+                console.log('No videos found', e);
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Export error details:', error);
+            throw labels.unknown_error;
+        }
     }
 };
+
