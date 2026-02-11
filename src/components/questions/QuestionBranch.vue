@@ -64,7 +64,6 @@
 						class="ion-align-self-center"
 					>
 						<ion-button
-							:disabled="isEntriesLimitReached"
 							class="question-action-button ion-text-nowrap"
 							color="secondary"
 							expand="block"
@@ -76,11 +75,6 @@
 							></ion-icon>
 							{{ labels.add_branch }}
 						</ion-button>
-						<ion-label
-							v-if="isEntriesLimitReached"
-							color="warning"
-							class="ion-text-wrap"
-						>{{ warningEntriesLimitReached }}</ion-label>
 					</ion-col>
 				</ion-row>
 
@@ -330,7 +324,6 @@ export default {
 			countNoFilters: 0,
 			countWithFilters: 0,
 			entriesOffset: 0,
-			limit: Infinity,
 			filters: { ...PARAMETERS.FILTERS_DEFAULT },
 			isInfiniteScrollDisabled: false
 		});
@@ -428,13 +421,6 @@ export default {
 			},
 			pwaEntryEditWarning: computed(() => {
 				return STRINGS[language].labels.editing_branches_pwa;
-			}),
-			isEntriesLimitReached: computed(() => {
-				state.limit = parseInt(projectModel.getEntriesLimit(inputRef), 10);
-				return state.limit !== null && state.countNoFilters >= state.limit;
-			}),
-			warningEntriesLimitReached: computed(() => {
-				return STRINGS[language].status_codes.ec5_250.split('.')[0];
 			})
 		};
 
@@ -643,7 +629,7 @@ export default {
 				};
 				// Show loader
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
-				//edit on PWA onlways start from first question
+				//edit on PWA always start from first question
 				await branchEntryService.setUpExisting(branchEntry);
 				rootStore.routeParams = {
 					formRef,

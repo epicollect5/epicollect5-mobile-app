@@ -41,7 +41,6 @@
 
         <ion-buttons slot="end">
           <ion-button
-              :disabled="isEntriesLimitReached"
               @click="addEntry()"
           >
             <ion-icon
@@ -125,18 +124,6 @@
           v-else
           class="animate__animated animate__fadeIn"
       >
-        <ion-item
-            v-if="isEntriesLimitReached"
-            class="ion-text-center ion-no-padding ion-no-margin"
-            lines="none"
-        >
-          <ion-label
-              color="warning"
-              class="ion-no-padding ion-no-margin ion-text-wrap"
-          >
-            {{ warningEntriesLimitReached }}
-          </ion-label>
-        </ion-item>
         <list-entries
             v-show="!state.isFetching"
             :projectRef="projectRef"
@@ -165,7 +152,7 @@ import {
   chevronBackOutline,
   ellipsisVertical
 } from 'ionicons/icons';
-import {reactive, computed} from '@vue/reactivity';
+import {reactive} from '@vue/reactivity';
 import {PARAMETERS} from '@/config';
 import {projectModel} from '@/models/project-model.js';
 import {formModel} from '@/models/form-model.js';
@@ -210,7 +197,6 @@ export default {
       nextFormRef: '',
       parentEntryUuid: '',
       hasUnsyncedEntries: false,
-      limit: Infinity,
       status: PARAMETERS.STATUS.ALL,
       backLabel: STRINGS[language].labels.projects,
       allMediaUuids: [],
@@ -340,9 +326,6 @@ export default {
             state.formRef,
             state.parentEntryUuid
         );
-
-        //any entries limit?
-        state.limit = parseInt(projectModel.getEntriesLimit(state.formRef), 10);
       }
 
       function _loadFormEntries() {
@@ -555,18 +538,6 @@ export default {
       }
     };
 
-    const computedScope = {
-      isEntriesLimitReached: computed(() => {
-        if (!state.formRef) {
-          return false;
-        }
-        return state.limit !== null && state.countNoFilters >= state.limit;
-      }),
-      warningEntriesLimitReached: computed(() => {
-        return STRINGS[language].status_codes.ec5_250.split('.')[0];
-      })
-    };
-
     //re-fetch entries list when needed (after add or delete)
     watch(
         () => [
@@ -622,7 +593,6 @@ export default {
       labels,
       ...methods,
       ...scope,
-      ...computedScope,
       state,
       //icons
       cloudUpload,
