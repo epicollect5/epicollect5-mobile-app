@@ -7,7 +7,6 @@ import {errorsService} from '@/services/errors-service';
 import {showModalLogin} from '@/use/show-modal-login';
 import {logout} from '@/use/logout';
 
-
 export async function updateLocalProject() {
     const rootStore = useRootStore();
     const language = rootStore.language;
@@ -48,7 +47,7 @@ export async function updateLocalProject() {
             notificationService.hideProgressDialog();
             // Web error
             console.log('fail');
-            if (authErrors.indexOf(error?.data?.errors[0]?.code) < 0) {
+            if (authErrors.indexOf(error?.data?.errors?.[0]?.code) < 0) {
                 // Other error
                 await errorsService.handleWebError(error);
                 return false;
@@ -94,5 +93,8 @@ export async function updateLocalProject() {
         } else {
             return false;
         }
+    }
+    else {
+        return false;
     }
 }
