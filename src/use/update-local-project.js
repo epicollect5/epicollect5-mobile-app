@@ -72,9 +72,15 @@ export async function updateLocalProject() {
         }
     }
 
-    const upToDate = await versioningService.checkProjectVersion();
-    if (upToDate) {
-        //project is up-to-date, do not update
+    try {
+        const upToDate = await versioningService.checkProjectVersion();
+        if (upToDate) {
+            //project is up-to-date, do not update
+            return false;
+        }
+    } catch (error) {
+        console.error('Error checking project version:', error);
+        //error checking project version, do not update
         return false;
     }
 

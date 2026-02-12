@@ -31,7 +31,7 @@ export const initService = {
         const rootStore = useRootStore();
         if ([PARAMETERS.WEB, PARAMETERS.PWA].includes(rootStore.device.platform)) {
             return {
-                name: 'Epicollect5',
+                name: PARAMETERS.APP_NAME,
                 version: 'n/a'
             };
         }
@@ -92,7 +92,7 @@ export const initService = {
                     }
 
                     if (platform === PARAMETERS.IOS) {
-                        this.initDatabaseIOS().then((db)=> {
+                        this.initDatabaseIOS().then((db) => {
                             setTimeout(() => {
                                 resolve(db);
                             }, PARAMETERS.DELAY_LONG);
@@ -109,7 +109,7 @@ export const initService = {
      * Moves DB from Documents to Library/LocalDatabase with Integrity Verification
      */
     async migrateLegacyDatabase() {
-        const dbName = 'epicollect5.db';
+        const dbName = PARAMETERS.DB_NAME;
         const targetFolder = 'LocalDatabase';
 
         try {
@@ -192,8 +192,10 @@ export const initService = {
                 }, () => {
                     // SUCCESS CALLBACK: The transaction is fully finished and committed here.
                     // It is now safe to close the DB without the "transaction in progress" error.
-                    db.close(() => console.log('Temp DB closed safely.'), (e) => {
-                    });
+                    db.close(
+                        () => console.log('Temp DB closed safely.'),
+                        (e) => console.warn('Failed to close temp DB:', e)
+                    );
                 });
             } catch (e) {
                 resolve(false);

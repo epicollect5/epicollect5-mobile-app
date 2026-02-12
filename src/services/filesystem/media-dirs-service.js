@@ -1,6 +1,5 @@
 import {useRootStore} from '@/stores/root-store';
 import {PARAMETERS} from '@/config';
-import {STRINGS} from '@/config/strings';
 import {Filesystem, Directory} from '@capacitor/filesystem';
 import {utilsService} from '@/services/utilities/utils-service';
 
@@ -72,7 +71,7 @@ export const mediaDirsService = {
             return true;
         }
 
-        //create the folder on the fyle system recursively
+        //create the folder on the file system recursively
         return new Promise((resolve, reject) => {
 
             let entry;
@@ -137,6 +136,7 @@ export const mediaDirsService = {
             PARAMETERS.VIDEO_DIR
         ];
 
+        let allSucceeded = true;
         for (const dir of mediaDirs) {
             try {
                 // 2. Sanitize the subdirectory: No slashes at all
@@ -157,10 +157,14 @@ export const mediaDirsService = {
                 // OR the folder really isn't there.
                 // We log the specific error code for debugging.
                 console.log('Folder skip logic triggered for: ' + dir, error.code);
+                // "not found" is expected; anything else is a real failure
+                if (error.message && !error.message.includes('not exist')) {
+                    allSucceeded = false;
+                }
             }
         }
 
-        return true;
+        return allSucceeded;
     },
 
     //check if a directory exists
@@ -205,7 +209,7 @@ export const mediaDirsService = {
             return Directory.LibraryNoCloud;
         }
 
-        // If we reach this point, it means we aree not on a native platform
+        // If we reach this point, it means we are not on a native platform
         console.warn('Unsupported platform for Capacitor filesystem directory resolution');
         return null;
     }

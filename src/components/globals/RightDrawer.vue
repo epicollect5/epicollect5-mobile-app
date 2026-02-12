@@ -363,7 +363,7 @@ export default {
           try {
             await exportService.exportMedia(projectRef, projectSlug);
             notificationService.hideProgressDialog();
-            const documentsFolder = await utilsService.getPlatformDocumentsFolder();
+            const documentsFolder = utilsService.getPlatformDocumentsFolder();
             //Warn users and show the download folder according to the platform
             if (rootStore.device.platform === PARAMETERS.ANDROID) {
 
@@ -387,7 +387,6 @@ export default {
         } else {
           //just remove the loader on the web, for testing
           notificationService.hideProgressDialog();
-          await notificationService.showAlert(labels.all_entries_downloaded);
           menuController.close();
         }
       },
@@ -403,13 +402,18 @@ export default {
         const projectRef = projectModel.getProjectRef();
         await notificationService.showProgressDialog(labels.wait);
 
-        //todo: should catch errors...
-        await databaseUpdateService.unsyncAllEntries(projectRef);
-        await databaseUpdateService.unsyncAllBranchEntries(projectRef);
-        await databaseUpdateService.unsyncAllFileEntries(projectRef);
+        try {
+          await databaseUpdateService.unsyncAllEntries(projectRef);
+          await databaseUpdateService.unsyncAllBranchEntries(projectRef);
+          await databaseUpdateService.unsyncAllFileEntries(projectRef);
+          notificationService.showToast(labels.unsynced);
+        } catch (error) {
+          console.log(error);
+          await notificationService.showAlert(error);
+        } finally {
+          notificationService.hideProgressDialog();
+        }
 
-        notificationService.hideProgressDialog();
-        notificationService.showToast(labels.unsynced);
         // Refresh view
         router.replace({
           name: PARAMETERS.ROUTES.ENTRIES,

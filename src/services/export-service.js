@@ -63,7 +63,6 @@ export const exportService = {
                     } else {
                         const entry = result.rows.item(0);
                         const formRef = form.details.ref;
-                        //  console.log(entry);
                         const rowArray = await JSONTransformerService.getFormCSVRow(
                             entry,
                             form,
@@ -76,10 +75,11 @@ export const exportService = {
                             await writeFileService.appendCSVRow(headers, rowCSV, formRef, offset, null);
                         } catch (error) {
                             reject(error);
+                            return;
                         }
                         //next entry
                         offset++;
-                        getEntry(offset);
+                        await getEntry(offset);
                     }
                 }
                 //get all entries for this project(entries + branch entries)
@@ -107,7 +107,6 @@ export const exportService = {
                 if (result.rows.length > 0) {
                     for (let i = 0; i < result.rows.length; i++) {
                         const currentBranch = result.rows.item(i);
-                        console.log(currentBranch.owner_input_ref);
                         branches.push({
                             branchRef: currentBranch.owner_input_ref,
                             formRef: currentBranch.form_ref
@@ -152,7 +151,6 @@ export const exportService = {
                         }
                         else {
                             const branchEntry = result.rows.item(0);
-                            console.log(branchEntry);
                             const row = await JSONTransformerService.getBranchCSVRow(
                                 branchEntry,
                                 branch,
@@ -160,21 +158,18 @@ export const exportService = {
                                 false
                             );
 
-                            console.log(row);
-
                             //write entry to file
                             try {
                                 await writeFileService.appendCSVRow(headers, row, branch.formRef, offset, branch.branchRef);
                             } catch (error) {
                                 reject(error);
+                                return;
                             }
                             //next entry
                             offset++;
-                            getBranchEntry(offset);
+                            await getBranchEntry(offset);
                         }
                     }
-
-                    console.log(headers);
 
                     //todo: get rows, 1 at a time
                     //get all branch entries for this branch
@@ -187,22 +182,13 @@ export const exportService = {
         });
     },
     async exportMedia (projectRef, projectSlug) {
-        return new Promise((resolve, reject) => {
-            (async function () {
-                // 1 - silently remove external media directories (if they exist already)
-                try {
-                    await mediaDirsService.removeExternalMediaDirs(projectSlug);
-                    // 2 - copy all media files by copying the media private folders to the download folder
-                    try {
-                        await exportMediaService.execute(projectRef, projectSlug);
-                        resolve();
-                    } catch (error) {
-                        reject(error);
-                    }
-                } catch (error) {
-                    reject(error);
-                }
-            }());
-        });
+        try {
+            await mediaDirsService.removeExternalMediaDirs(projectSlug);
+            await exportMediaService.execute(projectRef, projectSlug);
+        }
+        catch (error) {
+            console.log(error);
+            return error;
+        }
     }
 };

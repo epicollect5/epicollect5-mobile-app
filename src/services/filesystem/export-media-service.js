@@ -24,6 +24,11 @@ export const exportMediaService = {
         const destinationFolder = Directory.Documents; // Standard for both Android and iOS visibility
         const sourceFolder = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
 
+        if (!sourceFolder) {
+            console.warn('Unsupported platform for Capacitor filesystem directory resolution');
+            return true;
+        }
+
         // SANITIZE: Remove leading/trailing slashes to prevent Code 5 iOS
         const cleanProjectSlug = projectSlug.replace(/^\/|\/$/g, '');
         const cleanPhotoDir = PARAMETERS.PHOTO_DIR.replace(/^\/|\/$/g, '');
