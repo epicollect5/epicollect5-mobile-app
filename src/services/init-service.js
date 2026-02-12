@@ -180,14 +180,17 @@ export const initService = {
                         if (status === 'ok') {
                             resolve(true);
                         } else {
+                            db.close(() => {}, (e) => console.warn('Close after bad integrity:', e));
                             resolve(false);
                         }
                     }, (tx, err) => {
                         console.error('SQL Error during integrity check', err);
+                        db.close(() => {}, (e) => console.warn('Close after SQL error:', e));
                         resolve(false);
                     });
                 }, (err) => {
                     console.error('Transaction Error', err);
+                    db.close(() => {}, (e) => console.warn('Close after tx error:', e));
                     resolve(false);
                 }, () => {
                     // SUCCESS CALLBACK: The transaction is fully finished and committed here.
@@ -351,7 +354,7 @@ export const initService = {
                 const endpoint = PARAMETERS.PWA_LANGUAGE_FILES_ENDPOINT;
                 url = serverUrl + endpoint + language + '.json';
             } else {
-                //development i.e debugging pwa in the browser
+                //development i.e. debugging pwa in the browser
                 //get language file from local assets
                 url = './assets/ec5-status-codes/' + language + '.json';
             }
@@ -520,11 +523,9 @@ export const initService = {
                     user.action = STRINGS[language].labels.logout;
                     // Set JWT into rootscope
                     user.jwt = response.rows.item(0).jwt;
-                    // Set User name into rootscope
-
+                    // Set Username into rootscope
                     user.name = response.rows.item(0).name;
                     user.email = response.rows.item(0).email;
-
                 } else {
                     // Default action to 'login'
                     user.action = STRINGS[language].labels.login;

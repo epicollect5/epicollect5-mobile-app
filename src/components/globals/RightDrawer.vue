@@ -327,7 +327,6 @@ export default {
     const scope = {};
     const computedScope = {
       isBookmarked: computed(() => {
-        console.log('the bookmark ID is ', bookmarkStore.bookmarkId);
         return bookmarkStore.bookmarkId !== null;
       })
     };
@@ -407,22 +406,21 @@ export default {
           await databaseUpdateService.unsyncAllBranchEntries(projectRef);
           await databaseUpdateService.unsyncAllFileEntries(projectRef);
           notificationService.showToast(labels.unsynced);
+          // Refresh view
+          router.replace({
+            name: PARAMETERS.ROUTES.ENTRIES,
+            query: {
+              refreshEntries: true
+            }
+          });
+          //hide right drawer
+          menuController.close();
         } catch (error) {
           console.log(error);
           await notificationService.showAlert(error);
         } finally {
           notificationService.hideProgressDialog();
         }
-
-        // Refresh view
-        router.replace({
-          name: PARAMETERS.ROUTES.ENTRIES,
-          query: {
-            refreshEntries: true
-          }
-        });
-        //hide right drawer
-        menuController.close();
       },
       async showProjectInfo() {
         scope.ModalProjectInfo = await modalController.create({

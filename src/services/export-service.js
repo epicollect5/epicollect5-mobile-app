@@ -188,7 +188,7 @@ export const exportService = {
         }
         catch (error) {
             console.log(error);
-            return error;
+            throw error;
         }
     }
 };
