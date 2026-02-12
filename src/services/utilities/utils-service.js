@@ -11,7 +11,7 @@ import {databaseSelectService} from '@/services/database/database-select-service
 import {CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint} from '@capacitor/barcode-scanner';
 import {v4 as uuidv4} from 'uuid';
 import {notificationService} from '@/services/notification-service';
-import {Filesystem, Directory} from '@capacitor/filesystem';
+import {Directory} from '@capacitor/filesystem';
 
 export const utilsService = {
 
@@ -983,7 +983,7 @@ export const utilsService = {
         if (missingInB.length > 0) {
             console.error(`Object 'b' is missing keys: [${missingInB.join(', ')}]`);
             missingInB.forEach((key) => {
-               console.error('Missing label for ', a[key]);
+                console.error('Missing label for ', a[key]);
             });
         }
 

@@ -106,7 +106,7 @@
         </ion-item>
         <ion-item
             button
-            data-test="project-info"
+            data-test="edit-remote-entries"
             @click="editRemoteEntries()"
         >
           <ion-icon :icon="desktopOutline">
@@ -119,10 +119,17 @@
         </ion-item>
         <ion-item
             button
+            data-test="export-media"
             @click="exportMedia()">
           <ion-icon :icon="download">
           </ion-icon>
-          &nbsp;{{ labels.export_media }}<sup>&nbsp;Beta</sup>
+          <ion-label
+              data-translate="export_media"
+              class="ion-text-nowrap"
+          >
+            &nbsp;{{ labels.export_media }}
+          </ion-label>
+          <sup>&nbsp;Beta</sup>
         </ion-item>
         <!-- <ion-item
           button
@@ -356,12 +363,21 @@ export default {
           try {
             await exportService.exportMedia(projectRef, projectSlug);
             notificationService.hideProgressDialog();
-            const downloadFolder = await utilsService.getPlatformDocumentsFolder();
-            //Warn users and show the download folder
-            await notificationService.showAlert(
-                '/' + downloadFolder + '/' + projectSlug + '/',
-                labels.media_exported
-            );
+            const documentsFolder = await utilsService.getPlatformDocumentsFolder();
+            //Warn users and show the download folder according to the platform
+            if (rootStore.device.platform === PARAMETERS.ANDROID) {
+
+              await notificationService.showAlert(
+                  documentsFolder + '/' + projectSlug + '/',
+                  labels.media_exported
+              );
+            }
+            if (rootStore.device.platform === PARAMETERS.IOS) {
+              await notificationService.showAlert(
+                  '📂 > 📱 > Epicollect5 > ' + projectSlug,
+                  labels.media_exported
+              );
+            }
             menuController.close();
           } catch (error) {
             console.log(error);
@@ -423,14 +439,12 @@ export default {
         const hasInternetConnection = await utilsService.hasInternetConnection();
         if (!hasInternetConnection) {
           await notificationService.showAlert(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
-          state.isFetching = false;
           return;
         }
         window.open(datapage, '_system', 'location=yes');
       },
 
       async sortBy(field, sortType) {
-        const dbStore = useDBStore();
         // Sanitise the field and sort type, as they will be used in db queries
         const dbField =
             PARAMETERS.ALLOWED_ORDERING_COLUMNS.indexOf(field) > -1

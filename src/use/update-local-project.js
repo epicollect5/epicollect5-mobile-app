@@ -79,7 +79,7 @@ export async function updateLocalProject() {
     }
 
     // Project version out of date
-    // If we are still on the entries (first form) page, as user if they want to update
+    // If we are still on the entries (first form) page, ask user if they want to update
     if (rootStore.continueProjectVersionUpdate === true) {
         // Ask user if they want to upgrade the project
         const confirmed = await notificationService.confirmSingle(
@@ -89,11 +89,7 @@ export async function updateLocalProject() {
 
         if (confirmed) {
             return await updateProject();
-        } else {
-            return false;
         }
     }
-    else {
-        return false;
-    }
+    return false;
 }

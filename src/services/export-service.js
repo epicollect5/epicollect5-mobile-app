@@ -7,7 +7,6 @@ import { JSONTransformerService } from '@/services/utilities/json-transformer-se
 import { exportMediaService } from '@/services/filesystem/export-media-service';
 import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
 import { writeFileService } from '@/services/filesystem/write-file-service';
-import {exportMediaServiceCordova} from '@/services/filesystem/export-media-service-cordova';
 
 export const exportService = {
 
@@ -182,7 +181,7 @@ export const exportService = {
                     //recursively, get 1 entry, write as csv row, get next one
                     //1 file per each branch
                     offset = 0;
-                    getBranchEntry(offset);
+                    await getBranchEntry(offset);
                 }
             }());
         });

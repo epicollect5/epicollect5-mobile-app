@@ -3,6 +3,9 @@
   "version": "88.9.2",
   "private": true,
   "description": "Free and easy-to-use mobile data-gathering platform",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "postinstall": "jetifier",
     "serve": "vue-cli-service serve",

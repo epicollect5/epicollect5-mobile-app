@@ -98,7 +98,7 @@ export const exportMediaService = {
             return true;
         } catch (error) {
             console.error('Export error details:', error);
-            throw labels.unknown_error;
+            throw error.message || labels.unknown_error;
         }
     }
 };

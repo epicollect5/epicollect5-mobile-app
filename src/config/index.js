@@ -1,5 +1,6 @@
 export const PARAMETERS = {
     APP_NAME: 'Epicollect5',
+    DB_NAME: 'epicollect5.db',
     USER_GUIDE_URL: 'https://docs.epicollect.net',
     COMMUNITY_SUPPORT_URL: 'https://community.epicollect.net',
     PRODUCTION_SERVER_URL: 'https://five.epicollect.net',

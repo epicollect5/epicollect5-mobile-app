@@ -79,9 +79,9 @@ export const mediaDirsService = {
 
             function _onCreateSuccess(dir) {
                 if (dir.isDirectory) {
-                    console.log('Folder ' + dir.name+' already exists, skipping.');
+                    console.log('Folder ' + dir.name + ' already exists, skipping.');
                 } else {
-                    console.log('Folder ' + dir.name+' created.');
+                    console.log('Folder ' + dir.name + ' created.');
                 }
                 _createMediaDir();
             }
@@ -122,6 +122,11 @@ export const mediaDirsService = {
 
     async removeExternalMediaDirs(projectSlug) {
         const documentsFolder = utilsService.getPlatformDocumentsFolder();
+
+        //skip if not a native platform
+        if (!documentsFolder) {
+            return true;
+        }
 
         // 1. Sanitize the slug: No leading OR trailing slashes
         const slug = projectSlug.replace(/^\/|\/$/g, '');
@@ -196,8 +201,12 @@ export const mediaDirsService = {
          * location, ensuring the Filesystem plugin looks in the private Library
          * sandbox instead of the public Documents sandbox.
          */
-        else if (rootStore.device.platform === PARAMETERS.IOS) {
+        if (rootStore.device.platform === PARAMETERS.IOS) {
             return Directory.LibraryNoCloud;
         }
+
+        // If we reach this point, it means we aree not on a native platform
+        console.warn('Unsupported platform for Capacitor filesystem directory resolution');
+        return null;
     }
 };
