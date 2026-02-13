@@ -129,7 +129,7 @@ export const mediaDirsService = {
         const platform = rootStore.device.platform;
         const cleanSlug = projectSlug.replace(/^\/|\/$/g, '');
 
-        if (platform === 'android') {
+        if (platform === PARAMETERS.ANDROID) {
             // Results in 'Epicollect5/project-slug'
             return 'Epicollect5/' + cleanSlug;
         }

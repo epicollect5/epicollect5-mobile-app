@@ -19,7 +19,10 @@ export const exportMediaService = {
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
 
-        await Filesystem.requestPermissions();
+        const permResult = await Filesystem.requestPermissions();
+        if (permResult.publicStorage !== 'granted') {
+            throw labels.missing_permission;
+        }
 
         const destinationFolder = Directory.Documents;
         const sourceFolder = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
@@ -41,9 +44,11 @@ export const exportMediaService = {
             // 1. Check existence using semantic path
             let folderExists = false;
             try {
-                await Filesystem.stat({ path: baseMediaPath, directory: destinationFolder });
+                await Filesystem.stat({path: baseMediaPath, directory: destinationFolder});
                 folderExists = true;
-            } catch (e) { folderExists = false; }
+            } catch (e) {
+                folderExists = false;
+            }
 
             // 2. Create directory (recursive: true handles the 'Epicollect5' parent on Android)
             if (!folderExists) {
@@ -56,9 +61,9 @@ export const exportMediaService = {
 
             // 3. Perform Copies
             const mediaTypes = [
-                { from: photoFrom, dir: cleanPhotoDir },
-                { from: audioFrom, dir: cleanAudioDir },
-                { from: videoFrom, dir: cleanVideoDir }
+                {from: photoFrom, dir: cleanPhotoDir},
+                {from: audioFrom, dir: cleanAudioDir},
+                {from: videoFrom, dir: cleanVideoDir}
             ];
 
             for (const type of mediaTypes) {
