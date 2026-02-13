@@ -21,88 +21,61 @@ export const exportMediaService = {
 
         await Filesystem.requestPermissions();
 
-        const destinationFolder = Directory.Documents; // Standard for both Android and iOS visibility
+        const destinationFolder = Directory.Documents;
         const sourceFolder = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
 
-        if (!sourceFolder) {
-            console.warn('Unsupported platform for Capacitor filesystem directory resolution');
-            return true;
-        }
+        if (!sourceFolder) return true;
 
-        // SANITIZE: Remove leading/trailing slashes to prevent Code 5 iOS
-        const cleanProjectSlug = projectSlug.replace(/^\/|\/$/g, '');
+        // Use semantic path resolution
+        const baseMediaPath = mediaDirsService.getExportMediaPath(projectSlug);
+
         const cleanPhotoDir = PARAMETERS.PHOTO_DIR.replace(/^\/|\/$/g, '');
         const cleanAudioDir = PARAMETERS.AUDIO_DIR.replace(/^\/|\/$/g, '');
         const cleanVideoDir = PARAMETERS.VIDEO_DIR.replace(/^\/|\/$/g, '');
 
-        // Construct relative paths WITHOUT leading slashes
         const photoFrom = cleanPhotoDir + '/' + projectRef;
         const audioFrom = cleanAudioDir + '/' + projectRef;
         const videoFrom = cleanVideoDir + '/' + projectRef;
 
         try {
-            // 1. Check existence explicitly
+            // 1. Check existence using semantic path
             let folderExists = false;
             try {
-                await Filesystem.stat({
-                    path: cleanProjectSlug,
-                    directory: destinationFolder
-                });
+                await Filesystem.stat({ path: baseMediaPath, directory: destinationFolder });
                 folderExists = true;
-            } catch (e) {
-                // If stat fails, it's just not there. We don't need to check the message.
-                folderExists = false;
-            }
+            } catch (e) { folderExists = false; }
 
-            // 2. Act only if needed
+            // 2. Create directory (recursive: true handles the 'Epicollect5' parent on Android)
             if (!folderExists) {
                 await Filesystem.mkdir({
-                    path: cleanProjectSlug,
+                    path: baseMediaPath,
                     directory: destinationFolder,
                     recursive: true
                 });
-                console.log('Clean mkdir performed.');
             }
+
             // 3. Perform Copies
-            // PHOTOS
-            try {
-                await Filesystem.copy({
-                    from: photoFrom,
-                    directory: sourceFolder,
-                    to: cleanProjectSlug + '/' + cleanPhotoDir,
-                    toDirectory: destinationFolder
-                });
-            } catch (e) {
-                console.log('No photos found or copy failed', e);
-            }
+            const mediaTypes = [
+                { from: photoFrom, dir: cleanPhotoDir },
+                { from: audioFrom, dir: cleanAudioDir },
+                { from: videoFrom, dir: cleanVideoDir }
+            ];
 
-            // AUDIOS
-            try {
-                await Filesystem.copy({
-                    from: audioFrom,
-                    directory: sourceFolder,
-                    to: cleanProjectSlug + '/' + cleanAudioDir,
-                    toDirectory: destinationFolder
-                });
-            } catch (e) {
-                console.log('No audios found', e);
-            }
-
-            // VIDEOS
-            try {
-                await Filesystem.copy({
-                    from: videoFrom,
-                    directory: sourceFolder,
-                    to: cleanProjectSlug + '/' + cleanVideoDir,
-                    toDirectory: destinationFolder
-                });
-            } catch (e) {
-                console.log('No videos found', e);
+            for (const type of mediaTypes) {
+                try {
+                    await Filesystem.copy({
+                        from: type.from,
+                        directory: sourceFolder,
+                        to: baseMediaPath + '/' + type.dir,
+                        toDirectory: destinationFolder
+                    });
+                } catch (e) {
+                    console.log(`No ${type.dir} found to export.`);
+                }
             }
 
             return true;
         } catch (error) {
-            console.error('Export error details:', error);
             throw error.message || labels.unknown_error;
         }
     }

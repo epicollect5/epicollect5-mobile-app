@@ -365,15 +365,16 @@ export default {
             const documentsFolder = utilsService.getPlatformDocumentsFolder();
             //Warn users and show the download folder according to the platform
             if (rootStore.device.platform === PARAMETERS.ANDROID) {
-
+              //Show path for Android
+              const message = documentsFolder + ' > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug;
               await notificationService.showAlert(
-                  documentsFolder + '/' + projectSlug + '/',
+                  message,
                   labels.media_exported
               );
             }
             if (rootStore.device.platform === PARAMETERS.IOS) {
               await notificationService.showAlert(
-                  '📂 > 📱 > Epicollect5 > ' + projectSlug,
+                  '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug,
                   labels.media_exported
               );
             }

@@ -119,16 +119,32 @@ export const mediaDirsService = {
         });
     },
 
+    /**
+     * Resolves the path for user-visible exported media.
+     * iOS: App data is grouped by the OS under the App Name.
+     * Android: We manually group projects under an 'Epicollect5' folder.
+     */
+    getExportMediaPath(projectSlug) {
+        const rootStore = useRootStore();
+        const platform = rootStore.device.platform;
+        const cleanSlug = projectSlug.replace(/^\/|\/$/g, '');
+
+        if (platform === 'android') {
+            // Results in 'Epicollect5/project-slug'
+            return 'Epicollect5/' + cleanSlug;
+        }
+
+        // Results in 'project-slug' (iOS creates the 'Epicollect5' folder automatically)
+        return cleanSlug;
+    },
+
     async removeExternalMediaDirs(projectSlug) {
         const documentsFolder = utilsService.getPlatformDocumentsFolder();
-
-        //skip if not a native platform
         if (!documentsFolder) {
             return true;
         }
 
-        // 1. Sanitize the slug: No leading OR trailing slashes
-        const slug = projectSlug.replace(/^\/|\/$/g, '');
+        const baseMediaPath = this.getExportMediaPath(projectSlug);
 
         const mediaDirs = [
             PARAMETERS.PHOTO_DIR,
@@ -139,31 +155,20 @@ export const mediaDirsService = {
         let allSucceeded = true;
         for (const dir of mediaDirs) {
             try {
-                // 2. Sanitize the subdirectory: No slashes at all
                 const cleanDir = dir.replace(/\//g, '');
-
-                // Construct path manually to ensure a single clean slash
-                const fullPath = slug + '/' + cleanDir;
+                const fullPath = baseMediaPath + '/' + cleanDir;
 
                 await Filesystem.rmdir({
                     path: fullPath,
                     directory: documentsFolder,
                     recursive: true
                 });
-
-                console.log('Successfully removed: ' + fullPath);
             } catch (error) {
-                // iOS 0013 usually means the path was malformed
-                // OR the folder really isn't there.
-                // We log the specific error code for debugging.
-                console.log('Folder skip logic triggered for: ' + dir, error.code);
-                // "not found" is expected; anything else is a real failure
                 if (error.message && !error.message.includes('not exist')) {
                     allSucceeded = false;
                 }
             }
         }
-
         return allSucceeded;
     },
 

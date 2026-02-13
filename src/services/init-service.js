@@ -162,10 +162,12 @@ export const initService = {
     /**
      * Runs a PRAGMA integrity_check to ensure the moved file is valid.
      */
+
     async verifyDatabaseIntegrity(name) {
+        let db = {};
         return new Promise((resolve) => {
             try {
-                const db = window.sqlitePlugin.openDatabase({
+                db = window.sqlitePlugin.openDatabase({
                     name: name,
                     iosDatabaseLocation: 'default'
                 });
@@ -180,8 +182,8 @@ export const initService = {
                         if (status === 'ok') {
                             resolve(true);
                         } else {
-                            db.close(() => {}, (e) => console.warn('Close after bad integrity:', e));
                             resolve(false);
+                            db.close(() => {}, (e) => console.warn('Close after bad integrity:', e));
                         }
                     }, (tx, err) => {
                         console.error('SQL Error during integrity check', err);
@@ -201,6 +203,7 @@ export const initService = {
                     );
                 });
             } catch (e) {
+                db.close(() => {}, (e) => console.warn('Close after catch:', e));
                 resolve(false);
             }
         });
@@ -365,6 +368,7 @@ export const initService = {
                     resolve(language);
                 }).catch((error) => {
                 console.log(error);
+                reject(error);
             });
         });
     },
