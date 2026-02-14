@@ -131,7 +131,7 @@ export const mediaDirsService = {
 
         if (platform === PARAMETERS.ANDROID) {
             // Results in 'Epicollect5/project-slug'
-            return 'Epicollect5/' + cleanSlug;
+            return PARAMETERS.APP_NAME + '/' + cleanSlug;
         }
 
         // Results in 'project-slug' (iOS creates the 'Epicollect5' folder automatically)

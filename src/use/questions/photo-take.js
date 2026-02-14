@@ -34,13 +34,13 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
         try {
             const imageURI = await Camera.getPhoto(cameraOptions);
 
-            notificationService.stopForegroundService();
+            await notificationService.stopForegroundService();
 
             //if we do not have taken any photo yet, generate a new file name
             if (media[entryUuid][state.inputDetails.ref].cached === '') {
-                //check if we have a stored filename, i.e user is replacing the photo for the entry
+                //check if we have a stored filename, i.e. user is replacing the photo for the entry
                 if (media[entryUuid][state.inputDetails.ref].stored === '') {
-                    //generate new file name, this is a brand new file
+                    //generate new file name, this is a brand-new file
                     filename = utilsService.generateMediaFilename(
                         entryUuid,
                         PARAMETERS.QUESTION_TYPES.PHOTO
@@ -68,7 +68,7 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                 });
         } catch (error) {
             console.log(error);
-            notificationService.stopForegroundService();
+            await notificationService.stopForegroundService();
             notificationService.hideProgressDialog();
             if (!(typeof error.message === 'string' && error.message.toLowerCase().includes('user cancelled photos app'))) {
                 //reset media object to avoid trying to save a file that does not exist...
@@ -76,7 +76,7 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                 media[entryUuid][state.inputDetails.ref].cached = '';
                 // Reset answer
                 state.answer.answer = '';
-                await notificationService.showAlert(error);
+                await notificationService.showAlert(error.message || labels.unknown_error);
             }
         }
     }
