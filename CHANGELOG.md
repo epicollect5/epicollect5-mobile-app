@@ -1,6 +1,14 @@
 ## Release Notes
 
-# 88.9.2 - build 8992
+### 88.9.3 - build 8893
+
+- Added Media export option.
+- Entry-limit checks removed from the app.
+- iOS file sharing and in-place document opening enabled.
+- Localized labels for media export added.
+- Export and filesystem flows unified to use app Documents folder
+
+# 88.9.2 - build 8892
 
 - Fixed incomplete entry banner in the branch entries view.
 - Stronger language files validation
