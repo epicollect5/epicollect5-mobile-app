@@ -48,11 +48,11 @@ export const writeFileService = {
     },
     getFilePath (formRef, branchRef) {
 
-        const downloadFolder = utilsService.getPlatformDownloadFolder();
+        const downloadFolder = utilsService.getPlatformDocumentsFolder();
         const projectSlug = projectModel.getSlug();
         const mappings = projectModel.getProjectMappings();
         const projectExtra = projectModel.getProjectExtra();
-        //get form index (forms and branches can have same name, 
+        //get form index (forms and branches can have same name,
         //that would override the file)
         const formIndex = projectModel.getFormIndex(formRef);
         const formName = projectModel.getFormName(formRef);

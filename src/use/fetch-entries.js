@@ -1,7 +1,5 @@
-
 import { useDBStore } from '@/stores/db-store';
 import { PARAMETERS } from '@/config';
-import { projectModel } from '@/models/project-model.js';
 import { databaseSelectService } from '@/services/database/database-select-service';
 
 //get entries for a form
@@ -11,31 +9,15 @@ export async function fetchEntries(params) {
     const entries = [];
     const allMediaUuids = [];
     const branchMediaUuids = [];
-    let hasUnsyncedEntries = false;
-    let entriesLimitReached = false;
     const { formRef, parentEntryUuid, currentEntryOffset, filters, projectRef } = params;
     const order = dbStore.dbEntriesOrder;
-
-    //todo: need another query to check for unsynced entries, without forms and limits etc
-    // const resultNoFilters = await databaseSelectService.selectEntries(
-    //     projectRef,
-    //     formRef,
-    //     parentEntryUuid,
-    //     order,
-    //     PARAMETERS.ENTRIES_PER_PAGE,
-    //     currentEntryOffset,
-    //     null,
-    //     PARAMETERS.STATUS.ALL
-    // );
 
     //is there any unsynced entry project wide?
     const resultEntriesUnsynced = await databaseSelectService.countEntriesUnsynced(projectRef);
     const totalEntriesUnsynced = resultEntriesUnsynced.rows.item(0).total;
-
     const resultMediaUnsynced = await databaseSelectService.countMediaUnsynced(projectRef);
     const totalMediaUnsynced = resultMediaUnsynced.rows.item(0).total;
-
-    hasUnsyncedEntries = (totalEntriesUnsynced > 0 || totalMediaUnsynced > 0);
+    const hasUnsyncedEntries = (totalEntriesUnsynced > 0 || totalMediaUnsynced > 0);
 
     const result = await databaseSelectService.selectEntries(
         projectRef,
@@ -78,13 +60,9 @@ export async function fetchEntries(params) {
 
     //find all media errors and also count hierarchy entries (the latter for pagination)
     const mediaErrors = await databaseSelectService.selectEntryMediaErrorsByForm(projectRef, formRef);
-    const entriesCount = await databaseSelectService.countEntries(
-        projectRef,
-        formRef,
-        parentEntryUuid
-    );
 
-    //check if any entry has some media file sync failure (i.e file not saved or missing)
+
+    //check if any entry has some media file sync failure (i.e. file not saved or missing)
     if (entries.length > 0) {
         for (let index = 0; index < entries.length; index++) {
             for (let innerIndex = 0; innerIndex < mediaErrors.rows.length; innerIndex++) {
@@ -108,37 +86,10 @@ export async function fetchEntries(params) {
         }
     }
 
-    // Enable/Disable "Add Entry" button based on entries limit
-    const entriesLimit = projectModel.getEntriesLimit(formRef);
-
-    //check if we reached the limit
-    entriesLimitReached =
-        entriesLimit !== null &&
-        entriesCount.rows.item(0).total >= window.parseInt(entriesLimit, 10);
-
-    //hack:
-    //fake entries for debug
-    // for (let i = 0; i < 70; i++) {
-    //     entries.push({
-    //         title:
-    //             i +
-    //             '  entry',
-    //         entry_uuid: utilsService.uuid(),
-    //         synced: 0,
-    //         can_edit: 0,
-    //         is_remote: 0,
-    //         created_at: new Date().toISOString(),
-    //         has_media_error: false
-    //     });
-    // }
-    //hack:
-
-
     return {
         entries,
         allMediaUuids,
         branchMediaUuids,
-        hasUnsyncedEntries,
-        entriesLimitReached
+        hasUnsyncedEntries
     };
 }

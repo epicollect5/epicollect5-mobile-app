@@ -17,33 +17,31 @@ export const versioningService = {
     previousProjectStructure: {},
     changeMade: false,
 
-    //Check project version is current
-    checkProjectVersion () {
+    // Check project version is current
+    async checkProjectVersion() {
+        try {
+            // 1. Check for internet connection
+            const hasInternet = await utilsService.hasInternetConnection();
 
-        return new Promise((resolve) => {
+            if (hasInternet) {
+                // 2. Fetch remote version
+                const response = await webService.getProjectVersion(projectModel.getSlug());
+                const remoteVersion = response.data.data.attributes.structure_last_updated;
+                const localVersion = projectModel.getLastUpdated();
 
-            // If we are using a device and have an internet connection, check project version
-            //  if (isDevice && utilsService.hasInternetConnection()) {
-            if (utilsService.hasInternetConnection()) {
-                webService.getProjectVersion(projectModel.getSlug()).then(function (response) {
-                    // Check if version is current
-                    //todo we are using the timestamp as version, so we check for strict equality
-                    if (response.data.data.attributes.structure_last_updated === projectModel.getLastUpdated()) {
-                        // Resolve, version ok
-                        resolve(true);
-                    } else {
-                        // resolve with false, version error
-                        resolve(false);
-                    }
-                }, function (error) {
-                    console.log(error);
-                    // Any other error, just resolve
-                    resolve(true);
-                });
-            } else {
-                resolve(true);
+                // 3. Compare versions
+                // Resolve true if versions match, false if they don't
+                return remoteVersion === localVersion;
             }
-        });
+
+            // If no internet, we assume it's "ok" to proceed
+            return true;
+
+        } catch (error) {
+            console.error('Error checking project version:', error);
+            // On error, we resolve true to prevent blocking the user
+            return true;
+        }
     },
 
     //Update the project and all entries
@@ -182,7 +180,6 @@ export const versioningService = {
     selectAndUpdateEntries (formRef) {
 
         const self = this;
-
         const form = projectModel.getExtraForm(formRef);
         const groupInputs = form.group;
         const branchInputs = self.getBranchInputs(form);

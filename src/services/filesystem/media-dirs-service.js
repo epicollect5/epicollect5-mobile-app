@@ -1,6 +1,5 @@
 import {useRootStore} from '@/stores/root-store';
 import {PARAMETERS} from '@/config';
-import {STRINGS} from '@/config/strings';
 import {Filesystem, Directory} from '@capacitor/filesystem';
 import {utilsService} from '@/services/utilities/utils-service';
 
@@ -72,16 +71,16 @@ export const mediaDirsService = {
             return true;
         }
 
-        //create the folder on the fyle system recursively
+        //create the folder on the file system recursively
         return new Promise((resolve, reject) => {
 
             let entry;
 
             function _onCreateSuccess(dir) {
                 if (dir.isDirectory) {
-                    console.log('Folder ' + dir.name+' already exists, skipping.');
+                    console.log('Folder ' + dir.name + ' already exists, skipping.');
                 } else {
-                    console.log('Folder ' + dir.name+' created.');
+                    console.log('Folder ' + dir.name + ' created.');
                 }
                 _createMediaDir();
             }
@@ -120,66 +119,57 @@ export const mediaDirsService = {
         });
     },
 
-    async removeExternalMediaDirs(projectSlug) {
-
-        const self = this;
+    /**
+     * Resolves the path for user-visible exported media.
+     * iOS: App data is grouped by the OS under the App Name.
+     * Android: We manually group projects under an 'Epicollect5' folder.
+     */
+    getExportMediaPath(projectSlug) {
         const rootStore = useRootStore();
-        const language = rootStore.language;
-        const labels = STRINGS[language].language;
-        const downloadFolder = utilsService.getPlatformDownloadFolder();
-        const photoDirDestination =
-            downloadFolder + projectSlug + '/' + PARAMETERS.PHOTO_DIR;
-        const audioDirDestination =
-            downloadFolder + projectSlug + '/' + PARAMETERS.AUDIO_DIR;
-        const videoDirDestination =
-            downloadFolder + projectSlug + '/' + PARAMETERS.VIDEO_DIR;
+        const platform = rootStore.device.platform;
+        const cleanSlug = projectSlug.replace(/^\/|\/$/g, '');
 
-        //find out if folders exist
-        const externalStorage = cordova.file.externalRootDirectory;
-        const dirExistsPhoto = await self.dirExists(externalStorage + photoDirDestination);
-        const dirExistsAudio = await self.dirExists(externalStorage + audioDirDestination);
-        const dirExistsVideo = await self.dirExists(externalStorage + videoDirDestination);
+        if (platform === PARAMETERS.ANDROID) {
+            // Results in 'Epicollect5/project-slug'
+            return PARAMETERS.APP_NAME + '/' + cleanSlug;
+        }
 
-        return new Promise((resolve, reject) => {
-            (async function () {
+        // Results in 'project-slug' (iOS creates the 'Epicollect5' folder automatically)
+        return cleanSlug;
+    },
 
-                //any errors bail out
-                if (dirExistsPhoto === null || dirExistsAudio === null || dirExistsVideo === null) {
-                    reject(labels.unknown_error);
+    async removeExternalMediaDirs(projectSlug) {
+        const documentsFolder = utilsService.getPlatformDocumentsFolder();
+        if (!documentsFolder) {
+            return true;
+        }
+
+        const baseMediaPath = this.getExportMediaPath(projectSlug);
+
+        const mediaDirs = [
+            PARAMETERS.PHOTO_DIR,
+            PARAMETERS.AUDIO_DIR,
+            PARAMETERS.VIDEO_DIR
+        ];
+
+        let allSucceeded = true;
+        for (const dir of mediaDirs) {
+            try {
+                const cleanDir = dir.replace(/\//g, '');
+                const fullPath = baseMediaPath + '/' + cleanDir;
+
+                await Filesystem.rmdir({
+                    path: fullPath,
+                    directory: documentsFolder,
+                    recursive: true
+                });
+            } catch (error) {
+                if (error.message && !error.message.includes('not exist')) {
+                    allSucceeded = false;
                 }
-
-                try {
-                    //remove photo dir (if exists)
-                    if (dirExistsPhoto) {
-                        await Filesystem.rmdir({
-                            path: photoDirDestination,
-                            directory: Directory.ExternalStorage,
-                            recursive: true
-                        });
-                    }
-                    //remove audio dir (if exists)
-                    if (dirExistsAudio) {
-                        await Filesystem.rmdir({
-                            path: audioDirDestination,
-                            directory: Directory.ExternalStorage,
-                            recursive: true
-                        });
-                    }
-                    //remove video dir (if exists)
-                    if (dirExistsVideo) {
-                        await Filesystem.rmdir({
-                            path: videoDirDestination,
-                            directory: Directory.ExternalStorage,
-                            recursive: true
-                        });
-                    }
-                    resolve();
-                } catch (error) {
-                    console.log(error);
-                    resolve();
-                }
-            }());
-        });
+            }
+        }
+        return allSucceeded;
     },
 
     //check if a directory exists
@@ -196,5 +186,36 @@ export const mediaDirsService = {
                     error.code === 1 ? resolve(false) : resolve(null);
                 });
         });
+    },
+
+    getRelativeDataDirectoryForCapacitorFilesystem() {
+        const rootStore = useRootStore();
+
+        /**
+         * ANDROID MAPPING:
+         * In Cordova, 'cordova.file.dataDirectory' points to the internal
+         * app-specific folder (usually /data/user/0/package/files).
+         * In Capacitor, 'Directory.Data' is the direct equivalent.
+         */
+        if (rootStore.device.platform === PARAMETERS.ANDROID) {
+            return Directory.Data;
+        }
+
+        /**
+         * IOS MAPPING:
+         * This is where the platforms diverge.
+         * In Cordova, 'cordova.file.dataDirectory' typically points to 'Library/NoCloud'.
+         * In Capacitor, using 'Directory.Data' would incorrectly point to 'Documents'.
+         * 'Directory.LibraryNoCloud' is the precise match for the old Cordova storage
+         * location, ensuring the Filesystem plugin looks in the private Library
+         * sandbox instead of the public Documents sandbox.
+         */
+        if (rootStore.device.platform === PARAMETERS.IOS) {
+            return Directory.LibraryNoCloud;
+        }
+
+        // If we reach this point, it means we are not on a native platform
+        console.warn('Unsupported platform for Capacitor filesystem directory resolution');
+        return null;
     }
 };

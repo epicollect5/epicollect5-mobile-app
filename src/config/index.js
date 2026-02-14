@@ -1,5 +1,6 @@
 export const PARAMETERS = {
     APP_NAME: 'Epicollect5',
+    DB_NAME: 'epicollect5.db',
     USER_GUIDE_URL: 'https://docs.epicollect.net',
     COMMUNITY_SUPPORT_URL: 'https://community.epicollect.net',
     PRODUCTION_SERVER_URL: 'https://five.epicollect.net',
@@ -11,7 +12,7 @@ export const PARAMETERS = {
     // url production
     DEFAULT_SERVER_URL: 'https://five.epicollect.net',
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',
-    HOW_MANY_ENTRIES: 50,
+    HOW_MANY_ENTRIES: 30,
     HOW_MANY_BRANCH_ENTRIES: 2,
     ZOOM_LEVELS: 7,
     DEFAULT_LANGUAGE: 'en',

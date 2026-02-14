@@ -1,14 +1,15 @@
-import { Device } from '@capacitor/device';
-import { App } from '@capacitor/app';
-import { databaseSelectService } from '@/services/database/database-select-service';
-import { databaseMigrateService } from '@/services/database/database-migrate-service';
-import { databaseDeleteService } from '@/services/database/database-delete-service';
-import { databaseInsertService } from '@/services/database/database-insert-service';
-import { useRootStore } from '@/stores/root-store';
-import { useDBStore } from '@/stores/db-store';
-import { PARAMETERS, MIGRATIONS, DEMO_PROJECT } from '@/config';
-import { STRINGS } from '@/config/strings';
+import {Device} from '@capacitor/device';
+import {App} from '@capacitor/app';
+import {databaseSelectService} from '@/services/database/database-select-service';
+import {databaseMigrateService} from '@/services/database/database-migrate-service';
+import {databaseDeleteService} from '@/services/database/database-delete-service';
+import {databaseInsertService} from '@/services/database/database-insert-service';
+import {useRootStore} from '@/stores/root-store';
+import {useDBStore} from '@/stores/db-store';
+import {PARAMETERS, MIGRATIONS, DEMO_PROJECT} from '@/config';
+import {STRINGS} from '@/config/strings';
 import axios from 'axios';
+import {Filesystem, Directory} from '@capacitor/filesystem';
 
 export const initService = {
 
@@ -23,60 +24,187 @@ export const initService = {
             }
         }
 
-        return { ...deviceInfo, ...deviceId };
+        return {...deviceInfo, ...deviceId};
     },
 
     async getAppInfo() {
         const rootStore = useRootStore();
         if ([PARAMETERS.WEB, PARAMETERS.PWA].includes(rootStore.device.platform)) {
             return {
-                name: 'Epicollect5',
+                name: PARAMETERS.APP_NAME,
                 version: 'n/a'
             };
         }
         return await App.getInfo();
     },
 
+    async initDatabaseIOS() {
+        let dbLocation = 'default';
+        const dbName = PARAMETERS.DB_NAME;
+
+        // 1. Wait for migration
+        const isPrivateReady = await this.migrateLegacyDatabase();
+
+        if (!isPrivateReady) {
+            console.warn('Migration failed. Falling back to Documents.');
+            dbLocation = 'Documents';
+        }
+
+        // 2. Wrap the Callback-based openDatabase in a Promise
+        return new Promise((resolve, reject) => {
+            const db = window.sqlitePlugin.openDatabase({
+                name: dbName,
+                iosDatabaseLocation: dbLocation
+            }, () => {
+                console.log(`Database opened successfully at: ${dbLocation}`);
+                // Resolve the promise with the db instance
+                resolve(db);
+            }, (err) => {
+                console.error('Critical database open error:', err);
+                reject(err);
+            });
+        });
+    },
+
     async openDB(platform) {
+        const dbName = PARAMETERS.DB_NAME;
         return new Promise((resolve, reject) => {
             let db = {};
 
             if (platform === PARAMETERS.WEB) {
-                db = window.openDatabase('epicollect5.db', '1.0', 'epicollect5', 5000000);
+                db = window.openDatabase(dbName, '1.0', 'epicollect5', 5000000);
                 resolve(db);
-            }
-            else {
+            } else {
                 document.addEventListener('deviceready', () => {
                     console.log('deviceready called');
 
                     if (platform === PARAMETERS.ANDROID) {
                         db = window.sqlitePlugin.openDatabase({
-                            name: 'epicollect5.db',
+                            name: dbName,
                             location: 'default',
                             androidDatabaseProvider: 'system',
                             androidLockWorkaround: 1//to be tested if this makes problems
                         });
                         console.log('Database opened correctly, using default location');
-                        setTimeout(()=>{
+                        setTimeout(() => {
                             resolve(db);
                         }, PARAMETERS.DELAY_LONG);
                     }
 
                     if (platform === PARAMETERS.IOS) {
-                        db = window.sqlitePlugin.openDatabase({
-                            name: 'epicollect5.db',
-                            iosDatabaseLocation: 'Documents'
-                        }, ()=>{
-                            console.log('Database opened correctly, using Documents as location');
-                            setTimeout(()=>{
+                        this.initDatabaseIOS().then((db) => {
+                            setTimeout(() => {
                                 resolve(db);
                             }, PARAMETERS.DELAY_LONG);
-                        }, (error) =>{
-                            console.error('Error opening database -> ', error);
+                        }, (error) => {
                             reject(error);
                         });
                     }
                 });
+            }
+        });
+    },
+
+    /**
+     * Moves DB from Documents to Library/LocalDatabase with Integrity Verification
+     */
+    async migrateLegacyDatabase() {
+        const dbName = PARAMETERS.DB_NAME;
+        const targetFolder = 'LocalDatabase';
+
+        try {
+            // A. Check for legacy file existence explicitly
+            let isLegacyPresent = false;
+            try {
+                await Filesystem.stat({path: dbName, directory: Directory.Documents});
+                isLegacyPresent = true;
+            } catch (e) {
+                isLegacyPresent = false;
+            }
+
+            // B. Skip logic: If it's not in Documents, we are already private or fresh.
+            if (!isLegacyPresent) {
+                return true;
+            }
+
+            // C. Prepare the private directory
+            try {
+                await Filesystem.stat({path: targetFolder, directory: Directory.Library});
+            } catch (e) {
+                await Filesystem.mkdir({path: targetFolder, directory: Directory.Library, recursive: true});
+            }
+
+            // D. Perform the move (Copy first for safety)
+            await Filesystem.copy({
+                from: dbName, directory: Directory.Documents,
+                to: `${targetFolder}/${dbName}`, toDirectory: Directory.Library
+            });
+
+            // E. Verify the health of the new copy
+            const isHealthy = await this.verifyDatabaseIntegrity(dbName);
+
+            if (isHealthy) {
+                // F. Success! Wipe the public evidence.
+                await Filesystem.deleteFile({path: dbName, directory: Directory.Documents});
+                return true;
+            } else {
+                // Failure: Delete the corrupted copy so we don't use it.
+                await Filesystem.deleteFile({path: `${targetFolder}/${dbName}`, directory: Directory.Library});
+                return false;
+            }
+
+        } catch (error) {
+            console.error('Migration Logic Failure:', error);
+            return false;
+        }
+    },
+
+    /**
+     * Runs a PRAGMA integrity_check to ensure the moved file is valid.
+     */
+
+    async verifyDatabaseIntegrity(name) {
+        let db = {};
+        return new Promise((resolve) => {
+            try {
+                db = window.sqlitePlugin.openDatabase({
+                    name: name,
+                    iosDatabaseLocation: 'default'
+                });
+
+                // Use a simple executeSql if your plugin version supports it,
+                // otherwise keep the transaction but wait for the SUCCESS callback.
+                db.transaction((tx) => {
+                    tx.executeSql('PRAGMA integrity_check;', [], (tx, results) => {
+                        const status = results.rows.item(0).integrity_check;
+                        console.log('Verification status:', status);
+
+                        if (status === 'ok') {
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                            db.close(() => {}, (e) => console.warn('Close after bad integrity:', e));
+                        }
+                    }, (tx, err) => {
+                        console.error('SQL Error during integrity check', err);
+                        db.close(() => {}, (e) => console.warn('Close after SQL error:', e));
+                        resolve(false);
+                    });
+                }, (err) => {
+                    console.error('Transaction Error', err);
+                    db.close(() => {}, (e) => console.warn('Close after tx error:', e));
+                    resolve(false);
+                }, () => {
+                    // SUCCESS CALLBACK: The transaction is fully finished and committed here.
+                    // It is now safe to close the DB without the "transaction in progress" error.
+                    db.close(
+                        () => console.log('Temp DB closed safely.'),
+                        (e) => console.warn('Failed to close temp DB:', e)
+                    );
+                });
+            } catch (e) {
+                db.close(() => {}, (e) => console.warn('Close after catch:', e));
+                resolve(false);
             }
         });
     },
@@ -100,10 +228,10 @@ export const initService = {
 
     async migrateDB() {
         /**
-        * Migrating altering tables, depending on stored version against latest version
-        * See: http://stackoverflow.com/questions/989558/best-practices-for-in-app-database-migration-for-sqlite
-        */
-        // Get the db version from the database
+         * Migrating altering tables, depending on stored version against latest version
+         * See: http://stackoverflow.com/questions/989558/best-practices-for-in-app-database-migration-for-sqlite
+         */
+            // Get the db version from the database
         const dbStore = useDBStore();
         let dbVersion = dbStore.dbVersion;
         // Check if it doesn't exist
@@ -192,8 +320,7 @@ export const initService = {
                         console.log('Error getting language');
                     }
                 );
-            }
-            else {
+            } else {
                 self.getLanguageFile(PARAMETERS.DEFAULT_LANGUAGE).then((data) => {
                     STRINGS[PARAMETERS.DEFAULT_LANGUAGE].status_codes = data;
                     resolve(PARAMETERS.DEFAULT_LANGUAGE);
@@ -229,9 +356,8 @@ export const initService = {
                 //get the language files from data-editor folder in laravel
                 const endpoint = PARAMETERS.PWA_LANGUAGE_FILES_ENDPOINT;
                 url = serverUrl + endpoint + language + '.json';
-            }
-            else {
-                //development i.e debugging pwa in the browser
+            } else {
+                //development i.e. debugging pwa in the browser
                 //get language file from local assets
                 url = './assets/ec5-status-codes/' + language + '.json';
             }
@@ -241,8 +367,9 @@ export const initService = {
                     STRINGS[language].status_codes = data.data;
                     resolve(language);
                 }).catch((error) => {
-                    console.log(error);
-                });
+                console.log(error);
+                reject(error);
+            });
         });
     },
 
@@ -288,8 +415,7 @@ export const initService = {
                 // Update rootscope
                 if (res.rows.length > 0) {
                     resolve(JSON.parse(res.rows.item(0).value));
-                }
-                else {
+                } else {
                     resolve(null);
                 }
             }, function (error) {
@@ -321,7 +447,6 @@ export const initService = {
                     const meta = JSON.parse(response).data.meta;
                     DEMO_PROJECT.PROJECT_EXTRA = JSON.stringify(meta.project_extra);
                     DEMO_PROJECT.MAPPING = JSON.stringify(meta.project_mapping);
-
 
 
                     databaseInsertService.insertProject(
@@ -402,11 +527,9 @@ export const initService = {
                     user.action = STRINGS[language].labels.logout;
                     // Set JWT into rootscope
                     user.jwt = response.rows.item(0).jwt;
-                    // Set User name into rootscope
-
+                    // Set Username into rootscope
                     user.name = response.rows.item(0).name;
                     user.email = response.rows.item(0).email;
-
                 } else {
                     // Default action to 'login'
                     user.action = STRINGS[language].labels.login;
