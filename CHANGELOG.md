@@ -1,9 +1,5 @@
 ## Release Notes
 
-### 88.10.0 - build 88100
-
-
-
 # 88.9.2 - build 8992
 
 - Fixed incomplete entry banner in the branch entries view.
