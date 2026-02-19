@@ -243,8 +243,8 @@ debugger;
                         //extract global errors
 
                         const inputsExtra = projectModel.getExtraInputs();
-                        for (const [inpuRef, errors] of Object.entries(rootStore.queueBranchUploadErrorsPWA)) {
-                            if (!inputsExtra[inpuRef]) {
+                        for (const [inputRef, errors] of Object.entries(rootStore.queueBranchUploadErrorsPWA)) {
+                            if (!inputsExtra[inputRef]) {
                                 rootStore.queueGlobalUploadErrorsPWA.push(...errors);
                             }
                         }
@@ -349,7 +349,7 @@ debugger;
 
     //Validate and append answer/title to entry object
     validateAnswer (params) {
-        //todo: test this throughly in the future...
+        //todo: test this through in the future...
         //For edits: check if all the required questions have an answer
         //Users can edit an existing entry, go back and save.
         //The server would catch the missing required answer anyway

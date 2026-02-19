@@ -56,7 +56,7 @@ export const branchEntryService = {
         const self = this;
         self.form = formModel;
         self.entry = branchEntryModel;
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
 
             this.action = PARAMETERS.ENTRY_EDIT;
             // Replace entry model object with that supplied
@@ -90,7 +90,7 @@ export const branchEntryService = {
         self.entry = branchEntryModel;
 
         return new Promise((resolve, reject) => {
-            // Set the entry title title
+            // Set the entry title
             entryCommonService.setEntryTitle(
                 projectModel.getExtraForm(self.entry.formRef),
                 projectModel.getExtraInputs(),
@@ -142,7 +142,6 @@ export const branchEntryService = {
 
             //convert self.entry to an object identical to the one we save to the DB,
             //so we can re-use all the functions
-            console.log(JSON.stringify(self.entry.answers));
             const parsedBranchEntry = {
                 entry_uuid: self.entry.entryUuid,
                 parent_entry_uuid: self.entry.parentEntryUuid,
@@ -162,8 +161,6 @@ export const branchEntryService = {
                 owner_entry_uuid: self.entry.ownerEntryUuid
             };
 
-            console.log(JSON.stringify(parsedBranchEntry));
-
             //remove upload errors for this branch (looking up uuid)
             if (Object.keys(rootStore.queueBranchUploadErrorsPWA).length > 0) {
                 for (const [branchRef, errors] of Object.entries(rootStore.queueBranchUploadErrorsPWA)) {
@@ -176,7 +173,7 @@ export const branchEntryService = {
             }
 
 
-            //conver entry to upload format
+            //convert entry to upload format
             const uploadableBranchEntry = JSONTransformerService.makeJsonEntry(PARAMETERS.BRANCH_ENTRY, parsedBranchEntry);
 
             //if a remote branch, upload
@@ -195,7 +192,7 @@ export const branchEntryService = {
                     rootStore.queueTempBranchEntriesPWA[ownerInputRef] = [];
                 }
 
-                //if edit, replace current temp branch entry
+                //if edited, replace current temp branch entry
                 if (branchEntryService.action === PARAMETERS.ENTRY_EDIT) {
                     const existingBranchEntries = rootStore.queueTempBranchEntriesPWA[ownerInputRef];
                     const index = existingBranchEntries.findIndex((branch) => {
@@ -242,7 +239,7 @@ export const branchEntryService = {
         return entryCommonService.processJumpsPrevious(this.entry, currentInputIndex, this.branchInputs);
     },
 
-    //remove temp branch entries when quitting hierachy entry
+    //remove temp branch entries when quitting hierarchy entry
     removeTempBranches () {
 
         const self = this;
@@ -265,7 +262,7 @@ export const branchEntryService = {
             else {
                 //on native app, delete them from database
 
-                //when quitting a branch entry, there are not temp branches to remove
+                //when quitting a branch entry, there are no temp branches to remove
                 if (self.type === PARAMETERS.BRANCH_ENTRY) {
                     resolve();
                     return false;

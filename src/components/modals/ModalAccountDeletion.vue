@@ -91,6 +91,7 @@ import { errorsService } from '@/services/errors-service';
 import { showModalLogin } from '@/use/auth/show-modal-login';
 import { logout } from '@/use/auth/logout';
 import { useRouter } from 'vue-router';
+import { authVerificationService } from '@/services/auth/auth-verification-service';
 
 export default {
 	components: {
@@ -142,7 +143,7 @@ export default {
 					//show error
 					if (error.data?.errors[0]?.code === 'ec5_219') {
 						//jwt token expired?, logout and show login modal
-						const expired = await utilsService.isJWTExpired();
+						const expired = await authVerificationService.isJWTExpired();
 						if (expired) {
 							await logout();
 							showModalLogin();

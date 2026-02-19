@@ -1,10 +1,10 @@
-import { PARAMETERS } from '@/config';
-import { STRINGS } from '@/config/strings';
-import { useRootStore } from '@/stores/root-store';
-import { loadingController, alertController } from '@ionic/vue';
-import { PushNotifications } from '@capacitor/push-notifications';
-import { Toast } from '@capacitor/toast';
-import { Capacitor } from '@capacitor/core';
+import {PARAMETERS} from '@/config';
+import {STRINGS} from '@/config/strings';
+import {useRootStore} from '@/stores/root-store';
+import {loadingController, alertController} from '@ionic/vue';
+import {PushNotifications} from '@capacitor/push-notifications';
+import {Toast} from '@capacitor/toast';
+import {Capacitor} from '@capacitor/core';
 import {useToast} from '@/use/toast';
 
 export const notificationService = {
@@ -27,10 +27,13 @@ export const notificationService = {
                     position: setPosition
                 });
             }
-            //on the PWA use Ionic Toast Controller
+            //on the PWA use vanilla toast
             else {
-               const toast = useToast();
-                await toast.show(messageStr);
+                const toast = useToast();
+                await toast.show({
+                    message: messageStr,
+                    position: setPosition
+                });
             }
         }, setDelay);
     },
@@ -140,8 +143,7 @@ export const notificationService = {
 
                 if (title) {
                     ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + title + '</strong><br/><br/>' + message;
-                }
-                else {
+                } else {
                     if (message) {
                         ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + message + '</strong>';
                     }
@@ -227,8 +229,7 @@ export const notificationService = {
                         10
                     );
                     resolve();
-                }
-                else {
+                } else {
                     resolve();
                 }
             })();

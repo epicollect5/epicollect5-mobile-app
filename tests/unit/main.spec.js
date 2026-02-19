@@ -294,7 +294,7 @@ describe('Main.js Architecture', () => {
         const { Capacitor } = await import('@capacitor/core');
         const { mediaDirsService } = await import('@/services/filesystem/media-dirs-service');
 
-        initService.getDeviceInfo.mockResolvedValue({ platform: 'android' });
+        initService.getDeviceInfo.mockResolvedValue({ platform: 'ios' });
         initService.getLanguage.mockResolvedValue('en');
         // Force native platform to true
         vi.spyOn(Capacitor, 'isNativePlatform').mockReturnValue(true);

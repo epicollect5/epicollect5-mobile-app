@@ -27,8 +27,8 @@ export const fakeAnswerService = {
 
             //add random words
             for (let i = 0; i < numberOfWords; i++) {
-                const language = languagesArrays[utilsService.getRandomInt(languagesArrays.length - 1)];
-                randomPhrase += ' ' + language[utilsService.getRandomInt(language.length - 1)] + '';
+                const language = languagesArrays[utilsService.getRandomInt(languagesArrays.length)];
+                randomPhrase += ' ' + language[utilsService.getRandomInt(language.length)] + '';
             }
 
             randomPhrase += ' ' + symbolsArray[utilsService.getRandomInt(symbolsArray.length)];

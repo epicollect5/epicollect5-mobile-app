@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 
 module.exports = {
 
@@ -41,7 +41,12 @@ module.exports = {
 
         if (process.env.NODE_ENV === 'production') {
 
-            if (process.env.VUE_APP_MODE === 'WEB') {
+            if (process.env.VUE_APP_MODE === 'WEBVIEW') {
+
+                // 1. Explicitly filter out any existing BundleAnalyzerPlugin
+                config.plugins = config.plugins.filter(
+                    (p) => p.constructor && p.constructor.name !== 'BundleAnalyzerPlugin'
+                );
                 // // See available sourcemaps:
                 // // https://webpack.js.org/configuration/devtool/#devtool
                 config.devtool = 'source-map';
@@ -117,15 +122,16 @@ module.exports = {
                     new webpack.IgnorePlugin({
                         resourceRegExp: /an-array-of/
                     }),
-                    ...(process.env.VUE_APP_DEBUG !== '1' ? [
+                    ...(process.env.VUE_APP_DEBUG !== '1' && process.env.VUE_APP_MODE === 'PWA' ? [
                         new BundleAnalyzerPlugin({
-                            analyzerMode: 'server',
-                            openAnalyzer: true,
+                            analyzerMode: 'static',
+                            openAnalyzer: false,
+                            reportFilename: './bundle-report.html',
                             defaultSizes: 'gzip'
                         }),
                         new TerserPlugin({
                             terserOptions: {
-                                format: { comments: false },
+                                format: {comments: false},
                                 compress: {
                                     drop_console: true,
                                     drop_debugger: true
@@ -135,7 +141,6 @@ module.exports = {
                         })
                     ] : [])
                 ];
-
 
 
                 config.optimization = {

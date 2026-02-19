@@ -1024,29 +1024,7 @@ export const utilsService = {
         }
     },
 
-    async isJWTExpired() {
-        try {
-            const res = await databaseSelectService.getUser();
 
-            if (res.rows.length > 0) {
-                const jwt = res.rows.item(0).jwt;
-                const payload = jwt.split('.')[1];
-
-                // 1. Convert Base64URL to standard Base64
-                const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-
-                // 2. Decode and Parse
-                const jwtDecoded = JSON.parse(window.atob(base64));
-
-                // 3. Return expiry status (adding 10s buffer is good practice)
-                return jwtDecoded.exp < (Date.now() / 1000);
-            }
-            return true; // No user, treat as expired
-        } catch (error) {
-            console.error('JWT check failed', error);
-            return true;
-        }
-    },
 
     inverseSlug(slug) {
         // Replace hyphens with spaces using a regular expression

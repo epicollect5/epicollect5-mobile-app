@@ -99,7 +99,7 @@
 </template>
 
 <script>
-import {onMounted, onBeforeMount, onBeforeUnmount, reactive} from 'vue';
+import {onMounted, onBeforeUnmount, reactive} from 'vue';
 import {STRINGS} from '@/config/strings.js';
 import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
@@ -279,11 +279,12 @@ export default {
       map.setView([state.latitude, state.longitude], closeUpZoom);
       if (showProgressDialog) {
         notificationService.showToast(labels.location_acquired);
+        setTimeout(() => {
+          notificationService.hideProgressDialog();
+        }, PARAMETERS.DELAY_MEDIUM);
       }
       emitPWALocationUpdate();
-      setTimeout(() => {
-        notificationService.hideProgressDialog();
-      }, PARAMETERS.DELAY_MEDIUM);
+
     }
 
     function emitPWALocationUpdate() {
