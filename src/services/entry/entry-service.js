@@ -140,7 +140,7 @@ export const entryService = {
         return new Promise((resolve, reject) => {
             // If this is an entry we can actually edit, i.e. not a remote entry
             if (self.entry.canEdit === 1) {
-                // Set the entry title 
+                // Set the entry title
                 entryCommonService.setEntryTitle(projectModel.getExtraForm(
                     self.entry.formRef),
                     projectModel.getExtraInputs(),
@@ -192,7 +192,7 @@ export const entryService = {
     },
 
     saveEntryPWA () {
-
+debugger;
         const rootStore = useRootStore();
         const self = this;
 
@@ -257,7 +257,7 @@ export const entryService = {
 
         return new Promise((resolve, reject) => {
 
-            // Set the entry title 
+            // Set the entry title
             entryCommonService.setEntryTitle(projectModel.getExtraForm(
                 self.entry.formRef),
                 projectModel.getExtraInputs(),
@@ -267,7 +267,7 @@ export const entryService = {
 
             console.log(JSON.stringify(self.entry));
 
-            //convert self.entry to an object identical to the one we save to the DB, 
+            //convert self.entry to an object identical to the one we save to the DB,
             //so we can re-use all the functions
             const parsedEntry = {
                 entry_uuid: self.entry.entryUuid,
@@ -320,16 +320,19 @@ export const entryService = {
                 }
             }, (error) => {
                 console.log(error);
+                const inputErrors =[];
                 if (error.data.errors) {
                     //add global errors (if any) to store
                     const inputsExtra = projectModel.getExtraInputs();
                     error.data.errors.forEach((error) => {
-                        const inpuRef = error.source;
-                        if (!inputsExtra[inpuRef]) {
+                        const inputRef = error.source;
+                        if (!inputsExtra[inputRef]) {
                             //no inputRef, this is a global error
                             rootStore.queueGlobalUploadErrorsPWA.push(error);
                         }
+
                     });
+
                 }
                 reject(error);
             });
@@ -348,7 +351,7 @@ export const entryService = {
     validateAnswer (params) {
         //todo: test this throughly in the future...
         //For edits: check if all the required questions have an answer
-        //Users can edit an existing entry, go back and save. 
+        //Users can edit an existing entry, go back and save.
         //The server would catch the missing required answer anyway
         // if (this.action === PARAMETERS.ENTRY_EDIT) {
         //     const inputs = projectModel.getExtraInputs();

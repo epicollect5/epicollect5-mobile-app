@@ -6,6 +6,12 @@
 
 ## Configuration
  - Ios needs a xcconfig file with the REVERSED_CLIENT_ID for Google Sign In.
+
+## PWA
+
+To run it locally, `npm run pwa` then the url will be displayed in the terminal.
+Use the format `http://localhost:1234/{project-slug}/add-entry` to add an entry.
+To compile for production, `npm run pwa-build-prod`
   
 ## Forking
 

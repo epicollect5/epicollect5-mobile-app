@@ -48,3 +48,4 @@ ios/App/Epicollect5/env.xcconfig
 .nvmrc
 git-commits.csv
 .vscode
+deploy-pwa.sh

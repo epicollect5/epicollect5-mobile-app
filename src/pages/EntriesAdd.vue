@@ -312,7 +312,7 @@ import { initialSetup } from '@/use/questions/initial-setup';
 import { handleNext } from '@/use/questions/handle-next';
 import { handlePrev } from '@/use/questions/handle-prev';
 import { useBackButton } from '@ionic/vue';
-import { setupPWAEntry } from '@/use/setup-pwa-entry';
+import { setupPWAEntry } from '@/use/entry/setup-pwa-entry';
 import NotFound from '@/pages/NotFound';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
@@ -323,6 +323,8 @@ import { branchEntryService } from '@/services/entry/branch-entry-service';
 import ItemDividerError from '@/components/ItemDividerError.vue';
 import { questionCommonService } from '@/services/entry/question-common-service';
 import ToolbarEntriesAddNavigation from '@/components/ToolbarEntriesAddNavigation.vue';
+import {saveEntryPWA} from '@/services/entry/save-entry-pwa';
+import {saveEntryNative} from '@/services/entry/save-entry-native';
 
 export default {
 	components: {
@@ -351,13 +353,13 @@ export default {
 		ItemDividerError,
 		ToolbarEntriesAddNavigation
 	},
-	setup(props) {
+	setup() {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
 		const router = useRouter();
 
-		//if a wrong URL for the PWA is provided in the broswer, bail out
+		//if a wrong URL for the PWA is provided in the browser, bail out
 		if (rootStore.notFound && rootStore.isPWA) {
 			return {
 				notFound: true
@@ -413,7 +415,7 @@ export default {
 				return rootStore.isPWA;
 			}),
 			hasGlobalError: computed(() => {
-				//show errors at the top when they do not belong to a question
+				//show errors at the top when they do not belong to a question,
 				//but they are global
 
 				if (rootStore.queueGlobalUploadErrorsPWA.length > 0) {
@@ -425,105 +427,16 @@ export default {
 			})
 		};
 
-		function showEntrySavedSuccessScreen() {
-			state.entrySavedPWA = true;
-			state.entryFailedPWA = false;
-			state.showSave = false;
-			state.showSaved = true;
-			state.disablePrevious = true;
-			state.disableNext = true;
-			notificationService.hideProgressDialog();
-		}
-
 		const methods = {
 			async saveEntry(syncType) {
-				if (rootStore.isPWA) {
-					await notificationService.showProgressDialog(labels.wait, labels.saving);
-
-					rootStore.entriesAddScope.entryService.allowSave = true;
-					state.action = rootStore.entriesAddScope.entryService.action;
-
-					rootStore.entriesAddScope.entryService.saveEntryPWA().then(
-						() => {
-							//if branch, go back to branch question and update branches list
-							if (rootStore.entriesAddScope.entryService.type === PARAMETERS.BRANCH_ENTRY) {
-								//if dealing with a remote branch entry, just show the success screen
-								if (rootStore.branchEditType === PARAMETERS.PWA_BRANCH_REMOTE) {
-									showEntrySavedSuccessScreen();
-								} else {
-									quit(
-										questionCommonService.getNavigationParams(
-											rootStore.entriesAddScope.entryService
-										)
-									);
-								}
-							} else {
-								//this is a hierarchy entry:
-								showEntrySavedSuccessScreen();
-							}
-						},
-						(errorResponse) => {
-							//random server errors bail out
-							if (!errorResponse.data?.errors) {
-								console.log(errorResponse);
-								notificationService.hideProgressDialog();
-								errorsService.handleWebError(errorResponse);
-								return false;
-							}
-
-							//cache any errors
-							rootStore.routeParams = {
-								error: { errors: errorResponse.data.errors }
-							};
-							state.error = {
-								errors: errorResponse.data.errors
-							};
-
-							state.entrySavedPWA = false;
-							state.entryFailedPWA = true;
-							state.showSave = false;
-							state.showSaved = true;
-							state.disablePrevious = false;
-							state.disableNext = true;
-
-							//handle error, user can go back to check for errors
-							errorsService.handleWebError(errorResponse);
-							notificationService.hideProgressDialog();
-						}
-					);
-				} else {
-					methods.saveEntryToDatabase(syncType);
-				}
+        if(rootStore.isPWA){
+          await saveEntryPWA(state, quit);
+        }
+        else {
+          await saveEntryNative(state, syncType, quit);
+        }
 			},
-			// Save the entry to the local database
-			async saveEntryToDatabase(syncType) {
-				// Determine the syncType
-				syncType = syncType ? syncType : PARAMETERS.SYNCED_CODES.UNSYNCED;
 
-				await notificationService.showProgressDialog(labels.wait, labels.saving);
-				// SAVE ENTRY
-				rootStore.entriesAddScope.entryService.saveEntry(syncType).then(
-					function () {
-						// Quit with navigation params
-						quit(questionCommonService.getNavigationParams(rootStore.entriesAddScope.entryService));
-					},
-					function (error) {
-						console.log(error);
-						// An error occurred
-						notificationService.hideProgressDialog();
-						if (error.error && state.error) {
-							errorsService.handleEntryErrors(error.error, state.error, error.inputRefs);
-						} else {
-							//db errors are {code:0, message:'something'}
-							if (error.message) {
-								notificationService.showAlert(error.message, labels.error);
-							} else {
-								notificationService.showAlert(error, labels.error);
-							}
-						}
-					}
-				);
-			},
 			async addEntryPWA() {
 				// Show loader
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
@@ -568,7 +481,7 @@ export default {
 				methods.prev();
 			},
 			async quitEntry() {
-				//do quitting things
+				//do quit things
 				console.log('> Quit entry was called *************************************');
 				// By default, mark saved entries unsynced (native app only)
 				let syncType = PARAMETERS.SYNCED_CODES.UNSYNCED;
@@ -607,7 +520,7 @@ export default {
 						// If we're on the last page, just save the entry, no further validation needed
 						if (state.questionParams.currentInputRef === null) {
 							// Save entry
-							methods.saveEntry(syncType);
+							await methods.saveEntry(syncType);
 						} else {
 							// Validate and save current answer
 							try {
@@ -637,7 +550,7 @@ export default {
 
 								//if a jump was edited, "{entryService}.allowSave" would be false
 								if (!rootStore.entriesAddScope.entryService.allowSave) {
-									notificationService.showAlert(STRINGS[language].status_codes.ec5_140);
+									await notificationService.showAlert(STRINGS[language].status_codes.ec5_140);
 									return;
 								}
 
@@ -658,10 +571,10 @@ export default {
 										: PARAMETERS.SYNCED_CODES.INCOMPLETE;
 
 								// Save entry
-								methods.saveEntry(syncType);
+								await methods.saveEntry(syncType);
 							} catch (error) {
 								// An error occurred
-								errorsService.handleEntryErrors(error.error, state.error, error.inputRefs);
+								await errorsService.handleEntryErrors(error.error, state.error, error.inputRefs);
 							}
 						}
 						break;
@@ -684,7 +597,7 @@ export default {
 			 * Go to next question/save entry (depending on where you are in the form)
 			 */
 			async next() {
-				handleNext(state, rootStore.entriesAddScope);
+				await handleNext(state, rootStore.entriesAddScope);
 			},
 			onQuestionMounted() {
 				state.isFetching = false;
@@ -702,7 +615,7 @@ export default {
 			const projectSlug = projectModel.getSlug();
 
 			//on the PWA we do not track user location, we get it from the browser
-			if (rootStore.device.platform !== PARAMETERS.PWA) {
+			if (!rootStore.isPWA) {
 				// Stop watching position if the form has any location BUT NOT IF IT IS A BRANCH ENTRY!!!!!
 				// If we stop watching it would be impossible to add another location in a branch, as the watchPosition would not work
 				if (projectModel.hasLocation(formRef) && !isBranch) {
@@ -717,7 +630,6 @@ export default {
 				const queryPWA = {};
 
 				//imp: fix this, we need to handle quit entry (hierarchy) and quit branch
-
 				rootStore.routeParams = {
 					projectRef: projectModel.getProjectRef(),
 					formRef,
@@ -729,7 +641,7 @@ export default {
 					parentEntryUuid: response.routeParams.parentEntryUuid
 				};
 
-				//lets check if we are quitting from the PWA
+				//let's check if we are quitting from the PWA
 				if (rootStore.isPWA) {
 					if (response.routeName === PARAMETERS.ROUTES.PWA_QUIT) {
 						if (process.env.NODE_ENV === 'production') {
@@ -745,7 +657,7 @@ export default {
 					}
 
 					//re-append query params if this is an entry edit
-					//(happens after adding a local branch durign a hierarchy edit)
+					//(happens after adding a local branch during a hierarchy edit)
 					if (response.routeName === PARAMETERS.ROUTES.ENTRIES_EDIT) {
 						queryPWA.form_ref = formRef;
 						queryPWA.uuid = response.routeParams.entryUuid;
@@ -883,6 +795,8 @@ export default {
 		return {
 			labels,
 			state,
+      onQuestionMounted: methods.onQuestionMounted,
+      addEntryPWA: methods.addEntryPWA,
 			...methods,
 			...computedScope,
 			projectName,
