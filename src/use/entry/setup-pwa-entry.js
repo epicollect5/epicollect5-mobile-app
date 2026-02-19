@@ -60,7 +60,7 @@ export async function setupPWAEntry (action, isBranch) {
                 const entryUuid = searchParams.get('uuid');
                 let webEntry = null;
                 try {
-                    const response = await webService.downloadEntryPWA(projectSlug, formRef, entryUuid, branchRef, branchOwnerUuid);
+                    const response = await webService.fetchEntryPWA(projectSlug, formRef, entryUuid, branchRef, branchOwnerUuid);
                     console.log(JSON.stringify(response.data.data.entries[0]));
                     if (response.data.data.entries.length > 0) {
                         webEntry = response.data.data.entries[0];

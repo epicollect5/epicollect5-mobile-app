@@ -88,8 +88,8 @@ import { notificationService } from '@/services/notification-service';
 import { webService } from '@/services/web-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { errorsService } from '@/services/errors-service';
-import { showModalLogin } from '@/use/show-modal-login';
-import { logout } from '@/use/logout';
+import { showModalLogin } from '@/use/auth/show-modal-login';
+import { logout } from '@/use/auth/logout';
 import { useRouter } from 'vue-router';
 
 export default {
@@ -132,7 +132,7 @@ export default {
 					if (response.data.data.deleted) {
 						//log user out
 						await logout();
-						//show user confirmation		
+						//show user confirmation
 						notificationService.showAlert(STRINGS[language].status_codes.ec5_385);
 						return;
 					}

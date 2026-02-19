@@ -60,7 +60,7 @@ export const webService = {
                 url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
             } else {
                 //in development mode use open endpoint
-                url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
+                url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG + PARAMETERS.API.ROUTES.PWA.PROJECT_DEBUG + slug;
             }
 
             axios({
@@ -79,7 +79,6 @@ export const webService = {
                     mapping: response.data.meta.project_mapping,
                     last_updated: response.data.meta.project_stats.structure_last_updated
                 };
-
                 resolve(data);
             }, function (error) {
                 reject(error.response);
@@ -151,6 +150,7 @@ export const webService = {
                 }).then(function (response) {
                     resolve(response);
                 }, function (error) {
+                    debugger;
                     console.log(error);
                     reject(error.response);
                 });
@@ -169,8 +169,8 @@ export const webService = {
             let postURL = self.getServerUrl();
 
             if (PARAMETERS.DEBUG) {
-                //use debug endpoint (no csrf)
-                postURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_DEBUG + slug;
+                //use debug endpoint (no csrf), also add xdebug session
+                postURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_DEBUG + slug +'?XDEBUG_SESSION_START=phpstorm';
                 console.log('post data', JSON.stringify(payload));
             } else {
                 postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD + slug;
@@ -189,7 +189,7 @@ export const webService = {
         });
     },
 
-    downloadEntryPWA(slug, formRef, entryUuid, branchRef, branchOwnerUuid) {
+    fetchEntryPWA(slug, formRef, entryUuid, branchRef, branchOwnerUuid) {
 
         const self = this;
 

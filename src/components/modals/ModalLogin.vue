@@ -22,7 +22,7 @@ import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
 import HeaderModal from '@/components/HeaderModal.vue';
-import CardLoginLocal from '@/components/CardLoginLocal';
+import CardLoginLocal from '@/components/CardLoginLocal.vue';
 import CardLoginLdap from '@/components/CardLoginLdap.vue';
 import CardLoginDefault from '@/components/CardLoginDefault.vue';
 

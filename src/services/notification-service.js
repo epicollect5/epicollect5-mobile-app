@@ -4,7 +4,8 @@ import { useRootStore } from '@/stores/root-store';
 import { loadingController, alertController } from '@ionic/vue';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { Toast } from '@capacitor/toast';
-
+import { Capacitor } from '@capacitor/core';
+import {useToast} from '@/use/toast';
 
 export const notificationService = {
 
@@ -16,11 +17,21 @@ export const notificationService = {
         const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
 
         setTimeout(async () => {
-            await Toast.show({
-                text: messageStr,
-                duration: 'short',
-                position: setPosition
-            });
+
+            //on native platforms use Capacitor Toast API
+            if (Capacitor.isNativePlatform()) {
+
+                await Toast.show({
+                    text: messageStr,
+                    duration: 'short',
+                    position: setPosition
+                });
+            }
+            //on the PWA use Ionic Toast Controller
+            else {
+               const toast = useToast();
+                await toast.show(messageStr);
+            }
         }, setDelay);
     },
     async showAlert(message, header) {

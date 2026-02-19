@@ -82,26 +82,26 @@ export const PARAMETERS = {
             ACCOUNT_DELETION: '/profile/account-deletion-request',
             PWA: {
                 ROOT: '/api/internal',
-                ROOT_DEBUG: '/api',
-                //api/internal/project/{project_slug}
+                ROOT_DEBUG: '/api/pwa',
+                UPLOAD: '/web-upload/', //same as bulk upload from dataviewer
+                UPLOAD_DEBUG: '/upload-debug/',//for debugging
                 PROJECT: '/project/',
+                PROJECT_DEBUG: '/project-debug/',
                 ENTRIES: '/entries/',
-                ENTRIES_DEBUG: '/pwa-entries/',
+                ENTRIES_DEBUG: '/entries-debug/',
                 MEDIA: '/media/',
-                UPLOAD: '/web-upload/', //same as bulk upload
-                UPLOAD_DEBUG: '/pwa-upload/',//for debugging
-                UPLOAD_FILE: '/web-upload-file/',
-                UPLOAD_FILE_DEBUG: '/pwa-upload-file/',//for debugging
+                UPLOAD_FILE: '/upload-file/',
+                UPLOAD_FILE_DEBUG: '/upload-file-debug/',//for debugging
                 TEMP_MEDIA: '/temp-media/',
                 TEMP_MEDIA_DELETE: '/temp-media-delete/',
-                TEMP_MEDIA_DELETE_DEBUG: '/pwa-temp-media-delete/',
+                TEMP_MEDIA_DELETE_DEBUG: '/temp-media-delete-debug/',
                 UNIQUE_ANSWER: '/unique-answer/',
-                UNIQUE_ANSWER_DEBUG: '/pwa-unique-answer/',//for debugging
+                UNIQUE_ANSWER_DEBUG: '/unique-answer-debug/',//for debugging
                 DATA_VIEWER: '/data',
                 OPENCAGE: '/proxies/opencage/',
-                OPENCAGE_DEBUG: '/proxies/pwa-opencage/',
+                OPENCAGE_DEBUG: '/proxies/opencage-debug/',
                 ANSWERS: '/answers/',
-                ANSWERS_DEBUG: '/pwa-answers/'
+                ANSWERS_DEBUG: '/answers-debug/'
             }
         },
         PARAMS: {
@@ -366,7 +366,7 @@ export const PARAMETERS = {
         STORED: 'stored'
     },
     PWA_MAX_LATLONG_LENGTH: 10,
-    PWA_LANGUAGE_FILES_ENDPOINT: '/data-editor/app/assets/ec5-status-codes/',
+    PWA_LANGUAGE_FILES_ENDPOINT: '/pwa/assets/ec5-status-codes/',
 
     //ESRI satellite -> https://wiki.openstreetmap.org/wiki/Esri#Legal_permissions
     ESRI_TILES_PROVIDER_SATELLITE: 'https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=' + process.env.VUE_APP_ESRI_API_TOKEN,

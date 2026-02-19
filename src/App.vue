@@ -15,7 +15,7 @@ import {computed} from '@vue/reactivity';
 import {PARAMETERS} from '@/config';
 import {onMounted} from 'vue';
 import {App as CapacitorApp} from '@capacitor/app'; // Alias the Capacitor App module as CapacitorApp
-import {addProject} from '@/use/add-project';
+import {addProject} from '@/use/project/add-project';
 import {utilsService} from '@/services/utilities/utils-service';
 import {webService} from '@/services/web-service';
 import {notificationService} from '@/services/notification-service';

@@ -1,12 +1,11 @@
 import { menuController, modalController } from '@ionic/vue';
-import ModalLogin from '@/components/modals/ModalLogin';
+import ModalLogin from '@/components/modals/ModalLogin.vue';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
 import { webService } from '@/services/web-service';
 import { modalsHandlerService } from '@/services/modals/modals-handler-service';
-
 
 export function showModalLogin() {
     const rootStore = useRootStore();

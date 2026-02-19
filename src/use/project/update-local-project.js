@@ -4,8 +4,8 @@ import {versioningService} from '@/services/utilities/versioning-service';
 import {notificationService} from '@/services/notification-service';
 import {STRINGS} from '@/config/strings';
 import {errorsService} from '@/services/errors-service';
-import {showModalLogin} from '@/use/show-modal-login';
-import {logout} from '@/use/logout';
+import {showModalLogin} from '@/use/auth/show-modal-login';
+import {logout} from '@/use/auth/logout';
 
 export async function updateLocalProject() {
     const rootStore = useRootStore();

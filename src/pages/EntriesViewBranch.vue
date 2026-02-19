@@ -116,9 +116,9 @@ import {useBackButton} from '@ionic/vue';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import ItemDividerError from '@/components/ItemDividerError.vue';
-import {cloneEntryBranch} from '@/use/clone-entry-branch';
-import {fetchBranchAnswers} from '@/use/fetch-branch-answers';
-import {deleteEntryBranch} from '@/use/delete-entry-branch';
+import {cloneEntryBranch} from '@/use/entry/clone-entry-branch';
+import {fetchBranchAnswers} from '@/use/answers/fetch-branch-answers';
+import {deleteEntryBranch} from '@/use/entry/delete-entry-branch';
 
 export default {
   components: {ListAnswers, ItemDividerError},
@@ -192,8 +192,6 @@ export default {
       async cloneEntryBranch() {
         await cloneEntryBranch(
             state,
-            language,
-            labels,
             methods.goBack
         );
       }

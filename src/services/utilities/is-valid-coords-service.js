@@ -7,7 +7,7 @@ export const isValidCoordsService = {
     getCoords(param1, param2) {
         // Handle string format: 'lat, lng'
         if (typeof param1 === 'string' && param2 === undefined) {
-            [param1, param2] = param1.split(',').map(s => s.trim());
+            [param1, param2] = param1.split(',').map((s) => s.trim());
         }
         // Handle array format: [lat, lng]
         else if (Array.isArray(param1)) {

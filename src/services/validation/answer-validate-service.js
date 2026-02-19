@@ -64,7 +64,7 @@ export const answerValidateService = {
         const confirmAnswer = params.confirmAnswer?.answer;
 
         return new Promise((resolve, reject) => {
-
+debugger;
             self.isUnique(entry, params.input_details, answer).then(function (response) {
 
                 self.inputRef = params.input_details.ref;
@@ -76,7 +76,7 @@ export const answerValidateService = {
                     return;
                 }
 
-                // If we have a confirm field, check
+                // If we have a confirmation field, check
                 if (params.input_details.verify) {
                     if (answer !== null && confirmAnswer !== null) {
                         if (!commonValidate.checkConfirmed(params.input_details, answer, confirmAnswer)) {
@@ -183,7 +183,7 @@ export const answerValidateService = {
                     else {
                         // check uniqueness against the entries saved on the server
 
-                        //if branch, first check uniqueness against temp branch entries
+                        //if a branch, first check uniqueness against temp branch entries
                         if (entry.isBranch) {
 
                             console.log({ tempBranches: rootStore.queueTempBranchEntriesPWA });
@@ -208,6 +208,7 @@ export const answerValidateService = {
 
                         //check uniqueness on server (only when temp branch entries are ok)
                         if (!tempAnswerFound) {
+                            debugger;
                             webService.checkUniquenessPWA(projectSlug, payload).then((response) => {
                                 //ec5_249 answer unique
                                 if (response.data.data.code === 'ec5_249') {

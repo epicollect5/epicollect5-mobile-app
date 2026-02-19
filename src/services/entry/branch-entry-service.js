@@ -132,7 +132,7 @@ export const branchEntryService = {
         const ownerInputRef = self.entry.ownerInputRef;
 
         return new Promise((resolve, reject) => {
-            // Set the entry title 
+            // Set the entry title
             entryCommonService.setEntryTitle(
                 projectModel.getExtraForm(self.entry.formRef),
                 projectModel.getExtraInputs(),
@@ -140,7 +140,7 @@ export const branchEntryService = {
                 true
             );
 
-            //convert self.entry to an object identical to the one we save to the DB, 
+            //convert self.entry to an object identical to the one we save to the DB,
             //so we can re-use all the functions
             console.log(JSON.stringify(self.entry.answers));
             const parsedBranchEntry = {
@@ -242,7 +242,7 @@ export const branchEntryService = {
         return entryCommonService.processJumpsPrevious(this.entry, currentInputIndex, this.branchInputs);
     },
 
-    //remove temp branch entries when quitting hierachy entry 
+    //remove temp branch entries when quitting hierachy entry
     removeTempBranches () {
 
         const self = this;

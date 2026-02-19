@@ -8,7 +8,7 @@ import * as IonComponents from '@ionic/vue';
 import {IonicVue} from '@ionic/vue';
 import {SplashScreen} from '@capacitor/splash-screen';
 import {projectModel} from '@/models/project-model.js';
-import {setupPWAEntry} from '@/use/setup-pwa-entry';
+import {setupPWAEntry} from '@/use/entry/setup-pwa-entry';
 import {STRINGS} from '@/config/strings';
 import {commonValidate} from '@/services/validation/common-validate';
 /* Core CSS required for Ionic components to work properly */
@@ -183,6 +183,7 @@ export const app = createApp(App)
                     } catch (error) {
                         console.log(error);
                         rootStore.notFound = true;
+                        return false;
                     }
                 }
 

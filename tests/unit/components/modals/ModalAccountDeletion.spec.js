@@ -12,8 +12,8 @@ import { errorsService } from '@/services/errors-service';
 import { useDBStore } from '@/stores/db-store';
 import flushPromises from 'flush-promises';
 import { modalController, loadingController } from '@ionic/vue';
-import { logout } from '@/use/logout';
-import { showModalLogin } from '@/use/show-modal-login';
+import { logout } from '@/use/auth/logout';
+import { showModalLogin } from '@/use/auth/show-modal-login';
 
 
 const email = 'joe@gmail.com';
@@ -22,12 +22,12 @@ vi.mock('@/components/modals/ModalLogin', () => ({
     template: '<div></div>'
 }));
 
-vi.mock('@/use/logout', () => ({
+vi.mock('@/use/auth/logout', () => ({
     logout: vi.fn()
 }));
 
 
-vi.mock('@/use/show-modal-login', () => ({
+vi.mock('@/use/auth/show-modal-login', () => ({
     showModalLogin: vi.fn()
 }));
 
