@@ -138,9 +138,9 @@
 <script>
 import {useRootStore} from '@/stores/root-store';
 import {STRINGS} from '@/config/strings';
-import {deleteEntry} from '@/use/delete-entry';
-import {cloneEntry} from '@/use/clone-entry';
-import {fetchAnswers} from '@/use/fetch-answers';
+import {deleteEntry} from '@/use/entry/delete-entry';
+import {cloneEntry} from '@/use/entry/clone-entry';
+import {fetchAnswers} from '@/use/answers/fetch-answers';
 
 import {
   desktopOutline,
@@ -254,10 +254,7 @@ export default {
       async cloneEntry() {
         await cloneEntry(
             state,
-            router,
-            rootStore,
-            language,
-            labels
+            router
         );
       }
     };

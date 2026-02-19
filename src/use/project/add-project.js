@@ -2,13 +2,13 @@ import { DB_ERRORS, PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { projectModel } from '@/models/project-model.js';
 import { useRootStore } from '@/stores/root-store';
-import { showModalLogin } from '@/use/show-modal-login';
+import { showModalLogin } from '@/use/auth/show-modal-login';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
 import { downloadFileService } from '@/services/download-file-service';
 import { webService } from '@/services/web-service';
-import { logout } from '@/use/logout';
+import { logout } from '@/use/auth/logout';
 
 //imp: router gets passed because is available only in setup()
 export async function addProject(project, router) {

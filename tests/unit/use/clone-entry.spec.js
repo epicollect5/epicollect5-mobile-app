@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { cloneEntry } from '@/use/clone-entry';
-import { cloneEntryBranch } from '@/use/clone-entry-branch';
+import { setActivePinia, createPinia } from 'pinia';
+import { cloneEntry } from '@/use/entry/clone-entry';
+import { cloneEntryBranch } from '@/use/entry/clone-entry-branch';
 import { notificationService } from '@/services/notification-service';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { PARAMETERS } from '@/config';
@@ -20,6 +21,12 @@ vi.mock('@/config/strings', () => ({
         en: {
             status_codes: {
                 ec5_393: 'Do you want to clone this entry?'
+            },
+            labels: {
+                entry_cloned: 'Entry cloned',
+                clone: 'Clone',
+                cannot_clone_incomplete_entry: 'Cannot clone incomplete entry',
+                cannot_clone_entry_with_errors: 'Cannot clone entry with errors'
             }
         }
     }
@@ -41,6 +48,7 @@ describe('cloneEntry', () => {
     let state, router, rootStore, labels, goBack;
 
     beforeEach(() => {
+        setActivePinia(createPinia());
         vi.clearAllMocks();
 
         // Setup dummy dependencies
@@ -52,6 +60,7 @@ describe('cloneEntry', () => {
         rootStore = {};
         labels = {
             cannot_clone_incomplete_entry: 'Cannot clone incomplete entry',
+            cannot_clone_entry_with_errors: 'Cannot clone entry with errors',
             entry_cloned: 'Entry cloned'
         };
         goBack = vi.fn();
@@ -60,9 +69,36 @@ describe('cloneEntry', () => {
     it('should show alert and bail if entry is incomplete', async () => {
         state.entry.synced = PARAMETERS.SYNCED_CODES.INCOMPLETE;
 
-        await cloneEntry(state, router, rootStore, 'en', labels);
+        await cloneEntry(state, router);
 
         expect(notificationService.showAlert).toHaveBeenCalledWith(labels.cannot_clone_incomplete_entry);
+        expect(databaseInsertService.insertCloneEntry).not.toHaveBeenCalled();
+    });
+
+    it('should show alert and bail if branch entry is incomplete', async () => {
+        state.entry.synced = PARAMETERS.SYNCED_CODES.INCOMPLETE;
+
+        await cloneEntryBranch(state,  goBack);
+
+        expect(notificationService.showAlert).toHaveBeenCalledWith(labels.cannot_clone_incomplete_entry);
+        expect(databaseInsertService.insertCloneEntryBranch).not.toHaveBeenCalled();
+    });
+
+    it('should show alert and bail if entry has errors', async () => {
+        state.entry.synced = PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR;
+
+        await cloneEntry(state, router, rootStore, 'en', labels);
+
+        expect(notificationService.showAlert).toHaveBeenCalledWith(labels.cannot_clone_entry_with_errors);
+        expect(databaseInsertService.insertCloneEntry).not.toHaveBeenCalled();
+    });
+
+    it('should show alert and bail if branch entry has errors', async () => {
+        state.entry.synced = PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR;
+
+        await cloneEntryBranch(state, goBack);
+
+        expect(notificationService.showAlert).toHaveBeenCalledWith(labels.cannot_clone_entry_with_errors);
         expect(databaseInsertService.insertCloneEntry).not.toHaveBeenCalled();
     });
 
@@ -114,7 +150,7 @@ describe('cloneEntry', () => {
         databaseInsertService.insertCloneEntryBranch.mockResolvedValue(true);
 
         // 4. Run the test
-        await cloneEntryBranch(state,  'en', labels, goBack);
+        await cloneEntryBranch(state,   goBack);
 
         // Assertions
         expect(databaseInsertService.insertCloneEntryBranch).toHaveBeenCalled();

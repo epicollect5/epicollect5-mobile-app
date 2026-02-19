@@ -254,8 +254,8 @@ import { PARAMETERS } from '@/config';
 import { computed } from '@vue/runtime-core';
 import ModalProgressTransfer from '@/components/modals/ModalProgressTransfer';
 import { modalController } from '@ionic/vue';
-import { updateProject } from '@/use/update-project';
-import { showModalLogin } from '@/use/show-modal-login';
+import { updateProject } from '@/use/project/update-project';
+import { showModalLogin } from '@/use/auth/show-modal-login';
 import { useBackButton } from '@ionic/vue';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { notificationService } from '@/services/notification-service';
@@ -264,7 +264,7 @@ import { errorsService } from '@/services/errors-service';
 import { mediaService } from '@/services/entry/media-service';
 import { uploadMediaService } from '@/services/upload-media-service';
 import { uploadDataService } from '@/services/upload-data-service';
-import { logout } from '@/use/logout';
+import { logout } from '@/use/auth/logout';
 
 export default {
 	setup() {

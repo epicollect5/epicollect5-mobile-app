@@ -129,10 +129,11 @@ export default {
 			}),
 			hasError: computed(() => {
 				//any error for this question?
-
+debugger;
 				return utilsService.questionHasError(state);
 			}),
 			errorMessage: computed(() => {
+        debugger;
 				if (Object.keys(state.error.errors).length > 0) {
 					return state.error?.errors[state.currentInputRef]?.message;
 				} else {
