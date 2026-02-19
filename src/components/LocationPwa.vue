@@ -99,18 +99,17 @@
 </template>
 
 <script>
-import {onMounted, onBeforeMount, onBeforeUnmount} from 'vue';
+import {onMounted, onBeforeMount, onBeforeUnmount, reactive} from 'vue';
 import {STRINGS} from '@/config/strings.js';
 import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
 import {search, locate} from 'ionicons/icons';
-import {reactive} from '@vue/reactivity';
 import markerIcon from '@/leaflet/images/marker-icon@2x.png';
 import markerShadow from '@/leaflet/images/marker-shadow.png';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {webService} from '@/services/web-service';
-import { FullScreen } from 'leaflet.fullscreen';
+import {FullScreen} from 'leaflet.fullscreen';
 import 'leaflet.fullscreen/dist/Control.FullScreen.css';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -228,21 +227,20 @@ export default {
         );
       }
       //set icon for marker
-      L.Marker.prototype.setIcon(
-          L.icon({
-            iconUrl: markerIcon,
-            shadowUrl: markerShadow,
-            iconSize: [25, 41],
-            shadowAnchor: [12, 20] //to center shadow image
-          })
-      );
+      const icon = L.icon({
+        iconUrl: markerIcon,
+        shadowUrl: markerShadow,
+        iconSize: [25, 41],
+        shadowAnchor: [12, 20] //to center shadow image
+      });
 
       marker = L.marker([state.latitude, state.longitude], {
-        draggable: true
+        draggable: true,
+        icon
       });
       // Update marker on changing its position
       marker.on('dragend', (e) => {
-        const coords = e.target._latlng;
+        const coords = e.target.getLatLng();
 
         state.latitude = coords.lat.toFixed(6);
         state.longitude = coords.lng.toFixed(6);
@@ -259,11 +257,11 @@ export default {
       map.setView([state.latitude, state.longitude], closeUpZoom);
       if (showProgressDialog) {
         notificationService.showToast(labels.location_acquired);
+        setTimeout(() => {
+          notificationService.hideProgressDialog();
+        }, PARAMETERS.DELAY_MEDIUM);
       }
       emitPWALocationUpdate();
-      setTimeout(() => {
-        notificationService.hideProgressDialog();
-      }, PARAMETERS.DELAY_MEDIUM);
     }
 
     function updateMarker(showProgressDialog) {
@@ -336,14 +334,6 @@ export default {
         notificationService.hideProgressDialog();
       }
     }
-
-    onBeforeMount(() => {
-      //load leaflet from CDN
-
-      if (!window.L) {
-        //
-      }
-    });
 
     onMounted(async () => {
 

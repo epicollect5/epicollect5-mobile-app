@@ -150,7 +150,6 @@ export const webService = {
                 }).then(function (response) {
                     resolve(response);
                 }, function (error) {
-                    debugger;
                     console.log(error);
                     reject(error.response);
                 });

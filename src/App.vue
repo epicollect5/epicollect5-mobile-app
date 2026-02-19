@@ -11,9 +11,8 @@ import {STRINGS} from '@/config/strings';
 import {IonApp, IonRouterOutlet} from '@ionic/vue';
 import {useRootStore} from '@/stores/root-store';
 import {useRouter} from 'vue-router';
-import {computed} from '@vue/reactivity';
 import {PARAMETERS} from '@/config';
-import {onMounted} from 'vue';
+import {onMounted, computed} from 'vue';
 import {App as CapacitorApp} from '@capacitor/app'; // Alias the Capacitor App module as CapacitorApp
 import {addProject} from '@/use/project/add-project';
 import {utilsService} from '@/services/utilities/utils-service';

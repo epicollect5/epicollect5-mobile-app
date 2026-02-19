@@ -64,7 +64,6 @@ export const answerValidateService = {
         const confirmAnswer = params.confirmAnswer?.answer;
 
         return new Promise((resolve, reject) => {
-debugger;
             self.isUnique(entry, params.input_details, answer).then(function (response) {
 
                 self.inputRef = params.input_details.ref;
@@ -208,7 +207,6 @@ debugger;
 
                         //check uniqueness on server (only when temp branch entries are ok)
                         if (!tempAnswerFound) {
-                            debugger;
                             webService.checkUniquenessPWA(projectSlug, payload).then((response) => {
                                 //ec5_249 answer unique
                                 if (response.data.data.code === 'ec5_249') {

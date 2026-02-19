@@ -87,7 +87,7 @@ describe('cloneEntry', () => {
     it('should show alert and bail if entry has errors', async () => {
         state.entry.synced = PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR;
 
-        await cloneEntry(state, router, rootStore, 'en', labels);
+        await cloneEntry(state, router);
 
         expect(notificationService.showAlert).toHaveBeenCalledWith(labels.cannot_clone_entry_with_errors);
         expect(databaseInsertService.insertCloneEntry).not.toHaveBeenCalled();
@@ -99,13 +99,13 @@ describe('cloneEntry', () => {
         await cloneEntryBranch(state, goBack);
 
         expect(notificationService.showAlert).toHaveBeenCalledWith(labels.cannot_clone_entry_with_errors);
-        expect(databaseInsertService.insertCloneEntry).not.toHaveBeenCalled();
+        expect(databaseInsertService.insertCloneEntryBranch()).not.toHaveBeenCalled();
     });
 
     it('should NOT clone if user cancels the confirmation', async () => {
         notificationService.confirmSingle.mockResolvedValue(false);
 
-        await cloneEntry(state, router, rootStore, 'en', labels);
+        await cloneEntry(state, router);
 
         expect(databaseInsertService.insertCloneEntry).not.toHaveBeenCalled();
     });
@@ -123,7 +123,7 @@ describe('cloneEntry', () => {
         databaseInsertService.insertCloneEntry.mockResolvedValue(true);
 
         // 4. Run the test
-        await cloneEntry(state, router, rootStore, 'en', labels);
+        await cloneEntry(state, router);
 
         // Assertions
         expect(databaseInsertService.insertCloneEntry).toHaveBeenCalled();
@@ -169,7 +169,7 @@ describe('cloneEntry', () => {
         notificationService.confirmSingle.mockResolvedValue(true);
         databaseInsertService.insertCloneEntry.mockRejectedValue(new Error('DB error'));
 
-        await cloneEntry(state, router, rootStore, 'en', labels);
+        await cloneEntry(state, router);
 
         expect(notificationService.showAlert).toHaveBeenCalled();
         expect(router.replace).not.toHaveBeenCalled();

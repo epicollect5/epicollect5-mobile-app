@@ -82,7 +82,6 @@ export const errorsService = {
         let inputRef;
 
         // If we have any new errors, notify user
-        debugger;
         for (inputRef in errors) {
             if (Object.prototype.hasOwnProperty.call(errors, inputRef)) {
                 // Add first non-empty error to $scope.error object

@@ -165,6 +165,7 @@ export const app = createApp(App)
                         rootStore.providedSegment = PARAMETERS.PWA_ADD_ENTRY;
                     } catch (error) {
                         console.log(error);
+                        rootStore.notFound = true;
                         return false;
                     }
                 } else {

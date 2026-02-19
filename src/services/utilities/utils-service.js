@@ -741,7 +741,6 @@ export const utilsService = {
         return parseFloat(inputStep);
     },
     questionHasError(questionState) {
-debugger;
         if (questionState.error?.errors?.[questionState.currentInputRef]?.message?.trim() === '') {
             //no error message , answer is valid
             return false;

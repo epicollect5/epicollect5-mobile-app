@@ -155,7 +155,7 @@ import {projectModel} from '@/models/project-model.js';
 import {entryModel} from '@/models/entry-model';
 import {useRouter, useRoute} from 'vue-router';
 import {watch, reactive} from 'vue';
-import ListAnswers from '@/components/ListAnswers';
+import ListAnswers from '@/components/ListAnswers.vue';
 import {useBackButton} from '@ionic/vue';
 import {notificationService} from '@/services/notification-service';
 import ItemDividerError from '@/components/ItemDividerError.vue';
