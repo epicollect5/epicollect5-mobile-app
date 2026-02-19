@@ -99,7 +99,7 @@ describe('cloneEntry', () => {
         await cloneEntryBranch(state, goBack);
 
         expect(notificationService.showAlert).toHaveBeenCalledWith(labels.cannot_clone_entry_with_errors);
-        expect(databaseInsertService.insertCloneEntryBranch()).not.toHaveBeenCalled();
+        expect(databaseInsertService.insertCloneEntryBranch).not.toHaveBeenCalled();
     });
 
     it('should NOT clone if user cancels the confirmation', async () => {
