@@ -288,6 +288,9 @@ describe('Main.js Architecture', () => {
         await flushPromises();
 
         expect(notificationService.showAlert).toHaveBeenCalledWith('Not Found', 404);
+
+        const { useRootStore } = await import('@/stores/root-store');
+        expect(useRootStore().notFound).toBe(true);
     });
     it('Native: covers native-only filesystem logic', async () => {
         const { initService } = await import('@/services/init-service');

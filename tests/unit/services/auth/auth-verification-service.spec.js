@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
-import { authVerificationService } from '@/services/auth/auth-verification-service';
-import { useRootStore } from '@/stores/root-store';
-import { utilsService } from '@/services/utilities/utils-service';
-import { webService } from '@/services/web-service';
-import { notificationService } from '@/services/notification-service';
-import { databaseSelectService } from '@/services/database/database-select-service';
-import { errorsService } from '@/services/errors-service';
+import {describe, it, expect, vi, beforeEach} from 'vitest';
+import {setActivePinia, createPinia} from 'pinia';
+import {authVerificationService} from '@/services/auth/auth-verification-service';
+import {useRootStore} from '@/stores/root-store';
+import {utilsService} from '@/services/utilities/utils-service';
+import {webService} from '@/services/web-service';
+import {notificationService} from '@/services/notification-service';
+import {databaseSelectService} from '@/services/database/database-select-service';
+import {errorsService} from '@/services/errors-service';
 
 // Mock Services
 vi.mock('@/services/utilities/utils-service');
@@ -14,6 +14,10 @@ vi.mock('@/services/web-service');
 vi.mock('@/services/notification-service');
 vi.mock('@/services/database/database-select-service');
 vi.mock('@/services/errors-service');
+// Mock Config
+vi.mock('@/config/strings', () => ({
+    STRINGS: {en: {status_codes: {ec5_118: 'No Internet'}, labels: {sign_in: 'Sign In'}}}
+}));
 
 describe('authVerificationService', () => {
     beforeEach(() => {
@@ -26,19 +30,12 @@ describe('authVerificationService', () => {
 
         // Mock window.atob for Node environment
         if (typeof window.atob === 'undefined') {
-            global.window = { atob: (str) => Buffer.from(str, 'base64').toString('binary') };
+            window.atob = (str) => Buffer.from(str, 'base64').toString('binary');
         }
-
-        // 1. Force the language to a known key in your STRINGS file
-
-        // If you are mocking STRINGS, ensure it looks like this:
-         vi.mock('@/config/strings', () => ({
-           STRINGS: { en: { status_codes: { ec5_118: 'No Internet' }, labels: { sign_in: 'Sign In' } } }
-         }));
     });
 
     describe('verifyUser', () => {
-        const credentials = { email: 'test@example.com', password: 'password123' };
+        const credentials = {email: 'test@example.com', password: 'password123'};
 
         it('shows alert and rejects if there is no internet connection', async () => {
             // 1. Setup the mock
@@ -55,17 +52,17 @@ describe('authVerificationService', () => {
 
         it('resolves on successful verification', async () => {
             utilsService.hasInternetConnection.mockResolvedValue(true);
-            webService.verifyUserEmail.mockResolvedValue({ status: 'success' });
+            webService.verifyUserEmail.mockResolvedValue({status: 'success'});
 
             const result = await authVerificationService.verifyUser(credentials);
 
             expect(notificationService.showProgressDialog).toHaveBeenCalled();
-            expect(result).toEqual({ status: 'success' });
+            expect(result).toEqual({status: 'success'});
         });
 
         it('rejects with error code on failed verification', async () => {
             utilsService.hasInternetConnection.mockResolvedValue(true);
-            const mockError = { response: { status: 401 } };
+            const mockError = {response: {status: 401}};
             webService.verifyUserEmail.mockRejectedValue(mockError);
             errorsService.getWebErrorCode.mockReturnValue('EC5_101');
 
@@ -79,12 +76,12 @@ describe('authVerificationService', () => {
     describe('isJWTExpired', () => {
         // Helper to generate fake base64 payload
         const createJwt = (exp) => {
-            const payload = btoa(JSON.stringify({ exp })).replace(/=/g, '');
+            const payload = btoa(JSON.stringify({exp})).replace(/=/g, '');
             return `header.${payload}.signature`;
         };
 
         it('returns true if no user is found', async () => {
-            databaseSelectService.getUser.mockResolvedValue({ rows: { length: 0 } });
+            databaseSelectService.getUser.mockResolvedValue({rows: {length: 0}});
             const result = await authVerificationService.isJWTExpired();
             expect(result).toBe(true);
         });
@@ -94,7 +91,7 @@ describe('authVerificationService', () => {
             databaseSelectService.getUser.mockResolvedValue({
                 rows: {
                     length: 1,
-                    item: () => ({ jwt: createJwt(farFuture) })
+                    item: () => ({jwt: createJwt(farFuture)})
                 }
             });
             const result = await authVerificationService.isJWTExpired();
@@ -104,7 +101,7 @@ describe('authVerificationService', () => {
         it('returns true if token is within the 10s buffer', async () => {
             const nearExpiry = (Date.now() / 1000) + 5; // Expiring in 5s
             databaseSelectService.getUser.mockResolvedValue({
-                rows: { length: 1, item: () => ({ jwt: createJwt(nearExpiry) }) }
+                rows: {length: 1, item: () => ({jwt: createJwt(nearExpiry)})}
             });
             const result = await authVerificationService.isJWTExpired();
             expect(result).toBe(true);
@@ -112,7 +109,8 @@ describe('authVerificationService', () => {
 
         it('returns true and logs error on catch block', async () => {
             databaseSelectService.getUser.mockRejectedValue(new Error('DB Error'));
-            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+            });
 
             const result = await authVerificationService.isJWTExpired();
 

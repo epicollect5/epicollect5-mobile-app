@@ -71,9 +71,10 @@ export async function saveEntryPWA(state, quit) {
 
         //cache any errors
         rootStore.routeParams = {
+            ...rootStore.routeParams,
             error: {errors: errorResponse.data.errors}
         };
-
+        //set up scope errors
         state.error = {
             errors: translatedInputErrors
         };

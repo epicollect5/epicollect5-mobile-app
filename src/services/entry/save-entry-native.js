@@ -12,7 +12,7 @@ export async function saveEntryNative(state, syncType, quit) {
     const labels = STRINGS[language].labels;
 
     // Determine the syncType
-    syncType = syncType ? syncType : PARAMETERS.SYNCED_CODES.UNSYNCED;
+    syncType = syncType ?? PARAMETERS.SYNCED_CODES.UNSYNCED;
 
     await notificationService.showProgressDialog(labels.wait, labels.saving);
     // SAVE ENTRY

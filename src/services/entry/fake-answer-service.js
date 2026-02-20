@@ -69,13 +69,13 @@ export const fakeAnswerService = {
 
             switch (inputDetails.type) {
                 case 'text':
-                    this.generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex);
+                    fakeAnswerService.generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex);
                     //imp: truncate to 255 as per epicollect limits
                     answer.answer = utilsService.trunc(answer.answer, 255, false);
                     resolve(answer);
                     break;
                 case 'textarea':
-                    this.generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex);
+                    fakeAnswerService.generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex);
                     resolve(answer);
                     break;
                 case 'integer':
