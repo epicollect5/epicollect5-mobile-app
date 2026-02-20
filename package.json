@@ -29,7 +29,7 @@
     "coverage": "vitest --coverage",
     "vitest-ui": "vitest --ui",
     "vitest": "vitest",
-    "pwa": "rm -rf dist && export VUE_APP_MODE=PWA && export VUE_APP_DEBUG=1 && ionic serve --no-open -p 1234 --external",
+    "pwa:browser": "rm -rf dist && export VUE_APP_MODE=PWA && export VUE_APP_DEBUG=1 && ionic serve --no-open -p 1234 --external",
     "prepwa:prod": "vitest --run --silent",
     "pwa:prod": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG= && export VUE_APP_BYPASS_UNIQUENESS= && ionic build",
     "pwa:debug": "export VUE_APP_MODE=PWA && export VUE_APP_DEBUG=1 && ionic build",

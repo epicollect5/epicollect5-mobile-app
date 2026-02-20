@@ -192,7 +192,6 @@ export const entryService = {
     },
 
     saveEntryPWA () {
-debugger;
         const rootStore = useRootStore();
         const self = this;
 

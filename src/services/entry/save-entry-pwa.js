@@ -21,7 +21,19 @@ export async function saveEntryPWA(state, quit) {
         notificationService.hideProgressDialog();
     }
 
-    await notificationService.showProgressDialog(labels.wait, labels.saving);
+    //if the project has media to upload, warn about it in the progress dialog
+    if (Object.keys(rootStore.entriesAddScope.entryService.entry.media).length > 0) {
+        await notificationService.showProgressDialog(
+            labels.saving_with_encoding,
+            labels.wait
+            );
+    }
+    else {
+        await notificationService.showProgressDialog(
+            labels.wait,
+            labels.saving);
+    }
+
     rootStore.entriesAddScope.entryService.allowSave = true;
     state.action = rootStore.entriesAddScope.entryService.action;
 
