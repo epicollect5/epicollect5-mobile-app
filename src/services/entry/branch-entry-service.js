@@ -56,7 +56,7 @@ export const branchEntryService = {
         const self = this;
         self.form = formModel;
         self.entry = branchEntryModel;
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
 
             this.action = PARAMETERS.ENTRY_EDIT;
             // Replace entry model object with that supplied
@@ -72,6 +72,9 @@ export const branchEntryService = {
                 mediaService.getEntryStoredMedia(self.entry.entryUuid).then(function (response) {
                     self.entry.media = response;
                     resolve();
+                }, function (error) {
+                    console.log(error);
+                    reject(error);
                 });
             } else {
                 //todo: handle PWA
@@ -164,7 +167,7 @@ export const branchEntryService = {
             //remove upload errors for this branch (looking up uuid)
             if (Object.keys(rootStore.queueBranchUploadErrorsPWA).length > 0) {
                 for (const [branchRef, errors] of Object.entries(rootStore.queueBranchUploadErrorsPWA)) {
-                    for (let i = 0; i < errors.length; i++) {
+                    for (let i = errors.length - 1; i >= 0; i--) {
                         if (errors[i].uuid === self.entry.entryUuid) {
                             rootStore.queueBranchUploadErrorsPWA[branchRef].splice(i, 1);
                         }
@@ -245,7 +248,7 @@ export const branchEntryService = {
         const self = this;
         const rootStore = useRootStore();
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
 
             //if editing existing entry and quitting, just bail out
             //as no changes need to be made
@@ -268,7 +271,8 @@ export const branchEntryService = {
                     return false;
                 }
                 // Select all temp branch entries uuids
-                databaseSelectService.selectTempBranches(self.entry.entryUuid).then(function (res) {
+                databaseSelectService.selectTempBranches(self.entry.entryUuid)
+                    .then(function (res) {
                     // Remove unique_answers, if any, for each temp branch
                     if (res.rows.length > 0) {
                         databaseDeleteService.removeUniqueAnswers(res).then(function () {
@@ -276,12 +280,18 @@ export const branchEntryService = {
                             databaseDeleteService.deleteTempBranchEntries().then(function () {
                                 // Finished, resolve
                                 resolve();
+                            }, function (error) {
+                                reject(error);
                             });
+                        }, function (error) {
+                            reject(error);
                         });
                     } else {
                         // No temp branches, resolve
                         resolve();
                     }
+                }, function (error) {
+                    reject(error);
                 });
             }
         });

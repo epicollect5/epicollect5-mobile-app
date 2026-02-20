@@ -87,7 +87,7 @@ export async function saveEntryPWA(state, quit) {
         state.disableNext = true;
 
         //handle error, users can go back to check for errors
-        await errorsService.handleWebError(errorResponse);
         notificationService.hideProgressDialog();
+        await errorsService.handleWebError(errorResponse);
     }
 }

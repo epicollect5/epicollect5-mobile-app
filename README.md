@@ -18,10 +18,13 @@
    ```bash
    npm install
    ```
+   
 3. Copy the example environment file and configure it:
+
    ```bash
    cp .env-example.local .env.local
    ```
+   
 4. Update `.env.local` with your configuration (see Environment Variables section below)
 
 ## Environment Variables

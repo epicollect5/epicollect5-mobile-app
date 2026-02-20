@@ -1,5 +1,8 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { webService } from '@/services/web-service';
+import { initService } from '@/services/init-service';
+import {setupPWAEntry} from '@/use/entry/setup-pwa-entry';
 
 /**
  * 1. MANDATORY MOCKS (Hoisted)
@@ -8,7 +11,7 @@ import { setActivePinia, createPinia } from 'pinia';
 vi.mock('@/router', () => ({
     default: {
         install: vi.fn(),
-        isReady: vi.fn(() => Promise.resolve()),
+        isReady: vi.fn(() => Promise.resolve())
     }
 }));
 
@@ -68,7 +71,7 @@ vi.mock('@ionic/vue/css/structure.css', () => ({}));
 vi.mock('@ionic/vue/css/typography.css', () => ({}));
 
 
-// 1. IMPROVED SERVICE MOCKS (Fixing the undefineds)
+// 1. IMPROVED SERVICE MOCKS (Fixing the undefined)
 vi.mock('@/services/init-service', () => ({
     initService: {
         getDeviceInfo: vi.fn(),
@@ -84,7 +87,7 @@ vi.mock('@/services/init-service', () => ({
         insertDemoProject: vi.fn(),
         getSelectedTextSize: vi.fn(() => Promise.resolve('medium')),
         getCollectErrorsPreference: vi.fn(() => Promise.resolve(true)),
-        retrieveJwtToken: vi.fn(() => Promise.resolve({ name: 'Test User' })),
+        retrieveJwtToken: vi.fn(() => Promise.resolve({ name: 'Test User' }))
     }
 }));
 
@@ -224,6 +227,8 @@ describe('Main.js Architecture', () => {
     it('PWA: triggers notFound for invalid UUIDs in edit-entry mode', async () => {
         const { initService } = await import('@/services/init-service');
         const { commonValidate } = await import('@/services/validation/common-validate');
+        webService.getProjectPWA.mockResolvedValue({ data: {} });
+        setupPWAEntry.mockResolvedValue('form-ref-123');
 
         initService.getDeviceInfo.mockResolvedValue({ platform: 'web' });
         // Simulate invalid UUID check

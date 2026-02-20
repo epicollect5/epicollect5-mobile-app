@@ -22,7 +22,7 @@ vi.mock('@/config/strings', () => ({
 describe('authVerificationService', () => {
     beforeEach(() => {
         setActivePinia(createPinia());
-        vi.clearAllMocks();
+        vi.restoreAllMocks();
 
         // Setup default rootStore state
         const rootStore = useRootStore();
