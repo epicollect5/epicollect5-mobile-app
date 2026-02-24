@@ -57,7 +57,7 @@ describe('Dropzone.vue', () => {
         // Provide a filename so filesource is NOT empty
         const wrapper = factory({ filename: 'test.jpg' });
 
-        const spinner = wrapper.find('ion-spinner'); // or 'ion-spinner-stub'
+        const spinner = wrapper.find({name:'ion-spinner'});
 
         // 1. Check if it exists in the DOM
         expect(spinner.exists()).toBe(true);
@@ -69,7 +69,7 @@ describe('Dropzone.vue', () => {
     it('hides the spinner and shows the image when image is loaded', async () => {
         const wrapper = factory({ type: 'photo', filename: 'test.jpg' });
         const img = wrapper.find('img');
-        const spinner = wrapper.find('ion-spinner'); // or 'ion-spinner-stub'
+        const spinner = wrapper.find({name:'ion-spinner'}); // or 'ion-spinner-stub'
         // 1. Check if it exists in the DOM
         expect(spinner.exists()).toBe(true);
         // Simulate image load event
@@ -88,7 +88,7 @@ describe('Dropzone.vue', () => {
         wrapper.vm.state.loadingError = true;
         await wrapper.vm.$nextTick();
 
-        const label = wrapper.find('ion-label');
+        const label = wrapper.find({name:'ion-label'});
         expect(label.text()).toBe(errorMsg);
     });
 });
@@ -112,7 +112,7 @@ describe('Dropzone - getMediaUrlPWA Logic', () => {
         return mount(Dropzone, {
             props: {
                 filename: 'photo.jpg',
-                filestate: PARAMETERS.PWA_FILE_STATE.REMOTE,
+                filestate: PARAMETERS.PWA_FILE_STATE.CACHED,
                 fileError: '',
                 inputRef: 'ref',
                 type: PARAMETERS.QUESTION_TYPES.PHOTO,

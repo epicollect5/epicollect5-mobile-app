@@ -14,7 +14,7 @@
     "test:e2e": "vue-cli-service test:e2e",
     "lint": "vue-cli-service lint",
     "prenative:prod": "vitest --run --silent",
-    "native:debug": "export VUE_APP_MODE=WEBVIEW && ionic cap copy --inline",
+    "native:debug": "export VUE_APP_MODE=WEBVIEW && VUE_APP_DEBUG=1 && ionic cap copy --inline",
     "native:prod": "export VUE_APP_MODE=WEBVIEW && export VUE_APP_DEBUG= && export VUE_APP_BYPASS_UNIQUENESS= && ionic cap copy --prod --inline",
     "native:browser": "export VUE_APP_MODE=WEBVIEW && ionic serve --no-open --external",
     "native:copy": "ionic cap copy --no-build",

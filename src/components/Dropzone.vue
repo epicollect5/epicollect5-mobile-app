@@ -65,7 +65,7 @@
 import {STRINGS} from '@/config/strings.js';
 import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
-import {reactive, toRaw} from '@vue/reactivity';
+import {reactive, toRaw} from 'vue';
 import {useDropzone} from 'vue3-dropzone';
 import {projectModel} from '@/models/project-model';
 import {notificationService} from '@/services/notification-service';

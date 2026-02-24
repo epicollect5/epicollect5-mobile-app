@@ -98,7 +98,7 @@ Create a `.env.local` file based on `.env-example.local`:
 
 ### PWA (Progressive Web App)
 
-- **`npm run pwa`** - Run PWA locally in development mode
+- **`npm run pwa:browser`** - Run PWA locally in development mode
   - Sets `VUE_APP_MODE=PWA` and `VUE_APP_DEBUG=1`
   - Runs on `http://localhost:1234`
   - Use format: `http://localhost:1234/{project-slug}/add-entry` to add an entry

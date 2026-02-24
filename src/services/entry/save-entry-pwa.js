@@ -22,7 +22,9 @@ export async function saveEntryPWA(state, quit) {
     }
 
     //if the project has media to upload, warn about it in the progress dialog
-    if (Object.keys(rootStore.entriesAddScope.entryService.entry.media).length > 0) {
+
+    const media = rootStore.entriesAddScope.entryService.entry?.media ?? {};
+    if (Object.keys(media).length > 0) {
         await notificationService.showProgressDialog(
             labels.saving_with_encoding,
             labels.wait

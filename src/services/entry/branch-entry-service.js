@@ -83,13 +83,17 @@ export const branchEntryService = {
                     mediaService.getEntryStoredMediaPWA(self.entry).then(function (response) {
                         self.entry.media = response;
                         resolve();
+                    }, function (error) {
+                        console.log(error);
+                        reject(error);
                     });
                 }
                 else {
                     //on web debug media files are not available
                     self.entry.media = {};
+                    resolve();
                 }
-                resolve();
+
             }
         });
     },

@@ -1,7 +1,7 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
-import { webService } from '@/services/web-service';
-import { initService } from '@/services/init-service';
+import {vi, describe, it, expect, beforeEach} from 'vitest';
+import {setActivePinia, createPinia} from 'pinia';
+import {webService} from '@/services/web-service';
+import {initService} from '@/services/init-service';
 import {setupPWAEntry} from '@/use/entry/setup-pwa-entry';
 
 /**
@@ -16,7 +16,8 @@ vi.mock('@/router', () => ({
 }));
 
 vi.mock('pinia-logger', () => ({
-    PiniaLogger: vi.fn(() => () => {})
+    PiniaLogger: vi.fn(() => () => {
+    })
 }));
 
 vi.mock('@/config', () => ({
@@ -37,7 +38,7 @@ vi.mock('@/config', () => ({
                 bookmarks_loading_error: 'Bookmark Error',
                 temp_deletion_error: 'Temp Error'
             },
-            status_codes: { ec5_103: '103' }
+            status_codes: {ec5_103: '103'}
         }
         // Add other languages here if your tests use them
     }
@@ -45,19 +46,19 @@ vi.mock('@/config', () => ({
 
 // Mocking Ionic specifically to handle global component registration
 vi.mock('@ionic/vue', () => ({
-    IonicVue: { install: vi.fn() },
-    IonContent: { render: () => null },
-    IonPage: { render: () => null }
+    IonicVue: {install: vi.fn()},
+    IonContent: {render: () => null},
+    IonPage: {render: () => null}
     // Add any other specific Ion components used in main.js if needed
 }));
 
 // Stub UI and Assets individually to avoid "Parse failure" loop errors
-vi.mock('@/App.vue', () => ({ default: { name: 'App', render: () => null } }));
-vi.mock('@/components/globals/BaseLayout.vue', () => ({ default: {} }));
-vi.mock('@/components/globals/LeftDrawer.vue', () => ({ default: {} }));
-vi.mock('@/components/globals/RightDrawer.vue', () => ({ default: {} }));
-vi.mock('@/components/ListAnswers.vue', () => ({ default: {} }));
-vi.mock('@/components/ListItemAnswer.vue', () => ({ default: {} }));
+vi.mock('@/App.vue', () => ({default: {name: 'App', render: () => null}}));
+vi.mock('@/components/globals/BaseLayout.vue', () => ({default: {}}));
+vi.mock('@/components/globals/LeftDrawer.vue', () => ({default: {}}));
+vi.mock('@/components/globals/RightDrawer.vue', () => ({default: {}}));
+vi.mock('@/components/ListAnswers.vue', () => ({default: {}}));
+vi.mock('@/components/ListItemAnswer.vue', () => ({default: {}}));
 vi.mock('@/theme/variables.css', () => ({}));
 vi.mock('@/theme/core.scss', () => ({}));
 vi.mock('@/theme/animate.min.css', () => ({}));
@@ -76,7 +77,7 @@ vi.mock('@/services/init-service', () => ({
     initService: {
         getDeviceInfo: vi.fn(),
         getLanguagePWA: vi.fn(),
-        getAppInfo: vi.fn(() => Promise.resolve({ version: '1.0.0' })),
+        getAppInfo: vi.fn(() => Promise.resolve({version: '1.0.0'})),
         getLanguage: vi.fn(),
         openDB: vi.fn(),
         getDBVersion: vi.fn(),
@@ -87,36 +88,40 @@ vi.mock('@/services/init-service', () => ({
         insertDemoProject: vi.fn(),
         getSelectedTextSize: vi.fn(() => Promise.resolve('medium')),
         getCollectErrorsPreference: vi.fn(() => Promise.resolve(true)),
-        retrieveJwtToken: vi.fn(() => Promise.resolve({ name: 'Test User' }))
+        retrieveJwtToken: vi.fn(() => Promise.resolve({name: 'Test User'}))
     }
 }));
 
-vi.mock('@/services/web-service', () => ({ webService: { getProjectPWA: vi.fn() } }));
+vi.mock('@/services/web-service', () => ({webService: {getProjectPWA: vi.fn()}}));
 vi.mock('@/services/utilities/utils-service', () => ({
     utilsService: {
         getBasepath: vi.fn(() => '/'),
         stripTrailingSlash: vi.fn((s) => s)
     }
 }));
-vi.mock('@/services/utilities/rollbar-service', () => ({ rollbarService: { init: vi.fn() } }));
-vi.mock('@/services/notification-service', () => ({ notificationService: { showAlert: vi.fn() } }));
-vi.mock('@/services/database/database-create-service', () => ({ createDatabaseService: { execute: vi.fn() } }));
-vi.mock('@capacitor/splash-screen', () => ({ SplashScreen: { hide: vi.fn() } }));
-vi.mock('@/services/utilities/bookmarks-service', () => ({ bookmarksService: { getBookmarks: vi.fn() } }));
-vi.mock('@/services/filesystem/media-dirs-service', () => ({ mediaDirsService: { createDirsLegacy: vi.fn() } }));
+vi.mock('@/services/utilities/rollbar-service', () => ({rollbarService: {init: vi.fn()}}));
+vi.mock('@/services/notification-service', () => ({notificationService: {showAlert: vi.fn()}}));
+vi.mock('@/services/database/database-create-service', () => ({createDatabaseService: {execute: vi.fn()}}));
+vi.mock('@capacitor/splash-screen', () => ({SplashScreen: {hide: vi.fn()}}));
+vi.mock('@/services/utilities/bookmarks-service', () => ({bookmarksService: {getBookmarks: vi.fn()}}));
+vi.mock('@/services/filesystem/media-dirs-service', () => ({mediaDirsService: {createDirsLegacy: vi.fn()}}));
 vi.mock('@/services/filesystem/temp-dirs-service', () => ({
-    tempDirsService: { createTemporaryDir: vi.fn(), clearTemporaryDir: vi.fn() }
+    tempDirsService: {createTemporaryDir: vi.fn(), clearTemporaryDir: vi.fn()}
 }));
-vi.mock('@/services/filesystem/persistent-dirs-service', () => ({ persistentDirsService: { execute: vi.fn() } }));
-vi.mock('@/models/project-model.js', () => ({ projectModel: { initialisePWA: vi.fn() } }));
-vi.mock('@/use/entry/setup-pwa-entry', () => ({ setupPWAEntry: vi.fn() }));
+vi.mock('@/services/filesystem/persistent-dirs-service', () => ({persistentDirsService: {execute: vi.fn()}}));
+vi.mock('@/models/project-model.js', () => ({projectModel: {initialisePWA: vi.fn()}}));
+vi.mock('@/use/entry/setup-pwa-entry', () => ({setupPWAEntry: vi.fn()}));
 
 describe('Main.js Architecture', () => {
 
+    let originalLocation;
+
     beforeEach(() => {
+
         vi.resetModules();
         vi.clearAllMocks();
         setActivePinia(createPinia());
+        originalLocation = window.location;
 
         // 1. Fix: Mount Target
         document.body.innerHTML = '<div id="app"></div>';
@@ -134,15 +139,21 @@ describe('Main.js Architecture', () => {
         };
     });
 
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        delete window.location;
+        window.location = originalLocation;
+    });
+
     const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 
     it('boots as PWA when platform is web', async () => {
-        const { initService } = await import('@/services/init-service');
-        const { webService } = await import('@/services/web-service');
-        const { setupPWAEntry } = await import('@/use/entry/setup-pwa-entry');
+        const {initService} = await import('@/services/init-service');
+        const {webService} = await import('@/services/web-service');
+        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
 
-        initService.getDeviceInfo.mockResolvedValue({ platform: 'web' });
-        webService.getProjectPWA.mockResolvedValue({ data: {} });
+        initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
+        webService.getProjectPWA.mockResolvedValue({data: {}});
         setupPWAEntry.mockResolvedValue('form-ref-123');
 
         window.location.pathname = '/my-project/add-entry';
@@ -150,7 +161,7 @@ describe('Main.js Architecture', () => {
         await import('@/main');
         await flushPromises();
 
-        const { useRootStore } = await import('@/stores/root-store');
+        const {useRootStore} = await import('@/stores/root-store');
         const rootStore = useRootStore();
 
         expect(rootStore.isPWA).toBe(true);
@@ -159,11 +170,11 @@ describe('Main.js Architecture', () => {
     });
 
     it('boots as Native when platform is android', async () => {
-        const { initService } = await import('@/services/init-service');
-        const { bookmarksService } = await import('@/services/utilities/bookmarks-service');
+        const {initService} = await import('@/services/init-service');
+        const {bookmarksService} = await import('@/services/utilities/bookmarks-service');
 
-        initService.getDeviceInfo.mockResolvedValue({ platform: 'android' });
-        initService.openDB.mockResolvedValue({ executeSql: vi.fn() });
+        initService.getDeviceInfo.mockResolvedValue({platform: 'android'});
+        initService.openDB.mockResolvedValue({executeSql: vi.fn()});
         initService.getAppInfo.mockResolvedValue({});
         initService.getLanguage.mockResolvedValue('en');
         initService.getDBVersion.mockResolvedValue(1);
@@ -172,7 +183,7 @@ describe('Main.js Architecture', () => {
         await import('@/main');
         await flushPromises();
 
-        const { useRootStore } = await import('@/stores/root-store');
+        const {useRootStore} = await import('@/stores/root-store');
         const rootStore = useRootStore();
 
         expect(rootStore.isPWA).toBe(false);
@@ -181,12 +192,12 @@ describe('Main.js Architecture', () => {
     });
 
     it('handles Branch entry logic when branch params are present', async () => {
-        const { initService } = await import('@/services/init-service');
-        const { webService } = await import('@/services/web-service');
-        const { setupPWAEntry } = await import('@/use/entry/setup-pwa-entry');
+        const {initService} = await import('@/services/init-service');
+        const {webService} = await import('@/services/web-service');
+        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
 
-        initService.getDeviceInfo.mockResolvedValue({ platform: 'web' });
-        webService.getProjectPWA.mockResolvedValue({ data: {} });
+        initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
+        webService.getProjectPWA.mockResolvedValue({data: {}});
         setupPWAEntry.mockResolvedValue('form-ref-branch');
 
         // 1. Simulate Branch URL Parameters
@@ -197,7 +208,7 @@ describe('Main.js Architecture', () => {
         await import('@/main');
         await flushPromises();
 
-        const { useRootStore } = await import('@/stores/root-store');
+        const {useRootStore} = await import('@/stores/root-store');
         const rootStore = useRootStore();
 
         // 2. Verify it detected the branch
@@ -207,11 +218,11 @@ describe('Main.js Architecture', () => {
     });
 
     it('sets notFound if editing an entry without a UUID', async () => {
-        const { initService } = await import('@/services/init-service');
-        const { webService } = await import('@/services/web-service');
+        const {initService} = await import('@/services/init-service');
+        const {webService} = await import('@/services/web-service');
 
-        initService.getDeviceInfo.mockResolvedValue({ platform: 'web' });
-        webService.getProjectPWA.mockResolvedValue({ data: {} });
+        initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
+        webService.getProjectPWA.mockResolvedValue({data: {}});
 
         // 1. Simulate Edit Entry WITHOUT the required uuid param
         window.location.pathname = '/my-project/edit-entry';
@@ -220,17 +231,20 @@ describe('Main.js Architecture', () => {
         await import('@/main');
         await flushPromises();
 
-        const { useRootStore } = await import('@/stores/root-store');
+        const {useRootStore} = await import('@/stores/root-store');
         expect(useRootStore().notFound).toBe(true);
         console.log('UUID Validation Verified: notFound =', useRootStore().notFound);
     });
     it('PWA: triggers notFound for invalid UUIDs in edit-entry mode', async () => {
-        const { initService } = await import('@/services/init-service');
-        const { commonValidate } = await import('@/services/validation/common-validate');
-        webService.getProjectPWA.mockResolvedValue({ data: {} });
+        const {initService} = await import('@/services/init-service');
+        const {commonValidate} = await import('@/services/validation/common-validate');
+        const {webService} = await import('@/services/web-service');
+        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
+
+        webService.getProjectPWA.mockResolvedValue({data: {}});
         setupPWAEntry.mockResolvedValue('form-ref-123');
 
-        initService.getDeviceInfo.mockResolvedValue({ platform: 'web' });
+        initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
         // Simulate invalid UUID check
         vi.spyOn(commonValidate, 'isValidUuid').mockReturnValue(false);
 
@@ -240,19 +254,19 @@ describe('Main.js Architecture', () => {
         await import('@/main');
         await flushPromises();
 
-        const { useRootStore } = await import('@/stores/root-store');
+        const {useRootStore} = await import('@/stores/root-store');
         expect(useRootStore().notFound).toBe(true);
     });
 
     it('Native: executes filesystem cleanup only on native platforms', async () => {
-        const { initService } = await import('@/services/init-service');
-        const { mediaDirsService } = await import('@/services/filesystem/media-dirs-service');
-        const { Capacitor } = await import('@capacitor/core');
+        const {initService} = await import('@/services/init-service');
+        const {mediaDirsService} = await import('@/services/filesystem/media-dirs-service');
+        const {Capacitor} = await import('@capacitor/core');
 
         // Setup: Platform AND Language
-        initService.getDeviceInfo.mockResolvedValue({ platform: 'android' });
+        initService.getDeviceInfo.mockResolvedValue({platform: 'android'});
         initService.getLanguage.mockResolvedValue('en'); // This prevents the 'labels' undefined error
-        initService.openDB.mockResolvedValue({ executeSql: vi.fn() });
+        initService.openDB.mockResolvedValue({executeSql: vi.fn()});
 
         vi.spyOn(Capacitor, 'isNativePlatform').mockReturnValue(true);
 
@@ -263,12 +277,12 @@ describe('Main.js Architecture', () => {
     });
 
     it('Native: switches to production server when DEBUG is false', async () => {
-        const { PARAMETERS } = await import('@/config');
-        const { initService } = await import('@/services/init-service');
+        const {PARAMETERS} = await import('@/config');
+        const {initService} = await import('@/services/init-service');
 
         PARAMETERS.DEBUG = false;
         PARAMETERS.PRODUCTION_SERVER_URL = 'https://production.epicollect.net';
-        initService.getDeviceInfo.mockResolvedValue({ platform: 'android' });
+        initService.getDeviceInfo.mockResolvedValue({platform: 'android'});
 
         // Setup: Platform AND Language
         initService.getLanguage.mockResolvedValue('en'); // This prevents the 'labels' undefined error
@@ -279,13 +293,13 @@ describe('Main.js Architecture', () => {
         expect(PARAMETERS.DEFAULT_SERVER_URL).toBe('https://production.epicollect.net');
     });
     it('PWA: covers the error catch block when project fetch fails', async () => {
-        const { initService } = await import('@/services/init-service');
-        const { webService } = await import('@/services/web-service');
-        const { notificationService } = await import('@/services/notification-service');
+        const {initService} = await import('@/services/init-service');
+        const {webService} = await import('@/services/web-service');
+        const {notificationService} = await import('@/services/notification-service');
 
-        initService.getDeviceInfo.mockResolvedValue({ platform: 'web' });
+        initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
         // Force the service to fail
-        webService.getProjectPWA.mockRejectedValue({ statusText: 'Not Found', status: 404 });
+        webService.getProjectPWA.mockRejectedValue({statusText: 'Not Found', status: 404});
 
         window.location.pathname = '/project/add-entry';
 
@@ -294,15 +308,15 @@ describe('Main.js Architecture', () => {
 
         expect(notificationService.showAlert).toHaveBeenCalledWith('Not Found', 404);
 
-        const { useRootStore } = await import('@/stores/root-store');
+        const {useRootStore} = await import('@/stores/root-store');
         expect(useRootStore().notFound).toBe(true);
     });
     it('Native: covers native-only filesystem logic', async () => {
-        const { initService } = await import('@/services/init-service');
-        const { Capacitor } = await import('@capacitor/core');
-        const { mediaDirsService } = await import('@/services/filesystem/media-dirs-service');
+        const {initService} = await import('@/services/init-service');
+        const {Capacitor} = await import('@capacitor/core');
+        const {mediaDirsService} = await import('@/services/filesystem/media-dirs-service');
 
-        initService.getDeviceInfo.mockResolvedValue({ platform: 'ios' });
+        initService.getDeviceInfo.mockResolvedValue({platform: 'ios'});
         initService.getLanguage.mockResolvedValue('en');
         // Force native platform to true
         vi.spyOn(Capacitor, 'isNativePlatform').mockReturnValue(true);

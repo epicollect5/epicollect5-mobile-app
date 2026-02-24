@@ -43,8 +43,8 @@
 
 <script>
 import {ellipsisVertical, search, filter, helpCircle, create, copyOutline} from 'ionicons/icons';
-import {computed} from '@vue/reactivity';
 import {useRootStore} from '@/stores/root-store';
+import {computed} from 'vue';
 
 export default {
   props: {
@@ -61,7 +61,7 @@ export default {
       required: true
     }
   },
-  emit: ['on-label-button-click'],
+  emits: ['on-label-button-click'],
   setup(props, context) {
     const rootStore = useRootStore();
     const methods = {

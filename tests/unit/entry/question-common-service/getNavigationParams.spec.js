@@ -1,14 +1,14 @@
-import { PARAMETERS } from '@/config';
-import { projectModel } from '@/models/project-model';
-import { setActivePinia, createPinia } from 'pinia';
-import { questionCommonService } from '@/services/entry/question-common-service';
-import { useRootStore } from '@/stores/root-store';
-import { vi } from 'vitest';
+import {PARAMETERS} from '@/config';
+import {projectModel} from '@/models/project-model';
+import {setActivePinia, createPinia} from 'pinia';
+import {questionCommonService} from '@/services/entry/question-common-service';
+import {useRootStore} from '@/stores/root-store';
+import {vi} from 'vitest';
 
 //mock nested modules until it fixes "Failed to load /src/components/HeaderModal"
 vi.mock('@/services/errors-service', () => {
     const errorsService = vi.fn();
-    return { errorsService };
+    return {errorsService};
 });
 
 vi.mock('@/models/project-model', () => {
@@ -17,7 +17,7 @@ vi.mock('@/models/project-model', () => {
     projectModel.getFormGroups = vi.fn();
     projectModel.getProjectRef = vi.fn();
     projectModel.getInputIndexFromRef = vi.fn();
-    return { projectModel };
+    return {projectModel};
 });
 
 const projectRef = 'a8a6536ead2a43fbb64a43b95c5425fe';
@@ -128,7 +128,7 @@ describe('getNavigationParams (app)', () => {
         rootStore.isPWA = false;
         entryService.action = PARAMETERS.ENTRY_ADD;
         entryService.entry.isBranch = false;
-        entryService.entry.parentEntryUuid = '';
+        entryService.entry.parentEntryUuid = parentEntryUuid;
         entryService.entry.entryUuid = entryUuid;
 
         projectModel.getProjectRef.mockReturnValue(projectRef);
@@ -148,7 +148,7 @@ describe('getNavigationParams (app)', () => {
         rootStore.isPWA = true;
         entryService.action = PARAMETERS.ENTRY_ADD;
         entryService.entry.isBranch = false;
-        entryService.entry.parentEntryUuid = '';
+        entryService.entry.parentEntryUuid = parentEntryUuid;
         entryService.entry.entryUuid = entryUuid;
 
         projectModel.getProjectRef.mockReturnValue(projectRef);
@@ -186,7 +186,7 @@ describe('getNavigationParams (app)', () => {
     it(PARAMETERS.ENTRY_EDIT + ' hierarchy child pwa', () => {
 
         const rootStore = useRootStore();
-        rootStore.isPWA = false;
+        rootStore.isPWA = true;
         entryService.action = PARAMETERS.ENTRY_EDIT;
         entryService.entry.isBranch = false;
         entryService.entry.parentEntryUuid = parentEntryUuid;
@@ -194,12 +194,10 @@ describe('getNavigationParams (app)', () => {
 
         projectModel.getProjectRef.mockReturnValue(projectRef);
         expect(questionCommonService.getNavigationParams(entryService)).toMatchObject({
-            routeName: PARAMETERS.ROUTES.ENTRIES_VIEW,
+            routeName: PARAMETERS.ROUTES.PWA_QUIT,
             routeParams: {
-                entryUuid,
                 formRef,
-                projectRef,
-                parentEntryUuid
+                projectRef
             }
         });
     });
@@ -286,7 +284,7 @@ describe('getNavigationParams (app)', () => {
 
         const rootStore = useRootStore();
         rootStore.isPWA = false;
-        entryService.action = PARAMETERS.ENTRY_ADD;
+        entryService.action = PARAMETERS.ENTRY_EDIT;
         entryService.entry.isBranch = true;
         entryService.entry.parentEntryUuid = '';
         entryService.entry.ownerInputRef = ownerInputRef;
@@ -313,7 +311,7 @@ describe('getNavigationParams (app)', () => {
         const rootStore = useRootStore();
         rootStore.isPWA = true;
         rootStore.branchEditType = PARAMETERS.PWA_BRANCH_LOCAL;
-        entryService.action = PARAMETERS.ENTRY_ADD;
+        entryService.action = PARAMETERS.ENTRY_EDIT;
         entryService.entry.isBranch = true;
         entryService.entry.parentEntryUuid = '';
         entryService.entry.ownerInputRef = ownerInputRef;
@@ -340,7 +338,7 @@ describe('getNavigationParams (app)', () => {
         const rootStore = useRootStore();
         rootStore.isPWA = true;
         rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
-        entryService.action = PARAMETERS.ENTRY_ADD;
+        entryService.action = PARAMETERS.ENTRY_EDIT;
         entryService.entry.isBranch = true;
         entryService.entry.parentEntryUuid = '';
         entryService.entry.ownerInputRef = ownerInputRef;
