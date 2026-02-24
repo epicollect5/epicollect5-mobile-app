@@ -142,7 +142,7 @@ export const notificationService = {
                 let ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + labels.wait + '</strong>';
 
                 if (title) {
-                    ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + title + '</strong><br/><br/>' + message;
+                    ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + title + '</strong><br/><br/><span class="ec5LoadingMessage">' + message + '</span>';
                 } else {
                     if (message) {
                         ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + message + '</strong>';

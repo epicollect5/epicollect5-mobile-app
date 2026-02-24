@@ -90,9 +90,11 @@ export const PARAMETERS = {
                 ENTRIES: '/entries/',
                 ENTRIES_DEBUG: '/entries-debug/',
                 MEDIA: '/media/',
+                MEDIA_DEBUG: '/media-debug/',
                 UPLOAD_FILE: '/upload-file/',
                 UPLOAD_FILE_DEBUG: '/upload-file-debug/',//for debugging
                 TEMP_MEDIA: '/temp-media/',
+                TEMP_MEDIA_DEBUG: '/temp-media-debug/',
                 TEMP_MEDIA_DELETE: '/temp-media-delete/',
                 TEMP_MEDIA_DELETE_DEBUG: '/temp-media-delete-debug/',
                 UNIQUE_ANSWER: '/unique-answer/',

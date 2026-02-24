@@ -74,7 +74,6 @@ export const entryService = {
 
     // Initial function to set up the entry from an existing stored entry
     setUpExisting (entry) {
-
         console.log(JSON.stringify(entry));
 
         const self = this;
@@ -118,7 +117,7 @@ export const entryService = {
             } else {
                 if (rootStore.isPWA) {
                     // This is a promise to be resolved BEFORE any directive is called
-                    mediaService.getEntryStoredMediaPWA(self.entry.entryUuid).then(function (response) {
+                    mediaService.getEntryStoredMediaPWA(self.entry).then(function (response) {
                         self.entry.media = response;
                         resolve();
                     });

@@ -2,7 +2,6 @@ import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
-import { reactive, toRaw } from '@vue/reactivity';
 
 // Initial set up for each question
 export async function initialSetup (state, scope) {
@@ -38,14 +37,14 @@ export async function initialSetup (state, scope) {
         }
 
 
-        // Get the confirm answer for this question
+        // Get the confirmation answer for this question
         state.confirmAnswer = {};
         state.confirmAnswer[state.questionParams.currentInputRef] = {
             verify: state.inputDetails.verify, // bool
             answer: state.answers[state.questionParams.currentInputRef].answer // answer value
         };
 
-        // Get the confirm answers if the question is a GROUP
+        // Get the confirmation answers if the question is a GROUP
         if (state.questionParams.type === PARAMETERS.QUESTION_TYPES.GROUP) {
             scope.entryService.form.formStructure.group[state.questionParams.currentInputRef].forEach((groupInputRef) => {
                 state.confirmAnswer[groupInputRef] = {
@@ -58,7 +57,7 @@ export async function initialSetup (state, scope) {
 
     // Set up entry/branch entry specific details
     if (state.questionParams.isBranch) {
-        //is branch
+        //is branch?
         scope.entryService = branchEntryService;
         state.inputs = scope.entryService.branchInputs;
     } else {

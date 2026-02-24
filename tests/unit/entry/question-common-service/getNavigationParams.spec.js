@@ -1,14 +1,9 @@
-import { utilsService } from '@/services/utilities/utils-service';
 import { PARAMETERS } from '@/config';
-import { STRINGS } from '@/config/strings';
 import { projectModel } from '@/models/project-model';
 import { setActivePinia, createPinia } from 'pinia';
-import { answerService } from '@/services/entry/answer-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
 import { useRootStore } from '@/stores/root-store';
 import { vi } from 'vitest';
-
-
 
 //mock nested modules until it fixes "Failed to load /src/components/HeaderModal"
 vi.mock('@/services/errors-service', () => {

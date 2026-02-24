@@ -54,6 +54,7 @@ export const branchEntryService = {
     //Initial function to set up the entry from an existing stored entry
     setUpExisting (entry) {
         const self = this;
+        const rootStore = useRootStore();
         self.form = formModel;
         self.entry = branchEntryModel;
         return new Promise((resolve, reject) => {
@@ -77,8 +78,17 @@ export const branchEntryService = {
                     reject(error);
                 });
             } else {
-                //todo: handle PWA
-                self.entry.media = {};
+                if (rootStore.isPWA) {
+                    // This is a promise to be resolved BEFORE any directive is called
+                    mediaService.getEntryStoredMediaPWA(self.entry).then(function (response) {
+                        self.entry.media = response;
+                        resolve();
+                    });
+                }
+                else {
+                    //on web debug media files are not available
+                    self.entry.media = {};
+                }
                 resolve();
             }
         });

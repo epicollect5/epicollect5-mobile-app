@@ -69,7 +69,7 @@
 				</template>
 			</grid-question-narrow>
 
-			<!-- Photo thumbail -->
+			<!-- Photo thumbnail -->
 			<div
 				v-if="state.imageSource !== ''"
 				class="question-photo-thumbnail animate__animated animate__fadeIn ion-margin-top"
@@ -78,7 +78,7 @@
 					:src="state.imageSource"
 					@click="openViewer()"
 					@load="onImageLoad()"
-				/>
+				 :alt="state.answer.answer"/>
 			</div>
 
 		</ion-card-content>
@@ -175,7 +175,7 @@ export default {
 		// Check whether we want to index the media object using the main entry uuid, or branch entry uuid
 		const entryUuid = !entriesAddState.questionParams.isBranch
 			? entriesAddScope.entryService.entry.entryUuid //use entry_uuid
-			: entriesAddScope.branchEntryService.entry.entryUuid;//use branch entry_uuid 
+			: entriesAddScope.branchEntryService.entry.entryUuid;//use branch entry_uuid
 
 		media[entryUuid] = media[entryUuid] || {};
 
@@ -242,13 +242,13 @@ export default {
 						return false;
 					}
 				}
-				popoverMediaHandler({
-					media,
-					entryUuid,
-					state,
-					e,
-					mediaType: PARAMETERS.QUESTION_TYPES.PHOTO
-				});
+				await popoverMediaHandler({
+          media,
+          entryUuid,
+          state,
+          e,
+          mediaType: PARAMETERS.QUESTION_TYPES.PHOTO
+        });
 			},
 			takePicture(action) {
 				if (rootStore.device.platform !== PARAMETERS.WEB) {

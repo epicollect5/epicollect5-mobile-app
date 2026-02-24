@@ -59,7 +59,12 @@ export const useRootStore = defineStore('RootStore', {
             queueRemoteFilesToDeletePWA: [],
             queueBranchUploadErrorsPWA: {},
             queueGlobalUploadErrorsPWA: [],
-            branchEditType: PARAMETERS.PWA_BRANCH_LOCAL,
+            // Imp: local or remote (null if hierarchy)
+            //  Local is when adding branch entries to a remote entry,
+            //  so get stored media using temp media controller
+            //  Remote is when adding or editing an existing branch entry directly,
+            //  so get stored media using media controller
+            branchEditType: null,
             providedSegment: null,
             easterEgg: false
         };
