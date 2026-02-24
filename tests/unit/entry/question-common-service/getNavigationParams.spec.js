@@ -197,6 +197,7 @@ describe('getNavigationParams (app)', () => {
             routeName: PARAMETERS.ROUTES.PWA_QUIT,
             routeParams: {
                 formRef,
+                entryUuid,
                 projectRef
             }
         });
@@ -215,7 +216,6 @@ describe('getNavigationParams (app)', () => {
         projectModel.getProjectRef.mockReturnValue(projectRef);
         projectModel.getInputIndexFromRef.mockReturnValue(inputIndex);
         console.log(questionCommonService.getNavigationParams(entryService));
-
 
         expect(questionCommonService.getNavigationParams(entryService)).toMatchObject({
             routeName: PARAMETERS.ROUTES.ENTRIES_ADD,
@@ -289,19 +289,20 @@ describe('getNavigationParams (app)', () => {
         entryService.entry.parentEntryUuid = '';
         entryService.entry.ownerInputRef = ownerInputRef;
         entryService.entry.entryUuid = entryUuid;
+        entryService.entry.ownerEntryUuid = ownerEntryUuid;
 
         projectModel.getProjectRef.mockReturnValue(projectRef);
         projectModel.getInputIndexFromRef.mockReturnValue(inputIndex);
         console.log(questionCommonService.getNavigationParams(entryService));
 
         expect(questionCommonService.getNavigationParams(entryService)).toMatchObject({
-            routeName: PARAMETERS.ROUTES.ENTRIES_ADD,
+            routeName: PARAMETERS.ROUTES.ENTRIES_VIEW_BRANCH,
             routeParams: {
+                entryUuid,
+                ownerEntryUuid,
+                ownerInputRef,
                 formRef,
-                projectRef,
-                inputRef: ownerInputRef,
-                inputIndex,
-                isBranch: false
+                projectRef
             }
         });
     });
