@@ -1,18 +1,18 @@
-import { PARAMETERS } from '@/config';
-import { projectModel } from '@/models/project-model.js';
-import { formModel } from '@/models/form-model.js';
-import { utilsService } from '@/services/utilities/utils-service';
-import { mediaService } from '@/services/entry/media-service';
-import { useRootStore } from '@/stores/root-store';
-import { databaseInsertService } from '../database/database-insert-service';
-import { entryCommonService } from '@/services/entry/entry-common-service';
-import { databaseSelectService } from '../database/database-select-service';
-import { databaseDeleteService } from '../database/database-delete-service';
-import { branchEntryModel } from '@/models/branch-entry-model.js';
-import { Capacitor } from '@capacitor/core';
-import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
-import { webService } from '@/services/web-service';
-import { wasJumpEdited } from '@/use/questions/was-jump-edited';
+import {PARAMETERS} from '@/config';
+import {projectModel} from '@/models/project-model.js';
+import {formModel} from '@/models/form-model.js';
+import {utilsService} from '@/services/utilities/utils-service';
+import {mediaService} from '@/services/entry/media-service';
+import {useRootStore} from '@/stores/root-store';
+import {databaseInsertService} from '../database/database-insert-service';
+import {entryCommonService} from '@/services/entry/entry-common-service';
+import {databaseSelectService} from '../database/database-select-service';
+import {databaseDeleteService} from '../database/database-delete-service';
+import {branchEntryModel} from '@/models/branch-entry-model.js';
+import {Capacitor} from '@capacitor/core';
+import {JSONTransformerService} from '@/services/utilities/json-transformer-service';
+import {webService} from '@/services/web-service';
+import {wasJumpEdited} from '@/use/questions/was-jump-edited';
 
 export const branchEntryService = {
     type: PARAMETERS.BRANCH_ENTRY,
@@ -22,7 +22,7 @@ export const branchEntryService = {
     branchInputs: {},
 
     //Initial function to set up the branch entry
-    setUpNew (formRef, ownerInputRef, ownerInputUuid) {
+    setUpNew(formRef, ownerInputRef, ownerInputUuid) {
         this.form = formModel;
         this.entry = branchEntryModel;
         this.action = PARAMETERS.ENTRY_ADD;
@@ -52,7 +52,7 @@ export const branchEntryService = {
     },
 
     //Initial function to set up the entry from an existing stored entry
-    setUpExisting (entry) {
+    setUpExisting(entry) {
         const self = this;
         const rootStore = useRootStore();
         self.form = formModel;
@@ -87,8 +87,7 @@ export const branchEntryService = {
                         console.log(error);
                         reject(error);
                     });
-                }
-                else {
+                } else {
                     //on web debug media files are not available
                     self.entry.media = {};
                     resolve();
@@ -99,7 +98,7 @@ export const branchEntryService = {
     },
 
     // Save a branch entry
-    saveEntry (syncType) {
+    saveEntry(syncType) {
 
         const self = this;
         self.form = formModel;
@@ -115,7 +114,7 @@ export const branchEntryService = {
                 true
             );
 
-            function _onError (error) {
+            function _onError(error) {
                 console.log(error);
                 reject(error);
             }
@@ -141,7 +140,7 @@ export const branchEntryService = {
 
     },
 
-    async saveEntryPWA () {
+    saveEntryPWA() {
         //save branch entry in memory, it will be uploaded the owner entry is uploaded
         const rootStore = useRootStore();
         const projectSlug = projectModel.getSlug();
@@ -202,8 +201,7 @@ export const branchEntryService = {
                     console.log(error);
                     reject(error);
                 });
-            }
-            else {
+            } else {
                 //store branch entry in memory
                 if (!Object.prototype.hasOwnProperty.call(rootStore.queueTempBranchEntriesPWA, ownerInputRef)) {
                     rootStore.queueTempBranchEntriesPWA[ownerInputRef] = [];
@@ -215,9 +213,13 @@ export const branchEntryService = {
                     const index = existingBranchEntries.findIndex((branch) => {
                         return branch.id === self.entry.entryUuid;
                     });
-                    rootStore.queueTempBranchEntriesPWA[ownerInputRef][index] = uploadableBranchEntry;
-                }
-                else {
+                    if (index !== -1) {
+                        rootStore.queueTempBranchEntriesPWA[ownerInputRef][index] = uploadableBranchEntry;
+                    } else {
+                        // Entry not found in temp queue (e.g. store was reset); treat as a new branch
+                        rootStore.queueTempBranchEntriesPWA[ownerInputRef].push(uploadableBranchEntry);
+                    }
+                } else {
                     //new branch, just add it
                     rootStore.queueTempBranchEntriesPWA[ownerInputRef].push(uploadableBranchEntry);
                 }
@@ -226,16 +228,16 @@ export const branchEntryService = {
         });
     },
 
-    wasJumpEdited (params) {
+    wasJumpEdited(params) {
         return wasJumpEdited(this, params);
     },
 
     //Validate and append answer/title to entry object
-    validateAnswer (params) {
+    validateAnswer(params) {
         return entryCommonService.validateAnswer(this.entry, params);
     },
 
-    getAnswers (inputRef) {
+    getAnswers(inputRef) {
         return entryCommonService.getAnswers(this.entry, inputRef);
     },
 
@@ -244,7 +246,7 @@ export const branchEntryService = {
      * Process the jumps
      * Set any answer 'was_jumped' properties to true/false
      */
-    processJumpsNext (answer, inputDetails, currentInputIndex) {
+    processJumpsNext(answer, inputDetails, currentInputIndex) {
         return entryCommonService.processJumpsNext(this.entry, answer, inputDetails, currentInputIndex, this.branchInputs);
     },
 
@@ -252,12 +254,12 @@ export const branchEntryService = {
      * Get the previous input ref
      * Check for previous questions that were jumped
      */
-    processJumpsPrevious (currentInputIndex) {
+    processJumpsPrevious(currentInputIndex) {
         return entryCommonService.processJumpsPrevious(this.entry, currentInputIndex, this.branchInputs);
     },
 
     //remove temp branch entries when quitting hierarchy entry
-    removeTempBranches () {
+    removeTempBranches() {
 
         const self = this;
         const rootStore = useRootStore();
@@ -275,8 +277,7 @@ export const branchEntryService = {
             if (rootStore.isPWA) {
                 rootStore.queueTempBranchEntriesPWA = {};
                 resolve();
-            }
-            else {
+            } else {
                 //on native app, delete them from database
 
                 //when quitting a branch entry, there are no temp branches to remove
@@ -287,26 +288,26 @@ export const branchEntryService = {
                 // Select all temp branch entries uuids
                 databaseSelectService.selectTempBranches(self.entry.entryUuid)
                     .then(function (res) {
-                    // Remove unique_answers, if any, for each temp branch
-                    if (res.rows.length > 0) {
-                        databaseDeleteService.removeUniqueAnswers(res).then(function () {
-                            // Then delete all temp branch entries
-                            databaseDeleteService.deleteTempBranchEntries().then(function () {
-                                // Finished, resolve
-                                resolve();
+                        // Remove unique_answers, if any, for each temp branch
+                        if (res.rows.length > 0) {
+                            databaseDeleteService.removeUniqueAnswers(res).then(function () {
+                                // Then delete all temp branch entries
+                                databaseDeleteService.deleteTempBranchEntries().then(function () {
+                                    // Finished, resolve
+                                    resolve();
+                                }, function (error) {
+                                    reject(error);
+                                });
                             }, function (error) {
                                 reject(error);
                             });
-                        }, function (error) {
-                            reject(error);
-                        });
-                    } else {
-                        // No temp branches, resolve
-                        resolve();
-                    }
-                }, function (error) {
-                    reject(error);
-                });
+                        } else {
+                            // No temp branches, resolve
+                            resolve();
+                        }
+                    }, function (error) {
+                        reject(error);
+                    });
             }
         });
     }

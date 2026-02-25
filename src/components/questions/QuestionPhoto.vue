@@ -93,14 +93,13 @@ import {STRINGS} from '@/config/strings.js';
 import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
 import {camera, images} from 'ionicons/icons';
-import {reactive, computed} from '@vue/reactivity';
-import {inject} from 'vue';
+import {inject, reactive, computed} from 'vue';
 import {Capacitor} from '@capacitor/core';
 import ModalPhoto from '@/components/modals/ModalPhoto.vue';
 import {photoTake} from '@/use/questions/photo-take';
 import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
 import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
-import Dropzone from '@/components/Dropzone';
+import Dropzone from '@/components/Dropzone.vue';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {questionCommonService} from '@/services/entry/question-common-service';
@@ -260,31 +259,42 @@ export default {
       },
       //open viewer to see image with zoom capabilities
       async openViewer() {
-        const componentProps = {
-          imageSource: state.imageSource,
-          fileSource: state.fileSource,
-          isPWA: false
-        };
 
-        const modal = await modalController.create({
-          component: ModalPhoto,
-          cssClass: 'modal-photo',
-          componentProps
-        });
-        return modal.present();
+        try {
+          const componentProps = {
+            imageSource: state.imageSource,
+            fileSource: state.fileSource,
+            isPWA: false
+          };
+
+          const modal = await modalController.create({
+            component: ModalPhoto,
+            cssClass: 'modal-photo',
+            componentProps
+          });
+          return modal.present();
+        }
+        catch (error) {
+          console.error('openViewer failed', error);
+        }
       },
       async openViewerPWA(fileURL) {
-        const componentProps = {
-          imageSource: fileURL,
-          fileSource: fileURL,
-          isPWA: true
-        };
-        const modal = await modalController.create({
-          component: ModalPhoto,
-          cssClass: 'modal-photo',
-          componentProps
-        });
-        return modal.present();
+        try {
+          const componentProps = {
+            imageSource: fileURL,
+            fileSource: fileURL,
+            isPWA: true
+          };
+          const modal = await modalController.create({
+            component: ModalPhoto,
+            cssClass: 'modal-photo',
+            componentProps
+          });
+          return modal.present();
+        }
+        catch (error) {
+          console.error('openViewerPWA failed', error);
+        }
       },
       onImageLoad() {
         notificationService.hideProgressDialog();
