@@ -1,9 +1,11 @@
+// noinspection DuplicatedCode
+
 import {vi, describe, it, expect, beforeEach} from 'vitest';
 import {setActivePinia, createPinia} from 'pinia';
 import {webService} from '@/services/web-service';
 import {initService} from '@/services/init-service';
 import {setupPWAEntry} from '@/use/entry/setup-pwa-entry';
-
+import {PARAMETERS} from '@/config';
 /**
  * 1. MANDATORY MOCKS (Hoisted)
  * These must be explicit to avoid Parse failures in Vite's SSR transform.
@@ -147,7 +149,7 @@ describe('Main.js Architecture', () => {
 
     const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-    it('boots as PWA when platform is web', async () => {
+    it('boots as PWA when platform is web to ADD ENTRY', async () => {
         const {initService} = await import('@/services/init-service');
         const {webService} = await import('@/services/web-service');
         const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
@@ -166,7 +168,33 @@ describe('Main.js Architecture', () => {
 
         expect(rootStore.isPWA).toBe(true);
         expect(initService.getLanguagePWA).toHaveBeenCalled();
-        expect(rootStore.providedSegment).toBe('add-entry');
+        expect(rootStore.providedSegment).toBe(PARAMETERS.PWA_ADD_ENTRY);
+        expect(rootStore.branchEditType).toBe(PARAMETERS.PWA_BRANCH_LOCAL);
+
+    });
+
+    it('boots as PWA when platform is web to EDIT ENTRY', async () => {
+        const {initService} = await import('@/services/init-service');
+        const {webService} = await import('@/services/web-service');
+        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
+
+        initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
+        webService.getProjectPWA.mockResolvedValue({data: {}});
+        setupPWAEntry.mockResolvedValue('form-ref-123');
+
+        window.location.pathname = '/my-project/edit-entry';
+
+        await import('@/main');
+        await flushPromises();
+
+        const {useRootStore} = await import('@/stores/root-store');
+        const rootStore = useRootStore();
+
+        expect(rootStore.isPWA).toBe(true);
+        expect(initService.getLanguagePWA).toHaveBeenCalled();
+        expect(rootStore.providedSegment).toBe(PARAMETERS.PWA_EDIT_ENTRY);
+        expect(rootStore.branchEditType).toBe(PARAMETERS.PWA_BRANCH_LOCAL);
+
     });
 
     it('boots as Native when platform is android', async () => {
@@ -191,7 +219,7 @@ describe('Main.js Architecture', () => {
         expect(initService.insertDemoProject).toHaveBeenCalled();
     });
 
-    it('handles Branch entry logic when branch params are present', async () => {
+    it('handles Branch ADD entry logic when branch params are present', async () => {
         const {initService} = await import('@/services/init-service');
         const {webService} = await import('@/services/web-service');
         const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
@@ -214,6 +242,34 @@ describe('Main.js Architecture', () => {
         // 2. Verify it detected the branch
         expect(rootStore.routeParams.isBranch).toBe(true);
         expect(rootStore.routeParams.formRef).toBe('form-ref-branch');
+        expect(rootStore.branchEditType).toBe(PARAMETERS.PWA_BRANCH_REMOTE);
+        console.log('Branch Flow Verified: isBranch =', rootStore.routeParams.isBranch);
+    });
+
+    it('handles Branch EDIT entry logic when branch params are present', async () => {
+        const {initService} = await import('@/services/init-service');
+        const {webService} = await import('@/services/web-service');
+        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
+
+        initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
+        webService.getProjectPWA.mockResolvedValue({data: {}});
+        setupPWAEntry.mockResolvedValue('form-ref-branch');
+
+        // 1. Simulate Branch URL Parameters
+        window.location.pathname = '/my-project/edit-entry';
+        window.location.search = '?branch_ref=test_ref&branch_owner_uuid=12345';
+
+        // Trigger IIFE
+        await import('@/main');
+        await flushPromises();
+
+        const {useRootStore} = await import('@/stores/root-store');
+        const rootStore = useRootStore();
+
+        // 2. Verify it detected the branch
+        expect(rootStore.routeParams.isBranch).toBe(true);
+        expect(rootStore.routeParams.formRef).toBe('form-ref-branch');
+        expect(rootStore.branchEditType).toBe(PARAMETERS.PWA_BRANCH_REMOTE);
         console.log('Branch Flow Verified: isBranch =', rootStore.routeParams.isBranch);
     });
 

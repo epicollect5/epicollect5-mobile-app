@@ -198,9 +198,11 @@ export default {
                   }
               )
               .finally(() => {
-                notificationService.hideProgressDialog();
-                state.isDraggingOver = false;
                 context.emit('file-dropped', filename);
+                setTimeout(() => {
+                  notificationService.hideProgressDialog();
+                  state.isDraggingOver = false;
+                }, 2 * PARAMETERS.DELAY_LONG);
               });
         }
       },
@@ -248,6 +250,7 @@ export default {
       const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
       const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
       let mediaUrl = rootStore.serverUrl;
+      debugger;
       if (PARAMETERS.DEBUG) {
         //use debug endpoint (no csrf)
         if (filestate === PARAMETERS.PWA_FILE_STATE.CACHED) {

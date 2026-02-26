@@ -1,3 +1,4 @@
+<!--suppress JSUnusedGlobalSymbols -->
 <template>
   <ion-card
       class="question-card"
@@ -87,13 +88,12 @@
 
 <script>
 import {popoverMediaHandler} from '@/use/questions/popover-media-handler';
-import {onMounted} from 'vue';
 import {modalController} from '@ionic/vue';
 import {STRINGS} from '@/config/strings.js';
 import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
 import {camera, images} from 'ionicons/icons';
-import {inject, reactive, computed} from 'vue';
+import {inject, reactive, computed, onMounted} from 'vue';
 import {Capacitor} from '@capacitor/core';
 import ModalPhoto from '@/components/modals/ModalPhoto.vue';
 import {photoTake} from '@/use/questions/photo-take';
@@ -272,7 +272,7 @@ export default {
             cssClass: 'modal-photo',
             componentProps
           });
-          return modal.present();
+          return await modal.present();
         }
         catch (error) {
           console.error('openViewer failed', error);
@@ -290,7 +290,7 @@ export default {
             cssClass: 'modal-photo',
             componentProps
           });
-          return modal.present();
+          return await modal.present();
         }
         catch (error) {
           console.error('openViewerPWA failed', error);

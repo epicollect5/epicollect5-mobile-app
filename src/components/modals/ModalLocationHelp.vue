@@ -36,9 +36,9 @@
 					color="secondary"
 					slot="end"
 				>
-					<ion-icon :icon="locate"></ion-icon>
+					<ion-icon :icon="search"></ion-icon>
 					&nbsp;
-					{{ labels.update_location }}
+					{{ labels.search }}
 				</ion-button>
 			</ion-card-content>
 		</ion-card>
@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { closeOutline, locate } from 'ionicons/icons';
+import { closeOutline, locate, search } from 'ionicons/icons';
 import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
@@ -102,16 +102,14 @@ export default {
 			}
 		};
 
-		const computedScope = {};
-
 		return {
 			labels,
 			state,
-			...computedScope,
 			...methods,
 			//icons
 			closeOutline,
-			locate
+			locate,
+      search
 		};
 	}
 };

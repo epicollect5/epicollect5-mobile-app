@@ -136,20 +136,6 @@ describe('Dropzone - getMediaUrlPWA Logic', () => {
         expect(url).toContain('name=photo.jpg');
     });
 
-    it('uses /api/internal/media for editing a remote photo (Production)', () => {
-        const wrapper = factory({
-            type: PARAMETERS.QUESTION_TYPES.PHOTO,
-            filename: 'photo.jpg',
-            filestate: PARAMETERS.PWA_FILE_STATE.STORED
-        });
-
-        const url = wrapper.vm.state.filesource;
-        expect(url).toContain('https://api.epicollect.net');
-        expect(url).toContain('/api/internal/media/my-project'); // Prod Media Route
-        expect(url).toContain('format=entry_original');
-        expect(url).toContain('name=photo.jpg');
-    });
-
     it('uses /api/pwa/temp-media-debug for adding a remote photo (Debug)', () => {
         PARAMETERS.DEBUG = 1;
         const wrapper = factory({
@@ -167,6 +153,7 @@ describe('Dropzone - getMediaUrlPWA Logic', () => {
 
     it('uses /api/pwa/media-debug for editing a remote photo (Debug)', () => {
         PARAMETERS.DEBUG = 1;
+        rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
         const wrapper = factory({
             type: PARAMETERS.QUESTION_TYPES.PHOTO,
             filename: 'photo.jpg',
@@ -197,6 +184,8 @@ describe('Dropzone - getMediaUrlPWA Logic', () => {
 
     it('uses /api/internal/media for editing a remote photo (Production)', () => {
         PARAMETERS.DEBUG = 0;
+        rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
+        console.log('rootStore.branchEditType', rootStore.branchEditType);
         const wrapper = factory({
             type: PARAMETERS.QUESTION_TYPES.PHOTO,
             filename: 'photo.jpg',
@@ -284,11 +273,13 @@ describe('Dropzone - getMediaUrlPWA Logic', () => {
 
 describe('Media format query parameter', () => {
 
+    let rootStore;
+
     beforeEach(() => {
         setActivePinia(createPinia());
         vi.clearAllMocks();
 
-        const rootStore = useRootStore();
+        rootStore = useRootStore();
         rootStore.serverUrl = 'https://api.epicollect.net';
         // Reset Debug state to a known value
         PARAMETERS.DEBUG = false;
@@ -345,6 +336,8 @@ describe('Media format query parameter', () => {
     it.each(formatCases)(
         'uses correct format param for $label in Production (STORED)',
         ({ type, filename, expectedFormat }) => {
+            PARAMETERS.DEBUG = 0;
+            rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
             const wrapper = factory({
                 type,
                 filename,
@@ -377,6 +370,7 @@ describe('Media format query parameter', () => {
         'uses correct format param for $label in Debug (STORED)',
         ({ type, filename, expectedFormat }) => {
             PARAMETERS.DEBUG = 1;
+            rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
             const wrapper = factory({
                 type,
                 filename,

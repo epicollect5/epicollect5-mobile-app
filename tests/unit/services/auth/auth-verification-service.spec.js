@@ -109,8 +109,8 @@ describe('authVerificationService', () => {
 
         it('returns true and logs error on catch block', async () => {
             databaseSelectService.getUser.mockRejectedValue(new Error('DB Error'));
-            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {
-            });
+            // noinspection JSVoidFunctionReturnValueUsed
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
             const result = await authVerificationService.isJWTExpired();
 

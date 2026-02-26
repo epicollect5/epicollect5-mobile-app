@@ -399,12 +399,10 @@ export const webService = {
 
             if (PARAMETERS.DEBUG) {
                 //use debug endpoint (no csrf)
-                getURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.OPENCAGE_DEBUG;
+                getURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.OPENCAGE_DEBUG + address + '?XDEBUG_SESSION_START=phpstorm';
             } else {
-                getURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.OPENCAGE;
+                getURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.OPENCAGE + address;
             }
-
-            getURL += address;
 
             axios({
                 method: 'GET',

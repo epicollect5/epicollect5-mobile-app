@@ -43,8 +43,8 @@ export async function setupPWAEntry (action, isBranch) {
                 rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
             }
             else {
-                //use hierarchy service
-                rootStore.branchEditType = null;
+                //use hierarchy service (branch(es) added this way are local)
+                rootStore.branchEditType = PARAMETERS.PWA_BRANCH_LOCAL;
                 entryService.setUpNew(formRef, parentEntryUuid, parentFormRef);
             }
 
@@ -127,8 +127,8 @@ export async function setupPWAEntry (action, isBranch) {
                     rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
                 }
                 else {
-                    rootStore.branchEditType = null;
-                    entryService.setUpExisting(entry);
+                    rootStore.branchEditType = PARAMETERS.PWA_BRANCH_LOCAL;
+                    await entryService.setUpExisting(entry);
                 }
                 resolve(formRef);
             })();
