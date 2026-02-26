@@ -250,7 +250,7 @@ export default {
       const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
       const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
       let mediaUrl = rootStore.serverUrl;
-      debugger;
+
       if (PARAMETERS.DEBUG) {
         //use debug endpoint (no csrf)
         if (filestate === PARAMETERS.PWA_FILE_STATE.CACHED) {

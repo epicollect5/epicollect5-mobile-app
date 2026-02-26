@@ -117,5 +117,27 @@ describe('authVerificationService', () => {
             expect(result).toBe(true);
             expect(consoleSpy).toHaveBeenCalledWith('JWT check failed', expect.any(Error));
         });
+        it('returns true for a malformed JWT (not 3 parts)', async () => {
+            databaseSelectService.getUser.mockResolvedValue({
+                rows: {
+                    length: 1,
+                    item: () => ({ jwt: 'only.twoparts' })
+                }
+            });
+            const result = await authVerificationService.isJWTExpired();
+            expect(result).toBe(true);
+        });
+
+        it('returns true if exp claim is missing', async () => {
+            const payloadWithoutExp = Buffer.from(JSON.stringify({ sub: 'user123' })).toString('base64').replace(/=/g, '');
+            databaseSelectService.getUser.mockResolvedValue({
+                rows: {
+                    length: 1,
+                    item: () => ({ jwt: `header.${payloadWithoutExp}.signature` })
+                }
+            });
+            const result = await authVerificationService.isJWTExpired();
+            expect(result).toBe(true);
+        });
     });
 });

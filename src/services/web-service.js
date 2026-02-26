@@ -397,11 +397,13 @@ export const webService = {
             const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
             let getURL = self.getServerUrl();
 
+            const encodedAddress = encodeURIComponent(address);
+
             if (PARAMETERS.DEBUG) {
                 //use debug endpoint (no csrf)
-                getURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.OPENCAGE_DEBUG + address + '?XDEBUG_SESSION_START=phpstorm';
+                getURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.OPENCAGE_DEBUG + encodedAddress + '?XDEBUG_SESSION_START=phpstorm';
             } else {
-                getURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.OPENCAGE + address;
+                getURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.OPENCAGE + encodedAddress;
             }
 
             axios({

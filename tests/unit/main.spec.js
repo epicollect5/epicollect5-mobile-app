@@ -1,10 +1,35 @@
 // noinspection DuplicatedCode
 
+/**
+ * IMP: WHY DYNAMIC IMPORTS INSIDE EACH TEST?
+ *
+ * This test suite uses `vi.resetModules()` in beforeEach, which completely
+ * clears Vite's module registry between tests. This is necessary because
+ * main.js is an IIFE — its boot logic only runs once per module lifetime.
+ * Resetting modules allows us to re-run that boot sequence in each test
+ * with different conditions (platform, URL, mock return values, etc.).
+ *
+ * As a consequence, ALL imports that depend on fresh module state must be
+ * done dynamically inside each test using `await import(...)`, including:
+ *
+ * - Services (initService, webService, etc.): so each test gets a clean
+ *   mock instance unaffected by previous tests.
+ *
+ * - useRootStore: Pinia stores are singletons. A new Pinia is created in
+ *   beforeEach via setActivePinia(createPinia()), but a globally imported
+ *   useRootStore would remain bound to the first Pinia instance. Importing
+ *   it after main.js runs ensures we read the store that was actually
+ *   populated during that test's boot sequence.
+ *
+ * - main.js itself: must be dynamically imported last in each test, after
+ *   mocks are configured, so the IIFE runs with the correct conditions.
+ *
+ * TL;DR: resetModules() + dynamic import = fresh module execution per test.
+ *        Global imports would cache stale state and break test isolation.
+ */
+
 import {vi, describe, it, expect, beforeEach} from 'vitest';
 import {setActivePinia, createPinia} from 'pinia';
-import {webService} from '@/services/web-service';
-import {initService} from '@/services/init-service';
-import {setupPWAEntry} from '@/use/entry/setup-pwa-entry';
 import {PARAMETERS} from '@/config';
 /**
  * 1. MANDATORY MOCKS (Hoisted)
@@ -28,7 +53,7 @@ vi.mock('@/config', () => ({
         PWA_ADD_ENTRY: 'add-entry',
         PWA_EDIT_ENTRY: 'edit-entry',
         DEFAULT_LANGUAGE: 'en',
-        DEBUG: false,
+        DEBUG: 0,
         DELAY_EXTRA_LONG: 1,
         DEFAULT_SERVER_URL: '',
         PRODUCTION_SERVER_URL: 'https://prod.server.com'
@@ -118,7 +143,7 @@ describe('Main.js Architecture', () => {
 
     let originalLocation;
 
-    beforeEach(() => {
+    beforeEach(async () => {
 
         vi.resetModules();
         vi.clearAllMocks();
@@ -139,6 +164,12 @@ describe('Main.js Architecture', () => {
             href: 'https://test.com/project-slug/add-entry',
             origin: 'https://test.com'
         };
+
+        // Reset any PARAMETERS that tests might mutate
+        const { PARAMETERS } = await import('@/config');
+        PARAMETERS.DEBUG = 0;
+        PARAMETERS.DEFAULT_SERVER_URL = '';
+        PARAMETERS.PRODUCTION_SERVER_URL = 'https://prod.server.com';
     });
 
     afterEach(() => {

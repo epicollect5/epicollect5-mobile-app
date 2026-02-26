@@ -270,7 +270,7 @@ export const branchEntryService = {
             //as no changes need to be made
             if (self.action === PARAMETERS.ENTRY_EDIT) {
                 resolve();
-                return false;
+                return;
             }
 
             //on PWA, just remove branches from store
@@ -283,7 +283,7 @@ export const branchEntryService = {
                 //when quitting a branch entry, there are no temp branches to remove
                 if (self.type === PARAMETERS.BRANCH_ENTRY) {
                     resolve();
-                    return false;
+                    return;
                 }
                 // Select all temp branch entries uuids
                 databaseSelectService.selectTempBranches(self.entry.entryUuid)
