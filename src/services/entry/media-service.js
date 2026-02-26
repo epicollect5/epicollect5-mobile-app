@@ -55,7 +55,7 @@ export const mediaService = {
 
                 if (mediaFiles.length > 0) {
                     //insert file references to db
-                    databaseInsertService.insertMedia(entry, mediaFiles, syncType).then(function (response) {
+                    databaseInsertService.insertMedia(entry, mediaFiles, syncType).then(function () {
                         //move files (recursively) from app cache folder to app private folder for permanent storage
                         function _moveFile(file) {
 
@@ -97,7 +97,7 @@ export const mediaService = {
                     //(set them to unsynced(0) when there is an actual save (syncType = 0))
                     if (syncType === PARAMETERS.SYNCED_CODES.UNSYNCED) {
                         databaseUpdateService.updateFileEntryIncomplete(entry.entryUuid).then(
-                            function (response) {
+                            function () {
                                 resolve();
                             }, _onError);
                     } else {
@@ -148,7 +148,7 @@ export const mediaService = {
     //and check them against the answers
     getEntryStoredMediaPWA(entry) {
         const uuid = entry.entryUuid;
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const mediaTypes = [
                 PARAMETERS.QUESTION_TYPES.PHOTO,
                 PARAMETERS.QUESTION_TYPES.AUDIO,

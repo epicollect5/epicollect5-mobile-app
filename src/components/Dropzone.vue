@@ -1,3 +1,4 @@
+<!--suppress JSUnusedGlobalSymbols -->
 <template>
   <div
       class="dropzone"
@@ -140,12 +141,6 @@ export default {
 
           //upload file
           const file = acceptFiles[0];
-          // Get file extension from dropped file
-          let ext = acceptFiles[0].name.split('.').pop();
-          // Use jpg for all images
-          if (state.type === PARAMETERS.QUESTION_TYPES.PHOTO) {
-            ext = 'jpg';
-          }
 
           //todo: we need to get it from the query string for hierarchy forms
 

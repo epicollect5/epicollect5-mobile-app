@@ -72,7 +72,7 @@ export async function setupPWAEntry (action, isBranch) {
                     }
                 }
                 catch (errorResponse) {
-                    errorsService.handleWebError(errorResponse);
+                    await errorsService.handleWebError(errorResponse);
                     reject(errorResponse);
                     return false;
                 }

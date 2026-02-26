@@ -7,20 +7,6 @@ import {useRootStore} from '@/stores/root-store';
 
 export const webService = {
 
-    // Get XSRF token from cookie
-    getXsrfToken() {
-
-        const cookies = document.cookie.split(';');
-        let token = '';
-
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].split('=');
-            if (cookie[0].trim() === 'XSRF-TOKEN') {
-                token = decodeURIComponent(cookie[1]);
-            }
-        }
-        return token;
-    },
     //jwt auth
     getProject(slug) {
 
@@ -55,7 +41,7 @@ export const webService = {
 
         return new Promise((resolve, reject) => {
 
-            let url = '';
+            let url;
             if (process.env.NODE_ENV === 'production') {
                 url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
             } else {
@@ -91,7 +77,7 @@ export const webService = {
 
         const self = this;
 
-        if(exact) {
+        if (exact) {
             searchTerm += '?exact=true';
         }
 
@@ -169,7 +155,7 @@ export const webService = {
 
             if (PARAMETERS.DEBUG) {
                 //use debug endpoint (no csrf), also add xdebug session
-                postURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_DEBUG + slug +'?XDEBUG_SESSION_START=phpstorm';
+                postURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_DEBUG + slug + '?XDEBUG_SESSION_START=phpstorm';
                 console.log('post data', JSON.stringify(payload));
             } else {
                 postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD + slug;
@@ -205,13 +191,18 @@ export const webService = {
                 getURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.ENTRIES + slug;
             }
 
-            getURL += '?form_ref=' + formRef + '&uuid=' + entryUuid;
+            const query = new URLSearchParams({
+                form_ref: formRef ?? '',
+                uuid: entryUuid ?? ''
+            });
 
             //add extra params to fetch a single branch (for editing)
             if (branchRef && branchOwnerUuid) {
-                getURL += '&branch_ref=' + branchRef;
-                getURL += '&branch_owner_uuid=' + branchOwnerUuid;
+                query.set('branch_ref', branchRef);
+                query.set('branch_owner_uuid', branchOwnerUuid);
             }
+
+            getURL += '?'+ query.toString();
 
             axios({
                 method: 'GET',
@@ -455,33 +446,6 @@ export const webService = {
         });
     },
 
-    /**
-     * Upload a media entry to the server
-     */
-    uploadMediaEntry(slug, payload) {
-
-        const self = this;
-
-        return new Promise(function (resolve, reject) {
-            // Attempt to retrieve the jwt token
-            self.getHeaders(true).then(function (headers) {
-                return axios({
-                    method: 'POST',
-                    url: self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.UPLOAD + slug,
-                    headers: headers,
-                    data: {data: payload}
-                }).then(function (response) {
-                    resolve(response);
-                }, function (error) {
-                    reject(error.response);
-                });
-            });
-        });
-    },
-
-    /**
-     * Upload an entry to the serve
-     */
     login(data, type) {
 
         const self = this;
@@ -611,26 +575,21 @@ export const webService = {
     //imp: be careful when debugging with multiple tabs or between old/new app.
     //imp: to be sure, test on postman with different jwt tokens:
     //imp: only the latest is valid, all the others do not work anymore.
-    getHeaders(getJwt) {
+    getHeaders(shouldGetJWT) {
 
         const headers = {
-
             'Content-Type': 'application/vnd.api+json'
         };
 
+        return new Promise(function (resolve) {
 
-        return new Promise(function (resolve, reject) {
-
-            if (getJwt) {
+            if (shouldGetJWT) {
                 databaseSelectService.getUser().then(function (res) {
-
                     let jwt;
-
                     // Check if we have one
                     if (res.rows.length > 0) {
                         jwt = res.rows.item(0).jwt;
                     }
-
                     if (jwt) {
                         headers.Authorization = 'Bearer ' + jwt;
                     }
@@ -639,19 +598,6 @@ export const webService = {
             } else {
                 resolve(headers);
             }
-        });
-    },
-
-    getJWT() {
-        return new Promise(function (resolve) {
-            databaseSelectService.getUser().then(function (res) {
-                let jwt;
-                // Check if we have one
-                if (res.rows.length > 0) {
-                    jwt = res.rows.item(0).jwt;
-                }
-                resolve(jwt ?? null);
-            });
         });
     },
 

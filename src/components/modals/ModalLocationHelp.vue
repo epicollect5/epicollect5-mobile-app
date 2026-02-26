@@ -59,10 +59,10 @@
     </ion-card>
     <ion-card class="ion-margin">
       <ion-card-content class="ion-text-center">
-        <h2>Click the target icon pon the map to locate your current position</h2>
+        <h2>Click the target icon on the map to locate your current position</h2>
         <img
             class="locate-me-icon"
-            alt="target"
+            alt="marker"
             src="@/leaflet/images/locate-me@2x.png"
         />
 
@@ -72,7 +72,7 @@
       <ion-card-content class="ion-text-center">
         <h2>Drag the marker anywhere you want </h2>
         <img
-            width="20"
+            width="25"
             class="marker-icon"
             alt="target"
             src="@/leaflet/images/marker-icon@2x.png"
@@ -84,17 +84,15 @@
 
 <script>
 import {closeOutline, locate, search} from 'ionicons/icons';
-import {reactive} from '@vue/reactivity';
 import {STRINGS} from '@/config/strings';
 import {useRootStore} from '@/stores/root-store';
 import {modalController} from '@ionic/vue';
 
 export default {
-  setup(props) {
+  setup() {
     const rootStore = useRootStore();
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
-    const state = reactive({});
 
     const methods = {
       dismiss() {
@@ -104,7 +102,6 @@ export default {
 
     return {
       labels,
-      state,
       ...methods,
       //icons
       closeOutline,

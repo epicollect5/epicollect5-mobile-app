@@ -28,7 +28,7 @@
  *        Global imports would cache stale state and break test isolation.
  */
 
-import {vi, describe, it, expect, beforeEach} from 'vitest';
+import {vi, describe, it, expect, beforeEach, afterEach} from 'vitest';
 import {setActivePinia, createPinia} from 'pinia';
 import {PARAMETERS} from '@/config';
 /**
@@ -52,6 +52,8 @@ vi.mock('@/config', () => ({
         PWA: 'web',
         PWA_ADD_ENTRY: 'add-entry',
         PWA_EDIT_ENTRY: 'edit-entry',
+        PWA_BRANCH_LOCAL: 'branch-local',
+        PWA_BRANCH_REMOTE: 'branch-remote',
         DEFAULT_LANGUAGE: 'en',
         DEBUG: 0,
         DELAY_EXTRA_LONG: 1,
@@ -119,6 +121,8 @@ vi.mock('@/services/init-service', () => ({
     }
 }));
 
+
+
 vi.mock('@/services/web-service', () => ({webService: {getProjectPWA: vi.fn()}}));
 vi.mock('@/services/utilities/utils-service', () => ({
     utilsService: {
@@ -170,6 +174,24 @@ describe('Main.js Architecture', () => {
         PARAMETERS.DEBUG = 0;
         PARAMETERS.DEFAULT_SERVER_URL = '';
         PARAMETERS.PRODUCTION_SERVER_URL = 'https://prod.server.com';
+
+        // Default setupPWAEntry mock implementation
+        const { setupPWAEntry } = await import('@/use/entry/setup-pwa-entry');
+        setupPWAEntry.mockImplementation(async (action, isBranch) => {
+            const { useRootStore } = await import('@/stores/root-store');
+            const { PARAMETERS } = await import('@/config');
+            const rootStore = useRootStore();
+
+            if (isBranch) {
+                rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
+                return 'form-ref-branch';
+            } else {
+                rootStore.branchEditType = PARAMETERS.PWA_BRANCH_LOCAL;
+                return 'form-ref-123';
+            }
+
+
+        });
     });
 
     afterEach(() => {
@@ -183,11 +205,9 @@ describe('Main.js Architecture', () => {
     it('boots as PWA when platform is web to ADD ENTRY', async () => {
         const {initService} = await import('@/services/init-service');
         const {webService} = await import('@/services/web-service');
-        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
 
         initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
         webService.getProjectPWA.mockResolvedValue({data: {}});
-        setupPWAEntry.mockResolvedValue('form-ref-123');
 
         window.location.pathname = '/my-project/add-entry';
 
@@ -207,11 +227,9 @@ describe('Main.js Architecture', () => {
     it('boots as PWA when platform is web to EDIT ENTRY', async () => {
         const {initService} = await import('@/services/init-service');
         const {webService} = await import('@/services/web-service');
-        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
 
         initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
         webService.getProjectPWA.mockResolvedValue({data: {}});
-        setupPWAEntry.mockResolvedValue('form-ref-123');
 
         window.location.pathname = '/my-project/edit-entry';
 
@@ -225,7 +243,6 @@ describe('Main.js Architecture', () => {
         expect(initService.getLanguagePWA).toHaveBeenCalled();
         expect(rootStore.providedSegment).toBe(PARAMETERS.PWA_EDIT_ENTRY);
         expect(rootStore.branchEditType).toBe(PARAMETERS.PWA_BRANCH_LOCAL);
-
     });
 
     it('boots as Native when platform is android', async () => {
@@ -253,11 +270,9 @@ describe('Main.js Architecture', () => {
     it('handles Branch ADD entry logic when branch params are present', async () => {
         const {initService} = await import('@/services/init-service');
         const {webService} = await import('@/services/web-service');
-        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
 
         initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
         webService.getProjectPWA.mockResolvedValue({data: {}});
-        setupPWAEntry.mockResolvedValue('form-ref-branch');
 
         // 1. Simulate Branch URL Parameters
         window.location.pathname = '/my-project/add-entry';
@@ -280,11 +295,9 @@ describe('Main.js Architecture', () => {
     it('handles Branch EDIT entry logic when branch params are present', async () => {
         const {initService} = await import('@/services/init-service');
         const {webService} = await import('@/services/web-service');
-        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
 
         initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
         webService.getProjectPWA.mockResolvedValue({data: {}});
-        setupPWAEntry.mockResolvedValue('form-ref-branch');
 
         // 1. Simulate Branch URL Parameters
         window.location.pathname = '/my-project/edit-entry';
@@ -326,10 +339,8 @@ describe('Main.js Architecture', () => {
         const {initService} = await import('@/services/init-service');
         const {commonValidate} = await import('@/services/validation/common-validate');
         const {webService} = await import('@/services/web-service');
-        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
 
         webService.getProjectPWA.mockResolvedValue({data: {}});
-        setupPWAEntry.mockResolvedValue('form-ref-123');
 
         initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
         // Simulate invalid UUID check
