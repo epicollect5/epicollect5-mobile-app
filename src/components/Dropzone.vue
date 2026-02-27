@@ -132,7 +132,7 @@ export default {
         console.log(rejectReasons);
         if (acceptFiles.length === 0) {
           //state.hasDropError = true;
-          const message = rejectReasons[0].errors[0].message;
+          const message = rejectReasons?.[0]?.errors?.[0]?.message ?? labels.unknown_error;
           await notificationService.showAlert(message, labels.error);
           state.isDraggingOver = false;
           return false;

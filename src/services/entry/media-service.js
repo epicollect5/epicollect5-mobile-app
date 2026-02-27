@@ -112,7 +112,10 @@ export const mediaService = {
                         resolve();
                     }
                 }
-            })();
+            })().catch((error) => {
+                console.log(error);
+                reject(error);
+            });
         });
     },
 
