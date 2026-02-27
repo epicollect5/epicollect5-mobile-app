@@ -31,7 +31,7 @@ export const mediaService = {
                         await deleteFileService.removeFiles(queuedFiles);
                     } catch (error) {
                         console.log(error);
-                        reject(error);
+                       return reject(error);
                     }
                     try {
                         //remove files references from media table
@@ -43,7 +43,7 @@ export const mediaService = {
                         rootStore.queueFilesToDelete = [];
                     } catch (error) {
                         console.log(error);
-                        reject(error.message || labels.unknown_error);
+                       return reject(error.message || labels.unknown_error);
                     }
                 }
 
@@ -85,6 +85,14 @@ export const mediaService = {
                                         }
                                     }
                                 }, _onError);
+                            }
+                            else {
+                                //no cached file, move to next if any
+                                if (mediaFiles.length > 0) {
+                                    _moveFile(mediaFiles.pop());
+                                } else {
+                                    resolve();
+                                }
                             }
                         }
 
