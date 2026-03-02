@@ -67,7 +67,7 @@ import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
-import ModalPasswordlessSend from '@/components/modals/ModalPasswordlessSend';
+import ModalPasswordlessSend from '@/components/modals/ModalPasswordlessSend.vue';
 import { authGoogleService } from '@/services/auth/auth-google-service';
 import { authAppleService } from '@/services/auth/auth-apple-service';
 import { modalsHandlerService } from '@/services/modals/modals-handler-service';

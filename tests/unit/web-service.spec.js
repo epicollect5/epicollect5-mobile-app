@@ -1,7 +1,6 @@
 import { vi } from 'vitest';
 import axios from 'axios';
 import { webService } from '@/services/web-service';
-import { useRootStore } from '@/stores/root-store';
 import { projectModel } from '@/models/project-model';
 import { useDBStore } from '@/stores/db-store';
 import { setActivePinia, createPinia } from 'pinia';

@@ -2,10 +2,10 @@ import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { menuController } from '@ionic/vue';
-import { showModalLogin } from '@/use/show-modal-login';
+import { showModalLogin } from '@/use/auth/show-modal-login';
 import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
-import { logout } from '@/use/logout';
+import { logout } from '@/use/auth/logout';
 import LeftDrawer from '@/components/globals/LeftDrawer.vue';
 import { mount, shallowMount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
@@ -14,17 +14,16 @@ import flushPromises from 'flush-promises';
 import { createTestingPinia } from '@pinia/testing';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 
+vi.mock('@/use/auth/logout', () => ({
+    logout: vi.fn().mockResolvedValue(true)
+}));
 
 vi.mock('@/components/modals/ModalLogin', () => ({
     name: 'ModalLogin',
     template: '<div></div>'
 }));
 
-vi.mock('@/use/logout', () => ({
-    logout: vi.fn()
-}));
-
-vi.mock('@/use/show-modal-login', () => ({
+vi.mock('@/use/auth/show-modal-login', () => ({
     showModalLogin: vi.fn()
 }));
 

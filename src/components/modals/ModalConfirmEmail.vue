@@ -140,7 +140,7 @@ export default {
 				} catch (errorCode) {
 					//show error to user
 					notificationService.hideProgressDialog();
-					notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
+					await notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
 				}
 			}
 		};

@@ -8,10 +8,39 @@ import { utilsService } from '@/services/utilities/utils-service';
 import wordsSpanish from 'an-array-of-spanish-words';
 import wordsEnglish from 'an-array-of-english-words';
 import wordsGerman from 'an-array-of-german-words';
+import RandExp from 'randexp';
 
 export const fakeAnswerService = {
 
-    async createFakeAnswer(inputDetails, entry, entryIndex) {
+    generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex) {
+        if (inputDetails.regex) {
+            // if there is a regex, generate string that matches it
+            const randexp = new RandExp(inputDetails.regex);
+            //remove invalid chars (for epicollect5 validation)
+            randexp.defaultRange.subtract(60, 62); // -> <, >, =
+            answer.answer = randexp.gen();
+            console.log('answer matching regex ->', answer.answer, inputDetails.regex);
+        } else {
+
+            const numberOfWords = utilsService.getRandomInt(10);
+            let randomPhrase = '';
+
+            //add random words
+            for (let i = 0; i < numberOfWords; i++) {
+                const language = languagesArrays[utilsService.getRandomInt(languagesArrays.length)];
+                randomPhrase += ' ' + language[utilsService.getRandomInt(language.length)] + '';
+            }
+
+            randomPhrase += ' ' + symbolsArray[utilsService.getRandomInt(symbolsArray.length)];
+
+            //sanitise < and > replacing by Unicode (this is here for testing)
+            randomPhrase = randomPhrase.replaceAll('>', '\ufe65');
+            randomPhrase = randomPhrase.replaceAll('<', '\ufe64');
+            //"\ufe64 \ufe65", < >
+
+            answer.answer = (entryIndex + randomPhrase).trim();
+        }
+    }, async createFakeAnswer(inputDetails, entry, entryIndex) {
         return new Promise((resolve) => {
             const rootStore = useRootStore();
             const answer = { was_jumped: false };
@@ -35,72 +64,18 @@ export const fakeAnswerService = {
                 return Math.floor(Math.random() * (max - min + 1)) + min;
             }
 
-            const paLen = inputDetails.possible_answers.length;
             const languagesArrays = [wordsSpanish, wordsEnglish, wordsGerman];
             const symbolsArray = ['!', '@', '€', '£', '#', '$', '%', '^', '&', '*', '"', '\'', '\\', '{', ',', '.', '?', '|', '<', '>', '~', '`'];
 
             switch (inputDetails.type) {
                 case 'text':
-                    if (inputDetails.regex) {
-                        // if there is a regex, generate string that matches it
-                        const randexp = new window.RandExp(inputDetails.regex);
-                        //remove invalid chars (for epicollect5 validation)
-                        randexp.defaultRange.subtract(60, 62); // -> <, >, =
-                        answer.answer = randexp.gen();
-                        console.log('answer matching regex ->', answer.answer, inputDetails.regex);
-                    } else {
-
-                        const numberOfWords = utilsService.getRandomInt(10);
-                        let randomPhrase = '';
-
-                        //add random words
-                        for (let i = 0; i < numberOfWords; i++) {
-                            const language = languagesArrays[utilsService.getRandomInt(languagesArrays.length - 1)];
-                            randomPhrase += ' ' + language[utilsService.getRandomInt(language.length - 1)] + '';
-                        }
-
-                        randomPhrase += ' ' + symbolsArray[utilsService.getRandomInt(symbolsArray.length)];
-
-                        //sanitise < and > replacing by unicode (this is here for testing)
-                        randomPhrase = randomPhrase.replaceAll('>', '\ufe65');
-                        randomPhrase = randomPhrase.replaceAll('<', '\ufe64');
-                        //"\ufe64 \ufe65", < >
-
-                        answer.answer = (entryIndex + randomPhrase).trim();
-                    }
-
+                    fakeAnswerService.generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex);
                     //imp: truncate to 255 as per epicollect limits
                     answer.answer = utilsService.trunc(answer.answer, 255, false);
                     resolve(answer);
                     break;
                 case 'textarea':
-                    if (inputDetails.regex) {
-                        // if there is a regex, generate string that matches it
-                        const randexp = new window.RandExp(inputDetails.regex);
-                        //remove invalid chars (for epicollect5 validation)
-                        randexp.defaultRange.subtract(60, 62); // -> <, >, =
-                        answer.answer = randexp.gen();
-                        console.log('answer matching regex ->', answer.answer, inputDetails.regex);
-                    } else {
-
-                        const numberOfWords = utilsService.getRandomInt(10);
-                        let randomPhrase = '';
-
-                        //add random words
-                        for (let i = 0; i < numberOfWords; i++) {
-                            const language = languagesArrays[utilsService.getRandomInt(languagesArrays.length - 1)];
-                            randomPhrase += ' ' + language[utilsService.getRandomInt(language.length - 1)] + '';
-                        }
-
-                        randomPhrase += ' ' + symbolsArray[utilsService.getRandomInt(symbolsArray.length)];
-
-                        //sanitise < and > replacing by unicode (this is here for testing)
-                        randomPhrase = randomPhrase.replaceAll('>', '\ufe65');
-                        randomPhrase = randomPhrase.replaceAll('<', '\ufe64');
-                        //"\ufe64 \ufe65", < >
-
-                        answer.answer = (entryIndex + randomPhrase).trim();
-                    }
+                    fakeAnswerService.generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex);
                     resolve(answer);
                     break;
                 case 'integer':
@@ -117,7 +92,7 @@ export const fakeAnswerService = {
                             if (inputDetails.regex) {
                                 //allow to pick only from digits
                                 //see https://github.com/fent/randexp.js#default-range
-                                const randexp = new window.RandExp(inputDetails.regex);
+                                const randexp = new RandExp(inputDetails.regex);
                                 randexp.defaultRange.subtract(32, 126);
                                 randexp.defaultRange.add(48, 57);
                                 answer.answer = randexp.gen();
@@ -144,22 +119,28 @@ export const fakeAnswerService = {
                     break;
 
                 case 'radio':
-                case 'dropdown':
+                case 'dropdown': {
+                    const paLen = inputDetails.possible_answers.length;
                     random_idx = Math.floor((Math.random() * paLen));
                     answer.answer = inputDetails.possible_answers[random_idx].answer_ref;
                     resolve(answer);
                     break;
+                }
                 case 'checkbox':
                 case 'searchsingle':
-                case 'searchmultiple':
+                case 'searchmultiple': {
+                    const paLen = inputDetails.possible_answers.length;
                     random_idx = Math.floor((Math.random() * paLen));
                     answer.answer = [];
                     answer.answer.push(inputDetails.possible_answers[random_idx].answer_ref);
                     resolve(answer);
                     break;
+                }
                 case 'barcode':
                     answer.answer = 'xxxxx-xxxx-xxx'.replace(/[xy]/g, function (c) {
-                        const r = Math.random() * 16 || 0, v = c === 'x' ? r : (r && 0x3 || 0x8);
+                        // Use Math.floor to get an integer between 0 and 15
+                        const r = Math.floor(Math.random() * 16);
+                        const v = c === 'x' ? r : (r & 0x3 | 0x8);
                         return v.toString(16);
                     });
                     resolve(answer);

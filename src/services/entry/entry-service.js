@@ -74,7 +74,6 @@ export const entryService = {
 
     // Initial function to set up the entry from an existing stored entry
     setUpExisting (entry) {
-
         console.log(JSON.stringify(entry));
 
         const self = this;
@@ -118,7 +117,7 @@ export const entryService = {
             } else {
                 if (rootStore.isPWA) {
                     // This is a promise to be resolved BEFORE any directive is called
-                    mediaService.getEntryStoredMediaPWA(self.entry.entryUuid).then(function (response) {
+                    mediaService.getEntryStoredMediaPWA(self.entry).then(function (response) {
                         self.entry.media = response;
                         resolve();
                     });
@@ -140,7 +139,7 @@ export const entryService = {
         return new Promise((resolve, reject) => {
             // If this is an entry we can actually edit, i.e. not a remote entry
             if (self.entry.canEdit === 1) {
-                // Set the entry title 
+                // Set the entry title
                 entryCommonService.setEntryTitle(projectModel.getExtraForm(
                     self.entry.formRef),
                     projectModel.getExtraInputs(),
@@ -192,7 +191,6 @@ export const entryService = {
     },
 
     saveEntryPWA () {
-
         const rootStore = useRootStore();
         const self = this;
 
@@ -243,8 +241,8 @@ export const entryService = {
                         //extract global errors
 
                         const inputsExtra = projectModel.getExtraInputs();
-                        for (const [inpuRef, errors] of Object.entries(rootStore.queueBranchUploadErrorsPWA)) {
-                            if (!inputsExtra[inpuRef]) {
+                        for (const [inputRef, errors] of Object.entries(rootStore.queueBranchUploadErrorsPWA)) {
+                            if (!inputsExtra[inputRef]) {
                                 rootStore.queueGlobalUploadErrorsPWA.push(...errors);
                             }
                         }
@@ -257,7 +255,7 @@ export const entryService = {
 
         return new Promise((resolve, reject) => {
 
-            // Set the entry title 
+            // Set the entry title
             entryCommonService.setEntryTitle(projectModel.getExtraForm(
                 self.entry.formRef),
                 projectModel.getExtraInputs(),
@@ -267,7 +265,7 @@ export const entryService = {
 
             console.log(JSON.stringify(self.entry));
 
-            //convert self.entry to an object identical to the one we save to the DB, 
+            //convert self.entry to an object identical to the one we save to the DB,
             //so we can re-use all the functions
             const parsedEntry = {
                 entry_uuid: self.entry.entryUuid,
@@ -320,16 +318,19 @@ export const entryService = {
                 }
             }, (error) => {
                 console.log(error);
+                const inputErrors =[];
                 if (error.data.errors) {
                     //add global errors (if any) to store
                     const inputsExtra = projectModel.getExtraInputs();
                     error.data.errors.forEach((error) => {
-                        const inpuRef = error.source;
-                        if (!inputsExtra[inpuRef]) {
+                        const inputRef = error.source;
+                        if (!inputsExtra[inputRef]) {
                             //no inputRef, this is a global error
                             rootStore.queueGlobalUploadErrorsPWA.push(error);
                         }
+
                     });
+
                 }
                 reject(error);
             });
@@ -346,9 +347,9 @@ export const entryService = {
 
     //Validate and append answer/title to entry object
     validateAnswer (params) {
-        //todo: test this throughly in the future...
+        //todo: test this through in the future...
         //For edits: check if all the required questions have an answer
-        //Users can edit an existing entry, go back and save. 
+        //Users can edit an existing entry, go back and save.
         //The server would catch the missing required answer anyway
         // if (this.action === PARAMETERS.ENTRY_EDIT) {
         //     const inputs = projectModel.getExtraInputs();

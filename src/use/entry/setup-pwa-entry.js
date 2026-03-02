@@ -43,7 +43,8 @@ export async function setupPWAEntry (action, isBranch) {
                 rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
             }
             else {
-                //use hierarchy service
+                //use hierarchy service (branch(es) added this way are local)
+                rootStore.branchEditType = PARAMETERS.PWA_BRANCH_LOCAL;
                 entryService.setUpNew(formRef, parentEntryUuid, parentFormRef);
             }
 
@@ -60,8 +61,8 @@ export async function setupPWAEntry (action, isBranch) {
                 const entryUuid = searchParams.get('uuid');
                 let webEntry = null;
                 try {
-                    const response = await webService.downloadEntryPWA(projectSlug, formRef, entryUuid, branchRef, branchOwnerUuid);
-                    console.log(JSON.stringify(response.data.data.entries[0]));
+                    const response = await webService.fetchEntryPWA(projectSlug, formRef, entryUuid, branchRef, branchOwnerUuid);
+                    //console.log(JSON.stringify(response.data.data.entries[0]));
                     if (response.data.data.entries.length > 0) {
                         webEntry = response.data.data.entries[0];
                     }
@@ -71,7 +72,7 @@ export async function setupPWAEntry (action, isBranch) {
                     }
                 }
                 catch (errorResponse) {
-                    errorsService.handleWebError(errorResponse);
+                    await errorsService.handleWebError(errorResponse);
                     reject(errorResponse);
                     return false;
                 }
@@ -123,11 +124,11 @@ export async function setupPWAEntry (action, isBranch) {
                     entry.ownerInputRef = branchRef;
                     entry.ownerEntryUuid = branchOwnerUuid;
                     await branchEntryService.setUpExisting(entry);
-
                     rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
                 }
                 else {
-                    entryService.setUpExisting(entry);
+                    rootStore.branchEditType = PARAMETERS.PWA_BRANCH_LOCAL;
+                    await entryService.setUpExisting(entry);
                 }
                 resolve(formRef);
             })();

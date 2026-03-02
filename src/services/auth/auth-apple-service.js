@@ -1,5 +1,5 @@
 import { STRINGS } from '@/config/strings';
-
+import { jwtDecode } from 'jwt-decode';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { modalController } from '@ionic/vue';
@@ -23,7 +23,7 @@ export const authAppleService = {
         // Check if we have a connection
         const hasInternetConnection = await utilsService.hasInternetConnection();
         if (!hasInternetConnection) {
-            notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
+            await notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
         } else {
             window.cordova.plugins.SignInWithApple.signin(
                 { requestedScopes: [0, 1] },
@@ -57,7 +57,7 @@ export const authAppleService = {
                                 notificationService.hideProgressDialog();
                             }
                         } catch (errorCode) {
-                            notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
+                            await notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
                             notificationService.hideProgressDialog();
                         }
                     },
@@ -65,7 +65,7 @@ export const authAppleService = {
                             console.log(error);
                             //clashing accounts?
                             const errors = error.data.errors;
-                            const credentials = window.jwt_decode(appleJwtToken);
+                            const credentials = jwtDecode(appleJwtToken);
                             if (errors[0].code === 'ec5_384') {
                                 //need to confirm email
                                 account.code = null;
@@ -123,7 +123,7 @@ export const authAppleService = {
                                 // hide any modals
                                 modalsHandlerService.dismissAll();
                                 notificationService.hideProgressDialog();
-                                errorsService.handleWebError(error);
+                                await errorsService.handleWebError(error);
                             }
                         });
                 },

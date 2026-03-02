@@ -741,7 +741,6 @@ export const utilsService = {
         return parseFloat(inputStep);
     },
     questionHasError(questionState) {
-
         if (questionState.error?.errors?.[questionState.currentInputRef]?.message?.trim() === '') {
             //no error message , answer is valid
             return false;
@@ -1025,22 +1024,7 @@ export const utilsService = {
         }
     },
 
-    async isJWTExpired() {
-        return new Promise(function (resolve) {
-            databaseSelectService.getUser().then(function (res) {
-                let jwt;
-                // Check if we have one
-                if (res.rows.length > 0) {
-                    jwt = res.rows.item(0).jwt;
-                    const jwtDecoded = JSON.parse(window.atob(jwt.split('.')[1]));
-                    resolve(jwtDecoded.exp < Date.now() / 1000);
-                } else {
-                    //not found, send expired  so we get a new one
-                    resolve(true);
-                }
-            });
-        });
-    },
+
 
     inverseSlug(slug) {
         // Replace hyphens with spaces using a regular expression

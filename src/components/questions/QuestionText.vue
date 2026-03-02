@@ -62,17 +62,15 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { onMounted, reactive, computed, inject } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import { reactive, computed } from '@vue/reactivity';
-import { inject } from 'vue';
 import { projectModel } from '@/models/project-model.js';
 import { formModel } from '@/models/form-model.js';
 import { modalController } from '@ionic/vue';
-import ModalSavedAnswers from '@/components/modals/ModalSavedAnswers';
-import QuestionLabelAction from '@/components/QuestionLabelAction';
+import ModalSavedAnswers from '@/components/modals/ModalSavedAnswers.vue';
+import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
@@ -129,7 +127,6 @@ export default {
 			}),
 			hasError: computed(() => {
 				//any error for this question?
-
 				return utilsService.questionHasError(state);
 			}),
 			errorMessage: computed(() => {
@@ -189,6 +186,8 @@ export default {
 				state.confirmAnswer.answer = utilsService.getSanitisedAnswer(value);
 			}
 		};
+
+
 
 		return {
 			labels,

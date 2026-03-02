@@ -262,7 +262,7 @@ import { modalController } from '@ionic/vue';
 import { useRouter, useRoute } from 'vue-router';
 import { projectModel } from '@/models/project-model.js';
 import { format } from 'date-fns';
-import { fetchBranchEntries } from '@/use/fetch-branch-entries';
+import { fetchBranchEntries } from '@/use/entries/fetch-branch-entries';
 import ModalEntriesBranchFilter from '@/components/modals/ModalEntriesBranchFilter';
 import ToolbarEntriesFilters from '@/components/ToolbarEntriesFilters';
 import IconEntry from '@/components/IconEntry';

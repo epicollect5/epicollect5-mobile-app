@@ -297,8 +297,8 @@ import {
 } from 'ionicons/icons';
 import {useRouter} from 'vue-router';
 import {PARAMETERS} from '@/config';
-import {deleteProject} from '@/use/delete-project';
-import {deleteEntries} from '@/use/delete-entries';
+import {deleteProject} from '@/use/project/delete-project';
+import {deleteEntries} from '@/use/entries/delete-entries';
 import {projectModel} from '@/models/project-model.js';
 import {formModel} from '@/models/form-model.js';
 import {modalController, menuController} from '@ionic/vue';

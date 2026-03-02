@@ -180,10 +180,10 @@ import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
 import { formModel } from '@/models/form-model.js';
 import { menuController } from '@ionic/vue';
-import { showModalLogin } from '@/use/show-modal-login';
+import { showModalLogin } from '@/use/auth/show-modal-login';
 import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
-import { logout } from '@/use/logout';
+import { logout } from '@/use/auth/logout';
 
 export default {
 	setup() {

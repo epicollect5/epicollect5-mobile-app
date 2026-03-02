@@ -61,7 +61,7 @@ import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { menuController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
-import { loginLocal } from '@/use/login-local';
+import { loginLocal } from '@/use/auth/login-local';
 
 export default {
 	setup(props) {

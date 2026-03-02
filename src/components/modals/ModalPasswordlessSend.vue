@@ -64,7 +64,7 @@ import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { readonly } from 'vue';
-import ModalPasswordlessLogin from '@/components/modals/ModalPasswordlessLogin';
+import ModalPasswordlessLogin from '@/components/modals/ModalPasswordlessLogin.vue';
 import HeaderModal from '@/components/HeaderModal.vue';
 import { notificationService } from '@/services/notification-service';
 import { authPasswordlessService } from '@/services/auth/auth-passwordless-service';

@@ -1,16 +1,11 @@
 const path = require('path');
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
+const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 
 module.exports = {
 
-    pluginOptions: {
-        webpackBundleAnalyzer: {
-            openAnalyzer: process.env.NODE_ENV === 'production' && process.env.VUE_APP_MODE === 'PWA',
-            analyzerMode: process.env.NODE_ENV === 'development' || process.env.VUE_APP_MODE === 'WEB' ? 'disabled' : 'server'
-        }
-    },
-    filenameHashing: false,
+    filenameHashing: false, //to avoid app.####.js
     productionSourceMap: true,
 
     //this is to avoid compiling a lot of builds when debugging
@@ -34,13 +29,24 @@ module.exports = {
                 return isVue && isGenerated ? generated : vuesource;
             };
 
-            config.output.devtoolFallbackModuleFilenameTemplate =
-                'webpack:///[resource-path]?[hash]';
+            config.output.devtoolFallbackModuleFilenameTemplate = 'webpack:///[resource-path]?[hash]';
+
+            // Remove any BundleAnalyzerPlugin instances added by Vue CLI in debug mode
+            if (process.env.VUE_APP_DEBUG === '1') {
+                config.plugins = config.plugins.filter(
+                    (p) => p.constructor.name !== 'BundleAnalyzerPlugin'
+                );
+            }
         }
 
         if (process.env.NODE_ENV === 'production') {
 
-            if (process.env.VUE_APP_MODE === 'WEB') {
+            if (process.env.VUE_APP_MODE === 'WEBVIEW') {
+
+                // 1. Explicitly filter out any existing BundleAnalyzerPlugin
+                config.plugins = config.plugins.filter(
+                    (p) => p.constructor && p.constructor.name !== 'BundleAnalyzerPlugin'
+                );
                 // // See available sourcemaps:
                 // // https://webpack.js.org/configuration/devtool/#devtool
                 config.devtool = 'source-map';
@@ -59,11 +65,9 @@ module.exports = {
                     return isVue && isGenerated ? generated : vuesource;
                 };
 
-                config.output.devtoolFallbackModuleFilenameTemplate =
-                    'webpack:///[resource-path]?[hash]';
+                config.output.devtoolFallbackModuleFilenameTemplate = 'webpack:///[resource-path]?[hash]';
 
-                config.plugins = [
-                    ...config.plugins
+                config.plugins = [...config.plugins
                     //how many files in the builds, 1 for single file
                     // new webpack.optimize.LimitChunkCountPlugin({
                     //     maxChunks: 7
@@ -72,49 +76,26 @@ module.exports = {
 
                 config.optimization = {
                     splitChunks: {
-                        //minSize: 100000,
-                        //maxSize: 500000,
                         cacheGroups: {
                             default: false,// disable the built-in groups, default & vendors (vendors is overwritten below)
-
-                            // components: {
-                            //     test: /[\\/]src[\\/]components[\\/]/,
-                            //     name: 'components',
-                            //     chunks: 'all',
-                            //     priority: 95
-                            // },
-
                             app: {
-                                test: /[\\/]src[\\/]/,
-                                name: 'app',
-                                chunks: 'all',
-                                priority: 90
+                                test: /[\\/]src[\\/]/, name: 'app', chunks: 'all', priority: 90
                             },
-
                             capacitor: {
                                 test: /[\\/]node_modules[\\/]@capacitor[\\/]/,
                                 name: 'vendor-capacitor',
                                 chunks: 'all',
                                 priority: 80
-                            },
-                            vue: {
-                                test: /[\\/]node_modules[\\/]@vue[\\/]/,
-                                name: 'vendor-vue',
-                                chunks: 'all',
-                                priority: 70
-                            },
-                            ionic: {
+                            }, vue: {
+                                test: /[\\/]node_modules[\\/]@vue[\\/]/, name: 'vendor-vue', chunks: 'all', priority: 70
+                            }, ionic: {
                                 test: /[\\/]node_modules[\\/](@ionic|@ionic-native)[\\/]/,
                                 name: 'vendor-ionic',
                                 chunks: 'all',
                                 priority: 60
-                            },
-                            vendor: {
-                                test: /[\\/]node_modules[\\/]/,
-                                name: 'vendor-common',
-                                //enforce: true,
-                                chunks: 'all',
-                                priority: 50
+                            }, vendor: {
+                                test: /[\\/]node_modules[\\/]/, name: 'vendor-common', //enforce: true,
+                                chunks: 'all', priority: 50
                             }
                         }
                     }
@@ -122,14 +103,16 @@ module.exports = {
             }
 
             if (process.env.VUE_APP_MODE === 'PWA') {
+                //Filter out ANY existing BundleAnalyzerPlugin (from Vue CLI defaults) first
+                config.plugins = config.plugins.filter(
+                    (p) => p.constructor && p.constructor.name !== 'BundleAnalyzerPlugin'
+                );
 
-                config.plugins = [
-                    ...config.plugins,
-                    //how many files in the builds, 1 for single file
+
+                config.plugins = [...config.plugins,
                     new webpack.optimize.LimitChunkCountPlugin({
                         maxChunks: 5
                     }),
-                    //remove words arrays, they are just used for unit tests
                     new webpack.IgnorePlugin({
                         resourceRegExp: /an-array-of-/
                     }),
@@ -139,27 +122,30 @@ module.exports = {
                     new webpack.IgnorePlugin({
                         resourceRegExp: /an-array-of/
                     }),
-                    // new webpack.IgnorePlugin({
-                    //     resourceRegExp: /swiper.bundle.js/
-                    // }),
-                    //remove console.log()
-                    new TerserPlugin({
-                        terserOptions: {
-                            format: {
-                                comments: false
+                    ...(process.env.VUE_APP_DEBUG !== '1' && process.env.VUE_APP_MODE === 'PWA' ? [
+                        new BundleAnalyzerPlugin({
+                            analyzerMode: 'static',
+                            openAnalyzer: false,
+                            reportFilename: './bundle-report.html',
+                            defaultSizes: 'gzip'
+                        }),
+                        new TerserPlugin({
+                            terserOptions: {
+                                format: {comments: false},
+                                compress: {
+                                    drop_console: true,
+                                    drop_debugger: true
+                                }
                             },
-                            compress: {
-                                drop_console: process.env.VUE_APP_DEBUG !== '1'
-                            }
-                        },
-                        extractComments: false
-                    })
+                            extractComments: false
+                        })
+                    ] : [])
                 ];
 
+
                 config.optimization = {
+                    minimize: process.env.VUE_APP_DEBUG !== '1',
                     splitChunks: {
-                        //minSize: 100000,
-                        // maxSize: 150000,
                         cacheGroups: {
                             default: false,// disable the built-in groups, default & vendors (vendors is overwritten below)
                             capacitor: {
@@ -167,34 +153,23 @@ module.exports = {
                                 name: 'vendor-capacitor',
                                 chunks: 'all',
                                 priority: 90
-                            },
-                            vue: {
-                                test: /[\\/]node_modules[\\/]@vue[\\/]/,
-                                name: 'vendor-vue',
-                                chunks: 'all',
-                                priority: 80
-                            },
-                            ionic: {
+                            }, vue: {
+                                test: /[\\/]node_modules[\\/]@vue[\\/]/, name: 'vendor-vue', chunks: 'all', priority: 80
+                            }, ionic: {
                                 test: /[\\/]node_modules[\\/](@ionic|@ionic-native)[\\/]/,
                                 name: 'vendor-ionic',
                                 chunks: 'all',
                                 priority: 70
-                            },
-                            vendor: {
-                                test: /[\\/]node_modules[\\/]/,
-                                name: 'vendor-common',
-                                //enforce: true,
-                                chunks: 'all',
-                                priority: 1
+                            }, vendor: {
+                                test: /[\\/]node_modules[\\/]/, name: 'vendor-common', //enforce: true,
+                                chunks: 'all', priority: 1
                             }
-
                         }
                     }
                 };
             }
         }
-    },
-    //the following is to make pinia work
+    }, //the following is to make pinia work
     //see https://github.com/vuejs/pinia/issues/675
     chainWebpack: (config) => {
         config.module
@@ -203,11 +178,8 @@ module.exports = {
             .type('javascript/auto')
             .include.add(/node_modules/)
             .end();
-    },
-    pwa: {
+    }, pwa: {
         //workboxPluginMode: 'GenerateSW',
-        assetsVersion: '76.1.0',
-        themeColor: '#673C90',
-        msTileColor: '#FFFFFF'
+        assetsVersion: '76.1.0', themeColor: '#673C90', msTileColor: '#FFFFFF'
     }
 };

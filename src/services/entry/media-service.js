@@ -1,18 +1,17 @@
-import { projectModel } from '@/models/project-model.js';
-import { PARAMETERS } from '@/config';
-import { useRootStore } from '@/stores/root-store';
-import { STRINGS } from '@/config/strings.js';
-import { databaseSelectService } from '@/services/database/database-select-service';
-import { databaseInsertService } from '@/services/database/database-insert-service';
-import { databaseDeleteService } from '@/services/database/database-delete-service';
-import { databaseUpdateService } from '@/services/database/database-update-service';
-import { utilsService } from '@/services/utilities/utils-service';
-import { entryService } from '@/services/entry/entry-service';
-import { moveFileService } from '@/services/filesystem/move-file-service';
-import { deleteFileService } from '@/services/filesystem/delete-file-service';
+import {projectModel} from '@/models/project-model.js';
+import {PARAMETERS} from '@/config';
+import {useRootStore} from '@/stores/root-store';
+import {STRINGS} from '@/config/strings.js';
+import {databaseSelectService} from '@/services/database/database-select-service';
+import {databaseInsertService} from '@/services/database/database-insert-service';
+import {databaseDeleteService} from '@/services/database/database-delete-service';
+import {databaseUpdateService} from '@/services/database/database-update-service';
+import {utilsService} from '@/services/utilities/utils-service';
+import {moveFileService} from '@/services/filesystem/move-file-service';
+import {deleteFileService} from '@/services/filesystem/delete-file-service';
 
 export const mediaService = {
-    saveMedia (entry, syncType) {
+    saveMedia(entry, syncType) {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -32,7 +31,7 @@ export const mediaService = {
                         await deleteFileService.removeFiles(queuedFiles);
                     } catch (error) {
                         console.log(error);
-                        reject(error);
+                       return reject(error);
                     }
                     try {
                         //remove files references from media table
@@ -44,20 +43,21 @@ export const mediaService = {
                         rootStore.queueFilesToDelete = [];
                     } catch (error) {
                         console.log(error);
-                        reject(error.message || labels.unknown_error);
+                       return reject(error.message || labels.unknown_error);
                     }
                 }
+
                 //error callback
-                function _onError (error) {
+                function _onError(error) {
                     console.log(error);
                     reject(error);
                 }
 
                 if (mediaFiles.length > 0) {
                     //insert file references to db
-                    databaseInsertService.insertMedia(entry, mediaFiles, syncType).then(function (response) {
+                    databaseInsertService.insertMedia(entry, mediaFiles, syncType).then(function () {
                         //move files (recursively) from app cache folder to app private folder for permanent storage
-                        function _moveFile (file) {
+                        function _moveFile(file) {
 
                             //do we have a new file to save?
                             if (file.cached !== '') {
@@ -74,52 +74,60 @@ export const mediaService = {
                                     //file moved ok, move next if any
                                     if (mediaFiles.length > 0) {
                                         _moveFile(mediaFiles.pop());
-                                    }
-                                    else {
+                                    } else {
                                         if (syncType === PARAMETERS.SYNCED_CODES.UNSYNCED) {
                                             databaseUpdateService.updateFileEntryIncomplete(entry.entryUuid).then(
                                                 function () {
                                                     resolve();
                                                 }, _onError);
-                                        }
-                                        else {
+                                        } else {
                                             resolve();
                                         }
                                     }
                                 }, _onError);
                             }
+                            else {
+                                //no cached file, move to next if any
+                                if (mediaFiles.length > 0) {
+                                    _moveFile(mediaFiles.pop());
+                                } else {
+                                    resolve();
+                                }
+                            }
                         }
+
                         //move file
                         _moveFile(mediaFiles.pop());
                     }, _onError);
-                }
-                else {
+                } else {
                     console.log('saving media with syncType= ', syncType);
                     //update any incomplete media file for this entry
                     //(set them to unsynced(0) when there is an actual save (syncType = 0))
                     if (syncType === PARAMETERS.SYNCED_CODES.UNSYNCED) {
                         databaseUpdateService.updateFileEntryIncomplete(entry.entryUuid).then(
-                            function (response) {
+                            function () {
                                 resolve();
                             }, _onError);
-                    }
-                    else {
+                    } else {
                         resolve();
                     }
                 }
-            })();
+            })().catch((error) => {
+                console.log(error);
+                reject(error);
+            });
         });
     },
 
     //Get media stored for a single entry and return media object
-    getEntryStoredMedia (uuid) {
+    getEntryStoredMedia(uuid) {
 
         return new Promise((resolve, reject) => {
             const media = {};
             const projectRef = projectModel.getProjectRef();
 
             // Error callback
-            function _onError (error) {
+            function _onError(error) {
                 console.log(error);
                 reject(error);
             }
@@ -146,9 +154,12 @@ export const mediaService = {
         });
     },
 
-    getEntryStoredMediaPWA (uuid) {
-
-        return new Promise((resolve, reject) => {
+    //Get media stored for a single entry and return media object for PWA
+    //This is done by finding the media question input refs
+    //and check them against the answers
+    getEntryStoredMediaPWA(entry) {
+        const uuid = entry.entryUuid;
+        return new Promise((resolve) => {
             const mediaTypes = [
                 PARAMETERS.QUESTION_TYPES.PHOTO,
                 PARAMETERS.QUESTION_TYPES.AUDIO,
@@ -160,7 +171,7 @@ export const mediaService = {
                     return mediaTypes.includes(input.data.type);
                 });
 
-            const answers = entryService.entry.answers;
+            const answers = entry.answers;
             mediaInputs.forEach((mediaInput) => {
                 const inputRef = mediaInput.data.ref;
                 //if no answer, default to empty string (no media file)
@@ -177,13 +188,14 @@ export const mediaService = {
         });
     },
 
-    getProjectStoredMedia (options) {
+    getProjectStoredMedia(options) {
         return new Promise((resolve, reject) => {
             // Error callback
-            function _onError (error) {
+            function _onError(error) {
                 console.log(error);
                 reject(error);
             }
+
             //select only unsynced media files (synced flag 0)
             databaseSelectService.selectProjectMedia(options).then(function (response) {
                 resolve(response);

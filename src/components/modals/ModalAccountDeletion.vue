@@ -88,9 +88,10 @@ import { notificationService } from '@/services/notification-service';
 import { webService } from '@/services/web-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { errorsService } from '@/services/errors-service';
-import { showModalLogin } from '@/use/show-modal-login';
-import { logout } from '@/use/logout';
+import { showModalLogin } from '@/use/auth/show-modal-login';
+import { logout } from '@/use/auth/logout';
 import { useRouter } from 'vue-router';
+import { authVerificationService } from '@/services/auth/auth-verification-service';
 
 export default {
 	components: {
@@ -132,7 +133,7 @@ export default {
 					if (response.data.data.deleted) {
 						//log user out
 						await logout();
-						//show user confirmation		
+						//show user confirmation
 						notificationService.showAlert(STRINGS[language].status_codes.ec5_385);
 						return;
 					}
@@ -142,7 +143,7 @@ export default {
 					//show error
 					if (error.data?.errors[0]?.code === 'ec5_219') {
 						//jwt token expired?, logout and show login modal
-						const expired = await utilsService.isJWTExpired();
+						const expired = await authVerificationService.isJWTExpired();
 						if (expired) {
 							await logout();
 							showModalLogin();

@@ -72,13 +72,13 @@ import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import ModalProgressTransfer from '@/components/modals/ModalProgressTransfer';
 import { modalController } from '@ionic/vue';
-import { showModalLogin } from '@/use/show-modal-login';
+import { showModalLogin } from '@/use/auth/show-modal-login';
 import { useBackButton } from '@ionic/vue';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { errorsService } from '@/services/errors-service';
 import { downloadService } from '@/services/utilities/download-service';
-import { logout } from '@/use/logout';
+import { logout } from '@/use/auth/logout';
 
 export default {
 	setup() {

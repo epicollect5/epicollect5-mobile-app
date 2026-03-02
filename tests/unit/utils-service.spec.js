@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
 import { vi } from 'vitest';
 import { databaseSelectService } from '@/services/database/database-select-service';
+import {authVerificationService} from '@/services/auth/auth-verification-service';
 
 describe('UUID', () => {
     it('should be valid UUID v4', () => {
@@ -631,7 +632,7 @@ describe('isJWTExpired', () => {
             });
 
         // Call the function to check if JWT is expired
-        const result = await utilsService.isJWTExpired();
+        const result = await authVerificationService.isJWTExpired();
 
         // Assert the result
         expect(result).toBe(true);

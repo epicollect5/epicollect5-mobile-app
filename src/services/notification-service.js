@@ -1,10 +1,11 @@
-import { PARAMETERS } from '@/config';
-import { STRINGS } from '@/config/strings';
-import { useRootStore } from '@/stores/root-store';
-import { loadingController, alertController } from '@ionic/vue';
-import { PushNotifications } from '@capacitor/push-notifications';
-import { Toast } from '@capacitor/toast';
-
+import {PARAMETERS} from '@/config';
+import {STRINGS} from '@/config/strings';
+import {useRootStore} from '@/stores/root-store';
+import {loadingController, alertController} from '@ionic/vue';
+import {PushNotifications} from '@capacitor/push-notifications';
+import {Toast} from '@capacitor/toast';
+import {Capacitor} from '@capacitor/core';
+import {useToast} from '@/use/toast';
 
 export const notificationService = {
 
@@ -16,11 +17,24 @@ export const notificationService = {
         const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
 
         setTimeout(async () => {
-            await Toast.show({
-                text: messageStr,
-                duration: 'short',
-                position: setPosition
-            });
+
+            //on native platforms use Capacitor Toast API
+            if (Capacitor.isNativePlatform()) {
+
+                await Toast.show({
+                    text: messageStr,
+                    duration: 'short',
+                    position: setPosition
+                });
+            }
+            //on the PWA use vanilla toast
+            else {
+                const toast = useToast();
+                await toast.show({
+                    message: messageStr,
+                    position: setPosition
+                });
+            }
         }, setDelay);
     },
     async showAlert(message, header) {
@@ -128,9 +142,8 @@ export const notificationService = {
                 let ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + labels.wait + '</strong>';
 
                 if (title) {
-                    ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + title + '</strong><br/><br/>' + message;
-                }
-                else {
+                    ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + title + '</strong><br/><br/><span class="ec5LoadingMessage">' + message + '</span>';
+                } else {
                     if (message) {
                         ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + message + '</strong>';
                     }
@@ -216,8 +229,7 @@ export const notificationService = {
                         10
                     );
                     resolve();
-                }
-                else {
+                } else {
                     resolve();
                 }
             })();
