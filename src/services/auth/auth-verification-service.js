@@ -33,7 +33,10 @@ export const authVerificationService = {
                             reject(errorCode);
                         });
                 }
-            })();
+            })().catch((error) => {
+                console.log(error);
+                reject(error);
+            });
         });
     },
 
@@ -54,7 +57,7 @@ export const authVerificationService = {
 
                 // 3. Compare with current time (add 10s clock-skew buffer)
                 const currentTime = Date.now() / 1000;
-                return decoded.exp < (currentTime + 10);
+                return decoded.exp <= (currentTime + 10);
             }
 
             return true;

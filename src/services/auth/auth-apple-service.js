@@ -65,7 +65,18 @@ export const authAppleService = {
                             console.log(error);
                             //clashing accounts?
                             const errors = error.data.errors;
-                            const credentials = jwtDecode(appleJwtToken);
+                            let credentials;
+                            try {
+                                credentials = jwtDecode(appleJwtToken);
+                            } catch (error) {
+                                console.log(error);
+                                // hide all auth modals
+                                modalsHandlerService.dismissAll();
+                                notificationService.hideProgressDialog();
+                                await errorsService.handleWebError(error);
+                                return;
+                            }
+
                             if (errors[0].code === 'ec5_384') {
                                 //need to confirm email
                                 account.code = null;
@@ -108,7 +119,7 @@ export const authAppleService = {
                                     showBackdrop: true,
                                     backdropDismiss: false,
                                     componentProps: {
-                                        email: account.email
+                                        email: credentials.email
                                     }
                                 });
 
