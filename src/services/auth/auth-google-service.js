@@ -54,7 +54,7 @@ export const authGoogleService = {
         // Check if we have a connection
         const hasInternetConnection = await utilsService.hasInternetConnection();
         if (!hasInternetConnection) {
-            notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
+            await notificationService.showAlert(STRINGS[language].status_codes.ec5_118);
         } else {
 
             await notificationService.showProgressDialog(labels.sign_in + '...');
@@ -95,7 +95,7 @@ export const authGoogleService = {
                                     notificationService.hideProgressDialog();
                                 }
                             } catch (errorCode) {
-                                notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
+                                await notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
                                 notificationService.hideProgressDialog();
                             }
                         },
@@ -157,7 +157,7 @@ export const authGoogleService = {
                                 // hide any modals
                                 modalsHandlerService.dismissAll();
                                 notificationService.hideProgressDialog();
-                                errorsService.handleWebError(error);
+                                await errorsService.handleWebError(error);
                             }
 
                         });

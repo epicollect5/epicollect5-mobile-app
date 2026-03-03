@@ -74,7 +74,6 @@ export const authAppleService = {
                                     account.email = credentials.email;
                                     account.provider = PARAMETERS.PROVIDERS.APPLE;
 
-                                    notificationService.hideProgressDialog();
                                     //show form to enter code
                                     modalsHandlerService.confirmEmail = await modalController.create({
                                         cssClass: 'modal-confirm-email',
