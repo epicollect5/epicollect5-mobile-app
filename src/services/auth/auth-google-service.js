@@ -21,7 +21,7 @@ export const authGoogleService = {
             window.plugins.googleplus.login(
                 {
                     webClientId: authIds.google.CLIENT_ID, // optional clientId of your Web application from Credentials settings of your project - On Android, this MUST be included to get an idToken. On iOS, it is not required.
-                    offline: true // optional, but requires the webClientId - if set to true the plugin will also return a serverAuthCode, which can be used to grant offline access to a non-Google server
+                    offline: true // optional, but requires the webClientId - if set to true, the plugin will also return a serverAuthCode, which can be used to grant offline access to a non-Google server
                 },
                 function (response) {
                     console.log(response);
@@ -44,6 +44,7 @@ export const authGoogleService = {
             );
         });
     },
+
     async authGoogleUser (authIds) {
 
         const rootStore = useRootStore();
@@ -72,32 +73,8 @@ export const authGoogleService = {
                         async function (response) {
                             console.log('response', response);
 
-                            //Google user is authenticated, save to store
-                            try {
-                                await authLoginService.loginUser(response);
-                                modalsHandlerService.dismissAll();
-                                notificationService.showToast(STRINGS[language].status_codes.ec5_115);
-
-                                //any extra action to perform? (like addProject()...)
-                                if (rootStore.afterUserIsLoggedIn.callback !== null) {
-                                    const callback = rootStore.afterUserIsLoggedIn.callback;
-                                    const params = rootStore.afterUserIsLoggedIn.params;
-                                    if (params) {
-                                        await callback(...params);
-                                    } else {
-                                        //callback will be async updateLocalProject()
-                                        await callback();
-                                    }
-                                    //reset callback
-                                    rootStore.afterUserIsLoggedIn = { callback: null, params: null };
-                                }
-                                else {
-                                    notificationService.hideProgressDialog();
-                                }
-                            } catch (errorCode) {
-                                await notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
-                                notificationService.hideProgressDialog();
-                            }
+                            //Google user is authenticated, save it to store
+                            await authLoginService.onAuthSuccess(response, language, rootStore);
                         },
                         async function (error) {
                             console.log(error);
@@ -134,7 +111,7 @@ export const authGoogleService = {
                             }
 
                             if (errors[0].code === 'ec5_390') {
-                                //need to confirm password
+                                //need to confirm the password
                                 notificationService.hideProgressDialog();
                                 //show modal to enter password
                                 modalsHandlerService.confirmPassword = await modalController.create({
@@ -163,7 +140,8 @@ export const authGoogleService = {
                         });
                 }, function (error) {
                     //t.ly/wlpO => SIGN IN CANCELLED gets code 12501
-                    if (error != '12501') {
+                    //Need to check both the number and the string
+                    if (error.code === 12501 || error === '12501') {
                         notificationService.showAlert(STRINGS[language].status_codes.ec5_103, labels.error + ' ' + error);
                     }
                     notificationService.hideProgressDialog();

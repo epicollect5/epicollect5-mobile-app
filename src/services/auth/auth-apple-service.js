@@ -33,34 +33,10 @@ export const authAppleService = {
 
                     appleJwtToken = response.identityToken;
 
-                    //fullName is the user object from the response, like we have on the web JS sign in flow. Do not know if the plugin or Apple is not consistent with property names...
+                    //fullName is the user object from the response, like we have on the web JS sign-in flow. Do not know if the plugin or Apple is not consistent with property names...
                     webService.authAppleUser(appleJwtToken, response.fullName).then(async function (response) {
-                        try {
-                            await authLoginService.loginUser(response);
-                            modalsHandlerService.dismissAll();
-                            notificationService.showToast(STRINGS[language].status_codes.ec5_115);
-
-                            //any extra action to perform? (like addProject()...)
-                            if (rootStore.afterUserIsLoggedIn.callback !== null) {
-                                const callback = rootStore.afterUserIsLoggedIn.callback;
-                                const params = rootStore.afterUserIsLoggedIn.params;
-                                if (params) {
-                                    await callback(...params);
-                                } else {
-                                    //callback will be async updateLocalProject()
-                                    await callback();
-                                }
-                                //reset callback
-                                rootStore.afterUserIsLoggedIn = { callback: null, params: null };
-                            }
-                            else {
-                                notificationService.hideProgressDialog();
-                            }
-                        } catch (errorCode) {
-                            await notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
-                            notificationService.hideProgressDialog();
-                        }
-                    },
+                            await authLoginService.onAuthSuccess(response, language, rootStore);
+                        },
                         async function (error) {
                             console.log(error);
                             //clashing accounts?
@@ -110,7 +86,7 @@ export const authAppleService = {
                             }
 
                             if (errors[0].code === 'ec5_390') {
-                                //need to confirm password
+                                //need to confirm the password
                                 notificationService.hideProgressDialog();
                                 //show modal to enter password
                                 modalsHandlerService.confirmPassword = await modalController.create({

@@ -1,37 +1,11 @@
 import { STRINGS } from '@/config/strings';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { useRootStore } from '@/stores/root-store';
+import {modalsHandlerService} from '@/services/modals/modals-handler-service';
+import {notificationService} from '@/services/notification-service';
 
 export const authLoginService = {
-    getGoogleCodeNatively (authIds) {
-        return new Promise((resolve, reject) => {
-            // Cordova googleplus plugin
-            window.plugins.googleplus.login(
-                {
-                    webClientId: authIds.google.CLIENT_ID, // optional clientId of your Web application from Credentials settings of your project - On Android, this MUST be included to get an idToken. On iOS, it is not required.
-                    offline: true // optional, but requires the webClientId - if set to true the plugin will also return a serverAuthCode, which can be used to grant offline access to a non-Google server
-                },
-                function (response) {
-                    console.log(response);
-                    //Post google access code to server and retrieve jwt
-                    if (response.serverAuthCode) {
-                        resolve({
-                            code: response.serverAuthCode,
-                            email: response.email,
-                            family_name: response.familyName,
-                            given_name: response.givenName
-                        });
-                    } else {
-                        reject();
-                    }
-                },
-                function (error) {
-                    console.log(error);
-                    reject();
-                }
-            );
-        });
-    },
+
     storeUser (jwt, name, email) {
         return new Promise((resolve, reject) => {
             // Check we were given a jwt string
@@ -49,12 +23,7 @@ export const authLoginService = {
         });
     },
     validateResponse (response) {
-        if (response?.data?.data?.jwt) {
-            return true;
-        } else {
-            // Invalid json response
-            return false;
-        }
+        return !!response?.data?.data?.jwt;
     },
     async loginUser (response) {
         const rootStore = useRootStore();
@@ -77,6 +46,34 @@ export const authLoginService = {
                 reject('ec5_12');
             });
         });
+    },
+
+    async onAuthSuccess(response, language, rootStore) {
+        try {
+            await authLoginService.loginUser(response);
+            modalsHandlerService.dismissAll();
+            notificationService.showToast(STRINGS[language].status_codes.ec5_115);
+
+            //any extra action to perform? (like addProject()...)
+            // noinspection DuplicatedCode
+            if (rootStore.afterUserIsLoggedIn.callback !== null) {
+                const callback = rootStore.afterUserIsLoggedIn.callback;
+                const params = rootStore.afterUserIsLoggedIn.params;
+                if (params) {
+                    await callback(...params);
+                } else {
+                    //callback will be async updateLocalProject()
+                    await callback();
+                }
+                //reset callback
+                rootStore.afterUserIsLoggedIn = {callback: null, params: null};
+            } else {
+                notificationService.hideProgressDialog();
+            }
+        } catch (errorCode) {
+            await notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
+            notificationService.hideProgressDialog();
+        }
     }
 };
 
