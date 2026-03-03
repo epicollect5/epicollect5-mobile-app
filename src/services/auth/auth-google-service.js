@@ -141,7 +141,7 @@ export const authGoogleService = {
                 }, function (error) {
                     //t.ly/wlpO => SIGN IN CANCELLED gets code 12501
                     //Need to check both the number and the string
-                    if (error.code === 12501 || error === '12501') {
+                    if (error.code === 12501 || error.code === '12501') {
                         notificationService.showAlert(STRINGS[language].status_codes.ec5_103, labels.error + ' ' + error);
                     }
                     notificationService.hideProgressDialog();
