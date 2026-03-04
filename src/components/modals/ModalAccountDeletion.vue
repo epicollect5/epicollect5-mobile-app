@@ -117,7 +117,7 @@ export default {
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
 					//show error to user
-					notificationService.showAlert(STRINGS[language].status_codes['ec5_118']);
+					await notificationService.showAlert(STRINGS[language].status_codes['ec5_118']);
 					return false;
 				}
 				await notificationService.showProgressDialog(labels.wait);
@@ -126,7 +126,7 @@ export default {
 					const response = await webService.requestAccountDeletion();
 					if (response.data.data.accepted) {
 						//show toast
-						notificationService.showAlert(labels.account_deletion_request_sent);
+						await notificationService.showAlert(labels.account_deletion_request_sent);
 						return;
 					}
 
@@ -134,11 +134,11 @@ export default {
 						//log user out
 						await logout();
 						//show user confirmation
-						notificationService.showAlert(STRINGS[language].status_codes.ec5_385);
+						await notificationService.showAlert(STRINGS[language].status_codes.ec5_385);
 						return;
 					}
 					//show error
-					notificationService.showAlert(STRINGS[language].status_codes['ec5_116']);
+					await notificationService.showAlert(STRINGS[language].status_codes['ec5_116']);
 				} catch (error) {
 					//show error
 					if (error.data?.errors[0]?.code === 'ec5_219') {

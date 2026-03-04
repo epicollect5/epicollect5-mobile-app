@@ -53,7 +53,7 @@ export const errorsService = {
         const rootStore = useRootStore();
         const language = rootStore.language;
         let errorCode;
-        // No internet? (yeah let's say the connection dropped...)
+        // No internet? (yeah, let's say the connection dropped...)
         const hasInternetConnection = await utilsService.hasInternetConnection();
         if (!hasInternetConnection) {
             errorCode = 'ec5_135';

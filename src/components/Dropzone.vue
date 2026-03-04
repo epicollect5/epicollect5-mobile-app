@@ -31,6 +31,7 @@
           @load="onImageLoaded()"
           @error="onError"
           @click="onClick"
+          :alt="PARAMETERS.QUESTION_TYPES.PHOTO"
       >
       <audio
           v-if="state.type === PARAMETERS.QUESTION_TYPES.AUDIO"
@@ -144,7 +145,7 @@ export default {
 
           //todo: we need to get it from the query string for hierarchy forms
 
-          //get existing filename or generate new one
+          //get an existing filename or generate a new one
           if (props.filename === '') {
             filename = utilsService.generateMediaFilename(props.uuid, state.type);
           } else {
@@ -165,7 +166,7 @@ export default {
 
           // Add stringified upload data to api request
           payload.append('data', JSON.stringify(uploadData));
-          // Add file to api request
+          // Add a file to an api request
           payload.append('file', file);
 
           webService
@@ -251,11 +252,11 @@ export default {
         if (filestate === PARAMETERS.PWA_FILE_STATE.CACHED) {
           mediaUrl += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA_DEBUG + projectSlug;
         } else {
-          //if a branch and local, get file from temp media
+          //if a branch and local, get the file from temp media
           if (rootStore.branchEditType === PARAMETERS.PWA_BRANCH_LOCAL) {
             mediaUrl += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA_DEBUG + projectSlug;
           } else {
-            //if a branch but remote, stored file is in media
+            //if a branch but remote, the stored file is in media
             mediaUrl += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.MEDIA_DEBUG + projectSlug;
           }
         }
@@ -263,7 +264,7 @@ export default {
         if (filestate === PARAMETERS.PWA_FILE_STATE.CACHED) {
           mediaUrl += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
         } else {
-          //if a branch and local, get file from temp media
+          //if a branch and local, get the file from temp media
           if (rootStore.branchEditType === PARAMETERS.PWA_BRANCH_LOCAL) {
             mediaUrl += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
           } else {

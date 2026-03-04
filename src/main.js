@@ -150,7 +150,7 @@ export const app = createApp(App)
                 const response = await webService.getProjectPWA(projectSlug);
                 projectModel.initialisePWA((response));
 
-                // Set up a new entry or edit existing one
+                // Set up a new entry or edit the existing one
                 let formRef = '';
                 let isBranch = false;
                 if
@@ -232,14 +232,14 @@ export const app = createApp(App)
         console.log('Device language -> ', rootStore.language);
         const labels = STRINGS[rootStore.language].labels;
 
-        //Validate language files at start up for consistency, when debugging
+        //Validate language files at startup for consistency when debugging
         if (PARAMETERS.DEBUG) {
             await utilsService.validateLanguageFiles();
         }
 
         //in production, make sure we use the production server
         if (!PARAMETERS.DEBUG) {
-            //set default url to production when not debugging
+            //set the default url to production when not debugging
             PARAMETERS.DEFAULT_SERVER_URL = PARAMETERS.PRODUCTION_SERVER_URL;
         }
 
@@ -285,7 +285,7 @@ export const app = createApp(App)
             rootStore.persistentDir = await persistentDirsService.execute();
             console.log('Device persistent directory ->  ', rootStore.persistentDir);
 
-            //clear temp folder at start up, just in case there are some leftovers
+            //clear the temp folder at startup, just in case there are some leftovers
             try {
                 await tempDirsService.clearTemporaryDir();
             } catch (error) {
@@ -300,7 +300,7 @@ export const app = createApp(App)
         rootStore.serverUrl = await initService.getServerUrl();
         console.log('Server URL -> ', rootStore.serverUrl);
 
-        //set bookmarks in pinia store
+        //set bookmarks in a pinia store
         try {
             const bookmarks = await bookmarksService.getBookmarks();
             bookmarkStore.setBookmarks(bookmarks);

@@ -4,6 +4,7 @@ import { utilsService } from '@/services/utilities/utils-service';
 import { errorsService } from '@/services/errors-service';
 import { webService } from '@/services/web-service';
 import { useRootStore } from '@/stores/root-store';
+import { jwtDecode } from 'jwt-decode';
 import {databaseSelectService} from '@/services/database/database-select-service';
 
 export const authVerificationService = {
@@ -32,7 +33,10 @@ export const authVerificationService = {
                             reject(errorCode);
                         });
                 }
-            })();
+            })().catch((error) => {
+                console.log(error);
+                reject(error);
+            });
         });
     },
 
@@ -42,28 +46,23 @@ export const authVerificationService = {
 
             if (res.rows.length > 0) {
                 const jwt = res.rows.item(0).jwt;
-                const parts = jwt.split('.');
-                if (parts.length !== 3) {
-                    return true; // Malformed JWT, treat as expired
-                }
-                const payload = parts[1];
 
-                const base64Url = payload.replace(/-/g, '+').replace(/_/g, '/');
-                // Restore padding so atob() doesn't throw in strict environments
-                const base64 = base64Url.padEnd(base64Url.length + (4 - base64Url.length % 4) % 4, '=');
-                // 2. Decode and Parse
-                const jwtDecoded = JSON.parse(window.atob(base64));
+                // 1. Decode using the library
+                const decoded = jwtDecode(jwt);
 
-                // 3. No exp claim → treat as expired
-                if (jwtDecoded.exp === undefined || jwtDecoded.exp === null) {
+                // 2. Check for the 'exp' claim
+                if (!decoded.exp) {
                     return true;
                 }
 
-                // 4. Return expiry status with a 10s clock-skew buffer
-                return jwtDecoded.exp < (Date.now() / 1000) + 10;
+                // 3. Compare with current time (add 10s clock-skew buffer)
+                const currentTime = Date.now() / 1000;
+                return decoded.exp <= (currentTime + 10);
             }
-            return true; // No user, treat as expired
+
+            return true;
         } catch (error) {
+            // If jwtDecode throws (e.g., invalid format), it lands here
             console.error('JWT check failed', error);
             return true;
         }
