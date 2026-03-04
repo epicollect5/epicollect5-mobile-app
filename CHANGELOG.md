@@ -1,5 +1,10 @@
 ## Release Notes
 
+### 88.9.4 - build 8894
+
+- Added PWA support
+- Fixed bugs and stability improvements
+
 ### 88.9.3 - build 8893
 
 - Added Media export option.
@@ -73,7 +78,7 @@
 # 87.0.0 - build 8700
 
 - Upgraded to Capacitor 7 to target API 35 (Android 15)
-- Fixed edge to edge issue on Android 15 using new plugin
+- Fixed edge-to-edge issue on Android 15 using new plugin
 - Fixed bugs and stability improvements
 - Fixed regression bugs
 
