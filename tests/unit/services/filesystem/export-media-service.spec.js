@@ -4,6 +4,7 @@ import { useRootStore } from '@/stores/root-store';
 import { exportMediaService } from '@/services/filesystem/export-media-service';
 import { Filesystem } from '@capacitor/filesystem';
 import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
+import { utilsService } from '@/services/utilities/utils-service';
 
 // 1. Mock Capacitor Filesystem
 vi.mock('@capacitor/filesystem', () => ({
@@ -21,7 +22,12 @@ vi.mock('@capacitor/filesystem', () => ({
 // 2. Mock Internal Services
 vi.mock('@/services/filesystem/media-dirs-service', () => ({
     mediaDirsService: {
-        getRelativeDataDirectoryForCapacitorFilesystem: vi.fn(),
+        getRelativeDataDirectoryForCapacitorFilesystem: vi.fn()
+    }
+}));
+
+vi.mock('@/services/utilities/utils-service', () => ({
+    utilsService: {
         getExportPath: vi.fn()
     }
 }));
@@ -59,7 +65,8 @@ describe('exportMediaService.execute()', () => {
 
         // Default: Source exists
         mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem.mockReturnValue('DATA_DIR');
-        mediaDirsService.getExportPath.mockReturnValue('Epicollect5/my-project');
+        // Default: Export path
+        utilsService.getExportPath.mockReturnValue('Epicollect5/my-project');
     });
 
     it('throws error if permissions are not granted', async () => {
@@ -90,13 +97,19 @@ describe('exportMediaService.execute()', () => {
         expect(result).toBe(true);
         expect(Filesystem.mkdir).toHaveBeenCalledWith(expect.objectContaining({
             path: 'Epicollect5/my-project',
+            directory: 'DOCUMENTS_DIR',
             recursive: true
         }));
+
         // Should attempt to copy 3 times (Photos, Audio, Video)
         expect(Filesystem.copy).toHaveBeenCalledTimes(3);
+
+        // Check the first call (Photos)
         expect(Filesystem.copy).toHaveBeenCalledWith(expect.objectContaining({
             from: 'photos/abc-123',
-            to: 'Epicollect5/my-project/photos'
+            directory: 'DATA_DIR',
+            to: 'Epicollect5/my-project/photos',
+            toDirectory: 'DOCUMENTS_DIR'
         }));
     });
 

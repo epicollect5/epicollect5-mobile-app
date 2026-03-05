@@ -7,7 +7,6 @@ import slugify from 'slugify';
 import {isValidCoordsService} from '@/services/utilities/is-valid-coords-service';
 import {initService} from '@/services/init-service';
 import {STRINGS} from '@/config/strings';
-import {databaseSelectService} from '@/services/database/database-select-service';
 import {CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint} from '@capacitor/barcode-scanner';
 import {v4 as uuidv4} from 'uuid';
 import {notificationService} from '@/services/notification-service';
@@ -24,12 +23,6 @@ export const utilsService = {
         return uuidv4();
     },
 
-    //get timezone based on device settings
-    getTimeZone() {
-        const offset = new Date().getTimezoneOffset(), o = Math.abs(offset);
-        return (offset < 0 ? '+' : '-') + ('00' + Math.floor(o / 60)).slice(-2) + ':' + ('00' + (o % 60)).slice(-2);
-    },
-
     getInputFormattedDate(date) {
         const year = date.slice(0, 4);
         const month = date.slice(5, 7);
@@ -42,19 +35,17 @@ export const utilsService = {
         const z = (n) => ('0' + n).slice(-2);
         const zz = (n) => ('00' + n).slice(-3);
         let off = d.getTimezoneOffset();
-        const sign = off > 0 ? '-' : '+';
         off = Math.abs(off);
 
-        const iso = d.getFullYear() + '-'
+        //  sign + z(off / 60 | 0) + ':' + z(off % 60);
+
+        return d.getFullYear() + '-'
             + z(d.getMonth() + 1) + '-' +
             z(d.getDate()) + 'T' +
             z(d.getHours()) + ':' +
             z(d.getMinutes()) + ':' +
             z(d.getSeconds()) + '.' +
             zz(d.getMilliseconds());
-        //  sign + z(off / 60 | 0) + ':' + z(off % 60);
-
-        return iso;
     },
 
     getInputFormattedTime(input_date, format) {
@@ -118,7 +109,7 @@ export const utilsService = {
         let formatted_time;
         const ampm = hours24 >= 12 ? 'PM' : 'AM';
 
-        //convert 24 format to 12 format
+        //convert format 24 to format 12
         if (parseInt(hours24, 10) > 12) {
             hours12 = ((parseInt(hours24, 10) + 11) % 12) + 1;
             //prepend zero when needed
@@ -223,7 +214,7 @@ export const utilsService = {
         }
 
         //IMPORTANT: store dates removing timezone, UTC for the wins!
-        //this is for ordering, then the user will see the date converted to the local timezone anyway
+        //this is for ordering; then the user will see the date converted to the local timezone anyway
         //add 'Z' to indicate Zulu time (UTC, timezone offest 0)
 
         return self.getISOTime(self.convertDateToUTC(date)) + 'Z';
@@ -361,21 +352,6 @@ export const utilsService = {
         }
     },
 
-    //add/remove the timezone offset from the local time to level out timezone differences and have the Date in GMT always
-    getDateWithCompensatedTimezone(date) {
-
-        //local date
-        const compDate = new Date(
-            date.getFullYear(),
-            date.getMonth(),
-            date.getDate()
-        );
-
-        //remove timezone
-        compDate.setTime(compDate.getTime() + compDate.getTimezoneOffset() * 60 * 1000);
-        return compDate;
-    },
-
     /**
      * Map media object to array filtering out all the inputs without any answer.
      * The media object is first indexed by entryUuid, then inputRef. ie media[entryUuid][inputRef] = {}
@@ -413,48 +389,7 @@ export const utilsService = {
         return array;
     },
 
-    /**
-     * Serialize an object to a url string
-     *
-     * @param obj
-     * @returns {string}
-     */
-    serializeToUrl(obj) {
-        const str = [];
-        for (const p in obj) {
-            if (Object.prototype.hasOwnProperty.call(obj, p)) {
-                str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]));
-            }
-        }
-        return str.join('&');
-    },
-
-    /**
-     *
-     * @param str
-     * @returns {*}
-     */
-    stripTrailingSlash(str) {
-        if (str.substr(-1) === '/') {
-            return str.substr(0, str.length - 1).toLowerCase();
-        }
-        return str.toLowerCase();
-    },
-
-    /**
-     *
-     * @param obj
-     * @returns {string}
-     */
-    serializeObj(obj) {
-        const result = [];
-
-        Object.keys(obj).forEach(function (key, index) {
-            result.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]));
-        });
-
-        return result.join('&');
-    },
+    stripTrailingSlash: (str) => str.replace(/\/$/, '').toLowerCase(),
 
     htmlDecode(input) {
 
@@ -478,7 +413,7 @@ export const utilsService = {
             scripts[i].parentNode.removeChild(scripts[i]);
         }
 
-        // Return the inner html
+        // Return the inner HTML
         return div.innerHTML;
     },
 
@@ -488,7 +423,7 @@ export const utilsService = {
      *
      * @param b64Data {String} Pure base64 string without contentType
      * @param contentType {String} the content type of the file i.e (image/jpeg - image/png - text/plain)
-     * @param sliceSize {Int} SliceSize to process the byteCharacters
+     * @param sliceSize {int} SliceSize to process the byteCharacters
      * @see http://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript
      * @return Blob
      */
@@ -561,55 +496,6 @@ export const utilsService = {
         });
     },
 
-    /*
-     * Get app version name
-     */
-    //todo: not sure we still need this
-    async getAppVersion() {
-        const rootStore = useRootStore();
-        return new Promise((resolve) => {
-
-            if (rootStore.device.platform === PARAMETERS.WEB) {
-                resolve('');
-            }
-            /**
-             * Android - android/app/build.gradle (you're looking for the versionName variable)
-             * iOS - ios/App/App/Info.plist *(you're looking for the CFBundleShortVersionString key)
-             */
-            resolve(rootStore.app.version);
-        });
-    },
-
-    async getAppName() {
-        const rootStore = useRootStore();
-        return new Promise((resolve) => {
-            if (rootStore.device.platform === PARAMETERS.WEB) {
-                resolve('Epicollect5');
-            }
-            resolve(rootStore.app.name);
-        });
-    },
-
-    getFileType(filename) {
-
-        const parts = filename.split('.');
-        const ext = parts[parts.length - 1];
-        let type;
-
-        switch ('.' + ext) {
-            case PARAMETERS.PHOTO_EXT:
-                type = PARAMETERS.QUESTION_TYPES.PHOTO;
-                break;
-            case PARAMETERS.AUDIO_EXT:
-                type = PARAMETERS.QUESTION_TYPES.AUDIO;
-                break;
-            case PARAMETERS.VIDEO_EXT:
-                type = PARAMETERS.QUESTION_TYPES.VIDEO;
-                break;
-        }
-        return type;
-    },
-
     getFilePath(file_type) {
 
         let path = '';
@@ -630,7 +516,6 @@ export const utilsService = {
 
     getMIMEType(file_type) {
 
-        const rootStore = useRootStore();
         let mime_type;
 
         switch (file_type) {
@@ -681,20 +566,14 @@ export const utilsService = {
 
         return markup;
     },
-    trunc(str, desiredLength, useEllipsis) {
+    trunc: (str, desiredLength, useEllipsis = false) => {
         if (str.length <= desiredLength) {
             return str;
-        } else if (desiredLength >= 3) {
-            if (useEllipsis) {
-                const truncated = str.substr(0, desiredLength - 3); // Subtract 3 for the ellipsis
-                return truncated + '...';
-            } else {
-                const truncated = str.substr(0, desiredLength);
-                return truncated;
-            }
-        } else {
-            return str.substr(0, desiredLength);
         }
+        if (useEllipsis && desiredLength >= 3) {
+            return str.slice(0, desiredLength - 3) + '...';
+        }
+        return str.slice(0, desiredLength);
     },
     generateRandomString(length) {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -709,10 +588,8 @@ export const utilsService = {
     },
     hasQuestionError(state) {
         if (Object.keys(state.error.errors).length > 0) {
-            if (!state.error?.errors[state.currentInputRef]?.message) {
-                return false;
-            }
-            return true;
+            return state.error?.errors[state.currentInputRef]?.message;
+
         }
         return false;
     },
@@ -745,11 +622,8 @@ export const utilsService = {
             //no error message , answer is valid
             return false;
         }
-        if (questionState.error?.errors?.[questionState.currentInputRef]?.message === undefined) {
-            //no message key , answer is valid
-            return false;
-        }
-        return true;
+        return questionState.error?.errors?.[questionState.currentInputRef]?.message !== undefined;
+
     },
     filterObjectsByUniqueKey(arrayOfObjects, keyname) {
         const output = [], keys = [];
@@ -794,7 +668,7 @@ export const utilsService = {
          *  We do this as we might have filename too long (i.e. branch question of 255),
          *  then adding prefix we go over the max filename length (255)
          *
-         * then slugify() will take of foreign chars, spaces, symbols, ect..
+         * then slugify() will take of foreign chars, spaces, symbols, etc...
          */
 
         return prefix + '__' + slugify(this.trunc(body.toLowerCase(), 100));
@@ -873,8 +747,7 @@ export const utilsService = {
     getRandomLocation(lat, long) {
 
         function normish(mean, range) {
-            const num_out = ((Math.random() + Math.random() + Math.random() + Math.random() - 2) / 2) * range + mean;
-            return num_out;
+            return ((Math.random() + Math.random() + Math.random() + Math.random() - 2) / 2) * range + mean;
         }
 
         const x = normish(0, 0.01);
@@ -952,9 +825,6 @@ export const utilsService = {
             // Handle invalid input or return default values
             return null;
         }
-    },
-    isObject(obj) {
-        return Object.prototype.toString.call(obj) === '[object Object]';
     },
     arrayGroupBy(arr, cb) {
         return arr.reduce((a, b, i) => ((a[cb(b, i, arr)] || (a[cb(b, i, arr)] = [])).push(b), a), {});
@@ -1083,5 +953,23 @@ export const utilsService = {
         }
 
         return clonedEntry;
+    },
+    /**
+     * Resolves the path for user-visible exported media.
+     * iOS: App data is grouped by the OS under the App Name.
+     * Android: We manually group projects under an 'Epicollect5' folder.
+     */
+    getExportPath(projectSlug) {
+        const rootStore = useRootStore();
+        const platform = rootStore.device.platform;
+        const cleanSlug = projectSlug.replace(/^\/|\/$/g, '');
+
+        if (platform === PARAMETERS.ANDROID) {
+            // Results in 'Epicollect5/project-slug'
+            return PARAMETERS.APP_NAME + '/' + cleanSlug;
+        }
+
+        // Results in 'project-slug' (iOS creates the 'Epicollect5' folder automatically)
+        return cleanSlug;
     }
 };

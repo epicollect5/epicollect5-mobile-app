@@ -152,11 +152,8 @@ export default {
 
 			//imp: check this by setting a different timezone
 			//IMPORTANT Add timezone in, so the local date is still correct in the date picker
-			//console.log(state.answer.answer + utilsService.getTimeZone());
 
 			//see this answer for Safari issues https://goo.gl/guXxh7
-			//;
-			//state.date.answer = state.answer.answer + utilsService.getTimeZone();
 			//imp: timezone not needed for a input type date, YYYY-MM-DD, ??
 			state.date.answer = state.answer.answer.substring(0, 10);
 		}

@@ -4,7 +4,7 @@
       menu-id="right-drawer"
       content-id="main"
       @ionWillClose="onMenuWillClose()"
-      swipe-gesture="false"
+      :swipe-gesture="false"
   >
     <ion-header class="ion-no-border">
       <ion-toolbar
@@ -292,6 +292,7 @@ import {useBookmarkStore} from '@/stores/bookmark-store';
 import {STRINGS} from '@/config/strings';
 import {utilsService} from '@/services/utilities/utils-service';
 import {Share} from '@capacitor/share';
+import {Capacitor} from '@capacitor/core';
 
 import {
   cloudUpload,
@@ -345,6 +346,7 @@ export default {
       })
     };
 
+    // noinspection JSUnusedGlobalSymbols
     const methods = {
       onMenuWillClose() {
         //scroll menu to top
@@ -352,7 +354,11 @@ export default {
         drawerContent.value.$el.scrollToTop(PARAMETERS.DELAY_FAST);
       },
       async exportMedia() {
-        //todo:
+        //If not native platform bail out
+        if(!Capacitor.isNativePlatform()) {
+          return;
+        }
+
         const projectRef = projectModel.getProjectRef();
         const projectSlug = projectModel.getSlug();
         //show loader
@@ -386,14 +392,13 @@ export default {
             await notificationService.showAlert(error);
           }
         } else {
-          //just remove the loader on the web, for testing
+          //just remove the loader on the web for testing
           notificationService.hideProgressDialog();
           menuController.close();
         }
       },
 
       async exportEntries(){
-
         const projectRef = projectModel.getProjectRef();
         const projectSlug = projectModel.getSlug();
         await notificationService.showProgressDialog(labels.wait);
@@ -434,7 +439,7 @@ export default {
         deleteProject(router);
       },
       deleteEntries() {
-        //try to delete all entries and reload  entries page
+        //try to delete all entries and reload entries page
         deleteEntries(router);
       },
       async unsyncAllEntries() {

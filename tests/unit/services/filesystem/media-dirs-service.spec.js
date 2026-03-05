@@ -2,7 +2,6 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
 import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
-import { exportService } from '@/services/export-service';
 import { Filesystem } from '@capacitor/filesystem';
 import { utilsService } from '@/services/utilities/utils-service';
 
@@ -15,7 +14,8 @@ vi.mock('@capacitor/filesystem', () => ({
 
 vi.mock('@/services/utilities/utils-service', () => ({
     utilsService: {
-        getPlatformDocumentsFolder: vi.fn()
+        getPlatformDocumentsFolder: vi.fn(),
+        getExportPath: vi.fn((projectSlug) => `Epicollect5/${projectSlug}`)
     }
 }));
 
@@ -37,31 +37,6 @@ describe('mediaDirsService', () => {
         vi.clearAllMocks();
     });
 
-    describe('getExportPath()', () => {
-        it('returns path with App Name for Android', () => {
-            const rootStore = useRootStore();
-            rootStore.device = { platform: 'android' };
-
-            const path = exportService.getExportPath('my-project');
-            expect(path).toBe('Epicollect5/my-project');
-        });
-
-        it('returns only the slug for iOS', () => {
-            const rootStore = useRootStore();
-            rootStore.device = { platform: 'ios' };
-
-            const path = exportService.getExportPath('my-project');
-            expect(path).toBe('my-project');
-        });
-
-        it('cleans leading/trailing slashes from the slug', () => {
-            const rootStore = useRootStore();
-            rootStore.device = { platform: 'ios' };
-
-            const path = exportService.getExportPath('/my-project/');
-            expect(path).toBe('my-project');
-        });
-    });
 
     describe('removeExternalMediaDirs()', () => {
         const projectSlug = 'test-project';

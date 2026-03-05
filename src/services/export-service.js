@@ -29,7 +29,7 @@ export const exportService = {
 
         return new Promise((resolve, reject) => {
 
-            function processForm(form) {
+            async function processForm(form) {
                 const formRef = form.details.ref;
                 const headers = JSONTransformerService.getFormCSVHeaders(
                     form,
@@ -103,7 +103,7 @@ export const exportService = {
                 //recursively, get 1 entry, write as csv row, get next one
                 //1 file per each form, 1 file per each branch
                 offset = 0;
-                getEntry(offset);
+                await getEntry(offset);
             }
 
             processForm(forms.shift());
@@ -218,24 +218,5 @@ export const exportService = {
             console.log(error);
             throw error;
         }
-    },
-
-    /**
-     * Resolves the path for user-visible exported media.
-     * iOS: App data is grouped by the OS under the App Name.
-     * Android: We manually group projects under an 'Epicollect5' folder.
-     */
-    getExportPath(projectSlug) {
-        const rootStore = useRootStore();
-        const platform = rootStore.device.platform;
-        const cleanSlug = projectSlug.replace(/^\/|\/$/g, '');
-
-        if (platform === PARAMETERS.ANDROID) {
-            // Results in 'Epicollect5/project-slug'
-            return PARAMETERS.APP_NAME + '/' + cleanSlug;
-        }
-
-        // Results in 'project-slug' (iOS creates the 'Epicollect5' folder automatically)
-        return cleanSlug;
     }
 };

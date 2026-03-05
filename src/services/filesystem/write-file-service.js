@@ -4,49 +4,31 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { projectModel } from '@/models/project-model.js';
 import { utilsService } from '@/services/utilities/utils-service';
-import {exportService} from '@/services/export-service';
 
 export const writeFileService = {
 
     async appendCSVRow (headers, row, formRef, offset, branchRef) {
-        const self = this;
-        return new Promise((resolve, reject) => {
+        const filepath = this.getFilePath(formRef, branchRef);
 
-            (async function () {
-
-                const filepath = self.getFilePath(formRef, branchRef);
-
-                if (offset === 0) {
-                    try {
-                        await Filesystem.writeFile({
-                            path: filepath,
-                            data: headers,
-                            directory: Directory.Documents,
-                            encoding: Encoding.UTF8,
-                            recursive: true
-                        });
-                    } catch (error) {
-                        reject(error);
-                        return;
-                    }
-                }
-                //append entry data (if any)
-                //we cannot append empty string, throws NO_DATA error
-                if (row.length > 0) {
-                    try {
-                        await Filesystem.appendFile({
-                            path: filepath,
-                            data: '\r\n' + row,
-                            directory: Directory.Documents,
-                            encoding: Encoding.UTF8
-                        });
-                        resolve();
-                    } catch (error) {
-                        reject(error);
-                    }
-                }
-            }());
-        });
+        if (offset === 0) {
+            await Filesystem.writeFile({
+                path: filepath,
+                data: headers,
+                directory: Directory.Documents,
+                encoding: Encoding.UTF8,
+                recursive: true
+            });
+        }
+        //append entry data (if any)
+        //we cannot append empty string, throws NO_DATA error
+        if (row.length > 0) {
+            await Filesystem.appendFile({
+                path: filepath,
+                data: '\r\n' + row,
+                directory: Directory.Documents,
+                encoding: Encoding.UTF8
+            });
+        }
     },
 
     getFilePath (formRef, branchRef) {
@@ -83,7 +65,7 @@ export const writeFileService = {
             // formIndex + 1 to start from 1
             filename = utilsService.generateFilenameForExport('form-' + (formIndex + 1), formName);
         }
-        const folder = exportService.getExportPath(projectSlug);
+        const folder = utilsService.getExportPath(projectSlug);
 
         path = folder + '/data/' + filename + '.csv';
         return path;

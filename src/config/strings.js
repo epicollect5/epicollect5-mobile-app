@@ -428,7 +428,7 @@ export const STRINGS = {
             sign_in: 'Entrando',
             no_bookmarks_found: 'Nessun segnalibro trovato',
             my_bookmarks: 'Segnalibri',
-            export_entries: 'Esporta Voci ',
+            export_entries: 'Esporta Voci',
             exporting: 'Esportando',
             exporting_success: 'Tutte le voci esportate!',
             exported_to: 'Esportate in: ',

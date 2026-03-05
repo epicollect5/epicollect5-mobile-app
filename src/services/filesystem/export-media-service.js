@@ -11,6 +11,7 @@ import {PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
 import {Filesystem, Directory} from '@capacitor/filesystem';
 import {mediaDirsService} from '@/services/filesystem/media-dirs-service';
+import {utilsService} from '@/services/utilities/utils-service';
 
 export const exportMediaService = {
 
@@ -32,7 +33,7 @@ export const exportMediaService = {
         }
 
         // Use semantic path resolution
-        const baseMediaPath = mediaDirsService.getExportPath(projectSlug);
+        const baseMediaPath = utilsService.getExportPath(projectSlug);
 
         const cleanPhotoDir = PARAMETERS.PHOTO_DIR.replace(/^\/|\/$/g, '');
         const cleanAudioDir = PARAMETERS.AUDIO_DIR.replace(/^\/|\/$/g, '');
@@ -87,4 +88,3 @@ export const exportMediaService = {
         }
     }
 };
-
