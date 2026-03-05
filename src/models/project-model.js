@@ -138,9 +138,6 @@ export const projectModel = {
     getInput(inputRef) {
         return this.project_extra.inputs[inputRef] ? this.project_extra.inputs[inputRef].data : {};
     },
-    inputExists(inputRef) {
-        return this.project_extra.inputs[inputRef] ? true : false;
-    },
     getInputIndexFromRef(formRef, inputRef) {
 
         for (let i = 0; i < this.project_extra.forms[formRef].inputs.length; i++) {

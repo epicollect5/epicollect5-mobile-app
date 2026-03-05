@@ -60,7 +60,11 @@ export const exportService = {
                             formIndex++;
                             //reset offset for db query
                             offset = 0;
-                            processForm(forms.shift());
+                            try {
+                                await processForm(forms.shift());
+                            } catch (error) {
+                                reject(error);
+                            }
                         } else {
                             //no more forms
                             console.log('all forms written ->>>>>>>>>');
@@ -106,7 +110,10 @@ export const exportService = {
                 await getEntry(offset);
             }
 
-            processForm(forms.shift());
+            processForm(forms.shift()).catch((error) => {
+                console.log(error);
+                reject(error);
+            });
         });
     },
     async exportBranchEntries(projectRef) {
@@ -129,7 +136,11 @@ export const exportService = {
                             formRef: currentBranch.form_ref
                         });
                     }
-                    await processBranch(branches.shift());
+                    try {
+                        await processBranch(branches.shift());
+                    } catch (error) {
+                        reject(error);
+                    }
                 } else {
                     resolve();
                 }
@@ -160,7 +171,11 @@ export const exportService = {
                             if (branches.length > 0) {
                                 //reset offset for db query
                                 offset = 0;
-                                await processBranch(branches.shift());
+                                try {
+                                    await processBranch(branches.shift());
+                                } catch (error) {
+                                    reject(error);
+                                }
                             } else {
                                 //no more branches
                                 console.log('all branches written ->>>>>>>>>');

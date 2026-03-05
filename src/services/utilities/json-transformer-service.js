@@ -131,9 +131,17 @@ export const JSONTransformerService = {
 
             let mapTo;
             if (isBranch) {
+                // Direct branch input: forms[formRef][branchOwnerInputRef].branch[inputRef].map_to
                 mapTo = defaultMapping.forms[formRef][form.details.ownerInputRef].branch[inputDetails.ref]?.map_to;
             } else if (isGroup) {
-                mapTo = defaultMapping.forms[formRef][form.groupRef].group[inputDetails.ref]?.map_to;
+                if (form.branchOwnerInputRef) {
+                    // Group nested inside a branch:
+                    // forms[formRef][branchOwnerInputRef].branch[groupRef].group[inputRef].map_to
+                    mapTo = defaultMapping.forms[formRef][form.branchOwnerInputRef].branch[form.groupRef].group[inputDetails.ref]?.map_to;
+                } else {
+                    // Plain group: forms[formRef][groupRef].group[inputRef].map_to
+                    mapTo = defaultMapping.forms[formRef][form.groupRef].group[inputDetails.ref]?.map_to;
+                }
             } else {
                 mapTo = defaultMapping.forms[formRef][inputDetails.ref]?.map_to;
             }
@@ -148,7 +156,7 @@ export const JSONTransformerService = {
 
                 case PARAMETERS.QUESTION_TYPES.GROUP: {
                     const groupInputs = projectModel.getGroupInputRefs(formRef, inputDetails.ref);
-                    this.getGroupCSVHeaders(formRef, groupInputs, mappings, inputDetails.ref, headers);
+                    this.getGroupCSVHeaders(form, groupInputs, mappings, inputDetails.ref, headers);
                     break;
                 }
                 default:
@@ -160,16 +168,16 @@ export const JSONTransformerService = {
         return Papa.unparse([headers], {header: false, quotes: false});
     },
 
-    getGroupCSVHeaders(formRef, groupInputs, mappings, groupRef, headers) {
-        const form = {
-            details: {
-                ref: formRef
-            },
+    getGroupCSVHeaders(form, groupInputs, mappings, groupRef, headers) {
+        const newForm = {
+            details: { ref: form.details.ref },
             inputs: groupInputs,
             groupRef,
-            headers
+            headers,
+            branchOwnerInputRef: form.details.ownerInputRef || form.branchOwnerInputRef || null
+            // ^^^ only set when coming from a branch context
         };
-        return this.getFormCSVHeaders(form, mappings, true, 1, false);
+        return this.getFormCSVHeaders(newForm, mappings, true, 1, false);
     },
 
     getBranchCSVHeaders(branch, mappings) {
@@ -246,7 +254,7 @@ export const JSONTransformerService = {
                 }
                 case QT.GROUP: {
                     const groupInputs = projectModel.getGroupInputRefs(form.details.ref, inputDetails.ref);
-                    row = await this.getGroupCSVRow(form.details.ref, entry, groupInputs, answers, row);
+                    row = await this.getGroupCSVRow(form, entry, groupInputs, answers, row);
                     break;
                 }
                 case QT.BRANCH: {
@@ -268,15 +276,16 @@ export const JSONTransformerService = {
         return Papa.unparse([row], {header: false, quotes: false});
     },
 
-    async getGroupCSVRow(formRef,entry, groupInputs, answers, row) {
-        const form = {
+    async getGroupCSVRow(form, entry, groupInputs, answers, row) {
+        const newForm = {
             details: {
-                ref: formRef // Carry this over for nested groups
+                ref: form.details.ref,
+                ownerInputRef: form.details.ownerInputRef
             },
             inputs: groupInputs,
             row
         };
-        return await this.getFormCSVRow(entry, form, answers, true);
+        return await this.getFormCSVRow(entry, newForm, answers, true);
     },
 
     async getBranchCSVRow(entry, branch, answers) {
