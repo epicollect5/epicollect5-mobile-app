@@ -22,7 +22,7 @@ vi.mock('@capacitor/filesystem', () => ({
 vi.mock('@/services/filesystem/media-dirs-service', () => ({
     mediaDirsService: {
         getRelativeDataDirectoryForCapacitorFilesystem: vi.fn(),
-        getExportMediaPath: vi.fn()
+        getExportPath: vi.fn()
     }
 }));
 
@@ -59,7 +59,7 @@ describe('exportMediaService.execute()', () => {
 
         // Default: Source exists
         mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem.mockReturnValue('DATA_DIR');
-        mediaDirsService.getExportMediaPath.mockReturnValue('Epicollect5/my-project');
+        mediaDirsService.getExportPath.mockReturnValue('Epicollect5/my-project');
     });
 
     it('throws error if permissions are not granted', async () => {

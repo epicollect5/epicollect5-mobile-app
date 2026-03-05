@@ -1,16 +1,18 @@
-import { STRINGS } from '@/config/strings';
+import {STRINGS} from '@/config/strings';
 
-import { useRootStore } from '@/stores/root-store';
-import { projectModel } from '@/models/project-model.js';
-import { databaseSelectService } from '@/services/database/database-select-service';
-import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
-import { exportMediaService } from '@/services/filesystem/export-media-service';
-import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
-import { writeFileService } from '@/services/filesystem/write-file-service';
+import {useRootStore} from '@/stores/root-store';
+import {projectModel} from '@/models/project-model.js';
+import {databaseSelectService} from '@/services/database/database-select-service';
+import {JSONTransformerService} from '@/services/utilities/json-transformer-service';
+import {exportMediaService} from '@/services/filesystem/export-media-service';
+import {mediaDirsService} from '@/services/filesystem/media-dirs-service';
+import {writeFileService} from '@/services/filesystem/write-file-service';
+import {PARAMETERS} from '@/config';
+import {Capacitor} from '@capacitor/core';
 
 export const exportService = {
 
-    async exportHierarchyEntries (projectRef, projectSlug) {
+    async exportHierarchyEntries(projectRef) {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -18,6 +20,7 @@ export const exportService = {
         const mappings = projectModel.getProjectMappings();
         let offset;
         let formIndex = 0;
+        const debugLines = [];
 
         //do we have a mapping? If not, bail out (user must update project)
         if (Object.entries(mappings).length === 0) {
@@ -26,7 +29,7 @@ export const exportService = {
 
         return new Promise((resolve, reject) => {
 
-            function processForm (form) {
+            function processForm(form) {
                 const formRef = form.details.ref;
                 const headers = JSONTransformerService.getFormCSVHeaders(
                     form,
@@ -35,8 +38,11 @@ export const exportService = {
                     formIndex,
                     false
                 );
+                if (PARAMETERS.DEBUG) {
+                    debugLines.push(headers);
+                }
 
-                async function getEntry (offset) {
+                async function getEntry(offset) {
                     const result = await databaseSelectService.selectOneEntry(
                         projectRef,
                         formRef,
@@ -58,42 +64,52 @@ export const exportService = {
                         } else {
                             //no more forms
                             console.log('all forms written ->>>>>>>>>');
+                            // 4. Console log everything at once as a single block
+                            if (PARAMETERS.DEBUG) {
+                                console.log('--- FULL CSV DEBUG OUTPUT ---');
+                                console.log(debugLines.join('\n'));
+                                console.log('--- END CSV DEBUG OUTPUT ---');
+                            }
                             resolve();
                         }
                     } else {
                         const entry = result.rows.item(0);
                         const formRef = form.details.ref;
-                        const rowArray = await JSONTransformerService.getFormCSVRow(
+                        const row = await JSONTransformerService.getFormCSVRow(
                             entry,
                             form,
                             JSON.parse(entry.answers),
                             false
                         );
-                        const rowCSV = rowArray.join(',');
-                        //write entry to file
-                        try {
-                            await writeFileService.appendCSVRow(headers, rowCSV, formRef, offset, null);
-                        } catch (error) {
-                            reject(error);
-                            return;
+                        //write entry to file if native platform
+                        if (Capacitor.isNativePlatform()) {
+                            try {
+                                await writeFileService.appendCSVRow(headers, row, formRef, offset, null);
+                            } catch (error) {
+                                reject(error);
+                                return;
+                            }
+                        }
+                        if (PARAMETERS.DEBUG) {
+                            debugLines.push(row);
                         }
                         //next entry
                         offset++;
                         await getEntry(offset);
                     }
                 }
-                //get all entries for this project(entries + branch entries)
+
+                //get all entries for this project (entries + branch entries)
                 //recursively, get 1 entry, write as csv row, get next one
                 //1 file per each form, 1 file per each branch
                 offset = 0;
                 getEntry(offset);
             }
 
-
             processForm(forms.shift());
         });
     },
-    async exportBranchEntries (projectRef) {
+    async exportBranchEntries(projectRef) {
 
         const branches = [];
         let offset;
@@ -112,13 +128,12 @@ export const exportService = {
                             formRef: currentBranch.form_ref
                         });
                     }
-                    processBranch(branches.shift());
-                }
-                else {
+                    await processBranch(branches.shift());
+                } else {
                     resolve();
                 }
 
-                async function processBranch (branch) {
+                async function processBranch(branch) {
 
                     const mappings = projectModel.getProjectMappings();
                     const ownerInputRef = branch.branchRef;
@@ -128,28 +143,25 @@ export const exportService = {
                         mappings
                     );
 
-                    async function getBranchEntry (offset) {
+                    async function getBranchEntry(offset) {
                         const result = await databaseSelectService.selectOneBranchEntryForExport(
                             projectRef,
                             ownerInputRef,
                             offset
                         );
-
+                        //no more branch entries for this branch?
                         if (result.rows.length === 0) {
-                            //no more branch entries for this branch
-
                             //next branch?
                             if (branches.length > 0) {
                                 //reset offset for db query
                                 offset = 0;
-                                processBranch(branches.shift());
+                                await processBranch(branches.shift());
                             } else {
                                 //no more branches
                                 console.log('all branches written ->>>>>>>>>');
                                 resolve();
                             }
-                        }
-                        else {
+                        } else {
                             const branchEntry = result.rows.item(0);
                             const row = await JSONTransformerService.getBranchCSVRow(
                                 branchEntry,
@@ -181,14 +193,32 @@ export const exportService = {
             }());
         });
     },
-    async exportMedia (projectRef, projectSlug) {
+    async exportMedia(projectRef, projectSlug) {
         try {
             await mediaDirsService.removeExternalMediaDirs(projectSlug);
             await exportMediaService.execute(projectRef, projectSlug);
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             throw error;
         }
+    },
+
+    /**
+     * Resolves the path for user-visible exported media.
+     * iOS: App data is grouped by the OS under the App Name.
+     * Android: We manually group projects under an 'Epicollect5' folder.
+     */
+    getExportPath(projectSlug) {
+        const rootStore = useRootStore();
+        const platform = rootStore.device.platform;
+        const cleanSlug = projectSlug.replace(/^\/|\/$/g, '');
+
+        if (platform === PARAMETERS.ANDROID) {
+            // Results in 'Epicollect5/project-slug'
+            return PARAMETERS.APP_NAME + '/' + cleanSlug;
+        }
+
+        // Results in 'project-slug' (iOS creates the 'Epicollect5' folder automatically)
+        return cleanSlug;
     }
 };

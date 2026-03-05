@@ -56,7 +56,7 @@ import { modalController } from '@ionic/vue';
 import { Share } from '@capacitor/share';
 import { shareSocialSharp, closeOutline } from 'ionicons/icons';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Zoom } from 'swiper';
+import { Zoom } from 'swiper/modules';
 import 'swiper/css';
 import '@ionic/vue/css/ionic-swiper.css';
 import 'swiper/css/zoom';

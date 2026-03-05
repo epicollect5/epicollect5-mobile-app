@@ -4,6 +4,7 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { projectModel } from '@/models/project-model.js';
 import { utilsService } from '@/services/utilities/utils-service';
+import {exportService} from '@/services/export-service';
 
 export const writeFileService = {
 
@@ -19,13 +20,14 @@ export const writeFileService = {
                     try {
                         await Filesystem.writeFile({
                             path: filepath,
-                            data: headers.join(','),
-                            directory: Directory.ExternalStorage,
+                            data: headers,
+                            directory: Directory.Documents,
                             encoding: Encoding.UTF8,
                             recursive: true
                         });
                     } catch (error) {
                         reject(error);
+                        return;
                     }
                 }
                 //append entry data (if any)
@@ -35,7 +37,7 @@ export const writeFileService = {
                         await Filesystem.appendFile({
                             path: filepath,
                             data: '\r\n' + row,
-                            directory: Directory.ExternalStorage,
+                            directory: Directory.Documents,
                             encoding: Encoding.UTF8
                         });
                         resolve();
@@ -46,9 +48,8 @@ export const writeFileService = {
             }());
         });
     },
-    getFilePath (formRef, branchRef) {
 
-        const downloadFolder = utilsService.getPlatformDocumentsFolder();
+    getFilePath (formRef, branchRef) {
         const projectSlug = projectModel.getSlug();
         const mappings = projectModel.getProjectMappings();
         const projectExtra = projectModel.getProjectExtra();
@@ -82,7 +83,9 @@ export const writeFileService = {
             // formIndex + 1 to start from 1
             filename = utilsService.generateFilenameForExport('form-' + (formIndex + 1), formName);
         }
-        path = downloadFolder + projectSlug + '/' + filename + '.csv';
+        const folder = exportService.getExportPath(projectSlug);
+
+        path = folder + '/entries/' + filename + '.csv';
         return path;
     }
 };

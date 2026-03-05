@@ -196,7 +196,11 @@ export const projectModel = {
 
         return out;
     },
+    getGroupInputRefs(formRef, inputRef) {
+        return (this.project_extra.forms[formRef].group[inputRef]) ? this.project_extra.forms[formRef].group[inputRef] : [];
+    },
     getForms() {
+        debugger;
         return (this.project_extra.forms) ? this.project_extra.forms : [];
     },
     getFormRefsInOrder() {

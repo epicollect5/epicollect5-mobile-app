@@ -131,6 +131,20 @@
           </ion-label>
           <sup>&nbsp;Beta</sup>
         </ion-item>
+        <ion-item
+            button
+            data-test="export-media"
+            @click="exportEntries()">
+          <ion-icon :icon="download">
+          </ion-icon>
+          <ion-label
+              data-translate="export_entries"
+              class="ion-text-nowrap"
+          >
+            &nbsp;{{ labels.export_entries }}
+          </ion-label>
+          <sup>&nbsp;Beta</sup>
+        </ion-item>
         <!-- <ion-item
           button
           data-test="invite"
@@ -343,20 +357,7 @@ export default {
         const projectSlug = projectModel.getSlug();
         //show loader
         await notificationService.showProgressDialog(labels.wait);
-        // //export all hierarchy entries
-        // try {
-        // 	await exportService.exportHierarchyEntries(projectRef, projectSlug);
-        // } catch (error) {
-        // 	notificationService.hideProgressDialog();
-        // 	await notificationService.showAlert(error);
-        // }
-        // //export all branch entries
-        // try {
-        // 	await exportService.exportBranchEntries(projectRef, projectSlug);
-        // } catch (error) {
-        // 	notificationService.hideProgressDialog();
-        // 	await notificationService.showAlert(error);
-        // }
+
         //export all media files (skip for the web)
         if (rootStore.device.platform !== PARAMETERS.WEB) {
           try {
@@ -390,6 +391,51 @@ export default {
           menuController.close();
         }
       },
+
+      async exportEntries(){
+
+        const projectRef = projectModel.getProjectRef();
+        const projectSlug = projectModel.getSlug();
+        await notificationService.showProgressDialog(labels.wait);
+
+        //export all hierarchy entries
+        try {
+        	await exportService.exportHierarchyEntries(projectRef, projectSlug);
+          await exportService.exportBranchEntries(projectRef);
+
+          // const documentsFolder = utilsService.getPlatformDocumentsFolder();
+          // //Warn users and show the download folder according to the platform
+          // if (rootStore.device.platform === PARAMETERS.ANDROID) {
+          //   //Show path for Android
+          //   const message = documentsFolder + ' > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug;
+          //   await notificationService.showAlert(
+          //       message,
+          //       labels.media_exported
+          //   );
+          // }
+          // if (rootStore.device.platform === PARAMETERS.IOS) {
+          //   await notificationService.showAlert(
+          //       '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug,
+          //       labels.media_exported
+          //   );
+          // }
+          // menuController.close();
+        } catch (error) {
+        	notificationService.hideProgressDialog();
+        	await notificationService.showAlert(error);
+        }
+        finally {
+          notificationService.hideProgressDialog();
+        }
+        // //export all branch entries
+        // try {
+        // 	await exportService.exportBranchEntries(projectRef, projectSlug);
+        // } catch (error) {
+        // 	notificationService.hideProgressDialog();
+        // 	await notificationService.showAlert(error);
+        // }
+      },
+
       deleteProject() {
         //try to delete current project and redirect to projects list
         deleteProject(router);

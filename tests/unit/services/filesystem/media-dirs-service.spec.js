@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
 import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
+import { exportService } from '@/services/export-service';
 import { Filesystem } from '@capacitor/filesystem';
 import { utilsService } from '@/services/utilities/utils-service';
 
@@ -36,12 +37,12 @@ describe('mediaDirsService', () => {
         vi.clearAllMocks();
     });
 
-    describe('getExportMediaPath()', () => {
+    describe('getExportPath()', () => {
         it('returns path with App Name for Android', () => {
             const rootStore = useRootStore();
             rootStore.device = { platform: 'android' };
 
-            const path = mediaDirsService.getExportMediaPath('my-project');
+            const path = exportService.getExportPath('my-project');
             expect(path).toBe('Epicollect5/my-project');
         });
 
@@ -49,7 +50,7 @@ describe('mediaDirsService', () => {
             const rootStore = useRootStore();
             rootStore.device = { platform: 'ios' };
 
-            const path = mediaDirsService.getExportMediaPath('my-project');
+            const path = exportService.getExportPath('my-project');
             expect(path).toBe('my-project');
         });
 
@@ -57,7 +58,7 @@ describe('mediaDirsService', () => {
             const rootStore = useRootStore();
             rootStore.device = { platform: 'ios' };
 
-            const path = mediaDirsService.getExportMediaPath('/my-project/');
+            const path = exportService.getExportPath('/my-project/');
             expect(path).toBe('my-project');
         });
     });
@@ -109,5 +110,6 @@ describe('mediaDirsService', () => {
             const result = await mediaDirsService.removeExternalMediaDirs(projectSlug);
             expect(result).toBe(false);
         });
+
     });
 });

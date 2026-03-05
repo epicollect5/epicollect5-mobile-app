@@ -27,10 +27,12 @@ export const exportMediaService = {
         const destinationFolder = Directory.Documents;
         const sourceFolder = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
 
-        if (!sourceFolder) return true;
+        if (!sourceFolder) {
+            return true;
+        }
 
         // Use semantic path resolution
-        const baseMediaPath = mediaDirsService.getExportMediaPath(projectSlug);
+        const baseMediaPath = mediaDirsService.getExportPath(projectSlug);
 
         const cleanPhotoDir = PARAMETERS.PHOTO_DIR.replace(/^\/|\/$/g, '');
         const cleanAudioDir = PARAMETERS.AUDIO_DIR.replace(/^\/|\/$/g, '');

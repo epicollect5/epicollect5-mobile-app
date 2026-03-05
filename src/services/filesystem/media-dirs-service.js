@@ -2,6 +2,7 @@ import {useRootStore} from '@/stores/root-store';
 import {PARAMETERS} from '@/config';
 import {Filesystem, Directory} from '@capacitor/filesystem';
 import {utilsService} from '@/services/utilities/utils-service';
+import {exportService} from '@/services/export-service';
 
 export const mediaDirsService = {
 
@@ -119,32 +120,13 @@ export const mediaDirsService = {
         });
     },
 
-    /**
-     * Resolves the path for user-visible exported media.
-     * iOS: App data is grouped by the OS under the App Name.
-     * Android: We manually group projects under an 'Epicollect5' folder.
-     */
-    getExportMediaPath(projectSlug) {
-        const rootStore = useRootStore();
-        const platform = rootStore.device.platform;
-        const cleanSlug = projectSlug.replace(/^\/|\/$/g, '');
-
-        if (platform === PARAMETERS.ANDROID) {
-            // Results in 'Epicollect5/project-slug'
-            return PARAMETERS.APP_NAME + '/' + cleanSlug;
-        }
-
-        // Results in 'project-slug' (iOS creates the 'Epicollect5' folder automatically)
-        return cleanSlug;
-    },
-
     async removeExternalMediaDirs(projectSlug) {
         const documentsFolder = utilsService.getPlatformDocumentsFolder();
         if (!documentsFolder) {
             return true;
         }
 
-        const baseMediaPath = this.getExportMediaPath(projectSlug);
+        const baseMediaPath = exportService.getExportPath(projectSlug);
 
         const mediaDirs = [
             PARAMETERS.PHOTO_DIR,
