@@ -156,7 +156,7 @@ export const JSONTransformerService = {
             }
         });
 
-        if (isGroup) return headers;
+        if (isGroup || isBranch) return headers;
         return Papa.unparse([headers], {header: false, quotes: false});
     },
 
@@ -180,12 +180,12 @@ export const JSONTransformerService = {
         const formFromBranch = {
             details: {
                 ref: branch.formRef,
-                ownerInputRef: branch.branchRef,
-                inputs: branchInputsRefs.map((ref) => projectExtra.inputs[ref].data)
-            }
+                ownerInputRef: branch.branchRef
+            },
+            inputs: branchInputsRefs
         };
 
-        const headersArray = this.getFormCSVHeaders(formFromBranch, mappings, true, 0, true);
+        const headersArray = this.getFormCSVHeaders(formFromBranch, mappings, false, 0, true);
         headersArray.splice(0, 1, 'ec5_branch_owner_uuid', 'ec5_branch_uuid');
         return Papa.unparse([headersArray], {header: false, quotes: false});
     },
@@ -193,7 +193,7 @@ export const JSONTransformerService = {
     /**
      * CSV ROW METHODS
      */
-    async getFormCSVRow(entry, form, answers, isGroup) {
+    async getFormCSVRow(entry, form, answers, isGroup, isBranch) {
         let row = isGroup ? [...form.row] : [entry.entry_uuid, entry.created_at, entry.title];
 
         if (entry.parent_entry_uuid && !isGroup) {
@@ -264,7 +264,7 @@ export const JSONTransformerService = {
             }
         }
 
-        if (isGroup) return row;
+        if (isGroup || isBranch) return row;
         return Papa.unparse([row], {header: false, quotes: false});
     },
 
@@ -287,12 +287,13 @@ export const JSONTransformerService = {
         const formFromBranch = {
             details: {
                 ref: branch.formRef,
-                ownerInputRef: branch.branchRef,
-                inputs: branchInputsRefs.map((ref) => projectExtra.inputs[ref].data)
-            }
+                ownerInputRef: branch.branchRef
+            },
+            inputs: branchInputsRefs
+
         };
 
-        const rowArray = await this.getFormCSVRow(entry, formFromBranch, answers, true);
+        const rowArray = await this.getFormCSVRow(entry, formFromBranch, answers, false, true);
         rowArray.unshift(entry.owner_entry_uuid);
         return Papa.unparse([rowArray], {header: false, quotes: false});
     },
@@ -340,7 +341,7 @@ export const JSONTransformerService = {
                 input_ref: inputRef,
                 answer,
                 project_version: projectVersion,
-                platform: PARAMETERS.LEGACY_WEB
+                platform: _getLegacyPlatform()
             }
         };
     }

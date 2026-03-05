@@ -112,6 +112,7 @@ export const exportService = {
     async exportBranchEntries(projectRef) {
 
         const branches = [];
+        const debugLines = [];
         let offset;
 
         return new Promise((resolve, reject) => {
@@ -143,6 +144,10 @@ export const exportService = {
                         mappings
                     );
 
+                    if (PARAMETERS.DEBUG) {
+                        debugLines.push(headers);
+                    }
+
                     async function getBranchEntry(offset) {
                         const result = await databaseSelectService.selectOneBranchEntryForExport(
                             projectRef,
@@ -159,6 +164,12 @@ export const exportService = {
                             } else {
                                 //no more branches
                                 console.log('all branches written ->>>>>>>>>');
+                                // 4. Console log everything at once as a single block
+                                if (PARAMETERS.DEBUG) {
+                                    console.log('--- FULL CSV DEBUG OUTPUT ---');
+                                    console.log(debugLines.join('\n'));
+                                    console.log('--- END CSV DEBUG OUTPUT ---');
+                                }
                                 resolve();
                             }
                         } else {
@@ -170,20 +181,26 @@ export const exportService = {
                                 false
                             );
 
-                            //write entry to file
-                            try {
-                                await writeFileService.appendCSVRow(headers, row, branch.formRef, offset, branch.branchRef);
-                            } catch (error) {
-                                reject(error);
-                                return;
+                            //write entry to file on native platform
+                            if (Capacitor.isNativePlatform()) {
+                                try {
+                                    await writeFileService.appendCSVRow(headers, row, branch.formRef, offset, branch.branchRef);
+                                } catch (error) {
+                                    reject(error);
+                                    return;
+                                }
                             }
+
+                            if (PARAMETERS.DEBUG) {
+                                debugLines.push(row);
+                            }
+
                             //next entry
                             offset++;
                             await getBranchEntry(offset);
                         }
                     }
 
-                    //todo: get rows, 1 at a time
                     //get all branch entries for this branch
                     //recursively, get 1 entry, write as csv row, get next one
                     //1 file per each branch

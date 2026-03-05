@@ -16,6 +16,7 @@ vi.mock('@/models/project-model.js', () => ({
     projectModel: {
         getInput: vi.fn(),
         getGroupInputRefs: vi.fn(),
+        getProjectExtra: vi.fn(),
         getLastUpdated: () => '2026-01-01'
     }
 }));
@@ -506,4 +507,308 @@ describe('JSONTransformerService Parity Tests', () => {
     });
 });
 
+describe('JSONTransformerService Multi-Branch Logic', () => {
 
+    it('should correctly separate data for different branch types', async () => {
+        // 1. Setup two different branches
+        const branchA = { branchRef: 'branch_photos', formRef: 'f_1' };
+        const branchB = { branchRef: 'branch_members', formRef: 'f_1' };
+
+        const parentUuid = 'parent-100';
+
+        const mockInputs = {
+            'photo_caption': { type: 'text', ref: 'photo_caption' },
+            'member_name': { type: 'text', ref: 'member_name' }
+        };
+
+        // 1. Mock the Project Structure
+        projectModel.getProjectExtra.mockReturnValue({
+            forms: {
+                'f_1': {
+                    branch: {
+                        'branch_photos': ['photo_caption'],
+                        'branch_members': ['member_name']
+                    }
+                }
+            }
+        });
+
+        // 2. IMPORTANT: Mock the individual input lookup
+        // This is where the "Cannot read properties of undefined (reading 'type')" was coming from
+        projectModel.getInput.mockImplementation((ref) => mockInputs[ref]);
+
+        projectModel.getProjectExtra.mockReturnValue({
+            forms: {
+                'f_1': {
+                    branch: {
+                        'branch_photos': ['photo_caption'],
+                        'branch_members': ['member_name']
+                    }
+                }
+            },
+            inputs: {
+                'photo_caption': { data: mockInputs['photo_caption'] },
+                'member_name': { data: mockInputs['member_name'] }
+            }
+        });
+
+        // 2. Mock Entries for Branch A (Photos)
+        const entryPhoto = {
+            owner_entry_uuid: parentUuid,
+            entry_uuid: 'photo-1',
+            created_at: '2026-03-05',
+            title: 'Photo 1'
+        };
+        const answersPhoto = { 'photo_caption': { answer: 'Sunset' } };
+
+        // 3. Mock Entries for Branch B (Members)
+        const entryMember = {
+            owner_entry_uuid: parentUuid,
+            entry_uuid: 'member-1',
+            created_at: '2026-03-05',
+            title: 'Member 1'
+        };
+        const answersMember = { 'member_name': { answer: 'Bob' } };
+
+        // 4. Generate Rows
+        const rowPhoto = await JSONTransformerService.getBranchCSVRow(entryPhoto, branchA, answersPhoto);
+        const rowMember = await JSONTransformerService.getBranchCSVRow(entryMember, branchB, answersMember);
+
+        const parsedPhoto = Papa.parse(rowPhoto).data[0];
+        const parsedMember = Papa.parse(rowMember).data[0];
+
+        // ASSERTIONS
+        // Both should share the same owner_uuid
+        expect(parsedPhoto[0]).toBe(parentUuid);
+        expect(parsedMember[0]).toBe(parentUuid);
+
+        // But they should have different data content
+        expect(parsedPhoto).toContain('Sunset');
+        expect(parsedMember).toContain('Bob');
+
+        // Ensure they don't bleed into each other (Photo row shouldn't have Member data)
+        expect(parsedPhoto).not.toContain('Bob');
+    });
+
+    it('should generate correct headers for a branch', () => {
+        const branch = { branchRef: 'branch_photos', formRef: 'f_1' };
+        const mockMappings = [{
+            is_default: true,
+            forms: {
+                'f_1': {
+                    'branch_photos': {
+                        branch: {
+                            'photo_caption': { map_to: 'Caption' }
+                        }
+                    }
+                }
+            }
+        }];
+
+        // Mock project structure
+        projectModel.getProjectExtra.mockReturnValue({
+            forms: {
+                'f_1': {
+                    branch: {
+                        'branch_photos': ['photo_caption']
+                    }
+                }
+            }
+        });
+
+        projectModel.getInput.mockImplementation((ref) => {
+             if (ref === 'photo_caption') return { type: 'text', ref: 'photo_caption' };
+        });
+
+        const result = JSONTransformerService.getBranchCSVHeaders(branch, mockMappings);
+        const headers = Papa.parse(result).data[0];
+
+        expect(headers).toEqual(['ec5_branch_owner_uuid', 'ec5_branch_uuid', 'created_at', 'title', 'Caption']);
+    });
+
+    it('should maintain parity between branch headers and rows', async () => {
+        const branch = { branchRef: 'branch_photos', formRef: 'f_1' };
+        const mockMappings = [{
+            is_default: true,
+            forms: {
+                'f_1': {
+                    'branch_photos': {
+                        branch: {
+                            'photo_caption': { map_to: 'Caption' }
+                        }
+                    }
+                }
+            }
+        }];
+
+        projectModel.getProjectExtra.mockReturnValue({
+            forms: {
+                'f_1': {
+                    branch: {
+                        'branch_photos': ['photo_caption']
+                    }
+                }
+            }
+        });
+
+        projectModel.getInput.mockImplementation((ref) => {
+             if (ref === 'photo_caption') return { type: 'text', ref: 'photo_caption' };
+        });
+
+        const entry = {
+            owner_entry_uuid: 'owner-123',
+            entry_uuid: 'branch-entry-1',
+            created_at: '2026-03-05',
+            title: 'My Photo'
+        };
+        const answers = { 'photo_caption': { answer: 'A nice view' } };
+
+        const headerCSV = JSONTransformerService.getBranchCSVHeaders(branch, mockMappings);
+        const rowCSV = await JSONTransformerService.getBranchCSVRow(entry, branch, answers);
+
+        const headers = Papa.parse(headerCSV).data[0];
+        const row = Papa.parse(rowCSV).data[0];
+
+        expect(headers.length).toBe(row.length);
+        expect(headers[0]).toBe('ec5_branch_owner_uuid');
+        expect(row[0]).toBe('owner-123');
+        expect(headers[4]).toBe('Caption');
+        expect(row[4]).toBe('A nice view');
+    });
+});
+
+describe('JSONTransformerService Branch Row Content', () => {
+    const mockMappings = [{
+        is_default: true,
+        forms: {
+            'f_1': {
+                'branch_photos': {
+                    branch: {
+                        'photo_caption': { map_to: 'Caption' },
+                        'photo_location': { map_to: 'Photo_GPS' }
+                    }
+                }
+            }
+        }
+    }];
+
+    const branch = { branchRef: 'branch_photos', formRef: 'f_1' };
+
+    beforeEach(() => {
+        projectModel.getProjectExtra.mockReturnValue({
+            forms: {
+                'f_1': {
+                    branch: {
+                        'branch_photos': ['photo_caption', 'photo_location']
+                    }
+                }
+            }
+        });
+        projectModel.getInput.mockImplementation((ref) => {
+            if (ref === 'photo_caption') return { type: 'text', ref: 'photo_caption' };
+            if (ref === 'photo_location') return { type: 'location', ref: 'photo_location' };
+        });
+    });
+
+    it('should fill 6 columns for location even if coordinates are missing in a branch row', async () => {
+        const entry = { owner_entry_uuid: 'owner-123', entry_uuid: 'branch-entry-1', created_at: '2026-03-05', title: 'My Photo' };
+        const answers = { 'photo_caption': { answer: 'A nice view' }, 'photo_location': { answer: {} } }; // Empty object/no GPS fix
+
+        const rowCSV = await JSONTransformerService.getBranchCSVRow(entry, branch, answers);
+        const row = Papa.parse(rowCSV).data[0];
+
+        // Expect 4 metadata columns + 1 text + 6 location columns = 11 columns
+        expect(row.length).toBe(11);
+        const gpsBlock = row.slice(5, 11); // Caption is at index 4, so GPS starts at 5
+        expect(gpsBlock).toEqual(['', '', '', '', '', '']);
+    });
+
+    it('should correctly format UTM values for valid coordinates in a branch row', async () => {
+        const entry = { owner_entry_uuid: 'owner-123', entry_uuid: 'branch-entry-1', created_at: '2026-03-05', title: 'My Photo' };
+        const answers = { 'photo_caption': { answer: 'A nice view' }, 'photo_location': { answer: { latitude: 51.5074, longitude: -0.1278, accuracy: 10 } } };
+
+        const headerCSV = JSONTransformerService.getBranchCSVHeaders(branch, mockMappings);
+        const rowCSV = await JSONTransformerService.getBranchCSVRow(entry, branch, answers);
+
+        const headers = Papa.parse(headerCSV).data[0];
+        const row = Papa.parse(rowCSV).data[0];
+
+        const accIndex = headers.indexOf('acc_Photo_GPS');
+        const northIndex = headers.indexOf('UTM_Northing_Photo_GPS');
+        const eastIndex = headers.indexOf('UTM_Easting_Photo_GPS');
+        const zoneIndex = headers.indexOf('UTM_Zone_Photo_GPS');
+
+        expect(row[accIndex]).toBe('10');
+        expect(row[zoneIndex]).toBe('30U');
+
+        const northing = parseInt(row[northIndex]);
+        const easting = parseInt(row[eastIndex]);
+
+        expect(northing).toBeGreaterThan(5700000);
+        expect(northing).toBeLessThan(5800000);
+        expect(easting).toBeGreaterThan(690000);
+        expect(easting).toBeLessThan(700000);
+    });
+
+    it('should handle Null Island (0,0) correctly in a branch row', async () => {
+        const entry = { owner_entry_uuid: 'owner-123', entry_uuid: 'branch-entry-1', created_at: '2026-03-05', title: 'My Photo' };
+        const answers = { 'photo_caption': { answer: 'A nice view' }, 'photo_location': { answer: { latitude: 0, longitude: 0, accuracy: 5 } } };
+
+        const headerCSV = JSONTransformerService.getBranchCSVHeaders(branch, mockMappings);
+        const rowCSV = await JSONTransformerService.getBranchCSVRow(entry, branch, answers);
+
+        const headers = Papa.parse(headerCSV).data[0];
+        const row = Papa.parse(rowCSV).data[0];
+
+        const northIdx = headers.indexOf('UTM_Northing_Photo_GPS');
+        const eastIdx = headers.indexOf('UTM_Easting_Photo_GPS');
+
+        expect(row[northIdx]).toBe('0');
+        expect(row[eastIdx]).toBe('166021');
+        expect(headers.indexOf('UTM_Zone_Photo_GPS')).not.toBe(-1);
+    });
+
+    it('should catch invalid coordinates and return empty strings in a branch row', async () => {
+        const entry = { owner_entry_uuid: 'owner-123', entry_uuid: 'branch-entry-1', created_at: '2026-03-05', title: 'My Photo' };
+        const answers = { 'photo_caption': { answer: 'A nice view' }, 'photo_location': { answer: { latitude: 100, longitude: 20, accuracy: 10 } } };
+
+        const headerCSV = JSONTransformerService.getBranchCSVHeaders(branch, mockMappings);
+        const rowCSV = await JSONTransformerService.getBranchCSVRow(entry, branch, answers);
+
+        const headers = Papa.parse(headerCSV).data[0];
+        const row = Papa.parse(rowCSV).data[0];
+
+        expect(row[headers.indexOf('UTM_Northing_Photo_GPS')]).toBe('');
+        expect(row[headers.indexOf('UTM_Easting_Photo_GPS')]).toBe('');
+        expect(row[headers.indexOf('UTM_Zone_Photo_GPS')]).toBe('');
+    });
+
+    it('should handle empty or null answers gracefully in a branch row', async () => {
+        const entry = { owner_entry_uuid: 'owner-123', entry_uuid: 'branch-entry-1', created_at: '2026-03-05', title: 'My Photo' };
+        const answers = { 'photo_caption': { answer: null }, 'photo_location': { answer: { latitude: 51.5074, longitude: -0.1278, accuracy: 10 } } };
+
+        const headerCSV = JSONTransformerService.getBranchCSVHeaders(branch, mockMappings);
+        const rowCSV = await JSONTransformerService.getBranchCSVRow(entry, branch, answers);
+
+        const headers = Papa.parse(headerCSV).data[0];
+        const row = Papa.parse(rowCSV).data[0];
+
+        // Caption is at index 4
+        expect(row[4]).toBe('');
+        // Check that location data is still present
+        expect(row[headers.indexOf('lat_Photo_GPS')]).toBe('51.5074');
+    });
+
+    it('should handle missing answers object for a question in a branch row', async () => {
+        const entry = { owner_entry_uuid: 'owner-123', entry_uuid: 'branch-entry-1', created_at: '2026-03-05', title: 'My Photo' };
+        // photo_caption is completely missing from answers
+        const answers = { 'photo_location': { answer: { latitude: 51.5074, longitude: -0.1278, accuracy: 10 } } };
+
+        const rowCSV = await JSONTransformerService.getBranchCSVRow(entry, branch, answers);
+
+        const row = Papa.parse(rowCSV).data[0];
+
+        // Caption is at index 4, should be empty
+        expect(row[4]).toBe('');
+    });
+});

@@ -85,7 +85,7 @@ export const writeFileService = {
         }
         const folder = exportService.getExportPath(projectSlug);
 
-        path = folder + '/entries/' + filename + '.csv';
+        path = folder + '/data/' + filename + '.csv';
         return path;
     }
 };

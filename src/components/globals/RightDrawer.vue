@@ -133,7 +133,7 @@
         </ion-item>
         <ion-item
             button
-            data-test="export-media"
+            data-test="export-entries"
             @click="exportEntries()">
           <ion-icon :icon="download">
           </ion-icon>
@@ -400,26 +400,26 @@ export default {
 
         //export all hierarchy entries
         try {
-        	await exportService.exportHierarchyEntries(projectRef, projectSlug);
+        	await exportService.exportHierarchyEntries(projectRef);
           await exportService.exportBranchEntries(projectRef);
 
-          // const documentsFolder = utilsService.getPlatformDocumentsFolder();
-          // //Warn users and show the download folder according to the platform
-          // if (rootStore.device.platform === PARAMETERS.ANDROID) {
-          //   //Show path for Android
-          //   const message = documentsFolder + ' > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug;
-          //   await notificationService.showAlert(
-          //       message,
-          //       labels.media_exported
-          //   );
-          // }
-          // if (rootStore.device.platform === PARAMETERS.IOS) {
-          //   await notificationService.showAlert(
-          //       '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug,
-          //       labels.media_exported
-          //   );
-          // }
-          // menuController.close();
+          const documentsFolder = utilsService.getPlatformDocumentsFolder();
+          //Warn users and show the download folder according to the platform
+          if (rootStore.device.platform === PARAMETERS.ANDROID) {
+            //Show path for Android
+            const message = documentsFolder + ' > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug + ' > ' + 'data';
+            await notificationService.showAlert(
+                message,
+                labels.entries_exported
+            );
+          }
+          if (rootStore.device.platform === PARAMETERS.IOS) {
+            await notificationService.showAlert(
+                '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug + ' > ' + 'data',
+                labels.entries_exported
+            );
+          }
+          menuController.close();
         } catch (error) {
         	notificationService.hideProgressDialog();
         	await notificationService.showAlert(error);
@@ -427,13 +427,6 @@ export default {
         finally {
           notificationService.hideProgressDialog();
         }
-        // //export all branch entries
-        // try {
-        // 	await exportService.exportBranchEntries(projectRef, projectSlug);
-        // } catch (error) {
-        // 	notificationService.hideProgressDialog();
-        // 	await notificationService.showAlert(error);
-        // }
       },
 
       deleteProject() {
