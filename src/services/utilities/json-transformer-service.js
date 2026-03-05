@@ -241,7 +241,7 @@ export const JSONTransformerService = {
                 }
                 case QT.CHECKBOX:
                 case QT.SEARCH_SINGLE:
-                case QT.SEARCHMULTIPLE: {
+                case QT.SEARCH_MULTIPLE: {
                     if (Array.isArray(answer) && answer.length > 0) {
                         const labels = answer
                             .map((ref) => inputDetails.possible_answers?.find((pa) => pa.answer_ref === ref)?.answer)
@@ -312,17 +312,18 @@ export const JSONTransformerService = {
      */
     utmConverter(lat, lon) {
         try {
-            // Ensure values are numbers
             const latitude = parseFloat(lat);
             const longitude = parseFloat(lon);
 
-            // The 'utm' package expects (lat, lon)
-            const result = fromLatLon(latitude, longitude);
+            // Guard against NaN before passing to fromLatLon
+            if (isNaN(latitude) || isNaN(longitude)) {
+                return { easting: '', northing: '', zone: '' };
+            }
 
+            const result = fromLatLon(latitude, longitude);
             return {
                 easting: Math.floor(result.easting),
                 northing: Math.floor(result.northing),
-                // Use the correct property names: zoneNum and zoneLetter
                 zone: `${result.zoneNum}${result.zoneLetter}`
             };
         } catch (e) {

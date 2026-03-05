@@ -90,14 +90,14 @@ describe('answerValidateService', () => {
         setActivePinia(createPinia());
     });
 
-    it('SEARCHMULTIPLE allows multiple answers', async () => {
+    it('SEARCH_MULTIPLE allows multiple answers', async () => {
 
         params.answer.answer = ['62fd0291a1b1f', '62fd029da1b20', '62fd02a1a1b21'];
         await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
         expect(answerValidateService.getErrors()).toMatchObject({});
     });
 
-    it('SEARCHMULTIPLE answer does not match', async () => {
+    it('SEARCH_MULTIPLE answer does not match', async () => {
 
         params.answer.answer = [utilsService.generateUniqID()];
 
@@ -107,7 +107,7 @@ describe('answerValidateService', () => {
             [inputRef]: ['ec5_25']
         });
     });
-    it('SEARCHMULTIPLE answer does not match', async () => {
+    it('SEARCH_MULTIPLE answer does not match', async () => {
 
         params.answer.answer = [utilsService.generateUniqID()];
 
@@ -133,7 +133,7 @@ describe('answerValidateService', () => {
             [inputRef]: ['ec5_25']
         });
     });
-    it('SEARCHMULTIPLE answer required is provided', async () => {
+    it('SEARCH_MULTIPLE answer required is provided', async () => {
 
         //1
         params.answer.answer = ['62fd0291a1b1f'];
@@ -149,7 +149,7 @@ describe('answerValidateService', () => {
         expect(answerValidateService.getErrors()).toMatchObject({});
 
     });
-    it('SEARCHMULTIPLE answer required but missing', async () => {
+    it('SEARCH_MULTIPLE answer required but missing', async () => {
 
         params.answer.answer = [];
 
@@ -159,7 +159,7 @@ describe('answerValidateService', () => {
             [inputRef]: ['ec5_21']
         });
     });
-    it('SEARCHMULTIPLE answer NOT required', async () => {
+    it('SEARCH_MULTIPLE answer NOT required', async () => {
 
         params.answer.answer = [];
         params.input_details.is_required = false;

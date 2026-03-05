@@ -355,7 +355,7 @@ export default {
       },
       async exportMedia() {
         //If not native platform bail out
-        if(!Capacitor.isNativePlatform()) {
+        if (!Capacitor.isNativePlatform()) {
           return;
         }
 
@@ -364,48 +364,41 @@ export default {
         //show loader
         await notificationService.showProgressDialog(labels.wait);
 
-        //export all media files (skip for the web)
-        if (rootStore.device.platform !== PARAMETERS.WEB) {
-          try {
-            await exportService.exportMedia(projectRef, projectSlug);
-            notificationService.hideProgressDialog();
-            const documentsFolder = utilsService.getPlatformDocumentsFolder();
-            //Warn users and show the download folder according to the platform
-            if (rootStore.device.platform === PARAMETERS.ANDROID) {
-              //Show path for Android
-              const message = documentsFolder + ' > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug;
-              await notificationService.showAlert(
-                  message,
-                  labels.media_exported
-              );
-            }
-            if (rootStore.device.platform === PARAMETERS.IOS) {
-              await notificationService.showAlert(
-                  '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug,
-                  labels.media_exported
-              );
-            }
-            menuController.close();
-          } catch (error) {
-            console.log(error);
-            notificationService.hideProgressDialog();
-            await notificationService.showAlert(error);
-          }
-        } else {
-          //just remove the loader on the web for testing
+        try {
+          await exportService.exportMedia(projectRef, projectSlug);
           notificationService.hideProgressDialog();
+          const documentsFolder = utilsService.getPlatformDocumentsFolder();
+          //Warn users and show the download folder according to the platform
+          if (rootStore.device.platform === PARAMETERS.ANDROID) {
+            //Show path for Android
+            const message = documentsFolder + ' > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug;
+            await notificationService.showAlert(
+                message,
+                labels.media_exported
+            );
+          }
+          if (rootStore.device.platform === PARAMETERS.IOS) {
+            await notificationService.showAlert(
+                '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug,
+                labels.media_exported
+            );
+          }
           menuController.close();
+        } catch (error) {
+          console.log(error);
+          notificationService.hideProgressDialog();
+          await notificationService.showAlert(error);
         }
       },
 
-      async exportEntries(){
+      async exportEntries() {
         const projectRef = projectModel.getProjectRef();
         const projectSlug = projectModel.getSlug();
         await notificationService.showProgressDialog(labels.wait);
 
         //export all hierarchy entries
         try {
-        	await exportService.exportHierarchyEntries(projectRef);
+          await exportService.exportHierarchyEntries(projectRef);
           await exportService.exportBranchEntries(projectRef);
 
           const documentsFolder = utilsService.getPlatformDocumentsFolder();
@@ -426,10 +419,9 @@ export default {
           }
           menuController.close();
         } catch (error) {
-        	notificationService.hideProgressDialog();
-        	await notificationService.showAlert(error);
-        }
-        finally {
+          notificationService.hideProgressDialog();
+          await notificationService.showAlert(error);
+        } finally {
           notificationService.hideProgressDialog();
         }
       },

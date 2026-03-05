@@ -2011,7 +2011,7 @@ export const STRINGS = {
             load_more: 'Naloži več',
             take: 'Fotografiraj',
             pick: 'Galerija',
-            collected_on: 'Zbrano dne',
+            collected_on: 'Zbrano dne ',
             dismiss: 'Zavrni'
         }
     },
