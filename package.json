@@ -95,7 +95,6 @@
     "slugify": "^1.6.5",
     "swiper": "^12.1.2",
     "utm": "^1.1.1",
-    "utm-latlng": "^1.0.8",
     "uuid": "^8.3.2",
     "vue": "^3.4.27",
     "vue-datepicker-next": "^1.0.2",
