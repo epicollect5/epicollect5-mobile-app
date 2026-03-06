@@ -1,5 +1,12 @@
 ## Release Notes
 
+### 88.9.5 - build 8895
+
+- Added ability to export project entries to CSV files.
+- Integrated geographic coordinate conversion to UTM format for location.
+- Enhanced file export mechanism with better directory management across Android and iOS platforms.
+- Expanded multi-language support with localized labels for entry export functionality.
+
 ### 88.9.4 - build 8894
 
 - Added PWA support
@@ -36,7 +43,7 @@
 - Capacitor 8 update
 - Fixed navigation to prevent accidental back-button dismissal while audio, video encoding, or location modals are open.
 - Enhanced barcode scanner with improved hint detection for better scanning accuracy.
-- Audio is recorded as AAC with mp4 extension and 64kbps bitrate on both Android and iOS. 
+- Audio is recorded as AAC with mp4 extension and 64kbps bitrate on both Android and iOS.
 - Video is encoded as AAC/H264 with mp4 extension, 30fps and ~2Mbps bitrate on both Android and iOS.
 - Android Target SDK updated to 36 (Android 15)
 
