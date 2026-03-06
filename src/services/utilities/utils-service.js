@@ -532,41 +532,43 @@ export const utilsService = {
     },
 
     getProjectNameMarkup(hideName) {
-
-        let appStoragePath = '';
-        let markup = '';
         const rootStore = useRootStore();
+        const projectName = projectModel.getProjectName();
+        const alt = `${projectName} logo`;
+        const nameMarkup = hideName ? '' : `<span>&nbsp;${projectName.toUpperCase()}</span>`;
 
-        //PWA + WEB debug
+        const buildImgMarkup = (src, fallback = '') => {
+            const onError = fallback ? ` onError="this.src='${fallback}'"` : '';
+            return `<img class="project-logo" width="32" height="32" src="${src}"${onError} alt="${alt}"/>`;
+        };
+
+        // PWA / Web
         if (!Capacitor.isNativePlatform()) {
-            //PWA (or WEB debug) gets project logo from server
-            console.log(rootStore.serverUrl);
-            const projectSlug = projectModel.getSlug();
-            const apiEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.MEDIA;
-            const logoURL = rootStore.serverUrl + apiEndpoint + projectSlug + PARAMETERS.API.PARAMS.PROJECT_LOGO_QUERY_STRING;
+            const logoURL = rootStore.serverUrl
+                + PARAMETERS.API.ROUTES.PWA.ROOT
+                + PARAMETERS.API.ROUTES.PWA.MEDIA
+                + projectModel.getSlug()
+                + PARAMETERS.API.PARAMS.PROJECT_LOGO_QUERY_STRING;
 
-            markup = '<img class="project-logo" width="32" height="32" src="' + logoURL + '"/>';
-            markup += hideName ? '' : '<span>&nbsp;' + projectModel.getProjectName().toUpperCase() + '</span>';
+            return buildImgMarkup(logoURL) + nameMarkup;
         }
 
-        //Android & iOS
-        if (Capacitor.isNativePlatform()) {
-            if (projectModel.getProjectRef() === DEMO_PROJECT.PROJECT_REF) {
-                appStoragePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectModel.getProjectRef() + '/mobile-logo.jpg?' + new Date().getTime();
-                markup = '<img class="project-logo" width="32" height="32" src="' + appStoragePath + '" onError="this.src = \'assets/images/ec5-demo-project-logo.jpg\'"/>';
-                markup += hideName ? '' : '<span>&nbsp;' + projectModel.getProjectName().toUpperCase() + '</span>';
-            } else {
-                appStoragePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectModel.getProjectRef() + '/mobile-logo.jpg?' + new Date().getTime();
-                //fix for WKWebView
-                appStoragePath = Capacitor.convertFileSrc(appStoragePath);
-                markup = '<img class="project-logo" width="32" height="32" src="' + appStoragePath + '" onError="this.src = \'assets/images/ec5-placeholder-100x100.jpg\'"/>';
-                markup += hideName ? '' : '<span >&nbsp;' + projectModel.getProjectName().toUpperCase() + '</span>';
-            }
-        }
+        // Android & iOS
+        const projectRef = projectModel.getProjectRef();
+        const isDemoProject = projectRef === DEMO_PROJECT.PROJECT_REF;
+        const basePath = `${rootStore.persistentDir}${PARAMETERS.LOGOS_DIR}${projectRef}/mobile-logo.jpg?${Date.now()}`;
 
-        return markup;
+        const imgSrc = isDemoProject ? basePath : Capacitor.convertFileSrc(basePath); // WKWebView fix
+        const fallback = isDemoProject
+            ? 'assets/images/ec5-demo-project-logo.jpg'
+            : 'assets/images/ec5-placeholder-100x100.jpg';
+
+        return buildImgMarkup(imgSrc, fallback) + nameMarkup;
     },
     trunc: (str, desiredLength, useEllipsis = false) => {
+        if (typeof str !== 'string') {
+            return '';
+        }
         if (str.length <= desiredLength) {
             return str;
         }
@@ -893,7 +895,6 @@ export const utilsService = {
             console.log('%cLanguage files validated correctly', 'color: green; font-weight: bold;');
         }
     },
-
 
 
     inverseSlug(slug) {

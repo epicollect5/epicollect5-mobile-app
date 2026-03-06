@@ -58,8 +58,6 @@ export const exportService = {
                         if (forms.length > 0) {
                             //next form
                             formIndex++;
-                            //reset offset for db query
-                            offset = 0;
                             try {
                                 await processForm(forms.shift());
                             } catch (error) {
@@ -99,15 +97,23 @@ export const exportService = {
                         }
                         //next entry
                         offset++;
-                        await getEntry(offset);
+                        try {
+                            await getEntry(offset);
+                        } catch (error) {
+                            reject(error);
+                        }
                     }
                 }
 
                 //get all entries for this project (entries + branch entries)
                 //recursively, get 1 entry, write as csv row, get next one
                 //1 file per each form, 1 file per each branch
-                offset = 0;
-                await getEntry(offset);
+                offset = 0; //<-- reset offset for db query
+                try {
+                    await getEntry(offset);
+                } catch (error) {
+                    reject(error);
+                }
             }
 
             processForm(forms.shift()).catch((error) => {
@@ -215,7 +221,11 @@ export const exportService = {
 
                             //next entry
                             offset++;
-                            await getBranchEntry(offset);
+                            try {
+                                await getBranchEntry(offset);
+                            } catch (error) {
+                                reject(error);
+                            }
                         }
                     }
 
@@ -223,7 +233,11 @@ export const exportService = {
                     //recursively, get 1 entry, write as csv row, get next one
                     //1 file per each branch
                     offset = 0; //<-- reset offset for db query
-                    await getBranchEntry(offset);
+                    try {
+                        await getBranchEntry(offset);
+                    } catch (error) {
+                        reject(error);
+                    }
                 }
             }());
         });

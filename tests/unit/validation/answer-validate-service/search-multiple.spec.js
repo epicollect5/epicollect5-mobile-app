@@ -4,7 +4,7 @@ import {setActivePinia, createPinia} from 'pinia';
 import {utilsService} from '@/services/utilities/utils-service';
 
 const inputRef = '70dcdb0b606843989674d3851c544f23_62fa24c5161be_62fa24caa1b10';
-const entry = {
+const baseEntry = {
     entryUuid: '75523045-1954-4a3e-adc3-91500d5c65c4',
     parentEntryUuid: '',
     isRemote: 0,
@@ -29,7 +29,7 @@ const entry = {
     }
 };
 
-const params = {
+const baseParams = {
     input_details: {
         max: null,
         min: null,
@@ -76,6 +76,9 @@ const params = {
     }
 };
 
+let entry;
+let params;
+
 vi.mock('@/services/database/database-select-service', () => {
     const databaseSelectService = vi.fn();
     databaseSelectService.isUnique = vi.fn();
@@ -88,6 +91,8 @@ describe('answerValidateService', () => {
         // up by any useStore() call without having to pass it to it:
         // `useStore(pinia)`
         setActivePinia(createPinia());
+        entry = JSON.parse(JSON.stringify(baseEntry));
+        params = JSON.parse(JSON.stringify(baseParams));
         // Reset params to default state
         params.input_details.is_required = true;
     });
