@@ -419,7 +419,6 @@ export default {
           }
           menuController.close();
         } catch (error) {
-          notificationService.hideProgressDialog();
           await notificationService.showAlert(error);
         } finally {
           notificationService.hideProgressDialog();

@@ -43,7 +43,6 @@ export const writeFileService = {
         let path = '';
 
         if (branchRef !== null) {
-            //todo:
             const defaultMapping = mappings.filter((mapping) => {
                 if (mapping.is_default) {
                     return mapping.forms;
@@ -52,10 +51,10 @@ export const writeFileService = {
             let branchIndex = 0;
             const branchHeader = projectExtra.inputs[branchRef].data.question;
 
-            for (const [inputRef, input] of Object.entries(defaultMapping[0].forms[formRef])) {
+            for (const [inputRef, _input] of Object.entries(defaultMapping[0].forms[formRef])) {
                 if (inputRef === branchRef) {
-                    // branchIndex + 1 to start from 1
-                    filename = utilsService.generateFilenameForExport('branch-' + (branchIndex + 1), branchHeader);
+                    // Prepend form index (formIndex + 1 to start from 1) to branch identifier
+                    filename = utilsService.generateFilenameForExport('form-' + (formIndex + 1) + '_branch-' + (branchRef), formName + '-' + branchHeader);
                     break;
                 }
                 branchIndex++;

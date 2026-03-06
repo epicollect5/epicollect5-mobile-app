@@ -52,6 +52,8 @@ describe('writeFileService', () => {
 
         it('should return correct file path for a branch', () => {
             projectModel.getSlug.mockReturnValue('my-project');
+            projectModel.getFormIndex.mockReturnValue(0);
+            projectModel.getFormName.mockReturnValue('Test Form');
             projectModel.getProjectMappings.mockReturnValue([{
                 is_default: true,
                 forms: {
@@ -69,11 +71,12 @@ describe('writeFileService', () => {
                     }
                 }
             });
-            utilsService.generateFilenameForExport.mockReturnValue('branch-1_branch-question');
+            utilsService.generateFilenameForExport.mockReturnValue('form-1_branch-branch1_test-form-branch-question');
             utilsService.getExportPath.mockReturnValue('/path/to/export/my-project');
 
             const path = writeFileService.getFilePath('form1', 'branch1');
-            expect(path).toBe('/path/to/export/my-project/data/branch-1_branch-question.csv');
+            expect(utilsService.generateFilenameForExport).toHaveBeenCalledWith('form-1_branch-branch1', 'Test Form-Branch Question');
+            expect(path).toBe('/path/to/export/my-project/data/form-1_branch-branch1_test-form-branch-question.csv');
         });
     });
 

@@ -49,4 +49,3 @@ ios/App/Epicollect5/env.xcconfig
 git-commits.csv
 .vscode
 deploy-pwa.sh
-.github
