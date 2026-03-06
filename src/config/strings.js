@@ -757,7 +757,7 @@ export const STRINGS = {
     },
     fr: {
         labels: {
-            entries_exported: 'Entrées exportés',
+            entries_exported: 'Entrées exportées',
             saving_with_encoding: 'Téléverser avec encodage medias.\n\nCela peut prendre un certain temps.\n\nNe fermez pas cet onglet.',
             media_exported: 'Médias exportés',
             export_media: 'Exporter Médias',

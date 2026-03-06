@@ -389,7 +389,7 @@ export const utilsService = {
         return array;
     },
 
-    stripTrailingSlash: (str) => str.replace(/\/$/, ''),
+    stripTrailingSlash: (str) => (typeof str === 'string' ? str.replace(/\/$/, '') : ''),
 
     htmlDecode(input) {
 

@@ -1,7 +1,7 @@
-import { answerValidateService } from '@/services/validation/answer-validate-service';
-import { vi } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
-import { utilsService } from '@/services/utilities/utils-service';
+import {answerValidateService} from '@/services/validation/answer-validate-service';
+import {vi} from 'vitest';
+import {setActivePinia, createPinia} from 'pinia';
+import {utilsService} from '@/services/utilities/utils-service';
 
 const inputRef = '70dcdb0b606843989674d3851c544f23_62fa24c5161be_62fa24caa1b10';
 const entry = {
@@ -79,7 +79,7 @@ const params = {
 vi.mock('@/services/database/database-select-service', () => {
     const databaseSelectService = vi.fn();
     databaseSelectService.isUnique = vi.fn();
-    return { databaseSelectService };
+    return {databaseSelectService};
 });
 
 describe('answerValidateService', () => {
@@ -88,6 +88,8 @@ describe('answerValidateService', () => {
         // up by any useStore() call without having to pass it to it:
         // `useStore(pinia)`
         setActivePinia(createPinia());
+        // Reset params to default state
+        params.input_details.is_required = true;
     });
 
     it('SEARCH_MULTIPLE allows multiple answers', async () => {
@@ -97,9 +99,9 @@ describe('answerValidateService', () => {
         expect(answerValidateService.getErrors()).toMatchObject({});
     });
 
-    it('SEARCH_MULTIPLE answer does not match', async () => {
+    it('SEARCH_MULTIPLE rejects when one valid and one invalid answer', async () => {
 
-        params.answer.answer = [utilsService.generateUniqID()];
+        params.answer.answer = ['62fd0291a1b1f', utilsService.generateUniqID()];
 
         await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
         expect(answerValidateService.getErrors()).toMatchObject({
@@ -107,6 +109,8 @@ describe('answerValidateService', () => {
             [inputRef]: ['ec5_25']
         });
     });
+
+
     it('SEARCH_MULTIPLE answer does not match', async () => {
 
         params.answer.answer = [utilsService.generateUniqID()];

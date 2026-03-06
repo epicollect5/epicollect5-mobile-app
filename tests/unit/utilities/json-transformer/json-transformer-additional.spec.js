@@ -1,4 +1,5 @@
 // noinspection DuplicatedCode
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
 import { projectModel } from '@/models/project-model.js';
@@ -307,8 +308,6 @@ describe('JSONTransformerService — utmConverter', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 describe('JSONTransformerService — getBranchCSVHeaders splice correctness', () => {
 
-    beforeEach(() => vi.clearAllMocks());
-
     const mappings = [{
         is_default: true,
         forms: {
@@ -324,6 +323,8 @@ describe('JSONTransformerService — getBranchCSVHeaders splice correctness', ()
     }];
 
     beforeEach(() => {
+        vi.clearAllMocks();
+
         projectModel.getProjectExtra.mockReturnValue({
             forms: { 'f_1': { branch: { 'branch_ref': ['q_text', 'q_num'] } } }
         });

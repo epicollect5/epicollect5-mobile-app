@@ -126,23 +126,28 @@ export const exportService = {
 
             (async function () {
                 //get all the branch entries for all the forms
-                const result = await databaseSelectService.selectDistinctBranchRefs(projectRef);
+                try {
+                    const result = await databaseSelectService.selectDistinctBranchRefs(projectRef);
 
-                if (result.rows.length > 0) {
-                    for (let i = 0; i < result.rows.length; i++) {
-                        const currentBranch = result.rows.item(i);
-                        branches.push({
-                            branchRef: currentBranch.owner_input_ref,
-                            formRef: currentBranch.form_ref
-                        });
+                    if (result.rows.length > 0) {
+                        for (let i = 0; i < result.rows.length; i++) {
+                            const currentBranch = result.rows.item(i);
+                            branches.push({
+                                branchRef: currentBranch.owner_input_ref,
+                                formRef: currentBranch.form_ref
+                            });
+                        }
+                        try {
+                            await processBranch(branches.shift());
+                        } catch (error) {
+                            reject(error);
+                        }
+                    } else {
+                        resolve();
                     }
-                    try {
-                        await processBranch(branches.shift());
-                    } catch (error) {
-                        reject(error);
-                    }
-                } else {
-                    resolve();
+                } catch (error) {
+                    console.log(error);
+                    reject(error);
                 }
 
                 async function processBranch(branch) {
@@ -169,8 +174,6 @@ export const exportService = {
                         if (result.rows.length === 0) {
                             //next branch?
                             if (branches.length > 0) {
-                                //reset offset for db query
-                                offset = 0;
                                 try {
                                     await processBranch(branches.shift());
                                 } catch (error) {
@@ -219,7 +222,7 @@ export const exportService = {
                     //get all branch entries for this branch
                     //recursively, get 1 entry, write as csv row, get next one
                     //1 file per each branch
-                    offset = 0;
+                    offset = 0; //<-- reset offset for db query
                     await getBranchEntry(offset);
                 }
             }());
