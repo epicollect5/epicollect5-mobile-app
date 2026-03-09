@@ -77,7 +77,6 @@ export const createDatabaseService = {
                     'is_remote int' +
                     ')', [], (res) => {
                     }, _onError);
-
                 // temp branch entries table
                 tx.executeSql(
                     'CREATE TABLE IF NOT EXISTS temp_branch_entries (' +

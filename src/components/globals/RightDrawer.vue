@@ -145,15 +145,15 @@
           </ion-label>
           <sup>&nbsp;Beta</sup>
         </ion-item>
-        <!-- <ion-item
-          button
-          data-test="invite"
-          @click="invite()"
-        >
-          <ion-icon :icon="people">
-          </ion-icon>
-          <ion-label data-translate="invite" class="ion-text-nowrap">&nbsp;{{ labels.invite }}</ion-label>
-        </ion-item> -->
+<!--        <ion-item-->
+<!--            button-->
+<!--            data-test="invite"-->
+<!--            @click="invite()"-->
+<!--        >-->
+<!--          <ion-icon :icon="people">-->
+<!--          </ion-icon>-->
+<!--          <ion-label data-translate="invite" class="ion-text-nowrap">&nbsp;{{ labels.invite }}</ion-label>-->
+<!--        </ion-item>-->
         <ion-item-divider
             color="primary"
             class="ion-no-padding"

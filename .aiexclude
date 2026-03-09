@@ -1,0 +1,9 @@
+# Ignore build folders
+/dist/
+/build/
+
+# Ignore dependency folders
+/node_modules/
+
+# Ignore specific sensitive files
+.env

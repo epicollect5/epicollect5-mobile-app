@@ -1,314 +1,378 @@
 <template>
-	<base-layout title="">
+  <base-layout title="">
 
-		<template #actions-start>
-			<ion-menu-button></ion-menu-button>
-		</template>
+    <template #actions-start>
+      <ion-menu-button></ion-menu-button>
+    </template>
 
-		<template #actions-end>
-			<ion-button
-				fill="clear"
-				@click="saveSettings()"
-			>
-				<ion-icon
-					slot="start"
-					:icon="checkmark"
-				></ion-icon>
-				{{ labels.save }}
-			</ion-button>
-		</template>
+    <template #actions-end>
+      <ion-button
+          fill="clear"
+          @click="saveSettings()"
+      >
+        <ion-icon
+            slot="start"
+            :icon="checkmark"
+        ></ion-icon>
+        {{ labels.save }}
+      </ion-button>
+    </template>
 
-		<template #subheader>
-			<ion-toolbar color="dark">
-				<ion-buttons slot="start">
-					<ion-button @click="goBack()">
-						<ion-icon
-							slot="start"
-							:icon="chevronBackOutline"
-						>
-						</ion-icon>
-						{{ labels.back }}
-					</ion-button>
-				</ion-buttons>
-				<ion-buttons
-					class="toolbar-spacer"
-					slot="end"
-				>
-					<ion-button>
-						<ion-icon
-							slot="end"
-							:icon="chevronBackOutline"
-						>
-						</ion-icon>
-						{{ labels.back }}
-					</ion-button>
-				</ion-buttons>
-			</ion-toolbar>
-		</template>
+    <template #subheader>
+      <ion-toolbar color="dark">
+        <ion-buttons slot="start">
+          <ion-button @click="goBack()">
+            <ion-icon
+                slot="start"
+                :icon="chevronBackOutline"
+            >
+            </ion-icon>
+            {{ labels.back }}
+          </ion-button>
+        </ion-buttons>
+        <ion-buttons
+            class="toolbar-spacer"
+            slot="end"
+        >
+          <ion-button>
+            <ion-icon
+                slot="end"
+                :icon="chevronBackOutline"
+            >
+            </ion-icon>
+            {{ labels.back }}
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </template>
 
-		<template #content>
-			<ion-toolbar
-				color="light"
-				mode="ios"
-				class="animate__animated animate__fadeIn"
-			>
-				<div class="center-item-content-wrapper">
-					<ion-label class="ion-text-center ion-text-uppercase ">
-						{{ labels.settings }}
-					</ion-label>
-				</div>
-			</ion-toolbar>
-			<ion-card>
-				<ion-card-header class="settings-label">
-					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{ labels.accessibility }}
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item
-						lines="full"
-						class="ion-text-left"
-					>
-						<ion-label>{{ labels.text_size }}</ion-label>
-					</ion-item>
-					<ion-item lines="none">
-						<ion-range
-							min="0"
-							:max="zoomLevels"
-							step="1"
-							debounce="500"
-							snaps="true"
-							ticks="true"
-							:value="state.selectedTextSize"
-							@ionChange="updateSelectedTextSize($event)"
-						>
-							<ion-icon
-								slot="start"
-								:icon="remove"
-							></ion-icon>
-							<ion-icon
-								slot="end"
-								:icon="add"
-							></ion-icon>
-						</ion-range>
-					</ion-item>
-				</ion-card-content>
-			</ion-card>
+    <template #content>
+      <ion-toolbar
+          color="light"
+          mode="ios"
+          class="animate__animated animate__fadeIn"
+      >
+        <div class="center-item-content-wrapper">
+          <ion-label class="ion-text-center ion-text-uppercase ">
+            {{ labels.settings }}
+          </ion-label>
+        </div>
+      </ion-toolbar>
+      <ion-card>
+        <ion-card-header class="settings-label">
+          <ion-card-title class="ion-text-center ion-text-uppercase">
+            {{ labels.accessibility }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="ion-text-left ion-no-padding">
+          <ion-item
+              lines="full"
+              class="ion-text-left"
+          >
+            <ion-label>{{ labels.text_size }}</ion-label>
+          </ion-item>
+          <ion-item lines="none">
+            <ion-range
+                min="0"
+                :max="zoomLevels"
+                step="1"
+                debounce="500"
+                :snaps="true"
+                :ticks="true"
+                :value="state.selectedTextSize"
+                @ionChange="updateSelectedTextSize($event)"
+            >
+              <ion-icon
+                  slot="start"
+                  :icon="remove"
+              ></ion-icon>
+              <ion-icon
+                  slot="end"
+                  :icon="add"
+              ></ion-icon>
+            </ion-range>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
 
-			<ion-card>
-				<ion-card-header class="settings-label">
-					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{ labels.version }}
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item
-						lines="none"
-						class="ion-text-left"
-					>
-						<ion-label>{{ appVersion }}</ion-label>
-					</ion-item>
-				</ion-card-content>
-			</ion-card>
+      <ion-card>
+        <ion-card-header class="settings-label">
+          <ion-card-title class="ion-text-center ion-text-uppercase">
+            {{ labels.version }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="ion-text-left ion-no-padding">
+          <ion-item
+              lines="none"
+              class="ion-text-left"
+          >
+            <ion-label>{{ appVersion }}</ion-label>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
 
-			<ion-card>
-				<ion-card-header class="settings-label">
-					<ion-card-title
-						data-translate="help_us_improve"
-						class="ion-text-center ion-text-uppercase"
-					>
-						{{ labels.help_us_improve }}
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item
-						lines="none"
-						class="ion-text-left"
-					>
-						<ion-toggle
-							data-translate="collect_errors"
-							@ionChange="updateCollectErrors($event)"
-							class="ion-text-wrap"
-							color="secondary"
-							:checked="state.collectErrors"
-						>
-							{{ labels.collect_errors }}
-						</ion-toggle>
-					</ion-item>
-				</ion-card-content>
-			</ion-card>
+      <ion-card>
+        <ion-card-header class="settings-label">
+          <ion-card-title
+              data-translate="help_us_improve"
+              class="ion-text-center ion-text-uppercase"
+          >
+            {{ labels.help_us_improve }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="ion-text-left ion-no-padding">
+          <ion-item
+              lines="none"
+              class="ion-text-left"
+          >
+            <ion-toggle
+                data-translate="collect_errors"
+                @ionChange="updateCollectErrors($event)"
+                class="ion-text-wrap"
+                color="secondary"
+                :checked="state.collectErrors"
+            >
+              {{ labels.collect_errors }}
+            </ion-toggle>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+      <ion-card>
+        <ion-card-header class="settings-label">
+          <ion-card-title
+              data-translate="recovery"
+              class="ion-text-center ion-text-uppercase"
+          >
+            {{ labels.recovery }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <grid-question-narrow>
+            <template #content>
+              <ion-button color="secondary"
+                          expand="block"
+                          @click="exportDatabase()"
+              >
+                <ion-icon
+                    slot="start"
+                    :icon="archiveOutline"
+                ></ion-icon>
+                {{ labels.export_database }}
+               &nbsp;<sup>BETA</sup>
+              </ion-button>
+            </template>
+          </grid-question-narrow>
+        </ion-card-content>
+      </ion-card>
 
-			<ion-card v-if="isDebug || hasEasterEggProject">
-				<ion-card-header class="settings-label">
-					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{ labels.advanced_settings }}
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-center ion-no-padding">
-					<ion-item>
-						<ion-label color="dark">{{ labels.server_url }}
-						</ion-label>
-					</ion-item>
-					<ion-item lines="none">
-						<input
-							class="full-width"
-							type="text"
-							v-model="state.serverUrl"
-						/>
-					</ion-item>
-				</ion-card-content>
-			</ion-card>
+      <ion-card v-if="isDebug || hasEasterEggProject">
+        <ion-card-header class="settings-label">
+          <ion-card-title class="ion-text-center ion-text-uppercase">
+            {{ labels.advanced_settings }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="ion-text-center ion-no-padding">
+          <ion-item>
+            <ion-label color="dark">{{ labels.server_url }}
+            </ion-label>
+          </ion-item>
+          <ion-item lines="none">
+            <input
+                class="full-width"
+                type="text"
+                v-model="state.serverUrl"
+            />
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
 
-		</template>
-	</base-layout>
+    </template>
+  </base-layout>
 </template>
 
 <script>
-import { chevronBackOutline, add, remove, checkmark } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
-import { onMounted } from 'vue';
-import { STRINGS } from '@/config/strings';
-import { useRootStore } from '@/stores/root-store';
-import { useRouter } from 'vue-router';
-import { PARAMETERS } from '@/config';
-import { useBackButton } from '@ionic/vue';
-import { databaseInsertService } from '@/services/database/database-insert-service';
-import { notificationService } from '@/services/notification-service';
-import { rollbarService } from '@/services/utilities/rollbar-service';
+import {chevronBackOutline, add, remove, checkmark, archiveOutline} from 'ionicons/icons';
+import {onMounted, reactive, computed} from 'vue';
+import {STRINGS} from '@/config/strings';
+import {useRootStore} from '@/stores/root-store';
+import {useRouter} from 'vue-router';
+import {PARAMETERS} from '@/config';
+import {useBackButton} from '@ionic/vue';
+import {databaseInsertService} from '@/services/database/database-insert-service';
+import {notificationService} from '@/services/notification-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
+import {databaseExportService} from '@/services/database/database-export-service';
+import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
+import {Capacitor} from '@capacitor/core';
+import {utilsService} from '@/services/utilities/utils-service';
 
 export default {
-	components: {},
-	setup() {
-		const rootStore = useRootStore();
-		const language = rootStore.language;
-		const labels = STRINGS[language].labels;
-		const router = useRouter();
-		const state = reactive({
-			serverUrl: rootStore.serverUrl,
-			selectedTextSize: rootStore.selectedTextSize,
-			collectErrors: rootStore.collectErrors,
-			isSaving: false
-		});
-		const zoomLevels = PARAMETERS.ZOOM_LEVELS;
+  components: {GridQuestionNarrow},
+  setup() {
+    const rootStore = useRootStore();
+    const language = rootStore.language;
+    const labels = STRINGS[language].labels;
+    const router = useRouter();
+    const state = reactive({
+      serverUrl: rootStore.serverUrl,
+      selectedTextSize: rootStore.selectedTextSize,
+      collectErrors: rootStore.collectErrors,
+      isSaving: false
+    });
+    const zoomLevels = PARAMETERS.ZOOM_LEVELS;
 
-		const computedScope = {
-			appVersion: computed(() => {
-				return rootStore.app.name + ' v ' + rootStore.app.version;
-			}),
-			isDebug: computed(() => {
-				return PARAMETERS.DEBUG;
-			}),
-			hasEasterEggProject: computed(() => {
-				return rootStore.easterEgg;
-			})
-		};
+    const computedScope = {
+      appVersion: computed(() => {
+        return rootStore.app.name + ' v ' + rootStore.app.version;
+      }),
+      isDebug: computed(() => {
+        return PARAMETERS.DEBUG;
+      }),
+      hasEasterEggProject: computed(() => {
+        return rootStore.easterEgg;
+      })
+    };
 
-		const methods = {
-			goBack() {
-				router.replace({
-					name: rootStore.nextRoute,
-					query: { ...rootStore.routeParams }
-				});
-			},
-			async saveSettings() {
-				let failed = false;
-				await notificationService.showProgressDialog();
-				state.isSaving = true;
-				//change zoom level
-				//remove any zoom class
-				for (let i = 0; i <= zoomLevels; i++) {
-					document.body.classList.remove('zoom-' + i);
-				}
-				//add selected zoom level class
-				document.body.classList.add('zoom-' + state.selectedTextSize);
+    const methods = {
+      goBack() {
+        router.replace({
+          name: rootStore.nextRoute,
+          query: {...rootStore.routeParams}
+        });
+      },
+      async saveSettings() {
+        let failed = false;
+        await notificationService.showProgressDialog();
+        state.isSaving = true;
+        //change zoom level
+        //remove any zoom class
+        for (let i = 0; i <= zoomLevels; i++) {
+          document.body.classList.remove('zoom-' + i);
+        }
+        //add selected zoom level class
+        document.body.classList.add('zoom-' + state.selectedTextSize);
 
-				//update db
-				Object.values(PARAMETERS.SETTINGS_KEYS).forEach(async (key) => {
-					console.log(key);
+        //update db
+        for (const key of Object.values(PARAMETERS.SETTINGS_KEYS)) {
+          console.log(key);
 
-					switch (key) {
-						case PARAMETERS.SETTINGS_KEYS.SERVER_URL:
-							try {
-								// Remove trailing slash
-								const trimmedUrl = state.serverUrl.replace(/\/$/, '');
-								await databaseInsertService.insertSetting(key, trimmedUrl);
-								rootStore.serverUrl = trimmedUrl;
-							} catch (error) {
-								console.log(error);
-								failed = true;
-							}
-							break;
-						case PARAMETERS.SETTINGS_KEYS.SELECTED_TEXT_SIZE:
-							try {
-								await databaseInsertService.insertSetting(key, state.selectedTextSize);
-								rootStore.selectedTextSize = state.selectedTextSize;
-							} catch (error) {
-								console.log(error);
-								failed = true;
-							}
-							break;
-						case PARAMETERS.SETTINGS_KEYS.COLLECT_ERRORS:
+          switch (key) {
+            case PARAMETERS.SETTINGS_KEYS.SERVER_URL:
+              try {
+                // Remove trailing slash
+                const trimmedUrl = state.serverUrl.replace(/\/$/, '');
+                await databaseInsertService.insertSetting(key, trimmedUrl);
+                rootStore.serverUrl = trimmedUrl;
+              } catch (error) {
+                console.log(error);
+                failed = true;
+              }
+              break;
+            case PARAMETERS.SETTINGS_KEYS.SELECTED_TEXT_SIZE:
+              try {
+                await databaseInsertService.insertSetting(key, state.selectedTextSize);
+                rootStore.selectedTextSize = state.selectedTextSize;
+              } catch (error) {
+                console.log(error);
+                failed = true;
+              }
+              break;
+            case PARAMETERS.SETTINGS_KEYS.COLLECT_ERRORS:
 
-							try {
-								await databaseInsertService.insertSetting(key, state.collectErrors);
-								rootStore.collectErrors = state.collectErrors;
-							} catch (error) {
-								console.log(error);
-								failed = true;
-							}
-							break;
-					}
-				});
+              try {
+                await databaseInsertService.insertSetting(key, state.collectErrors);
+                rootStore.collectErrors = state.collectErrors;
+              } catch (error) {
+                console.log(error);
+                failed = true;
+              }
+              break;
+          }
+        }
 
-				notificationService.hideProgressDialog();
-				state.isSaving = false;
-				if (failed) {
-					notificationService.showAlert(labels.unknown_error, labels.error);
-				} else {
-					notificationService.showToast(STRINGS[language].status_codes.ec5_123);
-				}
-			},
-			updateSelectedTextSize(e) {
-				state.selectedTextSize = e.detail.value;
-				rootStore.selectedTextSize = state.selectedTextSize;
-			},
-			updateCollectErrors(e) {
-				state.collectErrors = e.detail.checked;
-				rootStore.collectErrors = state.collectErrors;
-				console.log('Rollbar reporting ->', rootStore.collectErrors);
-				rollbarService.configure({ enabled: Boolean(rootStore.collectErrors) });
-			}
-		};
+        notificationService.hideProgressDialog();
+        state.isSaving = false;
+        if (failed) {
+          await notificationService.showAlert(labels.unknown_error, labels.error);
+        } else {
+          notificationService.showToast(STRINGS[language].status_codes.ec5_123);
+        }
+      },
+      updateSelectedTextSize(e) {
+        state.selectedTextSize = e.detail.value;
+        rootStore.selectedTextSize = state.selectedTextSize;
+      },
+      updateCollectErrors(e) {
+        state.collectErrors = e.detail.checked;
+        rootStore.collectErrors = state.collectErrors;
+        console.log('Rollbar reporting ->', rootStore.collectErrors);
+        rollbarService.configure({enabled: Boolean(rootStore.collectErrors)});
+      },
+      async exportDatabase() {
+        if (Capacitor.isNativePlatform()) {
+          try {
+            await notificationService.showProgressDialog(labels.wait);
+            await databaseExportService.exportDatabase();
+            const documentsFolder = utilsService.getPlatformDocumentsFolder();
 
-		onMounted(() => {
-			console.log('Component Settings is mounted!');
-		});
+            //Warn users and show the download folder according to the platform
+            if (rootStore.device.platform === PARAMETERS.ANDROID) {
+              //Show path for Android
+              const message = documentsFolder + ' > ' + PARAMETERS.APP_NAME + ' > ' + 'recovery';
+              await notificationService.showAlert(
+                  message,
+                  labels.database_exported
+              );
+            }
+            if (rootStore.device.platform === PARAMETERS.IOS) {
+              await notificationService.showAlert(
+                  '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + 'recovery',
+                  labels.database_exported
+              );
+            }
+          } catch (error) {
+            console.log(error);
+            await notificationService.showAlert(labels.unknown_error, labels.error);
+          }
+          finally {
+            notificationService.hideProgressDialog();
+          }
+        } else {
+          await notificationService.showAlert(labels.not_available);
+        }
+      }
+    };
 
-		//back to projects list with back button (Android)
-		useBackButton(10, () => {
-			console.log(window.history);
-			if (!state.isSaving) {
-				methods.goBack();
-			}
-		});
+    onMounted(() => {
+      console.log('Component Settings is mounted!');
+    });
 
-		return {
-			labels,
-			...methods,
-			...computedScope,
-			state,
-			zoomLevels,
-			//icons
-			chevronBackOutline,
-			add,
-			remove,
-			checkmark
-		};
-	}
+    //back to projects list with back button (Android)
+    useBackButton(10, () => {
+      console.log(window.history);
+      if (!state.isSaving) {
+        methods.goBack();
+      }
+    });
+
+    return {
+      labels,
+      ...methods,
+      ...computedScope,
+      state,
+      zoomLevels,
+      //icons
+      chevronBackOutline,
+      add,
+      remove,
+      checkmark,
+      archiveOutline
+    };
+  }
 };
 </script>
 
 <style
-	lang="scss"
-	scoped
+    lang="scss"
+    scoped
 ></style>

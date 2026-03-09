@@ -11,6 +11,7 @@ import {STRINGS} from '@/config/strings';
 import axios from 'axios';
 import {Filesystem, Directory} from '@capacitor/filesystem';
 
+
 export const initService = {
 
     async getDeviceInfo() {
@@ -41,12 +42,15 @@ export const initService = {
     async initDatabaseIOS() {
         let dbLocation = 'default';
         const dbName = PARAMETERS.DB_NAME;
+        const rootStore = useRootStore();
 
         // 1. Wait for migration
         const isPrivateReady = await this.migrateLegacyDatabase();
 
         if (!isPrivateReady) {
             console.warn('Migration failed. Falling back to Documents.');
+            //Legacy fallback, as db location was Documents before, and we don't want to break existing users.
+            //https://github.com/storesafe/cordova-sqlite-storage?tab=readme-ov-file#opening-a-database
             dbLocation = 'Documents';
         }
 
@@ -57,6 +61,8 @@ export const initService = {
                 iosDatabaseLocation: dbLocation
             }, () => {
                 console.log(`Database opened successfully at: ${dbLocation}`);
+                // Store the location in the root store for use by export service
+                rootStore.iosDatabaseLocation = dbLocation;
                 // Resolve the promise with the db instance
                 resolve(db);
             }, (err) => {
@@ -261,7 +267,7 @@ export const initService = {
         const self = this;
         let deviceLanguage = PARAMETERS.DEFAULT_LANGUAGE; //en
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             if (navigator.globalization) {
                 navigator.globalization.getPreferredLanguage(
                     function (language) {
@@ -457,7 +463,7 @@ export const initService = {
                         PARAMETERS.DEFAULT_SERVER_URL,
                         DEMO_PROJECT.LAST_UPDATED,
                         DEMO_PROJECT.MAPPING
-                    ).then((res) => {
+                    ).then((_res) => {
                         resolve();
                     }, (error) => {
                         reject(error);
@@ -500,7 +506,7 @@ export const initService = {
                 }
 
                 //if we have a row, user made changes, check status
-                resolve(res.rows.item(0).value === 'true' ? true : false);
+                resolve(res.rows.item(0).value === 'true');
             }, function (error) {
                 reject(error);
             });
@@ -509,7 +515,7 @@ export const initService = {
 
     async retrieveJwtToken() {
         const rootStore = useRootStore();
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve, _reject) {
             databaseSelectService.getUser().then(async function (response) {
 
                 const user = {};

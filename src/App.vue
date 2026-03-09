@@ -35,8 +35,6 @@ export default {
       })
     };
 
-
-
     // noinspection JSDeprecatedSymbols
     CapacitorApp.addListener('appUrlOpen', async (data) => {
 
