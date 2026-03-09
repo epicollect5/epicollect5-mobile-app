@@ -65,14 +65,17 @@ export const databaseExportService = {
             'unique_answers', 'temp_unique_answers',
             'bookmarks', 'settings'
         ];
-        for (const table of tablesToDrop) {
-            await new Promise((resolve, reject) => {
-                db.transaction(
-                    (tx) => tx.executeSql(`DROP TABLE IF EXISTS ${table}`, [], resolve, reject),
-                    reject
-                );
-            });
-        }
+        await new Promise((resolve, reject) => {
+            db.transaction(
+                (tx) => {
+                    for (const table of tablesToDrop) {
+                        tx.executeSql(`DROP TABLE IF EXISTS ${table}`);
+                    }
+                },
+                reject, // error callback for the transaction
+                resolve // success callback for the transaction
+            );
+        });
     },
 
     async moveToDocuments(copyDbName, exportPath) {
