@@ -1,6 +1,8 @@
 export const STRINGS = {
     en: {
         labels: {
+            export_database: 'Export Database',
+            database_exported: 'Database exported',
             entries_exported: 'Entries exported',
             saving_with_encoding: 'Upload with media encoding.\n\nThis will take some time.\n\nDo not close this tab',
             media_exported: 'Media exported',
@@ -253,6 +255,8 @@ export const STRINGS = {
     },
     it: {
         labels: {
+            export_database: 'Esporta Database',
+            database_exported: 'Database esportato',
             entries_exported: 'Voci esportate',
             saving_with_encoding: 'Carica con codifica media.\n\nCi vorrà un po\' di tempo.\n\nNon chiudere questa scheda',
             media_exported: 'Media Esportati',
@@ -505,6 +509,8 @@ export const STRINGS = {
     },
     es: {
         labels: {
+            export_database: 'Exportar Base de datos',
+            database_exported: 'Base de datos exportada',
             entries_exported: 'Entradas exportadas',
             saving_with_encoding: 'Subir con codificación media.\n\nEsto tomará un tiempo.\n\nNo cierre esta pestaña.',
             media_exported: 'Media exportada',
@@ -757,6 +763,8 @@ export const STRINGS = {
     },
     fr: {
         labels: {
+            export_database: 'Exporter Base de données',
+            database_exported: 'Base de données exportée',
             entries_exported: 'Entrées exportées',
             saving_with_encoding: 'Téléverser avec encodage medias.\n\nCela peut prendre un certain temps.\n\nNe fermez pas cet onglet.',
             media_exported: 'Médias exportés',
@@ -1009,6 +1017,8 @@ export const STRINGS = {
     },
     pl: {
         labels: {
+            export_database: 'Eksportuj bazę danych',
+            database_exported: 'Baza danych wyeksportowana',
             entries_exported: 'Wpisy wyeksportowane',
             saving_with_encoding : 'Wysyłanie z kodowaniem media.\n\nTo może potrwać trochę czasu.\n\nNie zamykaj tej karty.',
             media_exported: 'Media eksportowane',
@@ -1261,6 +1271,8 @@ export const STRINGS = {
     },
     pt: {
         labels: {
+            export_database: 'Exportar Base de dados',
+            database_exported: 'Base de dados exportada',
             entries_exported: 'Entradas exportadas',
             saving_with_encoding: 'Carregando com codificação.\n\nIsso pode levar algum tempo.\n\nNão feche esta guia.',
             media_exported: 'Multimídia exportada',
@@ -1513,6 +1525,8 @@ export const STRINGS = {
     },
     ca: {
         labels: {
+            export_database: 'Exportar base de dades',
+            database_exported: 'Base de dades exportada',
             entries_exported: 'Entrades exportades',
             saving_with_encoding: 'Carregant amb codificació.\n\nAixò pot trigar algun temps.\n\nNo tanqui aquesta pestanya.',
             media_exported: 'Mídia exportada',
@@ -1765,6 +1779,8 @@ export const STRINGS = {
     },
     sl:{
         labels: {
+            export_database: 'Izvozi bazo podatkov',
+            database_exported: 'Baza podatkov izvožena',
             entries_exported: 'Izvoženi vnosi',
             saving_with_encoding: 'Prenos z kodiranjem.\n\nTo lahko traja nekaj časa.\n\nNe zaprite te zavihke.',
             media_exported: 'Mediji so izvozni',
@@ -2017,6 +2033,8 @@ export const STRINGS = {
     },
     de: {
         labels: {
+            export_database: 'Datenbank exportieren',
+            database_exported: 'Datenbank exportiert',
             entries_exported: 'Einträge exportiert',
             saving_with_encoding: 'Mit Kodierung hochladen.\n\nDies wird eine Weile dauern.\n\nSchließen Sie diesen Tab nicht.',
             media_exported: 'Medien exportiert',
