@@ -1,7 +1,5 @@
 import {Filesystem, Directory} from '@capacitor/filesystem';
 import {utilsService} from '@/services/utilities/utils-service';
-import {notificationService} from '@/services/notification-service';
-import {STRINGS} from '@/config/strings';
 import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
 
@@ -10,6 +8,11 @@ export const databaseExportService = {
     getPluginDbDirectory() {
         const rootStore = useRootStore();
         if (rootStore.device.platform === PARAMETERS.IOS) {
+            const location = rootStore.iosDatabaseLocation || 'default';
+            if (location === 'Documents') {
+                return cordova.file.documentsDirectory;
+            }
+            // 'default' location uses Library/LocalDatabase/
             return cordova.file.applicationStorageDirectory + 'Library/LocalDatabase/';
         }
         // Android
@@ -18,8 +21,19 @@ export const databaseExportService = {
 
     openDatabase(dbName) {
         return new Promise((resolve, reject) => {
+            const rootStore = useRootStore();
+            const dbConfig = {name: dbName};
+
+            // For iOS, use the stored iosDatabaseLocation
+            if (rootStore.device.platform === PARAMETERS.IOS) {
+                dbConfig.iosDatabaseLocation = rootStore.iosDatabaseLocation || 'default';
+            } else {
+                // For Android, use location: 'default'
+                dbConfig.location = 'default';
+            }
+
             const db = window.sqlitePlugin.openDatabase(
-                {name: dbName, location: 'default'},
+                dbConfig,
                 () => resolve(db),
                 (err) => reject(err)
             );
@@ -28,6 +42,10 @@ export const databaseExportService = {
 
     closeDatabase(db) {
         return new Promise((resolve, reject) => {
+            if (!db) {
+                resolve();
+                return;
+            }
             db.close(resolve, reject);
         });
     },
@@ -85,26 +103,22 @@ export const databaseExportService = {
             // Step 2: Open the copy via sqlitePlugin and drop unnecessary tables
             copyDb = await this.openDatabase(copyDbName);
             await this.dropUnnecessaryTables(copyDb);
+            await this.closeDatabase(copyDb);
             copyDb = null;
 
             // Step 3: Read cleaned copy and write to Documents, then delete the copy
             const exportPath = utilsService.getExportPath('/recovery/' + PARAMETERS.DB_NAME);
             await this.moveToDocuments(copyDbName, exportPath);
-
-            notificationService.showToast(STRINGS.databaseExported);
         } catch (error) {
             console.error('Error exporting database:', error);
-
             try {
                 await Filesystem.deleteFile({path: this.getPluginDbDirectory() + copyDbName});
                 // eslint-disable-next-line no-empty
             } catch (_) {
             }
 
-            notificationService.showToast(STRINGS.databaseExportError);
             throw error;
-        }
-        finally {
+        } finally {
             await this.closeDatabase(copyDb);
         }
     }

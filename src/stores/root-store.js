@@ -9,6 +9,7 @@ export const useRootStore = defineStore('RootStore', {
             isPWA: false,
             app: {},
             language: PARAMETERS.DEFAULT_LANGUAGE,
+            iosDatabaseLocation: 'default',
             tempDir: '',
             persistentDir: '',
             hierarchyNavigation: [],

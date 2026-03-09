@@ -143,7 +143,7 @@
               data-translate="help_us_improve"
               class="ion-text-center ion-text-uppercase"
           >
-            recovery
+            {{ labels.recovery }}
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
@@ -192,8 +192,7 @@
 
 <script>
 import {chevronBackOutline, add, remove, checkmark, archiveOutline} from 'ionicons/icons';
-import {reactive, computed} from '@vue/reactivity';
-import {onMounted} from 'vue';
+import {onMounted, reactive, computed} from 'vue';
 import {STRINGS} from '@/config/strings';
 import {useRootStore} from '@/stores/root-store';
 import {useRouter} from 'vue-router';

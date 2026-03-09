@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { Filesystem } from '@capacitor/filesystem';
+import { useRootStore } from '@/stores/root-store';
 
 // 1. Mock Capacitor Filesystem
 vi.mock('@capacitor/filesystem', () => ({
@@ -77,6 +78,36 @@ describe('Init Service', () => {
                 directory: 'DOCUMENTS'
             }));
             integritySpy.mockRestore();
+        });
+    });
+
+    describe('initDatabaseIOS()', () => {
+        it('stores default iosDatabaseLocation in root store when migration succeeds', async () => {
+            const mockDb = { id: 'ios-db' };
+            window.sqlitePlugin.openDatabase.mockReturnValue(mockDb);
+
+            // Mock successful migration
+            vi.spyOn(initService, 'migrateLegacyDatabase').mockResolvedValue(true);
+
+            const rootStore = useRootStore();
+            const db = await initService.initDatabaseIOS();
+
+            expect(db.id).toBe('ios-db');
+            expect(rootStore.iosDatabaseLocation).toBe('default');
+        });
+
+        it('stores Documents iosDatabaseLocation in root store when migration fails', async () => {
+            const mockDb = { id: 'ios-db' };
+            window.sqlitePlugin.openDatabase.mockReturnValue(mockDb);
+
+            // Mock failed migration
+            vi.spyOn(initService, 'migrateLegacyDatabase').mockResolvedValue(false);
+
+            const rootStore = useRootStore();
+            const db = await initService.initDatabaseIOS();
+
+            expect(db.id).toBe('ios-db');
+            expect(rootStore.iosDatabaseLocation).toBe('Documents');
         });
     });
 

@@ -1,6 +1,7 @@
 export const STRINGS = {
     en: {
         labels: {
+            recovery:'Recovery',
             export_database: 'Export Database',
             database_exported: 'Database exported',
             entries_exported: 'Entries exported',
@@ -255,6 +256,7 @@ export const STRINGS = {
     },
     it: {
         labels: {
+            recovery:'Recupero',
             export_database: 'Esporta Database',
             database_exported: 'Database esportato',
             entries_exported: 'Voci esportate',
@@ -509,6 +511,7 @@ export const STRINGS = {
     },
     es: {
         labels: {
+            recovery:'Recuperación',
             export_database: 'Exportar Base de datos',
             database_exported: 'Base de datos exportada',
             entries_exported: 'Entradas exportadas',
@@ -763,6 +766,7 @@ export const STRINGS = {
     },
     fr: {
         labels: {
+            recovery:'Récupération',
             export_database: 'Exporter Base de données',
             database_exported: 'Base de données exportée',
             entries_exported: 'Entrées exportées',
@@ -1017,6 +1021,7 @@ export const STRINGS = {
     },
     pl: {
         labels: {
+            recovery:'Odzyskiwanie',
             export_database: 'Eksportuj bazę danych',
             database_exported: 'Baza danych wyeksportowana',
             entries_exported: 'Wpisy wyeksportowane',
@@ -1271,6 +1276,7 @@ export const STRINGS = {
     },
     pt: {
         labels: {
+            recovery:'Recuperação',
             export_database: 'Exportar Base de dados',
             database_exported: 'Base de dados exportada',
             entries_exported: 'Entradas exportadas',
@@ -1525,6 +1531,7 @@ export const STRINGS = {
     },
     ca: {
         labels: {
+            recovery:'Recuperació',
             export_database: 'Exportar base de dades',
             database_exported: 'Base de dades exportada',
             entries_exported: 'Entrades exportades',
@@ -1779,6 +1786,7 @@ export const STRINGS = {
     },
     sl:{
         labels: {
+            recovery:'Obnova',
             export_database: 'Izvozi bazo podatkov',
             database_exported: 'Baza podatkov izvožena',
             entries_exported: 'Izvoženi vnosi',
@@ -2033,6 +2041,7 @@ export const STRINGS = {
     },
     de: {
         labels: {
+            recovery:'Wiederherstellung',
             export_database: 'Datenbank exportieren',
             database_exported: 'Datenbank exportiert',
             entries_exported: 'Einträge exportiert',

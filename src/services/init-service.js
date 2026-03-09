@@ -11,6 +11,7 @@ import {STRINGS} from '@/config/strings';
 import axios from 'axios';
 import {Filesystem, Directory} from '@capacitor/filesystem';
 
+
 export const initService = {
 
     async getDeviceInfo() {
@@ -41,12 +42,15 @@ export const initService = {
     async initDatabaseIOS() {
         let dbLocation = 'default';
         const dbName = PARAMETERS.DB_NAME;
+        const rootStore = useRootStore();
 
         // 1. Wait for migration
         const isPrivateReady = await this.migrateLegacyDatabase();
 
         if (!isPrivateReady) {
             console.warn('Migration failed. Falling back to Documents.');
+            //Legacy fallback, as db location was Documents before, and we don't want to break existing users.
+            //https://github.com/storesafe/cordova-sqlite-storage?tab=readme-ov-file#opening-a-database
             dbLocation = 'Documents';
         }
 
@@ -57,6 +61,8 @@ export const initService = {
                 iosDatabaseLocation: dbLocation
             }, () => {
                 console.log(`Database opened successfully at: ${dbLocation}`);
+                // Store the location in the root store for use by export service
+                rootStore.iosDatabaseLocation = dbLocation;
                 // Resolve the promise with the db instance
                 resolve(db);
             }, (err) => {
