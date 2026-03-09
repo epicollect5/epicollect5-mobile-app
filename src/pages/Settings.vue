@@ -140,7 +140,7 @@
       <ion-card>
         <ion-card-header class="settings-label">
           <ion-card-title
-              data-translate="help_us_improve"
+              data-translate="recovery"
               class="ion-text-center ion-text-uppercase"
           >
             {{ labels.recovery }}

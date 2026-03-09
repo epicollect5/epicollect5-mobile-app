@@ -1,7 +1,7 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
-import { Filesystem } from '@capacitor/filesystem';
-import { useRootStore } from '@/stores/root-store';
+import {vi, describe, it, expect, beforeEach, afterEach} from 'vitest';
+import {setActivePinia, createPinia} from 'pinia';
+import {Filesystem} from '@capacitor/filesystem';
+import {useRootStore} from '@/stores/root-store';
 
 // 1. Mock Capacitor Filesystem
 vi.mock('@capacitor/filesystem', () => ({
@@ -83,8 +83,12 @@ describe('Init Service', () => {
 
     describe('initDatabaseIOS()', () => {
         it('stores default iosDatabaseLocation in root store when migration succeeds', async () => {
-            const mockDb = { id: 'ios-db' };
-            window.sqlitePlugin.openDatabase.mockReturnValue(mockDb);
+            const mockDb = {id: 'ios-db'};
+            window.sqlitePlugin.openDatabase.mockImplementation((config, success) => {
+                // Defer so the service's 'db' variable is assigned before success fires
+                Promise.resolve().then(() => success());
+                return mockDb;
+            });
 
             // Mock successful migration
             vi.spyOn(initService, 'migrateLegacyDatabase').mockResolvedValue(true);
@@ -97,8 +101,12 @@ describe('Init Service', () => {
         });
 
         it('stores Documents iosDatabaseLocation in root store when migration fails', async () => {
-            const mockDb = { id: 'ios-db' };
-            window.sqlitePlugin.openDatabase.mockReturnValue(mockDb);
+            const mockDb = {id: 'ios-db'};
+            window.sqlitePlugin.openDatabase.mockImplementation((config, success) => {
+                // Defer so the service's 'db' variable is assigned before success fires
+                Promise.resolve().then(() => success());
+                return mockDb;
+            });
 
             // Mock failed migration
             vi.spyOn(initService, 'migrateLegacyDatabase').mockResolvedValue(false);
@@ -113,14 +121,14 @@ describe('Init Service', () => {
 
     describe('openDB()', () => {
         it('opens WebSQL on web platform', async () => {
-            window.openDatabase = vi.fn().mockReturnValue({ id: 'web-db' });
+            window.openDatabase = vi.fn().mockReturnValue({id: 'web-db'});
 
             const result = await initService.openDB('web');
             expect(result.id).toBe('web-db');
         });
 
         it('waits for deviceready and opens Android SQLite', async () => {
-            const mockDb = { id: 'android-db' };
+            const mockDb = {id: 'android-db'};
             window.sqlitePlugin.openDatabase.mockReturnValue(mockDb);
 
             const promise = initService.openDB('android');
@@ -146,7 +154,7 @@ describe('Init Service', () => {
                     // Simulate the SQL result object
                     success(mockTx, {
                         rows: {
-                            item: () => ({ integrity_check: 'ok' })
+                            item: () => ({integrity_check: 'ok'})
                         }
                     });
                 })
