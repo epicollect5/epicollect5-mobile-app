@@ -70,13 +70,16 @@ export const mediaDirsService = {
         });
     },
 
-    async removeExternalMediaDirs(projectSlug) {
-        const documentsFolder = utilsService.getPlatformDocumentsFolder();
+    async removeExternalMediaDirs(projectSlug, destination = Directory.Documents) {
+        // if takeout, target Directory.Data instead due to permissions.
+        const documentsFolder = destination === Directory.Data
+            ? Directory.Data
+            : utilsService.getPlatformDocumentsFolder();
         if (!documentsFolder) {
             return true;
         }
 
-        const baseMediaPath = utilsService.getExportPath(projectSlug);
+        const baseMediaPath = utilsService.getExportPath(projectSlug, destination);
 
         const mediaDirs = [
             PARAMETERS.PHOTO_DIR,

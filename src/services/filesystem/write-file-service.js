@@ -7,14 +7,14 @@ import { utilsService } from '@/services/utilities/utils-service';
 
 export const writeFileService = {
 
-    async appendCSVRow (headers, row, formRef, offset, branchRef) {
-        const filepath = this.getFilePath(formRef, branchRef);
+    async appendCSVRow (headers, row, formRef, offset, branchRef, destination = Directory.Documents) {
+        const filepath = this.getCSVFilePath(formRef, branchRef, destination);
 
         if (offset === 0) {
             await Filesystem.writeFile({
                 path: filepath,
                 data: headers,
-                directory: Directory.Documents,
+                directory: destination,
                 encoding: Encoding.UTF8,
                 recursive: true
             });
@@ -25,13 +25,13 @@ export const writeFileService = {
             await Filesystem.appendFile({
                 path: filepath,
                 data: '\r\n' + row,
-                directory: Directory.Documents,
+                directory: destination,
                 encoding: Encoding.UTF8
             });
         }
     },
 
-    getFilePath (formRef, branchRef) {
+    getCSVFilePath (formRef, branchRef, destination = Directory.Documents) {
         const projectSlug = projectModel.getSlug();
         const mappings = projectModel.getProjectMappings();
         const projectExtra = projectModel.getProjectExtra();
@@ -64,7 +64,7 @@ export const writeFileService = {
             // formIndex + 1 to start from 1
             filename = utilsService.generateFilenameForExport('form-' + (formIndex + 1), formName);
         }
-        const folder = utilsService.getExportPath(projectSlug);
+        const folder = utilsService.getExportPath(projectSlug, destination);
 
         path = folder + '/data/' + filename + '.csv';
         return path;

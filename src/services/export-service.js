@@ -9,10 +9,13 @@ import {mediaDirsService} from '@/services/filesystem/media-dirs-service';
 import {writeFileService} from '@/services/filesystem/write-file-service';
 import {PARAMETERS} from '@/config';
 import {Capacitor} from '@capacitor/core';
+import {CapacitorZip} from '@capgo/capacitor-zip';
+import {Directory, Filesystem} from '@capacitor/filesystem';
+import {Share} from '@capacitor/share';
 
 export const exportService = {
 
-    async exportHierarchyEntries(projectRef) {
+    async exportHierarchyEntries(projectRef, directory = Directory.Documents) {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -86,7 +89,14 @@ export const exportService = {
                         //write entry to file if native platform
                         if (Capacitor.isNativePlatform()) {
                             try {
-                                await writeFileService.appendCSVRow(headers, row, formRef, offset, null);
+                                await writeFileService.appendCSVRow(
+                                    headers,
+                                    row,
+                                    formRef,
+                                    offset,
+                                    null,
+                                    directory
+                                );
                             } catch (error) {
                                 reject(error);
                                 return;
@@ -122,7 +132,7 @@ export const exportService = {
             });
         });
     },
-    async exportBranchEntries(projectRef) {
+    async exportBranchEntries(projectRef, directory = Directory.Documents) {
 
         const branches = [];
         const debugLines = [];
@@ -208,7 +218,14 @@ export const exportService = {
                             //write entry to file on native platform
                             if (Capacitor.isNativePlatform()) {
                                 try {
-                                    await writeFileService.appendCSVRow(headers, row, branch.formRef, offset, branch.branchRef);
+                                    await writeFileService.appendCSVRow(
+                                        headers,
+                                        row,
+                                        branch.formRef,
+                                        offset,
+                                        branch.branchRef,
+                                        directory
+                                    );
                                 } catch (error) {
                                     reject(error);
                                     return;
@@ -242,13 +259,80 @@ export const exportService = {
             }());
         });
     },
-    async exportMedia(projectRef, projectSlug) {
+    async exportMedia(projectRef, projectSlug, directory = Directory.Documents) {
         try {
-            await mediaDirsService.removeExternalMediaDirs(projectSlug);
-            await exportMediaService.execute(projectRef, projectSlug);
+            await mediaDirsService.removeExternalMediaDirs(projectSlug, directory);
+            await exportMediaService.execute(projectRef, projectSlug, directory);
         } catch (error) {
             console.log(error);
             throw error;
+        }
+    },
+    async exportEntries(projectRef, projectSlug) {
+        const projectName = projectModel.getProjectName();
+        const dateOnly = new Date().toISOString().split('T')[0];
+        const zipFileName = `Epicollect5_${projectSlug}_${dateOnly}.zip`;
+        const archivePath = `archive/${projectSlug}`;
+        try {
+            // Wipe previous archive if exists
+            await Filesystem.rmdir({
+                path: archivePath,
+                directory: Directory.Data,
+                recursive: true
+            }).catch(() => {
+            });
+
+            // Write everything directly to Data/archive/
+            await exportService.exportHierarchyEntries(projectRef, Directory.Data);
+            await exportService.exportBranchEntries(projectRef, Directory.Data);
+            await exportService.exportMedia(projectRef, projectSlug, Directory.Data);
+
+            // Zip from Data/archive/ → Cache
+            const sourceResult = await Filesystem.getUri({
+                directory: Directory.Data,
+                path: archivePath
+            });
+            const destResult = await Filesystem.getUri({
+                directory: Directory.Cache,
+                path: zipFileName
+            });
+
+            const sourcePath = sourceResult.uri.replace('file://', '');
+            const destPath = destResult.uri.replace('file://', '');
+
+            const check = await Filesystem.readdir({
+                path: archivePath,
+                directory: Directory.Data
+            });
+            console.log('ARCHIVE CONTENTS:', JSON.stringify(check));
+
+            await CapacitorZip.zip({
+                source: sourcePath,
+                destination: destPath
+            });
+
+            await Share.share({
+                title: `Epicollect5 -- ${projectName}`,
+                url: destResult.uri
+            });
+
+        } catch (error) {
+            console.error('Archive failed:', error);
+            throw error;
+        } finally {
+            // Always cleanup
+            await Filesystem.rmdir({
+                path: `archive/${projectSlug}`,
+                directory: Directory.Data,
+                recursive: true
+            }).catch(() => {
+            });
+
+            await Filesystem.deleteFile({
+                path: zipFileName,
+                directory: Directory.Cache
+            }).catch(() => {
+            });
         }
     }
 };

@@ -15,17 +15,19 @@ import {utilsService} from '@/services/utilities/utils-service';
 
 export const exportMediaService = {
 
-    async execute(projectRef, projectSlug) {
+    async execute(projectRef, projectSlug, destinationFolder = Directory.Documents) {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
 
-        const permResult = await Filesystem.requestPermissions();
-        if (permResult.publicStorage !== 'granted') {
-            throw labels.missing_permission;
+        // Only request permissions when writing to external storage
+        if (destinationFolder === Directory.Documents) {
+            const permResult = await Filesystem.requestPermissions();
+            if (permResult.publicStorage !== 'granted') {
+                throw labels.missing_permission;
+            }
         }
 
-        const destinationFolder = Directory.Documents;
         const sourceFolder = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
 
         if (!sourceFolder) {
@@ -33,7 +35,10 @@ export const exportMediaService = {
         }
 
         // Use semantic path resolution
-        const baseMediaPath = utilsService.getExportPath(projectSlug);
+        // Use archive path for Data, export path for Documents
+        const baseMediaPath = destinationFolder === Directory.Data
+            ? `archive/${projectSlug}`
+            : utilsService.getExportPath(projectSlug, destinationFolder);
 
         const cleanPhotoDir = PARAMETERS.PHOTO_DIR.replace(/^\/|\/$/g, '');
         const cleanAudioDir = PARAMETERS.AUDIO_DIR.replace(/^\/|\/$/g, '');
