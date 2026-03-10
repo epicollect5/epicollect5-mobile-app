@@ -1,5 +1,5 @@
 import {STRINGS} from '@/config/strings';
-
+import {utilsService} from '@/services/utilities/utils-service';
 import {useRootStore} from '@/stores/root-store';
 import {projectModel} from '@/models/project-model.js';
 import {databaseSelectService} from '@/services/database/database-select-service';
@@ -270,26 +270,27 @@ export const exportService = {
     },
     async exportEntries(projectRef, projectSlug) {
         const projectName = projectModel.getProjectName();
+        const archiveDirectory = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
+        const archivePath = utilsService.getExportPath(projectSlug, archiveDirectory); // ← not hardcoded
         const dateOnly = new Date().toISOString().split('T')[0];
         const zipFileName = `Epicollect5_${projectSlug}_${dateOnly}.zip`;
-        const archivePath = `archive/${projectSlug}`;
         try {
             // Wipe previous archive if exists
             await Filesystem.rmdir({
                 path: archivePath,
-                directory: Directory.Data,
+                directory: archiveDirectory,
                 recursive: true
             }).catch(() => {
             });
 
             // Write everything directly to Data/archive/
-            await exportService.exportHierarchyEntries(projectRef, Directory.Data);
-            await exportService.exportBranchEntries(projectRef, Directory.Data);
-            await exportService.exportMedia(projectRef, projectSlug, Directory.Data);
+            await exportService.exportHierarchyEntries(projectRef, archiveDirectory);
+            await exportService.exportBranchEntries(projectRef, archiveDirectory);
+            await exportService.exportMedia(projectRef, projectSlug, archiveDirectory);
 
             // Zip from Data/archive/ → Cache
             const sourceResult = await Filesystem.getUri({
-                directory: Directory.Data,
+                directory: archiveDirectory,
                 path: archivePath
             });
             const destResult = await Filesystem.getUri({
@@ -300,11 +301,7 @@ export const exportService = {
             const sourcePath = sourceResult.uri.replace('file://', '');
             const destPath = destResult.uri.replace('file://', '');
 
-            const check = await Filesystem.readdir({
-                path: archivePath,
-                directory: Directory.Data
-            });
-            console.log('ARCHIVE CONTENTS:', JSON.stringify(check));
+
 
             await CapacitorZip.zip({
                 source: sourcePath,
@@ -322,8 +319,8 @@ export const exportService = {
         } finally {
             // Always cleanup
             await Filesystem.rmdir({
-                path: `archive/${projectSlug}`,
-                directory: Directory.Data,
+                path: archivePath,
+                directory: archiveDirectory,
                 recursive: true
             }).catch(() => {
             });

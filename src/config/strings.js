@@ -507,7 +507,7 @@ export const STRINGS = {
     },
     es: {
         labels: {
-            send_to_device: 'Enviar al Sispositivo',
+            send_to_device: 'Enviar al Dispositivo',
             share_archive: 'Compartir Archivo',
             save_entries: 'Guardar entradas',
             entries_exported: 'Entradas exportadas',
@@ -1266,7 +1266,7 @@ export const STRINGS = {
     },
     pt: {
         labels: {
-            send_to_device: 'Enviar para Sispositivo',
+            send_to_device: 'Enviar para Dispositivo',
             share_archive: 'Compartilhar Arquivo',
             save_entries: 'Salvar entradas',
             entries_exported: 'Entradas exportadas',

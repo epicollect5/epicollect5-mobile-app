@@ -8,7 +8,8 @@ vi.mock('@capacitor/filesystem', () => ({
         stat: vi.fn(),
         mkdir: vi.fn(),
         copy: vi.fn(),
-        deleteFile: vi.fn()
+        deleteFile: vi.fn(),
+        rmdir: vi.fn()
     },
     Directory: {
         Documents: 'DOCUMENTS',
@@ -109,31 +110,23 @@ describe('Init Service', () => {
     });
 
     describe('verifyDatabaseIntegrity()', () => {
-        it('resolves true when PRAGMA returns ok', async () => {
-            const mockTx = {
-                executeSql: vi.fn((query, params, success) => {
-                    // Simulate the SQL result object
-                    success(mockTx, {
-                        rows: {
-                            item: () => ({ integrity_check: 'ok' })
-                        }
-                    });
-                })
-            };
+        it('migrates and deletes legacy DB if integrity is OK', async () => {
+            Filesystem.stat.mockResolvedValueOnce({});
+            Filesystem.stat.mockRejectedValueOnce(new Error('No dir'));
+            Filesystem.mkdir.mockResolvedValue({});
+            Filesystem.copy.mockResolvedValue({});
+            Filesystem.rmdir.mockResolvedValue({});  // ← add this
 
-            const mockDb = {
-                transaction: vi.fn((cb, error, success) => {
-                    cb(mockTx); // Run transaction
-                    success();  // Trigger transaction success callback
-                }),
-                close: vi.fn((success) => success())
-            };
+            const integritySpy = vi.spyOn(initService, 'verifyDatabaseIntegrity').mockResolvedValue(true);
 
-            window.sqlitePlugin.openDatabase.mockReturnValue(mockDb);
+            const result = await initService.migrateLegacyDatabase();
 
-            const result = await initService.verifyDatabaseIntegrity('test.db');
             expect(result).toBe(true);
-            expect(mockDb.close).toHaveBeenCalled();
+            expect(Filesystem.copy).toHaveBeenCalled();
+            expect(Filesystem.deleteFile).toHaveBeenCalledWith(expect.objectContaining({
+                directory: 'DOCUMENTS'
+            }));
+            integritySpy.mockRestore();
         });
     });
 });

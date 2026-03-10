@@ -960,20 +960,19 @@ export const utilsService = {
      * iOS: App data is grouped by the OS under the App Name.
      * Android: We manually group projects under an 'Epicollect5' folder.
      */
-    getExportPath(projectSlug, destination = Directory.Documents) {
+    getExportPath(projectSlug, destination) {
         const rootStore = useRootStore();
         const platform = rootStore.device.platform;
         const cleanSlug = projectSlug.replace(/^\/|\/$/g, '');
 
-        // Archive flow writes to app-private Data, no Epicollect5 grouping needed
-        if (destination === Directory.Data) {
-            return `archive/${cleanSlug}`;
+        if (destination === Directory.Data || destination === Directory.LibraryNoCloud) {
+            return `archive/${cleanSlug}`;  // same on both platforms, it's private storage
         }
 
         if (platform === PARAMETERS.ANDROID) {
             return PARAMETERS.APP_NAME + '/' + cleanSlug;
         }
 
-        return cleanSlug;
+        return cleanSlug; // iOS public Documents
     }
 };

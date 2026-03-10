@@ -310,7 +310,6 @@ import {
   timeOutline,
   logoChrome,
   desktopOutline,
-  download,
   share,
   phonePortraitSharp
 } from 'ionicons/icons';
@@ -396,24 +395,22 @@ export default {
           await notificationService.showAlert(error);
         }
       },
-      shareArchive() {
+      async shareArchive() {
 
         if (!Capacitor.isNativePlatform()) {
           return;
         }
 
-        notificationService.showProgressDialog(labels.exporting, labels.wait);
+        await notificationService.showProgressDialog(labels.exporting, labels.wait);
 
         //now we need to create a zip archive
         exportService.exportEntries(projectModel.getProjectRef(), projectModel.getSlug())
             .then(() => {
-              notificationService.hideProgressDialog();
               notificationService.showToast(labels.exporting_success);
               menuController.close();
             })
             .catch((error) => {
               console.log(error);
-              notificationService.hideProgressDialog();
               notificationService.showAlert(error);
             }).finally(() => {
           notificationService.hideProgressDialog();
@@ -600,7 +597,6 @@ export default {
       timeOutline,
       logoChrome,
       desktopOutline,
-      download,
       share,
       phonePortraitSharp
       //*****************
