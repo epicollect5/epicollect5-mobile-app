@@ -280,7 +280,8 @@ export const exportService = {
                 path: archivePath,
                 directory: archiveDirectory,
                 recursive: true
-            }).catch(() => {
+            }).catch((error) => {
+                console.log('No previous archive to remove:', error);
             });
 
             // Write everything directly to Data/archive/
@@ -322,13 +323,15 @@ export const exportService = {
                 path: archivePath,
                 directory: archiveDirectory,
                 recursive: true
-            }).catch(() => {
+            }).catch((error) => {
+                console.log('No archive to remove:', error);
             });
 
             await Filesystem.deleteFile({
                 path: zipFileName,
                 directory: Directory.Cache
-            }).catch(() => {
+            }).catch((error) => {
+                console.log('No zip file to remove:', error);
             });
         }
     }

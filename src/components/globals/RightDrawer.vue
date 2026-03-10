@@ -394,25 +394,22 @@ export default {
         }
       },
       async shareArchive() {
-
         if (!Capacitor.isNativePlatform()) {
           return;
         }
 
         await notificationService.showProgressDialog(labels.exporting, labels.wait);
 
-        //now we need to create a zip archive
-        exportService.exportEntries(projectModel.getProjectRef(), projectModel.getSlug())
-            .then(() => {
-              notificationService.showToast(labels.exporting_success);
-              menuController.close();
-            })
-            .catch((error) => {
-              console.log(error);
-              notificationService.showAlert(error);
-            }).finally(() => {
+        try {
+          await exportService.exportEntries(projectModel.getProjectRef(), projectModel.getSlug());
+          notificationService.showToast(labels.exporting_success);
+          menuController.close();
+        } catch (error) {
+          console.log(error);
+          await notificationService.showAlert(error);
+        } finally {
           notificationService.hideProgressDialog();
-        });
+        }
       },
 
       deleteProject() {

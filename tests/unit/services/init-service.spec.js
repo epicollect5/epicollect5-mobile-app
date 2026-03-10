@@ -8,8 +8,7 @@ vi.mock('@capacitor/filesystem', () => ({
         stat: vi.fn(),
         mkdir: vi.fn(),
         copy: vi.fn(),
-        deleteFile: vi.fn(),
-        rmdir: vi.fn()
+        deleteFile: vi.fn()
     },
     Directory: {
         Documents: 'DOCUMENTS',
