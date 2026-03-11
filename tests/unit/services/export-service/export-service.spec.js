@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { exportService } from '@/services/export-service';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import {utilsService} from '@/services/utilities/utils-service';
@@ -12,6 +11,12 @@ vi.mock('@/config', () => ({
         APP_NAME: 'Epicollect5'
     }
 }));
+
+// Mock the modal composable to prevent it resolving the Vue component
+vi.mock('@/use/modals/use-modal-progress-export');
+
+// Mock export-service entirely since it's not under test here
+vi.mock('@/services/export-service');
 
 describe('exportService', () => {
     beforeEach(() => {

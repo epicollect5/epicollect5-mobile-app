@@ -6,6 +6,8 @@ import {PushNotifications} from '@capacitor/push-notifications';
 import {Toast} from '@capacitor/toast';
 import {Capacitor} from '@capacitor/core';
 import {useToast} from '@/use/toast';
+import {modalController} from '@ionic/vue';
+import ModalProgressExport from '@/components/modals/ModalProgressExport.vue';
 
 export const notificationService = {
 
@@ -254,5 +256,40 @@ buttons
                 cordova.plugins.foregroundService.stop();
             }
         }
+    },
+
+    /**
+     * Show the progress export modal
+     */
+    async showProgressExportModal() {
+        const rootStore = useRootStore();
+        if (rootStore.isExportModalActive) return; // prevent multiple modals
+
+        rootStore.isExportModalActive = true;
+        const language = rootStore.language;
+        const labels = STRINGS[language].labels;
+
+        const modal = await modalController.create({
+            cssClass: 'modal-progress-export',
+            component: ModalProgressExport,
+            showBackdrop: true,
+            backdropDismiss: false,
+            componentProps: {
+                header: labels.exporting
+            }
+        });
+
+        await modal.present();
+    },
+
+    /**
+     * Hide the progress export modal
+     */
+    async hideProgressExportModal() {
+        const rootStore = useRootStore();
+        if (!rootStore.isExportModalActive) return;
+
+        await modalController.dismiss();
+        rootStore.isExportModalActive = false;
     }
 };

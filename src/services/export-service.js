@@ -12,9 +12,8 @@ import {Capacitor} from '@capacitor/core';
 import {CapacitorZip} from '@capgo/capacitor-zip';
 import {Directory, Filesystem} from '@capacitor/filesystem';
 import {Share} from '@capacitor/share';
-import { modalController } from '@ionic/vue';
-import { notificationService } from '@/services/notification-service';
-import { modalProgressExport } from '@/use/modals/modal-progress-export';
+import {notificationService} from '@/services/notification-service';
+import {deleteFileService} from '@/services/filesystem/delete-file-service';
 
 export const exportService = {
 
@@ -287,16 +286,13 @@ export const exportService = {
             throw error;
         }
     },
-    async exportEntries(projectRef, projectSlug) {
+    async exportEntriesZipArchive(projectRef, projectSlug) {
         const rootStore = useRootStore();
         const projectName = projectModel.getProjectName();
         const archiveDirectory = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
         const archivePath = utilsService.getExportPath(projectSlug, archiveDirectory); // ← not hardcoded
         const dateOnly = new Date().toISOString().split('T')[0];
         const zipFileName = `Epicollect5_${projectSlug}_${dateOnly}.zip`;
-
-        // Use the composable
-        const { showModal } = modalProgressExport();
 
         try {
             // Get total entries count for progress bar
@@ -307,17 +303,14 @@ export const exportService = {
             const buffer = total > 0 ? Math.ceil(total * 0.10) : 0; // 10% buffer
             total += buffer; // Add buffer to total for progress bar
 
-            notificationService.setProgressExport({ total, done: 0 });
-            await showModal(); // Use the showModal from the composable
+            notificationService.setProgressExport({total, done: 0});
 
-            // Wipe previous archive if exists
-            await Filesystem.rmdir({
-                path: archivePath,
-                directory: archiveDirectory,
-                recursive: true
-            }).catch((error) => {
-                console.log('No previous archive to remove:', error);
-            });
+            await notificationService.showProgressExportModal(); // Use the showModal from the composable
+
+            await deleteFileService.removeDirectoryIfExists(
+                archivePath,
+                archiveDirectory
+            );
 
             // Write everything directly to Data/archive/
             await exportService.exportHierarchyEntries(projectRef, archiveDirectory);
@@ -356,35 +349,34 @@ export const exportService = {
             });
 
             // Dismiss the modal before opening the share panel
-            await modalController.dismiss();
-            rootStore.isExportModalActive = false;
+            await notificationService.hideProgressExportModal();
 
-            await Share.share({
-                title: `Epicollect5 -- ${projectName}`,
-                url: destResult.uri
-            });
+            let shareSuccessful = false;
+            try {
+                const shareResult = await Share.share({
+                    title: `Epicollect5 -- ${projectName}`,
+                    url: destResult.uri
+                });
+                shareSuccessful = shareResult.activityType !== 'cancel';
+            } catch (shareError) {
+                console.log('Share cancelled', shareError);
+                shareSuccessful = false;
+            }
+
+            return shareSuccessful;
 
         } catch (error) {
-            if (!error.message?.includes('Share canceled')) {
-                console.error('Archive failed:', error);
-                throw error;
-            }
+            console.error('Archive failed:', error);
+            return false;
         } finally {
             // Always cleanup
-            if (rootStore.isExportModalActive) {
-                await modalController.dismiss();
-                rootStore.isExportModalActive = false;
-            }
-            notificationService.setProgressExport({ total: 0, done: 0 });
+            await notificationService.hideProgressExportModal();
+            notificationService.setProgressExport({total: 0, done: 0});
 
-            await Filesystem.rmdir({
-                path: archivePath,
-                directory: archiveDirectory,
-                recursive: true
-            }).catch((error) => {
-                console.log('No archive to remove:', error);
-            });
-
+            await deleteFileService.removeDirectoryIfExists(
+                archivePath,
+                archiveDirectory
+            );
             await Filesystem.deleteFile({
                 path: zipFileName,
                 directory: Directory.Cache
@@ -394,12 +386,9 @@ export const exportService = {
         }
     },
     async sendToDevice(projectRef, projectSlug) {
-        const rootStore = useRootStore();
         const documentsDirectory = Directory.Documents;
-        const targetPath = utilsService.getExportPath(projectSlug, documentsDirectory);
-
-        // Use the composable
-        const { showModal } = modalProgressExport();
+        const deviceExportPath = utilsService.getExportPath(projectSlug, documentsDirectory);
+        let success = true; // Assume success unless an error occurs
 
         try {
             // Get total entries count for progress bar
@@ -408,17 +397,14 @@ export const exportService = {
             const totalMedia = await databaseSelectService.countAllMedia(projectRef);
             const total = totalEntries + totalBranchEntries + totalMedia;
 
-            notificationService.setProgressExport({ total, done: 0 });
-            await showModal(); // Use the showModal from the composable
+            notificationService.setProgressExport({total, done: 0});
+            await notificationService.showProgressExportModal(); // Use the showModal from the composable
 
-            // Wipe previous export if exists
-            await Filesystem.rmdir({
-                path: targetPath,
-                directory: documentsDirectory,
-                recursive: true
-            }).catch((error) => {
-                console.log('No previous export to remove:', error);
-            });
+            await deleteFileService.removeDirectoryIfExists(
+                deviceExportPath,
+                documentsDirectory
+            );
+
 
             // Write everything directly to Documents/Epicollect5/project_slug/
             await exportService.exportHierarchyEntries(projectRef, documentsDirectory);
@@ -432,20 +418,29 @@ export const exportService = {
             });
 
             // Dismiss the modal
-            await modalController.dismiss();
-            rootStore.isExportModalActive = false;
+            await notificationService.hideProgressExportModal();
 
-            return targetPath; // Return the path to the exported files
+            return deviceExportPath; // Return the path to the exported files
         } catch (error) {
             console.error('Send to device failed:', error);
+            success = false;
             throw error;
         } finally {
             // Always cleanup
-            if (rootStore.isExportModalActive) {
-                await modalController.dismiss();
-                rootStore.isExportModalActive = false;
+            await notificationService.hideProgressExportModal();
+            notificationService.setProgressExport({total: 0, done: 0});
+
+            if (!success) {
+                try {
+                    await deleteFileService.removeDirectoryIfExists(
+                        deviceExportPath,
+                        documentsDirectory
+                    );
+                } catch (cleanupError) {
+                    console.log('Cleanup failed:', cleanupError);
+                    // Log the cleanup error, but don't re-throw as the original export failed anyway
+                }
             }
-            notificationService.setProgressExport({ total: 0, done: 0 });
         }
     }
 };
