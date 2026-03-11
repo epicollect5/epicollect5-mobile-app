@@ -353,19 +353,18 @@ export const exportService = {
 
             let shareSuccessful = false;
             try {
-                const shareResult = await Share.share({
+                await Share.share({
                     title: `Epicollect5 -- ${projectName}`,
                     url: destResult.uri
                 });
-                shareSuccessful = shareResult.activityType !== 'cancel';
+                shareSuccessful = true;
             } catch (shareError) {
-                console.log('Share cancelled', shareError);
-                if (shareError.message && shareError.message.includes('cancel')) {
-                    // User cancelled the share action, not an actual error
-                    console.log('User cancelled the share action.');
+                if (shareError?.message?.toLowerCase().includes('cancel')) {
+                    // User dismissed — not an error
+                    shareSuccessful = false;
                 } else {
-                    console.error('Error during sharing:', shareError);
-                    // noinspection ExceptionCaughtLocallyJS - we want to log the error but not re-throw if it's just a cancellation
+                    // we want to log the error but not re-throw if it's just a cancellation
+                    // noinspection ExceptionCaughtLocallyJS
                     throw shareError;
                 }
             }

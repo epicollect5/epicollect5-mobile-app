@@ -932,7 +932,7 @@ export const databaseSelectService = {
                 params = [inputDetails.ref, '%' + answer + '%', entry.entryUuid];
                 break;
             case PARAMETERS.QUESTION_TYPES.TIME: {
-                //time answers are like "2011-10-.05T14:48:00.000"
+                //time answers are like "2011-10-05T14:48:00.000"
                 let timePart = answer.substring(10, 20);
                 //timePart is now like "T14:48:00."
                 switch (inputDetails.datetime_format) {

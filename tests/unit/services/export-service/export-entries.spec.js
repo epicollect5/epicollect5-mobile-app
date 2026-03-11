@@ -103,10 +103,16 @@ describe('exportService.exportEntriesZipArchive', () => {
         expect(result).toBe(true);
     });
 
-    it('should return false when share is cancelled', async () => {
-        Share.share.mockResolvedValue({ activityType: 'cancel' });
+    it('should return true even when share is cancelled 1', async () => {
+        Share.share.mockResolvedValue('cancel' );
         const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
-        expect(result).toBe(false);
+        expect(result).toBe(true);
+    });
+
+    it('should return true even when share is cancelled 2', async () => {
+        Share.share.mockResolvedValue('cancelled' );
+        const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(result).toBe(true);
     });
 
     it('should return false when share throws', async () => {

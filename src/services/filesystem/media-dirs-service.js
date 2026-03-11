@@ -76,11 +76,11 @@ export const mediaDirsService = {
         // In both cases we must clean up against the same private directory,
         // For "Send to Device" exports, we write directly to the public Documents folder.
         const isPrivateStorage = destination === Directory.Data || destination === Directory.LibraryNoCloud;
-        const documentsFolder = isPrivateStorage
+        const destinationFolder = isPrivateStorage
             ? destination
             : utilsService.getPlatformDocumentsFolder();
 
-        if (!documentsFolder) {
+        if (!destinationFolder) {
             return true;
         }
 
@@ -100,7 +100,7 @@ export const mediaDirsService = {
 
                 await Filesystem.rmdir({
                     path: fullPath,
-                    directory: documentsFolder,
+                    directory: destinationFolder,
                     recursive: true
                 });
             } catch (error) {

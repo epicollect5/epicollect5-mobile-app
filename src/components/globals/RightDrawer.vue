@@ -382,10 +382,11 @@ export default {
                 '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug
             );
           }
-          menuController.close();
         } catch (error) {
           console.log(error);
           await notificationService.showAlert(error);
+        } finally {
+          menuController.close();
         }
       },
       async shareArchive() {
@@ -396,11 +397,12 @@ export default {
           const wasShared = await exportService.exportEntriesZipArchive(projectModel.getProjectRef(), projectModel.getSlug());
           if (wasShared) {
             notificationService.showToast(labels.exporting_success);
-            menuController.close();
           }
         } catch (error) {
           console.log(error);
           await notificationService.showAlert(error);
+        } finally {
+          menuController.close();
         }
       },
 
