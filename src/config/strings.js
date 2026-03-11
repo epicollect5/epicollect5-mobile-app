@@ -249,7 +249,8 @@ export const STRINGS = {
             take: 'Take',
             pick: 'Pick',
             collected_on: 'Collected on ',
-            dismiss: 'Dismiss'
+            dismiss: 'Dismiss',
+            exporting_entries: 'Exporting Entries'
         }
     },
     it: {
@@ -502,7 +503,8 @@ export const STRINGS = {
             take: 'Camera',
             pick: 'Galleria',
             collected_on: 'Aggiunta il ',
-            dismiss: 'Chiudi'
+            dismiss: 'Chiudi',
+            exporting_entries: 'Esportando voci'
         }
     },
     es: {
@@ -755,7 +757,8 @@ export const STRINGS = {
             take: 'Cámara',
             pick: 'Galería',
             collected_on: 'Recogida en ',
-            dismiss: 'Cerrar'
+            dismiss: 'Cerrar',
+            exporting_entries: 'Exportando entradas'
         }
     },
     fr: {
@@ -1008,7 +1011,8 @@ export const STRINGS = {
             take: 'Prendre',
             pick: 'Choisir',
             collected_on: 'Collectée le ',
-            dismiss: 'Annuler'
+            dismiss: 'Annuler',
+            exporting_entries: 'Exportation des entrées'
         }
     },
     pl: {
@@ -1261,7 +1265,8 @@ export const STRINGS = {
             take: 'Zrób',
             pick: 'Pobierz',
             collected_on: 'Zebrane na/w ',
-            dismiss: 'Anuluj'
+            dismiss: 'Anuluj',
+            exporting_entries: 'Eksportowanie wpisów'
         }
     },
     pt: {
@@ -1514,7 +1519,8 @@ export const STRINGS = {
             take: 'Tirar',
             pick: 'Escolher',
             collected_on: 'Coletado em ',
-            dismiss: 'Fechar'
+            dismiss: 'Fechar',
+            exporting_entries: 'Exportando entradas'
         }
     },
     ca: {
@@ -1767,7 +1773,8 @@ export const STRINGS = {
             take: 'Fes',
             pick: 'Selecciona',
             collected_on: 'Recull el ',
-            dismiss: 'Descarta'
+            dismiss: 'Descarta',
+            exporting_entries: 'Exportant entrades'
         }
     },
     sl:{
@@ -2020,7 +2027,8 @@ export const STRINGS = {
             take: 'Fotografiraj',
             pick: 'Galerija',
             collected_on: 'Zbrano dne ',
-            dismiss: 'Zavrni'
+            dismiss: 'Zavrni',
+            exporting_entries: 'Izvažanje vnosov'
         }
     },
     de: {
@@ -2273,7 +2281,8 @@ export const STRINGS = {
             take: 'Aufnehmen',
             pick: 'Auswählen',
             collected_on: 'Erfasst am ',
-            dismiss: 'Schließen'
+            dismiss: 'Schließen',
+            exporting_entries: 'Einträge exportieren'
         }
     }
 };

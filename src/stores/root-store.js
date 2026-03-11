@@ -41,6 +41,10 @@ export const useRootStore = defineStore('RootStore', {
             progressEncoding: {
                 done: 0
             },
+            progressExport: {
+                total: 0,
+                done: 0
+            },
             modalLogin: {},
             afterUserIsLoggedIn: {
                 callback: null,
@@ -49,6 +53,7 @@ export const useRootStore = defineStore('RootStore', {
             isAudioModalActive: false,
             isLocationModalActive: false,
             isVideoEncodingModalActive: false,
+            isExportModalActive: false,
             ec5LoadingDialog: null,
             hasGoogleServices: true,
             entriesAddScope: {},

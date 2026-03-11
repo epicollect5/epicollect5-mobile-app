@@ -447,6 +447,26 @@ export const databaseSelectService = {
 
         return await this.getRows(query, params);
     },
+    async countAllEntries(projectRef) {
+        const query = 'SELECT COUNT(*) as total FROM entries WHERE project_ref = ?';
+        const params = [projectRef];
+        const result = await this.getRows(query, params);
+        return result.rows.item(0).total;
+    },
+
+    async countAllBranchEntries(projectRef) {
+        const query = 'SELECT COUNT(*) as total FROM branch_entries WHERE project_ref = ?';
+        const params = [projectRef];
+        const result = await this.getRows(query, params);
+        return result.rows.item(0).total;
+    },
+
+    async countAllMedia(projectRef) {
+        const query = 'SELECT COUNT(*) as total FROM media WHERE project_ref = ?';
+        const params = [projectRef];
+        const result = await this.getRows(query, params);
+        return result.rows.item(0).total;
+    },
     //Function to get entries for a project
     async selectBranchEntries(projectRef, formRef, ownerInputRef, order) {
 
@@ -533,7 +553,7 @@ export const databaseSelectService = {
 
         return await this.getRows(query, params);
     },
-    //this select from both branch _entries and temp_branch_entries
+    //this selects from both branch _entries and temp_branch_entries
     async selectBranchesForQuestion(ownerEntryUuid, ownerInputRef, limit, offset, filters, status) {
 
         let query = '';
@@ -912,7 +932,7 @@ export const databaseSelectService = {
                 params = [inputDetails.ref, '%' + answer + '%', entry.entryUuid];
                 break;
             case PARAMETERS.QUESTION_TYPES.TIME: {
-                //time answers are like "2011-10-05T14:48:00.000"
+                //time answers are like "2011-10-.05T14:48:00.000"
                 let timePart = answer.substring(10, 20);
                 //timePart is now like "T14:48:00."
                 switch (inputDetails.datetime_format) {

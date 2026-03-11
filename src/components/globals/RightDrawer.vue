@@ -364,14 +364,10 @@ export default {
 
         const projectRef = projectModel.getProjectRef();
         const projectSlug = projectModel.getSlug();
-        //show loader
-        await notificationService.showProgressDialog(labels.wait);
 
         try {
-          await exportService.exportHierarchyEntries(projectRef);
-          await exportService.exportBranchEntries(projectRef);
-          await exportService.exportMedia(projectRef, projectSlug);
-          notificationService.hideProgressDialog();
+          await exportService.sendToDevice(projectRef, projectSlug);
+
           const documentsFolder = utilsService.getPlatformDocumentsFolder();
           //Warn users and show the download folder according to the platform
           if (rootStore.device.platform === PARAMETERS.ANDROID) {
@@ -389,7 +385,6 @@ export default {
           menuController.close();
         } catch (error) {
           console.log(error);
-          notificationService.hideProgressDialog();
           await notificationService.showAlert(error);
         }
       },
@@ -397,9 +392,6 @@ export default {
         if (!Capacitor.isNativePlatform()) {
           return;
         }
-
-        await notificationService.showProgressDialog(labels.exporting, labels.wait);
-
         try {
           await exportService.exportEntries(projectModel.getProjectRef(), projectModel.getSlug());
           notificationService.showToast(labels.exporting_success);
@@ -407,8 +399,6 @@ export default {
         } catch (error) {
           console.log(error);
           await notificationService.showAlert(error);
-        } finally {
-          notificationService.hideProgressDialog();
         }
       },
 

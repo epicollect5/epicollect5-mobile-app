@@ -125,7 +125,7 @@ export const notificationService = {
                         cssClass: 'alert-confirm-multiple-' + platform,
                         header: title,
                         message,
-                        buttons
+buttons
                     });
                 return alert.present();
             })();
@@ -175,6 +175,11 @@ export const notificationService = {
     setProgressEncoding(progress) {
         const rootStore = useRootStore();
         rootStore.progressEncoding = progress;
+    },
+    //set progress in global state for modalProgressExport
+    setProgressExport(progress) {
+        const rootStore = useRootStore();
+        rootStore.progressExport = progress;
     },
     //Hide the progress dialog (global object)
     hideProgressDialog(delay) {

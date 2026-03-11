@@ -12,6 +12,9 @@ import {Capacitor} from '@capacitor/core';
 import {CapacitorZip} from '@capgo/capacitor-zip';
 import {Directory, Filesystem} from '@capacitor/filesystem';
 import {Share} from '@capacitor/share';
+import { modalController } from '@ionic/vue';
+import { notificationService } from '@/services/notification-service';
+import { modalProgressExport } from '@/use/modals/modal-progress-export';
 
 export const exportService = {
 
@@ -105,6 +108,14 @@ export const exportService = {
                         if (PARAMETERS.DEBUG) {
                             debugLines.push(row);
                         }
+
+                        // Update progress
+                        const progress = rootStore.progressExport;
+                        notificationService.setProgressExport({
+                            total: progress.total,
+                            done: progress.done + 1
+                        });
+
                         //next entry
                         offset++;
                         try {
@@ -134,6 +145,7 @@ export const exportService = {
     },
     async exportBranchEntries(projectRef, directory = Directory.Documents) {
 
+        const rootStore = useRootStore();
         const branches = [];
         const debugLines = [];
         let offset;
@@ -236,6 +248,13 @@ export const exportService = {
                                 debugLines.push(row);
                             }
 
+                            // Update progress
+                            const progress = rootStore.progressExport;
+                            notificationService.setProgressExport({
+                                total: progress.total,
+                                done: progress.done + 1
+                            });
+
                             //next entry
                             offset++;
                             try {
@@ -269,12 +288,28 @@ export const exportService = {
         }
     },
     async exportEntries(projectRef, projectSlug) {
+        const rootStore = useRootStore();
         const projectName = projectModel.getProjectName();
         const archiveDirectory = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
         const archivePath = utilsService.getExportPath(projectSlug, archiveDirectory); // ← not hardcoded
         const dateOnly = new Date().toISOString().split('T')[0];
         const zipFileName = `Epicollect5_${projectSlug}_${dateOnly}.zip`;
+
+        // Use the composable
+        const { showModal } = modalProgressExport();
+
         try {
+            // Get total entries count for progress bar
+            const totalEntries = await databaseSelectService.countAllEntries(projectRef);
+            const totalBranchEntries = await databaseSelectService.countAllBranchEntries(projectRef);
+            const totalMedia = await databaseSelectService.countAllMedia(projectRef);
+            let total = totalEntries + totalBranchEntries + totalMedia;
+            const buffer = total > 0 ? Math.ceil(total * 0.10) : 0; // 10% buffer
+            total += buffer; // Add buffer to total for progress bar
+
+            notificationService.setProgressExport({ total, done: 0 });
+            await showModal(); // Use the showModal from the composable
+
             // Wipe previous archive if exists
             await Filesystem.rmdir({
                 path: archivePath,
@@ -289,6 +324,13 @@ export const exportService = {
             await exportService.exportBranchEntries(projectRef, archiveDirectory);
             await exportService.exportMedia(projectRef, projectSlug, archiveDirectory);
 
+            // Update progress for media files
+            const progress = rootStore.progressExport;
+            notificationService.setProgressExport({
+                total: progress.total,
+                done: progress.done + totalMedia
+            });
+
             // Zip from Data/archive/ → Cache
             const sourceResult = await Filesystem.getUri({
                 directory: archiveDirectory,
@@ -302,12 +344,20 @@ export const exportService = {
             const sourcePath = sourceResult.uri.replace('file://', '');
             const destPath = destResult.uri.replace('file://', '');
 
-
-
             await CapacitorZip.zip({
                 source: sourcePath,
                 destination: destPath
             });
+
+            // Update progress to 100%
+            notificationService.setProgressExport({
+                total: total,
+                done: total
+            });
+
+            // Dismiss the modal before opening the share panel
+            await modalController.dismiss();
+            rootStore.isExportModalActive = false;
 
             await Share.share({
                 title: `Epicollect5 -- ${projectName}`,
@@ -315,10 +365,18 @@ export const exportService = {
             });
 
         } catch (error) {
-            console.error('Archive failed:', error);
-            throw error;
+            if (!error.message?.includes('Share canceled')) {
+                console.error('Archive failed:', error);
+                throw error;
+            }
         } finally {
             // Always cleanup
+            if (rootStore.isExportModalActive) {
+                await modalController.dismiss();
+                rootStore.isExportModalActive = false;
+            }
+            notificationService.setProgressExport({ total: 0, done: 0 });
+
             await Filesystem.rmdir({
                 path: archivePath,
                 directory: archiveDirectory,
@@ -333,6 +391,61 @@ export const exportService = {
             }).catch((error) => {
                 console.log('No zip file to remove:', error);
             });
+        }
+    },
+    async sendToDevice(projectRef, projectSlug) {
+        const rootStore = useRootStore();
+        const documentsDirectory = Directory.Documents;
+        const targetPath = utilsService.getExportPath(projectSlug, documentsDirectory);
+
+        // Use the composable
+        const { showModal } = modalProgressExport();
+
+        try {
+            // Get total entries count for progress bar
+            const totalEntries = await databaseSelectService.countAllEntries(projectRef);
+            const totalBranchEntries = await databaseSelectService.countAllBranchEntries(projectRef);
+            const totalMedia = await databaseSelectService.countAllMedia(projectRef);
+            const total = totalEntries + totalBranchEntries + totalMedia;
+
+            notificationService.setProgressExport({ total, done: 0 });
+            await showModal(); // Use the showModal from the composable
+
+            // Wipe previous export if exists
+            await Filesystem.rmdir({
+                path: targetPath,
+                directory: documentsDirectory,
+                recursive: true
+            }).catch((error) => {
+                console.log('No previous export to remove:', error);
+            });
+
+            // Write everything directly to Documents/Epicollect5/project_slug/
+            await exportService.exportHierarchyEntries(projectRef, documentsDirectory);
+            await exportService.exportBranchEntries(projectRef, documentsDirectory);
+            await exportService.exportMedia(projectRef, projectSlug, documentsDirectory);
+
+            // Update progress to 100%
+            notificationService.setProgressExport({
+                total: total,
+                done: total
+            });
+
+            // Dismiss the modal
+            await modalController.dismiss();
+            rootStore.isExportModalActive = false;
+
+            return targetPath; // Return the path to the exported files
+        } catch (error) {
+            console.error('Send to device failed:', error);
+            throw error;
+        } finally {
+            // Always cleanup
+            if (rootStore.isExportModalActive) {
+                await modalController.dismiss();
+                rootStore.isExportModalActive = false;
+            }
+            notificationService.setProgressExport({ total: 0, done: 0 });
         }
     }
 };

@@ -11,11 +11,11 @@
   </ion-header>
   <ion-content class="ion-text-center">
     <ion-spinner
-        class="spinner-encoding"
+        class="spinner-export"
         name="crescent">
     </ion-spinner>
     <div
-        class="progress-encoding animate__animated animate__fadeIn"
+        class="progress-export animate__animated animate__fadeIn"
     >
       <ion-progress-bar
           color="primary"
@@ -47,12 +47,12 @@ export default {
 
     const computedScope = {
       progress: computed(() => {
-        const progress = rootStore.progressEncoding;
-        return progress.done;
+        const progress = rootStore.progressExport;
+        return progress.done / progress.total;
       }),
       percentageDisplay: computed(() => {
-        const progress = rootStore.progressEncoding;
-        return Math.round((progress.done) * 100) + '%';
+        const progress = rootStore.progressExport;
+        return Math.round((progress.done / progress.total) * 100) + '%';
       }),
       header: props.header
     };
