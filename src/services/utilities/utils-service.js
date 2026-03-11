@@ -651,7 +651,6 @@ export const utilsService = {
     },
     getPlatformDocumentsFolder() {
         const rootStore = useRootStore();
-
         switch (rootStore.device.platform) {
             case PARAMETERS.ANDROID:
                 // Use Documents for Scoped Storage compatibility

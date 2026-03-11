@@ -5,25 +5,27 @@ import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { utilsService } from '@/services/utilities/utils-service';
 
-// 1. Mock Dependencies
+// Add to the Directory mock
 vi.mock('@capacitor/filesystem', () => ({
     Filesystem: {
         rmdir: vi.fn()
     },
     Directory: {
         Documents: 'DOCUMENTS',
-        Data: 'DATA'
+        Data: 'DATA',
+        LibraryNoCloud: 'LIBRARY_NO_CLOUD'  // ← add this
     }
 }));
 
 vi.mock('@/services/utilities/utils-service', () => ({
     utilsService: {
         getPlatformDocumentsFolder: vi.fn(),
-        getExportPath: vi.fn((projectSlug, destination) =>
-            destination === 'DATA'  // compare against the raw string, not Directory.Data
-                ? `archive/${projectSlug}`
-                : `Epicollect5/${projectSlug}`
-        )
+        getExportPath: vi.fn((projectSlug, destination) => {
+            if (destination === 'DATA' || destination === 'LIBRARY_NO_CLOUD') {
+                return `archive/${projectSlug}`;
+            }
+            return `Epicollect5/${projectSlug}`;
+        })
     }
 }));
 
@@ -102,6 +104,55 @@ describe('mediaDirsService', () => {
 
             const result = await mediaDirsService.removeExternalMediaDirs(projectSlug);
             expect(result).toBe(false);
+        });
+        it('attempts to remove photo, audio, and video directories (LibraryNoCloud/archive on iOS)', async () => {
+            Filesystem.rmdir.mockResolvedValue({});
+
+            const result = await mediaDirsService.removeExternalMediaDirs(projectSlug, Directory.LibraryNoCloud);
+
+            expect(result).toBe(true);
+            expect(Filesystem.rmdir).toHaveBeenCalledTimes(3);
+            // Uses archive/ path and Directory.LibraryNoCloud when destination is LibraryNoCloud
+            expect(Filesystem.rmdir).toHaveBeenCalledWith(expect.objectContaining({
+                path: 'archive/test-project/photos',
+                directory: 'LIBRARY_NO_CLOUD'
+            }));
+            // getPlatformDocumentsFolder should NOT be called for LibraryNoCloud destination
+            expect(utilsService.getPlatformDocumentsFolder).not.toHaveBeenCalled();
+        });
+
+        it('uses same archive path for both Data (Android) and LibraryNoCloud (iOS)', async () => {
+            Filesystem.rmdir.mockResolvedValue({});
+
+            await mediaDirsService.removeExternalMediaDirs(projectSlug, Directory.Data);
+            const androidCall = Filesystem.rmdir.mock.calls[0][0];
+
+            vi.clearAllMocks();
+            Filesystem.rmdir.mockResolvedValue({});
+
+            await mediaDirsService.removeExternalMediaDirs(projectSlug, Directory.LibraryNoCloud);
+            const iosCall = Filesystem.rmdir.mock.calls[0][0];
+
+            // Both platforms should use the same archive path structure
+            expect(androidCall.path).toBe(iosCall.path);
+            // But different directory constants
+            expect(androidCall.directory).toBe('DATA');
+            expect(iosCall.directory).toBe('LIBRARY_NO_CLOUD');
+        });
+
+        it('attempts to remove photo, audio, and video directories (Documents on iOS)', async () => {
+            utilsService.getPlatformDocumentsFolder.mockReturnValue('DOCUMENTS');
+            Filesystem.rmdir.mockResolvedValue({});
+
+            const result = await mediaDirsService.removeExternalMediaDirs(projectSlug, Directory.Documents);
+
+            expect(result).toBe(true);
+            expect(Filesystem.rmdir).toHaveBeenCalledTimes(3);
+            expect(Filesystem.rmdir).toHaveBeenCalledWith(expect.objectContaining({
+                path: 'Epicollect5/test-project/photos',
+                directory: 'DOCUMENTS'
+            }));
+            expect(utilsService.getPlatformDocumentsFolder).toHaveBeenCalled();
         });
     });
 });

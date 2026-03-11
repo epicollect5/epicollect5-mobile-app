@@ -71,10 +71,15 @@ export const mediaDirsService = {
     },
 
     async removeExternalMediaDirs(projectSlug, destination = Directory.Documents) {
-        // if takeout, target Directory.Data instead due to permissions.
-        const documentsFolder = destination === Directory.Data
-            ? Directory.Data
+        // For archive/zip exports, we write to app-private storage the use the Share plugin to share from there.
+        // Android → Directory.Data, iOS → Directory.LibraryNoCloud
+        // In both cases we must clean up against the same private directory,
+        // For "Send to Device" exports, we write directly to the public Documents folder.
+        const isPrivateStorage = destination === Directory.Data || destination === Directory.LibraryNoCloud;
+        const documentsFolder = isPrivateStorage
+            ? destination
             : utilsService.getPlatformDocumentsFolder();
+
         if (!documentsFolder) {
             return true;
         }

@@ -360,7 +360,14 @@ export const exportService = {
                 shareSuccessful = shareResult.activityType !== 'cancel';
             } catch (shareError) {
                 console.log('Share cancelled', shareError);
-                shareSuccessful = false;
+                if (shareError.message && shareError.message.includes('cancel')) {
+                    // User cancelled the share action, not an actual error
+                    console.log('User cancelled the share action.');
+                } else {
+                    console.error('Error during sharing:', shareError);
+                    // noinspection ExceptionCaughtLocallyJS - we want to log the error but not re-throw if it's just a cancellation
+                    throw shareError;
+                }
             }
 
             return shareSuccessful;
