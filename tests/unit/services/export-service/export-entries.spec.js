@@ -103,20 +103,20 @@ describe('exportService.exportEntriesZipArchive', () => {
         expect(result).toBe(true);
     });
 
-    it('should return true even when share is cancelled 1', async () => {
-        Share.share.mockResolvedValue('cancel' );
+    it('should ignore error when share is cancelled 1', async () => {
+        Share.share.mockRejectedValue({message:'canceled'});
         const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
         expect(result).toBe(true);
     });
 
     it('should return true even when share is cancelled 2', async () => {
-        Share.share.mockResolvedValue('cancelled' );
+        Share.share.mockRejectedValue({message:'cancelled'});
         const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
         expect(result).toBe(true);
     });
 
     it('should return false when share throws', async () => {
-        Share.share.mockRejectedValueOnce(new Error('User cancelled'));
+        Share.share.mockRejectedValueOnce(new Error('Unexpected error during sharing'));
         const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
         expect(result).toBe(false);
     });

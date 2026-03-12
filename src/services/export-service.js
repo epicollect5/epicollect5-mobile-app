@@ -359,11 +359,11 @@ export const exportService = {
                 });
                 shareSuccessful = true;
             } catch (shareError) {
-                if (shareError?.message?.toLowerCase().includes('cancel')) {
+                const msg = (shareError?.message ?? String(shareError)).toLowerCase();
+                if (msg.includes('cancel')) {
                     // User dismissed — not an error
-                    shareSuccessful = false;
+                    shareSuccessful = true;
                 } else {
-                    // we want to log the error but not re-throw if it's just a cancellation
                     // noinspection ExceptionCaughtLocallyJS
                     throw shareError;
                 }
