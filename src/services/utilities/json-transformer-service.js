@@ -279,6 +279,12 @@ export const JSONTransformerService = {
                     row.push(result.rows.item(0).total.toString());
                     break;
                 }
+                case QT.DECIMAL:
+                    row.push(answer !== null && answer !== undefined && answer !== '' ? parseFloat(answer).toString() : '');
+                    break;
+                case QT.INTEGER:
+                    row.push(answer !== null && answer !== undefined && answer !== '' ? parseInt(answer, 10).toString() : '');
+                    break;
                 default:
                     row.push(answer !== null && answer !== undefined ? answer.toString().trim() : '');
             }

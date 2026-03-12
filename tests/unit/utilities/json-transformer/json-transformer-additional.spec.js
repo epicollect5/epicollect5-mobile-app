@@ -306,6 +306,118 @@ describe('JSONTransformerService — utmConverter', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Integer and Decimal answer types
+// ─────────────────────────────────────────────────────────────────────────────
+describe('JSONTransformerService — Integer and Decimal Answer Types', () => {
+
+    beforeEach(() => vi.clearAllMocks());
+
+    const form = {details: {ref: 'form_ref'}, inputs: ['q_1']};
+
+    describe('integer', () => {
+
+        it('should return "0" for answer 0, not empty string', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 0}}, false)
+            ).data[0];
+            expect(row[4]).toBe('0');
+        });
+
+        it('should return "42" for a valid integer answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 42}}, false)
+            ).data[0];
+            expect(row[4]).toBe('42');
+        });
+
+        it('should return "42" for a string integer answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: '42'}}, false)
+            ).data[0];
+            expect(row[4]).toBe('42');
+        });
+
+        it('should return "" for empty string answer, not "NaN"', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: ''}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+
+        it('should return "" for null answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: null}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+
+        it('should return "" for undefined answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: undefined}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+    });
+
+    describe('decimal', () => {
+
+        it('should return "0" for answer 0, not empty string', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 0}}, false)
+            ).data[0];
+            expect(row[4]).toBe('0');
+        });
+
+        it('should return "3.14" for a valid decimal answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 3.14}}, false)
+            ).data[0];
+            expect(row[4]).toBe('3.14');
+        });
+
+        it('should strip trailing zeros from string decimal, matching server floatval behaviour', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: '9.6300'}}, false)
+            ).data[0];
+            expect(row[4]).toBe('9.63');
+        });
+
+        it('should return "" for empty string answer, not "NaN"', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: ''}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+
+        it('should return "" for null answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: null}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+
+        it('should return "" for undefined answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: undefined}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // getBranchCSVHeaders — splice correctness
 // ─────────────────────────────────────────────────────────────────────────────
 describe('JSONTransformerService — getBranchCSVHeaders splice correctness', () => {
