@@ -348,8 +348,10 @@ export const exportService = {
                 done: total
             });
 
-            // Dismiss the modal before opening the share panel
-            await notificationService.hideProgressExportModal();
+            setTimeout(async () => {
+                await notificationService.hideProgressExportModal();
+                // Delay to ensure modal is hidden before share sheet opens
+            }, 2 * PARAMETERS.DELAY_LONG);
 
             let shareSuccessful = false;
             try {
@@ -376,9 +378,6 @@ export const exportService = {
             return false;
         } finally {
             // Always cleanup
-            await notificationService.hideProgressExportModal();
-            notificationService.setProgressExport({total: 0, done: 0});
-
             await deleteFileService.removeDirectoryIfExists(
                 archivePath,
                 archiveDirectory
@@ -391,6 +390,7 @@ export const exportService = {
             });
         }
     },
+
     async sendToDevice(projectRef, projectSlug) {
         const documentsDirectory = Directory.Documents;
         const deviceExportPath = utilsService.getExportPath(projectSlug, documentsDirectory);
@@ -423,19 +423,14 @@ export const exportService = {
                 done: total
             });
 
-            // Dismiss the modal
-            await notificationService.hideProgressExportModal();
-
             return deviceExportPath; // Return the path to the exported files
         } catch (error) {
             console.error('Send to device failed:', error);
             success = false;
             throw error;
         } finally {
-            // Always cleanup
+            // Dismiss the modal
             await notificationService.hideProgressExportModal();
-            notificationService.setProgressExport({total: 0, done: 0});
-
             if (!success) {
                 try {
                     await deleteFileService.removeDirectoryIfExists(

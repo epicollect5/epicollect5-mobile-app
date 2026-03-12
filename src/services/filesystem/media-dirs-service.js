@@ -112,22 +112,6 @@ export const mediaDirsService = {
         return allSucceeded;
     },
 
-    //check if a directory exists
-    async dirExists(absolutePath) {
-        return new Promise((resolve) => {
-            window.resolveLocalFileSystemURL(
-                absolutePath,
-                (dir) => {
-                    console.log(dir);
-                    resolve(true);
-                }, (error) => {
-                    console.log(error);
-                    //if error code is 1, folder not found.
-                    error.code === 1 ? resolve(false) : resolve(null);
-                });
-        });
-    },
-
     getRelativeDataDirectoryForCapacitorFilesystem() {
         const rootStore = useRootStore();
 

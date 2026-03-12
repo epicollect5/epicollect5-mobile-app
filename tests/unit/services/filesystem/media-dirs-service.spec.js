@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';

@@ -19,6 +19,16 @@ function _getLegacyPlatform() {
     return mapping[platform] || PARAMETERS.LEGACY_WEB;
 }
 
+// Sanitise epoch timestamps cause by devices with wrong data settings,
+// also subtract 1 minute to ensure the timestamp is before the current time
+function _sanitizeTimestamp(ts) {
+    if (!ts || ts.startsWith('1970-01-01')) {
+        const d = new Date(Date.now() - 60000); // Subtract 1 minute
+        return d.toISOString().slice(0, 19) + '.000Z';
+    }
+    return ts;
+}
+
 function _makeJsonEntry(entry) {
     const rootStore = useRootStore();
     const entryType = entry.entry_type;
@@ -113,7 +123,7 @@ export const JSONTransformerService = {
      * CSV HEADER METHODS
      */
     getFormCSVHeaders(form, mappings, isGroup, formIndex, isBranch) {
-        const headers = isGroup ? form.headers : ['ec5_uuid', 'created_at', 'title'];
+        const headers = isGroup ? form.headers : ['ec5_uuid', 'created_at', 'exported_at', 'title'];
         const formRef = form.details.ref;
         const defaultMapping = mappings.find((m) => m.is_default);
 
@@ -170,7 +180,7 @@ export const JSONTransformerService = {
 
     getGroupCSVHeaders(form, groupInputs, mappings, groupRef, headers) {
         const newForm = {
-            details: { ref: form.details.ref },
+            details: {ref: form.details.ref},
             inputs: groupInputs,
             groupRef,
             headers,
@@ -202,7 +212,9 @@ export const JSONTransformerService = {
      * CSV ROW METHODS
      */
     async getFormCSVRow(entry, form, answers, isGroup, isBranch) {
-        let row = isGroup ? [...form.row] : [entry.entry_uuid, entry.created_at, entry.title];
+        const createdAt = _sanitizeTimestamp(entry.created_at);
+        const exportedAt = new Date().toISOString().replace(/\.\d{3}Z$/, '.000Z');
+        let row = isGroup ? [...form.row] : [entry.entry_uuid, createdAt, exportedAt, entry.title];
 
         if (entry.parent_entry_uuid && !isGroup) {
             row.splice(1, 0, entry.parent_entry_uuid);
@@ -317,7 +329,7 @@ export const JSONTransformerService = {
 
             // Guard against NaN before passing to fromLatLon
             if (isNaN(latitude) || isNaN(longitude)) {
-                return { easting: '', northing: '', zone: '' };
+                return {easting: '', northing: '', zone: ''};
             }
 
             const result = fromLatLon(latitude, longitude);
@@ -328,7 +340,7 @@ export const JSONTransformerService = {
             };
         } catch (e) {
             console.error('UTM Conversion Error:', e);
-            return { easting: '', northing: '', zone: '' };
+            return {easting: '', northing: '', zone: ''};
         }
     },
 

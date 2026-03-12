@@ -1,4 +1,6 @@
 // noinspection DuplicatedCode
+// noinspection DuplicatedCode
+
 import { describe, it, expect, vi } from 'vitest';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
 import { projectModel } from '@/models/project-model.js';
@@ -32,7 +34,7 @@ describe('JSONTransformerService Headers', () => {
 
         const result = JSONTransformerService.getFormCSVHeaders(form, mockMappings, false, 0, false);
 
-        expect(result).toBe('ec5_uuid,created_at,title,name_col');
+        expect(result).toBe('ec5_uuid,created_at,exported_at,title,name_col');
     });
 
     it('should insert parent_entry_uuid for child forms (formIndex > 0)', () => {
@@ -43,7 +45,7 @@ describe('JSONTransformerService Headers', () => {
         const cols = result.split(',');
 
         expect(cols[1]).toBe('parent_entry_uuid');
-        expect(cols.length).toBe(5);
+        expect(cols.length).toBe(6);
     });
 
     it('should expand location into 6 specific headers', () => {
@@ -65,6 +67,6 @@ describe('JSONTransformerService Headers', () => {
 
         const result = JSONTransformerService.getFormCSVHeaders(form, mockMappings, false, 0, false);
 
-        expect(result).toBe('ec5_uuid,created_at,title,sub_col');
+        expect(result).toBe('ec5_uuid,created_at,exported_at,title,sub_col');
     });
 });

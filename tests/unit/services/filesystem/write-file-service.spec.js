@@ -102,7 +102,7 @@ describe('writeFileService', () => {
 
             expect(Filesystem.writeFile).toHaveBeenCalledWith({
                 path: 'test.csv',
-                data: headers,
+                data:  '\uFEFF' + headers,
                 directory: Directory.Documents,
                 encoding: Encoding.UTF8,
                 recursive: true
@@ -122,7 +122,7 @@ describe('writeFileService', () => {
 
             expect(Filesystem.writeFile).toHaveBeenCalledWith({
                 path: 'test.csv',
-                data: headers,
+                data:  '\uFEFF' + headers,
                 directory: Directory.Data,
                 encoding: Encoding.UTF8,
                 recursive: true

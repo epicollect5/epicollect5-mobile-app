@@ -283,13 +283,17 @@ buttons
     },
 
     /**
-     * Hide the progress export modal
+     * Hide the progress export modal and reset state
      */
     async hideProgressExportModal() {
         const rootStore = useRootStore();
         if (!rootStore.isExportModalActive) return;
 
+        // 1. Dismiss the UI component
         await modalController.dismiss();
         rootStore.isExportModalActive = false;
+
+        // 2. Reset the progress state immediately so it's ready for next time
+        notificationService.setProgressExport({total: 0, done: 0});
     }
 };

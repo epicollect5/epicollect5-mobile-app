@@ -51,9 +51,9 @@ describe('JSONTransformerService CSV Export', () => {
 
         const result = await JSONTransformerService.getFormCSVRow(entry, form, answers, false);
         const parts = result.split(',');
-        expect(parts[3]).toBe('John');
-        expect(parts[4]).toBe('10');
-        expect(parts[10]).toBe('5');
+        expect(parts[4]).toBe('John');
+        expect(parts[5]).toBe('10');
+        expect(parts[11]).toBe('5');
     });
 
     it('should flatten groups and skip readme', async () => {
@@ -65,14 +65,14 @@ describe('JSONTransformerService CSV Export', () => {
         projectModel.getInput.mockImplementation((ref) => mockInputs[ref]);
         projectModel.getGroupInputRefs.mockReturnValue(['q_sub']);
 
-        const entry = { entry_uuid: '123', created_at: '2026-03-04', title: 'Test' };
+        const entry = { entry_uuid: '123', created_at: '2026-03-04', exported_at: '2026-03-05', title: 'Test' };
         const form = { details: { ref: 'form_1' }, inputs: ['q_readme', 'q_group'] };
         const answers = { 'q_sub': { answer: 'inside group' } };
 
         const result = await JSONTransformerService.getFormCSVRow(entry, form, answers, false);
         const parts = result.split(',');
-        expect(parts.length).toBe(4);
-        expect(parts[3]).toBe('inside group');
+        expect(parts.length).toBe(5);
+        expect(parts[4]).toBe('inside group');
     });
 
     it('should handle empty location coordinates', async () => {
@@ -84,7 +84,7 @@ describe('JSONTransformerService CSV Export', () => {
 
         const result = await JSONTransformerService.getFormCSVRow(entry, form, answers, false);
         const parts = result.split(',');
-        expect(parts.slice(3, 9)).toEqual(['', '', '', '', '', '']);
+        expect(parts.slice(4, 10)).toEqual(['', '', '', '', '', '']);
     });
 
     it('should correctly handle child form metadata columns', async () => {
@@ -124,7 +124,7 @@ describe('JSONTransformerService CSV Export', () => {
         }];
 
         const form = { details: { ref: 'child_form_ref' }, inputs: ['q_name', 'group_1'] };
-        const entry = { entry_uuid: 'c-1', parent_entry_uuid: 'p-1', created_at: '2026-03-04', title: 'Child Entry' };
+        const entry = { entry_uuid: 'c-1', parent_entry_uuid: 'p-1', created_at: '2026-03-04',  exported_at: '2026-03-04', title: 'Child Entry' };
         const answers = { 'q_name': { answer: 'Alice' }, 'q_in_group': { answer: 'Inside Group' } };
 
         const headerCSV = JSONTransformerService.getFormCSVHeaders(form, childMappings, false, 1, false);
@@ -135,9 +135,9 @@ describe('JSONTransformerService CSV Export', () => {
 
         expect(headers).toContain('parent_entry_uuid');
         expect(headers).toContain('inner_val');
-        expect(headers.length).toBe(6);
+        expect(headers.length).toBe(7);
         expect(row[1]).toBe('p-1');
-        expect(row[5]).toBe('Inside Group');
+        expect(row[6]).toBe('Inside Group');
         expect(row.length).toBe(headers.length);
     });
 });

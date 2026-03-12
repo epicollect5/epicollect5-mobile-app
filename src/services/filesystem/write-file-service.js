@@ -13,7 +13,7 @@ export const writeFileService = {
         if (offset === 0) {
             await Filesystem.writeFile({
                 path: filepath,
-                data: headers,
+                data: '\uFEFF' + headers, // Add UTF-8 BOM for Excel compatibility
                 directory: destination,
                 encoding: Encoding.UTF8,
                 recursive: true

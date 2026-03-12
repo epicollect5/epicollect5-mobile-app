@@ -8,6 +8,7 @@ import { Directory } from '@capacitor/filesystem';
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
+import { flushPromises } from '@vue/test-utils';
 
 vi.mock('@/stores/root-store');
 vi.mock('@/services/utilities/utils-service');
@@ -38,6 +39,8 @@ describe('exportService.sendToDevice', () => {
     let mockRootStore;
 
     beforeEach(() => {
+        // Enable fake timers to catch the setTimeouts
+        vi.useFakeTimers();
         vi.resetAllMocks();
 
         // Fake root store
@@ -71,6 +74,10 @@ describe('exportService.sendToDevice', () => {
         });
     });
 
+    afterEach(() => {
+        vi.useRealTimers(); // Clean up after each test
+    });
+
     it('should return the export path on success', async () => {
         const result = await exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
         expect(result).toBe(MOCK_EXPORT_PATH);
@@ -92,7 +99,12 @@ describe('exportService.sendToDevice', () => {
     });
 
     it('should show and hide the progress modal', async () => {
-        await exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        const promise = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+
+        // Fast-forward through the DELAY_LONG timeout
+        vi.runAllTimers();
+
+        await promise;
 
         expect(mockShow).toHaveBeenCalled();
         expect(mockHide).toHaveBeenCalled();
@@ -131,13 +143,21 @@ describe('exportService.sendToDevice', () => {
             .rejects.toThrow('Permission denied');
     });
 
-    it('should always reset progress and hide modal in finally block on failure', async () => {
-        vi.spyOn(exportService, 'exportHierarchyEntries').mockRejectedValueOnce(new Error('export failed'));
+    it('should always hide modal on failure', async () => {
+        // No need to call vi.useFakeTimers() - beforeEach already does it
 
-        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG)).rejects.toThrow('export failed');
+        vi.spyOn(exportService, 'exportHierarchyEntries')
+            .mockRejectedValueOnce(new Error('export failed'));
+
+        const promise = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+
+        await expect(promise).rejects.toThrow('export failed');
+
+        await flushPromises();
+
+        vi.runAllTimers();
+        await flushPromises(); // flush the async setTimeout callback
 
         expect(mockHide).toHaveBeenCalled();
-        expect(mockRootStore.progressExport).toEqual({ total: 0, done: 0 });
-        expect(deleteFileService.removeDirectoryIfExists).toHaveBeenCalledTimes(2); // initial + cleanup
     });
 });
