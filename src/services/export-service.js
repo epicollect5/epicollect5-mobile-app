@@ -415,13 +415,25 @@ export const exportService = {
             // Write everything directly to Documents/Epicollect5/project_slug/
             await exportService.exportHierarchyEntries(projectRef, documentsDirectory);
             await exportService.exportBranchEntries(projectRef, documentsDirectory);
+            //Export media last as it can be the most time-consuming, and we want the progress bar to reflect that
             await exportService.exportMedia(projectRef, projectSlug, documentsDirectory);
-
-            // Update progress to 100%
+            // Update progress for media files
+            const rootStore = useRootStore();
+            const progress = rootStore.progressExport;
             notificationService.setProgressExport({
-                total: total,
-                done: total
+                total: progress.total,
+                done: progress.done + totalMedia
             });
+
+            // Update progress to 100%n with a slight delay
+            // to ensure the user sees the completed state
+            // before the modal disappears
+            setTimeout(() => {
+                notificationService.setProgressExport({
+                    total: total,
+                    done: total
+                });
+            }, PARAMETERS.DELAY_LONG);
 
             return deviceExportPath; // Return the path to the exported files
         } catch (error) {
