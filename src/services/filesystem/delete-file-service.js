@@ -1,5 +1,6 @@
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
+import { Filesystem } from '@capacitor/filesystem';
 
 export const deleteFileService = {
 
@@ -66,5 +67,27 @@ export const deleteFileService = {
                 error.code === 1 ? resolve() : reject(error);
             });
         });
+    },
+    async removeDirectoryIfExists(path, directory) {
+        try {
+            await Filesystem.rmdir({
+                path,
+                directory,
+                recursive: true
+            });
+        } catch (error) {
+            const message = error?.message || '';
+            const code = error?.code || '';
+
+            // Ignore if directory doesn't exist
+            if (
+                message.includes('does not exist') || // Android
+                code === 'OS-PLUG-FILE-0013'      // iOS
+            ) {
+                console.warn('Directory already removed or missing:', path);
+            } else {
+                throw error;
+            }
+        }
     }
 };

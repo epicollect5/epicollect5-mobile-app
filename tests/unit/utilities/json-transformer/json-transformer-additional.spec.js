@@ -30,7 +30,8 @@ vi.mock('@/services/utilities/utils-service', () => ({
 
 const BASE_ENTRY = {
     entry_uuid: 'uuid-1',
-    created_at: '2026-03-05T10:00:00Z',
+    created_at: '2026-03-05T10:30:59.000Z',
+    exported_at: '2026-03-06T12:23:46.000Z',
     title: 'Test'
 };
 
@@ -55,7 +56,7 @@ describe('JSONTransformerService — Answer Types', () => {
             const row = Papa.parse(
                 await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 'ref_a'}}, false)
             ).data[0];
-            expect(row[3]).toBe('Option A');
+            expect(row[4]).toBe('Option A');
         });
 
         it('should resolve answer_ref to its label for dropdown', async () => {
@@ -63,7 +64,7 @@ describe('JSONTransformerService — Answer Types', () => {
             const row = Papa.parse(
                 await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 'ref_b'}}, false)
             ).data[0];
-            expect(row[3]).toBe('Option B');
+            expect(row[4]).toBe('Option B');
         });
 
         it('should return empty string when answer_ref does not match any possible answer', async () => {
@@ -71,7 +72,7 @@ describe('JSONTransformerService — Answer Types', () => {
             const row = Papa.parse(
                 await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 'ref_unknown'}}, false)
             ).data[0];
-            expect(row[3]).toBe('');
+            expect(row[4]).toBe('');
         });
 
         it('should return empty string when answer is empty string', async () => {
@@ -79,7 +80,7 @@ describe('JSONTransformerService — Answer Types', () => {
             const row = Papa.parse(
                 await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: ''}}, false)
             ).data[0];
-            expect(row[3]).toBe('');
+            expect(row[4]).toBe('');
         });
     });
 
@@ -96,7 +97,7 @@ describe('JSONTransformerService — Answer Types', () => {
             const row = Papa.parse(
                 await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: ['ref_x', 'ref_z']}}, false)
             ).data[0];
-            expect(row[3]).toBe('X, Z');
+            expect(row[4]).toBe('X, Z');
         });
 
         it('should return a single label without trailing comma for one selection', async () => {
@@ -104,7 +105,7 @@ describe('JSONTransformerService — Answer Types', () => {
             const row = Papa.parse(
                 await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: ['ref_y']}}, false)
             ).data[0];
-            expect(row[3]).toBe('Y');
+            expect(row[4]).toBe('Y');
         });
 
         it('should return empty string for an empty checkbox array', async () => {
@@ -112,7 +113,7 @@ describe('JSONTransformerService — Answer Types', () => {
             const row = Papa.parse(
                 await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: []}}, false)
             ).data[0];
-            expect(row[3]).toBe('');
+            expect(row[4]).toBe('');
         });
 
         it('should silently skip unrecognised refs in a checkbox answer', async () => {
@@ -121,7 +122,7 @@ describe('JSONTransformerService — Answer Types', () => {
                 await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: ['ref_x', 'ref_unknown']}}, false)
             ).data[0];
             // ref_unknown has no label so it is filtered out
-            expect(row[3]).toBe('X');
+            expect(row[4]).toBe('X');
         });
 
         it('should handle searchmultiple the same as checkbox', async () => {
@@ -133,7 +134,7 @@ describe('JSONTransformerService — Answer Types', () => {
             const row = Papa.parse(
                 await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: ['ref_x', 'ref_y']}}, false)
             ).data[0];
-            expect(row[3]).toBe('X, Y');
+            expect(row[4]).toBe('X, Y');
         });
 
         it('should handle search_single the same as checkbox', async () => {
@@ -145,7 +146,7 @@ describe('JSONTransformerService — Answer Types', () => {
             const row = Papa.parse(
                 await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: ['ref_z']}}, false)
             ).data[0];
-            expect(row[3]).toBe('Z');
+            expect(row[4]).toBe('Z');
         });
     });
 
@@ -160,7 +161,7 @@ describe('JSONTransformerService — Answer Types', () => {
             ).data[0];
 
             expect(utilsService.getUserFormattedDate).toHaveBeenCalledWith('2026-03-05', 'DD/MM/YYYY');
-            expect(row[3]).toBe('05/03/2026');
+            expect(row[4]).toBe('05/03/2026');
         });
 
         it('should return empty string for date when answer is empty', async () => {
@@ -171,7 +172,7 @@ describe('JSONTransformerService — Answer Types', () => {
             ).data[0];
 
             expect(utilsService.getUserFormattedDate).not.toHaveBeenCalled();
-            expect(row[3]).toBe('');
+            expect(row[4]).toBe('');
         });
 
         it('should call getUserFormattedTime and use its return value', async () => {
@@ -183,7 +184,7 @@ describe('JSONTransformerService — Answer Types', () => {
             ).data[0];
 
             expect(utilsService.getUserFormattedTime).toHaveBeenCalledWith('14:30:00', 'HH:mm');
-            expect(row[3]).toBe('14:30');
+            expect(row[4]).toBe('14:30');
         });
 
         it('should return empty string for time when answer is empty', async () => {
@@ -194,7 +195,7 @@ describe('JSONTransformerService — Answer Types', () => {
             ).data[0];
 
             expect(utilsService.getUserFormattedTime).not.toHaveBeenCalled();
-            expect(row[3]).toBe('');
+            expect(row[4]).toBe('');
         });
     });
 });
@@ -213,7 +214,7 @@ describe('JSONTransformerService — Falsy-but-valid Answer Values', () => {
         const row = Papa.parse(
             await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 0}}, false)
         ).data[0];
-        expect(row[3]).toBe('0');
+        expect(row[4]).toBe('0');
     });
 
     it('should preserve false as "false", not empty string', async () => {
@@ -221,7 +222,7 @@ describe('JSONTransformerService — Falsy-but-valid Answer Values', () => {
         const row = Papa.parse(
             await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: false}}, false)
         ).data[0];
-        expect(row[3]).toBe('false');
+        expect(row[4]).toBe('false');
     });
 
     it('should treat null answer as empty string', async () => {
@@ -229,7 +230,7 @@ describe('JSONTransformerService — Falsy-but-valid Answer Values', () => {
         const row = Papa.parse(
             await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: null}}, false)
         ).data[0];
-        expect(row[3]).toBe('');
+        expect(row[4]).toBe('');
     });
 
     it('should treat missing answer key as empty string', async () => {
@@ -237,7 +238,7 @@ describe('JSONTransformerService — Falsy-but-valid Answer Values', () => {
         const row = Papa.parse(
             await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {}, false)
         ).data[0];
-        expect(row[3]).toBe('');
+        expect(row[4]).toBe('');
     });
 
     it('location northing of 0 should be "0", not empty string', async () => {
@@ -251,7 +252,7 @@ describe('JSONTransformerService — Falsy-but-valid Answer Values', () => {
             )
         ).data[0];
         // Northing for (0,0) should be '0', not ''
-        expect(row[6]).toBe('0');
+        expect(row[7]).toBe('0');
     });
 });
 
@@ -305,6 +306,118 @@ describe('JSONTransformerService — utmConverter', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Integer and Decimal answer types
+// ─────────────────────────────────────────────────────────────────────────────
+describe('JSONTransformerService — Integer and Decimal Answer Types', () => {
+
+    beforeEach(() => vi.clearAllMocks());
+
+    const form = {details: {ref: 'form_ref'}, inputs: ['q_1']};
+
+    describe('integer', () => {
+
+        it('should return "0" for answer 0, not empty string', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 0}}, false)
+            ).data[0];
+            expect(row[4]).toBe('0');
+        });
+
+        it('should return "42" for a valid integer answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 42}}, false)
+            ).data[0];
+            expect(row[4]).toBe('42');
+        });
+
+        it('should return "42" for a string integer answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: '42'}}, false)
+            ).data[0];
+            expect(row[4]).toBe('42');
+        });
+
+        it('should return "" for empty string answer, not "NaN"', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: ''}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+
+        it('should return "" for null answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: null}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+
+        it('should return "" for undefined answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'integer', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: undefined}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+    });
+
+    describe('decimal', () => {
+
+        it('should return "0" for answer 0, not empty string', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 0}}, false)
+            ).data[0];
+            expect(row[4]).toBe('0');
+        });
+
+        it('should return "3.14" for a valid decimal answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: 3.14}}, false)
+            ).data[0];
+            expect(row[4]).toBe('3.14');
+        });
+
+        it('should strip trailing zeros from string decimal, matching server floatval behaviour', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: '9.6300'}}, false)
+            ).data[0];
+            expect(row[4]).toBe('9.63');
+        });
+
+        it('should return "" for empty string answer, not "NaN"', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: ''}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+
+        it('should return "" for null answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: null}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+
+        it('should return "" for undefined answer', async () => {
+            projectModel.getInput.mockReturnValue({type: 'decimal', ref: 'q_1'});
+            const row = Papa.parse(
+                await JSONTransformerService.getFormCSVRow(BASE_ENTRY, form, {'q_1': {answer: undefined}}, false)
+            ).data[0];
+            expect(row[4]).toBe('');
+        });
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // getBranchCSVHeaders — splice correctness
 // ─────────────────────────────────────────────────────────────────────────────
 describe('JSONTransformerService — getBranchCSVHeaders splice correctness', () => {
@@ -351,16 +464,17 @@ describe('JSONTransformerService — getBranchCSVHeaders splice correctness', ()
         ).data[0];
 
         expect(headers[2]).toBe('created_at');
-        expect(headers[3]).toBe('title');
+        expect(headers[3]).toBe('exported_at');
+        expect(headers[4]).toBe('title');
     });
 
     it('should have the correct total column count after splice', () => {
-        // 2 metadata (owner_uuid, branch_uuid) + created_at + title + 2 questions = 6
+        // 2 metadata (owner_uuid, branch_uuid) + created_at + exported_at + title + 2 questions = 6
         const headers = Papa.parse(
             JSONTransformerService.getBranchCSVHeaders({branchRef: 'branch_ref', formRef: 'f_1'}, mappings)
         ).data[0];
 
-        expect(headers.length).toBe(6);
+        expect(headers.length).toBe(7);
     });
 
     it('branch headers and row should remain in sync after splice', async () => {

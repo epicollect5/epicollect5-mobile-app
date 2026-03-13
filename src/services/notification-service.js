@@ -6,6 +6,8 @@ import {PushNotifications} from '@capacitor/push-notifications';
 import {Toast} from '@capacitor/toast';
 import {Capacitor} from '@capacitor/core';
 import {useToast} from '@/use/toast';
+import {modalController} from '@ionic/vue';
+import ModalProgressExport from '@/components/modals/ModalProgressExport.vue';
 
 export const notificationService = {
 
@@ -125,7 +127,7 @@ export const notificationService = {
                         cssClass: 'alert-confirm-multiple-' + platform,
                         header: title,
                         message,
-                        buttons
+buttons
                     });
                 return alert.present();
             })();
@@ -175,6 +177,11 @@ export const notificationService = {
     setProgressEncoding(progress) {
         const rootStore = useRootStore();
         rootStore.progressEncoding = progress;
+    },
+    //set progress in global state for modalProgressExport
+    setProgressExport(progress) {
+        const rootStore = useRootStore();
+        rootStore.progressExport = progress;
     },
     //Hide the progress dialog (global object)
     hideProgressDialog(delay) {
@@ -249,5 +256,44 @@ export const notificationService = {
                 cordova.plugins.foregroundService.stop();
             }
         }
+    },
+
+    /**
+     * Show the progress export modal
+     */
+    async showProgressExportModal() {
+        const rootStore = useRootStore();
+        if (rootStore.isExportModalActive) return; // prevent multiple modals
+
+        rootStore.isExportModalActive = true;
+        const language = rootStore.language;
+        const labels = STRINGS[language].labels;
+
+        const modal = await modalController.create({
+            cssClass: 'modal-progress-export',
+            component: ModalProgressExport,
+            showBackdrop: true,
+            backdropDismiss: false,
+            componentProps: {
+                header: labels.exporting
+            }
+        });
+
+        await modal.present();
+    },
+
+    /**
+     * Hide the progress export modal and reset state
+     */
+    async hideProgressExportModal() {
+        const rootStore = useRootStore();
+        if (!rootStore.isExportModalActive) return;
+
+        // 1. Dismiss the UI component
+        await modalController.dismiss();
+        rootStore.isExportModalActive = false;
+
+        // 2. Reset the progress state immediately so it's ready for next time
+        notificationService.setProgressExport({total: 0, done: 0});
     }
 };

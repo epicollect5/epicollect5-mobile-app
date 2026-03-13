@@ -70,13 +70,21 @@ export const mediaDirsService = {
         });
     },
 
-    async removeExternalMediaDirs(projectSlug) {
-        const documentsFolder = utilsService.getPlatformDocumentsFolder();
-        if (!documentsFolder) {
+    async removeExternalMediaDirs(projectSlug, destination = Directory.Documents) {
+        // For archive/zip exports, we write to app-private storage the use the Share plugin to share from there.
+        // Android → Directory.Data, iOS → Directory.LibraryNoCloud
+        // In both cases we must clean up against the same private directory,
+        // For "Send to Device" exports, we write directly to the public Documents folder.
+        const isPrivateStorage = destination === Directory.Data || destination === Directory.LibraryNoCloud;
+        const destinationFolder = isPrivateStorage
+            ? destination
+            : utilsService.getPlatformDocumentsFolder();
+
+        if (!destinationFolder) {
             return true;
         }
 
-        const baseMediaPath = utilsService.getExportPath(projectSlug);
+        const baseMediaPath = utilsService.getExportPath(projectSlug, destination);
 
         const mediaDirs = [
             PARAMETERS.PHOTO_DIR,
@@ -92,7 +100,7 @@ export const mediaDirsService = {
 
                 await Filesystem.rmdir({
                     path: fullPath,
-                    directory: documentsFolder,
+                    directory: destinationFolder,
                     recursive: true
                 });
             } catch (error) {
@@ -102,22 +110,6 @@ export const mediaDirsService = {
             }
         }
         return allSucceeded;
-    },
-
-    //check if a directory exists
-    async dirExists(absolutePath) {
-        return new Promise((resolve) => {
-            window.resolveLocalFileSystemURL(
-                absolutePath,
-                (dir) => {
-                    console.log(dir);
-                    resolve(true);
-                }, (error) => {
-                    console.log(error);
-                    //if error code is 1, folder not found.
-                    error.code === 1 ? resolve(false) : resolve(null);
-                });
-        });
     },
 
     getRelativeDataDirectoryForCapacitorFilesystem() {

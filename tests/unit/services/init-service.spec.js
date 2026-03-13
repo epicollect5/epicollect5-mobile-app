@@ -59,14 +59,11 @@ describe('Init Service', () => {
         });
 
         it('migrates and deletes legacy DB if integrity is OK', async () => {
-            // Mock legacy exists
             Filesystem.stat.mockResolvedValueOnce({});
-            // Mock target folder check fails (needs creation)
             Filesystem.stat.mockRejectedValueOnce(new Error('No dir'));
             Filesystem.mkdir.mockResolvedValue({});
             Filesystem.copy.mockResolvedValue({});
 
-            // Mock verifyDatabaseIntegrity - we spy on the service method
             const integritySpy = vi.spyOn(initService, 'verifyDatabaseIntegrity').mockResolvedValue(true);
 
             const result = await initService.migrateLegacyDatabase();
@@ -112,19 +109,16 @@ describe('Init Service', () => {
         it('resolves true when PRAGMA returns ok', async () => {
             const mockTx = {
                 executeSql: vi.fn((query, params, success) => {
-                    // Simulate the SQL result object
                     success(mockTx, {
-                        rows: {
-                            item: () => ({ integrity_check: 'ok' })
-                        }
+                        rows: { item: () => ({ integrity_check: 'ok' }) }
                     });
                 })
             };
 
             const mockDb = {
                 transaction: vi.fn((cb, error, success) => {
-                    cb(mockTx); // Run transaction
-                    success();  // Trigger transaction success callback
+                    cb(mockTx);
+                    success();
                 }),
                 close: vi.fn((success) => success())
             };
@@ -132,8 +126,55 @@ describe('Init Service', () => {
             window.sqlitePlugin.openDatabase.mockReturnValue(mockDb);
 
             const result = await initService.verifyDatabaseIntegrity('test.db');
+
             expect(result).toBe(true);
             expect(mockDb.close).toHaveBeenCalled();
         });
+
+        it('resolves false when PRAGMA returns anything other than ok', async () => {
+            const mockTx = {
+                executeSql: vi.fn((query, params, success) => {
+                    success(mockTx, {
+                        rows: { item: () => ({ integrity_check: 'corrupt' }) }
+                    });
+                })
+            };
+
+            const mockDb = {
+                transaction: vi.fn((cb, error, success) => {
+                    cb(mockTx);
+                    success();
+                }),
+                close: vi.fn((success) => success())
+            };
+
+            window.sqlitePlugin.openDatabase.mockReturnValue(mockDb);
+
+            const result = await initService.verifyDatabaseIntegrity('test.db');
+
+            expect(result).toBe(false);
+        });
+
+        it('resolves false when SQL execution fails', async () => {
+            const mockTx = {
+                executeSql: vi.fn((query, params, success, error) => {
+                    error(mockTx, new Error('SQL error'));
+                })
+            };
+
+            const mockDb = {
+                transaction: vi.fn((cb, _error) => {
+                    cb(mockTx);
+                }),
+                close: vi.fn((success) => success())
+            };
+
+            window.sqlitePlugin.openDatabase.mockReturnValue(mockDb);
+
+            const result = await initService.verifyDatabaseIntegrity('test.db');
+
+            expect(result).toBe(false);
+        });
     });
 });
+

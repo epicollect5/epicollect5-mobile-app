@@ -1,5 +1,5 @@
 import {STRINGS} from '@/config/strings';
-
+import {utilsService} from '@/services/utilities/utils-service';
 import {useRootStore} from '@/stores/root-store';
 import {projectModel} from '@/models/project-model.js';
 import {databaseSelectService} from '@/services/database/database-select-service';
@@ -9,10 +9,15 @@ import {mediaDirsService} from '@/services/filesystem/media-dirs-service';
 import {writeFileService} from '@/services/filesystem/write-file-service';
 import {PARAMETERS} from '@/config';
 import {Capacitor} from '@capacitor/core';
+import {CapacitorZip} from '@capgo/capacitor-zip';
+import {Directory, Filesystem} from '@capacitor/filesystem';
+import {Share} from '@capacitor/share';
+import {notificationService} from '@/services/notification-service';
+import {deleteFileService} from '@/services/filesystem/delete-file-service';
 
 export const exportService = {
 
-    async exportHierarchyEntries(projectRef) {
+    async exportHierarchyEntries(projectRef, directory = Directory.Documents) {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -86,7 +91,14 @@ export const exportService = {
                         //write entry to file if native platform
                         if (Capacitor.isNativePlatform()) {
                             try {
-                                await writeFileService.appendCSVRow(headers, row, formRef, offset, null);
+                                await writeFileService.appendCSVRow(
+                                    headers,
+                                    row,
+                                    formRef,
+                                    offset,
+                                    null,
+                                    directory
+                                );
                             } catch (error) {
                                 reject(error);
                                 return;
@@ -95,6 +107,14 @@ export const exportService = {
                         if (PARAMETERS.DEBUG) {
                             debugLines.push(row);
                         }
+
+                        // Update progress
+                        const progress = rootStore.progressExport;
+                        notificationService.setProgressExport({
+                            total: progress.total,
+                            done: progress.done + 1
+                        });
+
                         //next entry
                         offset++;
                         try {
@@ -122,8 +142,9 @@ export const exportService = {
             });
         });
     },
-    async exportBranchEntries(projectRef) {
+    async exportBranchEntries(projectRef, directory = Directory.Documents) {
 
+        const rootStore = useRootStore();
         const branches = [];
         const debugLines = [];
         let offset;
@@ -208,7 +229,14 @@ export const exportService = {
                             //write entry to file on native platform
                             if (Capacitor.isNativePlatform()) {
                                 try {
-                                    await writeFileService.appendCSVRow(headers, row, branch.formRef, offset, branch.branchRef);
+                                    await writeFileService.appendCSVRow(
+                                        headers,
+                                        row,
+                                        branch.formRef,
+                                        offset,
+                                        branch.branchRef,
+                                        directory
+                                    );
                                 } catch (error) {
                                     reject(error);
                                     return;
@@ -218,6 +246,13 @@ export const exportService = {
                             if (PARAMETERS.DEBUG) {
                                 debugLines.push(row);
                             }
+
+                            // Update progress
+                            const progress = rootStore.progressExport;
+                            notificationService.setProgressExport({
+                                total: progress.total,
+                                done: progress.done + 1
+                            });
 
                             //next entry
                             offset++;
@@ -242,13 +277,183 @@ export const exportService = {
             }());
         });
     },
-    async exportMedia(projectRef, projectSlug) {
+    async exportMedia(projectRef, projectSlug, directory = Directory.Documents) {
         try {
-            await mediaDirsService.removeExternalMediaDirs(projectSlug);
-            await exportMediaService.execute(projectRef, projectSlug);
+            await mediaDirsService.removeExternalMediaDirs(projectSlug, directory);
+            await exportMediaService.execute(projectRef, projectSlug, directory);
         } catch (error) {
             console.log(error);
             throw error;
+        }
+    },
+    async exportEntriesZipArchive(projectRef, projectSlug) {
+        const rootStore = useRootStore();
+        const projectName = projectModel.getProjectName();
+        const archiveDirectory = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
+        const archivePath = utilsService.getExportPath(projectSlug, archiveDirectory); // ← not hardcoded
+        const dateOnly = new Date().toISOString().split('T')[0];
+        const zipFileName = `Epicollect5_${projectSlug}_${dateOnly}.zip`;
+
+        try {
+            // Get total entries count for progress bar
+            const totalEntries = await databaseSelectService.countAllEntries(projectRef);
+            const totalBranchEntries = await databaseSelectService.countAllBranchEntries(projectRef);
+            const totalMedia = await databaseSelectService.countAllMedia(projectRef);
+            let total = totalEntries + totalBranchEntries + totalMedia;
+            const buffer = total > 0 ? Math.ceil(total * 0.10) : 0; // 10% buffer
+            total += buffer; // Add buffer to total for progress bar
+
+            notificationService.setProgressExport({total, done: 0});
+
+            await notificationService.showProgressExportModal(); // Use the showModal from the composable
+
+            await deleteFileService.removeDirectoryIfExists(
+                archivePath,
+                archiveDirectory
+            );
+
+            // Write everything directly to Data/archive/
+            await exportService.exportHierarchyEntries(projectRef, archiveDirectory);
+            await exportService.exportBranchEntries(projectRef, archiveDirectory);
+            await exportService.exportMedia(projectRef, projectSlug, archiveDirectory);
+
+            // Update progress for media files
+            const progress = rootStore.progressExport;
+            notificationService.setProgressExport({
+                total: progress.total,
+                done: progress.done + totalMedia
+            });
+
+            // Zip from Data/archive/ → Cache
+            const sourceResult = await Filesystem.getUri({
+                directory: archiveDirectory,
+                path: archivePath
+            });
+            const destResult = await Filesystem.getUri({
+                directory: Directory.Cache,
+                path: zipFileName
+            });
+
+            const sourcePath = sourceResult.uri.replace('file://', '');
+            const destPath = destResult.uri.replace('file://', '');
+
+            await CapacitorZip.zip({
+                source: sourcePath,
+                destination: destPath
+            });
+
+            // Update progress to 100%
+            notificationService.setProgressExport({
+                total: total,
+                done: total
+            });
+
+            setTimeout(async () => {
+                await notificationService.hideProgressExportModal();
+                // Delay to ensure modal is hidden before share sheet opens
+            }, 2 * PARAMETERS.DELAY_LONG);
+
+            let shareSuccessful = false;
+            try {
+                await Share.share({
+                    title: `Epicollect5 -- ${projectName}`,
+                    url: destResult.uri
+                });
+                shareSuccessful = true;
+            } catch (shareError) {
+                const msg = (shareError?.message ?? String(shareError)).toLowerCase();
+                if (msg.includes('cancel')) {
+                    // User dismissed — not an error
+                    shareSuccessful = true;
+                } else {
+                    // noinspection ExceptionCaughtLocallyJS
+                    throw shareError;
+                }
+            }
+
+            return shareSuccessful;
+
+        } catch (error) {
+            console.error('Archive failed:', error);
+            return false;
+        } finally {
+            // Always cleanup
+            await deleteFileService.removeDirectoryIfExists(
+                archivePath,
+                archiveDirectory
+            );
+            await Filesystem.deleteFile({
+                path: zipFileName,
+                directory: Directory.Cache
+            }).catch((error) => {
+                console.log('No zip file to remove:', error);
+            });
+        }
+    },
+
+    async sendToDevice(projectRef, projectSlug) {
+        const documentsDirectory = Directory.Documents;
+        const deviceExportPath = utilsService.getExportPath(projectSlug, documentsDirectory);
+        let success = true; // Assume success unless an error occurs
+
+        try {
+            // Get total entries count for progress bar
+            const totalEntries = await databaseSelectService.countAllEntries(projectRef);
+            const totalBranchEntries = await databaseSelectService.countAllBranchEntries(projectRef);
+            const totalMedia = await databaseSelectService.countAllMedia(projectRef);
+            const total = totalEntries + totalBranchEntries + totalMedia;
+
+            notificationService.setProgressExport({total, done: 0});
+            await notificationService.showProgressExportModal(); // Use the showModal from the composable
+
+            await deleteFileService.removeDirectoryIfExists(
+                deviceExportPath,
+                documentsDirectory
+            );
+
+
+            // Write everything directly to Documents/Epicollect5/project_slug/
+            await exportService.exportHierarchyEntries(projectRef, documentsDirectory);
+            await exportService.exportBranchEntries(projectRef, documentsDirectory);
+            //Export media last as it can be the most time-consuming, and we want the progress bar to reflect that
+            await exportService.exportMedia(projectRef, projectSlug, documentsDirectory);
+            // Update progress for media files
+            const rootStore = useRootStore();
+            const progress = rootStore.progressExport;
+            notificationService.setProgressExport({
+                total: progress.total,
+                done: progress.done + totalMedia
+            });
+
+            // Update progress to 100%n with a slight delay
+            // to ensure the user sees the completed state
+            // before the modal disappears
+            setTimeout(() => {
+                notificationService.setProgressExport({
+                    total: total,
+                    done: total
+                });
+            }, PARAMETERS.DELAY_LONG);
+
+            return deviceExportPath; // Return the path to the exported files
+        } catch (error) {
+            console.error('Send to device failed:', error);
+            success = false;
+            throw error;
+        } finally {
+            // Dismiss the modal
+            await notificationService.hideProgressExportModal();
+            if (!success) {
+                try {
+                    await deleteFileService.removeDirectoryIfExists(
+                        deviceExportPath,
+                        documentsDirectory
+                    );
+                } catch (cleanupError) {
+                    console.log('Cleanup failed:', cleanupError);
+                    // Log the cleanup error, but don't re-throw as the original export failed anyway
+                }
+            }
         }
     }
 };
