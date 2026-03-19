@@ -158,7 +158,7 @@ export const JSONTransformerService = {
 
             switch (inputDetails.type) {
                 case PARAMETERS.QUESTION_TYPES.LOCATION:
-                    headers.push(`lat_${mapTo}`, `long_${mapTo}`, `acc_${mapTo}`, `UTM_Northing_${mapTo}`, `UTM_Easting_${mapTo}`, `UTM_Zone_${mapTo}`);
+                    headers.push(`lat_${mapTo}`, `long_${mapTo}`, `accuracy_${mapTo}`, `UTM_Northing_${mapTo}`, `UTM_Easting_${mapTo}`, `UTM_Zone_${mapTo}`);
                     break;
                 case PARAMETERS.QUESTION_TYPES.BRANCH:
                     headers.push(mapTo);
@@ -229,12 +229,15 @@ export const JSONTransformerService = {
 
             switch (inputDetails.type) {
                 case QT.LOCATION:
-                    // Check for null/undefined specifically, allowing 0
                     if (answer?.latitude !== null && answer?.latitude !== undefined &&
                         answer?.longitude !== null && answer?.longitude !== undefined) {
 
                         const utmRes = this.utmConverter(answer.latitude, answer.longitude);
-                        row.push(answer.latitude, answer.longitude, answer.accuracy, utmRes.northing, utmRes.easting, utmRes.zone);
+                        const lat = answer.latitude !== '' ? parseFloat(answer.latitude).toString() : '';
+                        const long = answer.longitude !== '' ? parseFloat(answer.longitude).toString() : '';
+                        // accuracy can legitimately be 0 (very precise GPS fix), so guard explicitly against '' not falsy
+                        const acc = answer.accuracy !== null && answer.accuracy !== undefined && answer.accuracy !== '' ? parseFloat(answer.accuracy).toString() : '';
+                        row.push(lat, long, acc, utmRes.northing, utmRes.easting, utmRes.zone);
                     } else {
                         row.push('', '', '', '', '', '');
                     }

@@ -25,7 +25,11 @@ vi.mock('@/services/filesystem/delete-file-service', () => ({
     deleteFileService: { removeDirectoryIfExists: vi.fn() }
 }));
 vi.mock('@/config', () => ({
-    PARAMETERS: { ANDROID: 'android', APP_NAME: 'Epicollect5', DEBUG: false }
+    PARAMETERS: {
+        ANDROID: 'android',
+        APP_NAME: 'Epicollect5',
+        DELAY_LONG: 1000,
+        DEBUG: false }
 }));
 
 const MOCK_PROJECT_REF = 'project-ref-123';
@@ -92,10 +96,16 @@ describe('exportService.sendToDevice', () => {
     });
 
     it('should initialise progress to 0 and set to 100% at the end', async () => {
-        await exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        const promise = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
 
-        expect(notificationService.setProgressExport).toHaveBeenCalledWith({ total: 18, done: 0 });
-        expect(notificationService.setProgressExport).toHaveBeenCalledWith({ total: 18, done: 18 });
+        await promise;
+
+        vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
+
+        expect(notificationService.setProgressExport).toHaveBeenCalledTimes(3);
+        expect(notificationService.setProgressExport).toHaveBeenNthCalledWith(1, { total: 18, done: 0 });
+        expect(notificationService.setProgressExport).toHaveBeenNthCalledWith(2, { total: 18, done: 3 });
+        expect(notificationService.setProgressExport).toHaveBeenNthCalledWith(3, { total: 18, done: 18 });
     });
 
     it('should show and hide the progress modal', async () => {

@@ -84,7 +84,7 @@ describe('JSONTransformerService Row Content', () => {
         const headers = Papa.parse(headerCSV).data[0];
         const row = Papa.parse(rowCSV).data[0];
 
-        expect(row[headers.indexOf('acc_gps_col')]).toBe('10');
+        expect(row[headers.indexOf('accuracy_gps_col')]).toBe('10');
         expect(row[headers.indexOf('UTM_Zone_gps_col')]).toBe('30U');
         expect(parseInt(row[headers.indexOf('UTM_Northing_gps_col')])).toBeGreaterThan(5700000);
         expect(parseInt(row[headers.indexOf('UTM_Northing_gps_col')])).toBeLessThan(5800000);
@@ -187,7 +187,7 @@ describe('JSONTransformerService Parity Tests', () => {
 
         const locIndex = headerArray.indexOf('lat_gps');
         expect(headerArray.slice(locIndex, locIndex + 6)).toEqual([
-            'lat_gps', 'long_gps', 'acc_gps', 'UTM_Northing_gps', 'UTM_Easting_gps', 'UTM_Zone_gps'
+            'lat_gps', 'long_gps', 'accuracy_gps', 'UTM_Northing_gps', 'UTM_Easting_gps', 'UTM_Zone_gps'
         ]);
 
         expect(headerArray).toContain('user_age');

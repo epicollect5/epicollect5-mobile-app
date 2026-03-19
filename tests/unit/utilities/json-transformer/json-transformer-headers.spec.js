@@ -54,7 +54,7 @@ describe('JSONTransformerService Headers', () => {
 
         const result = JSONTransformerService.getFormCSVHeaders(form, mockMappings, false, 0, false);
 
-        expect(result).toContain('lat_gps_col,long_gps_col,acc_gps_col,UTM_Northing_gps_col,UTM_Easting_gps_col,UTM_Zone_gps_col');
+        expect(result).toContain('lat_gps_col,long_gps_col,accuracy_gps_col,UTM_Northing_gps_col,UTM_Easting_gps_col,UTM_Zone_gps_col');
     });
 
     it('should recursively flatten group headers', () => {

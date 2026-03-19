@@ -48,17 +48,21 @@ export const writeFileService = {
                     return mapping.forms;
                 }
             });
-            let branchIndex = 0;
             const branchHeader = projectExtra.inputs[branchRef].data.question;
+            const defaultForms = defaultMapping[0].forms;
 
-            for (const [inputRef, _input] of Object.entries(defaultMapping[0].forms[formRef])) {
-                if (inputRef === branchRef) {
-                    // Prepend form index (formIndex + 1 to start from 1) to branch identifier
-                    filename = utilsService.generateFilenameForExport('form-' + (formIndex + 1) + '_branch-' + (branchRef), formName + '-' + branchHeader);
-                    break;
+            // Count only branch-type inputs globally to get the correct index
+            let globalBranchIndex = 1;
+            outer: for (const [_fRef, inputs] of Object.entries(defaultForms)) {
+                for (const [inputRef, _input] of Object.entries(inputs)) {
+                    if (inputRef === branchRef) break outer;
+                    if (projectModel.getInput(inputRef)?.type === 'branch') {
+                        globalBranchIndex++;
+                    }
                 }
-                branchIndex++;
             }
+
+            filename = utilsService.generateFilenameForExport('branch-' + globalBranchIndex, formName + '-' + branchHeader);
         }
         else {
             // formIndex + 1 to start from 1

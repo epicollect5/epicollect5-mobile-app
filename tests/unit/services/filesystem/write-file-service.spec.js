@@ -84,7 +84,7 @@ describe('writeFileService', () => {
 
             const path = writeFileService.getCSVFilePath('form1', 'branch1', Directory.Documents);
 
-            expect(utilsService.generateFilenameForExport).toHaveBeenCalledWith('form-1_branch-branch1', 'Test Form-Branch Question');
+            expect(utilsService.generateFilenameForExport).toHaveBeenCalledWith('branch-1', 'Test Form-Branch Question');
             expect(path).toBe('Epicollect5/my-project/data/form-1_branch-branch1_test-form-branch-question.csv');
         });
     });
