@@ -433,9 +433,9 @@ export const exportService = {
                     total: total,
                     done: total
                 });
-            }, PARAMETERS.DELAY_LONG);
 
-            return deviceExportPath; // Return the path to the exported files
+                return deviceExportPath; // Return the path to the exported files
+            }, PARAMETERS.DELAY_LONG);
         } catch (error) {
             console.error('Send to device failed:', error);
             success = false;

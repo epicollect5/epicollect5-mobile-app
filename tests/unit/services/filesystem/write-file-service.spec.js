@@ -11,7 +11,8 @@ vi.mock('@capacitor/filesystem', () => ({
     },
     Directory: {
         Documents: 'Documents',
-        Data: 'DATA'
+        Data: 'DATA',
+        LibraryNoCloud: 'LIBRARY_NO_CLOUD'
     },
     Encoding: {
         UTF8: 'utf8'
@@ -111,6 +112,26 @@ describe('writeFileService', () => {
                 path: 'test.csv',
                 data: '\r\n' + row,
                 directory: Directory.Documents,
+                encoding: Encoding.UTF8
+            });
+        });
+
+        it('should write headers and append row when offset is 0 (LibraryNoCloud)', async () => {
+            vi.spyOn(writeFileService, 'getCSVFilePath').mockReturnValue('test.csv');
+
+            await writeFileService.appendCSVRow(headers, row, formRef, 0, branchRef, Directory.LibraryNoCloud);
+
+            expect(Filesystem.writeFile).toHaveBeenCalledWith({
+                path: 'test.csv',
+                data:  '\uFEFF' + headers,
+                directory: Directory.LibraryNoCloud,
+                encoding: Encoding.UTF8,
+                recursive: true
+            });
+            expect(Filesystem.appendFile).toHaveBeenCalledWith({
+                path: 'test.csv',
+                data: '\r\n' + row,
+                directory: Directory.LibraryNoCloud,
                 encoding: Encoding.UTF8
             });
         });

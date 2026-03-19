@@ -469,7 +469,7 @@ describe('JSONTransformerService — getBranchCSVHeaders splice correctness', ()
     });
 
     it('should have the correct total column count after splice', () => {
-        // 2 metadata (owner_uuid, branch_uuid) + created_at + exported_at + title + 2 questions = 6
+        // 2 metadata (owner_uuid, branch_uuid) + created_at + exported_at + title + 2 questions = 7
         const headers = Papa.parse(
             JSONTransformerService.getBranchCSVHeaders({branchRef: 'branch_ref', formRef: 'f_1'}, mappings)
         ).data[0];
