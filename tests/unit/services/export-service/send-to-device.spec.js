@@ -83,7 +83,18 @@ describe('exportService.sendToDevice', () => {
     });
 
     it('should return the export path on success', async () => {
-        const result = await exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        // 1. Start the function but DO NOT 'await' it yet
+        const exportPromise = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+
+        // 2. Allow all the 'awaits' BEFORE the delay to resolve
+        await vi.runAllTicks();
+
+        // 3. Move the fake clock forward
+        vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
+
+        // 4. Now that the timer has fired, we can await the final result
+        const result = await exportPromise;
+
         expect(result).toBe(MOCK_EXPORT_PATH);
     });
 

@@ -348,10 +348,9 @@ export const exportService = {
                 done: total
             });
 
-            setTimeout(async () => {
-                await notificationService.hideProgressExportModal();
-                // Delay to ensure modal is hidden before share sheet opens
-            }, 2 * PARAMETERS.DELAY_LONG);
+            // Ensure user sees 100% before modal disappears
+            await utilsService.delay(2 * PARAMETERS.DELAY_LONG);
+            await notificationService.hideProgressExportModal();
 
             let shareSuccessful = false;
             try {
@@ -428,14 +427,14 @@ export const exportService = {
             // Update progress to 100%n with a slight delay
             // to ensure the user sees the completed state
             // before the modal disappears
-            setTimeout(() => {
-                notificationService.setProgressExport({
-                    total: total,
-                    done: total
-                });
+            await utilsService.delay(PARAMETERS.DELAY_LONG);
 
-                return deviceExportPath; // Return the path to the exported files
-            }, PARAMETERS.DELAY_LONG);
+            notificationService.setProgressExport({
+                total: total,
+                done: total
+            });
+
+            return deviceExportPath; // Return the path to the exported files
         } catch (error) {
             console.error('Send to device failed:', error);
             success = false;

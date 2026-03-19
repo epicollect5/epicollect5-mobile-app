@@ -973,6 +973,8 @@ export const utilsService = {
         }
 
         return cleanSlug; // iOS public Documents
+    },
+    async delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
-
 };
