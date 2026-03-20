@@ -11,11 +11,11 @@
   </ion-header>
   <ion-content class="ion-text-center">
     <ion-spinner
-        class="spinner-encoding"
+        class="spinner-export"
         name="crescent">
     </ion-spinner>
     <div
-        class="progress-encoding animate__animated animate__fadeIn"
+        class="progress-export animate__animated animate__fadeIn"
     >
       <ion-progress-bar
           color="primary"
@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import {computed} from '@vue/reactivity';
+import {computed} from 'vue';
 import {useRootStore} from '@/stores/root-store';
 
 export default {
@@ -47,12 +47,14 @@ export default {
 
     const computedScope = {
       progress: computed(() => {
-        const progress = rootStore.progressEncoding;
-        return progress.done;
+        const progress = rootStore.progressExport;
+        if (progress.total === 0) return 0;
+        return progress.done / progress.total;
       }),
       percentageDisplay: computed(() => {
-        const progress = rootStore.progressEncoding;
-        return Math.round((progress.done) * 100) + '%';
+        const progress = rootStore.progressExport;
+        if (progress.total === 0) return '0%';
+        return Math.round((progress.done / progress.total) * 100) + '%';
       }),
       header: props.header
     };

@@ -59,5 +59,8 @@ project(':capacitor-toast').projectDir = new File('../node_modules/@capacitor/to
 include ':capawesome-capacitor-android-edge-to-edge-support'
 project(':capawesome-capacitor-android-edge-to-edge-support').projectDir = new File('../node_modules/@capawesome/capacitor-android-edge-to-edge-support/android')
 
+include ':capgo-capacitor-zip'
+project(':capgo-capacitor-zip').projectDir = new File('../node_modules/@capgo/capacitor-zip/android')
+
 include ':whiteguru-capacitor-plugin-video-editor'
 project(':whiteguru-capacitor-plugin-video-editor').projectDir = new File('../node_modules/@whiteguru/capacitor-plugin-video-editor/android')

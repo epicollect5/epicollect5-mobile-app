@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
 import { projectModel } from '@/models/project-model.js';
@@ -26,7 +28,7 @@ const mockMappings = [{
 
 const baseEntry = {
     entry_uuid: 'uuid-123',
-    created_at: '2026-03-04T12:00:00Z',
+    created_at: '2026-03-04T12:00:00.000Z',
     title: 'Test Entry'
 };
 
@@ -42,7 +44,11 @@ describe('JSONTransformerService Row Content', () => {
         const result = await JSONTransformerService.getFormCSVRow(baseEntry, form, answers, false);
         const row = Papa.parse(result).data[0];
 
-        expect(row).toEqual(['uuid-123', '2026-03-04T12:00:00Z', 'Test Entry', 'Alice']);
+        expect(row[0]).toBe('uuid-123'); // entry_uuid
+        expect(row[1]).toBe('2026-03-04T12:00:00.000Z'); // created_at
+        expect(row[3]).toBe('Test Entry'); // title
+        expect(row[4]).toBe('Alice'); // answer
+        expect(row[2]).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/); // exported_at format
     });
 
     it('should handle empty or null answers gracefully', async () => {
@@ -53,7 +59,7 @@ describe('JSONTransformerService Row Content', () => {
         const result = await JSONTransformerService.getFormCSVRow(baseEntry, form, answers, false);
         const row = Papa.parse(result).data[0];
 
-        expect(row[3]).toBe('');
+        expect(row[4]).toBe('');
     });
 
     it('should fill 6 columns for location even if coordinates are missing', async () => {
@@ -64,7 +70,7 @@ describe('JSONTransformerService Row Content', () => {
         const result = await JSONTransformerService.getFormCSVRow(baseEntry, form, answers, false);
         const row = Papa.parse(result).data[0];
 
-        expect(row.slice(3, 9)).toEqual(['', '', '', '', '', '']);
+        expect(row.slice(4, 10)).toEqual(['', '', '', '', '', '']);
     });
 
     it('should correctly format UTM values for valid coordinates', async () => {
@@ -78,7 +84,7 @@ describe('JSONTransformerService Row Content', () => {
         const headers = Papa.parse(headerCSV).data[0];
         const row = Papa.parse(rowCSV).data[0];
 
-        expect(row[headers.indexOf('acc_gps_col')]).toBe('10');
+        expect(row[headers.indexOf('accuracy_gps_col')]).toBe('10');
         expect(row[headers.indexOf('UTM_Zone_gps_col')]).toBe('30U');
         expect(parseInt(row[headers.indexOf('UTM_Northing_gps_col')])).toBeGreaterThan(5700000);
         expect(parseInt(row[headers.indexOf('UTM_Northing_gps_col')])).toBeLessThan(5800000);
@@ -98,8 +104,8 @@ describe('JSONTransformerService Row Content', () => {
         const result = await JSONTransformerService.getFormCSVRow(baseEntry, form, answers, false);
         const row = Papa.parse(result).data[0];
 
-        expect(row[3]).toBe('Nested Value');
-        expect(row.length).toBe(4);
+        expect(row[4]).toBe('Nested Value');
+        expect(row.length).toBe(5);
     });
 });
 
@@ -177,11 +183,11 @@ describe('JSONTransformerService Parity Tests', () => {
         const rowArray = Papa.parse(rowCSV).data[0];
 
         expect(headerArray.length).toBe(rowArray.length);
-        expect(headerArray.slice(0, 3)).toEqual(['ec5_uuid', 'created_at', 'title']);
+        expect(headerArray.slice(0, 4)).toEqual(['ec5_uuid', 'created_at', 'exported_at', 'title']);
 
         const locIndex = headerArray.indexOf('lat_gps');
         expect(headerArray.slice(locIndex, locIndex + 6)).toEqual([
-            'lat_gps', 'long_gps', 'acc_gps', 'UTM_Northing_gps', 'UTM_Easting_gps', 'UTM_Zone_gps'
+            'lat_gps', 'long_gps', 'accuracy_gps', 'UTM_Northing_gps', 'UTM_Easting_gps', 'UTM_Zone_gps'
         ]);
 
         expect(headerArray).toContain('user_age');
@@ -248,7 +254,7 @@ describe('JSONTransformerService Multi-Branch Logic', () => {
         const result = JSONTransformerService.getBranchCSVHeaders({ branchRef: 'branch_photos', formRef: 'f_1' }, mockMappings);
         const headers = Papa.parse(result).data[0];
 
-        expect(headers).toEqual(['ec5_branch_owner_uuid', 'ec5_branch_uuid', 'created_at', 'title', 'Caption']);
+        expect(headers).toEqual(['ec5_branch_owner_uuid', 'ec5_branch_uuid', 'created_at', 'exported_at', 'title', 'Caption']);
     });
 
     it('should maintain parity between branch headers and rows', async () => {
@@ -274,7 +280,7 @@ describe('JSONTransformerService Multi-Branch Logic', () => {
         expect(headers.length).toBe(row.length);
         expect(headers[0]).toBe('ec5_branch_owner_uuid');
         expect(row[0]).toBe('owner-123');
-        expect(headers[4]).toBe('Caption');
-        expect(row[4]).toBe('A nice view');
+        expect(headers[5]).toBe('Caption');
+        expect(row[5]).toBe('A nice view');
     });
 });

@@ -7,14 +7,14 @@ import { utilsService } from '@/services/utilities/utils-service';
 
 export const writeFileService = {
 
-    async appendCSVRow (headers, row, formRef, offset, branchRef) {
-        const filepath = this.getFilePath(formRef, branchRef);
+    async appendCSVRow (headers, row, formRef, offset, branchRef, destination = Directory.Documents) {
+        const filepath = this.getCSVFilePath(formRef, branchRef, destination);
 
         if (offset === 0) {
             await Filesystem.writeFile({
                 path: filepath,
-                data: headers,
-                directory: Directory.Documents,
+                data: '\uFEFF' + headers, // Add UTF-8 BOM for Excel compatibility
+                directory: destination,
                 encoding: Encoding.UTF8,
                 recursive: true
             });
@@ -25,13 +25,13 @@ export const writeFileService = {
             await Filesystem.appendFile({
                 path: filepath,
                 data: '\r\n' + row,
-                directory: Directory.Documents,
+                directory: destination,
                 encoding: Encoding.UTF8
             });
         }
     },
 
-    getFilePath (formRef, branchRef) {
+    getCSVFilePath (formRef, branchRef, destination = Directory.Documents) {
         const projectSlug = projectModel.getSlug();
         const mappings = projectModel.getProjectMappings();
         const projectExtra = projectModel.getProjectExtra();
@@ -48,23 +48,27 @@ export const writeFileService = {
                     return mapping.forms;
                 }
             });
-            let branchIndex = 0;
             const branchHeader = projectExtra.inputs[branchRef].data.question;
+            const defaultForms = defaultMapping[0].forms;
 
-            for (const [inputRef, _input] of Object.entries(defaultMapping[0].forms[formRef])) {
-                if (inputRef === branchRef) {
-                    // Prepend form index (formIndex + 1 to start from 1) to branch identifier
-                    filename = utilsService.generateFilenameForExport('form-' + (formIndex + 1) + '_branch-' + (branchRef), formName + '-' + branchHeader);
-                    break;
+            // Count only branch-type inputs globally to get the correct index
+            let globalBranchIndex = 1;
+            outer: for (const [_fRef, inputs] of Object.entries(defaultForms)) {
+                for (const [inputRef, _input] of Object.entries(inputs)) {
+                    if (inputRef === branchRef) break outer;
+                    if (projectModel.getInput(inputRef)?.type === 'branch') {
+                        globalBranchIndex++;
+                    }
                 }
-                branchIndex++;
             }
+
+            filename = utilsService.generateFilenameForExport('branch-' + globalBranchIndex, formName + '-' + branchHeader);
         }
         else {
             // formIndex + 1 to start from 1
             filename = utilsService.generateFilenameForExport('form-' + (formIndex + 1), formName);
         }
-        const folder = utilsService.getExportPath(projectSlug);
+        const folder = utilsService.getExportPath(projectSlug, destination);
 
         path = folder + '/data/' + filename + '.csv';
         return path;

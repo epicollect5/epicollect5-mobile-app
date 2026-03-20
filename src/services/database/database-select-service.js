@@ -79,7 +79,7 @@ export const databaseSelectService = {
 
         }
 
-        query += ' LIMIT 1 ';
+        query += ' ORDER BY created_at DESC LIMIT 1 ';
         //console.log(params);
         //console.log(query);
 
@@ -140,7 +140,7 @@ export const databaseSelectService = {
 
         const params = [projectRef, ownerInputRef];
 
-        query += 'LIMIT 1';
+        query += ' ORDER BY created_at DESC LIMIT 1 ';
         query += ' OFFSET ' + offset + ' ';
 
         return await this.getRows(query, params);
@@ -447,6 +447,26 @@ export const databaseSelectService = {
 
         return await this.getRows(query, params);
     },
+    async countAllEntries(projectRef) {
+        const query = 'SELECT COUNT(*) as total FROM entries WHERE project_ref = ?';
+        const params = [projectRef];
+        const result = await this.getRows(query, params);
+        return result.rows.item(0).total;
+    },
+
+    async countAllBranchEntries(projectRef) {
+        const query = 'SELECT COUNT(*) as total FROM branch_entries WHERE project_ref = ?';
+        const params = [projectRef];
+        const result = await this.getRows(query, params);
+        return result.rows.item(0).total;
+    },
+
+    async countAllMedia(projectRef) {
+        const query = 'SELECT COUNT(*) as total FROM media WHERE project_ref = ?';
+        const params = [projectRef];
+        const result = await this.getRows(query, params);
+        return result.rows.item(0).total;
+    },
     //Function to get entries for a project
     async selectBranchEntries(projectRef, formRef, ownerInputRef, order) {
 
@@ -533,7 +553,7 @@ export const databaseSelectService = {
 
         return await this.getRows(query, params);
     },
-    //this select from both branch _entries and temp_branch_entries
+    //this selects from both branch _entries and temp_branch_entries
     async selectBranchesForQuestion(ownerEntryUuid, ownerInputRef, limit, offset, filters, status) {
 
         let query = '';
@@ -996,7 +1016,7 @@ export const databaseSelectService = {
     /**
          * When deleting an entry, we have to delete all the children down to nested levels
          * We also need to collect the branch entries for current entry and each child entry,
-         * to delete any media: branch entries are delete directly passing the uuid as branch_owner_uuid
+         * to delete any media: branch entries are deleted directly passing the uuid as branch_owner_uuid
          */
     async getHierarchyEntries(entryUuid) {
 
@@ -1014,7 +1034,6 @@ export const databaseSelectService = {
             function _select(entryUuids) {
 
                 //get all child entries and branch entries for the current child entry
-                //todo: test this response, migrating from $q
                 Promise.all([
                     self.selectChildEntries(entryUuids),
                     //todo change selectBranches to accept array of uuids..
@@ -1047,9 +1066,7 @@ export const databaseSelectService = {
                             _select(childEntriesUuids);
                         }
                         else {
-
                             //todo this would resolve too early.....
-
                             //no more children down the hierarchy,
                             //resolve with complete array of entries
                             resolve({

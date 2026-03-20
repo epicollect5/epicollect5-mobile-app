@@ -1,10 +1,11 @@
 export const STRINGS = {
     en: {
         labels: {
+            send_to_device: 'Send to Device',
+            share_archive: 'Share Archive',
+            save_entries: 'Save entries',
             entries_exported: 'Entries exported',
             saving_with_encoding: 'Upload with media encoding.\n\nThis will take some time.\n\nDo not close this tab',
-            media_exported: 'Media exported',
-            export_media: 'Export Media',
             cannot_clone_incomplete_entry: 'Cannot clone incomplete entry',
             cannot_clone_entry_with_errors : 'Cannot clone entry with errors',
             entry_cloned: 'Entry cloned',
@@ -248,15 +249,17 @@ export const STRINGS = {
             take: 'Take',
             pick: 'Pick',
             collected_on: 'Collected on ',
-            dismiss: 'Dismiss'
+            dismiss: 'Dismiss',
+            exporting_entries: 'Exporting Entries'
         }
     },
     it: {
         labels: {
+            send_to_device: 'Invia al Dispositivo',
+            share_archive: 'Condividi Archivio',
+            save_entries: 'Salva voci',
             entries_exported: 'Voci esportate',
             saving_with_encoding: 'Carica con codifica media.\n\nCi vorrà un po\' di tempo.\n\nNon chiudere questa scheda',
-            media_exported: 'Media Esportati',
-            export_media: 'Esporta Media',
             cannot_clone_incomplete_entry: 'Impossibile clonare una voce incompleta',
             cannot_clone_entry_with_errors: 'Impossibile clonare una voce con errori',
             entry_cloned: 'Voce clonata',
@@ -500,15 +503,17 @@ export const STRINGS = {
             take: 'Camera',
             pick: 'Galleria',
             collected_on: 'Aggiunta il ',
-            dismiss: 'Chiudi'
+            dismiss: 'Chiudi',
+            exporting_entries: 'Esportando voci'
         }
     },
     es: {
         labels: {
+            send_to_device: 'Enviar al Dispositivo',
+            share_archive: 'Compartir Archivo',
+            save_entries: 'Guardar entradas',
             entries_exported: 'Entradas exportadas',
             saving_with_encoding: 'Subir con codificación media.\n\nEsto tomará un tiempo.\n\nNo cierre esta pestaña.',
-            media_exported: 'Media exportada',
-            export_media: 'Exportar Media',
             cannot_clone_incomplete_entry: 'No se puede clonar una entrada incompleta',
             cannot_clone_entry_with_errors: 'No se puede clonar una entrada con errores',
             entry_cloned: 'Entrada clonada',
@@ -752,15 +757,17 @@ export const STRINGS = {
             take: 'Cámara',
             pick: 'Galería',
             collected_on: 'Recogida en ',
-            dismiss: 'Cerrar'
+            dismiss: 'Cerrar',
+            exporting_entries: 'Exportando entradas'
         }
     },
     fr: {
         labels: {
+            send_to_device: 'Envoyer sur l\'Appareil',
+            share_archive: 'Partager l\'Archive',
+            save_entries: 'Enregistrer les entrées',
             entries_exported: 'Entrées exportées',
             saving_with_encoding: 'Téléverser avec encodage medias.\n\nCela peut prendre un certain temps.\n\nNe fermez pas cet onglet.',
-            media_exported: 'Médias exportés',
-            export_media: 'Exporter Médias',
             cannot_clone_incomplete_entry: 'Impossible de cloner une entrée incomplète',
             cannot_clone_entry_with_errors: 'Impossible de cloner une entrée avec des erreurs',
             entry_cloned: 'Entrée clonée',
@@ -1004,15 +1011,17 @@ export const STRINGS = {
             take: 'Prendre',
             pick: 'Choisir',
             collected_on: 'Collectée le ',
-            dismiss: 'Annuler'
+            dismiss: 'Annuler',
+            exporting_entries: 'Exportation des entrées'
         }
     },
     pl: {
         labels: {
+            send_to_device: 'Wyślij na Urządzenie',
+            share_archive: 'Udostępnij Archiwum',
+            save_entries: 'Zapisz wpisy',
             entries_exported: 'Wpisy wyeksportowane',
             saving_with_encoding : 'Wysyłanie z kodowaniem media.\n\nTo może potrwać trochę czasu.\n\nNie zamykaj tej karty.',
-            media_exported: 'Media eksportowane',
-            export_media: 'Eksportuj Media',
             cannot_clone_incomplete_entry: 'Nie można sklonować niekompletnej wpisu',
             cannot_clone_entry_with_errors: 'Nie można sklonować wpisu z błędami',
             entry_cloned: 'Wpis sklonowany',
@@ -1256,15 +1265,17 @@ export const STRINGS = {
             take: 'Zrób',
             pick: 'Pobierz',
             collected_on: 'Zebrane na/w ',
-            dismiss: 'Anuluj'
+            dismiss: 'Anuluj',
+            exporting_entries: 'Eksportowanie wpisów'
         }
     },
     pt: {
         labels: {
+            send_to_device: 'Enviar para Dispositivo',
+            share_archive: 'Compartilhar Arquivo',
+            save_entries: 'Salvar entradas',
             entries_exported: 'Entradas exportadas',
             saving_with_encoding: 'Carregando com codificação.\n\nIsso pode levar algum tempo.\n\nNão feche esta guia.',
-            media_exported: 'Multimídia exportada',
-            export_media: 'Exportar Multimídia',
             cannot_clone_incomplete_entry: 'Não é possível clonar uma entrada incompleta',
             cannot_clone_entry_with_errors: 'Não é possível clonar uma entrada com erros',
             entry_cloned: 'Entrada clonada',
@@ -1508,15 +1519,17 @@ export const STRINGS = {
             take: 'Tirar',
             pick: 'Escolher',
             collected_on: 'Coletado em ',
-            dismiss: 'Fechar'
+            dismiss: 'Fechar',
+            exporting_entries: 'Exportando entradas'
         }
     },
     ca: {
         labels: {
+            send_to_device: 'Enviar al Dispositiu',
+            share_archive: 'Compartir Arxiu',
+            save_entries: 'Desa les entrades',
             entries_exported: 'Entrades exportades',
             saving_with_encoding: 'Carregant amb codificació.\n\nAixò pot trigar algun temps.\n\nNo tanqui aquesta pestanya.',
-            media_exported: 'Mídia exportada',
-            export_media: 'Exportar Mídia',
             cannot_clone_incomplete_entry: 'No es pot clonar una entrada incompleta',
             cannot_clone_entry_with_errors: 'No es pot clonar una entrada amb errors',
             entry_cloned: 'Entrada clonada',
@@ -1760,15 +1773,17 @@ export const STRINGS = {
             take: 'Fes',
             pick: 'Selecciona',
             collected_on: 'Recull el ',
-            dismiss: 'Descarta'
+            dismiss: 'Descarta',
+            exporting_entries: 'Exportant entrades'
         }
     },
     sl:{
         labels: {
+            send_to_device: 'Pošlji na Napravo',
+            share_archive: 'Deli Arhiv',
+            save_entries: 'Shrani vnose',
             entries_exported: 'Izvoženi vnosi',
             saving_with_encoding: 'Prenos z kodiranjem.\n\nTo lahko traja nekaj časa.\n\nNe zaprite te zavihke.',
-            media_exported: 'Mediji so izvozni',
-            export_media: 'Izvozi Medije',
             cannot_clone_incomplete_entry: 'Ni mogoče klonirati nepopolnega vnosa',
             cannot_clone_entry_with_errors: 'Ni mogoče klonirati vnosa z napakami',
             entry_cloned: 'Vnos kloniran.',
@@ -2012,15 +2027,17 @@ export const STRINGS = {
             take: 'Fotografiraj',
             pick: 'Galerija',
             collected_on: 'Zbrano dne ',
-            dismiss: 'Zavrni'
+            dismiss: 'Zavrni',
+            exporting_entries: 'Izvažanje vnosov'
         }
     },
     de: {
         labels: {
+            send_to_device: 'An Gerät Senden',
+            share_archive: 'Archiv Teilen',
+            save_entries: 'Einträge speichern',
             entries_exported: 'Einträge exportiert',
             saving_with_encoding: 'Mit Kodierung hochladen.\n\nDies wird eine Weile dauern.\n\nSchließen Sie diesen Tab nicht.',
-            media_exported: 'Medien exportiert',
-            export_media: 'Exportieren Medien',
             cannot_clone_incomplete_entry: 'Kann unvollständige Einträge nicht klonen',
             cannot_clone_entry_with_errors: 'Kann Einträge mit Fehlern nicht klonen',
             entry_cloned: 'Eintrag geklont',
@@ -2264,7 +2281,8 @@ export const STRINGS = {
             take: 'Aufnehmen',
             pick: 'Auswählen',
             collected_on: 'Erfasst am ',
-            dismiss: 'Schließen'
+            dismiss: 'Schließen',
+            exporting_entries: 'Einträge exportieren'
         }
     }
 };

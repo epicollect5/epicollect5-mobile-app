@@ -145,7 +145,8 @@ export const initService = {
 
             if (isHealthy) {
                 // F. Success! Wipe the public evidence.
-                await Filesystem.deleteFile({path: dbName, directory: Directory.Documents});
+                await Filesystem.deleteFile({ path: dbName, directory: Directory.Documents });
+
                 return true;
             } else {
                 // Failure: Delete the corrupted copy so we don't use it.

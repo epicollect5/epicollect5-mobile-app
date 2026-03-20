@@ -117,43 +117,45 @@
           >&nbsp;{{ labels.edit_remote_entries }}
           </ion-label>
         </ion-item>
-        <ion-item
-            button
-            data-test="export-media"
-            @click="exportMedia()">
-          <ion-icon :icon="download">
-          </ion-icon>
-          <ion-label
-              data-translate="export_media"
-              class="ion-text-nowrap"
-          >
-            &nbsp;{{ labels.export_media }}
-          </ion-label>
-          <sup>&nbsp;Beta</sup>
-        </ion-item>
-        <ion-item
-            button
-            data-test="export-entries"
-            @click="exportEntries()">
-          <ion-icon :icon="download">
-          </ion-icon>
-          <ion-label
-              data-translate="export_entries"
-              class="ion-text-nowrap"
-          >
-            &nbsp;{{ labels.export_entries }}
-          </ion-label>
-          <sup>&nbsp;Beta</sup>
-        </ion-item>
-        <!-- <ion-item
-          button
-          data-test="invite"
-          @click="invite()"
+        <ion-item-divider
+            color="secondary"
+            class="ion-no-padding"
         >
-          <ion-icon :icon="people">
+          <ion-label
+              class="item-divider-label-centered ion-text-uppercase ion-text-nowrap"
+              data-translate="export_entries"
+          >
+            {{ labels.export_entries }}
+          </ion-label>
+        </ion-item-divider>
+        <ion-item
+            button
+            data-test="send-to-device"
+            @click="sendToDevice()">
+          <ion-icon :icon="phonePortraitSharp">
           </ion-icon>
-          <ion-label data-translate="invite" class="ion-text-nowrap">&nbsp;{{ labels.invite }}</ion-label>
-        </ion-item> -->
+          <ion-label
+              data-translate="send_to_device"
+              class="ion-text-nowrap"
+          >
+            &nbsp;{{ labels.send_to_device }}
+          </ion-label>
+          <sup>&nbsp;Beta</sup>
+        </ion-item>
+        <ion-item
+            button
+            data-test="share-archive"
+            @click="shareArchive()">
+          <ion-icon :icon="share">
+          </ion-icon>
+          <ion-label
+              data-translate="share_archive"
+              class="ion-text-nowrap"
+          >
+            &nbsp;{{ labels.share_archive }}
+          </ion-label>
+          <sup>&nbsp;Beta</sup>
+        </ion-item>
         <ion-item-divider
             color="primary"
             class="ion-no-padding"
@@ -308,7 +310,8 @@ import {
   timeOutline,
   logoChrome,
   desktopOutline,
-  download
+  share,
+  phonePortraitSharp
 } from 'ionicons/icons';
 import {useRouter} from 'vue-router';
 import {PARAMETERS} from '@/config';
@@ -353,7 +356,7 @@ export default {
         //imp:does not work after the menu is closed, so onWillClose is used
         drawerContent.value.$el.scrollToTop(PARAMETERS.DELAY_FAST);
       },
-      async exportMedia() {
+      async sendToDevice() {
         //If not native platform bail out
         if (!Capacitor.isNativePlatform()) {
           return;
@@ -361,67 +364,45 @@ export default {
 
         const projectRef = projectModel.getProjectRef();
         const projectSlug = projectModel.getSlug();
-        //show loader
-        await notificationService.showProgressDialog(labels.wait);
 
         try {
-          await exportService.exportMedia(projectRef, projectSlug);
-          notificationService.hideProgressDialog();
+          await exportService.sendToDevice(projectRef, projectSlug);
+
           const documentsFolder = utilsService.getPlatformDocumentsFolder();
           //Warn users and show the download folder according to the platform
           if (rootStore.device.platform === PARAMETERS.ANDROID) {
             //Show path for Android
             const message = documentsFolder + ' > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug;
             await notificationService.showAlert(
-                message,
-                labels.media_exported
+                message
             );
           }
           if (rootStore.device.platform === PARAMETERS.IOS) {
             await notificationService.showAlert(
-                '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug,
-                labels.media_exported
+                '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug
             );
           }
-          menuController.close();
         } catch (error) {
           console.log(error);
-          notificationService.hideProgressDialog();
-          await notificationService.showAlert(error);
-        }
-      },
-
-      async exportEntries() {
-        const projectRef = projectModel.getProjectRef();
-        const projectSlug = projectModel.getSlug();
-        await notificationService.showProgressDialog(labels.wait);
-
-        //export all hierarchy entries
-        try {
-          await exportService.exportHierarchyEntries(projectRef);
-          await exportService.exportBranchEntries(projectRef);
-
-          const documentsFolder = utilsService.getPlatformDocumentsFolder();
-          //Warn users and show the download folder according to the platform
-          if (rootStore.device.platform === PARAMETERS.ANDROID) {
-            //Show path for Android
-            const message = documentsFolder + ' > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug + ' > ' + 'data';
-            await notificationService.showAlert(
-                message,
-                labels.entries_exported
-            );
-          }
-          if (rootStore.device.platform === PARAMETERS.IOS) {
-            await notificationService.showAlert(
-                '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug + ' > ' + 'data',
-                labels.entries_exported
-            );
-          }
-          menuController.close();
-        } catch (error) {
           await notificationService.showAlert(error);
         } finally {
-          notificationService.hideProgressDialog();
+          menuController.close();
+        }
+      },
+      async shareArchive() {
+        if (!Capacitor.isNativePlatform()) {
+          return;
+        }
+        try {
+          const sharesStatus = await exportService.exportEntriesZipArchive(projectModel.getProjectRef(), projectModel.getSlug());
+          if (sharesStatus === PARAMETERS.SHARE_STATUS.SHARED) {
+            notificationService.showToast(labels.exporting_success);
+          }
+        } catch (error) {
+          console.log(error);
+          await notificationService.showAlert(error);
+        } finally {
+          menuController.close();
         }
       },
 
@@ -605,7 +586,8 @@ export default {
       timeOutline,
       logoChrome,
       desktopOutline,
-      download
+      share,
+      phonePortraitSharp
       //*****************
     };
   }

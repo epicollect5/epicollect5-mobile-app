@@ -1,4 +1,6 @@
 // noinspection DuplicatedCode
+// noinspection DuplicatedCode
+
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {JSONTransformerService} from '@/services/utilities/json-transformer-service';
 import {projectModel} from '@/models/project-model.js';
@@ -57,7 +59,7 @@ describe('JSONTransformerService — Plain Group', () => {
         const headers = Papa.parse(result).data[0];
 
         expect(headers).not.toContain('PlainGroup');
-        expect(headers).toEqual(['ec5_uuid', 'created_at', 'title', 'Name', 'Sex']);
+        expect(headers).toEqual(['ec5_uuid', 'created_at', 'exported_at', 'title', 'Name', 'Sex']);
     });
 
     it('should generate correct row data for a plain group', async () => {
@@ -195,7 +197,7 @@ describe('JSONTransformerService — Group Nested in Branch', () => {
         const row = Papa.parse(await JSONTransformerService.getBranchCSVRow(entry, branch, {})).data[0];
 
         expect(row.length).toBeGreaterThan(4);
-        row.slice(4).forEach((cell) => {
+        row.slice(5).forEach((cell) => {
             expect(cell).toBe('');
         });
     });
@@ -285,7 +287,7 @@ describe('JSONTransformerService — Multiple Plain Groups on the Same Form', ()
     it('should generate correct headers for two plain groups', () => {
         const headers = Papa.parse(JSONTransformerService.getFormCSVHeaders(form, mappings, false, 0, false)).data[0];
 
-        expect(headers).toEqual(['ec5_uuid', 'created_at', 'title', 'Name', 'Color', 'Age']);
+        expect(headers).toEqual(['ec5_uuid', 'created_at', 'exported_at', 'title', 'Name', 'Color', 'Age']);
         expect(headers).not.toContain('undefined');
     });
 

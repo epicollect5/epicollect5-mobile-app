@@ -43,7 +43,7 @@
     }
 }
 
-.modal-progress-transfer, .modal-progress-encoding {
+.modal-progress-transfer, .modal-progress-encoding, .modal-progress-export {
     --border-radius: 5px;
     --max-height: 200px;
     @media only screen and (max-width: 480px) {
@@ -58,14 +58,14 @@
     @media only screen and (min-width: 769px) {
         --max-width: 33%;
     }
-    .spinner-transfer, .spinner-encoding {
+    .spinner-transfer, .spinner-encoding, .spinner-export {
         left: 50%;
         top: 50%;
         position: fixed;
         transform: translate(-50%, -50%);
         margin-top: -16px;
     }
-    .progress-transfer, .progress-encoding {
+    .progress-transfer, .progress-encoding, .progress-export {
         bottom: 0;
         position: absolute;
         width: 100%;
@@ -112,6 +112,7 @@
 }
 .modal-progress-transfer,
 .modal-progress-encoding,
+.modal-progress-export,
 .modal-barcode,
 .modal-bookmark-add,
 .modal-entries-branch-filter,

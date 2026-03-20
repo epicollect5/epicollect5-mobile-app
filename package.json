@@ -59,6 +59,7 @@
     "@capacitor/status-bar": "^8.0.0",
     "@capacitor/toast": "^8.0.0",
     "@capawesome/capacitor-android-edge-to-edge-support": "^8.0.2",
+    "@capgo/capacitor-zip": "^8.1.5",
     "@ionic-native/core": "^5.36.0",
     "@ionic-native/globalization": "^5.32.1",
     "@ionic/core": "^8.2.0",

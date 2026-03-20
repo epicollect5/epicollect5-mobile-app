@@ -76,6 +76,10 @@
 		"classpath": "io.capawesome.capacitorjs.plugins.androidedgetoedgesupport.EdgeToEdgePlugin"
 	},
 	{
+		"pkg": "@capgo/capacitor-zip",
+		"classpath": "ee.forgr.plugin.capacitor_zip.CapacitorZipPlugin"
+	},
+	{
 		"pkg": "@whiteguru/capacitor-plugin-video-editor",
 		"classpath": "com.whiteguru.capacitor.plugin.videoeditor.VideoEditorPlugin"
 	}

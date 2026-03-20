@@ -2,10 +2,8 @@ import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { menuController, modalController } from '@ionic/vue';
-import { showModalLogin } from '@/use/auth/show-modal-login';
 import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
-import { logout } from '@/use/auth/logout';
 import RightDrawer from '@/components/globals/RightDrawer.vue';
 import { mount, shallowMount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
@@ -287,7 +285,6 @@ describe('RightDrawer component', () => {
 
         const rootStore = useRootStore();
         const dbStore = useDBStore();
-        const labels = STRINGS[rootStore.language].labels;
         const wrapper = mount(RightDrawer);
         rootStore.device = {
             platform: PARAMETERS.WEB
