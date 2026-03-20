@@ -10,6 +10,7 @@ import {Share} from '@capacitor/share';
 import {utilsService} from '@/services/utilities/utils-service';
 import {projectModel} from '@/models/project-model';
 import {useRootStore} from '@/stores/root-store';
+import {PARAMETERS} from '@/config';
 
 vi.mock('@/stores/root-store');
 vi.mock('@/services/utilities/utils-service');
@@ -40,7 +41,18 @@ vi.mock('@capacitor/filesystem', () => ({
         rmdir: vi.fn()
     }
 }));
-vi.mock('@/config', () => ({PARAMETERS: {ANDROID: 'android', APP_NAME: 'Epicollect5', DEBUG: false}}));
+vi.mock('@/config', () => (
+    {
+        PARAMETERS: {
+            ANDROID: 'android',
+            APP_NAME: 'Epicollect5',
+            DEBUG: false,
+            SHARE_STATUS: {
+                SHARED: 1,
+                NOT_SHARED: 0
+            }
+        }
+    }));
 
 const MOCK_PROJECT_REF = 'project-ref-123';
 const MOCK_PROJECT_SLUG = 'my-project';
@@ -98,21 +110,21 @@ describe('exportService.exportEntriesZipArchive', () => {
         exportMediaSpy.mockResolvedValue();
     });
 
-    it('should return true when share succeeds', async () => {
+    it('should return SHARED (1) when share succeeds', async () => {
         const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
-        expect(result).toBe(true);
+        expect(result).toBe(1);
     });
 
     it('should ignore error when share is cancelled 1', async () => {
         Share.share.mockRejectedValue({message: 'canceled'});
         const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
-        expect(result).toBe(true);
+        expect(result).toBe(0);
     });
 
     it('should return true even when share is cancelled 2', async () => {
         Share.share.mockRejectedValue({message: 'cancelled'});
         const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
-        expect(result).toBe(true);
+        expect(result).toBe(PARAMETERS.SHARE_STATUS.NOT_SHARED);
     });
 
     it('should return false when share throws', async () => {
@@ -175,7 +187,7 @@ describe('exportService.exportEntriesZipArchive', () => {
         // exportEntriesZipArchive continues successfully when cleanup encounters missing dirs
         deleteFileService.removeDirectoryIfExists.mockResolvedValue(undefined);
         const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
-        expect(result).toBe(true);
+        expect(result).toBe(PARAMETERS.SHARE_STATUS.SHARED);
     });
 
     it('should return false if removeDirectoryIfExists throws unexpected error', async () => {

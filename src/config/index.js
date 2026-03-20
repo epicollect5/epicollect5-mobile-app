@@ -332,6 +332,11 @@ export const PARAMETERS = {
     ANIMATION_FADEOUT: '',//not used yet
     BARCODE_VIEW_STYLE: ' card ec5-barcode ec5__input ',
 
+    SHARE_STATUS: {
+        NOT_SHARED: 0,
+        SHARED: 1
+    },
+
     ACTIONS: {
         FILE_DELETED: 'file-deleted',
         FILE_QUEUED: 'file-queued',

@@ -352,25 +352,24 @@ export const exportService = {
             await utilsService.delay(2 * PARAMETERS.DELAY_LONG);
             await notificationService.hideProgressExportModal();
 
-            let shareSuccessful = false;
+            let shareStatus = PARAMETERS.SHARE_STATUS.SHARED;
             try {
                 await Share.share({
                     title: `Epicollect5 -- ${projectName}`,
                     url: destResult.uri
                 });
-                shareSuccessful = true;
             } catch (shareError) {
                 const msg = (shareError?.message ?? String(shareError)).toLowerCase();
                 if (msg.includes('cancel')) {
                     // User dismissed — not an error
-                    shareSuccessful = true;
+                    shareStatus = PARAMETERS.SHARE_STATUS.NOT_SHARED;
                 } else {
                     // noinspection ExceptionCaughtLocallyJS
                     throw shareError;
                 }
             }
 
-            return shareSuccessful;
+            return shareStatus;
 
         } catch (error) {
             console.error('Archive failed:', error);

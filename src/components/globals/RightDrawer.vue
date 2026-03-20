@@ -394,8 +394,8 @@ export default {
           return;
         }
         try {
-          const wasShared = await exportService.exportEntriesZipArchive(projectModel.getProjectRef(), projectModel.getSlug());
-          if (wasShared) {
+          const sharesStatus = await exportService.exportEntriesZipArchive(projectModel.getProjectRef(), projectModel.getSlug());
+          if (sharesStatus === PARAMETERS.SHARE_STATUS.SHARED) {
             notificationService.showToast(labels.exporting_success);
           }
         } catch (error) {
