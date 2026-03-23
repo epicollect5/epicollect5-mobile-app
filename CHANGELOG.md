@@ -1,5 +1,11 @@
 ## Release Notes
 
+### 88.9.6 - build 8896
+
+- Export entries as a compressed archive for sharing
+- "Send to Device" export to store project data on the device
+- Real-time progress modal with percentage during exports
+
 ### 88.9.5 - build 8895
 
 - Added ability to export project entries to CSV files.
