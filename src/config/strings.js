@@ -1,6 +1,7 @@
 export const STRINGS = {
     en: {
         labels: {
+            import: 'Import',
             send_to_device: 'Send to Device',
             share_archive: 'Share Archive',
             save_entries: 'Save entries',
@@ -255,6 +256,7 @@ export const STRINGS = {
     },
     it: {
         labels: {
+            import: 'Importa',
             send_to_device: 'Invia al Dispositivo',
             share_archive: 'Condividi Archivio',
             save_entries: 'Salva voci',
@@ -509,6 +511,7 @@ export const STRINGS = {
     },
     es: {
         labels: {
+            import: 'Importar',
             send_to_device: 'Enviar al Dispositivo',
             share_archive: 'Compartir Archivo',
             save_entries: 'Guardar entradas',
@@ -763,6 +766,7 @@ export const STRINGS = {
     },
     fr: {
         labels: {
+            import: 'Importer',
             send_to_device: 'Envoyer sur l\'Appareil',
             share_archive: 'Partager l\'Archive',
             save_entries: 'Enregistrer les entrées',
@@ -1017,6 +1021,7 @@ export const STRINGS = {
     },
     pl: {
         labels: {
+            import: 'Importuj',
             send_to_device: 'Wyślij na Urządzenie',
             share_archive: 'Udostępnij Archiwum',
             save_entries: 'Zapisz wpisy',
@@ -1271,6 +1276,7 @@ export const STRINGS = {
     },
     pt: {
         labels: {
+            import: 'Importar',
             send_to_device: 'Enviar para Dispositivo',
             share_archive: 'Compartilhar Arquivo',
             save_entries: 'Salvar entradas',
@@ -1525,6 +1531,7 @@ export const STRINGS = {
     },
     ca: {
         labels: {
+            import: 'Importa',
             send_to_device: 'Enviar al Dispositiu',
             share_archive: 'Compartir Arxiu',
             save_entries: 'Desa les entrades',
@@ -1779,6 +1786,7 @@ export const STRINGS = {
     },
     sl:{
         labels: {
+            import: 'Uvozi',
             send_to_device: 'Pošlji na Napravo',
             share_archive: 'Deli Arhiv',
             save_entries: 'Shrani vnose',
@@ -2033,6 +2041,7 @@ export const STRINGS = {
     },
     de: {
         labels: {
+            import: 'Importieren',
             send_to_device: 'An Gerät Senden',
             share_archive: 'Archiv Teilen',
             save_entries: 'Einträge speichern',

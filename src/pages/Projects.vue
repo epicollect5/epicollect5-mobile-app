@@ -67,13 +67,13 @@
       <div v-show="showAddProjectsHelperText">
         <ion-card>
           <ion-card-content class="ion-text-center">
-            <p><strong>{{labels.project_addition_help_text}}</strong></p>
+            <p><strong>{{ labels.project_addition_help_text }}</strong></p>
             <ion-button color="warning" @click="openAddProjectsDocs()">
               <ion-icon
                   slot="start"
                   :icon="openOutline"
               ></ion-icon>
-              {{labels.learn_more}}
+              {{ labels.learn_more }}
             </ion-button>
           </ion-card-content>
         </ion-card>
@@ -94,7 +94,7 @@ import {fetchLocalProjects} from '@/use/project/fetch-local-projects';
 import {useRouter, useRoute} from 'vue-router';
 import {DEMO_PROJECT, PARAMETERS} from '@/config';
 import {notificationService} from '@/services/notification-service';
-import { App } from '@capacitor/app';
+import {App} from '@capacitor/app';
 import {onIonViewWillEnter, onIonViewWillLeave, useBackButton} from '@ionic/vue';
 
 export default {
@@ -135,6 +135,9 @@ export default {
       },
 
       async onProjectSelected(project) {
+        //was this project imported from file?
+        rootStore.wasProjectImportedFromFile = project.serverUrl === '';
+
         //set route parameters
         rootStore.routeParams = {
           projectRef: project.ref,
@@ -146,7 +149,7 @@ export default {
           name: PARAMETERS.ROUTES.ENTRIES
         });
       },
-      openAddProjectsDocs(){
+      openAddProjectsDocs() {
         window.open(PARAMETERS.ADD_PROJECTS_DOCS_URL, '_system', 'location=yes');
       }
     };

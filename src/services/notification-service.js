@@ -43,18 +43,50 @@ export const notificationService = {
         const rootStore = useRootStore();
         const language = rootStore.language;
 
-        // Convert message to string to avoid showing [object, object] for uncaught errors
-        const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+        // Robustly convert various kinds of errors/values to a user-friendly string.
+        // JSON.stringify on Error objects yields "{}", so prefer Error.message.
+        const messageStr = (function (m) {
+            if (m === undefined) return 'undefined';
+            if (m === null) return 'null';
+            if (typeof m === 'string') return m;
+            if (m instanceof Error) {
+                // Prefer the explicit message; include name if message missing
+                return m.message || m.name || String(m);
+            }
+            // Some environments expose error-like objects with a message property
+            if (typeof m === 'object' && 'message' in m && typeof m.message === 'string') {
+                return m.message;
+            }
+            try {
+                const str = JSON.stringify(m);
+                if (str && str !== '{}') return str;
+            } catch (e) {
+                // fall through to other strategies
+            }
+            try {
+                // If object has enumerable properties, list them
+                if (typeof m === 'object') {
+                    const entries = Object.entries(m);
+                    if (entries.length > 0) {
+                        return entries.map(([k, v]) => `${k}: ${String(v)}`).join(', ');
+                    }
+                }
+            } catch (e) {
+                // ignore
+            }
+            return String(m);
+        })(message);
+
         const headerStr = header || '';
 
-        const alert = await alertController
-            .create({
-                header: headerStr,
-                message: messageStr,
-                buttons: [STRINGS[language].labels.ok]
-            });
+        const alert = await alertController.create({
+            header: headerStr,
+            message: messageStr,
+            buttons: [STRINGS[language].labels.ok]
+        });
         await alert.present();
     },
+
     async confirmSingle(message, title) {
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -127,7 +159,7 @@ export const notificationService = {
                         cssClass: 'alert-confirm-multiple-' + platform,
                         header: title,
                         message,
-buttons
+                        buttons
                     });
                 return alert.present();
             })();

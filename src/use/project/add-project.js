@@ -6,7 +6,7 @@ import { showModalLogin } from '@/use/auth/show-modal-login';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
-import { downloadFileService } from '@/services/download-file-service';
+import { projectLogoService } from '@/services/project-logo-service';
 import { webService } from '@/services/web-service';
 import { logout } from '@/use/auth/logout';
 
@@ -21,7 +21,7 @@ export async function addProject(project, router) {
         STRINGS[rootStore.language].labels.wait,
         STRINGS[rootStore.language].labels.loading_project
     );
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
         (async () => {
             try {
                 const response = await webService.getProject(project.slug);
@@ -39,7 +39,7 @@ export async function addProject(project, router) {
                     // If no inputs, do not allow user to add this project
                     if (noInputs) {
                         notificationService.hideProgressDialog();
-                        notificationService.showAlert(
+                        await notificationService.showAlert(
                             STRINGS[rootStore.language].status_codes.ec5_133
                         );
                     } else {
@@ -57,7 +57,7 @@ export async function addProject(project, router) {
 
                             try {
                                 // Attempt to download the project logo
-                                await downloadFileService.downloadProjectLogo(
+                                await projectLogoService.downloadFromServer(
                                     project.slug,
                                     project.ref
                                 );
@@ -99,7 +99,7 @@ export async function addProject(project, router) {
                                 errorCode = 'ec5_111';
                             }
                             notificationService.hideProgressDialog();
-                            notificationService.showAlert(
+                            await notificationService.showAlert(
                                 STRINGS[rootStore.language].status_codes[errorCode]
                             );
                             resolve();
@@ -108,7 +108,7 @@ export async function addProject(project, router) {
                 } else {
                     // Web error
                     notificationService.hideProgressDialog();
-                    errorsService.handleWebError({ data: 'ec5_116' });
+                    await errorsService.handleWebError({data: 'ec5_116'});
                     resolve();
                 }
             } catch (error) {
@@ -144,7 +144,7 @@ export async function addProject(project, router) {
                     }
                 } else {
                     // Other error
-                    errorsService.handleWebError(error);
+                    await errorsService.handleWebError(error);
                 }
                 resolve();
             }

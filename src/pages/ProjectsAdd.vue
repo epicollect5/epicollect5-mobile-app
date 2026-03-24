@@ -5,6 +5,21 @@
 			<ion-menu-button></ion-menu-button>
 		</template>
 
+    <template #actions-end>
+      <ion-button
+          class="ion-text-nowrap"
+          fill="clear"
+          @click="openFilePIcker()"
+      >
+        <ion-icon
+            slot="start"
+            :icon="folderOpenOutline"
+        ></ion-icon>
+        {{ labels.import }}
+        &nbsp;<sup><small>BETA</small></sup>
+      </ion-button>
+    </template>
+
 		<template #subheader>
 			<ion-toolbar
 				color="dark"
@@ -27,7 +42,7 @@
 			<ion-searchbar
 				animated
 				debounce="500"
-				:placeholder="labels.search_for_project"
+				:placeholder="searchForProjectPlaceholder"
 				@ionInput="fetchProjects"
 			></ion-searchbar>
 
@@ -71,9 +86,8 @@
 
 <script>
 import ListItemProjects from '@/components/ListItemProjects';
-import { chevronBackOutline } from 'ionicons/icons';
-import { reactive, readonly } from '@vue/reactivity';
-import { PARAMETERS } from '@/config';
+import { chevronBackOutline, folderOpenOutline } from 'ionicons/icons';
+import {PARAMETERS} from '@/config';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { useRouter } from 'vue-router';
@@ -83,6 +97,10 @@ import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { errorsService } from '@/services/errors-service';
 import { useBackButton } from '@ionic/vue';
+import {reactive, readonly ,computed} from 'vue';
+import { FilePicker } from '@capawesome/capacitor-file-picker';
+import {importProject} from '@/use/project/import-project';
+
 
 export default {
 	components: {
@@ -97,6 +115,14 @@ export default {
 			searchTerm: ''
 		});
 
+    const computedScope = {
+      searchForProjectPlaceholder: computed(() => {
+        return STRINGS[rootStore.language].labels.search_for_project;
+      })
+    };
+
+
+
 		const methods = {
 			//redirect to projects list
 			goToProjectsList() {
@@ -107,6 +133,30 @@ export default {
 			onProjectSelected(project) {
 				addProject(project, router);
 			},
+      async openFilePIcker(){
+        try {
+          const result = await FilePicker.pickFiles({
+            // "application/json" is the standard for .json files
+            types: ['application/json'],
+            multiple: false,
+            readData: true// Set to true if you want the file content (base64)
+          });
+
+          const file = result.files[0];
+
+          if (file && file.data) {
+            // Decode base64 to string, then parse JSON
+            const decodedData = atob(file.data);
+            const jsonData = JSON.parse(decodedData);
+
+            console.log('Parsed JSON:', jsonData);
+
+            await importProject(jsonData, router);
+          }
+        } catch (e) {
+          console.log('User cancelled or error occurred', e);
+        }
+      },
 			async fetchProjects(e) {
 				state.searchTerm = e.target.value.trimStart();
 
@@ -117,10 +167,10 @@ export default {
 				//no internet connection, bail out
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
-					notificationService.showAlert(
-						STRINGS[rootStore.language].status_codes.ec5_135 + '!',
-						STRINGS[rootStore.language].labels.error
-					);
+					await notificationService.showAlert(
+              STRINGS[rootStore.language].status_codes.ec5_135 + '!',
+              STRINGS[rootStore.language].labels.error
+          );
 					return false;
 				}
 
@@ -163,8 +213,10 @@ export default {
 		return {
 			labels: STRINGS[rootStore.language].labels,
 			...methods,
+      ...computedScope,
 			state,
-			chevronBackOutline
+			chevronBackOutline,
+      folderOpenOutline
 		};
 	}
 };

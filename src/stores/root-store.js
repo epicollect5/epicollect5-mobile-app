@@ -71,7 +71,8 @@ export const useRootStore = defineStore('RootStore', {
             //  so get stored media using "media" controller
             branchEditType: PARAMETERS.PWA_BRANCH_LOCAL,
             providedSegment: null,
-            easterEgg: false
+            easterEgg: false,
+            wasProjectImportedFromFile: false
         };
     },
     getters: {},

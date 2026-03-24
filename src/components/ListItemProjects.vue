@@ -20,6 +20,10 @@
 		<ion-label class="ion-text-nowrap">
 			<p>{{ project.name }}</p>
 		</ion-label>
+    <ion-icon
+        slot="end"
+        :icon="getCloudOrLocalProjectIcon(project)"
+    ></ion-icon>
 	</ion-item>
 </template>
 
@@ -27,6 +31,7 @@
 import { reactive } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 import { computed, readonly } from '@vue/reactivity';
+import { cloudOutline, documentOutline } from 'ionicons/icons';
 export default {
 	props: {
 		projects: {
@@ -78,14 +83,25 @@ export default {
 				//return unique projects array based on "ref" key
 				//this is to avoid duplicates on slow devices (angular had the same issue)
 				return [...new Map(projects.map((project) => [project['ref'], project])).values()];
-			})
+			}),
+      //return the cloud icon if the project is from a server, otherwise return the document icon
+      getCloudOrLocalProjectIcon(project) {
+        if(project.serverUrl !== '') {
+          return cloudOutline;
+        } else {
+          return documentOutline;
+        }
+      }
 		};
 
 		return {
 			props,
 			state,
 			...methods,
-			...computedScope
+			...computedScope,
+      //icons
+      cloudOutline,
+      documentOutline
 		};
 	}
 };

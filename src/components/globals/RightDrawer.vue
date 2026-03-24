@@ -22,6 +22,7 @@
       <ion-list>
         <ion-item
             button
+            :disabled="wasProjectImportedFromFile"
             data-test="upload-page"
             @click="goToUploadPage()"
         >
@@ -36,6 +37,7 @@
         </ion-item>
         <ion-item
             button
+            :disabled="wasProjectImportedFromFile"
             data-test="download-page"
             @click="goToDownloadPage()"
         >
@@ -50,6 +52,7 @@
 
         <ion-item
             button
+            :disabled="wasProjectImportedFromFile"
             data-test="unsync-entries"
             @click="unsyncAllEntries()"
         >
@@ -106,6 +109,7 @@
         </ion-item>
         <ion-item
             button
+            :disabled="wasProjectImportedFromFile"
             data-test="edit-remote-entries"
             @click="editRemoteEntries()"
         >
@@ -346,6 +350,9 @@ export default {
     const computedScope = {
       isBookmarked: computed(() => {
         return bookmarkStore.bookmarkId !== null;
+      }),
+      wasProjectImportedFromFile: computed(() => {
+        return rootStore.wasProjectImportedFromFile;
       })
     };
 

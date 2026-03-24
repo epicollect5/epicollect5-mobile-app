@@ -1,8 +1,8 @@
-import { STRINGS } from '@/config/strings';
-import { useRootStore } from '@/stores/root-store';
-import { notificationService } from '@/services/notification-service';
-import { utilsService } from '@/services/utilities/utils-service';
-import { rollbarService } from '@/services/utilities/rollbar-service';
+import {STRINGS} from '@/config/strings';
+import {useRootStore} from '@/stores/root-store';
+import {notificationService} from '@/services/notification-service';
+import {utilsService} from '@/services/utilities/utils-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 export const errorsService = {
 
@@ -65,8 +65,7 @@ export const errorsService = {
             //show error to user and send it to Rollbar as well
             rollbarService.critical(response);
             await notificationService.showAlert(response, STRINGS[language].labels.error);
-        }
-        else {
+        } else {
             await notificationService.showAlert(STRINGS[language].status_codes[errorCode], STRINGS[language].labels.error);
         }
         return STRINGS[language].status_codes[errorCode];
@@ -119,5 +118,27 @@ export const errorsService = {
                 }
             }
         }
+    },
+    formatAjvError(errors) {
+        if (!errors || errors.length === 0) return 'Unknown validation error';
+
+        // We'll focus on the first error to keep the UI clean,
+        // but you could map over all of them.
+        const err = errors[0];
+
+        // Clean up the instancePath for the user (e.g., /data/project/forms/1 -> data > project > forms > 1)
+        const friendlyPath = err.instancePath
+            .replace(/^\//, '')
+            .replace(/\//g, ' → ');
+
+        // Handle specific keywords to make them "human"
+        let message = err.message;
+        if (err.keyword === 'maxItems') {
+            message = `should be empty or have fewer items (limit: ${err.params.limit})`;
+        } else if (err.keyword === 'required') {
+            message = `is missing the required field: ${err.params.missingProperty}`;
+        }
+
+        return `Validation Failed at: <br/><br/> ${friendlyPath}<br/><br/>Reason: ${message}`;
     }
 };

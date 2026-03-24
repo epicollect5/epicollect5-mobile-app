@@ -288,6 +288,7 @@ export const exportService = {
     },
     async exportEntriesZipArchive(projectRef, projectSlug) {
         const rootStore = useRootStore();
+        const labels = STRINGS[rootStore.language].labels;
         const projectName = projectModel.getProjectName();
         const archiveDirectory = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
         const archivePath = utilsService.getExportPath(projectSlug, archiveDirectory); // ← not hardcoded
@@ -302,6 +303,12 @@ export const exportService = {
             let total = totalEntries + totalBranchEntries + totalMedia;
             const buffer = total > 0 ? Math.ceil(total * 0.10) : 0; // 10% buffer
             total += buffer; // Add buffer to total for progress bar
+
+
+            //if total is 0, bail out
+            if (total === 0) {
+                throw new Error(labels.no_entries_found);
+            }
 
             notificationService.setProgressExport({total, done: 0});
 
@@ -373,6 +380,8 @@ export const exportService = {
 
         } catch (error) {
             console.error('Archive failed:', error);
+            await notificationService.hideProgressExportModal();
+            await notificationService.showAlert(error);
             return false;
         } finally {
             // Always cleanup
@@ -390,6 +399,8 @@ export const exportService = {
     },
 
     async sendToDevice(projectRef, projectSlug) {
+        const rootStore = useRootStore();
+        const labels = STRINGS[rootStore.language].labels;
         const documentsDirectory = Directory.Documents;
         const deviceExportPath = utilsService.getExportPath(projectSlug, documentsDirectory);
         let success = true; // Assume success unless an error occurs
@@ -400,6 +411,11 @@ export const exportService = {
             const totalBranchEntries = await databaseSelectService.countAllBranchEntries(projectRef);
             const totalMedia = await databaseSelectService.countAllMedia(projectRef);
             const total = totalEntries + totalBranchEntries + totalMedia;
+
+            //if total is 0, bail out
+            if (total === 0) {
+                throw new Error(labels.no_entries_found);
+            }
 
             notificationService.setProgressExport({total, done: 0});
             await notificationService.showProgressExportModal(); // Use the showModal from the composable
