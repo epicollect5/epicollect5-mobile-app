@@ -126,6 +126,7 @@ export default {
       })
     };
 
+
     const methods = {
       addProject() {
         console.log('should open add project page');

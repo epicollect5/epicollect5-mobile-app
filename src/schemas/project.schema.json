@@ -301,7 +301,7 @@
           }
         },
         {
-          "description": "location: default (if provided) must be a valid decimal-degrees coordinate pair (lat ±90, lng ±180, up to 6 decimal places).",
+          "description": "location: cannot be required, no default answer.",
           "if": {
             "properties": {
               "type": {
@@ -1277,5 +1277,5 @@
       "unevaluatedProperties": false
     }
   },
-  "$comment": "v2.2.0 — 2026-03-25. Added jump constraints: disallow jumps within the same group and require jumps to skip at least one question (no jumps to immediate next input). Epicollect5 project export schema. JSON Schema Draft 2020-12, validated with opis/json-schema (PHP). Emoji validation enforced by application logic. can_bulk_upload is optional — if present must be nobody|members|everybody. App sets to nobody on import."
+  "$comment": "v2.2.1 — 2026-03-25. Added jump constraints: disallow jumps within the same group and require jumps to skip at least one question (no jumps to immediate next input). Epicollect5 project export schema. JSON Schema Draft 2020-12, validated with opis/json-schema (PHP). Emoji validation enforced by application logic. can_bulk_upload is optional — if present must be nobody|members|everybody. App sets to nobody on import."
 }

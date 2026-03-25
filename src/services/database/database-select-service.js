@@ -47,7 +47,7 @@ export const databaseSelectService = {
     // Function to get all stored projects
 
     async selectProjects() {
-        const query = 'SELECT project_ref, name, COALESCE(server_url, "") FROM projects';
+        const query = 'SELECT project_ref, name, server_url FROM projects';
         return await this.getRows(query, []);
     },
     //Get one entry for a given form ref or parent entry uuid
