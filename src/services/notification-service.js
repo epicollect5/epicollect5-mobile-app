@@ -8,6 +8,7 @@ import {Capacitor} from '@capacitor/core';
 import {useToast} from '@/use/toast';
 import {modalController} from '@ionic/vue';
 import ModalProgressExport from '@/components/modals/ModalProgressExport.vue';
+import {clipboardService} from '@/services/clipboard-service';
 
 export const notificationService = {
 
@@ -327,5 +328,38 @@ export const notificationService = {
 
         // 2. Reset the progress state immediately so it's ready for next time
         notificationService.setProgressExport({total: 0, done: 0});
+    },
+
+    /**
+     * Shows a custom alert for validation errors with copy to clipboard option.
+     */
+    async showValidationErrorAlert(htmlMessage, plainText) {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+
+        const alert = await alertController.create({
+            header: 'Validation Error',
+            message: htmlMessage,
+            cssClass: 'validation-error-alert',
+            buttons: [
+                {
+                    text: STRINGS[language].labels.copy || 'Copy',
+                    handler: async () => {
+                        const success = await clipboardService.copyText(plainText);
+                        if (success) {
+                            notificationService.showToast(STRINGS[language].labels.copied_to_clipboard);
+                        } else {
+                            notificationService.showToast(STRINGS[language].labels.unknown_error);
+                        }
+                        return false; // Prevent alert dismissal
+                    }
+                },
+                {
+                    text: STRINGS[language].labels.ok || 'OK',
+                    role: 'cancel'
+                }
+            ]
+        });
+        await alert.present();
     }
 };

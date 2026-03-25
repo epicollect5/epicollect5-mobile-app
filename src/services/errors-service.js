@@ -119,7 +119,7 @@ export const errorsService = {
             }
         }
     },
-    formatAjvError(errors) {
+    formatAjvError(errors, data = null) {
         if (!errors || errors.length === 0) return 'Unknown validation error';
 
         // We'll focus on the first error to keep the UI clean,
@@ -136,6 +136,39 @@ export const errorsService = {
         const friendlyPath = err.instancePath
             .replace(/^\//, '')
             .replace(/\//g, ' → ');
+        
+        let affectedJson = '';
+        if (data && err.instancePath) {
+            try {
+                // Remove leading slash and split by /
+                const pathParts = err.instancePath.split('/').filter((p) => p !== '');
+                
+                // Show from 1 level up for better context
+                const parentPathParts = pathParts.slice(0, -1);
+                let current = data;
+                
+                for (const part of parentPathParts) {
+                    if (current && typeof current === 'object') {
+                        current = current[part];
+                    } else {
+                        current = undefined;
+                        break;
+                    }
+                }
+
+                if (current !== undefined) {
+                    const jsonString = JSON.stringify(current, null, 2);
+                    // Limit length to avoid overwhelming the UI
+                    const maxLength = 500;
+                    const displayJson = jsonString.length > maxLength
+                        ? jsonString.substring(0, maxLength) + '...'
+                        : jsonString;
+                    affectedJson = `<br/><br/><b>Context (JSON):</b><br/><pre style="background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code>${escapeHtml(displayJson)}</code></pre>`;
+                }
+            } catch (e) {
+                console.error('Error extracting affected JSON', e);
+            }
+        }
 
         // Handle specific keywords to make them "human"
         let message = err.message;
@@ -145,6 +178,6 @@ export const errorsService = {
             message = `is missing the required field: ${escapeHtml(err.params.missingProperty)}`;
         }
 
-        return `Validation Failed at: <br/><br/> ${escapeHtml(friendlyPath)}<br/><br/>Reason: ${escapeHtml(message)}`;
+        return `Validation Failed at: <span style="color: red">${escapeHtml(friendlyPath)}</span><br/><br/>Reason: ${escapeHtml(message)}${affectedJson}`;
     }
 };

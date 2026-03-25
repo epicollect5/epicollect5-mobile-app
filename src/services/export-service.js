@@ -307,6 +307,7 @@ export const exportService = {
 
             //if total is 0, bail out
             if (total === 0) {
+                notificationService.setProgressExport({total: 0, done: 0});
                 throw new Error(labels.no_entries_found);
             }
 
@@ -414,6 +415,7 @@ export const exportService = {
 
             //if total is 0, bail out
             if (total === 0) {
+                notificationService.setProgressExport({total: 0, done: 0});
                 throw new Error(labels.no_entries_found);
             }
 

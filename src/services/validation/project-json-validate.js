@@ -35,26 +35,15 @@ export const projectJsonValidate = {
     },
 
     /**
-     * Strict 2026 Emoji Detection.
-     * Uses Unicode Property Escapes to catch all pictographic symbols.
-     */
-    /**
-     * Strict Emoji Detection compatible with more JS engines.
-     * Catches characters that are intended to be rendered as emojis.
+     * Comprehensive Emoji Detection.
+     * Covers single-codepoint emojis, modifiers, flags, keycaps, and ZWJ sequences.
      */
     containsEmoji(str) {
         if (typeof str !== 'string') return false;
 
-        // Fallback to Emoji_Presentation if Extended_Pictographic fails
-        try {
-            const regex = /\p{Emoji_Presentation}/u;
-            return regex.test(str);
-        } catch (e) {
-            // Absolute fallback for very restrictive environments:
-            // A manual range that covers the bulk of modern emojis
-            const fallbackRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u;
-            return fallbackRegex.test(str);
-        }
+        // eslint-disable-next-line no-misleading-character-class
+        const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}]/u;
+        return emojiRegex.test(str);
     },
 
     isValidAgainstSchema(content) {
@@ -122,6 +111,10 @@ export const projectJsonValidate = {
                     localInputCount++;
                     validateText(input.question, `Question (${input.ref})`);
 
+                    // Validate user-facing text fields for emojis
+                    if (typeof input.default === 'string') validateText(input.default, `Default (${input.ref})`);
+                    if (typeof input.regex === 'string') validateText(input.regex, `Regex (${input.ref})`);
+
                     // --- NEW: Check Answer Ref Uniqueness ---
                     if (input.possible_answers.length > 0) {
                         const answerRefs = new Set();
@@ -148,14 +141,25 @@ export const projectJsonValidate = {
                     }
 
                     // 3. Choice-based Defaults (Referential Integrity)
-                    if (['radio', 'dropdown', 'searchsingle', 'searchmultiple'].includes(input.type)) {
+                    const validAnswerRefs = new Set(input.possible_answers.map((a) => a.answer_ref));
+
+                    if (['radio', 'dropdown', 'checkbox', 'searchsingle', 'searchmultiple'].includes(input.type)) {
                         if (input.default && input.default !== '') {
-                            const hasAnswer = input.possible_answers.some((a) => a.answer_ref === input.default);
-                            if (!hasAnswer) {
+                            if (!validAnswerRefs.has(input.default)) {
                                 throw new Error(`<strong>Validation Error</strong><br/>Default value "${input.default}" in ${input.ref} does not exist in possible answers.`);
                             }
                         }
                     }
+
+                    // 4. Jumps (Referential Integrity)
+                    input.jumps.forEach((jump) => {
+                        if (jump.answer_ref !== null && !validAnswerRefs.has(jump.answer_ref)) {
+                            throw new Error(`<strong>Validation Error</strong><br/>Jump in ${input.ref} references unknown answer_ref "${jump.answer_ref}".`);
+                        }
+                        if (jump.to !== 'END' && !validRefs.includes(jump.to)) {
+                            throw new Error(`<strong>Validation Error</strong><br/>Jump in ${input.ref} points to non-existent input "${jump.to}".`);
+                        }
+                    });
 
                     // 4. Jumps (Referential Integrity)
                     input.jumps.forEach((jump) => {

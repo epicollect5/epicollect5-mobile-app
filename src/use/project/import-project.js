@@ -52,9 +52,12 @@ export async function importProject(file, router) {
         if (!validator.isValid) {
             // Ajv provides a detailed array of why it failed
             console.error('Schema Validation Errors:', validator.errors);
-            // Throw a pretty error for the User/UI
-            const prettyError = errorsService.formatAjvError(validator.errors);
-            throw new Error(prettyError);
+            notificationService.hideProgressDialog();
+            // Show custom alert with copy option
+            const prettyErrorHtml = errorsService.formatAjvError(validator.errors, content);
+            const plainTextError = JSON.stringify({ errors: validator.errors, data: content }, null, 2);
+            await notificationService.showValidationErrorAlert(prettyErrorHtml, plainTextError);
+            return false;
         }
 
         projectJsonValidate.performDeepValidation(content);

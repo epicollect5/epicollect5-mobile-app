@@ -1,6 +1,7 @@
 export const STRINGS = {
     en: {
         labels: {
+            copy: 'Copy',
             import: 'Import',
             send_to_device: 'Send to Device',
             share_archive: 'Share Archive',
@@ -256,6 +257,7 @@ export const STRINGS = {
     },
     it: {
         labels: {
+            copy: 'Copia',
             import: 'Importa',
             send_to_device: 'Invia al Dispositivo',
             share_archive: 'Condividi Archivio',
@@ -511,6 +513,7 @@ export const STRINGS = {
     },
     es: {
         labels: {
+            copy: 'Copiar',
             import: 'Importar',
             send_to_device: 'Enviar al Dispositivo',
             share_archive: 'Compartir Archivo',
@@ -766,6 +769,7 @@ export const STRINGS = {
     },
     fr: {
         labels: {
+            copy: 'Copier',
             import: 'Importer',
             send_to_device: 'Envoyer sur l\'Appareil',
             share_archive: 'Partager l\'Archive',
@@ -1021,6 +1025,7 @@ export const STRINGS = {
     },
     pl: {
         labels: {
+            copy: 'Kopiuj',
             import: 'Importuj',
             send_to_device: 'Wyślij na Urządzenie',
             share_archive: 'Udostępnij Archiwum',
@@ -1276,6 +1281,7 @@ export const STRINGS = {
     },
     pt: {
         labels: {
+            copy: 'Copiar',
             import: 'Importar',
             send_to_device: 'Enviar para Dispositivo',
             share_archive: 'Compartilhar Arquivo',
@@ -1531,6 +1537,7 @@ export const STRINGS = {
     },
     ca: {
         labels: {
+            copy: 'Copia',
             import: 'Importa',
             send_to_device: 'Enviar al Dispositiu',
             share_archive: 'Compartir Arxiu',
@@ -1786,6 +1793,7 @@ export const STRINGS = {
     },
     sl:{
         labels: {
+            copy: 'Kopiraj',
             import: 'Uvozi',
             send_to_device: 'Pošlji na Napravo',
             share_archive: 'Deli Arhiv',
@@ -2041,6 +2049,7 @@ export const STRINGS = {
     },
     de: {
         labels: {
+            copy: 'Kopieren',
             import: 'Importieren',
             send_to_device: 'An Gerät Senden',
             share_archive: 'Archiv Teilen',

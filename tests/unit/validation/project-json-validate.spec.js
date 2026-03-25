@@ -379,8 +379,8 @@ describe('projectJsonValidate', () => {
             input.jumps = [
                 {
                     to: 'ffffffffffffffffffffffffffffffff_1111111111111',
-                    when: 'IS',
-                    answer_ref: '0000000000001'
+                    when: 'ALL',
+                    answer_ref: null
                 }
             ];
             payload.data.project.forms[0].inputs = [input];
