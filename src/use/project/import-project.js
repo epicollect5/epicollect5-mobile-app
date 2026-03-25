@@ -5,7 +5,7 @@ import {useRootStore} from '@/stores/root-store';
 import {databaseInsertService} from '@/services/database/database-insert-service';
 import {notificationService} from '@/services/notification-service';
 import {projectLogoService} from '@/services/project-logo-service';
-import {generateExtraStructure} from '@/services/project-extra-service';
+import projectExtraService from '@/services/project-extra-service';
 import projectMappingService from '@/services/project-mapping-service';
 import {errorsService} from '@/services/errors-service';
 import {projectJsonValidate} from '@/services/validation/project-json-validate';
@@ -61,7 +61,7 @@ export async function importProject(file, router) {
 
         const projectDefinition = content.data;
         //generate project extra structure from project data
-        const projectExtra = generateExtraStructure(projectDefinition);
+        const projectExtra = projectExtraService.generateExtraStructure(projectDefinition);
         //generate project mapping structure from project data
         const projectMapping = projectMappingService.createEC5AUTOMapping(projectExtra);
 

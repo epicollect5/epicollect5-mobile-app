@@ -1135,7 +1135,7 @@
     "possibleAnswer": {
       "type": "object",
       "title": "Possible Answer",
-      "description": "A selectable option for choice-based inputs.",
+      "description": "A selectable option for choice-based inputs. These objects provide a canonical answer label and a 13-char answer_ref used by the input 'default' and jump rules.",
       "required": [
         "answer",
         "answer_ref"
@@ -1153,6 +1153,12 @@
           "pattern": "^[a-f0-9]{13}$"
         }
       },
+      "examples": [
+        {
+          "answer": "Yes",
+          "answer_ref": "5953aa1bf3915"
+        }
+      ],
       "unevaluatedProperties": false
     },
     "jump": {

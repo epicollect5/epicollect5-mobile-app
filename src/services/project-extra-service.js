@@ -60,7 +60,7 @@ const INPUT_TYPE_BRANCH   = 'branch';
  *   project: ProjectExtraProject
  * }}
  */
-export function generateExtraStructure(projectDefinition) {
+function generateExtraStructure(projectDefinition) {
     // Normalise both envelope shapes
     const root = 'data' in projectDefinition
         ? projectDefinition.data
@@ -442,4 +442,6 @@ function flattenInput(input) {
  * @property {Array|Object} entries_limits
  */
 
-export default { generateExtraStructure };
+export default {
+    generateExtraStructure
+};
