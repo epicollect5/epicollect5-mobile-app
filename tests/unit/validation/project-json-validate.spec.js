@@ -199,6 +199,103 @@ describe('projectJsonValidate', () => {
             expect(caught?.message).toContain(`Branch (${branchInputRef}) has 4 titles (Max: 3)`);
         });
 
+        describe('Numeric Min/Max validation', () => {
+            it('sanitizes leading dots in decimal min/max', () => {
+                const input = {
+                    ...createTextInput(makeInputRef(1)),
+                    type: 'decimal',
+                    min: '.5',
+                    max: '1.5'
+                };
+                const payload = createProjectPayloadWithInputs([input]);
+                projectJsonValidate.performDeepValidation(payload);
+
+                expect(input.min).toBe('0.5');
+            });
+
+            it('sanitizes leading dots in negative decimal min/max', () => {
+                const input = {
+                    ...createTextInput(makeInputRef(1)),
+                    type: 'decimal',
+                    min: '-.9',
+                    max: '.1'
+                };
+                const payload = createProjectPayloadWithInputs([input]);
+                projectJsonValidate.performDeepValidation(payload);
+
+                expect(input.min).toBe('-0.9');
+                expect(input.max).toBe('0.1');
+            });
+
+            it('throws if min >= max for integer', () => {
+                const input = {
+                    ...createTextInput(makeInputRef(1)),
+                    type: 'integer',
+                    min: '10',
+                    max: '5'
+                };
+                const payload = createProjectPayloadWithInputs([input]);
+
+                expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/min \(10\) must be less than max \(5\)/);
+            });
+
+            it('throws if min >= max for decimal', () => {
+                const input = {
+                    ...createTextInput(makeInputRef(1)),
+                    type: 'decimal',
+                    min: '5.5',
+                    max: '5.5'
+                };
+                const payload = createProjectPayloadWithInputs([input]);
+
+                expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/min \(5.5\) must be less than max \(5.5\)/);
+            });
+
+            it('throws if integer min is out of range', () => {
+                const input = {
+                    ...createTextInput(makeInputRef(1)),
+                    type: 'integer',
+                    min: '-3000000000'
+                };
+                const payload = createProjectPayloadWithInputs([input]);
+
+                expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/min \(-3000000000\) is out of range for integer/);
+            });
+
+            it('throws if integer max is out of range', () => {
+                const input = {
+                    ...createTextInput(makeInputRef(1)),
+                    type: 'integer',
+                    max: '3000000000'
+                };
+                const payload = createProjectPayloadWithInputs([input]);
+
+                expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/max \(3000000000\) is out of range for integer/);
+            });
+
+            it('throws if decimal min is out of range', () => {
+                const input = {
+                    ...createTextInput(makeInputRef(1)),
+                    type: 'decimal',
+                    min: '-2e12'
+                };
+                const payload = createProjectPayloadWithInputs([input]);
+
+                expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/min \(-2000000000000\) is out of range for decimal/);
+            });
+
+            it('throws if decimal max is out of range', () => {
+                const input = {
+                    ...createTextInput(makeInputRef(1)),
+                    type: 'decimal',
+                    max: '2e12'
+                };
+                const payload = createProjectPayloadWithInputs([input]);
+
+                expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/max \(2000000000000\) is out of range for decimal/);
+            });
+        });
+
         it('rejects duplicate answer_ref values', () => {
             const payload = createValidProjectPayload();
             payload.data.project.forms[0].inputs = [

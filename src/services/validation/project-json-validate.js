@@ -164,6 +164,63 @@ export const projectJsonValidate = {
                         }
                     });
 
+                    // --- NEW: Min/Max Validation for Integer/Decimal ---
+                    if (['integer', 'decimal'].includes(input.type)) {
+                        let min = input.min;
+                        let max = input.max;
+
+                        // Sanitize decimal/integer min/max: pad leading dot (e.g. .5 -> 0.5, -.5 -> -0.5)
+                        const sanitizeNumericString = (val) => {
+                            if (typeof val === 'string') {
+                                if (val.startsWith('.')) return '0' + val;
+                                if (val.startsWith('-.')) return '-0' + val.slice(1);
+                            }
+                            return val;
+                        };
+
+                        min = sanitizeNumericString(min);
+                        max = sanitizeNumericString(max);
+
+                        // Update input in-place for consistency
+                        if (min !== undefined && min !== null) input.min = min;
+                        if (max !== undefined && max !== null) input.max = max;
+
+                        // Parse to numbers for validation
+                        const minNum = (min !== undefined && min !== null && min !== '') ? Number(min) : undefined;
+                        const maxNum = (max !== undefined && max !== null && max !== '') ? Number(max) : undefined;
+
+                        // If both set, min < max
+                        if (minNum !== undefined && maxNum !== undefined) {
+                            if (minNum >= maxNum) {
+                                throw new Error(`<strong>Validation Error</strong><br/>Input ${input.ref}: min (${minNum}) must be less than max (${maxNum}).`);
+                            }
+                        }
+
+                        // If only one is set, check against reasonable bounds to avoid out of range errors
+                        const INT_MIN = -2147483648;
+                        const INT_MAX = 2147483647;
+                        const DEC_MIN = -1e12; // Reasonable limit for decimal
+                        const DEC_MAX = 1e12;  // Reasonable limit for decimal
+
+                        if (minNum !== undefined) {
+                            if (input.type === 'integer' && minNum < INT_MIN) {
+                                throw new Error(`<strong>Validation Error</strong><br/>Input ${input.ref}: min (${minNum}) is out of range for integer.`);
+                            }
+                            if (input.type === 'decimal' && minNum < DEC_MIN) {
+                                throw new Error(`<strong>Validation Error</strong><br/>Input ${input.ref}: min (${minNum}) is out of range for decimal.`);
+                            }
+                        }
+
+                        if (maxNum !== undefined) {
+                            if (input.type === 'integer' && maxNum > INT_MAX) {
+                                throw new Error(`<strong>Validation Error</strong><br/>Input ${input.ref}: max (${maxNum}) is out of range for integer.`);
+                            }
+                            if (input.type === 'decimal' && maxNum > DEC_MAX) {
+                                throw new Error(`<strong>Validation Error</strong><br/>Input ${input.ref}: max (${maxNum}) is out of range for decimal.`);
+                            }
+                        }
+                    }
+
                     // --- 6. Recursion (Hierarchy & Scoping) ---
                     if (input.type === 'branch' && input.branch?.length) {
                         // BRANCHES: New titleCount scope (starts at 0)
