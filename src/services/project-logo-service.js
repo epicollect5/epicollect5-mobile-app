@@ -104,7 +104,10 @@ export const projectLogoService = {
                                 headers: headers
                             }
                         );
-                    });
+                    } ).catch(function (error) {
+                    console.error('Failed to get headers for logo download:', error);
+                    reject();
+                });
             } else {
                 // If via browser, just resolve
                 resolve();

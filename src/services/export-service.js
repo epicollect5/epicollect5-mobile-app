@@ -432,7 +432,6 @@ export const exportService = {
             //Export media last as it can be the most time-consuming, and we want the progress bar to reflect that
             await exportService.exportMedia(projectRef, projectSlug, documentsDirectory);
             // Update progress for media files
-            const rootStore = useRootStore();
             const progress = rootStore.progressExport;
             notificationService.setProgressExport({
                 total: progress.total,

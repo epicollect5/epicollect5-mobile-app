@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://epicollect.net/schemas/project-export/v2.0.1",
+  "$id": "https://epicollect.net/schemas/project-export/v2.2.0",
   "title": "Epicollect5 Project Export",
   "description": "Schema for the full Epicollect5 project envelope (JSON Schema Draft 2020-12, validated with opis/json-schema).",
   "type": "object",
@@ -60,6 +60,8 @@
     "form": {
       "type": "object",
       "title": "Form",
+      "maxItems": 5,
+      "minItems": 1,
       "description": "A single form within a project.\n\nLimits enforced by JSON Schema:\n- Max 300 inputs at top level (maxItems=300)\n- form.name: alphanumeric + spaces + hyphens + underscores, max 50\n\nLimits that MUST be enforced by application logic:\n- inputsMaxCount=300: total inputs counted recursively across all nesting levels\n- titlesMaxCount=3: at most 3 inputs per form may have is_title=true\n- searchMaxCount=5: combined searchsingle + searchmultiple per project (not per form)\n- Jump 'to' refs must point to input refs that exist within the same form\n- Input refs must be unique across the entire project",
       "required": [
         "ref",
@@ -76,7 +78,7 @@
         },
         "name": {
           "type": "string",
-          "description": "Human-readable form name. Max 50 characters. Alphanumeric characters, spaces, hyphens and underscores only. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic) (enforced by application logic).",
+          "description": "Human-readable form name. Max 50 characters. Alphanumeric characters, spaces, hyphens and underscores only. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
           "maxLength": 50,
           "pattern": "^[a-zA-Z0-9_ -]+$"
         },
@@ -93,6 +95,7 @@
         "inputs": {
           "type": "array",
           "description": "Ordered list of top-level inputs for this form. The total input count across ALL nesting levels (top-level + branch children + group children, counted recursively) must not exceed 300 (inputsMaxCount=300). This cross-level count must be enforced by application logic.",
+          "minItems": 1,
           "maxItems": 300,
           "items": {
             "$ref": "#/$defs/input"
@@ -184,7 +187,7 @@
           "description": "Whether the user must enter the value twice to confirm it. Must be false for 'readme' inputs."
         },
         "default": {
-          "description": "Default pre-filled value. Null or empty string when not set. Max length and format varies by input type (see allOf). Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic) (enforced by application logic).",
+          "description": "Default pre-filled value. Null or empty string when not set. Max length and format varies by input type (see allOf). Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
           "oneOf": [
             {
               "type": "null"
@@ -203,7 +206,7 @@
           "$ref": "#/$defs/numericString"
         },
         "regex": {
-          "description": "Regular-expression validation pattern applied to the user's answer. Max 50 characters. Null or empty string when not set. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic) (enforced by application logic).",
+          "description": "Regular-expression validation pattern applied to the user's answer. Max 50 characters. Null or empty string when not set. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
           "oneOf": [
             {
               "type": "null"
@@ -239,7 +242,7 @@
         },
         "jumps": {
           "type": "array",
-          "description": "Conditional skip logic rules evaluated after this input is answered. Must be empty for 'readme' inputs.",
+          "description": "Conditional skip logic rules evaluated after this input is answered. Allowed for all input types, but typically only used for choice-based inputs. Not allowed for questions in a group. Each jump rule consists of a condition ('when' + 'answer_ref') and a destination ('to'). The 'to' field must reference an existing input ref within the same form, or be 'END' to indicate the end of the form. The application must enforce that jump 'to' refs point to valid input refs within the same form, and it must jump at least one question otherwise that will not be a jump, just the next question making the jump redundant and potentially a sign of a user error in form design. The 'when' field specifies the condition operator: 'IS' means the jump applies if the given answer_ref is selected; 'IS_NOT' means the jump applies if the given answer_ref is not selected; 'NO_ANSWER_GIVEN' means the jump applies if the user leaves this question unanswered; 'ALL' means the jump always applies regardless of the answer (answer_ref must be null for 'ALL' jumps).",
           "items": {
             "$ref": "#/$defs/jump"
           }
@@ -924,7 +927,14 @@
           "then": {
             "properties": {
               "group": {
-                "minItems": 1
+                "minItems": 1,
+                "items": {
+                  "properties": {
+                    "jumps": {
+                      "maxItems": 0
+                    }
+                  }
+                }
               },
               "branch": {
                 "maxItems": 0
@@ -984,6 +994,65 @@
               }
             }
           }
+        },
+        {
+          "description": "location, photo, audio, video, readme: is_required must be false.",
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "readme",
+                  "location",
+                  "photo",
+                  "audio",
+                  "video"
+                ]
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "is_required": {
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "description": "For non-multiple-choice questions (possible_answers empty), jumps can only use 'ALL' condition.",
+          "if": {
+            "properties": {
+              "possible_answers": {
+                "maxItems": 0
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "jumps": {
+                "type": "array",
+                "maxItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "when": {
+                      "const": "ALL"
+                    },
+                    "answer_ref": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "when",
+                    "answer_ref"
+                  ]
+                }
+              }
+            }
+          }
         }
       ]
     },
@@ -998,7 +1067,7 @@
       "properties": {
         "answer": {
           "type": "string",
-          "description": "The display label for this answer option. Max 250 characters. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic) (enforced by application logic).",
+          "description": "The display label for this answer option. Max 250 characters. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
           "maxLength": 250,
           "pattern": "^[^<>]*$"
         },
@@ -1086,7 +1155,7 @@
         },
         "name": {
           "type": "string",
-          "description": "Human-readable project name. Min 3, max 50 characters. Alphanumeric characters, spaces and underscores only. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic) (enforced by application logic).",
+          "description": "Human-readable project name. Min 3, max 50 characters. Alphanumeric characters, spaces and underscores only. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
           "minLength": 3,
           "maxLength": 50,
           "pattern": "^[a-zA-Z0-9 _]+$"
@@ -1156,7 +1225,7 @@
         },
         "small_description": {
           "type": "string",
-          "description": "Short project description shown in listings. Min 15, max 100 characters. Plain text. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic) (enforced by application logic).",
+          "description": "Short project description shown in listings. Min 15, max 100 characters. Plain text. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
           "minLength": 15,
           "maxLength": 100,
           "pattern": "^[^<>]*$"
@@ -1206,30 +1275,7 @@
         }
       },
       "unevaluatedProperties": false
-    },
-    "entryLimit": {
-      "type": "object",
-      "title": "Entry Limit",
-      "description": "A per-form entry count limit.",
-      "required": [
-        "form_ref",
-        "limit"
-      ],
-      "properties": {
-        "form_ref": {
-          "type": "string",
-          "description": "Ref of the form this limit applies to. Must match the pattern of a valid form ref.",
-          "pattern": "^[a-f0-9]{32}_[a-f0-9]{13}$"
-        },
-        "limit": {
-          "type": "integer",
-          "description": "Maximum number of entries allowed for this form (0 allowed but discouraged).",
-          "minimum": 0,
-          "$comment": "0 is accepted for backward compatibility but discouraged — prefer entries_limits empty array to indicate no limits. Upper bound effectively 50000 for entries_limits string representation."
-        }
-      },
-      "unevaluatedProperties": false
     }
   },
-  "$comment": "v2.0.1 — 2026-03-23. Epicollect5 project export schema. JSON Schema Draft 2020-12, validated with opis/json-schema (PHP). Emoji validation enforced by application logic. can_bulk_upload is optional — if present must be nobody|members|everybody. App sets to nobody on import."
+  "$comment": "v2.2.0 — 2026-03-25. Added jump constraints: disallow jumps within the same group and require jumps to skip at least one question (no jumps to immediate next input). Epicollect5 project export schema. JSON Schema Draft 2020-12, validated with opis/json-schema (PHP). Emoji validation enforced by application logic. can_bulk_upload is optional — if present must be nobody|members|everybody. App sets to nobody on import."
 }

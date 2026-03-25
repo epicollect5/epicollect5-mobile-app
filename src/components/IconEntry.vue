@@ -67,11 +67,8 @@ export default {
       required: true
     }
   },
-  setup(props) {
-
-
+  setup() {
     return {
-      ...props,
       //icons
       bug,
       cloudOutline,

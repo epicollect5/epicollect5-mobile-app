@@ -126,6 +126,12 @@ export const errorsService = {
         // but you could map over all of them.
         const err = errors[0];
 
+        // Helper to escape HTML entities
+        const escapeHtml = (str) => str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+
         // Clean up the instancePath for the user (e.g., /data/project/forms/1 -> data > project > forms > 1)
         const friendlyPath = err.instancePath
             .replace(/^\//, '')
@@ -136,9 +142,9 @@ export const errorsService = {
         if (err.keyword === 'maxItems') {
             message = `should be empty or have fewer items (limit: ${err.params.limit})`;
         } else if (err.keyword === 'required') {
-            message = `is missing the required field: ${err.params.missingProperty}`;
+            message = `is missing the required field: ${escapeHtml(err.params.missingProperty)}`;
         }
 
-        return `Validation Failed at: <br/><br/> ${friendlyPath}<br/><br/>Reason: ${message}`;
+        return `Validation Failed at: <br/><br/> ${escapeHtml(friendlyPath)}<br/><br/>Reason: ${escapeHtml(message)}`;
     }
 };
