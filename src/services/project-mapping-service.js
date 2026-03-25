@@ -98,9 +98,9 @@ function getMappedInput(projectExtra, formRef, inputData, counter) {
     const entry = {
         map_to:           generateMapTo(counter.value, inputData.question),
         hide:             false,
-        possible_answers: [],
-        group:            [],
-        branch:           []
+        possible_answers: {},
+        group:            {},
+        branch:           {}
     };
 
     switch (inputData.type) {

@@ -43,6 +43,23 @@ export async function importProject(file, router) {
         STRINGS[rootStore.language].labels.loading_project
     );
 
+    // Helper to finish import with delay, navigation, and toast
+    const finishImport = async (refresh, markImported = false) => {
+        await new Promise((resolve) => window.setTimeout(resolve, PARAMETERS.DELAY_MEDIUM));
+        if (markImported) {
+            rootStore.wasProjectImportedFromFile = true;
+        }
+        notificationService.hideProgressDialog();
+        notificationService.showToast(
+            STRINGS[rootStore.language].status_codes.ec5_112
+        );
+        await router.replace({
+            name: PARAMETERS.ROUTES.PROJECTS,
+            query: {refresh}
+        });
+        return true;
+    };
+
     try {
         let content = await _normalizeProjectData(file);
         // Sanitize angle brackets to prevent schema validation failures due to "^[^<>]*$" pattern
@@ -96,36 +113,13 @@ export async function importProject(file, router) {
             try {
                 // Generate and Save Logo
                 await projectLogoService.generateLocally(project.name, project.ref);
-
-                window.setTimeout(function () {
-                    rootStore.wasProjectImportedFromFile = true;
-                    notificationService.hideProgressDialog();
-                    notificationService.showToast(
-                        STRINGS[rootStore.language].status_codes.ec5_112
-                    );
-                    router.replace({
-                        name: PARAMETERS.ROUTES.PROJECTS,
-                        query: {refresh: true}
-                    });
-                    return true;
-                }, PARAMETERS.DELAY_MEDIUM);
+                return await finishImport(true, true);
             } catch (error) {
                 // Logo download failed — continue without blocking
                 notificationService.showToast(
                     STRINGS[rootStore.language].status_codes.ec5_138
                 );
-
-                window.setTimeout(function () {
-                    notificationService.hideProgressDialog();
-                    notificationService.showToast(
-                        STRINGS[rootStore.language].status_codes.ec5_112
-                    );
-                    router.replace({
-                        name: PARAMETERS.ROUTES.PROJECTS,
-                        query: {refresh: false}
-                    });
-                    return true;
-                }, PARAMETERS.DELAY_MEDIUM);
+                return await finishImport(false);
             }
         } catch (error) {
             let errorCode = DB_ERRORS[error.code];

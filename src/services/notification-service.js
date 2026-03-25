@@ -338,7 +338,7 @@ export const notificationService = {
         const language = rootStore.language;
 
         const alert = await alertController.create({
-            header: 'Validation Error',
+            header: STRINGS[language].labels.error,
             message: htmlMessage,
             cssClass: 'validation-error-alert',
             buttons: [

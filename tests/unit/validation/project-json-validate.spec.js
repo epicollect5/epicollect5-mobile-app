@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { projectJsonValidate } from '@/services/validation/project-json-validate';
+import {describe, it, expect} from 'vitest';
+import {projectJsonValidate} from '@/services/validation/project-json-validate';
 
 const BASE_PROJECT_REF = '0123456789abcdef0123456789abcdef';
 const FORM_SUFFIX = 'bbbbbbbbbbbbb';
@@ -388,225 +388,224 @@ describe('projectJsonValidate', () => {
             expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/non-existent input/);
         });
     });
-});
 
-        describe('project.schema.json allOf constraints', () => {
-            const validateSchema = (input) => projectJsonValidate.isValidAgainstSchema(
-                createProjectPayloadWithInputs([input])
-            );
+    describe('project.schema.json allOf constraints', () => {
+        const validateSchema = (input) => projectJsonValidate.isValidAgainstSchema(
+            createProjectPayloadWithInputs([input])
+        );
 
-            it('requires readme inputs to keep is_required false', () => {
-                const input = createInputWithOverrides(makeInputRef(1), {
-                    type: 'readme',
-                    is_required: true
-                });
-
-                expect(validateSchema(input).isValid).toBe(false);
+        it('requires readme inputs to keep is_required false', () => {
+            const input = createInputWithOverrides(makeInputRef(1), {
+                type: 'readme',
+                is_required: true
             });
 
-            it('rejects location defaults that are not valid coordinates', () => {
-                const input = createInputWithOverrides(makeInputRef(1), {
-                    type: 'location',
-                    default: 'invalid-coordinate'
-                });
+            expect(validateSchema(input).isValid).toBe(false);
+        });
 
-                expect(validateSchema(input).isValid).toBe(false);
+        it('rejects location defaults that are not valid coordinates', () => {
+            const input = createInputWithOverrides(makeInputRef(1), {
+                type: 'location',
+                default: 'invalid-coordinate'
             });
 
-            const expectDefaultLengthViolation = (type, lengthLimit) => {
-                const longValue = 'a'.repeat(lengthLimit + 1);
-                const input = createInputWithOverrides(makeInputRef(lengthLimit), {
-                    type,
-                    default: longValue
-                });
+            expect(validateSchema(input).isValid).toBe(false);
+        });
 
-                expect(validateSchema(input).isValid).toBe(false);
+        const expectDefaultLengthViolation = (type, lengthLimit) => {
+            const longValue = 'a'.repeat(lengthLimit + 1);
+            const input = createInputWithOverrides(makeInputRef(lengthLimit), {
+                type,
+                default: longValue
+            });
+
+            expect(validateSchema(input).isValid).toBe(false);
+        };
+
+        it('enforces text defaults to 255 chars', () => expectDefaultLengthViolation('text', 255));
+        it('enforces phone defaults to 255 chars', () => expectDefaultLengthViolation('phone', 255));
+        it('enforces integer defaults to 255 chars', () => expectDefaultLengthViolation('integer', 255));
+        it('enforces decimal defaults to 255 chars', () => expectDefaultLengthViolation('decimal', 255));
+        it('enforces textarea defaults to 1000 chars', () => expectDefaultLengthViolation('textarea', 1000));
+        it('enforces date defaults to 25 chars', () => expectDefaultLengthViolation('date', 25));
+        it('enforces time defaults to 25 chars', () => expectDefaultLengthViolation('time', 25));
+
+        it('rejects dropdown defaults that are not valid answer_refs', () => {
+            const dropdown = createChoiceInput(makeInputRef(1), ['0000000000001']);
+            dropdown.default = 'short';
+
+            expect(validateSchema(dropdown).isValid).toBe(false);
+        });
+
+        it('rejects radio defaults that are not valid answer_refs', () => {
+            const radio = {...createChoiceInput(makeInputRef(2), ['0000000000002']), type: 'radio'};
+            radio.default = 'short';
+
+            expect(validateSchema(radio).isValid).toBe(false);
+        });
+
+        it('rejects checkbox defaults that are not valid answer_refs', () => {
+            const checkbox = {...createChoiceInput(makeInputRef(3), ['0000000000003']), type: 'checkbox'};
+            checkbox.default = 'short';
+
+            expect(validateSchema(checkbox).isValid).toBe(false);
+        });
+
+        it('enforces searchsingle to have at least one possible answer', () => {
+            const single = {...createSearchInput(makeInputRef(4), 4), possible_answers: []};
+
+            expect(validateSchema(single).isValid).toBe(false);
+        });
+
+        it('enforces searchsingle to not own branch children', () => {
+            const single = {...createSearchInput(makeInputRef(5), 5), branch: [createTextInput(makeInputRef(6))]};
+
+            expect(validateSchema(single).isValid).toBe(false);
+        });
+
+        const createSearchMultipleInput = (ref, answerRefSuffix) => ({
+            ...createSearchInput(ref, answerRefSuffix),
+            type: 'searchmultiple'
+        });
+
+        it('enforces searchmultiple to have at least one possible answer', () => {
+            const multi = {...createSearchMultipleInput(makeInputRef(6), 6), possible_answers: []};
+
+            expect(validateSchema(multi).isValid).toBe(false);
+        });
+
+        it('enforces searchmultiple to not own group children', () => {
+            const multi = {
+                ...createSearchMultipleInput(makeInputRef(7), 7),
+                group: [createTextInput(makeInputRef(8))]
             };
 
-            it('enforces text defaults to 255 chars', () => expectDefaultLengthViolation('text', 255));
-            it('enforces phone defaults to 255 chars', () => expectDefaultLengthViolation('phone', 255));
-            it('enforces integer defaults to 255 chars', () => expectDefaultLengthViolation('integer', 255));
-            it('enforces decimal defaults to 255 chars', () => expectDefaultLengthViolation('decimal', 255));
-            it('enforces textarea defaults to 1000 chars', () => expectDefaultLengthViolation('textarea', 1000));
-            it('enforces date defaults to 25 chars', () => expectDefaultLengthViolation('date', 25));
-            it('enforces time defaults to 25 chars', () => expectDefaultLengthViolation('time', 25));
+            expect(validateSchema(multi).isValid).toBe(false);
+        });
 
-            it('rejects dropdown defaults that are not valid answer_refs', () => {
-                const dropdown = createChoiceInput(makeInputRef(1), ['0000000000001']);
-                dropdown.default = 'short';
+        it('enforces photo defaults to 52 chars', () => expectDefaultLengthViolation('photo', 52));
+        it('enforces audio defaults to 51 chars', () => expectDefaultLengthViolation('audio', 51));
+        it('enforces video defaults to 51 chars', () => expectDefaultLengthViolation('video', 51));
+        it('enforces barcode defaults to 255 chars', () => expectDefaultLengthViolation('barcode', 255));
 
-                expect(validateSchema(dropdown).isValid).toBe(false);
-            });
+        it('requires at least one child within branches', () => {
+            const branch = createBranchInput(makeInputRef(9), []);
 
-            it('rejects radio defaults that are not valid answer_refs', () => {
-                const radio = {...createChoiceInput(makeInputRef(2), ['0000000000002']), type: 'radio'};
-                radio.default = 'short';
+            expect(validateSchema(branch).isValid).toBe(false);
+        });
 
-                expect(validateSchema(radio).isValid).toBe(false);
-            });
+        it('requires branches to keep possible_answers empty', () => {
+            const branch = createBranchInput(makeInputRef(10), [createTextInput(makeInputRef(11))]);
+            branch.possible_answers = [
+                {
+                    answer: 'Invalid',
+                    answer_ref: 'aaaaaaaaaaaaa'
+                }
+            ];
 
-            it('rejects checkbox defaults that are not valid answer_refs', () => {
-                const checkbox = {...createChoiceInput(makeInputRef(3), ['0000000000003']), type: 'checkbox'};
-                checkbox.default = 'short';
+            expect(validateSchema(branch).isValid).toBe(false);
+        });
 
-                expect(validateSchema(checkbox).isValid).toBe(false);
-            });
+        it('requires groups to have at least one child', () => {
+            const group = createGroupInput(makeInputRef(12), []);
 
-            it('enforces searchsingle to have at least one possible answer', () => {
-                const single = {...createSearchInput(makeInputRef(4), 4), possible_answers: []};
+            expect(validateSchema(group).isValid).toBe(false);
+        });
 
-                expect(validateSchema(single).isValid).toBe(false);
-            });
-
-            it('enforces searchsingle to not own branch children', () => {
-                const single = {...createSearchInput(makeInputRef(5), 5), branch: [createTextInput(makeInputRef(6))]};
-
-                expect(validateSchema(single).isValid).toBe(false);
-            });
-
-            const createSearchMultipleInput = (ref, answerRefSuffix) => ({
-                ...createSearchInput(ref, answerRefSuffix),
-                type: 'searchmultiple'
-            });
-
-            it('enforces searchmultiple to have at least one possible answer', () => {
-                const multi = {...createSearchMultipleInput(makeInputRef(6), 6), possible_answers: []};
-
-                expect(validateSchema(multi).isValid).toBe(false);
-            });
-
-            it('enforces searchmultiple to not own group children', () => {
-                const multi = {
-                    ...createSearchMultipleInput(makeInputRef(7), 7),
-                    group: [createTextInput(makeInputRef(8))]
-                };
-
-                expect(validateSchema(multi).isValid).toBe(false);
-            });
-
-            it('enforces photo defaults to 52 chars', () => expectDefaultLengthViolation('photo', 52));
-            it('enforces audio defaults to 51 chars', () => expectDefaultLengthViolation('audio', 51));
-            it('enforces video defaults to 51 chars', () => expectDefaultLengthViolation('video', 51));
-            it('enforces barcode defaults to 255 chars', () => expectDefaultLengthViolation('barcode', 255));
-
-            it('requires at least one child within branches', () => {
-                const branch = createBranchInput(makeInputRef(9), []);
-
-                expect(validateSchema(branch).isValid).toBe(false);
-            });
-
-            it('requires branches to keep possible_answers empty', () => {
-                const branch = createBranchInput(makeInputRef(10), [createTextInput(makeInputRef(11))]);
-                branch.possible_answers = [
+        it('prevents jumps inside group children', () => {
+            const child = createInputWithOverrides(makeInputRef(13), {
+                jumps: [
                     {
-                        answer: 'Invalid',
-                        answer_ref: 'aaaaaaaaaaaaa'
+                        to: 'END',
+                        when: 'ALL',
+                        answer_ref: null
                     }
-                ];
+                ]
+            });
+            const group = createGroupInput(makeInputRef(14), [child]);
 
-                expect(validateSchema(branch).isValid).toBe(false);
+            expect(validateSchema(group).isValid).toBe(false);
+        });
+
+        it('enforces non-branch/group inputs to keep branch/group empty', () => {
+            const input = createTextInput(makeInputRef(15));
+            input.branch = [createTextInput(makeInputRef(16))];
+
+            expect(validateSchema(input).isValid).toBe(false);
+        });
+
+        it('enforces question length for non-readme inputs', () => {
+            const input = createInputWithOverrides(makeInputRef(17), {
+                type: 'text',
+                question: 'a'.repeat(256)
             });
 
-            it('requires groups to have at least one child', () => {
-                const group = createGroupInput(makeInputRef(12), []);
+            expect(validateSchema(input).isValid).toBe(false);
+        });
 
-                expect(validateSchema(group).isValid).toBe(false);
+        it('requires location inputs to have is_required false', () => {
+            const input = createInputWithOverrides(makeInputRef(18), {
+                type: 'location',
+                is_required: true
             });
 
-            it('prevents jumps inside group children', () => {
-                const child = createInputWithOverrides(makeInputRef(13), {
-                    jumps: [
-                        {
-                            to: 'END',
-                            when: 'ALL',
-                            answer_ref: null
-                        }
-                    ]
-                });
-                const group = createGroupInput(makeInputRef(14), [child]);
+            expect(validateSchema(input).isValid).toBe(false);
+        });
 
-                expect(validateSchema(group).isValid).toBe(false);
-            });
-
-            it('enforces non-branch/group inputs to keep branch/group empty', () => {
-                const input = createTextInput(makeInputRef(15));
-                input.branch = [createTextInput(makeInputRef(16))];
-
-                expect(validateSchema(input).isValid).toBe(false);
-            });
-
-            it('enforces question length for non-readme inputs', () => {
-                const input = createInputWithOverrides(makeInputRef(17), {
-                    type: 'text',
-                    question: 'a'.repeat(256)
-                });
-
-                expect(validateSchema(input).isValid).toBe(false);
-            });
-
-            it('requires location inputs to have is_required false', () => {
-                const input = createInputWithOverrides(makeInputRef(18), {
-                    type: 'location',
-                    is_required: true
-                });
-
-                expect(validateSchema(input).isValid).toBe(false);
-            });
-
-            it('enforces verify: false for media, location, readme, branch, group', () => {
-                ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
-                    const input = {
-                        ...createTextInput(makeInputRef(1)),
-                        type,
-                        verify: true
-                    };
-                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
-                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
-
-                    expect(validateSchema(input).isValid).toBe(false);
-                });
-            });
-
-            it('enforces is_title: false for media, location, readme, branch, group', () => {
-                ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
-                    const input = {
-                        ...createTextInput(makeInputRef(1)),
-                        type,
-                        is_title: true
-                    };
-                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
-                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
-
-                    expect(validateSchema(input).isValid).toBe(false);
-                });
-            });
-
-            it('enforces empty default for media, location, readme, branch, group', () => {
-                ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
-                    const input = {
-                        ...createTextInput(makeInputRef(1)),
-                        type,
-                        default: 'invalid'
-                    };
-                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
-                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
-
-                    expect(validateSchema(input).isValid).toBe(false);
-                });
-            });
-
-            it('restricts jumps for non-choice inputs to when=ALL', () => {
-                const input = createInputWithOverrides(makeInputRef(19), {
-                    jumps: [
-                        {
-                            to: 'END',
-                            when: 'IS',
-                            answer_ref: '0000000000001'
-                        }
-                    ]
-                });
+        it('enforces verify: false for media, location, readme, branch, group', () => {
+            ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
+                const input = {
+                    ...createTextInput(makeInputRef(1)),
+                    type,
+                    verify: true
+                };
+                if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
+                if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
 
                 expect(validateSchema(input).isValid).toBe(false);
             });
         });
 
+        it('enforces is_title: false for media, location, readme, branch, group', () => {
+            ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
+                const input = {
+                    ...createTextInput(makeInputRef(1)),
+                    type,
+                    is_title: true
+                };
+                if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
+                if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
+
+                expect(validateSchema(input).isValid).toBe(false);
+            });
+        });
+
+        it('enforces empty default for media, location, readme, branch, group', () => {
+            ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
+                const input = {
+                    ...createTextInput(makeInputRef(1)),
+                    type,
+                    default: 'invalid'
+                };
+                if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
+                if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
+
+                expect(validateSchema(input).isValid).toBe(false);
+            });
+        });
+
+        it('restricts jumps for non-choice inputs to when=ALL', () => {
+            const input = createInputWithOverrides(makeInputRef(19), {
+                jumps: [
+                    {
+                        to: 'END',
+                        when: 'IS',
+                        answer_ref: '0000000000001'
+                    }
+                ]
+            });
+
+            expect(validateSchema(input).isValid).toBe(false);
+        });
+    });
+});
