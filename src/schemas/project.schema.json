@@ -265,7 +265,7 @@
       "unevaluatedProperties": false,
       "allOf": [
         {
-          "description": "readme: is_required and verify must be false; possible_answers, branch and group must be empty. Jumps are allowed — a readme can unconditionally redirect flow.",
+          "description": "readme: is_required, verify and is_title must be false; default must be empty; possible_answers, branch and group must be empty. Jumps are allowed — a readme can unconditionally redirect flow.",
           "if": {
             "properties": {
               "type": {
@@ -284,6 +284,20 @@
               "verify": {
                 "const": false
               },
+              "is_title": {
+                "const": false
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  }
+                ]
+              },
               "possible_answers": {
                 "maxItems": 0
               },
@@ -301,7 +315,7 @@
           }
         },
         {
-          "description": "location: cannot be required, no default answer.",
+          "description": "location: cannot be required, no default answer, verify and is_title must be false.",
           "if": {
             "properties": {
               "type": {
@@ -314,6 +328,15 @@
           },
           "then": {
             "properties": {
+              "is_required": {
+                "const": false
+              },
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
               "default": {
                 "oneOf": [
                   {
@@ -322,10 +345,6 @@
                   {
                     "type": "string",
                     "maxLength": 0
-                  },
-                  {
-                    "type": "string",
-                    "pattern": "^[-+]?([1-8]?\\d(\\.\\d{1,6})?|90(\\.0{1,6})?),\\s*[-+]?(180(\\.0{1,6})?|((1[0-7]\\d)|(\\d{1,2}))(\\.\\d{1,6})?)$"
                   }
                 ]
               },
@@ -763,7 +782,7 @@
           }
         },
         {
-          "description": "photo: max answer length 52 (longer than audio/video to accommodate .jpeg extension). No possible_answers.",
+          "description": "photo: verify and is_title must be false; default must be empty; No possible_answers.",
           "if": {
             "properties": {
               "type": {
@@ -776,6 +795,12 @@
           },
           "then": {
             "properties": {
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
               "default": {
                 "oneOf": [
                   {
@@ -783,7 +808,7 @@
                   },
                   {
                     "type": "string",
-                    "maxLength": 52
+                    "maxLength": 0
                   }
                 ]
               },
@@ -794,7 +819,7 @@
           }
         },
         {
-          "description": "audio: max answer length 51. No possible_answers.",
+          "description": "audio: verify and is_title must be false; default must be empty; No possible_answers.",
           "if": {
             "properties": {
               "type": {
@@ -807,6 +832,12 @@
           },
           "then": {
             "properties": {
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
               "default": {
                 "oneOf": [
                   {
@@ -814,7 +845,7 @@
                   },
                   {
                     "type": "string",
-                    "maxLength": 51
+                    "maxLength": 0
                   }
                 ]
               },
@@ -825,7 +856,7 @@
           }
         },
         {
-          "description": "video: max answer length 51. No possible_answers.",
+          "description": "video: verify and is_title must be false; default must be empty; No possible_answers.",
           "if": {
             "properties": {
               "type": {
@@ -838,6 +869,12 @@
           },
           "then": {
             "properties": {
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
               "default": {
                 "oneOf": [
                   {
@@ -845,7 +882,7 @@
                   },
                   {
                     "type": "string",
-                    "maxLength": 51
+                    "maxLength": 0
                   }
                 ]
               },
@@ -887,7 +924,7 @@
           }
         },
         {
-          "description": "branch: must have at least one child in 'branch'. 'group' and 'possible_answers' must be empty.",
+          "description": "branch: must have children; possible_answers, group must be empty; verify and is_title must be false; default must be empty.",
           "if": {
             "properties": {
               "type": {
@@ -900,20 +937,37 @@
           },
           "then": {
             "properties": {
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  }
+                ]
+              },
               "branch": {
                 "minItems": 1
               },
-              "group": {
+              "possible_answers": {
                 "maxItems": 0
               },
-              "possible_answers": {
+              "group": {
                 "maxItems": 0
               }
             }
           }
         },
         {
-          "description": "group: must have at least one child in 'group'. 'branch' and 'possible_answers' must be empty.",
+          "description": "group: must have children; jumps forbidden; verify and is_title must be false; default must be empty.",
           "if": {
             "properties": {
               "type": {
@@ -926,23 +980,45 @@
           },
           "then": {
             "properties": {
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  }
+                ]
+              },
               "group": {
-                "minItems": 1,
-                "items": {
-                  "properties": {
-                    "jumps": {
-                      "maxItems": 0
+                "minItems": 1
+              },
+              "jumps": {
+                "maxItems": 0
+              }
+            },
+            "allOf": [
+              {
+                "properties": {
+                  "group": {
+                    "items": {
+                      "properties": {
+                        "jumps": {
+                          "maxItems": 0
+                        }
+                      }
                     }
                   }
                 }
-              },
-              "branch": {
-                "maxItems": 0
-              },
-              "possible_answers": {
-                "maxItems": 0
               }
-            }
+            ]
           }
         },
         {

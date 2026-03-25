@@ -164,6 +164,19 @@ export const projectJsonValidate = {
                         }
                     });
 
+                    // --- NEW: Constraints for Media, Location, Readme, Branch, Group ---
+                    if (['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].includes(input.type)) {
+                        if (input.verify !== false) {
+                            throw new Error(`<strong>Validation Error</strong><br/>Input ${input.ref} (type: ${input.type}): verify must be false.`);
+                        }
+                        if (input.is_title !== false) {
+                            throw new Error(`<strong>Validation Error</strong><br/>Input ${input.ref} (type: ${input.type}): is_title must be false.`);
+                        }
+                        if (input.default !== '' && input.default !== null) {
+                            throw new Error(`<strong>Validation Error</strong><br/>Input ${input.ref} (type: ${input.type}): default must be empty.`);
+                        }
+                    }
+
                     // --- NEW: Min/Max Validation for Integer/Decimal ---
                     if (['integer', 'decimal'].includes(input.type)) {
                         let min = input.min;
@@ -228,6 +241,12 @@ export const projectJsonValidate = {
                         localInputCount += validateCollection(input.branch, `Branch (${input.ref})`);
                     } else if (input.type === 'group' && input.group?.length) {
                         // GROUPS: Continue with CURRENT titleCount scope
+                        // JUMPS are forbidden within groups (already in schema, but adding to deep validation for safety)
+                        input.group.forEach((groupInput) => {
+                            if (groupInput.jumps && groupInput.jumps.length > 0) {
+                                throw new Error(`<strong>Validation Error</strong><br/>Input ${groupInput.ref}: Jumps are forbidden within a group.`);
+                            }
+                        });
                         walk(input.group);
                     }
                 });

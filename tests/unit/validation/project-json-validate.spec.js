@@ -199,6 +199,51 @@ describe('projectJsonValidate', () => {
             expect(caught?.message).toContain(`Branch (${branchInputRef}) has 4 titles (Max: 3)`);
         });
 
+        describe('Media, Location, Readme, Branch, Group constraints', () => {
+            const types = ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'];
+
+            types.forEach((type) => {
+                it(`throws if ${type} has verify: true`, () => {
+                    const input = {
+                        ...createTextInput(makeInputRef(1)),
+                        type,
+                        verify: true
+                    };
+                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
+                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
+
+                    const payload = createProjectPayloadWithInputs([input]);
+                    expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/verify must be false/);
+                });
+
+                it(`throws if ${type} has is_title: true`, () => {
+                    const input = {
+                        ...createTextInput(makeInputRef(1)),
+                        type,
+                        is_title: true
+                    };
+                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
+                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
+
+                    const payload = createProjectPayloadWithInputs([input]);
+                    expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/is_title must be false/);
+                });
+
+                it(`throws if ${type} has non-empty default`, () => {
+                    const input = {
+                        ...createTextInput(makeInputRef(1)),
+                        type,
+                        default: 'some value'
+                    };
+                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
+                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
+
+                    const payload = createProjectPayloadWithInputs([input]);
+                    expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/default must be empty/);
+                });
+            });
+        });
+
         describe('Numeric Min/Max validation', () => {
             it('sanitizes leading dots in decimal min/max', () => {
                 const input = {
@@ -506,6 +551,48 @@ describe('projectJsonValidate', () => {
                 });
 
                 expect(validateSchema(input).isValid).toBe(false);
+            });
+
+            it('enforces verify: false for media, location, readme, branch, group', () => {
+                ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
+                    const input = {
+                        ...createTextInput(makeInputRef(1)),
+                        type,
+                        verify: true
+                    };
+                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
+                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
+
+                    expect(validateSchema(input).isValid).toBe(false);
+                });
+            });
+
+            it('enforces is_title: false for media, location, readme, branch, group', () => {
+                ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
+                    const input = {
+                        ...createTextInput(makeInputRef(1)),
+                        type,
+                        is_title: true
+                    };
+                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
+                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
+
+                    expect(validateSchema(input).isValid).toBe(false);
+                });
+            });
+
+            it('enforces empty default for media, location, readme, branch, group', () => {
+                ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
+                    const input = {
+                        ...createTextInput(makeInputRef(1)),
+                        type,
+                        default: 'invalid'
+                    };
+                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
+                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
+
+                    expect(validateSchema(input).isValid).toBe(false);
+                });
             });
 
             it('restricts jumps for non-choice inputs to when=ALL', () => {
