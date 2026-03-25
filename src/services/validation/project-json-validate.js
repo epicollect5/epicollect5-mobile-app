@@ -183,7 +183,7 @@ export const projectJsonValidate = {
             }
 
             // If this is the main form, check the total accumulated count
-            if (isTopLevel && localInputCount > LIMITS.MAX_TOTAL_INPUTS) {
+            if (isTopLevel && localInputCount > LIMITS.MAX_QUESTIONS) {
                 throw new Error(`<strong>Limit Exceeded</strong><br/>${scopeName} has ${localInputCount} total inputs (Max: 300).`);
             }
 
@@ -197,7 +197,7 @@ export const projectJsonValidate = {
         });
 
         // 4. Project-wide search limit (not scoped to branches)
-        if (totalSearchInputs > LIMITS.MAX_SEARCH_INPUTS) {
+        if (totalSearchInputs > LIMITS.MAX_SEARCH_QUESTIONS) {
             throw new Error(`<strong>Limit Exceeded</strong><br/>Project has ${totalSearchInputs} search inputs (Max: 5).`);
         }
 

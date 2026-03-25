@@ -10,8 +10,7 @@ import projectMappingService from '@/services/project-mapping-service';
 import {errorsService} from '@/services/errors-service';
 import {projectJsonValidate} from '@/services/validation/project-json-validate';
 
-//imp: router gets passed because is available only in setup()
-
+//imp: router gets passed in because is available only in setup()
 export async function importProject(file, router) {
 
     /**
