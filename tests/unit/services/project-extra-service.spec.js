@@ -236,5 +236,78 @@ describe('Project Extra Service', () => {
         expect(result.forms['for_123'].lists.location_inputs[0].input_ref).toBe('inp_bg1');
         expect(result.forms['for_123'].lists.location_inputs[0].branch_ref).toBe('grp_1');
     });
+
+    it('should handle branch inside group (form[*][group][*][branch][*])', () => {
+        const projectWithBranchInGroup = {
+            project: {
+                ...mockProject.data.project,
+                forms: [
+                    {
+                        ref: 'for_123',
+                        name: 'Form 1',
+                        slug: 'form-1',
+                        inputs: [
+                            {
+                                ref: 'grp_1',
+                                type: 'group',
+                                question: 'Group 1',
+                                group: [
+                                    {
+                                        ref: 'bra_g1',
+                                        type: 'branch',
+                                        question: 'Branch in Group',
+                                        branch: [
+                                            {
+                                                ref: 'inp_gb1',
+                                                type: 'location',
+                                                question: 'GB Location',
+                                                group: [],
+                                                branch: []
+                                            },
+                                            {
+                                                ref: 'inp_gb2',
+                                                type: 'radio',
+                                                question: 'GB Radio',
+                                                possible_answers: [
+                                                    { answer: 'Yes', answer_ref: 'ans_y' },
+                                                    { answer: 'No', answer_ref: 'ans_n' }
+                                                ],
+                                                group: [],
+                                                branch: []
+                                            }
+                                        ],
+                                        group: []
+                                    }
+                                ],
+                                branch: []
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        const result = projectExtraService.generateExtraStructure(projectWithBranchInGroup);
+
+        // The branch ref should appear in the parent group's children
+        expect(result.forms['for_123'].group['grp_1']).toContain('bra_g1');
+
+        // The branch's child refs should be registered under branches
+        expect(result.forms['for_123'].branch['bra_g1']).toEqual(['inp_gb1', 'inp_gb2']);
+
+        // Branch children should be in inputsExtra
+        expect(result.inputs['inp_gb1']).toBeDefined();
+        expect(result.inputs['inp_gb2']).toBeDefined();
+
+        // Location inside branch inside group: input_ref = parent branch ref, branch_ref = location ref
+        expect(result.forms['for_123'].lists.location_inputs).toHaveLength(1);
+        expect(result.forms['for_123'].lists.location_inputs[0].input_ref).toBe('bra_g1');
+        expect(result.forms['for_123'].lists.location_inputs[0].branch_ref).toBe('inp_gb1');
+
+        // MC input inside branch inside group goes to branch MC bucket
+        expect(result.forms['for_123'].lists.multiple_choice_inputs.branch['bra_g1']).toBeDefined();
+        expect(result.forms['for_123'].lists.multiple_choice_inputs.branch['bra_g1'].order).toContain('inp_gb2');
+        expect(result.forms['for_123'].lists.multiple_choice_inputs.branch['bra_g1']['inp_gb2'].question).toBe('GB Radio');
+    });
 });
 

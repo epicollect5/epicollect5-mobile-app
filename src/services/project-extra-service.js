@@ -186,6 +186,49 @@ function buildFormsExtra(forms, formRefs, inputsExtra) {
                             possible_answers: convertToHashMap(groupInput.possible_answers)
                         };
                     }
+
+                    // ── branch inside group ──────────────────────────────────────────
+                    if (groupInput.type === INPUT_TYPE_BRANCH) {
+                        /** @type {string[]} */
+                        const groupBranchInputRefs = [];
+
+                        /** @type {string[]} */
+                        const thisGroupBranchMcOrder = [];
+                        /** @type {Object.<string, MultipleChoiceInputEntry>} */
+                        const thisGroupBranchMcEntries = {};
+
+                        for (const groupBranchInput of groupInput.branch) {
+                            groupBranchInputRefs.push(groupBranchInput.ref);
+                            inputsExtra[groupBranchInput.ref] = { data: flattenInput(groupBranchInput) };
+
+                            if (groupBranchInput.type === INPUT_TYPE_LOCATION) {
+                                hasLocation = true;
+                                locationInputs.push({
+                                    question:  groupBranchInput.question,
+                                    // PHP uses the *parent* branch input's ref here, not the location's own ref
+                                    input_ref:  groupInput.ref,
+                                    branch_ref: groupBranchInput.ref
+                                });
+                            }
+
+                            if (MULTIPLE_CHOICE_QUESTION_TYPES.has(groupBranchInput.type)) {
+                                thisGroupBranchMcOrder.push(groupBranchInput.ref);
+                                thisGroupBranchMcEntries[groupBranchInput.ref] = {
+                                    question:         groupBranchInput.question,
+                                    possible_answers: convertToHashMap(groupBranchInput.possible_answers)
+                                };
+                            }
+                        }
+
+                        branches[groupInput.ref] = groupBranchInputRefs;
+
+                        if (thisGroupBranchMcOrder.length > 0) {
+                            multipleChoiceBranchInputs[groupInput.ref] = {
+                                order: thisGroupBranchMcOrder,
+                                ...thisGroupBranchMcEntries
+                            };
+                        }
+                    }
                 }
 
                 groups[input.ref] = groupInputRefs;
