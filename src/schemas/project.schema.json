@@ -60,8 +60,6 @@
     "form": {
       "type": "object",
       "title": "Form",
-      "maxItems": 5,
-      "minItems": 1,
       "description": "A single form within a project.\n\nLimits enforced by JSON Schema:\n- Max 300 inputs at top level (maxItems=300)\n- form.name: alphanumeric + spaces + hyphens + underscores, max 50\n\nLimits that MUST be enforced by application logic:\n- inputsMaxCount=300: total inputs counted recursively across all nesting levels\n- titlesMaxCount=3: at most 3 inputs per form may have is_title=true\n- searchMaxCount=5: combined searchsingle + searchmultiple per project (not per form)\n- Jump 'to' refs must point to input refs that exist within the same form\n- Input refs must be unique across the entire project",
       "required": [
         "ref",

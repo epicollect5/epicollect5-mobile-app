@@ -1,14 +1,14 @@
 import Ajv from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
 import projectJSONSchema from '@/schemas/project.schema.json';
-import {LIMITS} from'@/config';
+import {LIMITS} from '@/config';
 
 export const projectJsonValidate = {
     /**
      * Precision Sanitizer
      * Only targets user-facing text fields, avoiding 'regex', 'ref', and 'id'.
      */
-    sanitiseAngleBrackets  (data) {
+    sanitiseAngleBrackets(data) {
         if (Array.isArray(data)) {
             return data.map((item) => projectJsonValidate.sanitiseAngleBrackets(item));
         }
@@ -42,7 +42,7 @@ export const projectJsonValidate = {
      * Strict Emoji Detection compatible with more JS engines.
      * Catches characters that are intended to be rendered as emojis.
      */
-    containsEmoji  (str)  {
+    containsEmoji(str) {
         if (typeof str !== 'string') return false;
 
         // Fallback to Emoji_Presentation if Extended_Pictographic fails
@@ -70,7 +70,7 @@ export const projectJsonValidate = {
         const validator = ajv.compile(projectJSONSchema);
 
         // 2. Perform Validation
-        const isValid =  validator(content);
+        const isValid = validator(content);
 
         return {
             isValid,
@@ -78,7 +78,7 @@ export const projectJsonValidate = {
         };
     },
 
-    performDeepValidation (projectData)  {
+    performDeepValidation(projectData) {
         const data = projectData.data;
         const project = data.project;
 
@@ -231,6 +231,22 @@ export const projectJsonValidate = {
                             if (input.type === 'decimal' && maxNum > DEC_MAX) {
                                 throw new Error(`<strong>Validation Error</strong><br/>Input ${input.ref}: max (${maxNum}) is out of range for decimal.`);
                             }
+                        }
+
+                        const [lowerBound, upperBound] = input.type === 'integer'
+                            ? [INT_MIN, INT_MAX]
+                            : [DEC_MIN, DEC_MAX];
+
+                        if (minNum !== undefined && (minNum < lowerBound || minNum > upperBound)) {
+                            throw new Error(
+                                `<strong>Validation Error</strong><br/>Input ${input.ref}: min (${minNum}) is out of range for ${input.type}.`
+                            );
+                        }
+
+                        if (maxNum !== undefined && (maxNum < lowerBound || maxNum > upperBound)) {
+                            throw new Error(
+                                `<strong>Validation Error</strong><br/>Input ${input.ref}: max (${maxNum}) is out of range for ${input.type}.`
+                            );
                         }
                     }
 
