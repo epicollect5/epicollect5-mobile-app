@@ -35,6 +35,21 @@ export const projectJsonValidate = {
     },
 
     /**
+     * Decodes basic HTML entities to plain text.
+     * Handles &lt;, &gt;, &amp;, &quot;, &#39; (and numeric &#39;).
+     */
+    decodeHtmlEntities(str) {
+        if (typeof str !== 'string') return str;
+        return str
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, '\'')
+            .replace(/&apos;/g, '\''); // Sometimes used
+    },
+
+    /**
      * Comprehensive Emoji Detection.
      * Covers single-codepoint emojis, modifiers, flags, keycaps, and ZWJ sequences.
      */
@@ -85,6 +100,10 @@ export const projectJsonValidate = {
         // 2. Project Meta-data Checks
         validateText(project.name, 'Project Name');
         validateText(project.slug, 'Project Slug');
+        // --- NEW: Ensure slug length equals name length ---
+        if (project.slug.length !== project.name.length) {
+            throw new Error(`<strong>Validation Error</strong><br/>Project slug length (${project.slug.length}) must equal project name length (${project.name.length}).`);
+        }
         validateText(project.small_description, 'Small Description');
         validateText(project.description, 'Project Description');
 
@@ -95,7 +114,7 @@ export const projectJsonValidate = {
          * This ensures titles are reset for branches but summed for groups.
          */
 
-        const validateCollection = (inputs, scopeName, isTopLevel = false) => {
+        const validateCollection = (inputs, scopeName, isTopLevel = false, isInBranch = false) => {
             let titleCount = 0;
             let localInputCount = 0;
 
@@ -111,6 +130,14 @@ export const projectJsonValidate = {
                     localInputCount++;
                     validateText(input.question, `Question (${input.ref})`);
 
+                    // --- NEW: Check readme question length (decoded HTML entities <= 1000 chars) ---
+                    if (input.type === 'readme') {
+                        const decodedQuestion = projectJsonValidate.decodeHtmlEntities(input.question);
+                        if (decodedQuestion.length > 1000) {
+                            throw new Error(`<strong>Validation Error</strong><br/>Readme input ${input.ref}: decoded question text exceeds 1000 characters (${decodedQuestion.length}).`);
+                        }
+                    }
+
                     // Validate user-facing text fields for emojis
                     if (typeof input.default === 'string') validateText(input.default, `Default (${input.ref})`);
                     if (typeof input.regex === 'string') validateText(input.regex, `Regex (${input.ref})`);
@@ -120,6 +147,11 @@ export const projectJsonValidate = {
                         const answerRefs = new Set();
                         input.possible_answers.forEach((ans) => {
                             validateText(ans.answer, `Answer option in ${input.ref}`);
+
+                            // --- NEW: Check answer length (max 250 chars) ---
+                            if (ans.answer.length > 250) {
+                                throw new Error(`<strong>Validation Error</strong><br/>Answer option "${ans.answer}" in ${input.ref} exceeds 250 characters (${ans.answer.length}).`);
+                            }
 
                             if (answerRefs.has(ans.answer_ref)) {
                                 throw new Error(`<strong>Validation Error</strong><br/>Duplicate answer_ref "${ans.answer_ref}" found in input ${input.ref}.`);
@@ -140,6 +172,11 @@ export const projectJsonValidate = {
                         titleCount++;
                     }
 
+                    // --- NEW: Uniqueness Scope Check ---
+                    if (isInBranch && input.uniqueness === 'hierarchy') {
+                        throw new Error(`<strong>Validation Error</strong><br/>Input ${input.ref} is inside a branch and cannot have uniqueness "hierarchy". Allowed: "none" or "form".`);
+                    }
+
                     // 3. Choice-based Defaults (Referential Integrity)
                     const validAnswerRefs = new Set(input.possible_answers.map((a) => a.answer_ref));
 
@@ -158,6 +195,19 @@ export const projectJsonValidate = {
                         }
                         if (jump.to !== 'END' && !validRefs.includes(jump.to)) {
                             throw new Error(`<strong>Validation Error</strong><br/>Jump in ${input.ref} points to non-existent input "${jump.to}".`);
+                        }
+                        if (jump.to !== 'END') {
+                            const currentIndex = inputs.findIndex((i) => i.ref === input.ref);
+                            const targetIndex = inputs.findIndex((i) => i.ref === jump.to);
+                            if (targetIndex <= currentIndex + 1) {
+                                throw new Error(`<strong>Validation Error</strong><br/>Jump in ${input.ref} to "${jump.to}" must skip at least one question.`);
+                            }
+                        } else {
+                            // For jumps to END, ensure it's not from the last input
+                            const currentIndex = inputs.findIndex((i) => i.ref === input.ref);
+                            if (currentIndex >= inputs.length - 1) {
+                                throw new Error(`<strong>Validation Error</strong><br/>Jump in ${input.ref} to "END" must skip at least one question.`);
+                            }
                         }
                     });
 
@@ -256,7 +306,7 @@ export const projectJsonValidate = {
                     if (input.type === 'branch' && input.branch?.length) {
                         // BRANCHES: New titleCount scope (starts at 0)
                         // but their inputs ADD to the total count of the form hierarchy.
-                        localInputCount += validateCollection(input.branch, `Branch (${input.ref})`);
+                        localInputCount += validateCollection(input.branch, `Branch (${input.ref})`, false, true);
                     } else if (input.type === 'group' && input.group?.length) {
                         // GROUPS: Continue with CURRENT titleCount scope
                         // JUMPS are forbidden within groups (already in schema, but adding to deep validation for safety)

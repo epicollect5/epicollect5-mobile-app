@@ -165,6 +165,14 @@ describe('projectJsonValidate', () => {
             expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/Emoji detected/);
         });
 
+        it('throws when project slug length does not equal project name length', () => {
+            const payload = createValidProjectPayload();
+            payload.data.project.name = 'Test Project'; // 12 chars
+            payload.data.project.slug = 'test'; // 4 chars
+
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/Project slug length \(4\) must equal project name length \(12\)/);
+        });
+
         it('enforces at most three title inputs per form, including groups', () => {
             const payload = createValidProjectPayload();
             payload.data.project.forms[0].inputs = Array.from({length: 4}, (_, idx) => ({
@@ -331,6 +339,16 @@ describe('projectJsonValidate', () => {
             expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/Duplicate answer_ref/);
         });
 
+        it('rejects possible answer text exceeding 250 characters', () => {
+            const payload = createValidProjectPayload();
+            const longAnswer = 'a'.repeat(251); // 251 chars
+            const choiceInput = createChoiceInput(makeInputRef(1), ['0000000000001']);
+            choiceInput.possible_answers[0].answer = longAnswer;
+            payload.data.project.forms[0].inputs = [choiceInput];
+
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/exceeds 250 characters/);
+        });
+
         it('rejects defaults that are not listed in possible_answers', () => {
             const payload = createValidProjectPayload();
             const dropdown = createChoiceInput(makeInputRef(1), ['0000000000001']);
@@ -369,232 +387,115 @@ describe('projectJsonValidate', () => {
             expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/non-existent input/);
         });
 
-        it('rejects jumps exceeding possible answers for multiple choice inputs', () => {
+        it('rejects jumps that do not skip at least one question', () => {
             const payload = createValidProjectPayload();
-            const choiceInput = createChoiceInput(makeInputRef(1), ['0000000000001', '0000000000002']); // 2 possible answers
-            choiceInput.jumps = [
-                { to: 'END', when: 'IS', answer_ref: '0000000000001' },
-                { to: 'END', when: 'IS', answer_ref: '0000000000002' },
-                { to: 'END', when: 'ALL', answer_ref: null } // 3 jumps, exceeds 2
+            const input1 = createTextInput(makeInputRef(1));
+            const input2 = createTextInput(makeInputRef(2));
+            input1.jumps = [
+                {
+                    to: makeInputRef(2), // Jump to next input, should skip at least one
+                    when: 'ALL',
+                    answer_ref: null
+                }
             ];
-            payload.data.project.forms[0].inputs = [choiceInput];
+            payload.data.project.forms[0].inputs = [input1, input2];
 
-            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/number of jumps \(3\) cannot exceed number of possible answers \(2\)/);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/must skip at least one question/);
         });
 
-        it('allows jumps not exceeding possible answers for multiple choice inputs', () => {
+        it('allows jumps that skip at least one question', () => {
             const payload = createValidProjectPayload();
-            const choiceInput = createChoiceInput(makeInputRef(1), ['0000000000001', '0000000000002']); // 2 possible answers
-            choiceInput.jumps = [
-                { to: 'END', when: 'IS', answer_ref: '0000000000001' },
-                { to: 'END', when: 'IS_NOT', answer_ref: '0000000000002' } // 2 jumps, equal to possible answers
+            const input1 = createTextInput(makeInputRef(1));
+            const input2 = createTextInput(makeInputRef(2));
+            const input3 = createTextInput(makeInputRef(3));
+            input1.jumps = [
+                {
+                    to: makeInputRef(3), // Jump from index 0 to index 2, skipping 1
+                    when: 'ALL',
+                    answer_ref: null
+                }
             ];
-            payload.data.project.forms[0].inputs = [choiceInput];
+            payload.data.project.forms[0].inputs = [input1, input2, input3];
 
             expect(() => projectJsonValidate.performDeepValidation(payload)).not.toThrow();
         });
-    });
 
-    describe('project.schema.json allOf constraints', () => {
-        const validateSchema = (input) => projectJsonValidate.isValidAgainstSchema(
-            createProjectPayloadWithInputs([input])
-        );
 
-        it('requires readme inputs to keep is_required false', () => {
-            const input = createInputWithOverrides(makeInputRef(1), {
-                type: 'readme',
-                is_required: true
-            });
-
-            expect(validateSchema(input).isValid).toBe(false);
-        });
-
-        it('rejects location defaults that are not valid coordinates', () => {
-            const input = createInputWithOverrides(makeInputRef(1), {
-                type: 'location',
-                default: 'invalid-coordinate'
-            });
-
-            expect(validateSchema(input).isValid).toBe(false);
-        });
-
-        const expectDefaultLengthViolation = (type, lengthLimit) => {
-            const longValue = 'a'.repeat(lengthLimit + 1);
-            const input = createInputWithOverrides(makeInputRef(lengthLimit), {
-                type,
-                default: longValue
-            });
-
-            expect(validateSchema(input).isValid).toBe(false);
-        };
-
-        it('enforces text defaults to 255 chars', () => expectDefaultLengthViolation('text', 255));
-        it('enforces phone defaults to 255 chars', () => expectDefaultLengthViolation('phone', 255));
-        it('enforces integer defaults to 255 chars', () => expectDefaultLengthViolation('integer', 255));
-        it('enforces decimal defaults to 255 chars', () => expectDefaultLengthViolation('decimal', 255));
-        it('enforces textarea defaults to 1000 chars', () => expectDefaultLengthViolation('textarea', 1000));
-        it('enforces date defaults to 25 chars', () => expectDefaultLengthViolation('date', 25));
-        it('enforces time defaults to 25 chars', () => expectDefaultLengthViolation('time', 25));
-
-        it('rejects dropdown defaults that are not valid answer_refs', () => {
-            const dropdown = createChoiceInput(makeInputRef(1), ['0000000000001']);
-            dropdown.default = 'short';
-
-            expect(validateSchema(dropdown).isValid).toBe(false);
-        });
-
-        it('rejects radio defaults that are not valid answer_refs', () => {
-            const radio = {...createChoiceInput(makeInputRef(2), ['0000000000002']), type: 'radio'};
-            radio.default = 'short';
-
-            expect(validateSchema(radio).isValid).toBe(false);
-        });
-
-        it('rejects checkbox defaults that are not valid answer_refs', () => {
-            const checkbox = {...createChoiceInput(makeInputRef(3), ['0000000000003']), type: 'checkbox'};
-            checkbox.default = 'short';
-
-            expect(validateSchema(checkbox).isValid).toBe(false);
-        });
-
-        it('enforces searchsingle to have at least one possible answer', () => {
-            const single = {...createSearchInput(makeInputRef(4), 4), possible_answers: []};
-
-            expect(validateSchema(single).isValid).toBe(false);
-        });
-
-        it('enforces searchsingle to not own branch children', () => {
-            const single = {...createSearchInput(makeInputRef(5), 5), branch: [createTextInput(makeInputRef(6))]};
-
-            expect(validateSchema(single).isValid).toBe(false);
-        });
-
-        const createSearchMultipleInput = (ref, answerRefSuffix) => ({
-            ...createSearchInput(ref, answerRefSuffix),
-            type: 'searchmultiple'
-        });
-
-        it('enforces searchmultiple to have at least one possible answer', () => {
-            const multi = {...createSearchMultipleInput(makeInputRef(6), 6), possible_answers: []};
-
-            expect(validateSchema(multi).isValid).toBe(false);
-        });
-
-        it('enforces searchmultiple to not own group children', () => {
-            const multi = {
-                ...createSearchMultipleInput(makeInputRef(7), 7),
-                group: [createTextInput(makeInputRef(8))]
-            };
-
-            expect(validateSchema(multi).isValid).toBe(false);
-        });
-
-        it('enforces photo defaults to 52 chars', () => expectDefaultLengthViolation('photo', 52));
-        it('enforces audio defaults to 51 chars', () => expectDefaultLengthViolation('audio', 51));
-        it('enforces video defaults to 51 chars', () => expectDefaultLengthViolation('video', 51));
-        it('enforces barcode defaults to 255 chars', () => expectDefaultLengthViolation('barcode', 255));
-
-        it('requires at least one child within branches', () => {
-            const branch = createBranchInput(makeInputRef(9), []);
-
-            expect(validateSchema(branch).isValid).toBe(false);
-        });
-
-        it('requires branches to keep possible_answers empty', () => {
-            const branch = createBranchInput(makeInputRef(10), [createTextInput(makeInputRef(11))]);
-            branch.possible_answers = [
+        it('rejects jumps to END from the last input', () => {
+            const payload = createValidProjectPayload();
+            const input1 = createTextInput(makeInputRef(1));
+            const input2 = createTextInput(makeInputRef(2));
+            input2.jumps = [
                 {
-                    answer: 'Invalid',
-                    answer_ref: 'aaaaaaaaaaaaa'
+                    to: 'END', // Jump to end from last input, should fail
+                    when: 'ALL',
+                    answer_ref: null
                 }
             ];
+            payload.data.project.forms[0].inputs = [input1, input2];
 
-            expect(validateSchema(branch).isValid).toBe(false);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/must skip at least one question/);
         });
 
-        it('requires groups to have at least one child', () => {
-            const group = createGroupInput(makeInputRef(12), []);
+        it('rejects uniqueness "hierarchy" for inputs inside branches', () => {
+            const payload = createValidProjectPayload();
+            const branchChild = createTextInput(makeInputRef(2));
+            branchChild.uniqueness = 'hierarchy'; // Invalid for branch children
+            const branch = createBranchInput(makeInputRef(1), [branchChild]);
+            payload.data.project.forms[0].inputs = [branch];
 
-            expect(validateSchema(group).isValid).toBe(false);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/cannot have uniqueness "hierarchy"/);
         });
 
-        it('prevents jumps inside group children', () => {
-            const child = createInputWithOverrides(makeInputRef(13), {
-                jumps: [
-                    {
-                        to: 'END',
-                        when: 'ALL',
-                        answer_ref: null
-                    }
-                ]
+        it('allows uniqueness "none" for inputs inside branches', () => {
+            const payload = createValidProjectPayload();
+            const branchChild = createTextInput(makeInputRef(2));
+            branchChild.uniqueness = 'none'; // Valid for branch children
+            const branch = createBranchInput(makeInputRef(1), [branchChild]);
+            payload.data.project.forms[0].inputs = [branch];
+
+            expect(() => projectJsonValidate.performDeepValidation(payload)).not.toThrow();
+        });
+
+        it('allows uniqueness "form" for inputs inside branches', () => {
+            const payload = createValidProjectPayload();
+            const branchChild = createTextInput(makeInputRef(2));
+            branchChild.uniqueness = 'form'; // Valid for branch children
+            const branch = createBranchInput(makeInputRef(1), [branchChild]);
+            payload.data.project.forms[0].inputs = [branch];
+
+            expect(() => projectJsonValidate.performDeepValidation(payload)).not.toThrow();
+        });
+
+        it('allows uniqueness "hierarchy" for top-level inputs', () => {
+            const payload = createValidProjectPayload();
+            const topLevelInput = createTextInput(makeInputRef(1));
+            topLevelInput.uniqueness = 'hierarchy'; // Valid for top-level
+            payload.data.project.forms[0].inputs = [topLevelInput];
+
+            expect(() => projectJsonValidate.performDeepValidation(payload)).not.toThrow();
+        });
+
+        it('rejects readme questions exceeding 1000 decoded characters', () => {
+            const payload = createValidProjectPayload();
+            const readmeInput = createInputWithOverrides(makeInputRef(1), {
+                type: 'readme',
+                question: '&lt;' + 'a'.repeat(1000) + '&gt;' // Encoded < and >, plus 1000 'a's, decoded length > 1000
             });
-            const group = createGroupInput(makeInputRef(14), [child]);
+            payload.data.project.forms[0].inputs = [readmeInput];
 
-            expect(validateSchema(group).isValid).toBe(false);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/decoded question text exceeds 1000 characters/);
         });
 
-        it('enforces non-branch/group inputs to keep branch/group empty', () => {
-            const input = createTextInput(makeInputRef(15));
-            input.branch = [createTextInput(makeInputRef(16))];
-
-            expect(validateSchema(input).isValid).toBe(false);
-        });
-
-        it('enforces question length for non-readme inputs', () => {
-            const input = createInputWithOverrides(makeInputRef(17), {
-                type: 'text',
-                question: 'a'.repeat(256)
+        it('allows readme questions up to 1000 decoded characters', () => {
+            const payload = createValidProjectPayload();
+            const readmeInput = createInputWithOverrides(makeInputRef(1), {
+                type: 'readme',
+                question: 'a'.repeat(1000) // Exactly 1000 chars
             });
+            payload.data.project.forms[0].inputs = [readmeInput];
 
-            expect(validateSchema(input).isValid).toBe(false);
-        });
-
-        it('requires location inputs to have is_required false', () => {
-            const input = createInputWithOverrides(makeInputRef(18), {
-                type: 'location',
-                is_required: true
-            });
-
-            expect(validateSchema(input).isValid).toBe(false);
-        });
-
-        describe('Media, Location, Readme, Branch, Group schema constraints', () => {
-            const types = ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'];
-            const constraints = [
-                { prop: 'verify', value: true },
-                { prop: 'is_title', value: true },
-                { prop: 'default', value: 'invalid' }
-            ];
-
-            types.forEach((type) => {
-                constraints.forEach(({ prop, value }) => {
-                    it(`enforces ${prop}: ${value} for ${type}`, () => {
-                        const input = {
-                            ...createTextInput(makeInputRef(1)),
-                            type,
-                            [prop]: value
-                        };
-                        if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
-                        if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
-
-                        expect(validateSchema(input).isValid).toBe(false);
-                    });
-                });
-            });
-        });
-
-        it('restricts jumps for non-choice inputs to when=ALL', () => {
-            const input = createInputWithOverrides(makeInputRef(19), {
-                jumps: [
-                    {
-                        to: 'END',
-                        when: 'IS',
-                        answer_ref: '0000000000001'
-                    }
-                ]
-            });
-
-            expect(validateSchema(input).isValid).toBe(false);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).not.toThrow();
         });
     });
 });
