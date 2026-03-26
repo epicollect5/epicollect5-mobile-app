@@ -29,6 +29,7 @@ def capacitor_pods
   pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
   pod 'CapacitorToast', :path => '../../node_modules/@capacitor/toast'
+  pod 'CapawesomeCapacitorFilePicker', :path => '../../node_modules/@capawesome/capacitor-file-picker'
   pod 'CapgoCapacitorZip', :path => '../../node_modules/@capgo/capacitor-zip'
   pod 'WhiteguruCapacitorPluginVideoEditor', :path => '../../node_modules/@whiteguru/capacitor-plugin-video-editor'
   pod 'CordovaPlugins', :path => '../capacitor-cordova-ios-plugins'

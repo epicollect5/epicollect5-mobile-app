@@ -44,6 +44,7 @@ export function fetchLocalProjects () {
                         projects.push({
                             ref: res.rows.item(i).project_ref,
                             name: res.rows.item(i).name,
+                            serverUrl: res.rows.item(i).server_url,
                             logo: appPersistentStoragePath
                         });
 

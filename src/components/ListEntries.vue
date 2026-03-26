@@ -24,7 +24,11 @@
 						<!-- Expand column to full width for single form projects -->
 						<ion-col :size="nextFormRef ? 9 : 12">
 							<ion-label class="list-entries-item-title unwrap-fix">
-								<icon-entry :entry="entry"></icon-entry>
+								<icon-entry
+                    :entry="entry"
+                    :wasProjectImportedFromFile="wasProjectImportedFromFile">
+
+                </icon-entry>
 								{{ entry.title }}
 							</ion-label>
 						</ion-col>
@@ -258,7 +262,10 @@ export default {
 		const computedScope = {
 			formName: computed(() => {
 				return nextFormRef.value ? projectModel.getFormName(nextFormRef.value) : '';
-			})
+			}),
+      wasProjectImportedFromFile: computed(() => {
+        return rootStore.wasProjectImportedFromFile;
+      })
 		};
 
 		onMounted(async () => {

@@ -47,6 +47,8 @@ PODS:
     - Capacitor
   - CapacitorToast (8.0.0):
     - Capacitor
+  - CapawesomeCapacitorFilePicker (8.0.2):
+    - Capacitor
   - CapgoCapacitorZip (8.1.5):
     - Capacitor
     - ZIPFoundation (~> 0.9.19)
@@ -127,6 +129,7 @@ DEPENDENCIES:
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapacitorToast (from `../../node_modules/@capacitor/toast`)"
+  - "CapawesomeCapacitorFilePicker (from `../../node_modules/@capawesome/capacitor-file-picker`)"
   - "CapgoCapacitorZip (from `../../node_modules/@capgo/capacitor-zip`)"
   - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
   - CordovaPluginsResources (from `../capacitor-cordova-ios-plugins`)
@@ -187,6 +190,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/status-bar"
   CapacitorToast:
     :path: "../../node_modules/@capacitor/toast"
+  CapawesomeCapacitorFilePicker:
+    :path: "../../node_modules/@capawesome/capacitor-file-picker"
   CapgoCapacitorZip:
     :path: "../../node_modules/@capgo/capacitor-zip"
   CordovaPlugins:
@@ -220,6 +225,7 @@ SPEC CHECKSUMS:
   CapacitorSplashScreen: 422880d7117605c30699eb4b21644b62db42e86c
   CapacitorStatusBar: 312e2e67928dfe9514c4a8916a1fd610552f5f35
   CapacitorToast: aefebcd4cead9f44a04ace80c66a7eb4031751e7
+  CapawesomeCapacitorFilePicker: eb29fb54c59614fede51e0e0fe25070dda9d024c
   CapgoCapacitorZip: fa08dc8ecd77ba68f763e2447d9aaa83744f2ea2
   CordovaPlugins: 7a62f889f16755d6b203786baf68ea310e01e864
   CordovaPluginsResources: da93847212bf7b16ba770e4d6c3e7dba820174c7
@@ -235,6 +241,6 @@ SPEC CHECKSUMS:
   WhiteguruCapacitorPluginVideoEditor: 1a56d775023055c927da6fc08161b2b97b14e5b1
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 
-PODFILE CHECKSUM: 316220f12d232b12950045a0bcf4e2156c8a239a
+PODFILE CHECKSUM: f402062037be69523edf349bfa05482c125e7a15
 
 COCOAPODS: 1.16.2
