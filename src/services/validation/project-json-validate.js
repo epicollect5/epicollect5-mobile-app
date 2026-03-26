@@ -161,12 +161,10 @@ export const projectJsonValidate = {
                         }
                     });
 
-                    // 4. Jumps (Referential Integrity)
-                    input.jumps.forEach((jump) => {
-                        if (jump.to !== 'END' && !validRefs.includes(jump.to)) {
-                            throw new Error(`<strong>Validation Error</strong><br/>Jump in ${input.ref} points to non-existent input "${jump.to}".`);
-                        }
-                    });
+                    // Check: for multiple choice inputs, jumps cannot exceed possible_answers
+                    if (input.possible_answers.length > 0 && input.jumps.length > input.possible_answers.length) {
+                        throw new Error(`<strong>Validation Error</strong><br/>Input ${input.ref}: number of jumps (${input.jumps.length}) cannot exceed number of possible answers (${input.possible_answers.length}).`);
+                    }
 
                     // --- NEW: Constraints for Media, Location, Readme, Branch, Group ---
                     if (['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].includes(input.type)) {

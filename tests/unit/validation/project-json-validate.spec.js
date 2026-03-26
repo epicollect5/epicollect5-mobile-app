@@ -201,45 +201,26 @@ describe('projectJsonValidate', () => {
 
         describe('Media, Location, Readme, Branch, Group constraints', () => {
             const types = ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'];
+            const constraints = [
+                { prop: 'verify', value: true, error: /verify must be false/ },
+                { prop: 'is_title', value: true, error: /is_title must be false/ },
+                { prop: 'default', value: 'some value', error: /default must be empty/ }
+            ];
 
             types.forEach((type) => {
-                it(`throws if ${type} has verify: true`, () => {
-                    const input = {
-                        ...createTextInput(makeInputRef(1)),
-                        type,
-                        verify: true
-                    };
-                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
-                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
+                constraints.forEach(({ prop, value, error }) => {
+                    it(`throws if ${type} has ${prop}: ${value}`, () => {
+                        const input = {
+                            ...createTextInput(makeInputRef(1)),
+                            type,
+                            [prop]: value
+                        };
+                        if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
+                        if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
 
-                    const payload = createProjectPayloadWithInputs([input]);
-                    expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/verify must be false/);
-                });
-
-                it(`throws if ${type} has is_title: true`, () => {
-                    const input = {
-                        ...createTextInput(makeInputRef(1)),
-                        type,
-                        is_title: true
-                    };
-                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
-                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
-
-                    const payload = createProjectPayloadWithInputs([input]);
-                    expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/is_title must be false/);
-                });
-
-                it(`throws if ${type} has non-empty default`, () => {
-                    const input = {
-                        ...createTextInput(makeInputRef(1)),
-                        type,
-                        default: 'some value'
-                    };
-                    if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
-                    if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
-
-                    const payload = createProjectPayloadWithInputs([input]);
-                    expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/default must be empty/);
+                        const payload = createProjectPayloadWithInputs([input]);
+                        expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(error);
+                    });
                 });
             });
         });
@@ -386,6 +367,31 @@ describe('projectJsonValidate', () => {
             payload.data.project.forms[0].inputs = [input];
 
             expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/non-existent input/);
+        });
+
+        it('rejects jumps exceeding possible answers for multiple choice inputs', () => {
+            const payload = createValidProjectPayload();
+            const choiceInput = createChoiceInput(makeInputRef(1), ['0000000000001', '0000000000002']); // 2 possible answers
+            choiceInput.jumps = [
+                { to: 'END', when: 'IS', answer_ref: '0000000000001' },
+                { to: 'END', when: 'IS', answer_ref: '0000000000002' },
+                { to: 'END', when: 'ALL', answer_ref: null } // 3 jumps, exceeds 2
+            ];
+            payload.data.project.forms[0].inputs = [choiceInput];
+
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/number of jumps \(3\) cannot exceed number of possible answers \(2\)/);
+        });
+
+        it('allows jumps not exceeding possible answers for multiple choice inputs', () => {
+            const payload = createValidProjectPayload();
+            const choiceInput = createChoiceInput(makeInputRef(1), ['0000000000001', '0000000000002']); // 2 possible answers
+            choiceInput.jumps = [
+                { to: 'END', when: 'IS', answer_ref: '0000000000001' },
+                { to: 'END', when: 'IS_NOT', answer_ref: '0000000000002' } // 2 jumps, equal to possible answers
+            ];
+            payload.data.project.forms[0].inputs = [choiceInput];
+
+            expect(() => projectJsonValidate.performDeepValidation(payload)).not.toThrow();
         });
     });
 
@@ -552,45 +558,28 @@ describe('projectJsonValidate', () => {
             expect(validateSchema(input).isValid).toBe(false);
         });
 
-        it('enforces verify: false for media, location, readme, branch, group', () => {
-            ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
-                const input = {
-                    ...createTextInput(makeInputRef(1)),
-                    type,
-                    verify: true
-                };
-                if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
-                if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
+        describe('Media, Location, Readme, Branch, Group schema constraints', () => {
+            const types = ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'];
+            const constraints = [
+                { prop: 'verify', value: true },
+                { prop: 'is_title', value: true },
+                { prop: 'default', value: 'invalid' }
+            ];
 
-                expect(validateSchema(input).isValid).toBe(false);
-            });
-        });
+            types.forEach((type) => {
+                constraints.forEach(({ prop, value }) => {
+                    it(`enforces ${prop}: ${value} for ${type}`, () => {
+                        const input = {
+                            ...createTextInput(makeInputRef(1)),
+                            type,
+                            [prop]: value
+                        };
+                        if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
+                        if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
 
-        it('enforces is_title: false for media, location, readme, branch, group', () => {
-            ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
-                const input = {
-                    ...createTextInput(makeInputRef(1)),
-                    type,
-                    is_title: true
-                };
-                if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
-                if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
-
-                expect(validateSchema(input).isValid).toBe(false);
-            });
-        });
-
-        it('enforces empty default for media, location, readme, branch, group', () => {
-            ['photo', 'audio', 'video', 'location', 'readme', 'branch', 'group'].forEach((type) => {
-                const input = {
-                    ...createTextInput(makeInputRef(1)),
-                    type,
-                    default: 'invalid'
-                };
-                if (type === 'branch') input.branch = [createTextInput(makeInputRef(2))];
-                if (type === 'group') input.group = [createTextInput(makeInputRef(2))];
-
-                expect(validateSchema(input).isValid).toBe(false);
+                        expect(validateSchema(input).isValid).toBe(false);
+                    });
+                });
             });
         });
 

@@ -1212,7 +1212,7 @@
     "project": {
       "type": "object",
       "title": "Project",
-      "description": "Top-level project definition.\n\nLimits enforced by JSON Schema:\n- status and can_bulk_upload are NOT validated here — the application overwrites them on import (status -> active, can_bulk_upload -> nobody).\n- Max 5 forms (formsMaxCount=5)\n- project.name: alphanumeric + spaces, min 3, max 50\n- form.name: alphanumeric + spaces + hyphens + underscores, max 50\n- small_description: min 15, max 100\n- description: max 3000 (empty allowed)\n\nLimits that MUST be enforced by application logic (cannot be expressed in JSON Schema):\n- inputsMaxCount=300: total inputs per form across all nesting levels (top-level + branch + group children)\n- titlesMaxCount=3: at most 3 inputs per form may have is_title=true\n- searchMaxCount=5: combined searchsingle + searchmultiple inputs across the entire project\n- Jump 'to' refs must point to input refs that exist within the same form\n- Input refs must be unique across the entire project",
+      "description": "Top-level project definition.\n\nLimits enforced by JSON Schema:\n- status and can_bulk_upload are NOT validated here — the application overwrites them on import (status -> active, can_bulk_upload -> nobody).\n- Max 5 forms (formsMaxCount=5)\n- project.name: alphanumeric + spaces, min 3, max 50\n- form.name: alphanumeric + spaces + hyphens + underscores, max 50\n- small_description: min 15, max 100\n- description: max 3000 (empty allowed)\n\nLimits that MUST be enforced by application logic (cannot be expressed in JSON Schema):\n- inputsMaxCount=300: total inputs per form across all nesting levels (top-level + branch + group children)\n- titlesMaxCount=3: at most 3 inputs per form may have is_title=true\n- searchMaxCount=5: combined searchsingle + searchmultiple inputs across the entire project\n- Jump 'to' refs must point to input refs that exist within the same form\n- Input refs must be unique across the entire project\n- For multiple choice inputs (possible_answers > 0), number of jumps cannot exceed number of possible_answers",
       "required": [
         "ref",
         "name",
@@ -1357,5 +1357,5 @@
       "unevaluatedProperties": false
     }
   },
-  "$comment": "v2.2.1 — 2026-03-25. Added jump constraints: disallow jumps within the same group and require jumps to skip at least one question (no jumps to immediate next input). Epicollect5 project export schema. JSON Schema Draft 2020-12, validated with opis/json-schema (PHP). Emoji validation enforced by application logic. can_bulk_upload is optional — if present must be nobody|members|everybody. App sets to nobody on import."
+  "$comment": "v2.2.2 — 2026-03-26"
 }
