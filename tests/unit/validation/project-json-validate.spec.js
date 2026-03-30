@@ -1,8 +1,8 @@
 import {describe, it, expect} from 'vitest';
 import {projectJsonValidate} from '@/services/validation/project-json-validate';
 
-const BASE_PROJECT_REF = '0123456789abcdef0123456789abcdef';
-const FORM_SUFFIX = 'bbbbbbbbbbbbb';
+const BASE_PROJECT_REF = 'f73df54472684c85b4a14d07e6193060';
+const FORM_SUFFIX = '5ece4797eaf5e';
 const FORM_REF = `${BASE_PROJECT_REF}_${FORM_SUFFIX}`;
 const makeInputRef = (index) => `${FORM_REF}_${String(index).padStart(13, '0')}`;
 const makeNestedInputRef = (parentRef, index) => `${parentRef}_${String(index).padStart(13, '0')}`;
@@ -62,14 +62,6 @@ const createInputWithOverrides = (ref, overrides = {}) => ({
     ...overrides
 });
 
-const createGroupInput = (ref, groupChildren) => ({
-    ...createTextInput(ref),
-    type: 'group',
-    group: groupChildren,
-    branch: [],
-    possible_answers: [],
-    default: ''
-});
 
 const createProjectPayloadWithInputs = (inputs) => {
     const payload = createValidProjectPayload();

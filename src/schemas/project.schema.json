@@ -1328,7 +1328,9 @@
         },
         "logo_url": {
           "type": "string",
-          "description": "URL to the project logo image. Empty string when no logo is set."
+          "deprecated": true,
+          "description": "DEPRECATED: URL to the project logo image. This property is now ignored by the mobile app, which uses the project slug to resolve logo paths dynamically. It remains optional for backward compatibility with legacy project exports.",
+          "default": ""
         },
         "created_at": {
           "type": "string",

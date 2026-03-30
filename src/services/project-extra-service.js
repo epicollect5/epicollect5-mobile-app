@@ -353,7 +353,6 @@ function buildProjectExtra(project, formRefs) {
             slug:              project.slug,
             access:            project.access,
             status:            project.status,
-            logo_url:          project.logo_url,
             visibility:        project.visibility,
             small_description: project.small_description,
             description:       project.description,
@@ -438,7 +437,6 @@ function flattenInput(input) {
  * @property {string}  slug
  * @property {string}  access      'public' | 'private'
  * @property {string}  status      'active' | 'locked' | 'trashed'
- * @property {string}  logo_url
  * @property {string}  visibility  'hidden' | 'listed'
  * @property {string}  small_description
  * @property {string}  description
@@ -481,7 +479,7 @@ function flattenInput(input) {
 /**
  * @typedef {Object} ProjectExtraProject
  * @property {string[]} forms
- * @property {{ ref: string, name: string, slug: string, access: string, status: string, logo_url: string, visibility: string, small_description: string, description: string, category: string }} details
+ * @property {{ ref: string, name: string, slug: string, access: string, status: string, visibility: string, small_description: string, description: string, category: string }} details
  * @property {Array|Object} entries_limits
  */
 
