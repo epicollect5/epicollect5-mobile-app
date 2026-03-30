@@ -20,6 +20,9 @@
           "type": "string",
           "description": "Project identifier. A 32-character lowercase hex UUIDv4 without dashes. Must be identical to project.ref.",
           "pattern": "^[a-f0-9]{32}$",
+          "examples": [
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901"
+          ],
           "$comment": "data.id must equal project.ref. JSON Schema cannot enforce cross-field equality — application logic must verify this constraint."
         },
         "type": {
@@ -60,6 +63,8 @@
     "form": {
       "type": "object",
       "title": "Form",
+      "maxItems": 5,
+      "minItems": 1,
       "description": "A single form within a project.\n\nLimits enforced by JSON Schema:\n- Max 300 inputs at top level (maxItems=300)\n- form.name: alphanumeric + spaces + hyphens + underscores, max 50\n\nLimits that MUST be enforced by application logic:\n- inputsMaxCount=300: total inputs counted recursively across all nesting levels\n- titlesMaxCount=3: at most 3 inputs per form may have is_title=true\n- searchMaxCount=5: combined searchsingle + searchmultiple per project (not per form)\n- Jump 'to' refs must point to input refs that exist within the same form\n- Input refs must be unique across the entire project",
       "required": [
         "ref",
@@ -72,7 +77,10 @@
         "ref": {
           "type": "string",
           "description": "Unique reference identifier for this form. Composed of the project ref (32-char lowercase hex UUID without dashes) followed by an underscore and a 13-char lowercase hex uniqid.",
-          "pattern": "^[a-f0-9]{32}_[a-f0-9]{13}$"
+          "pattern": "^[a-f0-9]{32}_[a-f0-9]{13}$",
+          "examples": [
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901_a4f9b3c2d1e6f"
+          ]
         },
         "name": {
           "type": "string",
@@ -83,7 +91,6 @@
         "slug": {
           "type": "string",
           "description": "URL-safe form identifier. Lowercase alphanumeric characters and hyphens only.",
-          "minLength": 3,
           "maxLength": 50,
           "pattern": "^[a-z0-9-]+$"
         },
@@ -131,7 +138,12 @@
         "ref": {
           "type": "string",
           "description": "Unique reference identifier for this input. Format: {form_ref}_{13-char hex} for top-level inputs, with one additional _{13-char hex} segment per nesting level (branch/group children).",
-          "pattern": "^[a-f0-9]{32}(_[a-f0-9]{13})+$"
+          "pattern": "^[a-f0-9]{32}(_[a-f0-9]{13})+$",
+          "examples": [
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901_a4f9b3c2d1e6f_9b7c3a2d4e5f1",
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901_a4f9b3c2d1e6f_9b7c3a2d4e5f1_6e4d2c1b0a9f8",
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901_a4f9b3c2d1e6f_9b7c3a2d4e5f1_6e4d2c1b0a9f8_1f2e3d4c5b6a7"
+          ]
         },
         "type": {
           "type": "string",
@@ -1202,7 +1214,11 @@
               "description": "Ref of the target input — must be a valid EC5 input ref."
             }
           ],
-          "description": "Ref of the input to jump to, or 'END' to end the form. Any other value is invalid."
+          "description": "Ref of the input to jump to, or 'END' to end the form. Any other value is invalid.",
+          "examples": [
+            "END",
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901_a4f9b3c2d1e6f_9b7c3a2d4e5f1"
+          ]
         },
         "when": {
           "type": "string",
@@ -1229,7 +1245,6 @@
       },
       "unevaluatedProperties": false
     },
-
     "project": {
       "type": "object",
       "title": "Project",
@@ -1240,10 +1255,7 @@
         "slug",
         "forms",
         "category",
-        "logo_url",
-        "description",
         "small_description",
-        "entries_limits",
         "visibility",
         "access",
         "status"
@@ -1252,7 +1264,10 @@
         "ref": {
           "type": "string",
           "description": "Unique project reference. A 32-character lowercase hex UUIDv4 without dashes.",
-          "pattern": "^[a-f0-9]{32}$"
+          "pattern": "^[a-f0-9]{32}$",
+          "examples": [
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901"
+          ]
         },
         "name": {
           "type": "string",
@@ -1299,9 +1314,17 @@
           ]
         },
         "homepage": {
-          "type": "string",
-          "description": "Full URL to the project homepage on Epicollect5.",
-          "format": "uri"
+          "description": "Full URL to the project homepage on Epicollect5. Empty string when no homepage is set.",
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 0
+            },
+            {
+              "type": "string",
+              "format": "uri"
+            }
+          ]
         },
         "logo_url": {
           "type": "string",
@@ -1321,11 +1344,19 @@
           ]
         },
         "description": {
-          "type": "string",
-          "description": "Long-form project description. Min 3, max 3000 characters. HTML allowed except literal < and > — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
-          "minLength": 3,
-          "maxLength": 3000,
-          "pattern": "^[^<>]*$"
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 0
+            },
+            {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3000,
+              "pattern": "^[^<>]*$"
+            }
+          ],
+          "description": "Project description: empty or 3-3000 chars, no < or >. It can have new lines"
         },
         "small_description": {
           "type": "string",
@@ -1381,5 +1412,5 @@
       "unevaluatedProperties": false
     }
   },
-  "$comment": "v2.2.2 — 2026-03-26"
+  "$comment": "v2.2.4 — 2026-03-30"
 }

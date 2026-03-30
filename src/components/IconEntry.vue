@@ -64,7 +64,7 @@ export default {
     },
     wasProjectImportedFromFile: {
       type: Boolean,
-      required: true
+      default: false
     }
   },
   setup() {

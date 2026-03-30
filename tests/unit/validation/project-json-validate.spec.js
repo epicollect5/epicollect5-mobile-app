@@ -5,6 +5,7 @@ const BASE_PROJECT_REF = '0123456789abcdef0123456789abcdef';
 const FORM_SUFFIX = 'bbbbbbbbbbbbb';
 const FORM_REF = `${BASE_PROJECT_REF}_${FORM_SUFFIX}`;
 const makeInputRef = (index) => `${FORM_REF}_${String(index).padStart(13, '0')}`;
+const makeNestedInputRef = (parentRef, index) => `${parentRef}_${String(index).padStart(13, '0')}`;
 
 const createTextInput = (ref) => ({
     ref,
@@ -439,7 +440,7 @@ describe('projectJsonValidate', () => {
 
         it('rejects uniqueness "hierarchy" for inputs inside branches', () => {
             const payload = createValidProjectPayload();
-            const branchChild = createTextInput(makeInputRef(2));
+            const branchChild = createTextInput(makeNestedInputRef(makeInputRef(1), 1));
             branchChild.uniqueness = 'hierarchy'; // Invalid for branch children
             const branch = createBranchInput(makeInputRef(1), [branchChild]);
             payload.data.project.forms[0].inputs = [branch];
@@ -449,7 +450,7 @@ describe('projectJsonValidate', () => {
 
         it('allows uniqueness "none" for inputs inside branches', () => {
             const payload = createValidProjectPayload();
-            const branchChild = createTextInput(makeInputRef(2));
+            const branchChild = createTextInput(makeNestedInputRef(makeInputRef(1), 1));
             branchChild.uniqueness = 'none'; // Valid for branch children
             const branch = createBranchInput(makeInputRef(1), [branchChild]);
             payload.data.project.forms[0].inputs = [branch];
@@ -459,7 +460,7 @@ describe('projectJsonValidate', () => {
 
         it('allows uniqueness "form" for inputs inside branches', () => {
             const payload = createValidProjectPayload();
-            const branchChild = createTextInput(makeInputRef(2));
+            const branchChild = createTextInput(makeNestedInputRef(makeInputRef(1), 1));
             branchChild.uniqueness = 'form'; // Valid for branch children
             const branch = createBranchInput(makeInputRef(1), [branchChild]);
             payload.data.project.forms[0].inputs = [branch];

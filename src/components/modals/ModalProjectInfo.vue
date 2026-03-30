@@ -81,7 +81,7 @@
 
 <script>
 import {open, closeOutline} from 'ionicons/icons';
-import {reactive} from '@vue/reactivity';
+import {reactive, computed} from '@vue/reactivity';
 import {STRINGS} from '@/config/strings';
 
 import {useRootStore} from '@/stores/root-store';
@@ -128,7 +128,9 @@ export default {
       projectName: projectModel.getProjectName(),
       projectSmallDescription: projectModel.getSmallDescription(),
       projectDescription: projectModel.getDescription(),
-      wasProjectImportedFromFile: rootStore.wasProjectImportedFromFile
+      wasProjectImportedFromFile: computed(() => {
+        return rootStore.wasProjectImportedFromFile;
+      })
     };
 
     return {
