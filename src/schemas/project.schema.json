@@ -1029,26 +1029,8 @@
               },
               "group": {
                 "minItems": 1
-              },
-              "jumps": {
-                "maxItems": 0
               }
-            },
-            "allOf": [
-              {
-                "properties": {
-                  "group": {
-                    "items": {
-                      "properties": {
-                        "jumps": {
-                          "maxItems": 0
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            ]
+            }
           }
         },
         {

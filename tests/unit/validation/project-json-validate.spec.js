@@ -57,6 +57,14 @@ const createBranchInput = (ref, branchChildren) => ({
     default: ''
 });
 
+const createGroupInput = (ref, groupChildren = [], overrides = {}) => ({
+    ...createTextInput(ref),
+    type: 'group',
+    group: groupChildren,
+    possible_answers: [],
+    ...overrides
+});
+
 const createInputWithOverrides = (ref, overrides = {}) => ({
     ...createTextInput(ref),
     ...overrides
@@ -489,6 +497,99 @@ describe('projectJsonValidate', () => {
             payload.data.project.forms[0].inputs = [readmeInput];
 
             expect(() => projectJsonValidate.performDeepValidation(payload)).not.toThrow();
+        });
+    });
+
+    describe('Jump logic for group and non-choice inputs', () => {
+        it('allows a group input to have a single unconditional jump (when: ALL)', () => {
+            const groupRef = makeInputRef(1);
+            const groupInput = createGroupInput(groupRef, [], {
+                jumps: [
+                    {
+                        to: makeInputRef(3), // skip at least one question
+                        when: 'ALL',
+                        answer_ref: null
+                    }
+                ]
+            });
+            const textInput2 = createTextInput(makeInputRef(2));
+            const textInput3 = createTextInput(makeInputRef(3));
+            const payload = createProjectPayloadWithInputs([groupInput, textInput2, textInput3]);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).not.toThrow();
+        });
+
+        it('rejects a group input with more than one jump', () => {
+            const groupRef = makeInputRef(1);
+            const groupInput = createGroupInput(groupRef, [], {
+                jumps: [
+                    {
+                        to: makeInputRef(3),
+                        when: 'ALL',
+                        answer_ref: null
+                    },
+                    {
+                        to: makeInputRef(2),
+                        when: 'ALL',
+                        answer_ref: null
+                    }
+                ]
+            });
+            const textInput2 = createTextInput(makeInputRef(2));
+            const textInput3 = createTextInput(makeInputRef(3));
+            const payload = createProjectPayloadWithInputs([groupInput, textInput2, textInput3]);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/must NOT have more than 1 items|Jump in/);
+        });
+
+        it('rejects a group input with a jump when: IS', () => {
+            const groupRef = makeInputRef(1);
+            const groupInput = createGroupInput(groupRef, [], {
+                jumps: [
+                    {
+                        to: makeInputRef(3),
+                        when: 'IS',
+                        answer_ref: '123456789abcd'
+                    }
+                ]
+            });
+            const textInput2 = createTextInput(makeInputRef(2));
+            const textInput3 = createTextInput(makeInputRef(3));
+            const payload = createProjectPayloadWithInputs([groupInput, textInput2, textInput3]);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/unknown answer_ref|must be equal to constant/);
+        });
+
+        it('allows a text input (no possible_answers) to have a single unconditional jump', () => {
+            const textInput = createTextInput(makeInputRef(1));
+            textInput.jumps = [
+                {
+                    to: makeInputRef(3), // skip at least one question
+                    when: 'ALL',
+                    answer_ref: null
+                }
+            ];
+            const textInput2 = createTextInput(makeInputRef(2));
+            const textInput3 = createTextInput(makeInputRef(3));
+            const payload = createProjectPayloadWithInputs([textInput, textInput2, textInput3]);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).not.toThrow();
+        });
+
+        it('rejects a text input (no possible_answers) with more than one jump', () => {
+            const textInput = createTextInput(makeInputRef(1));
+            textInput.jumps = [
+                {
+                    to: makeInputRef(3),
+                    when: 'ALL',
+                    answer_ref: null
+                },
+                {
+                    to: makeInputRef(2),
+                    when: 'ALL',
+                    answer_ref: null
+                }
+            ];
+            const textInput2 = createTextInput(makeInputRef(2));
+            const textInput3 = createTextInput(makeInputRef(3));
+            const payload = createProjectPayloadWithInputs([textInput, textInput2, textInput3]);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/must NOT have more than 1 items|Jump in/);
         });
     });
 });

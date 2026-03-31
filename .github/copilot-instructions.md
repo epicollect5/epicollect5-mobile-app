@@ -8,7 +8,7 @@ You must follow these rules strictly. If you generate code that violates these, 
 - **Vue Components**:
     - Disable multi-word component name checks.
     - Follow this specific order for component options: props, emits, setup, data, computed, watch, methods.
-- **Environment**: This is a Vue 3 project with Cordova globals enabled.
+- **Environment**: This is a Ionic Vue (3) project with Cordova globals enabled and Capacitor.
 # Testing Requirements
 - **Framework**: Use Vitest for all tests. Never use Jest.
 - **Imports**: Always import testing functions from 'vitest' (e.g., `import { describe, it, expect, vi } from 'vitest';`).
