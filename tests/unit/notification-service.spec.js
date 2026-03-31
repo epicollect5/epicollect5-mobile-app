@@ -1,10 +1,7 @@
 import { vi } from 'vitest';
 import { notificationService } from '@/services/notification-service';
 import { useRootStore } from '@/stores/root-store';
-import { projectModel } from '@/models/project-model';
-import { useDBStore } from '@/stores/db-store';
 import { setActivePinia, createPinia } from 'pinia';
-import { PARAMETERS } from '@/config';
 import { alertController } from '@ionic/vue';
 import { STRINGS } from '@/config/strings';
 
@@ -96,5 +93,53 @@ describe('notificationService tests', () => {
         });
         expect(mocks.presentMock).toHaveBeenCalled();
     });
-});
 
+    // New tests for Error, objects-with-message, and undefined
+
+    it('should display Error.message when passed an Error object', async () => {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const error = new Error('No entries or media to export');
+        const header = 'Export error';
+
+        await notificationService.showAlert(error, header);
+
+        expect(alertController.create).toHaveBeenCalledWith({
+            header: header,
+            message: error.message,
+            buttons: [STRINGS[language].labels.ok]
+        });
+        expect(mocks.presentMock).toHaveBeenCalled();
+    });
+
+    it('should use the "message" property if object has a message field', async () => {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const messageObj = { message: 'boom' };
+        const header = 'Test header';
+
+        await notificationService.showAlert(messageObj, header);
+
+        expect(alertController.create).toHaveBeenCalledWith({
+            header: header,
+            message: messageObj.message,
+            buttons: [STRINGS[language].labels.ok]
+        });
+        expect(mocks.presentMock).toHaveBeenCalled();
+    });
+
+    it('should show "undefined" when message is undefined', async () => {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const header = 'Test header';
+
+        await notificationService.showAlert(undefined, header);
+
+        expect(alertController.create).toHaveBeenCalledWith({
+            header: header,
+            message: 'undefined',
+            buttons: [STRINGS[language].labels.ok]
+        });
+        expect(mocks.presentMock).toHaveBeenCalled();
+    });
+});

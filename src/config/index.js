@@ -430,3 +430,10 @@ export const DB_ERRORS = {
     6: 'ec5_109',
     7: 'ec5_110'
 };
+
+export const LIMITS = {
+    MAX_TITLES:3,
+    MAX_QUESTIONS:300,
+    MAX_FORMS:5,
+    MAX_SEARCH_QUESTIONS:5
+};

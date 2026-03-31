@@ -1,8 +1,8 @@
-import { STRINGS } from '@/config/strings';
-import { useRootStore } from '@/stores/root-store';
-import { notificationService } from '@/services/notification-service';
-import { utilsService } from '@/services/utilities/utils-service';
-import { rollbarService } from '@/services/utilities/rollbar-service';
+import {STRINGS} from '@/config/strings';
+import {useRootStore} from '@/stores/root-store';
+import {notificationService} from '@/services/notification-service';
+import {utilsService} from '@/services/utilities/utils-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 export const errorsService = {
 
@@ -65,8 +65,7 @@ export const errorsService = {
             //show error to user and send it to Rollbar as well
             rollbarService.critical(response);
             await notificationService.showAlert(response, STRINGS[language].labels.error);
-        }
-        else {
+        } else {
             await notificationService.showAlert(STRINGS[language].status_codes[errorCode], STRINGS[language].labels.error);
         }
         return STRINGS[language].status_codes[errorCode];
@@ -119,5 +118,66 @@ export const errorsService = {
                 }
             }
         }
+    },
+    formatAjvError(errors, data = null) {
+        if (!errors || errors.length === 0) return 'Unknown validation error';
+
+        // We'll focus on the first error to keep the UI clean,
+        // but you could map over all of them.
+        const err = errors[0];
+
+        // Helper to escape HTML entities
+        const escapeHtml = (str) => str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+
+        // Clean up the instancePath for the user (e.g., /data/project/forms/1 -> data > project > forms > 1)
+        const friendlyPath = err.instancePath
+            .replace(/^\//, '')
+            .replace(/\//g, ' → ');
+        
+        let affectedJson = '';
+        if (data && err.instancePath) {
+            try {
+                // Remove leading slash and split by /
+                const pathParts = err.instancePath.split('/').filter((p) => p !== '');
+                
+                // Show from 1 level up for better context
+                const parentPathParts = pathParts.slice(0, -1);
+                let current = data;
+                
+                for (const part of parentPathParts) {
+                    if (current && typeof current === 'object') {
+                        current = current[part];
+                    } else {
+                        current = undefined;
+                        break;
+                    }
+                }
+
+                if (current !== undefined) {
+                    const jsonString = JSON.stringify(current, null, 2);
+                    // Limit length to avoid overwhelming the UI
+                    const maxLength = 500;
+                    const displayJson = jsonString.length > maxLength
+                        ? jsonString.substring(0, maxLength) + '...'
+                        : jsonString;
+                    affectedJson = `<br/><br/><b>Context (JSON):</b><br/><pre style="background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code>${escapeHtml(displayJson)}</code></pre>`;
+                }
+            } catch (e) {
+                console.error('Error extracting affected JSON', e);
+            }
+        }
+
+        // Handle specific keywords to make them "human"
+        let message = err.message;
+        if (err.keyword === 'maxItems') {
+            message = `should be empty or have fewer items (limit: ${err.params.limit})`;
+        } else if (err.keyword === 'required') {
+            message = `is missing the required field: ${escapeHtml(err.params.missingProperty)}`;
+        }
+
+        return `Validation Failed at: <span style="color: red">${escapeHtml(friendlyPath)}</span><br/><br/>Reason: ${escapeHtml(message)}${affectedJson}`;
     }
 };

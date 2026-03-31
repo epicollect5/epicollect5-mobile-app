@@ -1,7 +1,7 @@
 <template>
   <ion-app>
     <left-drawer v-if="needsDrawers"></left-drawer>
-    <right-drawer v-if="needsDrawers"></right-drawer>
+    <right-drawer v-if="needsDrawers" :key="projectRef"></right-drawer>
     <ion-router-outlet id="main"/>
   </ion-app>
 </template>
@@ -32,6 +32,9 @@ export default {
     const computedScope = {
       needsDrawers: computed(() => {
         return rootStore.device.platform !== PARAMETERS.PWA;
+      }),
+      projectRef: computed(() => {
+        return rootStore.routeParams.projectRef;
       })
     };
 

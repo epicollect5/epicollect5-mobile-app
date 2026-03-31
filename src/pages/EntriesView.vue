@@ -88,7 +88,7 @@
 
         <!-- entries unsynced banner --------------------------------------->
         <ion-item
-            v-if="state.synced === 0"
+            v-if="state.synced === 0 && !wasProjectImportedFromFile"
             class="item-warning ion-text-center animate__animated animate__fadeIn"
             lines="full"
         >
@@ -141,6 +141,7 @@ import {STRINGS} from '@/config/strings';
 import {deleteEntry} from '@/use/entry/delete-entry';
 import {cloneEntry} from '@/use/entry/clone-entry';
 import {fetchAnswers} from '@/use/answers/fetch-answers';
+import {computed} from 'vue';
 
 import {
   desktopOutline,
@@ -207,6 +208,12 @@ export default {
       console.error('Failed to fetch answers:', error);
        state.isFetching = false;
     });
+
+    const computedScope ={
+      wasProjectImportedFromFile: computed(() => {
+        return rootStore.wasProjectImportedFromFile;
+      })
+    };
 
     const methods = {
       goBack() {
@@ -296,6 +303,7 @@ export default {
       state,
       labels,
       statusCodes,
+      ...computedScope,
       ...methods,
       //icons
       desktopOutline,

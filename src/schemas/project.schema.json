@@ -1,0 +1,1400 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epicollect.net/schemas/project-export/v2.2.0",
+  "title": "Epicollect5 Project Export",
+  "description": "Schema for the full Epicollect5 project envelope (JSON Schema Draft 2020-12, validated with opis/json-schema).",
+  "type": "object",
+  "required": [
+    "data"
+  ],
+  "properties": {
+    "data": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "project"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Project identifier. A 32-character lowercase hex UUIDv4 without dashes. Must be identical to project.ref.",
+          "pattern": "^[a-f0-9]{32}$",
+          "examples": [
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901"
+          ],
+          "$comment": "data.id must equal project.ref. JSON Schema cannot enforce cross-field equality — application logic must verify this constraint."
+        },
+        "type": {
+          "type": "string",
+          "description": "Resource type. Always 'project' for project exports.",
+          "const": "project"
+        },
+        "project": {
+          "$ref": "#/$defs/project"
+        }
+      },
+      "unevaluatedProperties": false,
+      "description": "Project export envelope. data.id must be identical to project.ref — enforced by application logic."
+    }
+  },
+  "unevaluatedProperties": false,
+  "$defs": {
+    "numericString": {
+      "title": "Numeric value",
+      "description": "A numeric constraint for min/max fields. Accepts: null (not set), empty string (not set), integer, number, or a numeric string. Leading-dot decimals like .5 are accepted.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": [
+            "integer",
+            "number"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^(|-?(\\d+(\\.\\d*)?|\\.\\d+))$"
+        }
+      ],
+      "$comment": "Leading-dot decimals (.5, -.5) are valid here. The server normalises these to canonical form (0.5, -0.5) before persisting."
+    },
+    "form": {
+      "type": "object",
+      "title": "Form",
+      "maxItems": 5,
+      "minItems": 1,
+      "description": "A single form within a project.\n\nLimits enforced by JSON Schema:\n- Max 300 inputs at top level (maxItems=300)\n- form.name: alphanumeric + spaces + hyphens + underscores, max 50\n\nLimits that MUST be enforced by application logic:\n- inputsMaxCount=300: total inputs counted recursively across all nesting levels\n- titlesMaxCount=3: at most 3 inputs per form may have is_title=true\n- searchMaxCount=5: combined searchsingle + searchmultiple per project (not per form)\n- Jump 'to' refs must point to input refs that exist within the same form\n- Input refs must be unique across the entire project",
+      "required": [
+        "ref",
+        "name",
+        "slug",
+        "type",
+        "inputs"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "description": "Unique reference identifier for this form. Composed of the project ref (32-char lowercase hex UUID without dashes) followed by an underscore and a 13-char lowercase hex uniqid.",
+          "pattern": "^[a-f0-9]{32}_[a-f0-9]{13}$",
+          "examples": [
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901_a4f9b3c2d1e6f"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable form name. Max 50 characters. Alphanumeric characters, spaces, hyphens and underscores only. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
+          "maxLength": 50,
+          "pattern": "^[a-zA-Z0-9_ -]+$"
+        },
+        "slug": {
+          "type": "string",
+          "description": "URL-safe form identifier. Lowercase alphanumeric characters and hyphens only.",
+          "maxLength": 50,
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "type": {
+          "type": "string",
+          "description": "Form hierarchy type.",
+          "const": "hierarchy"
+        },
+        "inputs": {
+          "type": "array",
+          "description": "Ordered list of top-level inputs for this form. The total input count across ALL nesting levels (top-level + branch children + group children, counted recursively) must not exceed 300 (inputsMaxCount=300). This cross-level count must be enforced by application logic.",
+          "minItems": 1,
+          "maxItems": 300,
+          "items": {
+            "$ref": "#/$defs/input"
+          }
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "input": {
+      "type": "object",
+      "title": "Input",
+      "description": "A single form input / question. Emojis are not permitted in any user-facing string field.",
+      "required": [
+        "ref",
+        "type",
+        "question",
+        "is_title",
+        "is_required",
+        "uniqueness",
+        "verify",
+        "jumps",
+        "possible_answers",
+        "branch",
+        "group",
+        "regex",
+        "default",
+        "max",
+        "min",
+        "datetime_format",
+        "set_to_current_datetime"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "description": "Unique reference identifier for this input. Format: {form_ref}_{13-char hex} for top-level inputs, with one additional _{13-char hex} segment per nesting level (branch/group children).",
+          "pattern": "^[a-f0-9]{32}(_[a-f0-9]{13})+$",
+          "examples": [
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901_a4f9b3c2d1e6f_9b7c3a2d4e5f1",
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901_a4f9b3c2d1e6f_9b7c3a2d4e5f1_6e4d2c1b0a9f8",
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901_a4f9b3c2d1e6f_9b7c3a2d4e5f1_6e4d2c1b0a9f8_1f2e3d4c5b6a7"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "description": "Input widget type.",
+          "enum": [
+            "text",
+            "integer",
+            "decimal",
+            "phone",
+            "date",
+            "time",
+            "dropdown",
+            "radio",
+            "checkbox",
+            "searchsingle",
+            "searchmultiple",
+            "textarea",
+            "readme",
+            "location",
+            "barcode",
+            "photo",
+            "audio",
+            "video",
+            "branch",
+            "group"
+          ]
+        },
+        "question": {
+          "type": "string",
+          "description": "The question text shown to the user (may contain HTML entities). Max 255 characters for all input types except readme. Readme has no schema length limit — app logic enforces 1000 decoded chars. Literal < and > are forbidden — use &lt; and &gt; instead.",
+          "pattern": "^[^<>]*$",
+          "$comment": "maxLength is intentionally absent from this base definition. The 255-char limit is enforced per input type via allOf conditionals. readme inputs are excluded from the length limit here because their HTML-encoded content inflates raw string length beyond the decoded text length."
+        },
+        "is_title": {
+          "type": "boolean",
+          "description": "Whether this input's answer is used as the entry title. At most 3 inputs per form may have is_title=true (titlesMaxCount=3). Application logic must enforce this cross-field constraint."
+        },
+        "is_required": {
+          "type": "boolean",
+          "description": "Whether an answer is required. Must be false for 'readme' inputs."
+        },
+        "uniqueness": {
+          "type": "string",
+          "description": "Uniqueness constraint scope.",
+          "enum": [
+            "none",
+            "form",
+            "hierarchy"
+          ]
+        },
+        "verify": {
+          "type": "boolean",
+          "description": "Whether the user must enter the value twice to confirm it. Must be false for 'readme' inputs."
+        },
+        "default": {
+          "description": "Default pre-filled value. Null or empty string when not set. Max length and format varies by input type (see allOf). Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "max": {
+          "description": "Maximum allowed value for numeric inputs (integer/decimal), encoded as a string. Null or empty string when not set.",
+          "$ref": "#/$defs/numericString"
+        },
+        "min": {
+          "description": "Minimum allowed value for numeric inputs (integer/decimal), encoded as a string. Null or empty string when not set.",
+          "$ref": "#/$defs/numericString"
+        },
+        "regex": {
+          "description": "Regular-expression validation pattern applied to the user's answer. Max 50 characters. Null or empty string when not set. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "maxLength": 50,
+              "pattern": "^[^<>]*$"
+            }
+          ]
+        },
+        "datetime_format": {
+          "description": "Date/time format string. Required for date and time inputs, null for others.",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "set_to_current_datetime": {
+          "type": "boolean",
+          "description": "Whether the input should be pre-filled with the current date/time. Applicable to 'date' and 'time' inputs only."
+        },
+        "possible_answers": {
+          "type": "array",
+          "description": "Selectable answer options.\n- dropdown, radio, checkbox: min 1, max 300.\n- searchsingle, searchmultiple: min 1, max 1000.\n- All other input types: must be empty (maxItems 0).\nEach answer label max 250 characters; answer_ref max 13 characters.",
+          "items": {
+            "$ref": "#/$defs/possibleAnswer"
+          }
+        },
+        "jumps": {
+          "type": "array",
+          "description": "Conditional skip logic rules evaluated after this input is answered. Allowed for all input types, but typically only used for choice-based inputs. Not allowed for questions in a group. Each jump rule consists of a condition ('when' + 'answer_ref') and a destination ('to'). The 'to' field must reference an existing input ref within the same form, or be 'END' to indicate the end of the form. The application must enforce that jump 'to' refs point to valid input refs within the same form, and it must jump at least one question otherwise that will not be a jump, just the next question making the jump redundant and potentially a sign of a user error in form design. The 'when' field specifies the condition operator: 'IS' means the jump applies if the given answer_ref is selected; 'IS_NOT' means the jump applies if the given answer_ref is not selected; 'NO_ANSWER_GIVEN' means the jump applies if the user leaves this question unanswered; 'ALL' means the jump always applies regardless of the answer (answer_ref must be null for 'ALL' jumps).",
+          "items": {
+            "$ref": "#/$defs/jump"
+          }
+        },
+        "branch": {
+          "type": "array",
+          "description": "Child inputs collected as a repeatable sub-form. Non-empty only when type is 'branch'. Must be empty for all other types.",
+          "items": {
+            "$ref": "#/$defs/input"
+          }
+        },
+        "group": {
+          "type": "array",
+          "description": "Child inputs displayed as an inline group. Non-empty only when type is 'group'. Must be empty for all other types.",
+          "items": {
+            "$ref": "#/$defs/input"
+          }
+        }
+      },
+      "unevaluatedProperties": false,
+      "allOf": [
+        {
+          "description": "readme: is_required, verify and is_title must be false; default must be empty; possible_answers, branch and group must be empty. Jumps are allowed — a readme can unconditionally redirect flow.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "readme"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "is_required": {
+                "const": false
+              },
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              },
+              "branch": {
+                "maxItems": 0
+              },
+              "group": {
+                "maxItems": 0
+              },
+              "question": {
+                "$comment": "Intended max length: 1000 characters of decoded plain text. NOT enforced by this schema because the raw stored string inflates beyond 1000 chars due to HTML entities like &lt; &gt; &quot; &amp; etc. Application logic must decode HTML entities first and then enforce the 1000 char limit.",
+                "description": "Readme display content. Max 1000 characters of decoded (plain text) content. The raw stored string may exceed 1000 chars due to HTML entity encoding — application logic enforces the decoded length limit. No emoji (enforced by application logic). Literal < and > are forbidden — use &lt; and &gt; instead. Raw URLs as plain text are allowed; clickable HTML anchor tags are forbidden (already blocked by < and > restriction)."
+              }
+            }
+          }
+        },
+        {
+          "description": "location: cannot be required, no default answer, verify and is_title must be false.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "location"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "is_required": {
+                "const": false
+              },
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              },
+              "branch": {
+                "maxItems": 0
+              },
+              "group": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "text: max answer length 255. No possible_answers.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 255,
+                    "pattern": "^[^<>]*$"
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "phone: max answer length 255. No possible_answers.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "phone"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 255
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "integer: max answer length 255. No possible_answers.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "integer"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 255
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "decimal: max answer length 255. No possible_answers.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "decimal"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 255
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "textarea: max answer length 1000. No possible_answers.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "textarea"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "pattern": "^[^<>]*$"
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "date: max answer length 25. No possible_answers.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "date"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 25
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              },
+              "datetime_format": {
+                "enum": [
+                  "dd/MM/YYYY",
+                  "MM/dd/YYYY",
+                  "YYYY/MM/dd",
+                  "MM/YYYY",
+                  "dd/MM"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "description": "time: max answer length 25. No possible_answers.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "time"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 25
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              },
+              "datetime_format": {
+                "enum": [
+                  "HH:mm:ss",
+                  "hh:mm:ss",
+                  "HH:mm",
+                  "hh:mm",
+                  "mm:ss"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "description": "dropdown: stored answer is the answer_ref (max 13 chars). possible_answers: min 1, max 300. Default must be null, empty string, or a valid answer_ref (^[a-f0-9]{13}$).",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "dropdown"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{13}$",
+                    "description": "Must be a valid answer_ref (13-char lowercase hex) when set.",
+                    "$comment": "Format validated by schema (13-char hex). Existence check — that this answer_ref is present in possible_answers — cannot be expressed in JSON Schema and is enforced by application logic."
+                  }
+                ]
+              },
+              "possible_answers": {
+                "minItems": 1,
+                "maxItems": 300
+              }
+            }
+          }
+        },
+        {
+          "description": "radio: stored answer is the answer_ref (max 13 chars). possible_answers: min 1, max 300. Default must be null, empty string, or a valid answer_ref (^[a-f0-9]{13}$).",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "radio"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{13}$",
+                    "description": "Must be a valid answer_ref (13-char lowercase hex) when set.",
+                    "$comment": "Format validated by schema (13-char hex). Existence check — that this answer_ref is present in possible_answers — cannot be expressed in JSON Schema and is enforced by application logic."
+                  }
+                ]
+              },
+              "possible_answers": {
+                "minItems": 1,
+                "maxItems": 300
+              }
+            }
+          }
+        },
+        {
+          "description": "checkbox: stored answer is the answer_ref (max 13 chars). possible_answers: min 1, max 300. Default must be null, empty string, or a valid answer_ref (^[a-f0-9]{13}$).",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "checkbox"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{13}$",
+                    "description": "Must be a valid answer_ref (13-char lowercase hex) when set.",
+                    "$comment": "Format validated by schema (13-char hex). Existence check — that this answer_ref is present in possible_answers — cannot be expressed in JSON Schema and is enforced by application logic."
+                  }
+                ]
+              },
+              "possible_answers": {
+                "minItems": 1,
+                "maxItems": 300
+              }
+            }
+          }
+        },
+        {
+          "description": "searchsingle: possible_answers min 1, max 1000. LIMIT: the combined count of searchsingle and searchmultiple inputs across ALL forms in the project must not exceed 5 (searchMaxCount=5). Application logic must enforce this project-level constraint. Default must be null, empty string, or a valid answer_ref (^[a-f0-9]{13}$).",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "searchsingle"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "possible_answers": {
+                "minItems": 1,
+                "maxItems": 1000
+              },
+              "branch": {
+                "maxItems": 0
+              },
+              "group": {
+                "maxItems": 0
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{13}$",
+                    "description": "Must be a valid answer_ref (13-char lowercase hex) when set.",
+                    "$comment": "Format validated by schema (13-char hex). Existence check — that this answer_ref is present in possible_answers — cannot be expressed in JSON Schema and is enforced by application logic."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "description": "searchmultiple: possible_answers min 1, max 1000. LIMIT: the combined count of searchsingle and searchmultiple inputs across ALL forms in the project must not exceed 5 (searchMaxCount=5). Application logic must enforce this project-level constraint. Default must be null, empty string, or a valid answer_ref (^[a-f0-9]{13}$).",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "searchmultiple"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "possible_answers": {
+                "minItems": 1,
+                "maxItems": 1000
+              },
+              "branch": {
+                "maxItems": 0
+              },
+              "group": {
+                "maxItems": 0
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{13}$",
+                    "description": "Must be a valid answer_ref (13-char lowercase hex) when set.",
+                    "$comment": "Format validated by schema (13-char hex). Existence check — that this answer_ref is present in possible_answers — cannot be expressed in JSON Schema and is enforced by application logic."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "description": "photo: verify and is_title must be false; default must be empty; No possible_answers.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "photo"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "audio: verify and is_title must be false; default must be empty; No possible_answers.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "audio"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "video: verify and is_title must be false; default must be empty; No possible_answers.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "video"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "barcode: max answer length 255. No possible_answers.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "barcode"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 255
+                  }
+                ]
+              },
+              "possible_answers": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "branch: must have children; possible_answers, group must be empty; verify and is_title must be false; default must be empty.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "branch"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  }
+                ]
+              },
+              "branch": {
+                "minItems": 1
+              },
+              "possible_answers": {
+                "maxItems": 0
+              },
+              "group": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "group: must have children; jumps forbidden; verify and is_title must be false; default must be empty.",
+          "if": {
+            "properties": {
+              "type": {
+                "const": "group"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "verify": {
+                "const": false
+              },
+              "is_title": {
+                "const": false
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  }
+                ]
+              },
+              "group": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "description": "All non-branch/group types: 'branch' and 'group' arrays must be empty.",
+          "if": {
+            "properties": {
+              "type": {
+                "not": {
+                  "enum": [
+                    "branch",
+                    "group"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "branch": {
+                "maxItems": 0
+              },
+              "group": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "description": "All non-readme types: question max 255 characters.",
+          "if": {
+            "properties": {
+              "type": {
+                "not": {
+                  "const": "readme"
+                }
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "question": {
+                "maxLength": 255
+              }
+            }
+          }
+        },
+        {
+          "description": "location, photo, audio, video, readme: is_required must be false.",
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "readme",
+                  "location",
+                  "photo",
+                  "audio",
+                  "video"
+                ]
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "is_required": {
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "description": "For non-multiple-choice questions (possible_answers empty), jumps can only use 'ALL' condition.",
+          "if": {
+            "properties": {
+              "possible_answers": {
+                "maxItems": 0
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "jumps": {
+                "type": "array",
+                "maxItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "when": {
+                      "const": "ALL"
+                    },
+                    "answer_ref": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "when",
+                    "answer_ref"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "possibleAnswer": {
+      "type": "object",
+      "title": "Possible Answer",
+      "description": "A selectable option for choice-based inputs. These objects provide a canonical answer label and a 13-char answer_ref used by the input 'default' and jump rules.",
+      "required": [
+        "answer",
+        "answer_ref"
+      ],
+      "properties": {
+        "answer": {
+          "type": "string",
+          "description": "The display label for this answer option. Max 250 characters. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
+          "maxLength": 250,
+          "pattern": "^[^<>]*$"
+        },
+        "answer_ref": {
+          "type": "string",
+          "description": "Unique reference identifier for this answer option. Always exactly 13 lowercase hexadecimal characters.",
+          "pattern": "^[a-f0-9]{13}$"
+        }
+      },
+      "examples": [
+        {
+          "answer": "Yes",
+          "answer_ref": "5953aa1bf3915"
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "jump": {
+      "type": "object",
+      "title": "Jump",
+      "description": "A conditional skip/branch rule evaluated after an input is answered.",
+      "required": [
+        "to",
+        "when",
+        "answer_ref"
+      ],
+      "properties": {
+        "to": {
+          "oneOf": [
+            {
+              "type": "string",
+              "const": "END",
+              "description": "Jump to end of form."
+            },
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{32}(_[a-f0-9]{13})+$",
+              "description": "Ref of the target input — must be a valid EC5 input ref."
+            }
+          ],
+          "description": "Ref of the input to jump to, or 'END' to end the form. Any other value is invalid.",
+          "examples": [
+            "END",
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901_a4f9b3c2d1e6f_9b7c3a2d4e5f1"
+          ]
+        },
+        "when": {
+          "type": "string",
+          "description": "Condition operator.",
+          "enum": [
+            "IS",
+            "IS_NOT",
+            "NO_ANSWER_GIVEN",
+            "ALL"
+          ]
+        },
+        "answer_ref": {
+          "description": "The answer_ref value that triggers this jump. Must be null when 'when' is 'ALL' or 'NO_ANSWER_GIVEN'. Always exactly 13 lowercase hexadecimal characters when provided.",
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{13}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "project": {
+      "type": "object",
+      "title": "Project",
+      "description": "Top-level project definition.",
+      "required": [
+        "ref",
+        "name",
+        "slug",
+        "forms",
+        "category",
+        "small_description",
+        "visibility",
+        "access",
+        "status"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "description": "Unique project reference. A 32-character lowercase hex UUIDv4 without dashes.",
+          "pattern": "^[a-f0-9]{32}$",
+          "examples": [
+            "3f8e2a7b9c4d6f1e2a3b4c5d6e7f8901"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable project name. Min 3, max 50 characters. Alphanumeric characters, spaces and underscores only. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
+          "minLength": 3,
+          "maxLength": 50,
+          "pattern": "^[a-zA-Z0-9 _]+$"
+        },
+        "slug": {
+          "type": "string",
+          "description": "URL-safe form identifier. Lowercase alphanumeric characters and hyphens only.",
+          "minLength": 3,
+          "maxLength": 50,
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "forms": {
+          "type": "array",
+          "description": "Ordered list of forms in the project. Min 1, max 5 (formsMaxCount=5).",
+          "minItems": 1,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/form"
+          }
+        },
+        "access": {
+          "type": "string",
+          "description": "Who can submit entries to this project.",
+          "enum": [
+            "public",
+            "private"
+          ]
+        },
+        "category": {
+          "type": "string",
+          "description": "Project category.",
+          "enum": [
+            "general",
+            "social",
+            "art",
+            "humanities",
+            "biology",
+            "economics",
+            "science"
+          ]
+        },
+        "homepage": {
+          "description": "Full URL to the project homepage on Epicollect5. Empty string when no homepage is set.",
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 0
+            },
+            {
+              "type": "string",
+              "format": "uri"
+            }
+          ]
+        },
+        "logo_url": {
+          "type": "string",
+          "deprecated": true,
+          "description": "DEPRECATED: URL to the project logo image. This property is now ignored by the mobile app, which uses the project slug to resolve logo paths dynamically. It remains optional for backward compatibility with legacy project exports.",
+          "default": ""
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Project creation timestamp in 'YYYY-MM-DD HH:mm:ss' format.",
+          "pattern": "^(19|20|21)\\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]) (0\\d|1\\d|2[0-3]):[0-5]\\d:[0-5]\\d$"
+        },
+        "visibility": {
+          "type": "string",
+          "description": "Whether the project is publicly listed on the Epicollect5 website.",
+          "enum": [
+            "hidden",
+            "listed"
+          ]
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 0
+            },
+            {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3000,
+              "pattern": "^[^<>]*$"
+            }
+          ],
+          "description": "Project description: empty or 3-3000 chars, no < or >. It can have new lines"
+        },
+        "small_description": {
+          "type": "string",
+          "description": "Short project description shown in listings. Min 15, max 100 characters. Plain text. Literal < and > are forbidden — use &lt; and &gt; instead. Emojis are not allowed (enforced by application logic).",
+          "minLength": 15,
+          "maxLength": 100,
+          "pattern": "^[^<>]*$"
+        },
+        "entries_limits": {
+          "description": "Per-form or per-branch entry count limits. Either an empty array [] (no limits set) or an object keyed by a valid EC5 ref ({32-char hex} followed by one or more _{13-char hex} segments) with string-encoded integer values. e.g. {\"form_ref\": \"20\", \"branch_ref\": \"500\"}. '0' is accepted for backward compatibility but discouraged — prefer an empty array ([]) to indicate no limits. Upper bound is 50000.",
+          "oneOf": [
+            {
+              "type": "array",
+              "maxItems": 0,
+              "description": "Empty array — no entry limits set."
+            },
+            {
+              "type": "object",
+              "description": "Object keyed by EC5 ref with string-encoded entry limits (0..50000).",
+              "propertyNames": {
+                "pattern": "^[a-f0-9]{32}(_[a-f0-9]{13})+$",
+                "$comment": "Key must be a valid form ref or input ref — {32hex} followed by one or more _{13hex} segments."
+              },
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^(?:0|[1-9][0-9]{0,3}|[1-4][0-9]{4}|50000)$",
+                "description": "Entry limit as a string-encoded integer between 0 and 50000 (inclusive). '0' is accepted for backward compatibility but discouraged — prefer an empty array ([]) to represent no limits.",
+                "$comment": "Pattern enforces 0..50000 (string). Prefer empty array to indicate no entry limits."
+              }
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "Project lifecycle status.",
+          "enum": [
+            "active",
+            "locked",
+            "trashed"
+          ]
+        },
+        "can_bulk_upload": {
+          "type": "string",
+          "description": "Who is allowed to bulk-upload entries. Optional — if present must be one of the valid values. New projects should use 'nobody'.",
+          "enum": [
+            "nobody",
+            "members",
+            "everybody"
+          ],
+          "$comment": "Optional field. Not part of the core project definition — stored as a database flag. If present it must be valid. Application sets to 'nobody' on import."
+        }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "$comment": "v2.2.4 — 2026-03-31"
+}
