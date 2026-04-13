@@ -1,7 +1,9 @@
 import Ajv from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
+import * as ajvI18n from 'ajv-i18n';
 import projectJSONSchema from '@/schemas/project.schema.json';
-import {LIMITS} from '@/config';
+import {LIMITS, PARAMETERS} from '@/config';
+import {STRINGS} from '@/config/strings';
 
 export const projectJsonValidate = {
     /**
@@ -81,13 +83,17 @@ export const projectJsonValidate = {
         return /^([a-f0-9]{13})(_[a-f0-9]{13})*$/.test(suffix);
     },
 
-    isValidAgainstSchema(content) {
+    isValidAgainstSchema(content, language = 'en') {
         // 1. Initialize Ajv
         const ajv = new Ajv({
-            allErrors: true,
-            verbose: true,
-            // This allows AJV to recognize the $schema tag in your file
-            dynamicRef: true
+          allErrors: true,
+          verbose: true,
+          dynamicRef: true,
+          // disable only strictTypes but keep other strict checks:
+          //strictTypes: false,
+          // or disable all strict mode warnings:
+          // strict: false,
+          allowUnionTypes: true
         });
 
         addFormats(ajv);
@@ -96,11 +102,121 @@ export const projectJsonValidate = {
         // 2. Perform Validation
         const isValid = validator(content);
 
+        // If invalid, attempt to localize AJV messages in-place using ajv-i18n
+        // Only translate for non-English locales to avoid changing existing EN messages
+        if (!isValid && validator.errors && typeof language === 'string' && language !== 'en') {
+            try {
+                const translator = ajvI18n[language];
+                if (typeof translator === 'function') {
+                    translator(validator.errors);
+                }
+            } catch (e) {
+                // Fail silently: keep original messages if translation fails
+                // eslint-disable-next-line no-console
+                console.error('ajv-i18n translation error', e);
+            }
+        }
+
         return {
             isValid,
             errors: validator.errors
         };
     },
+
+    /**
+     * Pre-validates project structure before full validation.
+     * Ensures: data/id/project keys present, id === project.ref,
+     * all required project metadata keys present,
+     * at least 1 form with at least 1 input.
+     * Throws descriptive error if structure is invalid.
+     * Uses device language for localized error messages.
+     */
+    preValidateProjectStructure(content, language = PARAMETERS.DEFAULT_LANGUAGE) {
+        // Ensure language is valid, fallback to English if not
+        const validLanguages = [PARAMETERS.DEFAULT_LANGUAGE, ...PARAMETERS.SUPPORTED_LANGUAGES];
+        if (!validLanguages.includes(language)) {
+            language = PARAMETERS.DEFAULT_LANGUAGE;
+        }
+
+        const errors = STRINGS[language].validation_errors;
+
+        // Check top-level envelope
+        if (!content || typeof content !== 'object') {
+            throw new Error(errors.invalid_data_object);
+        }
+        if (!content.data) {
+            throw new Error(errors.missing_data_key);
+        }
+
+        const data = content.data;
+        if (typeof data !== 'object') {
+            throw new Error(errors.data_not_object);
+        }
+
+        // Check required top-level keys in data
+        if (!data.id) {
+            throw new Error(errors.missing_data_id);
+        }
+        if (!data.type) {
+            throw new Error(errors.missing_data_type);
+        }
+        if (!data.project) {
+            throw new Error(errors.missing_data_project);
+        }
+
+        const project = data.project;
+        if (typeof project !== 'object') {
+            throw new Error(errors.project_not_object);
+        }
+
+        // Check id === project.ref
+        if (data.id !== project.ref) {
+            throw new Error(errors.id_mismatch);
+        }
+
+        // Check all required project metadata keys
+        const requiredProjectKeys = ['ref', 'name', 'slug', 'forms', 'category', 'small_description', 'visibility', 'access', 'status'];
+        const keyErrorMap = {
+            ref: errors.missing_project_key_ref,
+            name: errors.missing_project_key_name,
+            slug: errors.missing_project_key_slug,
+            forms: errors.missing_project_key_forms,
+            category: errors.missing_project_key_category,
+            small_description: errors.missing_project_key_small_description,
+            visibility: errors.missing_project_key_visibility,
+            access: errors.missing_project_key_access,
+            status: errors.missing_project_key_status
+        };
+
+        for (const key of requiredProjectKeys) {
+            if (!(key in project)) {
+                throw new Error(keyErrorMap[key]);
+            }
+        }
+
+        // Check forms array
+        if (!Array.isArray(project.forms)) {
+            throw new Error(errors.forms_not_array);
+        }
+        if (project.forms.length === 0) {
+            throw new Error(errors.no_forms);
+        }
+
+        // Check at least 1 form has at least 1 input
+        let hasInputs = false;
+        for (const form of project.forms) {
+            if (Array.isArray(form.inputs) && form.inputs.length > 0) {
+                hasInputs = true;
+                break;
+            }
+        }
+        if (!hasInputs) {
+            throw new Error(errors.no_form_inputs);
+        }
+
+        return true;
+    },
+
 
     performDeepValidation(projectData) {
         const data = projectData.data;

@@ -9,6 +9,7 @@ import projectExtraService from '@/services/project-extra-service';
 import projectMappingService from '@/services/project-mapping-service';
 import {errorsService} from '@/services/errors-service';
 import {projectJsonValidate} from '@/services/validation/project-json-validate';
+import {projectJsonSanitise} from '@/services/validation/project-json-sanitise';
 
 //imp: router gets passed in because is available only in setup()
 export async function importProject(file, router) {
@@ -53,18 +54,28 @@ export async function importProject(file, router) {
         notificationService.showToast(
             STRINGS[rootStore.language].status_codes.ec5_112
         );
-        await router.replace({
+
+        router.replace({
             name: PARAMETERS.ROUTES.PROJECTS,
-            query: {refresh}
+            query: { refresh: refresh}
         });
         return true;
     };
 
     try {
         let content = await _normalizeProjectData(file);
-        // Sanitize angle brackets to prevent schema validation failures due to "^[^<>]*$" pattern
+
+        // Step 1: Pre-validate structure (minimal checks for backward compatibility)
+        projectJsonValidate.preValidateProjectStructure(content, rootStore.language);
+
+        // Step 2: Sanitize project definition (like server does on export)
+        content.data = projectJsonSanitise.sanitiseProjectDefinitionForImport(content.data);
+
+        // Step 3: Sanitize angle brackets to prevent schema validation failures due to "^[^<>]*$" pattern
         content = projectJsonValidate.sanitiseAngleBrackets(content);
-        const validator = projectJsonValidate.isValidAgainstSchema(content);
+
+        // Step 4: Validate against schema (pass current language for AJV i18n)
+        const validator = projectJsonValidate.isValidAgainstSchema(content, rootStore.language);
 
         if (!validator.isValid) {
             // Ajv provides a detailed array of why it failed
@@ -77,6 +88,7 @@ export async function importProject(file, router) {
             return false;
         }
 
+        // Step 5: Deep validation
         projectJsonValidate.performDeepValidation(content);
 
         const projectDefinition = content.data;

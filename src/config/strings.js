@@ -253,6 +253,28 @@ export const STRINGS = {
             collected_on: 'Collected on ',
             dismiss: 'Dismiss',
             exporting_entries: 'Exporting Entries'
+        },
+        validation_errors: {
+            invalid_data_object: 'Project data must be a valid object.',
+            missing_data_key: 'Missing required key: data.',
+            data_not_object: 'data must be an object.',
+            missing_data_id: 'Missing required key: data.id (project reference).',
+            missing_data_type: 'Missing required key: data.type.',
+            missing_data_project: 'Missing required key: data.project.',
+            project_not_object: 'project must be an object.',
+            id_mismatch: 'ID mismatch: data.id must equal project.ref.',
+            missing_project_key_ref: 'Missing required project key: project.ref.',
+            missing_project_key_name: 'Missing required project key: project.name.',
+            missing_project_key_slug: 'Missing required project key: project.slug.',
+            missing_project_key_forms: 'Missing required project key: project.forms.',
+            missing_project_key_category: 'Missing required project key: project.category.',
+            missing_project_key_small_description: 'Missing required project key: project.small_description.',
+            missing_project_key_visibility: 'Missing required project key: project.visibility.',
+            missing_project_key_access: 'Missing required project key: project.access.',
+            missing_project_key_status: 'Missing required project key: project.status.',
+            forms_not_array: 'project.forms must be an array.',
+            no_forms: 'Project must have at least 1 form.',
+            no_form_inputs: 'Project must have at least 1 form with at least 1 input.'
         }
     },
     it: {
@@ -509,6 +531,28 @@ export const STRINGS = {
             collected_on: 'Aggiunta il ',
             dismiss: 'Chiudi',
             exporting_entries: 'Esportando voci'
+        },
+        validation_errors: {
+            invalid_data_object: 'I dati del progetto devono essere un oggetto valido.',
+            missing_data_key: 'Chiave richiesta mancante: data.',
+            data_not_object: 'data deve essere un oggetto.',
+            missing_data_id: 'Chiave richiesta mancante: data.id (riferimento del progetto).',
+            missing_data_type: 'Chiave richiesta mancante: data.type.',
+            missing_data_project: 'Chiave richiesta mancante: data.project.',
+            project_not_object: 'project deve essere un oggetto.',
+            id_mismatch: 'Disallineamento ID: data.id deve essere uguale a project.ref.',
+            missing_project_key_ref: 'Chiave di progetto richiesta mancante: project.ref.',
+            missing_project_key_name: 'Chiave di progetto richiesta mancante: project.name.',
+            missing_project_key_slug: 'Chiave di progetto richiesta mancante: project.slug.',
+            missing_project_key_forms: 'Chiave di progetto richiesta mancante: project.forms.',
+            missing_project_key_category: 'Chiave di progetto richiesta mancante: project.category.',
+            missing_project_key_small_description: 'Chiave di progetto richiesta mancante: project.small_description.',
+            missing_project_key_visibility: 'Chiave di progetto richiesta mancante: project.visibility.',
+            missing_project_key_access: 'Chiave di progetto richiesta mancante: project.access.',
+            missing_project_key_status: 'Chiave di progetto richiesta mancante: project.status.',
+            forms_not_array: 'project.forms deve essere un array.',
+            no_forms: 'Il progetto deve avere almeno 1 modulo.',
+            no_form_inputs: 'Il progetto deve avere almeno 1 modulo con almeno 1 input.'
         }
     },
     es: {
@@ -765,6 +809,28 @@ export const STRINGS = {
             collected_on: 'Recogida en ',
             dismiss: 'Cerrar',
             exporting_entries: 'Exportando entradas'
+        },
+        validation_errors: {
+            invalid_data_object: 'Los datos del proyecto deben ser un objeto válido.',
+            missing_data_key: 'Falta la clave requerida: data.',
+            data_not_object: 'data debe ser un objeto.',
+            missing_data_id: 'Falta la clave requerida: data.id (referencia del proyecto).',
+            missing_data_type: 'Falta la clave requerida: data.type.',
+            missing_data_project: 'Falta la clave requerida: data.project.',
+            project_not_object: 'project debe ser un objeto.',
+            id_mismatch: 'Desajuste de ID: data.id debe ser igual a project.ref.',
+            missing_project_key_ref: 'Falta la clave de proyecto requerida: project.ref.',
+            missing_project_key_name: 'Falta la clave de proyecto requerida: project.name.',
+            missing_project_key_slug: 'Falta la clave de proyecto requerida: project.slug.',
+            missing_project_key_forms: 'Falta la clave de proyecto requerida: project.forms.',
+            missing_project_key_category: 'Falta la clave de proyecto requerida: project.category.',
+            missing_project_key_small_description: 'Falta la clave de proyecto requerida: project.small_description.',
+            missing_project_key_visibility: 'Falta la clave de proyecto requerida: project.visibility.',
+            missing_project_key_access: 'Falta la clave de proyecto requerida: project.access.',
+            missing_project_key_status: 'Falta la clave de proyecto requerida: project.status.',
+            forms_not_array: 'project.forms debe ser un array.',
+            no_forms: 'El proyecto debe tener al menos 1 formulario.',
+            no_form_inputs: 'El proyecto debe tener al menos 1 formulario con al menos 1 entrada.'
         }
     },
     fr: {
@@ -1021,6 +1087,28 @@ export const STRINGS = {
             collected_on: 'Collectée le ',
             dismiss: 'Annuler',
             exporting_entries: 'Exportation des entrées'
+        },
+        validation_errors: {
+            invalid_data_object: 'Les données du projet doivent être un objet valide.',
+            missing_data_key: 'Clé requise manquante: data.',
+            data_not_object: 'data doit être un objet.',
+            missing_data_id: 'Clé requise manquante: data.id (référence du projet).',
+            missing_data_type: 'Clé requise manquante: data.type.',
+            missing_data_project: 'Clé requise manquante: data.project.',
+            project_not_object: 'project doit être un objet.',
+            id_mismatch: 'Décalage d\'ID: data.id doit être égal à project.ref.',
+            missing_project_key_ref: 'Clé de projet requise manquante: project.ref.',
+            missing_project_key_name: 'Clé de projet requise manquante: project.name.',
+            missing_project_key_slug: 'Clé de projet requise manquante: project.slug.',
+            missing_project_key_forms: 'Clé de projet requise manquante: project.forms.',
+            missing_project_key_category: 'Clé de projet requise manquante: project.category.',
+            missing_project_key_small_description: 'Clé de projet requise manquante: project.small_description.',
+            missing_project_key_visibility: 'Clé de projet requise manquante: project.visibility.',
+            missing_project_key_access: 'Clé de projet requise manquante: project.access.',
+            missing_project_key_status: 'Clé de projet requise manquante: project.status.',
+            forms_not_array: 'project.forms doit être un array.',
+            no_forms: 'Le projet doit avoir au moins 1 formulaire.',
+            no_form_inputs: 'Le projet doit avoir au moins 1 formulaire avec au moins 1 entrée.'
         }
     },
     pl: {
@@ -1277,6 +1365,28 @@ export const STRINGS = {
             collected_on: 'Zebrane na/w ',
             dismiss: 'Anuluj',
             exporting_entries: 'Eksportowanie wpisów'
+        },
+        validation_errors: {
+            invalid_data_object: 'Dane projektu muszą być ważnym obiektem.',
+            missing_data_key: 'Brakuje wymaganego klucza: data.',
+            data_not_object: 'data musi być obiektem.',
+            missing_data_id: 'Brakuje wymaganego klucza: data.id (odniesienie projektu).',
+            missing_data_type: 'Brakuje wymaganego klucza: data.type.',
+            missing_data_project: 'Brakuje wymaganego klucza: data.project.',
+            project_not_object: 'project musi być obiektem.',
+            id_mismatch: 'Niezgodność ID: data.id musi być równy project.ref.',
+            missing_project_key_ref: 'Brakuje wymaganego klucza projektu: project.ref.',
+            missing_project_key_name: 'Brakuje wymaganego klucza projektu: project.name.',
+            missing_project_key_slug: 'Brakuje wymaganego klucza projektu: project.slug.',
+            missing_project_key_forms: 'Brakuje wymaganego klucza projektu: project.forms.',
+            missing_project_key_category: 'Brakuje wymaganego klucza projektu: project.category.',
+            missing_project_key_small_description: 'Brakuje wymaganego klucza projektu: project.small_description.',
+            missing_project_key_visibility: 'Brakuje wymaganego klucza projektu: project.visibility.',
+            missing_project_key_access: 'Brakuje wymaganego klucza projektu: project.access.',
+            missing_project_key_status: 'Brakuje wymaganego klucza projektu: project.status.',
+            forms_not_array: 'project.forms musi być tablicą.',
+            no_forms: 'Projekt musi mieć co najmniej 1 formularz.',
+            no_form_inputs: 'Projekt musi mieć co najmniej 1 formularz z co najmniej 1 danymi wejściowymi.'
         }
     },
     pt: {
@@ -1533,6 +1643,28 @@ export const STRINGS = {
             collected_on: 'Coletado em ',
             dismiss: 'Fechar',
             exporting_entries: 'Exportando entradas'
+        },
+        validation_errors: {
+            invalid_data_object: 'Os dados do projeto devem ser um objeto válido.',
+            missing_data_key: 'Chave obrigatória ausente: data.',
+            data_not_object: 'data deve ser um objeto.',
+            missing_data_id: 'Chave obrigatória ausente: data.id (referência do projeto).',
+            missing_data_type: 'Chave obrigatória ausente: data.type.',
+            missing_data_project: 'Chave obrigatória ausente: data.project.',
+            project_not_object: 'project deve ser um objeto.',
+            id_mismatch: 'Incompatibilidade de ID: data.id deve ser igual a project.ref.',
+            missing_project_key_ref: 'Chave de projeto obrigatória ausente: project.ref.',
+            missing_project_key_name: 'Chave de projeto obrigatória ausente: project.name.',
+            missing_project_key_slug: 'Chave de projeto obrigatória ausente: project.slug.',
+            missing_project_key_forms: 'Chave de projeto obrigatória ausente: project.forms.',
+            missing_project_key_category: 'Chave de projeto obrigatória ausente: project.category.',
+            missing_project_key_small_description: 'Chave de projeto obrigatória ausente: project.small_description.',
+            missing_project_key_visibility: 'Chave de projeto obrigatória ausente: project.visibility.',
+            missing_project_key_access: 'Chave de projeto obrigatória ausente: project.access.',
+            missing_project_key_status: 'Chave de projeto obrigatória ausente: project.status.',
+            forms_not_array: 'project.forms deve ser um array.',
+            no_forms: 'O projeto deve ter pelo menos 1 formulário.',
+            no_form_inputs: 'O projeto deve ter pelo menos 1 formulário com pelo menos 1 entrada.'
         }
     },
     ca: {
@@ -1789,6 +1921,28 @@ export const STRINGS = {
             collected_on: 'Recull el ',
             dismiss: 'Descarta',
             exporting_entries: 'Exportant entrades'
+        },
+        validation_errors: {
+            invalid_data_object: 'Les dades del projecte han de ser un objecte vàlid.',
+            missing_data_key: 'Falta la clau requerida: data.',
+            data_not_object: 'data ha de ser un objecte.',
+            missing_data_id: 'Falta la clau requerida: data.id (referència del projecte).',
+            missing_data_type: 'Falta la clau requerida: data.type.',
+            missing_data_project: 'Falta la clau requerida: data.project.',
+            project_not_object: 'project ha de ser un objecte.',
+            id_mismatch: 'Desajust d\'ID: data.id ha de ser igual a project.ref.',
+            missing_project_key_ref: 'Falta la clau de projecte requerida: project.ref.',
+            missing_project_key_name: 'Falta la clau de projecte requerida: project.name.',
+            missing_project_key_slug: 'Falta la clau de projecte requerida: project.slug.',
+            missing_project_key_forms: 'Falta la clau de projecte requerida: project.forms.',
+            missing_project_key_category: 'Falta la clau de projecte requerida: project.category.',
+            missing_project_key_small_description: 'Falta la clau de projecte requerida: project.small_description.',
+            missing_project_key_visibility: 'Falta la clau de projecte requerida: project.visibility.',
+            missing_project_key_access: 'Falta la clau de projecte requerida: project.access.',
+            missing_project_key_status: 'Falta la clau de projecte requerida: project.status.',
+            forms_not_array: 'project.forms ha de ser un array.',
+            no_forms: 'El projecte ha de tenir almenys 1 formulari.',
+            no_form_inputs: 'El projecte ha de tenir almenys 1 formulari amb almenys 1 entrada.'
         }
     },
     sl:{
@@ -2045,6 +2199,28 @@ export const STRINGS = {
             collected_on: 'Zbrano dne ',
             dismiss: 'Zavrni',
             exporting_entries: 'Izvažanje vnosov'
+        },
+        validation_errors: {
+            invalid_data_object: 'Projektni podatki morajo biti veljaven objekt.',
+            missing_data_key: 'Manjka obvezni ključ: data.',
+            data_not_object: 'data mora biti objekt.',
+            missing_data_id: 'Manjka obvezni ključ: data.id (sklic projekta).',
+            missing_data_type: 'Manjka obvezni ključ: data.type.',
+            missing_data_project: 'Manjka obvezni ključ: data.project.',
+            project_not_object: 'project mora biti objekt.',
+            id_mismatch: 'Neuskladenost ID: data.id mora biti enak project.ref.',
+            missing_project_key_ref: 'Manjka obvezni ključ projekta: project.ref.',
+            missing_project_key_name: 'Manjka obvezni ključ projekta: project.name.',
+            missing_project_key_slug: 'Manjka obvezni ključ projekta: project.slug.',
+            missing_project_key_forms: 'Manjka obvezni ključ projekta: project.forms.',
+            missing_project_key_category: 'Manjka obvezni ključ projekta: project.category.',
+            missing_project_key_small_description: 'Manjka obvezni ključ projekta: project.small_description.',
+            missing_project_key_visibility: 'Manjka obvezni ključ projekta: project.visibility.',
+            missing_project_key_access: 'Manjka obvezni ključ projekta: project.access.',
+            missing_project_key_status: 'Manjka obvezni ključ projekta: project.status.',
+            forms_not_array: 'project.forms mora biti niz.',
+            no_forms: 'Projekt mora imeti vsaj 1 obrazec.',
+            no_form_inputs: 'Projekt mora imeti vsaj 1 obrazec z vsaj 1 vhodom.'
         }
     },
     de: {
@@ -2301,6 +2477,28 @@ export const STRINGS = {
             collected_on: 'Erfasst am ',
             dismiss: 'Schließen',
             exporting_entries: 'Einträge exportieren'
+        },
+        validation_errors: {
+            invalid_data_object: 'Projektdaten müssen ein gültiges Objekt sein.',
+            missing_data_key: 'Erforderlicher Schlüssel fehlt: data.',
+            data_not_object: 'data muss ein Objekt sein.',
+            missing_data_id: 'Erforderlicher Schlüssel fehlt: data.id (Projektreferenz).',
+            missing_data_type: 'Erforderlicher Schlüssel fehlt: data.type.',
+            missing_data_project: 'Erforderlicher Schlüssel fehlt: data.project.',
+            project_not_object: 'project muss ein Objekt sein.',
+            id_mismatch: 'ID-Nichtübereinstimmung: data.id muss gleich project.ref sein.',
+            missing_project_key_ref: 'Erforderlicher Projektschlüssel fehlt: project.ref.',
+            missing_project_key_name: 'Erforderlicher Projektschlüssel fehlt: project.name.',
+            missing_project_key_slug: 'Erforderlicher Projektschlüssel fehlt: project.slug.',
+            missing_project_key_forms: 'Erforderlicher Projektschlüssel fehlt: project.forms.',
+            missing_project_key_category: 'Erforderlicher Projektschlüssel fehlt: project.category.',
+            missing_project_key_small_description: 'Erforderlicher Projektschlüssel fehlt: project.small_description.',
+            missing_project_key_visibility: 'Erforderlicher Projektschlüssel fehlt: project.visibility.',
+            missing_project_key_access: 'Erforderlicher Projektschlüssel fehlt: project.access.',
+            missing_project_key_status: 'Erforderlicher Projektschlüssel fehlt: project.status.',
+            forms_not_array: 'project.forms muss ein Array sein.',
+            no_forms: 'Das Projekt muss mindestens 1 Formular haben.',
+            no_form_inputs: 'Das Projekt muss mindestens 1 Formular mit mindestens 1 Eingabe haben.'
         }
     }
 };

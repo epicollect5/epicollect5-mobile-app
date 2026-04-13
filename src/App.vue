@@ -15,10 +15,12 @@ import {PARAMETERS} from '@/config';
 import {onMounted, computed} from 'vue';
 import {App as CapacitorApp} from '@capacitor/app'; // Alias the Capacitor App module as CapacitorApp
 import {addProject} from '@/use/project/add-project';
+import {importProject} from '@/use/project/import-project';
 import {utilsService} from '@/services/utilities/utils-service';
 import {webService} from '@/services/web-service';
 import {notificationService} from '@/services/notification-service';
 import {errorsService} from '@/services/errors-service';
+import {androidFileIntentService} from '@/services/android-file-intent-service';
 
 export default {
   name: 'App',
@@ -47,6 +49,32 @@ export default {
           STRINGS[rootStore.language].labels.wait,
           STRINGS[rootStore.language].labels.loading_project
       );
+
+      // Check if this is a JSON file intent from Android file manager
+      if (androidFileIntentService.isJsonFileIntent(data.url, rootStore.device.platform)) {
+        try {
+          await router.replace({
+            name: PARAMETERS.ROUTES.PROJECTS_ADD,
+            query: {refresh: true}
+          });
+
+          // Extract and parse the JSON file
+          const jsonData = await androidFileIntentService.extractJsonFromIntent(data.url);
+
+          // Run the import flow with the JSON data
+          await importProject(jsonData, router);
+          return;
+        } catch (error) {
+          console.error('Failed to handle JSON file intent:', error);
+          notificationService.hideProgressDialog();
+          await notificationService.showAlert(STRINGS[rootStore.language].labels.invalid);
+          await router.replace({
+            name: PARAMETERS.ROUTES.PROJECTS,
+            query: {refresh: true}
+          });
+          return;
+        }
+      }
 
       //Send app to add project page to re-use everything
       //like we are adding a project manually
