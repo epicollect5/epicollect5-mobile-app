@@ -18,6 +18,19 @@
         {{ labels.import }}
         &nbsp;<sup><small>BETA</small></sup>
       </ion-button>
+      <ion-button
+          v-if="PARAMETERS.DEBUG"
+          class="ion-text-nowrap"
+          fill="clear"
+          @click="openBulkFilePicker()"
+      >
+        <ion-icon
+            slot="start"
+            :icon="folderOpenOutline"
+        ></ion-icon>
+        {{ labels.import }} ZIP
+        &nbsp;<sup><small>BETA</small></sup>
+      </ion-button>
     </template>
 
     <template #subheader>
@@ -100,6 +113,7 @@ import {useBackButton} from '@ionic/vue';
 import {reactive, readonly, computed} from 'vue';
 import {FilePicker} from '@capawesome/capacitor-file-picker';
 import {importProject} from '@/use/project/import-project';
+import {bulkImportProjects} from '@/use/project/bulk-import-projects';
 
 
 export default {
@@ -166,6 +180,30 @@ export default {
           }
         }
       },
+      async openBulkFilePicker() {
+        try {
+          const result = await FilePicker.pickFiles({
+            types: ['application/zip'],
+            multiple: false,
+            readData: false
+          });
+
+          const file = result.files[0];
+
+          if (file) {
+            await bulkImportProjects(file, router);
+          }
+        } catch (e) {
+          if (e?.message?.toLowerCase().includes('cancel') || e?.code === 'RESULT_CANCELED') {
+            console.log('User cancelled file picker');
+          } else {
+            console.error('File import error:', e);
+            await notificationService.showAlert(
+                STRINGS[rootStore.language].status_codes.ec5_103 || 'Failed to read file'
+            );
+          }
+        }
+      },
       async fetchProjects(e) {
         state.searchTerm = e.target.value.trimStart();
 
@@ -221,6 +259,7 @@ export default {
 
     return {
       labels: STRINGS[rootStore.language].labels,
+      PARAMETERS,
       ...methods,
       ...computedScope,
       state,
