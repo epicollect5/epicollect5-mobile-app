@@ -181,6 +181,7 @@ import { projectModel } from '@/models/project-model.js';
 import { formModel } from '@/models/form-model.js';
 import { menuController } from '@ionic/vue';
 import { showModalLogin } from '@/use/auth/show-modal-login';
+import { databaseSelectService } from '@/services/database/database-select-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
 import { logout } from '@/use/auth/logout';
@@ -252,9 +253,13 @@ export default {
 				}
 				window.open(PARAMETERS.USER_GUIDE_URL, '_system', 'location=yes');
 			},
-			goToBookmark(bookmark) {
+			async goToBookmark(bookmark) {
 
 				console.log(bookmark);
+				const project = await databaseSelectService.selectProject(bookmark.projectRef);
+				rootStore.wasProjectImportedFromFile = project.rows.length > 0
+					? project.rows.item(0).server_url === ''
+					: false;
 				// Remove current project from the store
 				projectModel.destroy();
 				formModel.destroy();
