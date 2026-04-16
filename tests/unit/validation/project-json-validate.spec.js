@@ -166,12 +166,20 @@ describe('projectJsonValidate', () => {
             expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/Emoji detected/);
         });
 
-        it('throws when project slug length does not equal project name length', () => {
+        it('throws when project slug does not match the Laravel-style slug for the project name', () => {
             const payload = createValidProjectPayload();
-            payload.data.project.name = 'Test Project'; // 12 chars
-            payload.data.project.slug = 'test'; // 4 chars
+            payload.data.project.name = 'Test_Project';
+            payload.data.project.slug = 'test_project';
 
-            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/Project slug length \(4\) must equal project name length \(12\)/);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/Project slug "test_project" does not match project name "Test_Project". Expected "test-project"/);
+        });
+
+        it('accepts a slug generated from underscores and repeated spaces', () => {
+            const payload = createValidProjectPayload();
+            payload.data.project.name = 'Test__  Project';
+            payload.data.project.slug = 'test-project';
+
+            expect(() => projectJsonValidate.performDeepValidation(payload)).not.toThrow();
         });
 
         it('enforces at most three title inputs per form, including groups', () => {

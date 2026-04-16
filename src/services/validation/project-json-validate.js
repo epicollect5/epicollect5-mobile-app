@@ -4,6 +4,7 @@ import * as ajvI18n from 'ajv-i18n';
 import projectJSONSchema from '@/schemas/project.schema.json';
 import {LIMITS, PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
+import {utilsService} from '@/services/utilities/utils-service';
 
 export const projectJsonValidate = {
     /**
@@ -286,9 +287,9 @@ export const projectJsonValidate = {
         // 2. Project Meta-data Checks
         validateText(project.name, 'Project Name');
         validateText(project.slug, 'Project Slug');
-        // --- NEW: Ensure slug length equals name length ---
-        if (project.slug.length !== project.name.length) {
-            throw new Error(`<strong>Validation Error</strong><br/>Project slug length (${project.slug.length}) must equal project name length (${project.name.length}).`);
+        const expectedProjectSlug = utilsService.laravelSlug(project.name);
+        if (project.slug !== expectedProjectSlug) {
+            throw new Error(`<strong>Validation Error</strong><br/>Project slug "${project.slug}" does not match project name "${project.name}". Expected "${expectedProjectSlug}".`);
         }
         validateText(project.small_description, 'Small Description');
         validateText(project.description, 'Project Description');

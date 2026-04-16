@@ -900,6 +900,29 @@ export const utilsService = {
         // Replace hyphens with spaces using a regular expression
         return slug.replace(/-/g, ' ');
     },
+    laravelSlug(title, separator = '-', dictionary = {'@': 'at'}) {
+        if (typeof title !== 'string') {
+            return '';
+        }
+
+        const flip = separator === '-' ? '_' : '-';
+        let slug = title.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+
+        slug = slug.replace(new RegExp(`[${flip}]+`, 'g'), separator);
+
+        Object.entries(dictionary).forEach(([key, value]) => {
+            slug = slug.split(key).join(`${separator}${value}${separator}`);
+        });
+
+        slug = slug.toLowerCase();
+        slug = slug.replace(new RegExp(`[^${separator}a-z0-9\\s]+`, 'g'), '');
+        slug = slug.replace(new RegExp(`[${separator}\\s]+`, 'g'), separator);
+
+        const escapedSeparator = separator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        slug = slug.replace(new RegExp(`^${escapedSeparator}+|${escapedSeparator}+$`, 'g'), '');
+
+        return slug;
+    },
     //add 'file://' protocol if it is missing in the URI
     getProtocol(uri) {
         return uri.includes('file://') ? '' : 'file://';

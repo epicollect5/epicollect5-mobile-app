@@ -267,6 +267,23 @@ describe('Time', () => {
     });
 });
 
+describe('Slug helpers', () => {
+    it('laravelSlug() converts spaces and underscores to a single hyphen', () => {
+        expect(utilsService.laravelSlug('My Project')).toBe('my-project');
+        expect(utilsService.laravelSlug('My_Project')).toBe('my-project');
+        expect(utilsService.laravelSlug('My__  Project')).toBe('my-project');
+        expect(utilsService.laravelSlug('ABC_123')).toBe('abc-123');
+    });
+
+    it('laravelSlug() applies Laravel-style dictionary replacement for @', () => {
+        expect(utilsService.laravelSlug('Email@Home')).toBe('email-at-home');
+    });
+
+    it('inverseSlug() replaces hyphens with spaces', () => {
+        expect(utilsService.inverseSlug('my-project')).toBe('my project');
+    });
+});
+
 describe('Filename', () => {
     beforeEach(() => {
         // creates a fresh pinia and make it active so it's automatically picked
@@ -716,7 +733,6 @@ describe('trunc', () => {
         }
     });
 });
-
 
 
 
