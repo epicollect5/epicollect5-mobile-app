@@ -97,7 +97,7 @@ export async function importProject(file, router) {
         }
 
         // Step 5: Deep validation
-        projectJsonValidate.performDeepValidation(content);
+        projectJsonValidate.performDeepValidation(content, rootStore.language);
 
         const projectDefinition = content.data;
         const projectMeta = content.meta || {};

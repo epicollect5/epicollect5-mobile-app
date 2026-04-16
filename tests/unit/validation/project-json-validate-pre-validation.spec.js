@@ -116,9 +116,9 @@ describe('projectJsonValidate - Pre-validation', () => {
                 });
             });
 
-            it(`${language} validation_errors have the correct number of total keys (21)`, () => {
+            it(`${language} validation_errors have the correct number of total keys`, () => {
                 const validationErrors = STRINGS[language].validation_errors;
-                expect(Object.keys(validationErrors).length).toBe(21);
+                expect(Object.keys(validationErrors).length).toBe(expectedErrorKeys.length);
             });
         });
 
