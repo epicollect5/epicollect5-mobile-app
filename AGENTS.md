@@ -94,7 +94,6 @@ export const myService = {
 - **`.env.local`** (create from `.env-example.local`) controls:
   - `VUE_APP_MODE`: `WEBVIEW` (native) or `PWA` (web) - set by build scripts
   - `VUE_APP_DEBUG`: `1` to enable debug UI/skip validation
-  - `VUE_APP_MAPBOX_API_TOKEN`, `VUE_APP_ESRI_API_TOKEN`: map provider tokens
   - `VUE_APP_GOOGLE_CLIENT_ID_WEB`: OAuth client ID
 
 ---

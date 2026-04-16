@@ -358,15 +358,15 @@ export default {
         attribution: PARAMETERS.ESRI_TILES_PROVIDER_ATTRIBUTION,
         maxNativeZoom: 20
       });
-      //http://maps.stamen.com/#watercolor/12/37.7706/-122.3782
-      const stamenHC = L.tileLayer(PARAMETERS.STAMEN_HIGH_CONTRAST_TILES_PROVIDER, {
-        attribution: PARAMETERS.STAMEN_TILES_ATTRIBUTION,
-        maxNativeZoom: 20
+
+      //terrain map with contour lines and hillshading, provided by OpenTopoMap https://opentopomap.org/
+      const openTopo = L.tileLayer(PARAMETERS.OPENTOPO_TILES_PROVIDER, {
+        attribution: PARAMETERS.OPENTOPO_TILES_ATTRIBUTION,
+        maxNativeZoom: 17
       });
 
-      //add tiles (MAPBOX OUTDOOR)
-      const mapboxOutdoors = L.tileLayer(PARAMETERS.MAPBOX_TILES_PROVIDER_OUTDOOR, {
-        attribution: PARAMETERS.MAPBOX_TILES_ATTRIBUTION,
+      const cartoDark = L.tileLayer(PARAMETERS.CARTO_DARK_TILES_PROVIDER, {
+        attribution: PARAMETERS.CARTO_TILES_ATTRIBUTION,
         maxNativeZoom: 20
       });
 
@@ -380,13 +380,13 @@ export default {
       carto.addTo(map); // to set it as the default
       const baseMaps = {
         Satellite: esriSatellite,
-        Terrain: mapboxOutdoors,
-        Contrast: stamenHC,
+        Terrain: openTopo,
         Carto: carto,
+        CartoDark: cartoDark,
         OpenStreetMap: osm
       };
 
-      //add layers control
+      //add layer control
       L.control.layers(baseMaps).addTo(map);
 
       //build locate user control
