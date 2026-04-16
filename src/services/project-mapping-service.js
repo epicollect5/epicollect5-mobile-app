@@ -76,7 +76,20 @@ function getMappedInputs(projectExtra, formRef, inputRefs, counter) {
             continue;
         }
         counter.value++;
-        Object.assign(mappedInputs, getMappedInput(projectExtra, formRef, inputData, counter));
+        mappedInputs[inputRef] = getMappedInput(projectExtra, formRef, inputData, counter);
+    }
+    return mappedInputs;
+}
+
+function getMappedNestedInputs(projectExtra, formRef, inputRefs, counter) {
+    const mappedInputs = {};
+    for (const inputRef of inputRefs) {
+        const inputData = projectExtra.inputs[inputRef].data;
+        if (EXCLUDE_FROM_MAPPING.has(inputData.type)) {
+            continue;
+        }
+        counter.value++;
+        mappedInputs[inputRef] = getMappedInput(projectExtra, formRef, inputData, counter);
     }
     return mappedInputs;
 }
@@ -94,27 +107,28 @@ function getMappedInputs(projectExtra, formRef, inputRefs, counter) {
  * @returns {Object.<string, Object>}
  */
 function getMappedInput(projectExtra, formRef, inputData, counter) {
-    const inputRef = inputData.ref;
     const entry = {
         map_to:           generateMapTo(counter.value, inputData.question),
         hide:             false,
-        possible_answers: {},
-        group:            {},
-        branch:           {}
+        possible_answers: [],
+        group:            [],
+        branch:           []
     };
 
     switch (inputData.type) {
         case 'group': {
+            const inputRef = inputData.ref;
             const groupInputRefs = projectExtra.forms[formRef].group[inputRef] || [];
             if (groupInputRefs.length > 0) {
-                entry.group = getMappedInputs(projectExtra, formRef, groupInputRefs, counter);
+                entry.group = getMappedNestedInputs(projectExtra, formRef, groupInputRefs, counter);
             }
             break;
         }
         case 'branch': {
+            const inputRef = inputData.ref;
             const branchInputRefs = projectExtra.forms[formRef].branch[inputRef] || [];
             if (branchInputRefs.length > 0) {
-                entry.branch = getMappedInputs(projectExtra, formRef, branchInputRefs, counter);
+                entry.branch = getMappedNestedInputs(projectExtra, formRef, branchInputRefs, counter);
             }
             break;
         }
@@ -127,7 +141,7 @@ function getMappedInput(projectExtra, formRef, inputData, counter) {
             break;
     }
 
-    return { [inputRef]: entry };
+    return entry;
 }
 
 /**
@@ -186,6 +200,70 @@ function createEC5AUTOMapping(projectExtra) {
     };
 }
 
+function validateMappedInputsReferences(mappedInputs, validInputRefs) {
+    if (!mappedInputs || typeof mappedInputs !== 'object') {
+        return true;
+    }
+
+    if (Array.isArray(mappedInputs)) {
+        mappedInputs.forEach((mappedEntry) => {
+            const inputRef = mappedEntry?.ref;
+            if (!validInputRefs.has(inputRef)) {
+                throw new Error(`Invalid meta.project_mapping: input ref "${inputRef}" does not exist in project definition.`);
+            }
+
+            if (mappedEntry.group) {
+                validateMappedInputsReferences(mappedEntry.group, validInputRefs);
+            }
+
+            if (mappedEntry.branch) {
+                validateMappedInputsReferences(mappedEntry.branch, validInputRefs);
+            }
+        });
+
+        return true;
+    }
+
+    for (const [inputRef, mappedEntry] of Object.entries(mappedInputs)) {
+        if (inputRef === 'order') {
+            continue;
+        }
+
+        if (!validInputRefs.has(inputRef)) {
+            throw new Error(`Invalid meta.project_mapping: input ref "${inputRef}" does not exist in project definition.`);
+        }
+
+        if (mappedEntry.group) {
+            validateMappedInputsReferences(mappedEntry.group, validInputRefs);
+        }
+
+        if (mappedEntry.branch) {
+            validateMappedInputsReferences(mappedEntry.branch, validInputRefs);
+        }
+    }
+
+    return true;
+}
+
+function validateProjectMappingReferences(projectMappings, projectExtra) {
+    const validFormRefs = new Set(Object.keys(projectExtra.forms || {}));
+    const validInputRefs = new Set(Object.keys(projectExtra.inputs || {}));
+
+    projectMappings.forEach((projectMapping) => {
+        const mappedForms = projectMapping.forms || {};
+        for (const [formRef, mappedInputs] of Object.entries(mappedForms)) {
+            if (!validFormRefs.has(formRef)) {
+                throw new Error(`Invalid meta.project_mapping: form ref "${formRef}" does not exist in project definition.`);
+            }
+
+            validateMappedInputsReferences(mappedInputs, validInputRefs);
+        }
+    });
+
+    return true;
+}
+
 export default {
-    createEC5AUTOMapping
+    createEC5AUTOMapping,
+    validateProjectMappingReferences
 };

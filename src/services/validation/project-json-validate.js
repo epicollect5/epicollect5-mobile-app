@@ -123,6 +123,45 @@ export const projectJsonValidate = {
         };
     },
 
+    isValidProjectMapping(projectMapping, language = 'en') {
+        const ajv = new Ajv({
+            allErrors: true,
+            verbose: true,
+            dynamicRef: true,
+            allowUnionTypes: true
+        });
+
+        addFormats(ajv);
+
+        const projectMappingSchema = {
+            type: 'array',
+            items: {
+                $ref: '#/$defs/project_mapping'
+            },
+            $defs: projectJSONSchema.$defs
+        };
+
+        const validator = ajv.compile(projectMappingSchema);
+        const isValid = validator(projectMapping);
+
+        if (!isValid && validator.errors && typeof language === 'string' && language !== 'en') {
+            try {
+                const translator = ajvI18n[language];
+                if (typeof translator === 'function') {
+                    translator(validator.errors);
+                }
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error('ajv-i18n translation error', e);
+            }
+        }
+
+        return {
+            isValid,
+            errors: validator.errors
+        };
+    },
+
     /**
      * Pre-validates project structure before full validation.
      * Ensures: data/id/project keys present, id === project.ref,

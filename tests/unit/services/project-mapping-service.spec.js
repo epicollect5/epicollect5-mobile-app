@@ -47,16 +47,21 @@ describe('Project Mapping Service', () => {
         // counter.value++;
         // So readme IS skipped before increment.
         expect(formMapping['inp_3'].map_to).toBe('2_Pick_one');
-        expect(formMapping['inp_3'].possible_answers['ans_a'].map_to).toBe('A');
+        expect(formMapping['inp_3'].possible_answers.ans_a.map_to).toBe('A');
 
         // inp_4: A group -> index 3
         expect(formMapping['inp_4'].map_to).toBe('3_A_group');
-        expect(formMapping['inp_4'].group['inp_g1'].map_to).toBe('4_Inside_group_text');
+        const inpG1 = formMapping['inp_4'].group.inp_g1;
+        const inpG2 = formMapping['inp_4'].group.inp_g2;
+        const inpB1 = inpG2.branch.inp_b1;
+        const inpB2 = inpG2.branch.inp_b2;
+
+        expect(inpG1.map_to).toBe('4_Inside_group_text');
 
         // Nested branch in group
-        expect(formMapping['inp_4'].group['inp_g2'].map_to).toBe('5_A_branch');
-        expect(formMapping['inp_4'].group['inp_g2'].branch['inp_b1'].map_to).toBe('6_Inside_branch_text');
-        expect(formMapping['inp_4'].group['inp_g2'].branch['inp_b2'].map_to).toBe('7_Multi_pick');
+        expect(inpG2.map_to).toBe('5_A_branch');
+        expect(inpB1.map_to).toBe('6_Inside_branch_text');
+        expect(inpB2.map_to).toBe('7_Multi_pick');
     });
 
     it('should handle map_to generation edge cases', () => {
@@ -77,5 +82,46 @@ describe('Project Mapping Service', () => {
         expect(map['i2'].map_to).toBe('2_Question_with_spac');
         expect(map['i3'].map_to).toBe('3_Question_with_ymbo');
     });
-});
 
+    it('should validate imported mapping references', () => {
+        const mapping = projectMappingService.createEC5AUTOMapping(mockProjectExtra);
+
+        expect(() => projectMappingService.validateProjectMappingReferences([mapping], mockProjectExtra)).not.toThrow();
+    });
+
+    it('should throw when imported mapping contains an unknown form ref', () => {
+        const invalidMapping = [{
+            name: 'EC5_AUTO',
+            is_default: true,
+            map_index: 0,
+            forms: {
+                unknown_form_ref: {}
+            }
+        }];
+
+        expect(() => projectMappingService.validateProjectMappingReferences(invalidMapping, mockProjectExtra))
+            .toThrow(/form ref "unknown_form_ref" does not exist/);
+    });
+
+    it('should throw when imported mapping contains an unknown input ref', () => {
+        const invalidMapping = [{
+            name: 'EC5_AUTO',
+            is_default: true,
+            map_index: 0,
+            forms: {
+                for_123: {
+                    unknown_input_ref: {
+                        map_to: '1_Unknown',
+                        hide: false,
+                        possible_answers: [],
+                        group: [],
+                        branch: []
+                    }
+                }
+            }
+        }];
+
+        expect(() => projectMappingService.validateProjectMappingReferences(invalidMapping, mockProjectExtra))
+            .toThrow(/input ref "unknown_input_ref" does not exist/);
+    });
+});

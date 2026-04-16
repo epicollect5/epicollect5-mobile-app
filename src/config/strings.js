@@ -274,7 +274,8 @@ export const STRINGS = {
             missing_project_key_status: 'Missing required project key: project.status.',
             forms_not_array: 'project.forms must be an array.',
             no_forms: 'Project must have at least 1 form.',
-            no_form_inputs: 'Project must have at least 1 form with at least 1 input.'
+            no_form_inputs: 'Project must have at least 1 form with at least 1 input.',
+            invalid_project_mapping: 'Invalid meta.project_mapping at "{{path}}": {{error}}'
         }
     },
     it: {
@@ -552,7 +553,8 @@ export const STRINGS = {
             missing_project_key_status: 'Chiave di progetto richiesta mancante: project.status.',
             forms_not_array: 'project.forms deve essere un array.',
             no_forms: 'Il progetto deve avere almeno 1 modulo.',
-            no_form_inputs: 'Il progetto deve avere almeno 1 modulo con almeno 1 input.'
+            no_form_inputs: 'Il progetto deve avere almeno 1 modulo con almeno 1 input.',
+            invalid_project_mapping: 'meta.project_mapping non valido in "{{path}}": {{error}}'
         }
     },
     es: {
@@ -830,7 +832,8 @@ export const STRINGS = {
             missing_project_key_status: 'Falta la clave de proyecto requerida: project.status.',
             forms_not_array: 'project.forms debe ser un array.',
             no_forms: 'El proyecto debe tener al menos 1 formulario.',
-            no_form_inputs: 'El proyecto debe tener al menos 1 formulario con al menos 1 entrada.'
+            no_form_inputs: 'El proyecto debe tener al menos 1 formulario con al menos 1 entrada.',
+            invalid_project_mapping: 'meta.project_mapping no válido en "{{path}}": {{error}}'
         }
     },
     fr: {
@@ -1108,7 +1111,8 @@ export const STRINGS = {
             missing_project_key_status: 'Clé de projet requise manquante: project.status.',
             forms_not_array: 'project.forms doit être un array.',
             no_forms: 'Le projet doit avoir au moins 1 formulaire.',
-            no_form_inputs: 'Le projet doit avoir au moins 1 formulaire avec au moins 1 entrée.'
+            no_form_inputs: 'Le projet doit avoir au moins 1 formulaire avec au moins 1 entrée.',
+            invalid_project_mapping: 'meta.project_mapping invalide à "{{path}}" : {{error}}'
         }
     },
     pl: {
@@ -1386,7 +1390,8 @@ export const STRINGS = {
             missing_project_key_status: 'Brakuje wymaganego klucza projektu: project.status.',
             forms_not_array: 'project.forms musi być tablicą.',
             no_forms: 'Projekt musi mieć co najmniej 1 formularz.',
-            no_form_inputs: 'Projekt musi mieć co najmniej 1 formularz z co najmniej 1 danymi wejściowymi.'
+            no_form_inputs: 'Projekt musi mieć co najmniej 1 formularz z co najmniej 1 danymi wejściowymi.',
+            invalid_project_mapping: 'Nieprawidłowy meta.project_mapping w "{{path}}": {{error}}'
         }
     },
     pt: {
@@ -1664,7 +1669,8 @@ export const STRINGS = {
             missing_project_key_status: 'Chave de projeto obrigatória ausente: project.status.',
             forms_not_array: 'project.forms deve ser um array.',
             no_forms: 'O projeto deve ter pelo menos 1 formulário.',
-            no_form_inputs: 'O projeto deve ter pelo menos 1 formulário com pelo menos 1 entrada.'
+            no_form_inputs: 'O projeto deve ter pelo menos 1 formulário com pelo menos 1 entrada.',
+            invalid_project_mapping: 'meta.project_mapping inválido em "{{path}}": {{error}}'
         }
     },
     ca: {
@@ -1942,7 +1948,8 @@ export const STRINGS = {
             missing_project_key_status: 'Falta la clau de projecte requerida: project.status.',
             forms_not_array: 'project.forms ha de ser un array.',
             no_forms: 'El projecte ha de tenir almenys 1 formulari.',
-            no_form_inputs: 'El projecte ha de tenir almenys 1 formulari amb almenys 1 entrada.'
+            no_form_inputs: 'El projecte ha de tenir almenys 1 formulari amb almenys 1 entrada.',
+            invalid_project_mapping: 'meta.project_mapping no vàlid a "{{path}}": {{error}}'
         }
     },
     sl:{
@@ -2220,7 +2227,8 @@ export const STRINGS = {
             missing_project_key_status: 'Manjka obvezni ključ projekta: project.status.',
             forms_not_array: 'project.forms mora biti niz.',
             no_forms: 'Projekt mora imeti vsaj 1 obrazec.',
-            no_form_inputs: 'Projekt mora imeti vsaj 1 obrazec z vsaj 1 vhodom.'
+            no_form_inputs: 'Projekt mora imeti vsaj 1 obrazec z vsaj 1 vhodom.',
+            invalid_project_mapping: 'Neveljaven meta.project_mapping na "{{path}}": {{error}}'
         }
     },
     de: {
@@ -2498,7 +2506,8 @@ export const STRINGS = {
             missing_project_key_status: 'Erforderlicher Projektschlüssel fehlt: project.status.',
             forms_not_array: 'project.forms muss ein Array sein.',
             no_forms: 'Das Projekt muss mindestens 1 Formular haben.',
-            no_form_inputs: 'Das Projekt muss mindestens 1 Formular mit mindestens 1 Eingabe haben.'
+            no_form_inputs: 'Das Projekt muss mindestens 1 Formular mit mindestens 1 Eingabe haben.',
+            invalid_project_mapping: 'Ungültiges meta.project_mapping bei "{{path}}": {{error}}'
         }
     }
 };

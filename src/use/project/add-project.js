@@ -4,6 +4,7 @@ import { projectModel } from '@/models/project-model.js';
 import { useRootStore } from '@/stores/root-store';
 import { showModalLogin } from '@/use/auth/show-modal-login';
 import { databaseInsertService } from '@/services/database/database-insert-service';
+import { databaseSelectService } from '@/services/database/database-select-service';
 import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
 import { projectLogoService } from '@/services/project-logo-service';
@@ -43,6 +44,17 @@ export async function addProject(project, router) {
                             STRINGS[rootStore.language].status_codes.ec5_133
                         );
                     } else {
+                        const exists = await databaseSelectService.projectExists(project.ref);
+
+                        if (exists) {
+                            notificationService.hideProgressDialog();
+                            await notificationService.showAlert(
+                                STRINGS[rootStore.language].status_codes.ec5_111
+                            );
+                            resolve();
+                            return;
+                        }
+
                         try {
                             //insert project to sqlite database
                             await databaseInsertService.insertProject(

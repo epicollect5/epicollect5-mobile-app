@@ -3,6 +3,7 @@ import {STRINGS} from '@/config/strings';
 import {projectModel} from '@/models/project-model.js';
 import {useRootStore} from '@/stores/root-store';
 import {databaseInsertService} from '@/services/database/database-insert-service';
+import {databaseSelectService} from '@/services/database/database-select-service';
 import {notificationService} from '@/services/notification-service';
 import {projectLogoService} from '@/services/project-logo-service';
 import projectExtraService from '@/services/project-extra-service';
@@ -34,7 +35,14 @@ export async function importProject(file, router) {
         if (!json || typeof json !== 'object') throw new Error('Invalid JSON input');
 
         // Return the envelope: use .data if it exists, otherwise the whole object
-        return json.data ? {data: json.data} : {data: json};
+        if (json.data) {
+            return {
+                data: json.data,
+                ...(json.meta !== undefined ? {meta: json.meta} : {})
+            };
+        }
+
+        return {data: json};
     };
 
     const rootStore = useRootStore();
@@ -92,15 +100,37 @@ export async function importProject(file, router) {
         projectJsonValidate.performDeepValidation(content);
 
         const projectDefinition = content.data;
+        const projectMeta = content.meta || {};
         //generate project extra structure from project data
         const projectExtra = projectExtraService.generateExtraStructure(projectDefinition);
-        //generate project mapping structure from project data
-        const projectMapping = projectMappingService.createEC5AUTOMapping(projectExtra);
+        let projectMapping = [projectMappingService.createEC5AUTOMapping(projectExtra)];
+
+        if (Object.prototype.hasOwnProperty.call(projectMeta, 'project_mapping')) {
+            const projectMappingValidation = projectJsonValidate.isValidProjectMapping(
+                projectMeta.project_mapping,
+                rootStore.language
+            );
+
+            if (!projectMappingValidation.isValid) {
+                const firstError = projectMappingValidation.errors?.[0];
+                const mappingPath = firstError?.instancePath || '/meta/project_mapping';
+                const mappingError = firstError?.message || 'Invalid schema.';
+                const invalidProjectMappingTemplate = STRINGS[rootStore.language]?.validation_errors?.invalid_project_mapping
+                    || 'Invalid meta.project_mapping at "{{path}}": {{error}}';
+                const invalidProjectMappingMessage = invalidProjectMappingTemplate
+                    .replace('{{path}}', mappingPath)
+                    .replace('{{error}}', mappingError);
+                throw new Error(invalidProjectMappingMessage);
+            }
+
+            projectMappingService.validateProjectMappingReferences(projectMeta.project_mapping, projectExtra);
+            projectMapping = projectMeta.project_mapping;
+        }
 
         //generate project extra structure
         projectDefinition.meta = {};
         projectDefinition.meta.project_extra = projectExtra;
-        projectDefinition.meta.project_mapping = [projectMapping];
+        projectDefinition.meta.project_mapping = projectMapping;
 
         // Load project extra structure into project model
         projectModel.loadExtraStructure(projectDefinition.meta.project_extra);
@@ -111,6 +141,16 @@ export async function importProject(file, router) {
         const project = projectDefinition.project;
 
         try {
+            const exists = await databaseSelectService.projectExists(project.ref);
+
+            if (exists) {
+                notificationService.hideProgressDialog();
+                await notificationService.showAlert(
+                    STRINGS[rootStore.language].status_codes.ec5_111
+                );
+                return false;
+            }
+
             //insert project to sqlite database
             await databaseInsertService.insertProject(
                 project.slug,
