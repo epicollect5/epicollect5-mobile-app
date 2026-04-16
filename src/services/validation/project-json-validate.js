@@ -86,14 +86,10 @@ export const projectJsonValidate = {
     isValidAgainstSchema(content, language = 'en') {
         // 1. Initialize Ajv
         const ajv = new Ajv({
-          allErrors: true,
-          verbose: true,
-          dynamicRef: true,
-          // disable only strictTypes but keep other strict checks:
-          //strictTypes: false,
-          // or disable all strict mode warnings:
-          // strict: false,
-          allowUnionTypes: true
+            allErrors: true,
+            verbose: true,
+            dynamicRef: true,
+            allowUnionTypes: true
         });
 
         addFormats(ajv);
