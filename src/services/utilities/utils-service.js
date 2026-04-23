@@ -7,7 +7,6 @@ import slugify from 'slugify';
 import {isValidCoordsService} from '@/services/utilities/is-valid-coords-service';
 import {initService} from '@/services/init-service';
 import {STRINGS} from '@/config/strings';
-import {CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint} from '@capacitor/barcode-scanner';
 import {v4 as uuidv4} from 'uuid';
 import {notificationService} from '@/services/notification-service';
 import {Directory} from '@capacitor/filesystem';
@@ -475,7 +474,13 @@ export const utilsService = {
 
                 if (rootStore.device.platform === PARAMETERS.WEB) {
                     resolve('');
+                    return;
                 }
+
+                const {
+                    CapacitorBarcodeScanner,
+                    CapacitorBarcodeScannerTypeHint
+                } = await import(/* webpackChunkName: "vendor-native-barcode" */ '@capacitor/barcode-scanner');
 
                 CapacitorBarcodeScanner.scanBarcode({
                     hint: CapacitorBarcodeScannerTypeHint.ALL

@@ -4,7 +4,6 @@ import {useRootStore} from '@/stores/root-store';
 import {notificationService} from '@/services/notification-service';
 import {tempDirsService} from '@/services/filesystem/temp-dirs-service';
 import {importProject} from '@/use/project/import-project';
-import {CapacitorZip} from '@capgo/capacitor-zip';
 import {Filesystem} from '@capacitor/filesystem';
 import {FilePicker} from '@capawesome/capacitor-file-picker';
 
@@ -30,6 +29,7 @@ export async function bulkImportProjects(zipFile, router) {
             return false;
         }
 
+        const {CapacitorZip} = await import(/* webpackChunkName: "vendor-native-zip" */ '@capgo/capacitor-zip');
         tempDirPath = await tempDirsService.createTemporaryDir();
         const normalizedTempDirPath = tempDirPath.replace('file://', '');
         const sourcePath = getInputPath(zipFile);

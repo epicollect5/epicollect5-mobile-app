@@ -103,15 +103,29 @@ module.exports = {
             }
 
             if (process.env.VUE_APP_MODE === 'PWA') {
-                //Filter out ANY existing BundleAnalyzerPlugin (from Vue CLI defaults) first
+                //Filter out ANY existing BundleAnalyzerPlugin/WorkboxPlugin instances first
                 config.plugins = config.plugins.filter(
-                    (p) => p.constructor && p.constructor.name !== 'BundleAnalyzerPlugin'
+                    (p) => p.constructor && ![
+                        'BundleAnalyzerPlugin',
+                        'GenerateSW',
+                        'InjectManifest'
+                    ].includes(p.constructor.name)
                 );
+
+                config.resolve = config.resolve || {};
+                config.resolve.alias = {
+                    ...(config.resolve.alias || {}),
+                    '@capacitor/barcode-scanner': path.resolve(__dirname, 'src/services/pwa-stubs/barcode-scanner.js'),
+                    '@capgo/capacitor-zip': path.resolve(__dirname, 'src/services/pwa-stubs/capacitor-zip.js'),
+                    'ajv/dist/2020': path.resolve(__dirname, 'src/services/pwa-stubs/ajv-2020.js'),
+                    'ajv-formats': path.resolve(__dirname, 'src/services/pwa-stubs/ajv-formats.js'),
+                    'ajv-i18n': path.resolve(__dirname, 'src/services/pwa-stubs/ajv-i18n.js')
+                };
 
 
                 config.plugins = [...config.plugins,
                     new webpack.optimize.LimitChunkCountPlugin({
-                        maxChunks: 5
+                        maxChunks: 8
                     }),
                     new webpack.IgnorePlugin({
                         resourceRegExp: /an-array-of-/
@@ -121,6 +135,12 @@ module.exports = {
                     }),
                     new webpack.IgnorePlugin({
                         resourceRegExp: /an-array-of/
+                    }),
+                    new webpack.IgnorePlugin({
+                        resourceRegExp: /^@capacitor\/barcode-scanner$/
+                    }),
+                    new webpack.IgnorePlugin({
+                        resourceRegExp: /^@capgo\/capacitor-zip$/
                     }),
                     ...(process.env.VUE_APP_DEBUG !== '1' && process.env.VUE_APP_MODE === 'PWA' ? [
                         new BundleAnalyzerPlugin({
@@ -160,6 +180,17 @@ module.exports = {
                                 name: 'vendor-ionic',
                                 chunks: 'all',
                                 priority: 70
+                            }, ionicons: {
+                                test: /[\\/]node_modules[\\/]ionicons[\\/]/,
+                                name: 'vendor-common-ionicons',
+                                chunks: 'all',
+                                priority: 60
+                            }, leaflet: {
+                                test: /[\\/]node_modules[\\/](leaflet|leaflet\.fullscreen)[\\/]/,
+                                name: 'vendor-common-leaflet',
+                                chunks: 'all',
+                                enforce: true,
+                                priority: 55
                             }, vendor: {
                                 test: /[\\/]node_modules[\\/]/, name: 'vendor-common', //enforce: true,
                                 chunks: 'all', priority: 1

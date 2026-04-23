@@ -9,7 +9,6 @@ import {mediaDirsService} from '@/services/filesystem/media-dirs-service';
 import {writeFileService} from '@/services/filesystem/write-file-service';
 import {PARAMETERS} from '@/config';
 import {Capacitor} from '@capacitor/core';
-import {CapacitorZip} from '@capgo/capacitor-zip';
 import {Directory, Filesystem} from '@capacitor/filesystem';
 import {Share} from '@capacitor/share';
 import {notificationService} from '@/services/notification-service';
@@ -344,6 +343,7 @@ export const exportService = {
 
             const sourcePath = sourceResult.uri.replace('file://', '');
             const destPath = destResult.uri.replace('file://', '');
+            const {CapacitorZip} = await import(/* webpackChunkName: "vendor-native-zip" */ '@capgo/capacitor-zip');
 
             await CapacitorZip.zip({
                 source: sourcePath,
