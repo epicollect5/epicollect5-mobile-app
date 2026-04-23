@@ -43,9 +43,13 @@ module.exports = {
 
             if (process.env.VUE_APP_MODE === 'WEBVIEW') {
 
-                // 1. Explicitly filter out any existing BundleAnalyzerPlugin
+                // 1. Explicitly filter out any existing BundleAnalyzerPlugin/WorkboxPlugin instances
                 config.plugins = config.plugins.filter(
-                    (p) => p.constructor && p.constructor.name !== 'BundleAnalyzerPlugin'
+                    (p) => p.constructor && ![
+                        'BundleAnalyzerPlugin',
+                        'GenerateSW',
+                        'InjectManifest'
+                    ].includes(p.constructor.name)
                 );
                 // // See available sourcemaps:
                 // // https://webpack.js.org/configuration/devtool/#devtool
