@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
@@ -323,7 +325,6 @@ describe('RightDrawer component', () => {
 
         const rootStore = useRootStore();
         const dbStore = useDBStore();
-        const labels = STRINGS[rootStore.language].labels;
         rootStore.device = {
             platform: PARAMETERS.WEB
         };
@@ -362,7 +363,6 @@ describe('RightDrawer component', () => {
 
         const rootStore = useRootStore();
         const dbStore = useDBStore();
-        const labels = STRINGS[rootStore.language].labels;
         rootStore.device = {
             platform: PARAMETERS.WEB
         };
@@ -401,7 +401,6 @@ describe('RightDrawer component', () => {
 
         const rootStore = useRootStore();
         const dbStore = useDBStore();
-        const labels = STRINGS[rootStore.language].labels;
         rootStore.device = {
             platform: PARAMETERS.WEB
         };
@@ -1247,7 +1246,6 @@ describe('RightDrawer component', () => {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const dbStore = useDBStore();
-        const labels = STRINGS[rootStore.language].labels;
         STRINGS[language].status_codes = {
             ec5_121: '---',
             ec5_122: '---'
@@ -1357,7 +1355,6 @@ describe('RightDrawer component', () => {
         const bookmarkStore = useBookmarkStore();
         const language = rootStore.language;
         const dbStore = useDBStore();
-        const labels = STRINGS[rootStore.language].labels;
         STRINGS[language].status_codes = {
             ec5_127: '---',
             ec5_104: '---'
@@ -1399,7 +1396,6 @@ describe('RightDrawer component', () => {
         const bookmarkStore = useBookmarkStore();
         const language = rootStore.language;
         const dbStore = useDBStore();
-        const labels = STRINGS[rootStore.language].labels;
         STRINGS[language].status_codes = {
             ec5_127: '---',
             ec5_104: '---'

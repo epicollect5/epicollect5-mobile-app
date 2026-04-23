@@ -13,7 +13,7 @@ import { useBookmarkStore } from '@/stores/bookmark-store';
 
 
 /**
- * Delete a project and redirect to projects page if success
+ * Delete a project and redirect to projects' page if success
  */
 export async function deleteProject (router) {
 
@@ -46,26 +46,25 @@ export async function deleteProject (router) {
 
     //if any media files
     const files = projectMedia.audios.concat(projectMedia.videos).concat(projectMedia.photos);
-    console.log(files);
 
     if (files.length > 0) {
         try {
             await deleteFileService.removeFiles(files);
             await databaseDeleteService.deleteProject(projectRef);
-            _onDeleteSuccess();
+            await _onDeleteSuccess();
         } catch (error) {
             console.log(error);
             notificationService.hideProgressDialog();
-            notificationService.showAlert(labels.unknown_error, labels.error);
+            await notificationService.showAlert(labels.unknown_error, labels.error);
         }
     } else {
         try {
             await databaseDeleteService.deleteProject(projectRef);
-            _onDeleteSuccess();
+            await _onDeleteSuccess();
         } catch (error) {
             console.log(error);
             notificationService.hideProgressDialog();
-            notificationService.showAlert(labels.unknown_error, labels.error);
+            await notificationService.showAlert(labels.unknown_error, labels.error);
         }
     }
 
@@ -73,7 +72,7 @@ export async function deleteProject (router) {
 
         const projectRef = projectModel.getProjectRef();
         const bookmarkStore = useBookmarkStore();
-        //if we are deleting the easter egg project, reset server url to default
+        //if we are deleting the Easter egg project, reset server url to default
         if (projectRef === PARAMETERS.EASTER_EGG.PROJECT_REF) {
             await databaseInsertService.insertSetting(PARAMETERS.SETTINGS_KEYS.SERVER_URL, PARAMETERS.DEFAULT_SERVER_URL);
             rootStore.serverUrl = PARAMETERS.DEFAULT_SERVER_URL;
@@ -89,10 +88,10 @@ export async function deleteProject (router) {
 
         try {
             const bookmarks = await bookmarksService.getBookmarks();
-            bookmarkStore.setBookmarks(bookmarks);
+            bookmarkStore.setBookmarks(Array.isArray(bookmarks) ? bookmarks : []);
         }
         catch (error) {
-            notificationService.showAlert(labels.bookmarks_loading_error);
+            await notificationService.showAlert(labels.bookmarks_loading_error);
             bookmarkStore.setBookmarks([]);
         }
         // Destroy project model
@@ -102,7 +101,7 @@ export async function deleteProject (router) {
         notificationService.showToast(STRINGS[language].status_codes.ec5_114);
         //hide right drawer
         menuController.close();
-        // Go back to projects page
+        // Go back to projects' page
         router.replace({
             name: PARAMETERS.ROUTES.PROJECTS,
             query: { refresh: true }

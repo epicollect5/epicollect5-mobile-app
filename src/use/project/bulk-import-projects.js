@@ -6,10 +6,23 @@ import {tempDirsService} from '@/services/filesystem/temp-dirs-service';
 import {importProject} from '@/use/project/import-project';
 import {CapacitorZip} from '@capgo/capacitor-zip';
 import {Filesystem} from '@capacitor/filesystem';
+import {FilePicker} from '@capawesome/capacitor-file-picker';
 
 export async function bulkImportProjects(zipFile, router) {
     const rootStore = useRootStore();
     let tempDirPath = '';
+
+    const getInputPath = (file) => {
+        if (typeof file?.path === 'string' && file.path.length > 0) {
+            return file.path;
+        }
+
+        if (typeof file?.uri === 'string' && file.uri.length > 0) {
+            return file.uri;
+        }
+
+        throw new Error('Could not resolve ZIP file path');
+    };
 
     try {
         if (rootStore.device.platform === PARAMETERS.WEB) {
@@ -19,6 +32,10 @@ export async function bulkImportProjects(zipFile, router) {
 
         tempDirPath = await tempDirsService.createTemporaryDir();
         const normalizedTempDirPath = tempDirPath.replace('file://', '');
+        const sourcePath = getInputPath(zipFile);
+        const zipFileName = zipFile.name || 'bulk-import.zip';
+        const copiedZipPath = `${normalizedTempDirPath}/${zipFileName}`;
+        const extractionPath = `${normalizedTempDirPath}/bulk-import-${Date.now()}`;
 
         console.log('Temp directory created at:', normalizedTempDirPath);
 
@@ -27,19 +44,22 @@ export async function bulkImportProjects(zipFile, router) {
             'Extracting ZIP archive...'
         );
 
-        const sourceUri = zipFile.uri || URL.createObjectURL(zipFile);
-        const sourcePathClean = sourceUri.replace('file://', '');
+        await FilePicker.copyFile({
+            from: sourcePath,
+            to: copiedZipPath,
+            overwrite: true
+        });
 
         await CapacitorZip.unzip({
-            source: sourcePathClean,
-            destination: normalizedTempDirPath
+            source: copiedZipPath,
+            destination: extractionPath
         });
 
         console.log('ZIP extracted successfully');
         notificationService.hideProgressDialog();
 
         const result = await Filesystem.readdir({
-            path: normalizedTempDirPath
+            path: extractionPath
         });
 
         const jsonFiles = result.files
@@ -65,7 +85,7 @@ export async function bulkImportProjects(zipFile, router) {
                 );
 
                 const fileContent = await Filesystem.readFile({
-                    path: `${normalizedTempDirPath}/${fileName}`,
+                    path: `${extractionPath}/${fileName}`,
                     encoding: 'utf8'
                 });
 

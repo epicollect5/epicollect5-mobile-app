@@ -84,6 +84,31 @@ export const projectJsonSanitise = {
     },
 
     /**
+     * Removes jumps to 'END' from the last input in each array of inputs.
+     * Recursively applies to all nested branch and group arrays.
+     * This fixes legacy projects where invalid END jumps were set on last elements.
+     */
+    removeEndJumpsFromLastInput(inputsArray) {
+        if (!Array.isArray(inputsArray) || inputsArray.length === 0) {
+            return;
+        }
+
+        inputsArray.forEach((input) => {
+            if (input.branch && Array.isArray(input.branch)) {
+                this.removeEndJumpsFromLastInput(input.branch);
+            }
+            if (input.group && Array.isArray(input.group)) {
+                this.removeEndJumpsFromLastInput(input.group);
+            }
+        });
+
+        const lastInput = inputsArray[inputsArray.length - 1];
+        if (lastInput.jumps && Array.isArray(lastInput.jumps)) {
+            lastInput.jumps = lastInput.jumps.filter((jump) => jump.to !== 'END');
+        }
+    },
+
+    /**
      * Sanitize project definition for import (like server does on export).
      * This ensures backward compatibility with older project exports.
      *
@@ -95,6 +120,7 @@ export const projectJsonSanitise = {
      * - Clear group array when input type is branch
      * - Recursively sanitize jumps in inputs
      * - Recursively sanitize decimal min/max values
+     * - Remove jumps to END from last inputs in forms and branches
      */
     sanitiseProjectDefinitionForImport(projectDefinition) {
         const SMALL_DESC_MIN_LENGTH = 15;
@@ -143,7 +169,15 @@ export const projectJsonSanitise = {
             });
         }
 
+        // Remove END jumps from last inputs in forms
+        if (projectDefinition.project.forms && Array.isArray(projectDefinition.project.forms)) {
+            projectDefinition.project.forms.forEach((form) => {
+                if (form.inputs && Array.isArray(form.inputs)) {
+                    this.removeEndJumpsFromLastInput(form.inputs);
+                }
+            });
+        }
+
         return projectDefinition;
     }
 };
-

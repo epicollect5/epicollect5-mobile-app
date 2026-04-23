@@ -183,6 +183,73 @@ describe('projectJsonSanitise', () => {
         });
     });
 
+    describe('removeEndJumpsFromLastInput', () => {
+        it('removes END jumps only from the last input in an input array', () => {
+            const inputs = [
+                {
+                    jumps: [
+                        {
+                            to: 'END'
+                        }
+                    ]
+                },
+                {
+                    jumps: [
+                        {
+                            to: 'END'
+                        },
+                        {
+                            to: 'next-input'
+                        }
+                    ]
+                }
+            ];
+
+            projectJsonSanitise.removeEndJumpsFromLastInput(inputs);
+
+            expect(inputs[0].jumps).toEqual([{to: 'END'}]);
+            expect(inputs[1].jumps).toEqual([{to: 'next-input'}]);
+        });
+
+        it('removes END jumps from nested last branch and group inputs on any sibling', () => {
+            const inputs = [
+                {
+                    branch: [
+                        {
+                            jumps: [
+                                {
+                                    to: 'END'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    group: [
+                        {
+                            jumps: [
+                                {
+                                    to: 'END'
+                                }
+                            ]
+                        }
+                    ],
+                    jumps: [
+                        {
+                            to: 'END'
+                        }
+                    ]
+                }
+            ];
+
+            projectJsonSanitise.removeEndJumpsFromLastInput(inputs);
+
+            expect(inputs[0].branch[0].jumps).toEqual([]);
+            expect(inputs[1].group[0].jumps).toEqual([]);
+            expect(inputs[1].jumps).toEqual([]);
+        });
+    });
+
     describe('sanitiseProjectDefinitionForImport', () => {
         it('trims newlines from descriptions', () => {
             const project = createMinimalProject();
@@ -266,9 +333,7 @@ describe('projectJsonSanitise', () => {
                 }
             ];
             projectJsonSanitise.sanitiseProjectDefinitionForImport(project.data);
-            const jump = project.data.project.forms[0].inputs[0].jumps[0];
-            expect(jump.answer_ref).toBe(null);
-            expect(jump).not.toHaveProperty('has_valid_destination');
+            expect(project.data.project.forms[0].inputs[0].jumps).toEqual([]);
         });
 
         it('sanitizes decimal inputs', () => {
@@ -315,7 +380,7 @@ describe('projectJsonSanitise', () => {
             expect(project.data.project.description).toBe('Desc');
             expect(project.data.project.forms[0].name).toBe('Form Name');
             expect(project.data.project.forms[0].inputs[0].group).toEqual([]);
-            expect(project.data.project.forms[0].inputs[0].jumps[0].answer_ref).toBe(null);
+            expect(project.data.project.forms[0].inputs[0].jumps).toEqual([]);
         });
     });
 
@@ -341,8 +406,7 @@ describe('projectJsonSanitise', () => {
             expect(project.data.project.small_description).toBe('Old: _html____');
             expect(project.data.project.forms[0].name).toBe('Main Form');
             expect(project.data.project.forms[0].inputs[0].min).toBe('0.5');
-            expect(project.data.project.forms[0].inputs[0].jumps[0].answer_ref).toBe(null);
-            expect(project.data.project.forms[0].inputs[0].jumps[0]).not.toHaveProperty('has_valid_destination');
+            expect(project.data.project.forms[0].inputs[0].jumps).toEqual([]);
         });
 
         it('handles deeply nested sanitization (branch with group with decimal)', () => {
@@ -379,4 +443,3 @@ describe('projectJsonSanitise', () => {
         });
     });
 });
-

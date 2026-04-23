@@ -36,6 +36,12 @@ vi.mock('@capgo/capacitor-zip', () => ({
     }
 }));
 
+vi.mock('@capawesome/capacitor-file-picker', () => ({
+    FilePicker: {
+        copyFile: vi.fn()
+    }
+}));
+
 vi.mock('@capacitor/filesystem', () => ({
     Filesystem: {
         readdir: vi.fn(),
@@ -50,6 +56,7 @@ describe('bulkImportProjects', () => {
     let tempDirsService;
     let importProject;
     let CapacitorZip;
+    let FilePicker;
     let Filesystem;
 
     const router = {
@@ -60,6 +67,7 @@ describe('bulkImportProjects', () => {
         vi.resetModules();
         vi.clearAllMocks();
         setActivePinia(createPinia());
+        vi.spyOn(Date, 'now').mockReturnValue(12345);
 
         ({bulkImportProjects} = await import('@/use/project/bulk-import-projects'));
         ({useRootStore} = await import('@/stores/root-store'));
@@ -67,6 +75,7 @@ describe('bulkImportProjects', () => {
         ({tempDirsService} = await import('@/services/filesystem/temp-dirs-service'));
         ({importProject} = await import('@/use/project/import-project'));
         ({CapacitorZip} = await import('@capgo/capacitor-zip'));
+        ({FilePicker} = await import('@capawesome/capacitor-file-picker'));
         ({Filesystem} = await import('@capacitor/filesystem'));
 
         const rootStore = useRootStore();
@@ -78,6 +87,7 @@ describe('bulkImportProjects', () => {
 
         tempDirsService.createTemporaryDir.mockResolvedValue('file:///tmp/ec5tmp');
         tempDirsService.clearTemporaryDir.mockResolvedValue();
+        FilePicker.copyFile.mockResolvedValue();
         CapacitorZip.unzip.mockResolvedValue();
         importProject.mockResolvedValue(true);
     });
@@ -94,19 +104,24 @@ describe('bulkImportProjects', () => {
             .mockResolvedValueOnce({data: JSON.stringify({data: {project: {ref: 'a'}}})})
             .mockResolvedValueOnce({data: JSON.stringify({data: {project: {ref: 'b'}}})});
 
-        const result = await bulkImportProjects({uri: 'file:///tmp/import.zip'}, router);
+        const result = await bulkImportProjects({path: 'file:///tmp/import.zip'}, router);
 
         expect(result).toBe(true);
+        expect(FilePicker.copyFile).toHaveBeenCalledWith({
+            from: 'file:///tmp/import.zip',
+            to: '/tmp/ec5tmp/bulk-import.zip',
+            overwrite: true
+        });
         expect(CapacitorZip.unzip).toHaveBeenCalledWith({
-            source: '/tmp/import.zip',
-            destination: '/tmp/ec5tmp'
+            source: '/tmp/ec5tmp/bulk-import.zip',
+            destination: '/tmp/ec5tmp/bulk-import-12345'
         });
         expect(Filesystem.readFile).toHaveBeenNthCalledWith(1, {
-            path: '/tmp/ec5tmp/a-project.json',
+            path: '/tmp/ec5tmp/bulk-import-12345/a-project.json',
             encoding: 'utf8'
         });
         expect(Filesystem.readFile).toHaveBeenNthCalledWith(2, {
-            path: '/tmp/ec5tmp/b-project.json',
+            path: '/tmp/ec5tmp/bulk-import-12345/b-project.json',
             encoding: 'utf8'
         });
         expect(importProject).toHaveBeenNthCalledWith(1, {data: {project: {ref: 'a'}}}, router);
@@ -121,7 +136,7 @@ describe('bulkImportProjects', () => {
             ]
         });
 
-        const result = await bulkImportProjects({uri: 'file:///tmp/import.zip'}, router);
+        const result = await bulkImportProjects({path: 'file:///tmp/import.zip'}, router);
 
         expect(result).toBe(false);
         expect(importProject).not.toHaveBeenCalled();
@@ -145,7 +160,7 @@ describe('bulkImportProjects', () => {
             .mockResolvedValueOnce(false)
             .mockResolvedValueOnce(true);
 
-        const result = await bulkImportProjects({uri: 'file:///tmp/import.zip'}, router);
+        const result = await bulkImportProjects({path: 'file:///tmp/import.zip'}, router);
 
         expect(result).toBe(false);
         expect(importProject).toHaveBeenCalledTimes(1);
@@ -156,10 +171,21 @@ describe('bulkImportProjects', () => {
     it('shows the error and cleans up when unzip fails', async () => {
         CapacitorZip.unzip.mockRejectedValue(new Error('Bad zip'));
 
-        const result = await bulkImportProjects({uri: 'file:///tmp/import.zip'}, router);
+        const result = await bulkImportProjects({path: 'file:///tmp/import.zip'}, router);
 
         expect(result).toBe(false);
         expect(notificationService.showAlert).toHaveBeenCalledWith('Bad zip');
+        expect(tempDirsService.clearTemporaryDir).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows the error and cleans up when the picked file cannot be copied locally', async () => {
+        FilePicker.copyFile.mockRejectedValue(new Error('copyFile failed.'));
+
+        const result = await bulkImportProjects({path: 'content://picked/import.zip'}, router);
+
+        expect(result).toBe(false);
+        expect(CapacitorZip.unzip).not.toHaveBeenCalled();
+        expect(notificationService.showAlert).toHaveBeenCalledWith('copyFile failed.');
         expect(tempDirsService.clearTemporaryDir).toHaveBeenCalledTimes(1);
     });
 });

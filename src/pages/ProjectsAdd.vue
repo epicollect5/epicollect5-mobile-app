@@ -19,7 +19,7 @@
         &nbsp;<sup><small>BETA</small></sup>
       </ion-button>
       <ion-button
-          v-if="PARAMETERS.DEBUG"
+          v-if="state.isDebug"
           class="ion-text-nowrap"
           fill="clear"
           @click="openBulkFilePicker()"
@@ -28,7 +28,7 @@
             slot="start"
             :icon="folderOpenOutline"
         ></ion-icon>
-        {{ labels.import }} ZIP
+        Validate ZIP
         &nbsp;<sup><small>BETA</small></sup>
       </ion-button>
     </template>
@@ -113,7 +113,7 @@ import {useBackButton} from '@ionic/vue';
 import {reactive, readonly, computed} from 'vue';
 import {FilePicker} from '@capawesome/capacitor-file-picker';
 import {importProject} from '@/use/project/import-project';
-import {bulkImportProjects} from '@/use/project/bulk-import-projects';
+import {bulkValidateProjects} from '@/use/project/bulk-validate-projects';
 
 
 export default {
@@ -126,7 +126,8 @@ export default {
     const state = reactive({
       isFetching: false,
       projects: [],
-      searchTerm: ''
+      searchTerm: '',
+      isDebug: PARAMETERS.DEBUG
     });
 
     const computedScope = {
@@ -137,7 +138,7 @@ export default {
 
 
     const methods = {
-      //redirect to projects list
+      //redirect to projects' list
       goToProjectsList() {
         router.replace({
           name: PARAMETERS.ROUTES.PROJECTS
@@ -191,7 +192,7 @@ export default {
           const file = result.files[0];
 
           if (file) {
-            await bulkImportProjects(file, router);
+            await bulkValidateProjects(file);
           }
         } catch (e) {
           if (e?.message?.toLowerCase().includes('cancel') || e?.code === 'RESULT_CANCELED') {
@@ -249,7 +250,7 @@ export default {
       }
     };
 
-    //back to projects list with back button (Android)
+    //back to projects' list with back button (Android)
     useBackButton(10, () => {
       console.log(window.history);
       if (!state.isFetching) {

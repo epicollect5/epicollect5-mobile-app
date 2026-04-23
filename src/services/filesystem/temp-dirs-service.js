@@ -59,6 +59,15 @@ export const tempDirsService = {
                     reject(error);
                 }
 
+                function _removeEntry(entry, onSuccess, onFailure) {
+                    if (entry.isDirectory) {
+                        entry.removeRecursively(onSuccess, onFailure);
+                        return;
+                    }
+
+                    entry.remove(onSuccess, onFailure);
+                }
+
                 const rootStore = useRootStore();
                 const device = rootStore.device;
                 const tempFolderPath = rootStore.tempDir;
@@ -75,14 +84,21 @@ export const tempDirsService = {
                     reader.readEntries(function (entries) {
                         if (entries.length === 0) {
                             console.log('No files to delete in the temporary folder.');
+                            resolve();
                         } else {
+                            let pendingEntries = entries.length;
+
                             entries.forEach(function (entry) {
-                                entry.remove(function () {
-                                    console.log('File removed: ' + entry.fullPath);
+                                _removeEntry(entry, function () {
+                                    console.log('Entry removed: ' + entry.fullPath);
+                                    pendingEntries -= 1;
+
+                                    if (pendingEntries === 0) {
+                                        resolve();
+                                    }
                                 }, _onError);
                             });
                         }
-                        resolve();
                     }, _onError);
                 }, _onError);
             }
