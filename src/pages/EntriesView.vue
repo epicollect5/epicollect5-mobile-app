@@ -138,9 +138,9 @@
 <script>
 import {useRootStore} from '@/stores/root-store';
 import {STRINGS} from '@/config/strings';
-import {deleteEntry} from '@/use/entry/delete-entry';
-import {cloneEntry} from '@/use/entry/clone-entry';
-import {fetchAnswers} from '@/use/answers/fetch-answers';
+import {deleteEntry} from '@/composables/entry/delete-entry';
+import {cloneEntry} from '@/composables/entry/clone-entry';
+import {fetchAnswers} from '@/composables/answers/fetch-answers';
 import {computed} from 'vue';
 
 import {
@@ -156,10 +156,10 @@ import {projectModel} from '@/models/project-model.js';
 import {entryModel} from '@/models/entry-model';
 import {useRouter, useRoute} from 'vue-router';
 import {watch, reactive} from 'vue';
-import ListAnswers from '@/components/ListAnswers.vue';
+import ListAnswers from '@/components/answers/ListAnswers.vue';
 import {useBackButton} from '@ionic/vue';
 import {notificationService} from '@/services/notification-service';
-import ItemDividerError from '@/components/ItemDividerError.vue';
+import ItemDividerError from '@/components/ui/ItemDividerError.vue';
 import {useBookmarkStore} from '@/stores/bookmark-store';
 
 

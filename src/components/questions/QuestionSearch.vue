@@ -94,7 +94,7 @@ import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject } from 'vue';
 import { modalController } from '@ionic/vue';
 import ModalPossibleAnswers from '@/components/modals/ModalPossibleAnswers';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow';
+import GridQuestionNarrow from '@/components/ui/GridQuestionNarrow.vue';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { questionCommonService } from '@/services/entry/question-common-service';

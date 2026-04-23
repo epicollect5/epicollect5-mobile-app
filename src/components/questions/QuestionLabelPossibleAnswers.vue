@@ -38,7 +38,7 @@ import { filter } from 'ionicons/icons';
 import { readonly, toRefs } from '@vue/reactivity';
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
-import ModalPossibleAnswers from '@/components/modals/ModalPossibleAnswers';
+import ModalPossibleAnswers from '@/components/modals/ModalPossibleAnswers.vue';
 import { PARAMETERS } from '@/config';
 import { notificationService } from '@/services/notification-service';
 

@@ -1,5 +1,5 @@
 import { PARAMETERS } from '@/config';
-import { initialSetup } from '@/use/questions/initial-setup';
+import { initialSetup } from '@/composables/questions/initial-setup';
 import { errorsService } from '@/services/errors-service';
 
 // Initial set up for each question

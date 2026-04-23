@@ -17,7 +17,7 @@ vi.mock('@/services/filesystem/temp-dirs-service', () => ({
     }
 }));
 
-vi.mock('@/use/project/validate-project-payload', () => ({
+vi.mock('@/composables/project/validate-project-payload', () => ({
     validateProjectPayload: vi.fn()
 }));
 
@@ -56,11 +56,11 @@ describe('bulkValidateProjects', () => {
         setActivePinia(createPinia());
         vi.spyOn(Date, 'now').mockReturnValue(12345);
 
-        ({bulkValidateProjects} = await import('@/use/project/bulk-validate-projects'));
+        ({bulkValidateProjects} = await import('@/composables/project/bulk-validate-projects'));
         ({useRootStore} = await import('@/stores/root-store'));
         ({notificationService} = await import('@/services/notification-service'));
         ({tempDirsService} = await import('@/services/filesystem/temp-dirs-service'));
-        ({validateProjectPayload} = await import('@/use/project/validate-project-payload'));
+        ({validateProjectPayload} = await import('@/composables/project/validate-project-payload'));
         ({CapacitorZip} = await import('@capgo/capacitor-zip'));
         ({FilePicker} = await import('@capawesome/capacitor-file-picker'));
         ({Filesystem} = await import('@capacitor/filesystem'));

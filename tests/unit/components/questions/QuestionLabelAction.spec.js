@@ -2,7 +2,7 @@ import {mount} from '@vue/test-utils';
 import {describe, it, expect, beforeEach} from 'vitest';
 import {setActivePinia, createPinia} from 'pinia';
 import {useRootStore} from '@/stores/root-store';
-import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
+import QuestionLabelAction from '@/components/questions/QuestionLabelAction.vue';
 import {ellipsisVertical, search, filter, helpCircle, create, copyOutline} from 'ionicons/icons';
 
 describe('QuestionLabelAction.vue - Action Visibility & Icons', () => {

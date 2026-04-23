@@ -1,7 +1,7 @@
 import { jumpsService } from '@/services/entry/jumps-service';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model';
-import { wasJumpEdited } from '@/use/questions/was-jump-edited';
+import { wasJumpEdited } from '@/composables/questions/was-jump-edited';
 import { vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 

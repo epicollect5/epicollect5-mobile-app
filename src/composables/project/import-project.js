@@ -6,7 +6,7 @@ import {databaseInsertService} from '@/services/database/database-insert-service
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {notificationService} from '@/services/notification-service';
 import {projectLogoService} from '@/services/project-logo-service';
-import {validateProjectPayload} from '@/use/project/validate-project-payload';
+import {validateProjectPayload} from '@/composables/project/validate-project-payload';
 
 //imp: router gets passed in because is available only in setup()
 export async function importProject(file, router) {

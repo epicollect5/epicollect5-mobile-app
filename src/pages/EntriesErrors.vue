@@ -152,7 +152,7 @@ import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
 import { useRouter, useRoute } from 'vue-router';
 import { onMounted, watch } from 'vue';
-import IconEntry from '@/components/IconEntry';
+import IconEntry from '@/components/entries/IconEntry.vue';
 import { entryModel } from '@/models/entry-model';
 import { useBackButton } from '@ionic/vue';
 import { databaseSelectService } from '@/services/database/database-select-service';

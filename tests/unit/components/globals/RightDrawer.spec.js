@@ -53,11 +53,11 @@ vi.mock('@/components/modals/ModalBookmarkAdd', () => ({
     }
 }));
 
-vi.mock('@/use/auth/logout', () => ({
+vi.mock('@/composables/auth/logout', () => ({
     logout: vi.fn()
 }));
 
-vi.mock('@/use/auth/show-modal-login', () => ({
+vi.mock('@/composables/auth/show-modal-login', () => ({
     showModalLogin: vi.fn()
 }));
 

@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import Dropzone from '@/components/Dropzone.vue';
+import Dropzone from '@/components/pwa/Dropzone.vue';
 import { useRootStore } from '@/stores/root-store';
 import { projectModel } from '@/models/project-model';
 import { PARAMETERS } from '@/config';

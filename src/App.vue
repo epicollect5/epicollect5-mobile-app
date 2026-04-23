@@ -14,8 +14,8 @@ import {useRouter} from 'vue-router';
 import {PARAMETERS} from '@/config';
 import {onMounted, computed} from 'vue';
 import {App as CapacitorApp} from '@capacitor/app'; // Alias the Capacitor App module as CapacitorApp
-import {addProject} from '@/use/project/add-project';
-import {importProject} from '@/use/project/import-project';
+import {addProject} from '@/composables/project/add-project';
+import {importProject} from '@/composables/project/import-project';
 import {utilsService} from '@/services/utilities/utils-service';
 import {webService} from '@/services/web-service';
 import {notificationService} from '@/services/notification-service';

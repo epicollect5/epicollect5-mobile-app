@@ -66,11 +66,11 @@ vi.mock('@/models/project-model.js', () => ({
     }
 }));
 
-vi.mock('@/use/auth/show-modal-login', () => ({
+vi.mock('@/composables/auth/show-modal-login', () => ({
     showModalLogin: vi.fn()
 }));
 
-vi.mock('@/use/auth/logout', () => ({
+vi.mock('@/composables/auth/logout', () => ({
     logout: vi.fn()
 }));
 
@@ -104,7 +104,7 @@ describe('addProject', () => {
             return 0;
         });
 
-        ({addProject} = await import('@/use/project/add-project'));
+        ({addProject} = await import('@/composables/project/add-project'));
         ({useRootStore} = await import('@/stores/root-store'));
         ({webService} = await import('@/services/web-service'));
         ({databaseSelectService} = await import('@/services/database/database-select-service'));

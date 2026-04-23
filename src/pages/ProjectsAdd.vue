@@ -98,22 +98,22 @@
 </template>
 
 <script>
-import ListItemProjects from '@/components/ListItemProjects';
+import ListItemProjects from '@/components/lists/ListItemProjects.vue';
 import {chevronBackOutline, folderOpenOutline} from 'ionicons/icons';
 import {PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
 import {useRootStore} from '@/stores/root-store';
 import {useRouter} from 'vue-router';
-import {addProject} from '@/use/project/add-project';
-import {fetchServerProjects} from '@/use/project/fetch-server-projects';
+import {addProject} from '@/composables/project/add-project';
+import {fetchServerProjects} from '@/composables/project/fetch-server-projects';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {errorsService} from '@/services/errors-service';
 import {useBackButton} from '@ionic/vue';
 import {reactive, readonly, computed} from 'vue';
 import {FilePicker} from '@capawesome/capacitor-file-picker';
-import {importProject} from '@/use/project/import-project';
-import {bulkValidateProjects} from '@/use/project/bulk-validate-projects';
+import {importProject} from '@/composables/project/import-project';
+import {bulkValidateProjects} from '@/composables/project/bulk-validate-projects';
 
 
 export default {

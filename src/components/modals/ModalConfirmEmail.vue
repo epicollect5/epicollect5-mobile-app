@@ -74,7 +74,7 @@ import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { readonly } from 'vue';
-import HeaderModal from '@/components/HeaderModal.vue';
+import HeaderModal from '@/components/ui/HeaderModal.vue';
 import { notificationService } from '@/services/notification-service';
 import { authVerificationService } from '@/services/auth/auth-verification-service';
 import { authLoginService } from '@/services/auth/auth-login-service';

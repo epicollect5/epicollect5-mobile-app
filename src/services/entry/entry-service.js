@@ -15,7 +15,7 @@ import { entryCommonService } from '@/services/entry/entry-common-service';
 import { mediaService } from '@/services/entry/media-service';
 import { webService } from '@/services/web-service';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
-import { wasJumpEdited } from '@/use/questions/was-jump-edited';
+import { wasJumpEdited } from '@/composables/questions/was-jump-edited';
 
 export const entryService = {
     type: PARAMETERS.ENTRY,

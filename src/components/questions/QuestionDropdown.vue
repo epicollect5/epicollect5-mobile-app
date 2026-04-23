@@ -57,7 +57,7 @@ import { inject } from 'vue';
 import { PARAMETERS } from '@/config';
 import { modalController } from '@ionic/vue';
 import ModalPossibleAnswers from '@/components/modals/ModalPossibleAnswers';
-import GridQuestionWide from '@/components/GridQuestionWide';
+import GridQuestionWide from '@/components/ui/GridQuestionWide.vue';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { questionCommonService } from '@/services/entry/question-common-service';

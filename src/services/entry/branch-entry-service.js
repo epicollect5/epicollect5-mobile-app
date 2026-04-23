@@ -12,7 +12,7 @@ import {branchEntryModel} from '@/models/branch-entry-model.js';
 import {Capacitor} from '@capacitor/core';
 import {JSONTransformerService} from '@/services/utilities/json-transformer-service';
 import {webService} from '@/services/web-service';
-import {wasJumpEdited} from '@/use/questions/was-jump-edited';
+import {wasJumpEdited} from '@/composables/questions/was-jump-edited';
 
 export const branchEntryService = {
     type: PARAMETERS.BRANCH_ENTRY,

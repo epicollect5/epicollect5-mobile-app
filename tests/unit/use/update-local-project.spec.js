@@ -3,9 +3,9 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
 import { versioningService } from '@/services/utilities/versioning-service';
 import { notificationService } from '@/services/notification-service';
-import { logout } from '@/use/auth/logout';
-import { showModalLogin } from '@/use/auth/show-modal-login';
-import { updateLocalProject } from '@/use/project/update-local-project';
+import { logout } from '@/composables/auth/logout';
+import { showModalLogin } from '@/composables/auth/show-modal-login';
+import { updateLocalProject } from '@/composables/project/update-local-project';
 import { PARAMETERS } from '@/config';
 import { errorsService } from '@/services/errors-service';
 
@@ -27,8 +27,8 @@ vi.mock('@/services/notification-service', () => ({
     }
 }));
 
-vi.mock('@/use/auth/logout', () => ({ logout: vi.fn() }));
-vi.mock('@/use/auth/show-modal-login', () => ({ showModalLogin: vi.fn() }));
+vi.mock('@/composables/auth/logout', () => ({ logout: vi.fn() }));
+vi.mock('@/composables/auth/show-modal-login', () => ({ showModalLogin: vi.fn() }));
 vi.mock('@/services/errors-service', () => ({
     errorsService: { handleWebError: vi.fn() }
 }));

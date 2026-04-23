@@ -83,13 +83,13 @@ import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import HeaderModal from '@/components/HeaderModal.vue';
+import HeaderModal from '@/components/ui/HeaderModal.vue';
 import { notificationService } from '@/services/notification-service';
 import { webService } from '@/services/web-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { errorsService } from '@/services/errors-service';
-import { showModalLogin } from '@/use/auth/show-modal-login';
-import { logout } from '@/use/auth/logout';
+import { showModalLogin } from '@/composables/auth/show-modal-login';
+import { logout } from '@/composables/auth/logout';
 import { useRouter } from 'vue-router';
 import { authVerificationService } from '@/services/auth/auth-verification-service';
 

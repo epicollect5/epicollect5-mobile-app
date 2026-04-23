@@ -72,7 +72,7 @@ export async function bulkValidateProjects(zipFile) {
         }
 
         const {CapacitorZip} = await import(/* webpackChunkName: "vendor-native-zip" */ '@capgo/capacitor-zip');
-        const {validateProjectPayload} = await import(/* webpackChunkName: "native-project-validation" */ '@/use/project/validate-project-payload');
+        const {validateProjectPayload} = await import(/* webpackChunkName: "native-project-validation" */ '@/composables/project/validate-project-payload');
         tempDirPath = await tempDirsService.createTemporaryDir();
         const normalizedTempDirPath = tempDirPath.replace('file://', '');
         const sourcePath = getInputPath(zipFile);

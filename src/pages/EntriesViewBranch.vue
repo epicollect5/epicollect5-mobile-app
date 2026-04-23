@@ -111,14 +111,14 @@ import {projectModel} from '@/models/project-model.js';
 import {branchEntryModel} from '@/models/branch-entry-model.js';
 import {useRouter, useRoute} from 'vue-router';
 import {watch, reactive} from 'vue';
-import ListAnswers from '@/components/ListAnswers';
+import ListAnswers from '@/components/answers/ListAnswers.vue';
 import {useBackButton} from '@ionic/vue';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
-import ItemDividerError from '@/components/ItemDividerError.vue';
-import {cloneEntryBranch} from '@/use/entry/clone-entry-branch';
-import {fetchBranchAnswers} from '@/use/answers/fetch-branch-answers';
-import {deleteEntryBranch} from '@/use/entry/delete-entry-branch';
+import ItemDividerError from '@/components/ui/ItemDividerError.vue';
+import {cloneEntryBranch} from '@/composables/entry/clone-entry-branch';
+import {fetchBranchAnswers} from '@/composables/answers/fetch-branch-answers';
+import {deleteEntryBranch} from '@/composables/entry/delete-entry-branch';
 
 export default {
   components: {ListAnswers, ItemDividerError},

@@ -26,7 +26,7 @@ vi.mock('@/services/filesystem/temp-dirs-service', () => ({
     }
 }));
 
-vi.mock('@/use/project/import-project', () => ({
+vi.mock('@/composables/project/import-project', () => ({
     importProject: vi.fn()
 }));
 
@@ -69,11 +69,11 @@ describe('bulkImportProjects', () => {
         setActivePinia(createPinia());
         vi.spyOn(Date, 'now').mockReturnValue(12345);
 
-        ({bulkImportProjects} = await import('@/use/project/bulk-import-projects'));
+        ({bulkImportProjects} = await import('@/composables/project/bulk-import-projects'));
         ({useRootStore} = await import('@/stores/root-store'));
         ({notificationService} = await import('@/services/notification-service'));
         ({tempDirsService} = await import('@/services/filesystem/temp-dirs-service'));
-        ({importProject} = await import('@/use/project/import-project'));
+        ({importProject} = await import('@/composables/project/import-project'));
         ({CapacitorZip} = await import('@capgo/capacitor-zip'));
         ({FilePicker} = await import('@capawesome/capacitor-file-picker'));
         ({Filesystem} = await import('@capacitor/filesystem'));

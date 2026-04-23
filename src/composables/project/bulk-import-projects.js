@@ -3,7 +3,7 @@ import {STRINGS} from '@/config/strings';
 import {useRootStore} from '@/stores/root-store';
 import {notificationService} from '@/services/notification-service';
 import {tempDirsService} from '@/services/filesystem/temp-dirs-service';
-import {importProject} from '@/use/project/import-project';
+import {importProject} from '@/composables/project/import-project';
 import {Filesystem} from '@capacitor/filesystem';
 import {FilePicker} from '@capawesome/capacitor-file-picker';
 

@@ -12,9 +12,6 @@ vi.mock('@/config', () => ({
     }
 }));
 
-// Mock the modal composable to prevent it resolving the Vue component
-vi.mock('@/use/modals/use-modal-progress-export');
-
 // Mock export-service entirely since it's not under test here
 vi.mock('@/services/export-service');
 

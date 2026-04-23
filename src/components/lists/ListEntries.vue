@@ -106,10 +106,10 @@ import { reactive, computed, readonly, toRefs, inject } from 'vue';
 import { PARAMETERS } from '@/config';
 import { useRouter } from 'vue-router';
 import { format } from 'date-fns';
-import { fetchEntries } from '@/use/entries/fetch-entries.js';
+import { fetchEntries } from '@/composables/entries/fetch-entries.js';
 import { projectModel } from '@/models/project-model.js';
-import ToolbarEntriesFilters from '@/components/ToolbarEntriesFilters';
-import IconEntry from '@/components/IconEntry';
+import ToolbarEntriesFilters from '@/components/entries/ToolbarEntriesFilters.vue';
+import IconEntry from '@/components/entries/IconEntry.vue';
 
 export default {
 	components: { ToolbarEntriesFilters, IconEntry },

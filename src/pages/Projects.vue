@@ -84,13 +84,13 @@
 </template>
 
 <script>
-import ListItemProjects from '@/components/ListItemProjects';
+import ListItemProjects from '@/components/lists/ListItemProjects.vue';
 import {add, openOutline} from 'ionicons/icons';
 import {reactive, computed} from '@vue/reactivity';
 import {onMounted, onActivated, watch, onRenderTriggered} from 'vue';
 import {STRINGS} from '@/config/strings';
 import {useRootStore} from '@/stores/root-store';
-import {fetchLocalProjects} from '@/use/project/fetch-local-projects';
+import {fetchLocalProjects} from '@/composables/project/fetch-local-projects';
 import {useRouter, useRoute} from 'vue-router';
 import {DEMO_PROJECT, PARAMETERS} from '@/config';
 import {notificationService} from '@/services/notification-service';

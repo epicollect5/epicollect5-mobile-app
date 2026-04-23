@@ -1,11 +1,11 @@
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
-import { showModalLogin } from '@/use/auth/show-modal-login';
+import { showModalLogin } from '@/composables/auth/show-modal-login';
 import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
 import { versioningService } from '@/services/utilities/versioning-service';
-import { logout } from '@/use/auth/logout';
+import { logout } from '@/composables/auth/logout';
 
 
 export async function updateProject () {

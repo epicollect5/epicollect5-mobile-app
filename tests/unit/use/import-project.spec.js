@@ -138,7 +138,7 @@ describe('importProject', () => {
             return 0;
         });
 
-        ({importProject} = await import('@/use/project/import-project'));
+        ({importProject} = await import('@/composables/project/import-project'));
         ({useRootStore} = await import('@/stores/root-store'));
         ({databaseInsertService} = await import('@/services/database/database-insert-service'));
         ({databaseSelectService} = await import('@/services/database/database-select-service'));

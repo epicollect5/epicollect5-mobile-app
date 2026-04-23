@@ -5,7 +5,7 @@ import {loadingController, alertController} from '@ionic/vue';
 import {PushNotifications} from '@capacitor/push-notifications';
 import {Toast} from '@capacitor/toast';
 import {Capacitor} from '@capacitor/core';
-import {useToast} from '@/use/toast';
+import {useToast} from '@/composables/toast';
 import {modalController} from '@ionic/vue';
 import ModalProgressExport from '@/components/modals/ModalProgressExport.vue';
 import {clipboardService} from '@/services/clipboard-service';

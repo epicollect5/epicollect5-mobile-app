@@ -47,7 +47,7 @@ describe('validateProjectPayload', () => {
         vi.resetModules();
         vi.clearAllMocks();
 
-        ({validateProjectPayload} = await import('@/use/project/validate-project-payload'));
+        ({validateProjectPayload} = await import('@/composables/project/validate-project-payload'));
         ({default: projectExtraService} = await import('@/services/project-extra-service'));
         ({default: projectMappingService} = await import('@/services/project-mapping-service'));
         ({errorsService} = await import('@/services/errors-service'));

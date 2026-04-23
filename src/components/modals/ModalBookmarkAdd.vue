@@ -80,7 +80,7 @@ import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import { projectModel } from '@/models/project-model.js';
-import HeaderModal from '@/components/HeaderModal.vue';
+import HeaderModal from '@/components/ui/HeaderModal.vue';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { notificationService } from '@/services/notification-service';
 
