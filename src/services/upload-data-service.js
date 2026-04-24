@@ -27,7 +27,7 @@ export const uploadDataService = {
 
     /**
      * Function to upload all entries one at a time
-     * Will first upload parent>branches>child>branches>child>branches....etc.
+     * Will first upload parent>branches>child>branches>child>branches...etc.
      * Working through the hierarchy
      *
      * When we reach the bottom, we then start syncing each entry in the database until we reach
@@ -86,7 +86,7 @@ export const uploadDataService = {
                     if (entries.length > 0) {
                         parentUuid = entries[entries.length - 1];
                     }
-                    // Select one entry that is either unsynced, or has unsynced children
+                    // Select one entry that is either unsynced or has unsynced children
                     databaseSelectService.selectOneEntry(projectRef, formRef, parentUuid, [PARAMETERS.SYNCED_CODES.UNSYNCED, PARAMETERS.SYNCED_CODES.HAS_UNSYNCED_CHILD_ENTRIES], null).then(
                         function (res) {
                             if (res.rows.length > 0) {
@@ -226,7 +226,7 @@ export const uploadDataService = {
                                                 // Upload the next branch
                                                 window.setTimeout(function () {
                                                     _uploadBranch();
-                                                }, PARAMETERS.DELAY_LONG);
+                                                }, 2 * PARAMETERS.DELAY_LONG);
                                             });
                                     }, function (response) {
 
@@ -237,7 +237,7 @@ export const uploadDataService = {
                                                 // Continue - upload the next branch
                                                 window.setTimeout(function () {
                                                     _uploadBranch();
-                                                }, PARAMETERS.DELAY_LONG);
+                                                }, 2 * PARAMETERS.DELAY_LONG);
                                             }, function (error) {
                                                 if (self.showErrors) {
                                                     // Show stopping error, resolve with errors
@@ -253,13 +253,13 @@ export const uploadDataService = {
                                 // Can't edit, so move onto next branch
                                 window.setTimeout(function () {
                                     _uploadBranch();
-                                }, PARAMETERS.DELAY_LONG);
+                                }, 2 * PARAMETERS.DELAY_LONG);
                             }
                         } else {
                             // If no more branches to upload, go back to previous entry and attempt to upload its next child
                             window.setTimeout(function () {
                                 _uploadEntry(null);
-                            }, PARAMETERS.DELAY_LONG);
+                            }, 2 * PARAMETERS.DELAY_LONG);
                         }
                     });
             }
