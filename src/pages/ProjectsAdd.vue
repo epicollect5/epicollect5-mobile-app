@@ -156,6 +156,11 @@ export default {
             readData: true// Set to true if you want the file content (base64)
           });
 
+          await notificationService.showProgressDialog(
+              STRINGS[rootStore.language].labels.wait,
+              STRINGS[rootStore.language].labels.loading_project
+          );
+
           const file = result.files[0];
 
           if (file && file.data) {
@@ -170,6 +175,7 @@ export default {
             await importProject(jsonData, router);
           }
         } catch (e) {
+          notificationService.hideProgressDialog();
           // FilePicker throws when user cancels - this is expected
           if (e?.message?.toLowerCase().includes('cancel') || e?.code === 'RESULT_CANCELED') {
             console.log('User cancelled file picker');

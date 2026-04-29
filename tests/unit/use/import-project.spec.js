@@ -25,7 +25,9 @@ vi.mock('@/services/database/database-insert-service', () => ({
 
 vi.mock('@/services/database/database-select-service', () => ({
     databaseSelectService: {
-        projectExists: vi.fn()
+        projectRefExists: vi.fn(),
+        projectNameExists: vi.fn(),
+        projectSlugExists: vi.fn()
     }
 }));
 
@@ -165,7 +167,9 @@ describe('importProject', () => {
         projectMappingService.createEC5AUTOMapping.mockReturnValue(generatedMapping);
         projectMappingService.validateProjectMappingReferences.mockReturnValue(true);
 
-        databaseSelectService.projectExists.mockResolvedValue(false);
+        databaseSelectService.projectRefExists.mockResolvedValue(false);
+        databaseSelectService.projectNameExists.mockResolvedValue(false);
+        databaseSelectService.projectSlugExists.mockResolvedValue(false);
         databaseInsertService.insertProject.mockResolvedValue(true);
         projectLogoService.generateLocally.mockResolvedValue(true);
 
@@ -232,12 +236,44 @@ describe('importProject', () => {
     it('does not import a project when the project ref already exists locally', async () => {
         const payload = createBasePayload();
 
-        databaseSelectService.projectExists.mockResolvedValue(true);
+        databaseSelectService.projectRefExists.mockResolvedValue(true);
 
         const result = await importProject(payload, router);
 
         expect(result).toBe(false);
-        expect(databaseSelectService.projectExists).toHaveBeenCalledWith('a'.repeat(32));
+        expect(databaseSelectService.projectRefExists).toHaveBeenCalledWith('a'.repeat(32));
+        expect(databaseInsertService.insertProject).not.toHaveBeenCalled();
+        expect(notificationService.hideProgressDialog).toHaveBeenCalled();
+        expect(notificationService.showAlert).toHaveBeenCalledWith('Project exists');
+    });
+
+    it('does not import a project when the project name already exists locally', async () => {
+        const payload = createBasePayload();
+
+        databaseSelectService.projectNameExists.mockResolvedValue(true);
+
+        const result = await importProject(payload, router);
+
+        expect(result).toBe(false);
+        expect(databaseSelectService.projectRefExists).toHaveBeenCalledWith('a'.repeat(32));
+        expect(databaseSelectService.projectNameExists).toHaveBeenCalledWith('Test Project');
+        expect(databaseSelectService.projectSlugExists).not.toHaveBeenCalled();
+        expect(databaseInsertService.insertProject).not.toHaveBeenCalled();
+        expect(notificationService.hideProgressDialog).toHaveBeenCalled();
+        expect(notificationService.showAlert).toHaveBeenCalledWith('Project exists');
+    });
+
+    it('does not import a project when the project slug already exists locally', async () => {
+        const payload = createBasePayload();
+
+        databaseSelectService.projectSlugExists.mockResolvedValue(true);
+
+        const result = await importProject(payload, router);
+
+        expect(result).toBe(false);
+        expect(databaseSelectService.projectRefExists).toHaveBeenCalledWith('a'.repeat(32));
+        expect(databaseSelectService.projectNameExists).toHaveBeenCalledWith('Test Project');
+        expect(databaseSelectService.projectSlugExists).toHaveBeenCalledWith('test-project');
         expect(databaseInsertService.insertProject).not.toHaveBeenCalled();
         expect(notificationService.hideProgressDialog).toHaveBeenCalled();
         expect(notificationService.showAlert).toHaveBeenCalledWith('Project exists');

@@ -208,7 +208,7 @@ describe('projectJsonSanitise', () => {
             projectJsonSanitise.removeEndJumpsFromLastInput(inputs);
 
             expect(inputs[0].jumps).toEqual([{to: 'END'}]);
-            expect(inputs[1].jumps).toEqual([{to: 'next-input'}]);
+            expect(inputs[1].jumps).toEqual([]);
         });
 
         it('removes END jumps from nested last branch and group inputs on any sibling', () => {

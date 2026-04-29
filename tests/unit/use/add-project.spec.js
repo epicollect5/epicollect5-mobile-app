@@ -26,7 +26,7 @@ vi.mock('@/services/web-service', () => ({
 
 vi.mock('@/services/database/database-select-service', () => ({
     databaseSelectService: {
-        projectExists: vi.fn()
+        projectRefExists: vi.fn()
     }
 }));
 
@@ -129,7 +129,7 @@ describe('addProject', () => {
             }
         });
         projectModel.getExtraInputs.mockReturnValue([{}]);
-        databaseSelectService.projectExists.mockResolvedValue(false);
+        databaseSelectService.projectRefExists.mockResolvedValue(false);
         databaseInsertService.insertProject.mockResolvedValue(true);
         projectLogoService.downloadFromServer.mockResolvedValue(true);
     });
@@ -139,11 +139,11 @@ describe('addProject', () => {
     });
 
     it('does not insert a downloaded project when the project ref already exists locally', async () => {
-        databaseSelectService.projectExists.mockResolvedValue(true);
+        databaseSelectService.projectRefExists.mockResolvedValue(true);
 
         await addProject(project, router);
 
-        expect(databaseSelectService.projectExists).toHaveBeenCalledWith(project.ref);
+        expect(databaseSelectService.projectRefExists).toHaveBeenCalledWith(project.ref);
         expect(databaseInsertService.insertProject).not.toHaveBeenCalled();
         expect(notificationService.hideProgressDialog).toHaveBeenCalled();
         expect(notificationService.showAlert).toHaveBeenCalledWith('Project exists');

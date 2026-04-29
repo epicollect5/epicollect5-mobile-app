@@ -44,7 +44,7 @@ export async function addProject(project, router) {
                             STRINGS[rootStore.language].status_codes.ec5_133
                         );
                     } else {
-                        const exists = await databaseSelectService.projectExists(project.ref);
+                        const exists = await databaseSelectService.projectRefExists(project.ref);
 
                         if (exists) {
                             notificationService.hideProgressDialog();

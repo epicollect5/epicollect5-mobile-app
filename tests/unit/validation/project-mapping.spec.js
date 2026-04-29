@@ -57,6 +57,18 @@ describe('project_mapping validation', () => {
         expect(result.errors).toBeNull();
     });
 
+    it('accepts imported mappings with custom name, index and default flag', () => {
+        const mapping = createValidProjectMapping();
+        mapping[0].name = 'Test';
+        mapping[0].map_index = 1;
+        mapping[0].is_default = false;
+
+        const result = projectJsonValidate.isValidProjectMapping(mapping);
+
+        expect(result.isValid).toBe(true);
+        expect(result.errors).toBeNull();
+    });
+
     it('rejects reserved map_to values', () => {
         const mapping = createValidProjectMapping();
         mapping[0].forms[FORM_REF][INPUT_REF].map_to = 'ec5_uuid';

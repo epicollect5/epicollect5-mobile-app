@@ -81,6 +81,34 @@ describe('validateProjectPayload', () => {
         expect(result.projectDefinition.meta.project_mapping).toEqual([{name: 'EC5_AUTO'}]);
     });
 
+    it('preserves a valid imported project mapping', async () => {
+        const importedMapping = [
+            {
+                name: 'Test',
+                map_index: 1,
+                is_default: true,
+                forms: {}
+            }
+        ];
+
+        const result = await validateProjectPayload({
+            data: {
+                project: {
+                    ref: 'project-ref',
+                    slug: 'project-slug',
+                    name: 'Project Name'
+                }
+            },
+            meta: {
+                project_mapping: importedMapping
+            }
+        }, 'en');
+
+        expect(projectJsonValidate.isValidProjectMapping).toHaveBeenCalledWith(importedMapping, 'en');
+        expect(projectMappingService.validateProjectMappingReferences).toHaveBeenCalled();
+        expect(result.projectDefinition.meta.project_mapping).toEqual(importedMapping);
+    });
+
     it('throws a validation alert payload when schema validation fails', async () => {
         projectJsonValidate.isValidAgainstSchema.mockReturnValue({
             isValid: false,

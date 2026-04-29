@@ -12,11 +12,6 @@ import {validateProjectPayload} from '@/composables/project/validate-project-pay
 export async function importProject(file, router) {
     const rootStore = useRootStore();
 
-    await notificationService.showProgressDialog(
-        STRINGS[rootStore.language].labels.wait,
-        STRINGS[rootStore.language].labels.loading_project
-    );
-
     // Helper to finish import with delay, navigation, and toast
     const finishImport = async (refresh, markImported = false) => {
         await new Promise((resolve) => window.setTimeout(resolve, PARAMETERS.DELAY_MEDIUM));
@@ -47,9 +42,30 @@ export async function importProject(file, router) {
         projectModel.destroy();
 
         try {
-            const exists = await databaseSelectService.projectExists(project.ref);
 
-            if (exists) {
+            //bail out if project ref already in the database
+            const projectRefExists = await databaseSelectService.projectRefExists(project.ref);
+            if (projectRefExists) {
+                notificationService.hideProgressDialog();
+                await notificationService.showAlert(
+                    STRINGS[rootStore.language].status_codes.ec5_111
+                );
+                return false;
+            }
+
+            //bail out if project name already in the database
+            const projectNameExists = await databaseSelectService.projectNameExists(project.name);
+            if (projectNameExists) {
+                notificationService.hideProgressDialog();
+                await notificationService.showAlert(
+                    STRINGS[rootStore.language].status_codes.ec5_111
+                );
+                return false;
+            }
+
+            //bail out if project slug already in the database
+            const projectSlugExists = await databaseSelectService.projectSlugExists(project.slug);
+            if (projectSlugExists) {
                 notificationService.hideProgressDialog();
                 await notificationService.showAlert(
                     STRINGS[rootStore.language].status_codes.ec5_111

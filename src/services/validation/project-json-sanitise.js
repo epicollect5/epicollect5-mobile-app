@@ -103,8 +103,8 @@ export const projectJsonSanitise = {
         });
 
         const lastInput = inputsArray[inputsArray.length - 1];
-        if (lastInput.jumps && Array.isArray(lastInput.jumps)) {
-            lastInput.jumps = lastInput.jumps.filter((jump) => jump.to !== 'END');
+        if (Array.isArray(lastInput.jumps)) {
+            lastInput.jumps = [];
         }
     },
 

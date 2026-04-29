@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://epicollect.net/schemas/project/v2.2.7",
+  "$id": "https://epicollect.net/schemas/project/v2.2.8",
   "title": "Epicollect5 Project Export",
   "description": "Schema for the full Epicollect5 project envelope (JSON Schema Draft 2020-12, validated with opis/json-schema).",
   "type": "object",
@@ -44,6 +44,8 @@
         "project_mapping": {
           "type": "array",
           "description": "An array of project mapping configurations.",
+          "maxItems": 1,
+          "$comment": "Project file export/import carries at most one mapping: the current default mapping selected by the application. Server-side runtime may store additional mappings, but those are not included in the exported project file.",
           "items": {
             "$ref": "#/$defs/project_mapping"
           }
@@ -1454,8 +1456,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "Name of the mapping, e.g., 'EC5_AUTO'.",
-          "const": "EC5_AUTO"
+          "description": "Name of the mapping."
         },
         "forms": {
           "type": "object",
@@ -1469,13 +1470,11 @@
         },
         "map_index": {
           "type": "integer",
-          "description": "Mapping index.",
-          "const": 0
+          "description": "Mapping index."
         },
         "is_default": {
           "type": "boolean",
-          "description": "Indicates if this is the default mapping. For local import, always true",
-          "const": true
+          "description": "Indicates if this is the default mapping. For project file export/import, this is expected to be true."
         }
       },
       "unevaluatedProperties": false
@@ -1642,5 +1641,5 @@
       ]
     }
   },
-  "$comment": "v2.2.7 — 2024-05-15"
+  "$comment": "v2.2.8 — 2026-04-28"
 }
