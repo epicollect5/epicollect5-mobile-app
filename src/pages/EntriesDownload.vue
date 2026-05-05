@@ -285,8 +285,7 @@ export default {
 							done: resumeDownload ? formCache.processedEntries : 0
 						});
 
-						// Start downloading for this form
-						await downloadService.downloadFormEntries(formRef, {
+						const hasEntries = await downloadService.downloadFormEntries(formRef, {
 							delayMs: 3 * PARAMETERS.DELAY_LONG,
 							startUrl: resumeDownload ? formCache.startUrl : null,
 							initialTotalEntries: resumeDownload ? formCache.totalEntries : 0,
@@ -306,77 +305,74 @@ export default {
 							onPageDownloaded(currentUrl, nextUrl, progress) {
 								_rememberDownloadedUrl(formRef, currentUrl, nextUrl, progress);
 							}
-						}).then(
-							function (hasEntries) {
-								// Entries downloaded code
-								let code = 'ec5_143';
+						});
 
-								//dismiss the upload modal
-								modalController.dismiss();
+						// Entries downloaded code
+						let code = 'ec5_143';
 
-								// If no entries were found, then there are no more to download for other forms
-								if (!hasEntries) {
-									// No entries found code
-									code = 'ec5_144';
+						//dismiss the upload modal
+						modalController.dismiss();
 
-									// Is this the first form?
-									if (projectModel.getFirstFormRef() === formRef) {
-										state.noEntriesFound = true;
-									} else {
-										// Otherwise we've finished downloading entries for another form and have completed
-										state.completed = true;
-									}
-								} else {
-									// Enable the next form
-									state.enabledButtons[projectModel.getNextFormRef(formRef)] = true;
-									state.entriesDownloaded[formRef] = true;
+						// If no entries were found, then there are no more to download for other forms
+						if (!hasEntries) {
+							// No entries found code
+							code = 'ec5_144';
 
-									// Is this the last form?
-									if (projectModel.getLastFormRef() === formRef) {
-										state.completed = true;
-									}
-								}
+							// Is this the first form?
+							if (projectModel.getFirstFormRef() === formRef) {
+								state.noEntriesFound = true;
+							} else {
+								// Otherwise we've finished downloading entries for another form and have completed
+								state.completed = true;
+							}
+						} else {
+							// Enable the next form
+							state.enabledButtons[projectModel.getNextFormRef(formRef)] = true;
+							state.entriesDownloaded[formRef] = true;
 
-								_clearFormDownloadCache(formRef);
-								notificationService.showToast(STRINGS[language].status_codes[code]);
-							},
-							async function (error) {
-								const authErrors = PARAMETERS.AUTH_ERROR_CODES;
+							// Is this the last form?
+							if (projectModel.getLastFormRef() === formRef) {
+								state.completed = true;
+							}
+						}
 
-								//dismiss the upload modal
-								modalController.dismiss();
-								_syncResumeAvailability(formRef);
+						_clearFormDownloadCache(formRef);
+						notificationService.showToast(STRINGS[language].status_codes[code]);
+					} catch (error) {
+						const authErrors = PARAMETERS.AUTH_ERROR_CODES;
 
-								if (error?.cancelled) {
-									return;
-								}
+						//dismiss the upload modal
+						modalController.dismiss();
+						_syncResumeAvailability(formRef);
 
-								/*
-							 ec5_77: user is not logged in (or jwt expired)
-							 ec5_78: user is logged but cannot access the project
-							 */
+						if (error?.cancelled) {
+							return;
+						}
 
-								// Check if we have an auth error
-								if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
-									//if error code is ec5_78 it means the user is logged in but has no role in the requested project
-									if (error.data.errors[0].code !== 'ec5_78') {
-										const confirmed = await notificationService.confirmSingle(
-											STRINGS[rootStore.language].status_codes[error.data.errors[0].code]
-										);
+						/*
+						 ec5_77: user is not logged in (or jwt expired)
+						 ec5_78: user is logged but cannot access the project
+						 */
 
-										if (confirmed) {
-											//the user is not logged in or token expired,
-											//send it to login page
-											await logout();
-											showModalLogin();
-										}
-									}
-								} else {
-									// Other error
-									await errorsService.handleWebError(error);
+						// Check if we have an auth error
+						if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
+							//if error code is ec5_78 it means the user is logged in but has no role in the requested project
+							if (error.data.errors[0].code !== 'ec5_78') {
+								const confirmed = await notificationService.confirmSingle(
+									STRINGS[rootStore.language].status_codes[error.data.errors[0].code]
+								);
+
+								if (confirmed) {
+									//the user is not logged in or token expired,
+									//send it to login page
+									await logout();
+									showModalLogin();
 								}
 							}
-						);
+						} else {
+							// Other error
+							await errorsService.handleWebError(error);
+						}
 					} finally {
 						state.isFetching = false;
 					}
