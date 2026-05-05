@@ -85,11 +85,13 @@ export const notificationService = {
         });
     },
     //multiple options modal
-    async confirmMultiple(message, title, yesButton, noButton) {
+    async confirmMultiple(message, title, yesButton, noButton, yesAction, noAction) {
 
         const rootStore = useRootStore();
         const platform = (rootStore.device.platform).toLowerCase();
         const mode = platform === 'ios' ? 'ios' : 'md';
+        const confirmYesAction = yesAction || PARAMETERS.ACTIONS.ENTRY_SAVE;
+        const confirmNoAction = noAction || PARAMETERS.ACTIONS.ENTRY_QUIT;
 
         return new Promise((resolve) => {
 
@@ -104,13 +106,13 @@ export const notificationService = {
                 {
                     text: noButton,
                     handler: () => {
-                        resolve(PARAMETERS.ACTIONS.ENTRY_QUIT);
+                        resolve(confirmNoAction);
                     }
                 },
                 {
                     text: yesButton,
                     handler: () => {
-                        resolve(PARAMETERS.ACTIONS.ENTRY_SAVE);
+                        resolve(confirmYesAction);
                     }
                 }
             ];

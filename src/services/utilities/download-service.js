@@ -81,13 +81,7 @@ export const downloadService = {
                 return hasEntries;
             }
 
-            let response;
-            try {
-                response = await webService.downloadEntries(slug, formRef, url);
-            } catch (responseError) {
-                console.log('error');
-                throw responseError;
-            }
+            const response = await webService.downloadEntries(slug, formRef, url);
 
             _throwIfCancelled();
 

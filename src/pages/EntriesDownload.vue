@@ -165,8 +165,8 @@ export default {
 			}
 
 			const formCache = _getFormDownloadCache(formRef);
-			return `${formCache.processedEntries}/${formCache.totalEntries}`;
-		}
+      return `${formCache.processedEntries ?? 0}/${formCache.totalEntries ?? 0}`;
+    }
 
 		function _getFormDownloadCache(formRef) {
 			if (!state.downloadCache[formRef]) {
@@ -383,14 +383,16 @@ export default {
 						labels.resume_last_download_message,
 						labels.download_remote_entries,
 						labels.resume_last_download,
-						labels.restart_download
+						labels.restart_download,
+						PARAMETERS.ACTIONS.DOWNLOAD_RESUME,
+						PARAMETERS.ACTIONS.DOWNLOAD_RESTART
 					);
 
-					if (action === PARAMETERS.ACTIONS.ENTRY_SAVE) {
+					if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESUME) {
 						beginDownload(true);
 					}
 
-					if (action === PARAMETERS.ACTIONS.ENTRY_QUIT) {
+					if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESTART) {
 						_clearFormDownloadCache(formRef);
 						beginDownload(false);
 					}

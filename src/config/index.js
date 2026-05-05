@@ -341,7 +341,9 @@ export const PARAMETERS = {
         FILE_DELETED: 'file-deleted',
         FILE_QUEUED: 'file-queued',
         ENTRY_QUIT: 'entry-quit',
-        ENTRY_SAVE: 'entry-save'
+        ENTRY_SAVE: 'entry-save',
+        DOWNLOAD_RESUME: 'download-resume',
+        DOWNLOAD_RESTART: 'download-restart'
     },
     SETTINGS_KEYS: {
         SERVER_URL: 'server_url',
