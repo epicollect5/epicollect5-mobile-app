@@ -43,7 +43,14 @@ describe('ModalProgressTransfer', () => {
     });
 
     it('confirms, calls onClose, and dismisses when the close button is enabled', async () => {
-        const onClose = vi.fn();
+        const calls = [];
+        const onClose = vi.fn(async () => {
+            calls.push('onClose');
+        });
+        modalController.dismiss.mockImplementationOnce(() => {
+            calls.push('dismiss');
+            return Promise.resolve();
+        });
         const wrapper = shallowMount(ModalProgressTransfer, {
             props: {
                 header: 'Downloading entries',
@@ -58,5 +65,25 @@ describe('ModalProgressTransfer', () => {
         expect(notificationService.confirmSingle).toHaveBeenCalledWith('Are you sure?');
         expect(onClose).toHaveBeenCalled();
         expect(modalController.dismiss).toHaveBeenCalledWith(null, 'cancel');
+        expect(calls).toEqual(['onClose', 'dismiss']);
+    });
+
+    it('does not call onClose or dismiss when close confirmation is cancelled', async () => {
+        notificationService.confirmSingle.mockResolvedValueOnce(false);
+        const onClose = vi.fn();
+        const wrapper = shallowMount(ModalProgressTransfer, {
+            props: {
+                header: 'Downloading entries',
+                showCloseButton: true,
+                onClose
+            }
+        });
+
+        await wrapper.vm.closeModal();
+        await flushPromises();
+
+        expect(notificationService.confirmSingle).toHaveBeenCalledWith('Are you sure?');
+        expect(onClose).not.toHaveBeenCalled();
+        expect(modalController.dismiss).not.toHaveBeenCalled();
     });
 });

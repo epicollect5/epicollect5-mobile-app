@@ -266,12 +266,8 @@ export default {
 						}
 					});
 
-					modal.onDidDismiss().then((_response) => {
-						state.isFetching = false;
-					});
-					state.isFetching = true;
-					return modal.present();
-				}
+						return modal.present();
+					}
 
 				const beginDownload = (resumeDownload = false) => {
 					state.wasAttemptedDownload = true;
@@ -280,6 +276,7 @@ export default {
 
 				const startDownload = (resumeDownload = false) => {
 					const formCache = _getFormDownloadCache(formRef);
+					state.isFetching = true;
 					_showModalUploadProgress({
 						total: resumeDownload ? formCache.totalEntries : 0,
 						done: resumeDownload ? formCache.processedEntries : 0
@@ -287,7 +284,7 @@ export default {
 
 					// Start downloading for this form
 					downloadService.downloadFormEntries(formRef, {
-						delayMs: 2 * PARAMETERS.DELAY_LONG,
+						delayMs: 3 * PARAMETERS.DELAY_LONG,
 						startUrl: resumeDownload ? formCache.startUrl : null,
 						initialTotalEntries: resumeDownload ? formCache.totalEntries : 0,
 						initialEntryNumber: resumeDownload ? formCache.processedEntries : 0,
@@ -295,7 +292,7 @@ export default {
 							return downloadCancelled;
 						},
 						shouldSkipUrl(url) {
-							return Boolean(formCache.urls[url]);
+							return Object.prototype.hasOwnProperty.call(formCache.urls, url);
 						},
 						getCachedNextUrl(url) {
 							return formCache.urls[url] || null;
@@ -376,7 +373,9 @@ export default {
 								await errorsService.handleWebError(error);
 							}
 						}
-					);
+					).finally(function () {
+						state.isFetching = false;
+					});
 				};
 
 				const handleResumePrompt = async () => {
@@ -397,12 +396,16 @@ export default {
 					}
 				};
 
+				// Warn user
+				if (state.isFetching) {
+					return;
+				}
+
 				if (!shouldResume && state.resumeAvailable[formRef]) {
 					handleResumePrompt();
 					return;
 				}
 
-				// Warn user
 				if (state.showWarning && !shouldResume) {
 					notificationService
 						.confirmSingle(labels.download_warning, labels.download_remote_entries)

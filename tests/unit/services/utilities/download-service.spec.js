@@ -173,6 +173,36 @@ describe('downloadService.downloadFormEntries', () => {
         });
     });
 
+    it('returns true when earlier pages had entries and the last page is empty', async () => {
+        webService.downloadEntries
+            .mockResolvedValueOnce(makeResponse('page-1', [{ uuid: 'entry-1' }], 'page-2', 1))
+            .mockResolvedValueOnce(makeResponse('page-2', [], null, 1));
+
+        const downloadPromise = downloadService.downloadFormEntries('form-ref', {
+            delayMs: 2000
+        });
+
+        await flushPromises();
+        await vi.advanceTimersByTimeAsync(2000);
+
+        await expect(downloadPromise).resolves.toBe(true);
+        expect(databaseInsertService.insertEntries).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not re-download a cached terminal URL when resuming completed progress', async () => {
+        const hasEntries = await downloadService.downloadFormEntries('form-ref', {
+            startUrl: 'page-1',
+            initialTotalEntries: 1,
+            initialEntryNumber: 1,
+            shouldSkipUrl: (url) => url === 'page-1',
+            getCachedNextUrl: () => null
+        });
+
+        expect(hasEntries).toBe(true);
+        expect(webService.downloadEntries).not.toHaveBeenCalled();
+        expect(databaseInsertService.insertEntries).not.toHaveBeenCalled();
+    });
+
     it('does not mark a page as downloaded when the request fails', async () => {
         const onPageDownloaded = vi.fn();
         const error = { status: 429 };
@@ -208,6 +238,32 @@ describe('downloadService.downloadFormEntries', () => {
         await vi.advanceTimersByTimeAsync(100);
 
         await cancellationExpectation;
+        expect(webService.downloadEntries).toHaveBeenCalledTimes(1);
+    });
+
+    it('records the page checkpoint before honoring cancellation after a committed insert', async () => {
+        let cancelled = false;
+        const onPageDownloaded = vi.fn();
+
+        webService.downloadEntries.mockResolvedValueOnce(makeResponse('page-1', [{ uuid: 'entry-1' }], 'page-2', 2));
+        databaseInsertService.insertEntries.mockImplementationOnce(() => {
+            cancelled = true;
+            return Promise.resolve();
+        });
+
+        await expect(downloadService.downloadFormEntries('form-ref', {
+            delayMs: 2000,
+            isCancelled: () => cancelled,
+            onPageDownloaded
+        })).rejects.toMatchObject({
+            cancelled: true
+        });
+
+        expect(onPageDownloaded).toHaveBeenCalledWith('page-1', 'page-2', {
+            totalEntries: 2,
+            processedEntries: 1
+        });
+        expect(notificationService.setProgressTransfer).toHaveBeenLastCalledWith({ total: 2, done: 1 });
         expect(webService.downloadEntries).toHaveBeenCalledTimes(1);
     });
 });

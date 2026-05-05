@@ -14,7 +14,7 @@ export const downloadService = {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
-        const delayMs = options.delayMs ?? 2000;
+        const delayMs = options.delayMs ?? 3 * PARAMETERS.DELAY_LONG;
 
         // Default error object
         const errorObj = {
@@ -29,6 +29,7 @@ export const downloadService = {
         let totalEntries = options.initialTotalEntries ?? 0;
         let entryNumber = options.initialEntryNumber ?? 0;
         let url = options.startUrl;
+        let hasEntries = entryNumber > 0;
         const cancellationError = {
             cancelled: true
         };
@@ -76,6 +77,8 @@ export const downloadService = {
                     url = cachedNextUrl;
                     continue;
                 }
+
+                return hasEntries;
             }
 
             let response;
@@ -104,8 +107,6 @@ export const downloadService = {
                 });
             }
 
-            let hasEntries = false;
-
             // Do we have any entries?
             if (entries.length > 0) {
 
@@ -120,7 +121,6 @@ export const downloadService = {
 
                 _throwIfCancelled();
                 await databaseInsertService.insertEntries(flattenedEntries, PARAMETERS.SYNCED_CODES.SYNCED);
-                _throwIfCancelled();
 
                 entryNumber += entries.length;
 
@@ -133,6 +133,8 @@ export const downloadService = {
                         processedEntries: entryNumber
                     });
                 }
+
+                _throwIfCancelled();
 
                 // Check if we have any more entries
                 // Use the nextUrl to download the next set

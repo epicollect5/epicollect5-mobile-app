@@ -82,7 +82,7 @@ export default {
 
 				if (confirmed) {
 					if (props.onClose) {
-						props.onClose();
+						await props.onClose();
 					}
 					await modalController.dismiss(null, 'cancel');
 				}
