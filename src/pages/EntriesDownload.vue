@@ -122,6 +122,7 @@ export default {
 			showWarning: true,
 			wasAttemptedDownload: false,
 			isFetching: false,
+			promptOpen: false,
 			downloadCache: {}
 		});
 
@@ -263,8 +264,8 @@ export default {
 							onClose() {
 								downloadCancelled = true;
 							}
-						}
-					});
+							}
+						});
 
 						return modal.present();
 					}
@@ -274,134 +275,143 @@ export default {
 					startDownload(resumeDownload);
 				};
 
-				const startDownload = (resumeDownload = false) => {
+				const startDownload = async (resumeDownload = false) => {
 					const formCache = _getFormDownloadCache(formRef);
 					state.isFetching = true;
-					_showModalUploadProgress({
-						total: resumeDownload ? formCache.totalEntries : 0,
-						done: resumeDownload ? formCache.processedEntries : 0
-					});
 
-					// Start downloading for this form
-					downloadService.downloadFormEntries(formRef, {
-						delayMs: 3 * PARAMETERS.DELAY_LONG,
-						startUrl: resumeDownload ? formCache.startUrl : null,
-						initialTotalEntries: resumeDownload ? formCache.totalEntries : 0,
-						initialEntryNumber: resumeDownload ? formCache.processedEntries : 0,
-						isCancelled() {
-							return downloadCancelled;
-						},
-						shouldSkipUrl(url) {
-							return Object.prototype.hasOwnProperty.call(formCache.urls, url);
-						},
-						getCachedNextUrl(url) {
-							return formCache.urls[url] || null;
-						},
-						onProgress(progress) {
-							_updateStoredProgress(formRef, progress);
-						},
-						onPageDownloaded(currentUrl, nextUrl, progress) {
-							_rememberDownloadedUrl(formRef, currentUrl, nextUrl, progress);
-						}
-					}).then(
-						function (hasEntries) {
-							// Entries downloaded code
-							let code = 'ec5_143';
+					try {
+						await _showModalUploadProgress({
+							total: resumeDownload ? formCache.totalEntries : 0,
+							done: resumeDownload ? formCache.processedEntries : 0
+						});
 
-							//dismiss the upload modal
-							modalController.dismiss();
+						// Start downloading for this form
+						await downloadService.downloadFormEntries(formRef, {
+							delayMs: 3 * PARAMETERS.DELAY_LONG,
+							startUrl: resumeDownload ? formCache.startUrl : null,
+							initialTotalEntries: resumeDownload ? formCache.totalEntries : 0,
+							initialEntryNumber: resumeDownload ? formCache.processedEntries : 0,
+							isCancelled() {
+								return downloadCancelled;
+							},
+							shouldSkipUrl(url) {
+								return Object.prototype.hasOwnProperty.call(formCache.urls, url);
+							},
+							getCachedNextUrl(url) {
+								return formCache.urls[url] || null;
+							},
+							onProgress(progress) {
+								_updateStoredProgress(formRef, progress);
+							},
+							onPageDownloaded(currentUrl, nextUrl, progress) {
+								_rememberDownloadedUrl(formRef, currentUrl, nextUrl, progress);
+							}
+						}).then(
+							function (hasEntries) {
+								// Entries downloaded code
+								let code = 'ec5_143';
 
-							// If no entries were found, then there are no more to download for other forms
-							if (!hasEntries) {
-								// No entries found code
-								code = 'ec5_144';
+								//dismiss the upload modal
+								modalController.dismiss();
 
-								// Is this the first form?
-								if (projectModel.getFirstFormRef() === formRef) {
-									state.noEntriesFound = true;
+								// If no entries were found, then there are no more to download for other forms
+								if (!hasEntries) {
+									// No entries found code
+									code = 'ec5_144';
+
+									// Is this the first form?
+									if (projectModel.getFirstFormRef() === formRef) {
+										state.noEntriesFound = true;
+									} else {
+										// Otherwise we've finished downloading entries for another form and have completed
+										state.completed = true;
+									}
 								} else {
-									// Otherwise we've finished downloading entries for another form and have completed
-									state.completed = true;
-								}
-							} else {
-								// Enable the next form
-								state.enabledButtons[projectModel.getNextFormRef(formRef)] = true;
-								state.entriesDownloaded[formRef] = true;
+									// Enable the next form
+									state.enabledButtons[projectModel.getNextFormRef(formRef)] = true;
+									state.entriesDownloaded[formRef] = true;
 
-								// Is this the last form?
-								if (projectModel.getLastFormRef() === formRef) {
-									state.completed = true;
-								}
-							}
-
-							_clearFormDownloadCache(formRef);
-							notificationService.showToast(STRINGS[language].status_codes[code]);
-						},
-						async function (error) {
-							const authErrors = PARAMETERS.AUTH_ERROR_CODES;
-
-							//dismiss the upload modal
-							modalController.dismiss();
-							_syncResumeAvailability(formRef);
-
-							if (error?.cancelled) {
-								return;
-							}
-
-							/*
-						 ec5_77: user is not logged in (or jwt expired)
-						 ec5_78: user is logged but cannot access the project
-						 */
-
-							// Check if we have an auth error
-							if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
-								//if error code is ec5_78 it means the user is logged in but has no role in the requested project
-								if (error.data.errors[0].code !== 'ec5_78') {
-									const confirmed = await notificationService.confirmSingle(
-										STRINGS[rootStore.language].status_codes[error.data.errors[0].code]
-									);
-
-									if (confirmed) {
-										//the user is not logged in or token expired,
-										//send it to login page
-										await logout();
-										showModalLogin();
+									// Is this the last form?
+									if (projectModel.getLastFormRef() === formRef) {
+										state.completed = true;
 									}
 								}
-							} else {
-								// Other error
-								await errorsService.handleWebError(error);
+
+								_clearFormDownloadCache(formRef);
+								notificationService.showToast(STRINGS[language].status_codes[code]);
+							},
+							async function (error) {
+								const authErrors = PARAMETERS.AUTH_ERROR_CODES;
+
+								//dismiss the upload modal
+								modalController.dismiss();
+								_syncResumeAvailability(formRef);
+
+								if (error?.cancelled) {
+									return;
+								}
+
+								/*
+							 ec5_77: user is not logged in (or jwt expired)
+							 ec5_78: user is logged but cannot access the project
+							 */
+
+								// Check if we have an auth error
+								if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
+									//if error code is ec5_78 it means the user is logged in but has no role in the requested project
+									if (error.data.errors[0].code !== 'ec5_78') {
+										const confirmed = await notificationService.confirmSingle(
+											STRINGS[rootStore.language].status_codes[error.data.errors[0].code]
+										);
+
+										if (confirmed) {
+											//the user is not logged in or token expired,
+											//send it to login page
+											await logout();
+											showModalLogin();
+										}
+									}
+								} else {
+									// Other error
+									await errorsService.handleWebError(error);
+								}
 							}
-						}
-					).finally(function () {
+						);
+					} finally {
 						state.isFetching = false;
-					});
-				};
-
-				const handleResumePrompt = async () => {
-					const action = await notificationService.confirmMultiple(
-						labels.resume_last_download_message,
-						labels.download_remote_entries,
-						labels.resume_last_download,
-						labels.restart_download,
-						PARAMETERS.ACTIONS.DOWNLOAD_RESUME,
-						PARAMETERS.ACTIONS.DOWNLOAD_RESTART
-					);
-
-					if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESUME) {
-						beginDownload(true);
 					}
+					};
 
-					if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESTART) {
-						_clearFormDownloadCache(formRef);
-						beginDownload(false);
+					const handleResumePrompt = async () => {
+						state.promptOpen = true;
+
+						try {
+							const action = await notificationService.confirmMultiple(
+								labels.resume_last_download_message,
+								labels.download_remote_entries,
+								labels.resume_last_download,
+								labels.restart_download,
+								PARAMETERS.ACTIONS.DOWNLOAD_RESUME,
+								PARAMETERS.ACTIONS.DOWNLOAD_RESTART
+							);
+
+							if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESUME) {
+								beginDownload(true);
+							}
+
+							if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESTART) {
+								_clearFormDownloadCache(formRef);
+								beginDownload(false);
+							}
+						} finally {
+							state.promptOpen = false;
+						}
+					};
+
+					// Warn user
+					if (state.isFetching || state.promptOpen) {
+						return;
 					}
-				};
-
-				// Warn user
-				if (state.isFetching) {
-					return;
-				}
 
 				if (!shouldResume && state.resumeAvailable[formRef]) {
 					handleResumePrompt();

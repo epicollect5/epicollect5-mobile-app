@@ -108,6 +108,7 @@ export const databaseInsertService = {
                 console.log('*** ' + query + '--------------------***');
                 console.log(dbError);
                 reject(dbError);
+                return true;
             }
 
             dbStore.db.transaction(function (tx) {

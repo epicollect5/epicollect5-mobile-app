@@ -86,8 +86,9 @@ describe('databaseInsertService.insertEntries', () => {
 
     it('rejects when a statement reports an error', async () => {
         const error = new Error('insert failed');
+        let statementErrorResult;
         const executeSql = vi.fn((query, params, success, onError) => {
-            onError({}, error);
+            statementErrorResult = onError({}, error);
         });
         const transaction = vi.fn((work) => {
             work({ executeSql });
@@ -102,5 +103,6 @@ describe('databaseInsertService.insertEntries', () => {
         await expect(databaseInsertService.insertEntries([
             makeEntry('entry-1')
         ], 1)).rejects.toBe(error);
+        expect(statementErrorResult).toBe(true);
     });
 });
