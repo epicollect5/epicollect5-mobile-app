@@ -304,7 +304,7 @@ export const PARAMETERS = {
         NOT_FOUND: 'not-found'
     },
 
-    ENTRIES_REMOTE_PER_PAGE: 50,//this for the remote entries download
+    ENTRIES_REMOTE_PER_PAGE: 250,//this for the remote entries download
     ENTRIES_PER_PAGE: 25,//Entries
     ANSWERS_PER_PAGE: 25,//EntriesView
     POSSIBLE_ANSWERS_PER_PAGE: 25,

@@ -7,7 +7,7 @@
 
 		<template #actions-end>
 			<!-- imp: Added only as spacers to center project name -->
-			<ion-button disabled="true">
+			<ion-button disabled>
 				<ion-icon>
 				</ion-icon>
 			</ion-button>
@@ -53,6 +53,29 @@
 							></ion-icon>
 							&nbsp;{{ form.name }}
 						</ion-button>
+						<ion-grid class="download-progress-grid">
+							<ion-row>
+								<ion-col size="6">
+									<span class="download-progress-value">
+										{{ labels.download_progress }}: {{ getDownloadProgressLabel(form.formRef) }}
+									</span>
+								</ion-col>
+								<ion-col
+									size="6"
+									class="download-progress-action"
+								>
+									<ion-button
+										@click="clearDownloadProgress(form.formRef)"
+										:disabled="state.isFetching || !hasDownloadProgress(form.formRef)"
+										size="small"
+										fill="clear"
+										color="tertiary"
+									>
+										{{ labels.clear_download_progress }}
+									</ion-button>
+								</ion-col>
+							</ion-row>
+						</ion-grid>
 					</div>
 				</ion-item>
 			</ion-list>
@@ -71,13 +94,14 @@ import { useRouter } from 'vue-router';
 import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import ModalProgressTransfer from '@/components/modals/ModalProgressTransfer';
-import { modalController } from '@ionic/vue';
+import { modalController, onIonViewWillEnter, onIonViewWillLeave } from '@ionic/vue';
 import { showModalLogin } from '@/use/auth/show-modal-login';
 import { useBackButton } from '@ionic/vue';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { errorsService } from '@/services/errors-service';
 import { downloadService } from '@/services/utilities/download-service';
+import { entriesDownloadProgressService } from '@/services/utilities/entries-download-progress-service';
 import { logout } from '@/use/auth/logout';
 
 export default {
@@ -94,9 +118,11 @@ export default {
 			noEntriesFound: false,
 			enabledButtons: [],
 			entriesDownloaded: [],
+			resumeAvailable: [],
 			showWarning: true,
 			wasAttemptedDownload: false,
-			isFetching: false
+			isFetching: false,
+			downloadCache: {}
 		});
 
 		//get markup to show project logo in page header
@@ -115,7 +141,84 @@ export default {
       });
 		}
 
+		function _persistFormDownloadCache(formRef) {
+			entriesDownloadProgressService.save(projectModel.getProjectRef(), formRef, state.downloadCache[formRef]);
+		}
+
+		function _loadFormDownloadCache(formRef) {
+			return entriesDownloadProgressService.load(projectModel.getProjectRef(), formRef);
+		}
+
+		function _syncResumeAvailability(formRef) {
+			const formCache = _getFormDownloadCache(formRef);
+			state.resumeAvailable[formRef] = Object.keys(formCache.urls).length > 0;
+		}
+
+		function _hasFormDownloadProgress(formRef) {
+			const formCache = _getFormDownloadCache(formRef);
+			return Boolean(formCache.updatedAt || formCache.processedEntries || formCache.totalEntries || Object.keys(formCache.urls).length > 0);
+		}
+
+		function _getFormDownloadProgressLabel(formRef) {
+			if (!_hasFormDownloadProgress(formRef)) {
+				return '-/-';
+			}
+
+			const formCache = _getFormDownloadCache(formRef);
+			return `${formCache.processedEntries}/${formCache.totalEntries}`;
+		}
+
+		function _getFormDownloadCache(formRef) {
+			if (!state.downloadCache[formRef]) {
+				state.downloadCache[formRef] = _loadFormDownloadCache(formRef);
+			}
+
+			return state.downloadCache[formRef];
+		}
+
+		function _rememberDownloadedUrl(formRef, currentUrl, nextUrl, progress) {
+			if (!currentUrl) {
+				return;
+			}
+
+			const formCache = _getFormDownloadCache(formRef);
+			formCache.startUrl = formCache.startUrl || currentUrl;
+			formCache.urls[currentUrl] = nextUrl || null;
+			formCache.totalEntries = progress?.totalEntries ?? formCache.totalEntries;
+			formCache.processedEntries = progress?.processedEntries ?? formCache.processedEntries;
+			formCache.updatedAt = Date.now();
+			_persistFormDownloadCache(formRef);
+			_syncResumeAvailability(formRef);
+		}
+
+		function _updateStoredProgress(formRef, progress) {
+			const formCache = _getFormDownloadCache(formRef);
+			formCache.totalEntries = progress?.totalEntries ?? formCache.totalEntries;
+			formCache.processedEntries = progress?.processedEntries ?? formCache.processedEntries;
+			formCache.updatedAt = Date.now();
+			_persistFormDownloadCache(formRef);
+		}
+
+		function _clearFormDownloadCache(formRef) {
+			delete state.downloadCache[formRef];
+			entriesDownloadProgressService.clear(projectModel.getProjectRef(), formRef);
+			state.resumeAvailable[formRef] = false;
+		}
+
 		const methods = {
+			hasDownloadProgress(formRef) {
+				return _hasFormDownloadProgress(formRef);
+			},
+			getDownloadProgressLabel(formRef) {
+				return _getFormDownloadProgressLabel(formRef);
+			},
+			async clearDownloadProgress(formRef) {
+				const confirmed = await notificationService.confirmSingle(labels.are_you_sure, labels.clear_download_progress);
+
+				if (confirmed) {
+					_clearFormDownloadCache(formRef);
+				}
+			},
 			goBack() {
 				const currentRouteName = router.currentRoute.value.name;
 				if (!state.wasAttemptedDownload) {
@@ -144,47 +247,66 @@ export default {
 					});
 				}
 			},
-			downloadEntries(formRef) {
-				async function _showModalUploadProgress() {
-					rootStore.progressTransfer = { total: 0, done: 0 };
+			downloadEntries(formRef, shouldResume = false) {
+				let downloadCancelled = false;
+
+				async function _showModalUploadProgress(progress = { total: 0, done: 0 }) {
+					rootStore.progressTransfer = progress;
 					const modal = await modalController.create({
 						cssClass: 'modal-progress-transfer',
 						component: ModalProgressTransfer,
 						showBackdrop: true,
 						backdropDismiss: false,
 						componentProps: {
-							header: labels.downloading_entries
+							header: labels.downloading_entries,
+							showCloseButton: true,
+							onClose() {
+								downloadCancelled = true;
+							}
 						}
 					});
 
-					modal.onDidDismiss().then((response) => {
+					modal.onDidDismiss().then((_response) => {
 						state.isFetching = false;
 					});
 					state.isFetching = true;
 					return modal.present();
 				}
 
-				// Warn user
-				if (state.showWarning) {
-					notificationService
-						.confirmSingle(labels.download_warning, labels.download_remote_entries)
-						.then(function (result) {
-							// If ok was selected, download
-							if (result) {
-								state.showWarning = false;
-								state.wasAttemptedDownload = true;
-								startDownload();
-							}
-						});
-				} else {
-					startDownload();
-				}
+				const beginDownload = (resumeDownload = false) => {
+					state.wasAttemptedDownload = true;
+					startDownload(resumeDownload);
+				};
 
-				function startDownload() {
-					_showModalUploadProgress();
+				const startDownload = (resumeDownload = false) => {
+					const formCache = _getFormDownloadCache(formRef);
+					_showModalUploadProgress({
+						total: resumeDownload ? formCache.totalEntries : 0,
+						done: resumeDownload ? formCache.processedEntries : 0
+					});
 
 					// Start downloading for this form
-					downloadService.downloadFormEntries(formRef).then(
+					downloadService.downloadFormEntries(formRef, {
+						delayMs: 2 * PARAMETERS.DELAY_LONG,
+						startUrl: resumeDownload ? formCache.startUrl : null,
+						initialTotalEntries: resumeDownload ? formCache.totalEntries : 0,
+						initialEntryNumber: resumeDownload ? formCache.processedEntries : 0,
+						isCancelled() {
+							return downloadCancelled;
+						},
+						shouldSkipUrl(url) {
+							return Boolean(formCache.urls[url]);
+						},
+						getCachedNextUrl(url) {
+							return formCache.urls[url] || null;
+						},
+						onProgress(progress) {
+							_updateStoredProgress(formRef, progress);
+						},
+						onPageDownloaded(currentUrl, nextUrl, progress) {
+							_rememberDownloadedUrl(formRef, currentUrl, nextUrl, progress);
+						}
+					}).then(
 						function (hasEntries) {
 							// Entries downloaded code
 							let code = 'ec5_143';
@@ -215,6 +337,7 @@ export default {
 								}
 							}
 
+							_clearFormDownloadCache(formRef);
 							notificationService.showToast(STRINGS[language].status_codes[code]);
 						},
 						async function (error) {
@@ -222,6 +345,11 @@ export default {
 
 							//dismiss the upload modal
 							modalController.dismiss();
+							_syncResumeAvailability(formRef);
+
+							if (error?.cancelled) {
+								return;
+							}
 
 							/*
 						 ec5_77: user is not logged in (or jwt expired)
@@ -238,22 +366,70 @@ export default {
 
 									if (confirmed) {
 										//the user is not logged in or token expired,
-										//send to login page
+										//send it to login page
 										await logout();
 										showModalLogin();
 									}
 								}
 							} else {
 								// Other error
-								errorsService.handleWebError(error);
+								await errorsService.handleWebError(error);
 							}
 						}
 					);
+				};
+
+				const handleResumePrompt = async () => {
+					const action = await notificationService.confirmMultiple(
+						labels.resume_last_download_message,
+						labels.download_remote_entries,
+						labels.resume_last_download,
+						labels.restart_download
+					);
+
+					if (action === PARAMETERS.ACTIONS.ENTRY_SAVE) {
+						beginDownload(true);
+					}
+
+					if (action === PARAMETERS.ACTIONS.ENTRY_QUIT) {
+						_clearFormDownloadCache(formRef);
+						beginDownload(false);
+					}
+				};
+
+				if (!shouldResume && state.resumeAvailable[formRef]) {
+					handleResumePrompt();
+					return;
+				}
+
+				// Warn user
+				if (state.showWarning && !shouldResume) {
+					notificationService
+						.confirmSingle(labels.download_warning, labels.download_remote_entries)
+						.then(function (result) {
+							// If ok was selected, download
+							if (result) {
+								state.showWarning = false;
+								beginDownload(false);
+							}
+						});
+				} else {
+					beginDownload(shouldResume);
 				}
 			}
 		};
 
 		_getFormButtons();
+
+		onIonViewWillEnter(() => {
+			state.forms.forEach((form) => {
+				_syncResumeAvailability(form.formRef);
+			});
+		});
+
+		onIonViewWillLeave(() => {
+			state.downloadCache = {};
+		});
 
 		//back with back button (Android)
 		useBackButton(10, () => {
@@ -278,4 +454,23 @@ export default {
 <style
 	lang="scss"
 	scoped
-></style>
+>
+.download-progress-grid {
+	padding: 0;
+	width: 100%;
+}
+
+.download-progress-value {
+	display: inline-flex;
+	align-items: center;
+	height: 100%;
+	color: var(--ion-color-medium);
+	font-size: 0.875rem;
+}
+
+.download-progress-action {
+	display: flex;
+	justify-content: flex-end;
+	padding: 0;
+}
+</style>

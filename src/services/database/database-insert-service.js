@@ -50,9 +50,7 @@ export const databaseInsertService = {
         return await this.insertRows(query, params);
     },
 
-    //Function to save a complete entry
-    async insertEntry(entry, syncType) {
-        let params = [];
+    getEntryInsertQuery() {
         let query = '';
         query += 'INSERT OR REPLACE INTO entries (';
         query += 'entry_uuid, ';
@@ -70,7 +68,11 @@ export const databaseInsertService = {
         query += 'title) ';
         query += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)';
 
-        params = [
+        return query;
+    },
+
+    getEntryInsertParams(entry, syncType) {
+        return [
             entry.entryUuid,
             entry.parentEntryUuid,
             entry.projectRef,
@@ -85,8 +87,38 @@ export const databaseInsertService = {
             entry.updatedAt ? entry.updatedAt : utilsService.getISODateTime(),//updated_at
             (entry.title !== '' ? entry.title.trim() : entry.entryUuid)
         ];
+    },
+
+    //Function to save a complete entry
+    async insertEntry(entry, syncType) {
+        const query = this.getEntryInsertQuery();
+        const params = this.getEntryInsertParams(entry, syncType);
 
         return await this.insertRows(query, params);
+    },
+
+    async insertEntries(entries, syncType) {
+        const dbStore = useDBStore();
+        const query = this.getEntryInsertQuery();
+        const paramsList = entries.map((entry) => this.getEntryInsertParams(entry, syncType));
+
+        return new Promise((resolve, reject) => {
+            function _onError(tx, error) {
+                const dbError = error || tx;
+                console.log('*** ' + query + '--------------------***');
+                console.log(dbError);
+                reject(dbError);
+            }
+
+            dbStore.db.transaction(function (tx) {
+                paramsList.forEach((params) => {
+                    tx.executeSql(query, params, function () {
+                    }, _onError);
+                });
+            }, _onError, function () {
+                resolve();
+            });
+        });
     },
 
     async insertMedia(entry, files, syncType) {
