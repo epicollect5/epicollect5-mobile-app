@@ -60,6 +60,30 @@ export const downloadService = {
             }
         }
 
+        function _normalizeNextUrlProtocol(nextUrl, currentUrl) {
+            if (!PARAMETERS.DEBUG) {
+                return nextUrl;
+            }
+
+            if (!nextUrl || !currentUrl) {
+                return nextUrl;
+            }
+
+            try {
+                const nextUrlObject = new URL(nextUrl);
+                const currentUrlObject = new URL(currentUrl);
+
+                if (currentUrlObject.protocol === 'https:' && nextUrlObject.protocol === 'http:' && nextUrlObject.host === currentUrlObject.host) {
+                    nextUrlObject.protocol = 'https:';
+                    return nextUrlObject.toString();
+                }
+            } catch (_error) {
+                return nextUrl;
+            }
+
+            return nextUrl;
+        }
+
         //Update the progress counter
         function _updateProgress (entryNumber) {
             notificationService.setProgressTransfer({ total: totalEntries, done: entryNumber });
@@ -74,7 +98,7 @@ export const downloadService = {
                 const cachedNextUrl = options.getCachedNextUrl?.(url);
 
                 if (cachedNextUrl) {
-                    url = cachedNextUrl;
+                    url = _normalizeNextUrlProtocol(cachedNextUrl, url);
                     continue;
                 }
 
@@ -90,8 +114,8 @@ export const downloadService = {
             }
 
             const entries = response.data.data.entries;
-            const nextUrl = response.data.links.next;
             const currentUrl = response.config?.url || url;
+            const nextUrl = _normalizeNextUrlProtocol(response.data.links.next, currentUrl);
             totalEntries = response.data.meta.total;
 
             if (options.onProgress) {

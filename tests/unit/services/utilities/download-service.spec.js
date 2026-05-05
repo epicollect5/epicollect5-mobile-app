@@ -4,6 +4,7 @@ import { downloadService } from '@/services/utilities/download-service';
 import { webService } from '@/services/web-service';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { notificationService } from '@/services/notification-service';
+import { PARAMETERS } from '@/config';
 
 vi.mock('@/stores/root-store', () => ({
     useRootStore: vi.fn(() => ({
@@ -38,7 +39,8 @@ vi.mock('@/config', () => ({
         },
         SYNCED_CODES: {
             SYNCED: 1
-        }
+        },
+        DEBUG: 1
     }
 }));
 
@@ -98,6 +100,7 @@ describe('downloadService.downloadFormEntries', () => {
     beforeEach(() => {
         vi.useFakeTimers();
         vi.clearAllMocks();
+        PARAMETERS.DEBUG = 1;
     });
 
     afterEach(() => {
@@ -147,6 +150,63 @@ describe('downloadService.downloadFormEntries', () => {
         expect(webService.downloadEntries).toHaveBeenCalledTimes(1);
         expect(webService.downloadEntries).toHaveBeenCalledWith('project-slug', 'form-ref', 'page-2');
         expect(notificationService.setProgressTransfer).toHaveBeenLastCalledWith({ total: 2, done: 2 });
+    });
+
+    it('normalizes same-host next links to https when the current request is https', async () => {
+        const onPageDownloaded = vi.fn();
+
+        webService.downloadEntries
+            .mockResolvedValueOnce(makeResponse('https://example.com/api/entries?page=1', [{ uuid: 'entry-1' }], 'http://example.com/api/entries?page=2', 2))
+            .mockResolvedValueOnce(makeResponse('https://example.com/api/entries?page=2', [{ uuid: 'entry-2' }], null, 2));
+
+        const downloadPromise = downloadService.downloadFormEntries('form-ref', {
+            delayMs: 2000,
+            startUrl: 'https://example.com/api/entries?page=1',
+            onPageDownloaded
+        });
+
+        await flushPromises();
+        await vi.advanceTimersByTimeAsync(2000);
+        await downloadPromise;
+
+        expect(onPageDownloaded).toHaveBeenNthCalledWith(1, 'https://example.com/api/entries?page=1', 'https://example.com/api/entries?page=2', {
+            totalEntries: 2,
+            processedEntries: 1
+        });
+        expect(webService.downloadEntries).toHaveBeenNthCalledWith(2, 'project-slug', 'form-ref', 'https://example.com/api/entries?page=2');
+    });
+
+    it('normalizes cached same-host next links to https when resuming from an https URL', async () => {
+        webService.downloadEntries.mockResolvedValueOnce(makeResponse('https://example.com/api/entries?page=2', [{ uuid: 'entry-2' }], null, 2));
+
+        await downloadService.downloadFormEntries('form-ref', {
+            startUrl: 'https://example.com/api/entries?page=1',
+            initialTotalEntries: 2,
+            initialEntryNumber: 1,
+            shouldSkipUrl: (url) => url === 'https://example.com/api/entries?page=1',
+            getCachedNextUrl: () => 'http://example.com/api/entries?page=2'
+        });
+
+        expect(webService.downloadEntries).toHaveBeenCalledWith('project-slug', 'form-ref', 'https://example.com/api/entries?page=2');
+    });
+
+    it('does not normalize next links when debug mode is disabled', async () => {
+        PARAMETERS.DEBUG = 0;
+
+        webService.downloadEntries
+            .mockResolvedValueOnce(makeResponse('https://example.com/api/entries?page=1', [{ uuid: 'entry-1' }], 'http://example.com/api/entries?page=2', 2))
+            .mockResolvedValueOnce(makeResponse('http://example.com/api/entries?page=2', [{ uuid: 'entry-2' }], null, 2));
+
+        const downloadPromise = downloadService.downloadFormEntries('form-ref', {
+            delayMs: 2000,
+            startUrl: 'https://example.com/api/entries?page=1'
+        });
+
+        await flushPromises();
+        await vi.advanceTimersByTimeAsync(2000);
+        await downloadPromise;
+
+        expect(webService.downloadEntries).toHaveBeenNthCalledWith(2, 'project-slug', 'form-ref', 'http://example.com/api/entries?page=2');
     });
 
     it('reports persisted progress before and after a page is stored', async () => {
