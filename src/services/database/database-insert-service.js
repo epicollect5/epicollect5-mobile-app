@@ -4,6 +4,7 @@ import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
 import { STRINGS } from '@/config/strings';
+import { PARAMETERS } from '@/config';
 
 export const databaseInsertService = {
 
@@ -106,8 +107,9 @@ export const databaseInsertService = {
         return new Promise((resolve, reject) => {
             function _onError(tx, error) {
                 const rootStore = useRootStore();
-                const language = rootStore.language;
-                const dbError = error || new Error(STRINGS[language].status_codes.ec5_104);
+                const language = rootStore.language || PARAMETERS.DEFAULT_LANGUAGE;
+                const strings = STRINGS[language] || STRINGS[PARAMETERS.DEFAULT_LANGUAGE];
+                const dbError = error || (tx && !tx.executeSql ? tx : new Error(strings.status_codes.ec5_104));
                 console.log('*** ' + query + '--------------------***');
                 console.log(dbError);
                 reject(dbError);
