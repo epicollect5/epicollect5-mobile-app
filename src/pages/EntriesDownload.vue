@@ -142,8 +142,24 @@ export default {
       });
     }
 
+    function _resetDownloadButtonState() {
+      state.completed = false;
+      state.noEntriesFound = false;
+      state.enabledButtons = [];
+      state.entriesDownloaded = [];
+
+      state.forms.forEach((form, formIndex) => {
+        state.enabledButtons[form.formRef] = formIndex === 0;
+        state.entriesDownloaded[form.formRef] = false;
+      });
+    }
+
     function _persistFormDownloadCache(formRef) {
-      entriesDownloadProgressService.save(projectModel.getProjectRef(), formRef, state.downloadCache[formRef]);
+      try {
+        entriesDownloadProgressService.save(projectModel.getProjectRef(), formRef, state.downloadCache[formRef]);
+      } catch (error) {
+        console.warn('Failed to persist entries download progress:', error);
+      }
     }
 
     function _loadFormDownloadCache(formRef) {
@@ -382,6 +398,16 @@ export default {
           }
         };
 
+        const confirmDownloadWarning = async () => {
+          const confirmed = await notificationService.confirmSingle(labels.download_warning, labels.download_remote_entries);
+
+          if (confirmed) {
+            state.showWarning = false;
+          }
+
+          return confirmed;
+        };
+
         const handleResumePrompt = async () => {
           state.promptOpen = true;
 
@@ -400,6 +426,14 @@ export default {
             }
 
             if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESTART) {
+              if (state.showWarning) {
+                const confirmed = await confirmDownloadWarning();
+
+                if (!confirmed) {
+                  return;
+                }
+              }
+
               _clearFormDownloadCache(formRef);
               beginDownload(false);
             }
@@ -422,10 +456,8 @@ export default {
           state.promptOpen = true;
 
           try {
-            const confirmed = await notificationService.confirmSingle(labels.download_warning, labels.download_remote_entries);
             // If ok was selected, download
-            if (confirmed) {
-              state.showWarning = false;
+            if (await confirmDownloadWarning()) {
               beginDownload(false);
             }
           } finally {
@@ -440,6 +472,8 @@ export default {
     _getFormButtons();
 
     onIonViewWillEnter(() => {
+      _resetDownloadButtonState();
+
       state.forms.forEach((form) => {
         _syncResumeAvailability(form.formRef);
       });
