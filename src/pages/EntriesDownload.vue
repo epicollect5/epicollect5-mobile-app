@@ -42,7 +42,7 @@
           <div class="center-item-content-wrapper">
             <ion-button
                 @click="downloadEntries(form.formRef)"
-                :disabled="!state.enabledButtons[form.formRef] || state.entriesDownloaded[form.formRef] || state.noEntriesFound || state.completed"
+                :disabled="isDownloadDisabled(form.formRef)"
                 size="default"
                 color="secondary"
                 expand="block"
@@ -93,16 +93,9 @@ import {useRootStore} from '@/stores/root-store';
 import {useRouter} from 'vue-router';
 import {projectModel} from '@/models/project-model.js';
 import {PARAMETERS} from '@/config';
-import ModalProgressTransfer from '@/components/modals/ModalProgressTransfer';
-import {modalController, onIonViewWillEnter, onIonViewWillLeave} from '@ionic/vue';
-import {showModalLogin} from '@/use/auth/show-modal-login';
-import {useBackButton} from '@ionic/vue';
-import {notificationService} from '@/services/notification-service';
+import {onIonViewWillEnter, onIonViewWillLeave, useBackButton} from '@ionic/vue';
 import {utilsService} from '@/services/utilities/utils-service';
-import {errorsService} from '@/services/errors-service';
-import {downloadService} from '@/services/utilities/download-service';
-import {entriesDownloadProgressService} from '@/services/utilities/entries-download-progress-service';
-import {logout} from '@/use/auth/logout';
+import {entriesDownloadService} from '@/services/entries-download-service';
 
 export default {
   setup() {
@@ -142,99 +135,26 @@ export default {
       });
     }
 
-    function _resetDownloadButtonState() {
-      state.completed = false;
-      state.noEntriesFound = false;
-      state.enabledButtons = [];
-      state.entriesDownloaded = [];
-
-      state.forms.forEach((form, formIndex) => {
-        state.enabledButtons[form.formRef] = formIndex === 0;
-        state.entriesDownloaded[form.formRef] = false;
-      });
-    }
-
-    function _persistFormDownloadCache(formRef) {
-      try {
-        entriesDownloadProgressService.save(projectModel.getProjectRef(), formRef, state.downloadCache[formRef]);
-      } catch (error) {
-        console.warn('Failed to persist entries download progress:', error);
-      }
-    }
-
-    function _loadFormDownloadCache(formRef) {
-      return entriesDownloadProgressService.load(projectModel.getProjectRef(), formRef);
-    }
-
-    function _syncResumeAvailability(formRef) {
-      const formCache = _getFormDownloadCache(formRef);
-      state.resumeAvailable[formRef] = Object.keys(formCache.urls).length > 0;
-    }
-
-    function _hasFormDownloadProgress(formRef) {
-      const formCache = _getFormDownloadCache(formRef);
-      return Boolean(formCache.updatedAt || formCache.processedEntries || formCache.totalEntries || Object.keys(formCache.urls).length > 0);
-    }
-
-    function _getFormDownloadProgressLabel(formRef) {
-      if (!_hasFormDownloadProgress(formRef)) {
-        return '-/-';
-      }
-
-      const formCache = _getFormDownloadCache(formRef);
-      return `${formCache.processedEntries ?? 0}/${formCache.totalEntries ?? 0}`;
-    }
-
-    function _getFormDownloadCache(formRef) {
-      if (!state.downloadCache[formRef]) {
-        state.downloadCache[formRef] = _loadFormDownloadCache(formRef);
-      }
-
-      return state.downloadCache[formRef];
-    }
-
-    function _rememberDownloadedUrl(formRef, currentUrl, nextUrl, progress) {
-      if (!currentUrl) {
-        return;
-      }
-
-      const formCache = _getFormDownloadCache(formRef);
-      formCache.startUrl = formCache.startUrl || currentUrl;
-      formCache.urls[currentUrl] = nextUrl || null;
-      formCache.totalEntries = progress?.totalEntries ?? formCache.totalEntries;
-      formCache.processedEntries = progress?.processedEntries ?? formCache.processedEntries;
-      formCache.updatedAt = Date.now();
-      _persistFormDownloadCache(formRef);
-      _syncResumeAvailability(formRef);
-    }
-
-    function _updateStoredProgress(formRef, progress) {
-      const formCache = _getFormDownloadCache(formRef);
-      formCache.totalEntries = progress?.totalEntries ?? formCache.totalEntries;
-      formCache.processedEntries = progress?.processedEntries ?? formCache.processedEntries;
-      formCache.updatedAt = Date.now();
-      _persistFormDownloadCache(formRef);
-    }
-
-    function _clearFormDownloadCache(formRef) {
-      delete state.downloadCache[formRef];
-      entriesDownloadProgressService.clear(projectModel.getProjectRef(), formRef);
-      state.resumeAvailable[formRef] = false;
-    }
+    const entriesDownloader = entriesDownloadService.initDownloader({
+      state,
+      rootStore,
+      labels,
+      language,
+      projectModel
+    });
 
     const methods = {
       hasDownloadProgress(formRef) {
-        return _hasFormDownloadProgress(formRef);
+        return entriesDownloader.hasDownloadProgress(formRef);
       },
       getDownloadProgressLabel(formRef) {
-        return _getFormDownloadProgressLabel(formRef);
+        return entriesDownloader.getDownloadProgressLabel(formRef);
+      },
+      isDownloadDisabled(formRef) {
+        return !state.enabledButtons[formRef] || state.entriesDownloaded[formRef] || state.noEntriesFound || state.completed;
       },
       async clearDownloadProgress(formRef) {
-        const confirmed = await notificationService.confirmSingle(labels.are_you_sure, labels.clear_download_progress);
-
-        if (confirmed) {
-          _clearFormDownloadCache(formRef);
-        }
+        await entriesDownloader.clearDownloadProgress(formRef);
       },
       goBack() {
         const currentRouteName = router.currentRoute.value.name;
@@ -265,222 +185,19 @@ export default {
         }
       },
       async downloadEntries(formRef, shouldResume = false) {
-        let downloadCancelled = false;
-
-        async function _showModalUploadProgress(progress = {total: 0, done: 0}) {
-          rootStore.progressTransfer = progress;
-          const modal = await modalController.create({
-            cssClass: 'modal-progress-transfer',
-            component: ModalProgressTransfer,
-            showBackdrop: true,
-            backdropDismiss: false,
-            componentProps: {
-              header: labels.downloading_entries,
-              showCloseButton: true,
-              onClose() {
-                downloadCancelled = true;
-              }
-            }
-          });
-
-          return modal.present();
-        }
-
-        const beginDownload = (resumeDownload = false) => {
-          if (state.isFetching) {
-            return;
-          }
-
-          state.wasAttemptedDownload = true;
-          startDownload(resumeDownload);
-        };
-
-        const startDownload = async (resumeDownload = false) => {
-          const formCache = _getFormDownloadCache(formRef);
-          state.isFetching = true;
-
-          try {
-            await _showModalUploadProgress({
-              total: resumeDownload ? formCache.totalEntries : 0,
-              done: resumeDownload ? formCache.processedEntries : 0
-            });
-
-            const hasEntries = await downloadService.downloadFormEntries(formRef, {
-              delayMs: 3 * PARAMETERS.DELAY_LONG,
-              startUrl: resumeDownload ? formCache.startUrl : null,
-              initialTotalEntries: resumeDownload ? formCache.totalEntries : 0,
-              initialEntryNumber: resumeDownload ? formCache.processedEntries : 0,
-              isCancelled() {
-                return downloadCancelled;
-              },
-              shouldSkipUrl(url) {
-                return Object.prototype.hasOwnProperty.call(formCache.urls, url);
-              },
-              getCachedNextUrl(url) {
-                return formCache.urls[url] || null;
-              },
-              onProgress(progress) {
-                _updateStoredProgress(formRef, progress);
-              },
-              onPageDownloaded(currentUrl, nextUrl, progress) {
-                _rememberDownloadedUrl(formRef, currentUrl, nextUrl, progress);
-              }
-            });
-
-            // Entries downloaded code
-            let code = 'ec5_143';
-
-            //dismiss the upload modal
-            modalController.dismiss();
-
-            // If no entries were found, then there are no more to download for other forms
-            if (!hasEntries) {
-              // No entries found code
-              code = 'ec5_144';
-
-              // Is this the first form?
-              if (projectModel.getFirstFormRef() === formRef) {
-                state.noEntriesFound = true;
-              } else {
-                // Otherwise we've finished downloading entries for another form and have completed
-                state.completed = true;
-              }
-            } else {
-              // Enable the next form
-              state.enabledButtons[projectModel.getNextFormRef(formRef)] = true;
-              state.entriesDownloaded[formRef] = true;
-
-              // Is this the last form?
-              if (projectModel.getLastFormRef() === formRef) {
-                state.completed = true;
-              }
-            }
-
-            _clearFormDownloadCache(formRef);
-            notificationService.showToast(STRINGS[language].status_codes[code]);
-          } catch (error) {
-            const authErrors = PARAMETERS.AUTH_ERROR_CODES;
-
-            //dismiss the upload modal
-            modalController.dismiss();
-            _syncResumeAvailability(formRef);
-
-            if (error?.cancelled) {
-              return;
-            }
-
-            /*
-             ec5_77: user is not logged in (or jwt expired)
-             ec5_78: user is logged but cannot access the project
-             */
-
-            // Check if we have an auth error
-            if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
-              //if error code is ec5_78 it means the user is logged in but has no role in the requested project
-              if (error.data.errors[0].code !== 'ec5_78') {
-                const confirmed = await notificationService.confirmSingle(
-                    STRINGS[rootStore.language].status_codes[error.data.errors[0].code]
-                );
-
-                if (confirmed) {
-                  //the user is not logged in or token expired,
-                  //send it to login page
-                  await logout();
-                  showModalLogin();
-                }
-              }
-            } else {
-              // Other error
-              await errorsService.handleWebError(error);
-            }
-          } finally {
-            state.isFetching = false;
-          }
-        };
-
-        const confirmDownloadWarning = async () => {
-          const confirmed = await notificationService.confirmSingle(labels.download_warning, labels.download_remote_entries);
-
-          if (confirmed) {
-            state.showWarning = false;
-          }
-
-          return confirmed;
-        };
-
-        const handleResumePrompt = async () => {
-          state.promptOpen = true;
-
-          try {
-            const action = await notificationService.confirmMultiple(
-                labels.resume_last_download_message,
-                labels.download_remote_entries,
-                labels.resume_last_download,
-                labels.restart_download,
-                PARAMETERS.ACTIONS.DOWNLOAD_RESUME,
-                PARAMETERS.ACTIONS.DOWNLOAD_RESTART
-            );
-
-            if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESUME) {
-              beginDownload(true);
-            }
-
-            if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESTART) {
-              if (state.showWarning) {
-                const confirmed = await confirmDownloadWarning();
-
-                if (!confirmed) {
-                  return;
-                }
-              }
-
-              _clearFormDownloadCache(formRef);
-              beginDownload(false);
-            }
-          } finally {
-            state.promptOpen = false;
-          }
-        };
-
-        // Warn user
-        if (state.isFetching || state.promptOpen) {
-          return;
-        }
-
-        if (!shouldResume && state.resumeAvailable[formRef]) {
-          await handleResumePrompt();
-          return;
-        }
-
-        if (state.showWarning && !shouldResume) {
-          state.promptOpen = true;
-
-          try {
-            // If ok was selected, download
-            if (await confirmDownloadWarning()) {
-              beginDownload(false);
-            }
-          } finally {
-            state.promptOpen = false;
-          }
-        } else {
-          beginDownload(shouldResume);
-        }
+        await entriesDownloader.downloadEntries(formRef, shouldResume);
       }
     };
 
     _getFormButtons();
 
     onIonViewWillEnter(() => {
-      _resetDownloadButtonState();
-
-      state.forms.forEach((form) => {
-        _syncResumeAvailability(form.formRef);
-      });
+      entriesDownloader.resetDownloadButtonState();
+      entriesDownloader.syncResumeAvailabilityForForms();
     });
 
     onIonViewWillLeave(() => {
-      state.downloadCache = {};
+      entriesDownloader.clearDownloadCache();
     });
 
     //back with back button (Android)
