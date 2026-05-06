@@ -25,7 +25,14 @@ export const entriesDownloadProgressService = {
 
     load(projectRef, formRef) {
         const storageKey = _getStorageKey(projectRef, formRef);
-        const cachedValue = window.localStorage.getItem(storageKey);
+        let cachedValue = null;
+
+        try {
+            cachedValue = window.localStorage.getItem(storageKey);
+        } catch (error) {
+            console.warn('Failed to load entries download progress:', error);
+            return _createEmptyProgress();
+        }
 
         if (!cachedValue) {
             return _createEmptyProgress();
@@ -39,20 +46,34 @@ export const entriesDownloadProgressService = {
                 urls: parsedValue?.urls || {}
             };
         } catch (error) {
-            console.log('error', error);
-            window.localStorage.removeItem(storageKey);
+            console.warn('Failed to parse entries download progress:', error);
+
+            try {
+                window.localStorage.removeItem(storageKey);
+            } catch (removeError) {
+                console.warn('Failed to remove invalid entries download progress:', removeError);
+            }
+
             return _createEmptyProgress();
         }
     },
 
     save(projectRef, formRef, progress) {
-        window.localStorage.setItem(
-            _getStorageKey(projectRef, formRef),
-            JSON.stringify(progress)
-        );
+        try {
+            window.localStorage.setItem(
+                _getStorageKey(projectRef, formRef),
+                JSON.stringify(progress)
+            );
+        } catch (error) {
+            console.warn('Failed to save entries download progress:', error);
+        }
     },
 
     clear(projectRef, formRef) {
-        window.localStorage.removeItem(_getStorageKey(projectRef, formRef));
+        try {
+            window.localStorage.removeItem(_getStorageKey(projectRef, formRef));
+        } catch (error) {
+            console.warn('Failed to clear entries download progress:', error);
+        }
     }
 };
