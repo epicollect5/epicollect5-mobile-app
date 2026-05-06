@@ -3,7 +3,7 @@
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
-import STRINGS from '@/utils/strings';
+import { STRINGS } from '@/config/strings';
 
 export const databaseInsertService = {
 
