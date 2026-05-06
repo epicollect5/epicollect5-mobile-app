@@ -10,6 +10,7 @@ import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { useBookmarkStore } from '@/stores/bookmark-store';
+import { entriesDownloadProgressService } from '@/services/utilities/entries-download-progress-service';
 
 
 /**
@@ -73,6 +74,7 @@ export async function deleteProject (router) {
 
         const projectRef = projectModel.getProjectRef();
         const bookmarkStore = useBookmarkStore();
+        entriesDownloadProgressService.clearProject(projectRef);
         //if we are deleting the easter egg project, reset server url to default
         if (projectRef === PARAMETERS.EASTER_EGG.PROJECT_REF) {
             await databaseInsertService.insertSetting(PARAMETERS.SETTINGS_KEYS.SERVER_URL, PARAMETERS.DEFAULT_SERVER_URL);

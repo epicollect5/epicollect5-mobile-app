@@ -6,6 +6,8 @@ import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
 import { versioningService } from '@/services/utilities/versioning-service';
 import { logout } from '@/use/auth/logout';
+import { projectModel } from '@/models/project-model';
+import { entriesDownloadProgressService } from '@/services/utilities/entries-download-progress-service';
 
 
 export async function updateProject () {
@@ -21,6 +23,7 @@ export async function updateProject () {
 
     versioningService.updateProject().then(
         function (changeMade) {
+            entriesDownloadProgressService.clearProject(projectModel.getProjectRef());
             notificationService.hideProgressDialog(0);
 
             // If new questions have been added, notify user

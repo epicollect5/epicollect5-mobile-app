@@ -56,6 +56,30 @@ describe('entriesDownloadProgressService', () => {
         });
     });
 
+    it('clears all persisted progress for a project', () => {
+        entriesDownloadProgressService.save('project-ref', 'form-a', {
+            urls: {
+                'page-1': 'page-2'
+            }
+        });
+        entriesDownloadProgressService.save('project-ref', 'form-b', {
+            urls: {
+                'page-3': 'page-4'
+            }
+        });
+        entriesDownloadProgressService.save('other-project-ref', 'form-a', {
+            urls: {
+                'page-5': 'page-6'
+            }
+        });
+
+        entriesDownloadProgressService.clearProject('project-ref');
+
+        expect(window.localStorage.getItem('entries-download-progress:project-ref:form-a')).toBeNull();
+        expect(window.localStorage.getItem('entries-download-progress:project-ref:form-b')).toBeNull();
+        expect(window.localStorage.getItem('entries-download-progress:other-project-ref:form-a')).not.toBeNull();
+    });
+
     it('removes malformed persisted progress and returns empty progress', () => {
         window.localStorage.setItem('entries-download-progress:project-ref:form-ref', 'not-json');
 

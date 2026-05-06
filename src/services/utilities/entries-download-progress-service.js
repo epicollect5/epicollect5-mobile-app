@@ -14,6 +14,14 @@ function _createEmptyProgress() {
     };
 }
 
+function _removeStorageKey(storageKey, warningMessage) {
+    try {
+        window.localStorage.removeItem(storageKey);
+    } catch (error) {
+        console.warn(warningMessage, error);
+    }
+}
+
 export const entriesDownloadProgressService = {
     getStorageKey(projectRef, formRef) {
         return _getStorageKey(projectRef, formRef);
@@ -47,12 +55,7 @@ export const entriesDownloadProgressService = {
             };
         } catch (error) {
             console.warn('Failed to parse entries download progress:', error);
-
-            try {
-                window.localStorage.removeItem(storageKey);
-            } catch (removeError) {
-                console.warn('Failed to remove invalid entries download progress:', removeError);
-            }
+            _removeStorageKey(storageKey, 'Failed to remove invalid entries download progress:');
 
             return _createEmptyProgress();
         }
@@ -70,10 +73,28 @@ export const entriesDownloadProgressService = {
     },
 
     clear(projectRef, formRef) {
+        _removeStorageKey(_getStorageKey(projectRef, formRef), 'Failed to clear entries download progress:');
+    },
+
+    clearProject(projectRef) {
+        const storageKeyPrefix = `${STORAGE_KEY_PREFIX}:${projectRef}:`;
+        const storageKeys = [];
+
         try {
-            window.localStorage.removeItem(_getStorageKey(projectRef, formRef));
+            for (let index = 0; index < window.localStorage.length; index += 1) {
+                const storageKey = window.localStorage.key(index);
+
+                if (storageKey?.startsWith(storageKeyPrefix)) {
+                    storageKeys.push(storageKey);
+                }
+            }
         } catch (error) {
-            console.warn('Failed to clear entries download progress:', error);
+            console.warn('Failed to list entries download progress keys:', error);
+            return;
         }
+
+        storageKeys.forEach((storageKey) => {
+            _removeStorageKey(storageKey, 'Failed to clear project entries download progress:');
+        });
     }
 };
