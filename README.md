@@ -144,6 +144,10 @@ The build process is configured in `vue.config.js` and behaves differently based
 ## Configuration
  - iOS needs a xcconfig file with the REVERSED_CLIENT_ID for Google Sign In.
 
+## PR Reviews
+
+All reviews MUST follow guidelines in `.github/review-guidelines.md`
+
 ## Forking
 
 We provide this software as is, under MIT license, for the benefit and use of the community, however we are unable to provide support for its use or modification.
