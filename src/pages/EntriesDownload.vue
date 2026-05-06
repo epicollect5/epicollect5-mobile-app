@@ -111,7 +111,7 @@ export default {
       noEntriesFound: false,
       enabledButtons: [],
       entriesDownloaded: [],
-      resumeAvailable: [],
+      resumeAvailable: {},
       showWarning: true,
       wasAttemptedDownload: false,
       isFetching: false,

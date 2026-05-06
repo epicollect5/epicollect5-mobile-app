@@ -3,6 +3,7 @@
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
+import STRINGS from '@/utils/strings';
 
 export const databaseInsertService = {
 
@@ -104,7 +105,9 @@ export const databaseInsertService = {
 
         return new Promise((resolve, reject) => {
             function _onError(tx, error) {
-                const dbError = error || tx;
+                const rootStore = useRootStore();
+                const language = rootStore.language;
+                const dbError = error || new Error(STRINGS[language].status_codes.ec5_104);
                 console.log('*** ' + query + '--------------------***');
                 console.log(dbError);
                 reject(dbError);
@@ -252,7 +255,7 @@ export const databaseInsertService = {
         query += 'FROM temp_branch_entries';
 
         console.log('Moving temp branches: ');
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             this.insertRows(query, []).then(() => {
                 // Now remove entries from the temporary table
                 query = 'DELETE FROM temp_branch_entries';
