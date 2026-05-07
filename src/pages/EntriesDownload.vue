@@ -57,7 +57,12 @@
               <ion-row>
                 <ion-col size="6">
 									<span class="download-progress-value">
-										{{ labels.download_progress }}: {{ getDownloadProgressLabel(form.formRef) }}
+                    <ion-icon
+                        slot="start"
+                        :icon="desktopOutline"
+                    ></ion-icon>
+                    &nbsp;
+                    {{getDownloadProgressLabel(form.formRef) }}
 									</span>
                 </ion-col>
                 <ion-col
@@ -85,7 +90,7 @@
 </template>
 
 <script>
-import {chevronBackOutline, documentText} from 'ionicons/icons';
+import {chevronBackOutline, documentText, desktopOutline} from 'ionicons/icons';
 import {reactive} from '@vue/reactivity';
 import {STRINGS} from '@/config/strings';
 
@@ -214,6 +219,7 @@ export default {
       state,
       //icons
       chevronBackOutline,
+      desktopOutline,
       documentText
     };
   }

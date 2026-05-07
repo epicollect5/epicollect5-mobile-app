@@ -1,5 +1,11 @@
 ## Release Notes
 
+### 88.9.7 - build 8897
+
+- Added entries download progress service
+- Resume interrupted downloads with per-form progress UI, resume/restart prompts.
+- Added clear-progress action and progress modal with cancel.
+
 ### 88.9.6 - build 8896
 
 - Export entries as a compressed archive for sharing
