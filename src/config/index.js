@@ -12,7 +12,7 @@ export const PARAMETERS = {
     // url production
     DEFAULT_SERVER_URL: 'https://five.epicollect.net',
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',
-    HOW_MANY_ENTRIES: 30,
+    HOW_MANY_ENTRIES: 1000,
     HOW_MANY_BRANCH_ENTRIES: 2,
     ZOOM_LEVELS: 7,
     DEFAULT_LANGUAGE: 'en',
@@ -355,16 +355,16 @@ export const PARAMETERS = {
         AUDIO: ['audio/mp4', 'audio/wav', 'video/mp4'],
         VIDEO: ['video/mp4']
     },
-    //bytes
+    //size in bytes
     PWA_UPLOAD_MAX_SIZE: {
-        PHOTO: 10000000, // 10MB
-        AUDIO: 100000000,// 100MB,
-        VIDEO: 500000000 //500MB
+        PHOTO: 5000000, // 5MB
+        AUDIO: 10000000,// 10MB,
+        VIDEO: 25000000 //25MB
     },
     PWA_FILE_ACCEPTED_FORMATS: {
         PHOTO: 'jpg or png only, max file size 10 MB, max resolution 4096 x 4096px',
-        AUDIO: 'mp4 or wav only, max file size 100 MB',
-        VIDEO: 'mp4 only, max file size 500 MB'
+        AUDIO: 'mp4 or wav only, max file size 10 MB',
+        VIDEO: 'mp4 only, max file size 25 MB'
     },
     PWA_ADD_ENTRY: 'add-entry',
     PWA_EDIT_ENTRY: 'edit-entry',

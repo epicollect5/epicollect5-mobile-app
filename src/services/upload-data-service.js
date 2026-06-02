@@ -100,9 +100,7 @@ export const uploadDataService = {
                                     // Add entry uuid to entries array, to retrieve its children later
                                     entries.push(res.rows.item(0).entry_uuid);
                                     // Upload branches for this entry
-                                    window.setTimeout(function () {
-                                        _uploadBranch();
-                                    }, 2 * PARAMETERS.DELAY_LONG);
+                                    _uploadBranch();
                                 } else {
                                     entry = JSONTransformerService.makeJsonEntry(PARAMETERS.ENTRY, res.rows.item(0));
                                     webService.uploadEntry(slug, entry).then(
@@ -112,9 +110,7 @@ export const uploadDataService = {
                                             // Add entry uuid to entries array, to retrieve its children later
                                             entries.push(res.rows.item(0).entry_uuid);
                                             // Upload branches for this entry
-                                            window.setTimeout(function () {
-                                                _uploadBranch();
-                                            }, 2 * PARAMETERS.DELAY_LONG);
+                                            _uploadBranch();
 
                                         }, async function (response) {
 
@@ -226,7 +222,7 @@ export const uploadDataService = {
                                                 // Upload the next branch
                                                 window.setTimeout(function () {
                                                     _uploadBranch();
-                                                }, 2 * PARAMETERS.DELAY_LONG);
+                                                }, PARAMETERS.DELAY_LONG);
                                             });
                                     }, function (response) {
 
@@ -237,7 +233,7 @@ export const uploadDataService = {
                                                 // Continue - upload the next branch
                                                 window.setTimeout(function () {
                                                     _uploadBranch();
-                                                }, 2 * PARAMETERS.DELAY_LONG);
+                                                }, PARAMETERS.DELAY_LONG);
                                             }, function (error) {
                                                 if (self.showErrors) {
                                                     // Show stopping error, resolve with errors
@@ -253,13 +249,13 @@ export const uploadDataService = {
                                 // Can't edit, so move onto next branch
                                 window.setTimeout(function () {
                                     _uploadBranch();
-                                }, 2 * PARAMETERS.DELAY_LONG);
+                                }, PARAMETERS.DELAY_LONG);
                             }
                         } else {
                             // If no more branches to upload, go back to previous entry and attempt to upload its next child
                             window.setTimeout(function () {
                                 _uploadEntry(null);
-                            }, 2 * PARAMETERS.DELAY_LONG);
+                            }, PARAMETERS.DELAY_LONG);
                         }
                     });
             }

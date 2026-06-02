@@ -14,8 +14,9 @@ export const databaseInsertService = {
 
             function _onError(tx, error) {
                 console.log('*** ' + query + '--------------------***');
-                console.log(error);
-                reject(error);
+                const actualError = error || tx;
+                console.log(actualError);
+                reject(actualError);
             }
 
             dbStore.db.transaction(function (tx) {

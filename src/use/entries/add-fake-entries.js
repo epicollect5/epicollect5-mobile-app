@@ -7,125 +7,114 @@ import { notificationService } from '@/services/notification-service';
 import { entryCommonService } from '@/services/entry/entry-common-service';
 import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
+import { databaseInsertService } from '@/services/database/database-insert-service';
 
-export async function addFakeEntries (params) {
-    return new Promise((resolve, reject) => {
-        const { formRef, parentEntryUuid, parentFormRef } = params;
-        const rootStore = useRootStore();
-        const language = rootStore.language;
-        const labels = STRINGS[language].labels;
+export async function addFakeEntries(params) {
+    const { formRef, parentEntryUuid, parentFormRef } = params;
+    const rootStore = useRootStore();
+    const language = rootStore.language;
+    const labels = STRINGS[language].labels;
 
-        (async () => {
+    await notificationService.showProgressDialog(labels.wait);
 
-            // Show loader
-            await notificationService.showProgressDialog(labels.wait);
+    const howManyEntries = PARAMETERS.HOW_MANY_ENTRIES;
+    const howManyBranches = PARAMETERS.HOW_MANY_BRANCH_ENTRIES;
+    const branches = Object.keys(formModel.formStructure.branch);
+    const BATCH_SIZE = 100;
+    const syncType = PARAMETERS.SYNCED_CODES.UNSYNCED;
 
-            //todo add a popup to ask how many so we do not recompile ;)
-            const howManyEntries = PARAMETERS.HOW_MANY_ENTRIES;
-            const howManyBranches = PARAMETERS.HOW_MANY_BRANCH_ENTRIES;
-            let currentBranchIndex;
-            const branches = [];
+    // Unsync parent chain once for all fake entries
+    if (parentEntryUuid) {
+        await entryService.unsyncParentEntries(projectModel.getProjectRef(), parentEntryUuid);
+    }
 
-            // Loop branches and create flat array
-            for (const [key, value] of Object.entries(formModel.formStructure.branch)) {
-                branches.push(key);
+    const batch = [];
+
+    try {
+        for (let i = 1; i <= howManyEntries; i++) {
+            entryService.setUpNew(formRef, parentEntryUuid, parentFormRef);
+            console.log(`${i}. - adding fake entry for ${entryService.entry.entryUuid}`);
+
+            if (Math.random() < 0.5) {
+                entryService.entry.createdAt = '1970-01-01T12:24:27.000Z';
+                console.warn(`${i}. - created_at is epoch for entry: ${entryService.entry.entryUuid}`);
             }
 
-            function _addFakeHierarchyEntry (i) {
-                currentBranchIndex = 0;
+            await entryCommonService.addFakeAnswers(
+                entryService.entry,
+                entryService.form.inputs.slice(0),
+                i
+            );
 
-                // Set up a new entry
-                entryService.setUpNew(formRef, parentEntryUuid, parentFormRef);
-                // Add fake answers for all questions in this entry
-                console.log(i + '. - adding fake entry for ' + entryService.entry.entryUuid);
+            for (const branchRef of branches) {
+                const branchInputs = projectModel.getBranches(formModel.formRef, branchRef);
 
-                // Randomly decide whether to override `created_at` with the epoch time
-                if (Math.random() < 0.5) { // Adjust the probability by changing `0.5`
-                    entryService.entry.createdAt = '1970-01-01T12:24:27.000Z';
-                    console.warn(
-                        `${i}. - created_at is epoch for entry: ${entryService.entry.entryUuid}`
+                for (let j = 1; j <= howManyBranches; j++) {
+                    branchEntryService.setUpNew(
+                        formModel.formRef,
+                        branchRef,
+                        entryService.entry.entryUuid
                     );
+                    console.log(`${j}. - adding fake branch for ${entryService.entry.entryUuid}`);
+
+                    if (Math.random() < 0.5) {
+                        branchEntryService.entry.createdAt = '1970-01-01T12:24:27.000Z';
+                        console.warn(`${i}. - created_at is epoch for BRANCH entry: ${branchEntryService.entry.entryUuid}`);
+                    }
+
+                    await entryCommonService.addFakeAnswers(
+                        branchEntryService.entry,
+                        branchInputs.slice(0),
+                        j
+                    );
+
+                    await branchEntryService.saveEntry(syncType);
                 }
-
-                entryCommonService
-                    .addFakeAnswers(
-                        entryService.entry,
-                        entryService.form.inputs.slice(0), //pass a copy to keep the original array intact
-                        i
-                    )
-                    .then(function () {
-                        function _addFakeBranchEntry (j) {
-                            // If we have any branches
-                            if (branches[currentBranchIndex]) {
-                                console.log(
-                                    j + '. - adding fake branch for ' + entryService.entry.entryUuid
-                                );
-                                // Set up a new entry
-                                branchEntryService.setUpNew(
-                                    formModel.formRef,
-                                    branches[currentBranchIndex],
-                                    entryService.entry.entryUuid
-                                );
-
-                                const branchInputs = projectModel.getBranches(
-                                    formModel.formRef,
-                                    branches[currentBranchIndex]
-                                );
-
-                                // Randomly decide whether to override `created_at` with the epoch time
-                                if (Math.random() < 0.5) { // Adjust the probability by changing `0.5`
-                                    branchEntryService.entry.createdAt = '1970-01-01T12:24:27.000Z';
-                                    console.warn(
-                                        `${i}. - created_at is epoch for BRANCH entry: ${branchEntryService.entry.entryUuid}`
-                                    );
-                                }
-
-                                // Add fake answers for all questions in this branch entry
-                                entryCommonService
-                                    .addFakeAnswers(
-                                        branchEntryService.entry,
-                                        branchInputs.slice(0), //pass copy to keep original array intact
-                                        j
-                                    )
-                                    .then(function () {
-                                        // Save the entry
-                                        branchEntryService.saveEntry(PARAMETERS.SYNCED_CODES.UNSYNCED);
-
-                                        if (j < howManyBranches) {
-                                            // Increment this branch entry count
-                                            j++;
-                                            // Hit this function again
-                                            _addFakeBranchEntry(j);
-                                        } else {
-                                            // Increment to the next branch
-                                            currentBranchIndex++;
-                                            // Reset branch entry count
-                                            // Hit this function again
-                                            _addFakeBranchEntry(1);
-                                        }
-                                    });
-                            } else {
-                                //Save the whole entry
-                                entryService
-                                    .saveEntry(PARAMETERS.SYNCED_CODES.UNSYNCED)
-                                    .then(function () {
-                                        if (i < howManyEntries) {
-                                            i++;
-                                            _addFakeHierarchyEntry(i);
-                                        } else {
-                                            // hide loader
-                                            notificationService.hideProgressDialog();
-                                            resolve();
-                                        }
-                                    });
-                            }
-                        }
-                        //add branch entries if any
-                        _addFakeBranchEntry(1);
-                    });
             }
-            _addFakeHierarchyEntry(1);
-        })();
-    });
 
+            // Set title as saveEntry does
+            entryCommonService.setEntryTitle(
+                projectModel.getExtraForm(entryService.entry.formRef),
+                projectModel.getExtraInputs(),
+                entryService.entry,
+                false
+            );
+
+            // Snapshot entry before next setUpNew overwrites the singleton
+            batch.push({
+                entryUuid: entryService.entry.entryUuid,
+                parentEntryUuid: entryService.entry.parentEntryUuid,
+                projectRef: entryService.entry.projectRef,
+                formRef: entryService.entry.formRef,
+                parentFormRef: entryService.entry.parentFormRef,
+                answers: entryService.entry.answers,
+                canEdit: entryService.entry.canEdit,
+                isRemote: entryService.entry.isRemote,
+                createdAt: entryService.entry.createdAt,
+                updatedAt: entryService.entry.updatedAt,
+                title: entryService.entry.title
+            });
+
+            // Flush batch in a single transaction
+            if (batch.length >= BATCH_SIZE) {
+                await databaseInsertService.insertEntries(batch, syncType);
+                batch.length = 0;
+            }
+
+            // Yield to keep UI responsive
+            if (i % 100 === 0) {
+                await new Promise((resolve) => setTimeout(resolve, 0));
+            }
+        }
+
+        // Flush remaining entries
+        if (batch.length > 0) {
+            await databaseInsertService.insertEntries(batch, syncType);
+        }
+    } catch (error) {
+        notificationService.hideProgressDialog();
+        throw error;
+    }
+
+    notificationService.hideProgressDialog();
 }
