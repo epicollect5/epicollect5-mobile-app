@@ -77,7 +77,7 @@ export const uploadDataService = {
                 if (entries.length === 0 && formRef === null) {
                     console.log('uploading next top level parent entry');
                     // Go to next top level entry upload
-                    window.setTimeout(function () {
+                    setTimeout(() => {
                         _uploadEntry(topLevelFormRef);
                     }, PARAMETERS.DELAY_EXTRA_LONG);
                 } else {
@@ -100,7 +100,7 @@ export const uploadDataService = {
                                     // Add entry uuid to entries array, to retrieve its children later
                                     entries.push(res.rows.item(0).entry_uuid);
                                     // Upload branches for this entry
-                                    window.setTimeout(function () {
+                                    setTimeout(() => {
                                         _uploadBranch();
                                     }, PARAMETERS.DELAY_MEDIUM);
                                 } else {
@@ -112,7 +112,7 @@ export const uploadDataService = {
                                             // Add entry uuid to entries array, to retrieve its children later
                                             entries.push(res.rows.item(0).entry_uuid);
                                             // Upload branches for this entry
-                                            window.setTimeout(function () {
+                                            setTimeout(() => {
                                                 _uploadBranch();
                                             }, PARAMETERS.DELAY_MEDIUM);
 
@@ -139,7 +139,7 @@ export const uploadDataService = {
                                                     function () {
                                                         _updateProgress();
                                                         // Continue - try to upload the next child
-                                                        window.setTimeout(function () {
+                                                        setTimeout(() => {
                                                             _uploadEntry(null);
                                                         }, PARAMETERS.DELAY_EXTRA_LONG);
                                                     }, function (error) {
@@ -178,7 +178,7 @@ export const uploadDataService = {
                                         // No children left to upload for this entry
                                         // Go back up the chain
                                         entries.pop();
-                                        window.setTimeout(function () {
+                                        setTimeout(() => {
                                             _uploadEntry(null);
                                         }, PARAMETERS.DELAY_EXTRA_LONG);
                                     });
@@ -224,7 +224,7 @@ export const uploadDataService = {
                                                 _updateProgress();
                                                 console.log('uploaded branch entry: ' + res.rows.item(0).entry_uuid);
                                                 // Upload the next branch
-                                                window.setTimeout(function () {
+                                                setTimeout(() => {
                                                     _uploadBranch();
                                                 }, PARAMETERS.DELAY_LONG);
                                             });
@@ -235,7 +235,7 @@ export const uploadDataService = {
                                             function () {
                                                 _updateProgress();
                                                 // Continue - upload the next branch
-                                                window.setTimeout(function () {
+                                                setTimeout(() => {
                                                     _uploadBranch();
                                                 }, PARAMETERS.DELAY_LONG);
                                             }, function (error) {
@@ -251,13 +251,13 @@ export const uploadDataService = {
                             } else {
                                 _updateProgress();
                                 // Can't edit, so move onto next branch
-                                window.setTimeout(function () {
+                                setTimeout(() => {
                                     _uploadBranch();
                                 }, PARAMETERS.DELAY_LONG);
                             }
                         } else {
                             // If no more branches to upload, go back to previous entry and attempt to upload its next child
-                            window.setTimeout(function () {
+                            setTimeout(() => {
                                 _uploadEntry(null);
                             }, PARAMETERS.DELAY_EXTRA_LONG);
                         }
