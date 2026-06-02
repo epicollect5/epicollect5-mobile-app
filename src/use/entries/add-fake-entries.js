@@ -46,6 +46,33 @@ export async function addFakeEntries(params) {
                 i
             );
 
+            // Set title as saveEntry does
+            entryCommonService.setEntryTitle(
+                projectModel.getExtraForm(entryService.entry.formRef),
+                projectModel.getExtraInputs(),
+                entryService.entry,
+                false
+            );
+
+            // Snapshot entry before next setUpNew overwrites the singleton
+            batch.push({
+                entryUuid: entryService.entry.entryUuid,
+                parentEntryUuid: entryService.entry.parentEntryUuid,
+                projectRef: entryService.entry.projectRef,
+                formRef: entryService.entry.formRef,
+                parentFormRef: entryService.entry.parentFormRef,
+                answers: entryService.entry.answers,
+                canEdit: entryService.entry.canEdit,
+                isRemote: entryService.entry.isRemote,
+                createdAt: entryService.entry.createdAt,
+                updatedAt: entryService.entry.updatedAt,
+                title: entryService.entry.title
+            });
+
+            // Flush batch in a single transaction
+            await databaseInsertService.insertEntries(batch, syncType);
+            batch.length = 0;
+
             for (const branchRef of branches) {
                 const branchInputs = projectModel.getBranches(formModel.formRef, branchRef);
 
@@ -72,35 +99,6 @@ export async function addFakeEntries(params) {
                 }
             }
 
-            // Set title as saveEntry does
-            entryCommonService.setEntryTitle(
-                projectModel.getExtraForm(entryService.entry.formRef),
-                projectModel.getExtraInputs(),
-                entryService.entry,
-                false
-            );
-
-            // Snapshot entry before next setUpNew overwrites the singleton
-            batch.push({
-                entryUuid: entryService.entry.entryUuid,
-                parentEntryUuid: entryService.entry.parentEntryUuid,
-                projectRef: entryService.entry.projectRef,
-                formRef: entryService.entry.formRef,
-                parentFormRef: entryService.entry.parentFormRef,
-                answers: entryService.entry.answers,
-                canEdit: entryService.entry.canEdit,
-                isRemote: entryService.entry.isRemote,
-                createdAt: entryService.entry.createdAt,
-                updatedAt: entryService.entry.updatedAt,
-                title: entryService.entry.title
-            });
-
-            // Flush batch in a single transaction
-            if (batch.length >= BATCH_SIZE) {
-                await databaseInsertService.insertEntries(batch, syncType);
-                batch.length = 0;
-            }
-
             // Yield to keep UI responsive
             if (i % 100 === 0) {
                 await new Promise((resolve) => setTimeout(resolve, 0));
@@ -111,6 +109,8 @@ export async function addFakeEntries(params) {
         if (batch.length > 0) {
             await databaseInsertService.insertEntries(batch, syncType);
         }
+        await databaseInsertService.moveBranchEntries();
+        await databaseInsertService.moveUniqueAnswers();
     } catch (error) {
         notificationService.hideProgressDialog();
         throw error;

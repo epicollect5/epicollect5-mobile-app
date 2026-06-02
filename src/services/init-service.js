@@ -72,7 +72,7 @@ export const initService = {
             let db = {};
 
             if (platform === PARAMETERS.WEB) {
-                db = window.openDatabase(dbName, '1.0', 'epicollect5', 5000000);
+                db = window.openDatabase(dbName, '1.0', 'epicollect5', PARAMETERS.WEB_SQL_SIZE );
                 resolve(db);
             } else {
                 document.addEventListener('deviceready', () => {

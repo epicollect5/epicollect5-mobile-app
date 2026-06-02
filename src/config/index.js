@@ -14,6 +14,7 @@ export const PARAMETERS = {
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',
     HOW_MANY_ENTRIES: 1000,
     HOW_MANY_BRANCH_ENTRIES: 2,
+    WEB_SQL_SIZE: 500000000, //500MB
     ZOOM_LEVELS: 7,
     DEFAULT_LANGUAGE: 'en',
     SUPPORTED_LANGUAGES: [
@@ -146,7 +147,7 @@ export const PARAMETERS = {
     ENTRY_EDIT: 'EDIT',
     ENTRY_UPLOAD: 'UPLOAD',
 
-    // Error codes which should stop all entry uploads, ie project does not exist, user not authenticated etc
+    // Error codes that should stop all entry uploads, ie project does not exist, user not authenticated etc.
     UPLOAD_STOPPING_ERROR_CODES: [
         'ec5_11', // project does not exist
         'ec5_50', // problem with JWT
@@ -362,7 +363,7 @@ export const PARAMETERS = {
         VIDEO: 25000000 //25MB
     },
     PWA_FILE_ACCEPTED_FORMATS: {
-        PHOTO: 'jpg or png only, max file size 10 MB, max resolution 4096 x 4096px',
+        PHOTO: 'jpg or png only, max file size 5 MB, max resolution 4096 x 4096px',
         AUDIO: 'mp4 or wav only, max file size 10 MB',
         VIDEO: 'mp4 only, max file size 25 MB'
     },
