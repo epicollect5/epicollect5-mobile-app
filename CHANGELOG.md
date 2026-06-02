@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 88.9.8 - build 8898
+
+ - Fixed bug with upload progress (delays too long)
+
 # 88.9.7 - build 8897
 
 - Added entries download progress service
