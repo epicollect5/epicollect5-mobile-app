@@ -1,0 +1,61 @@
+CHANGELOG.md
+  s_35dc5be345a564::t_bd593e15de0ea1 6-8
+  s_35dc5be345a564::t_8d9cee8c558a31 3-5
+  s_35dc5be345a564::t_6e65c4062fd7da 9-10
+src/components/ListItemProjects.vue
+  s_35dc5be345a564::t_62bb9079ecda02 103-105
+  s_35dc5be345a564::t_7312c65e14e261 106-107
+tests/unit/use/fetch-server-projects.spec.js
+  s_35dc5be345a564::t_2590bfab55a7c5 33,37,40-44,46,49,52-56,60,65,68-72,74,77,79-84,86,88,90-91,93-195,198-202,204,207,210,212-213,215,218,221-225,237,245,252,272
+  s_35dc5be345a564::t_787b54fbb219a1 30-32
+  s_35dc5be345a564::t_d6147fedadef87 34-36
+  s_35dc5be345a564::t_83fa61c3c13cc4 38-39
+  s_35dc5be345a564::t_a9d20ec236a131 45
+  s_35dc5be345a564::t_0ee3cbab1ffa73 47-48
+  s_35dc5be345a564::t_9d440424f71abf 50-51
+  s_35dc5be345a564::t_b1a4f74996a4e9 57-59
+  s_35dc5be345a564::t_76276088c97798 61-64
+  s_35dc5be345a564::t_14b820be0f9b84 66-67
+  s_35dc5be345a564::t_4e85cbb0d479be 73
+  s_35dc5be345a564::t_3821802c12c397 75-76
+  s_35dc5be345a564::t_d5665b55e19fa5 78
+  s_35dc5be345a564::t_cf838fd81bfe38 85
+  s_35dc5be345a564::t_f35f8f1be49c4b 87
+  s_35dc5be345a564::t_f2c5c779476a3e 89
+  s_35dc5be345a564::t_e8716950afbad1 92
+  s_35dc5be345a564::t_03d4a1eeb2ebdd 196-197
+  s_35dc5be345a564::t_b5bf8f814cc166 203
+  s_35dc5be345a564::t_e82aa4b79fd722 205-206
+  s_35dc5be345a564::t_97199ab4bbfa86 208-209
+  s_35dc5be345a564::t_5a51bd8d657593 211
+  s_35dc5be345a564::t_59f77265514880 214
+  s_35dc5be345a564::t_13608257a8f2c2 216-217
+  s_35dc5be345a564::t_f2a7e4bb7e11ac 219-220
+  s_35dc5be345a564::t_b31c7c58bdedcf 226-228,234-236
+  s_35dc5be345a564::t_6db63f1bd56ec6 238-240,242-244
+  s_35dc5be345a564::t_256be17e8885e5 246-251
+  s_35dc5be345a564::t_e41802a8dd3308 253-255,269-271
+  s_35dc5be345a564::t_8fae3e392acb9a 273
+src/theme/core.scss
+  s_35dc5be345a564::t_446be67eb8b2bc 85-90
+  s_35dc5be345a564::t_87ce8f9b605b07 83-84
+  s_35dc5be345a564::t_e4b5047d222692 91
+src/use/project/fetch-server-projects.js
+  s_35dc5be345a564::t_44ca02ea82f7c0 24-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "583bbf7367683874223a2dc4d4987465dc6a18ac",
+  "prompts": {},
+  "sessions": {
+    "s_35dc5be345a564": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_14db006cbffev2alOdkurIQibg",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
