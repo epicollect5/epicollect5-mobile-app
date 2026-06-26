@@ -21,8 +21,32 @@ export function fetchServerProjects (searchTerm) {
                     if (response.data.data.length > 0) {
                         response.data.data.forEach((projectData) => {
                             const project = projectData.project;
-                            // Add image url
-                            project.logo = webService.getProjectImageUrl(project.slug);
+                            if (project.logo_base64) {
+                                // Server feature flag on: use the embedded
+                                // base64 data URI (avoids one HTTP request
+                                // per hit). Private projects also enter this
+                                // branch only when the field is a non-empty
+                                // string, which the server does not return
+                                // for them; private hits land in the `else`
+                                // branch below.
+                                project.logo = project.logo_base64;
+                            } else if (!('logo_base64' in project)) {
+                                // Key absent in payload: server feature flag
+                                // is off. Fall back to the legacy client-
+                                // side URL so the app keeps working without
+                                // the flag enabled. The consumer decides
+                                // what to display based on `access`, so this
+                                // is harmless for private hits (the locked
+                                // placeholder is shown regardless).
+                                project.logo = webService.getProjectImageUrl(project.slug);
+                            } else {
+                                // logo_base64 is explicitly null or empty
+                                // in the payload. The consumer renders the
+                                // appropriate placeholder (locked for
+                                // private, generic for public) based on
+                                // `access`.
+                                project.logo = project.logo_base64;
+                            }
                             projects.push(project);
                         });
                         //on slow devices, sometimes projects gets duplicated, so we take care of it here
