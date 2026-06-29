@@ -1,0 +1,19 @@
+tests/unit/components/ListItemProjects.spec.js
+  s_35dc5be345a564::t_eedf124deb24b2 68-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "7a1de1fcfdd4ca52cf47a744d6fd7b6b2aea9b6c",
+  "prompts": {},
+  "sessions": {
+    "s_35dc5be345a564": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_14db006cbffev2alOdkurIQibg",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
