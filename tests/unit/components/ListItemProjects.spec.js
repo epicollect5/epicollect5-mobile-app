@@ -65,6 +65,13 @@ describe('ListItemProjects.vue getProjectLogo() — search page (add-project)', 
         expect(wrapper.vm.getProjectLogo({ access: 'public', logo: '' }))
             .toBe(PARAMETERS.PROJECT_LOGO_PLACEHOLDER);
     });
+
+    it('falls back to the placeholder when public project has no logo property at all', () => {
+        wrapper = mountComponent([], 'add-project');
+
+        expect(wrapper.vm.getProjectLogo({ access: 'public' }))
+            .toBe(PARAMETERS.PROJECT_LOGO_PLACEHOLDER);
+    });
 });
 
 describe('ListItemProjects.vue getProjectLogo() — local list page (projects)', () => {
