@@ -159,6 +159,23 @@ describe('projectJsonValidate', () => {
             expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/ID Mismatch/);
         });
 
+        it('throws when the project has more forms than LIMITS.MAX_FORMS', () => {
+            const payload = createValidProjectPayload();
+            // Replace the single form with 6 forms (MAX_FORMS = 5)
+            payload.data.project.forms = Array.from({length: 6}, (_, idx) => {
+                const formSuffix = String(idx + 1).padStart(13, '0');
+                return {
+                    ref: `${BASE_PROJECT_REF}_${formSuffix}`,
+                    name: `Form ${idx + 1}`,
+                    slug: `form-${idx + 1}`,
+                    type: 'hierarchy',
+                    inputs: [createTextInput(makeInputRef(idx + 1))]
+                };
+            });
+
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/Project has 6 forms \(Max: 5\)/);
+        });
+
         it('throws when metadata contains emojis', () => {
             const payload = createValidProjectPayload();
             payload.data.project.name = 'Invalid 😊 Project';
@@ -189,7 +206,7 @@ describe('projectJsonValidate', () => {
                 is_title: true
             }));
 
-            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/Form "Main Form" has 4 titles/);
+            expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/Form &quot;Main Form&quot; has 4 titles/);
         });
 
         it('allows each branch its own title budget', () => {
@@ -598,6 +615,113 @@ describe('projectJsonValidate', () => {
             const textInput3 = createTextInput(makeInputRef(3));
             const payload = createProjectPayloadWithInputs([textInput, textInput2, textInput3]);
             expect(() => projectJsonValidate.performDeepValidation(payload)).toThrow(/must NOT have more than 1 items|Jump in/);
+        });
+    });
+
+    describe('XSS prevention in formatValidationError', () => {
+        it('escapes numeric HTML entity in possibleAnswer.answer', () => {
+            const xss = '&#60;img src=x onerror=alert(1)&#62;';
+            const longAnswer = xss + 'A'.repeat(251 - xss.length);
+            const payload = createProjectPayloadWithInputs([
+                createChoiceInput(makeInputRef(1), ['1111111111111'])
+            ]);
+            payload.data.project.forms[0].inputs[0].possible_answers[0].answer = longAnswer;
+
+            let caught;
+            try {
+                projectJsonValidate.performDeepValidation(payload);
+            } catch (error) {
+                caught = error;
+            }
+
+            expect(caught).toBeDefined();
+            // The raw '<img' must NOT appear unescaped in the error message
+            expect(caught.message).not.toMatch(/<img/i);
+            // The '&#60;' is preserved as text (escaped to '&amp;#60;'),
+            // so the browser renders it literally instead of interpreting it as '<'
+            expect(caught.message).toContain('&amp;#60;img');
+        });
+
+        it('escapes hex HTML entity in possibleAnswer.answer', () => {
+            const xss = '&#x3C;script&#x3E;alert(1)&#x3C;/script&#x3E;';
+            const longAnswer = xss + 'A'.repeat(251 - xss.length);
+            const payload = createProjectPayloadWithInputs([
+                createChoiceInput(makeInputRef(1), ['1111111111111'])
+            ]);
+            payload.data.project.forms[0].inputs[0].possible_answers[0].answer = longAnswer;
+
+            let caught;
+            try {
+                projectJsonValidate.performDeepValidation(payload);
+            } catch (error) {
+                caught = error;
+            }
+
+            expect(caught).toBeDefined();
+            expect(caught.message).not.toMatch(/<script/i);
+            // '&#x3C;' is preserved as text (escaped to '&amp;#x3C;')
+            expect(caught.message).toContain('&amp;#x3C;script');
+        });
+
+        it('escapes single-quote attribute-injection payloads', () => {
+            const xss = '\' onmouseover=\'alert(1)';
+            const longAnswer = xss + 'A'.repeat(251 - xss.length);
+            const payload = createProjectPayloadWithInputs([
+                createChoiceInput(makeInputRef(1), ['1111111111111'])
+            ]);
+            payload.data.project.forms[0].inputs[0].possible_answers[0].answer = longAnswer;
+
+            let caught;
+            try {
+                projectJsonValidate.performDeepValidation(payload);
+            } catch (error) {
+                caught = error;
+            }
+
+            expect(caught).toBeDefined();
+            expect(caught.message).toContain('&#39; onmouseover=&#39;alert(1)');
+        });
+
+        it('escapes double-quote attribute-injection payloads', () => {
+            const xss = '" onerror="alert(1)';
+            const longAnswer = xss + 'A'.repeat(251 - xss.length);
+            const payload = createProjectPayloadWithInputs([
+                createChoiceInput(makeInputRef(1), ['1111111111111'])
+            ]);
+            payload.data.project.forms[0].inputs[0].possible_answers[0].answer = longAnswer;
+
+            let caught;
+            try {
+                projectJsonValidate.performDeepValidation(payload);
+            } catch (error) {
+                caught = error;
+            }
+
+            expect(caught).toBeDefined();
+            expect(caught.message).toContain('&quot; onerror=&quot;alert(1)');
+        });
+
+        it('escapes the & character (prevents double-entity bypass)', () => {
+            // '&amp;' is a valid user string. If we did NOT escape '&' on
+            // substitution, the browser would interpret '&amp;' as '&', then
+            // '#60;' as '<', firing the XSS. After escape, '&' becomes '&amp;'
+            // so the input '&amp;#60;' becomes '&amp;amp;#60;'.
+            const xss = '&amp;#60;img src=x onerror=alert(1)&amp;#62;';
+            const longAnswer = xss + 'A'.repeat(251 - xss.length);
+            const payload = createProjectPayloadWithInputs([
+                createChoiceInput(makeInputRef(1), ['1111111111111'])
+            ]);
+            payload.data.project.forms[0].inputs[0].possible_answers[0].answer = longAnswer;
+
+            let caught;
+            try {
+                projectJsonValidate.performDeepValidation(payload);
+            } catch (error) {
+                caught = error;
+            }
+
+            expect(caught).toBeDefined();
+            expect(caught.message).toContain('&amp;amp;#60;');
         });
     });
 });

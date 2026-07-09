@@ -61,10 +61,18 @@ const INPUT_TYPE_BRANCH   = 'branch';
  * }}
  */
 function generateExtraStructure(projectDefinition) {
+    if (!projectDefinition || typeof projectDefinition !== 'object') {
+        throw new Error('generateExtraStructure: projectDefinition is missing or not an object');
+    }
+
     // Normalise both envelope shapes
     const root = 'data' in projectDefinition
         ? projectDefinition.data
         : projectDefinition;
+
+    if (!root || !root.project || !Array.isArray(root.project.forms)) {
+        throw new Error('generateExtraStructure: project.forms is missing or not an array');
+    }
 
     const project = root.project;
     const forms   = project.forms;

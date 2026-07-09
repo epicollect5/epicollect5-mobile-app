@@ -37,6 +37,7 @@ export const STRINGS = {
             editing_branches_pwa: 'Please note: to edit existing branch entries you must use the Epicollect5 Data Viewer.',
             format: 'Format',
             clear_filters: 'Clear Filters',
+            invalid: 'Invalid',
             invalid_value: 'Invalid value',
             search: 'Search',
             are_you_sure: 'Are you sure?',
@@ -317,6 +318,7 @@ export const STRINGS = {
             deep_group_jumps_forbidden: '<strong>Validation Error</strong><br/>Input {{inputRef}}: Jumps are forbidden within a group.',
             deep_title_limit_exceeded: '<strong>Limit Exceeded</strong><br/>{{scopeName}} has {{titleCount}} titles (Max: {{maxTitles}}).',
             deep_input_limit_exceeded: '<strong>Limit Exceeded</strong><br/>{{scopeName}} has {{inputCount}} total inputs (Max: {{maxQuestions}}).',
+            deep_form_limit_exceeded: '<strong>Limit Exceeded</strong><br/>Project has {{formsCount}} forms (Max: {{maxForms}}).',
             deep_search_limit_exceeded: '<strong>Limit Exceeded</strong><br/>Project has {{searchCount}} search inputs (Max: {{maxSearchQuestions}}).',
             invalid_project_mapping: 'Invalid meta.project_mapping at "{{path}}": {{error}}'
         }
@@ -359,6 +361,7 @@ export const STRINGS = {
             editing_branches_pwa: 'Nota: per visualizzare le voci BRANCH esistenti è possibile utilizzare Epicollect5 Data Viewer.',
             format: 'Formato',
             clear_filters: 'Ripristina Filtri',
+            invalid: 'Non valido',
             invalid_value: 'Invalido',
             search: 'Cerca',
             are_you_sure: 'Sei sicuro?',
@@ -639,6 +642,7 @@ export const STRINGS = {
             deep_group_jumps_forbidden: '<strong>Errore di validazione</strong><br/>Input {{inputRef}}: i jump sono vietati all\'interno di un gruppo.',
             deep_title_limit_exceeded: '<strong>Limite superato</strong><br/>{{scopeName}} contiene {{titleCount}} titoli (Max: {{maxTitles}}).',
             deep_input_limit_exceeded: '<strong>Limite superato</strong><br/>{{scopeName}} contiene {{inputCount}} input totali (Max: {{maxQuestions}}).',
+            deep_form_limit_exceeded: '<strong>Limite superato</strong><br/>Il progetto contiene {{formsCount}} moduli (Max: {{maxForms}}).',
             deep_search_limit_exceeded: '<strong>Limite superato</strong><br/>Il progetto contiene {{searchCount}} input di ricerca (Max: {{maxSearchQuestions}}).',
             invalid_project_mapping: 'meta.project_mapping non valido in "{{path}}": {{error}}'
         }
@@ -681,6 +685,7 @@ export const STRINGS = {
             editing_branches_pwa: 'Tenga en cuenta: para ver las entradas BRANCH existentes, puede usar Epicollect5 Data Viewer.',
             format: 'Formato',
             clear_filters: 'Reiniciar Filtros',
+            invalid: 'No válido',
             invalid_value: 'No válido',
             search: 'Buscar',
             are_you_sure: '¿Estás seguro?',
@@ -961,6 +966,7 @@ export const STRINGS = {
             deep_group_jumps_forbidden: '<strong>Error de validación</strong><br/>Entrada {{inputRef}}: los saltos están prohibidos dentro de un grupo.',
             deep_title_limit_exceeded: '<strong>Límite superado</strong><br/>{{scopeName}} tiene {{titleCount}} títulos (Máx.: {{maxTitles}}).',
             deep_input_limit_exceeded: '<strong>Límite superado</strong><br/>{{scopeName}} tiene {{inputCount}} entradas totales (Máx.: {{maxQuestions}}).',
+            deep_form_limit_exceeded: '<strong>Límite superado</strong><br/>El proyecto tiene {{formsCount}} formularios (Máx.: {{maxForms}}).',
             deep_search_limit_exceeded: '<strong>Límite superado</strong><br/>El proyecto tiene {{searchCount}} entradas de búsqueda (Máx.: {{maxSearchQuestions}}).',
             invalid_project_mapping: 'meta.project_mapping no válido en "{{path}}": {{error}}'
         }
@@ -1003,6 +1009,7 @@ export const STRINGS = {
             editing_branches_pwa: 'Remarque: pour afficher les entrées BRANCH existantes, vous pouvez utiliser Epicollect5 Data Viewer.',
             format: 'Format',
             clear_filters: 'Effacer filtres',
+            invalid: 'Invalide',
             invalid_value: 'Valeur invalide',
             search: 'Chercher',
             are_you_sure: 'Es-tu sûr?',
@@ -1283,6 +1290,7 @@ export const STRINGS = {
             deep_group_jumps_forbidden: '<strong>Erreur de validation</strong><br/>Entrée {{inputRef}}: les sauts sont interdits à l\'intérieur d\'un groupe.',
             deep_title_limit_exceeded: '<strong>Limite dépassée</strong><br/>{{scopeName}} contient {{titleCount}} titres (Max: {{maxTitles}}).',
             deep_input_limit_exceeded: '<strong>Limite dépassée</strong><br/>{{scopeName}} contient {{inputCount}} entrées au total (Max: {{maxQuestions}}).',
+            deep_form_limit_exceeded: '<strong>Limite dépassée</strong><br/>Le projet contient {{formsCount}} formulaires (Max: {{maxForms}}).',
             deep_search_limit_exceeded: '<strong>Limite dépassée</strong><br/>Le projet contient {{searchCount}} entrées de recherche (Max: {{maxSearchQuestions}}).',
             invalid_project_mapping: 'meta.project_mapping invalide à "{{path}}" : {{error}}'
         }
@@ -1325,6 +1333,7 @@ export const STRINGS = {
             editing_branches_pwa: 'Uwaga: aby wyświetlić istniejące wpisy oddziałów, można użyć przeglądarki danych Epicollect5.',
             format: 'Format',
             clear_filters: 'Wyczyść filtry',
+            invalid: 'Nieprawidłowe',
             invalid_value: 'Niewłaściwa wartość',
             search: 'Szukaj',
             are_you_sure: 'Jesteś pewny?',
@@ -1605,6 +1614,7 @@ export const STRINGS = {
             deep_group_jumps_forbidden: '<strong>Błąd walidacji</strong><br/>Wejście {{inputRef}}: skoki są zabronione wewnątrz grupy.',
             deep_title_limit_exceeded: '<strong>Przekroczono limit</strong><br/>{{scopeName}} zawiera {{titleCount}} tytuły (Maks.: {{maxTitles}}).',
             deep_input_limit_exceeded: '<strong>Przekroczono limit</strong><br/>{{scopeName}} zawiera łącznie {{inputCount}} pól wejściowych (Maks.: {{maxQuestions}}).',
+            deep_form_limit_exceeded: '<strong>Przekroczono limit</strong><br/>Projekt zawiera {{formsCount}} formularzy (Maks.: {{maxForms}}).',
             deep_search_limit_exceeded: '<strong>Przekroczono limit</strong><br/>Projekt zawiera {{searchCount}} pól wyszukiwania (Maks.: {{maxSearchQuestions}}).',
             invalid_project_mapping: 'Nieprawidłowy meta.project_mapping w "{{path}}": {{error}}'
         }
@@ -1647,6 +1657,7 @@ export const STRINGS = {
             editing_branches_pwa: 'Observação: para editar entradas de filiais existentes, você deve usar o Visualizador de Dados do Epicollect5.',
             format: 'Formato',
             clear_filters: 'Limpar filtros',
+            invalid: 'Inválido',
             invalid_value: 'Valor inválido',
             search: 'Pesquisar',
             are_you_sure: 'Tem certeza?',
@@ -1927,6 +1938,7 @@ export const STRINGS = {
             deep_group_jumps_forbidden: '<strong>Erro de validação</strong><br/>Entrada {{inputRef}}: saltos são proibidos dentro de um grupo.',
             deep_title_limit_exceeded: '<strong>Limite excedido</strong><br/>{{scopeName}} tem {{titleCount}} títulos (Máx.: {{maxTitles}}).',
             deep_input_limit_exceeded: '<strong>Limite excedido</strong><br/>{{scopeName}} tem {{inputCount}} entradas no total (Máx.: {{maxQuestions}}).',
+            deep_form_limit_exceeded: '<strong>Limite excedido</strong><br/>O projeto tem {{formsCount}} formulários (Máx.: {{maxForms}}).',
             deep_search_limit_exceeded: '<strong>Limite excedido</strong><br/>O projeto tem {{searchCount}} entradas de pesquisa (Máx.: {{maxSearchQuestions}}).',
             invalid_project_mapping: 'meta.project_mapping inválido em "{{path}}": {{error}}'
         }
@@ -1969,6 +1981,7 @@ export const STRINGS = {
             editing_branches_pwa: 'Nota: per a editar les entrades existents de la branca heu d\'utilitzar el visor de dades Epicollect5.',
             format: 'Format',
             clear_filters: 'Neteja els filtres',
+            invalid: 'No vàlid',
             invalid_value: 'Valor no vàlid',
             search: 'Cerca',
             are_you_sure: 'N\'estàs segur?',
@@ -2249,6 +2262,7 @@ export const STRINGS = {
             deep_group_jumps_forbidden: '<strong>Error de validació</strong><br/>Entrada {{inputRef}}: els salts estan prohibits dins d\'un grup.',
             deep_title_limit_exceeded: '<strong>Límit excedit</strong><br/>{{scopeName}} té {{titleCount}} títols (Màx.: {{maxTitles}}).',
             deep_input_limit_exceeded: '<strong>Límit excedit</strong><br/>{{scopeName}} té {{inputCount}} entrades totals (Màx.: {{maxQuestions}}).',
+            deep_form_limit_exceeded: '<strong>Límit excedit</strong><br/>El projecte té {{formsCount}} formularis (Màx.: {{maxForms}}).',
             deep_search_limit_exceeded: '<strong>Límit excedit</strong><br/>El projecte té {{searchCount}} entrades de cerca (Màx.: {{maxSearchQuestions}}).',
             invalid_project_mapping: 'meta.project_mapping no vàlid a "{{path}}": {{error}}'
         }
@@ -2291,6 +2305,7 @@ export const STRINGS = {
             editing_branches_pwa: 'Opozorilo: za urejanje vnosov obstoječih podvprašanj morate uporabiti pregledovalnik podatkov Epicollect5.',
             format: 'Oblika',
             clear_filters: 'Počisti filtre',
+            invalid: 'Neveljavno',
             invalid_value: 'Nepravilna vrednost',
             search: 'Najdi',
             are_you_sure: 'Ali ste prepričani?',
@@ -2571,6 +2586,7 @@ export const STRINGS = {
             deep_group_jumps_forbidden: '<strong>Napaka validacije</strong><br/>Vnos {{inputRef}}: skoki so znotraj skupine prepovedani.',
             deep_title_limit_exceeded: '<strong>Omejitev presežena</strong><br/>{{scopeName}} ima {{titleCount}} naslovov (Najv.: {{maxTitles}}).',
             deep_input_limit_exceeded: '<strong>Omejitev presežena</strong><br/>{{scopeName}} ima skupaj {{inputCount}} vnosov (Najv.: {{maxQuestions}}).',
+            deep_form_limit_exceeded: '<strong>Omejitev presežena</strong><br/>Projekt ima {{formsCount}} obrazcev (Najv.: {{maxForms}}).',
             deep_search_limit_exceeded: '<strong>Omejitev presežena</strong><br/>Projekt ima {{searchCount}} iskalnih vnosov (Najv.: {{maxSearchQuestions}}).',
             invalid_project_mapping: 'Neveljaven meta.project_mapping na "{{path}}": {{error}}'
         }
@@ -2613,6 +2629,7 @@ export const STRINGS = {
             editing_branches_pwa: 'Bitte beachten Sie: Um bestehende Verzweigungseinträge zu bearbeiten, müssen Sie den Epicollect5 Data Viewer verwenden.',
             format: 'Format',
             clear_filters: 'Filter zurücksetzen',
+            invalid: 'Ungültig',
             invalid_value: 'Ungültiger Wert',
             search: 'Suchen',
             are_you_sure: 'Sind Sie sicher?',
@@ -2893,6 +2910,7 @@ export const STRINGS = {
             deep_group_jumps_forbidden: '<strong>Validierungsfehler</strong><br/>Eingabe {{inputRef}}: Sprünge sind innerhalb einer Gruppe verboten.',
             deep_title_limit_exceeded: '<strong>Limit überschritten</strong><br/>{{scopeName}} hat {{titleCount}} Titel (Max: {{maxTitles}}).',
             deep_input_limit_exceeded: '<strong>Limit überschritten</strong><br/>{{scopeName}} hat insgesamt {{inputCount}} Eingaben (Max: {{maxQuestions}}).',
+            deep_form_limit_exceeded: '<strong>Limit überschritten</strong><br/>Projekt hat {{formsCount}} Formulare (Max: {{maxForms}}).',
             deep_search_limit_exceeded: '<strong>Limit überschritten</strong><br/>Das Projekt hat {{searchCount}} Sucheingaben (Max: {{maxSearchQuestions}}).',
             invalid_project_mapping: 'Ungültiges meta.project_mapping bei "{{path}}": {{error}}'
         }

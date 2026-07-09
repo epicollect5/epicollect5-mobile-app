@@ -94,7 +94,7 @@
 
 <script>
 import { eye, create } from 'ionicons/icons';
-import { reactive, computed, readonly } from '@vue/reactivity';
+import { computed, reactive, readonly } from 'vue';
 import { useRouter } from 'vue-router';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';

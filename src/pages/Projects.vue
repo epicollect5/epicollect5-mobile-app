@@ -86,8 +86,7 @@
 <script>
 import ListItemProjects from '@/components/lists/ListItemProjects.vue';
 import {add, openOutline} from 'ionicons/icons';
-import {reactive, computed} from '@vue/reactivity';
-import {onMounted, onActivated, watch, onRenderTriggered} from 'vue';
+import { computed, onActivated, onMounted, onRenderTriggered, reactive, watch } from 'vue';
 import {STRINGS} from '@/config/strings';
 import {useRootStore} from '@/stores/root-store';
 import {fetchLocalProjects} from '@/composables/project/fetch-local-projects';

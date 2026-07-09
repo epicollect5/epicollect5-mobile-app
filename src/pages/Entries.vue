@@ -154,12 +154,11 @@ import {
   chevronBackOutline,
   ellipsisVertical
 } from 'ionicons/icons';
-import {reactive} from '@vue/reactivity';
 import {PARAMETERS} from '@/config';
 import {projectModel} from '@/models/project-model.js';
 import {formModel} from '@/models/form-model.js';
 import {useRouter, useRoute} from 'vue-router';
-import {onMounted, watch, computed} from 'vue';
+import { computed, onMounted, reactive, watch } from 'vue';
 import {updateLocalProject} from '@/composables/project/update-local-project';
 import {addFakeEntries} from '@/composables/entries/add-fake-entries';
 import {format} from 'date-fns';

@@ -4,6 +4,15 @@ import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {rollbarService} from '@/services/utilities/rollbar-service';
 
+export function escapeHtml(value) {
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll('\'', '&#39;');
+}
+
 export const errorsService = {
 
     getEC5Errors(errors) {
@@ -126,27 +135,21 @@ export const errorsService = {
         // but you could map over all of them.
         const err = errors[0];
 
-        // Helper to escape HTML entities
-        const escapeHtml = (str) => str
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-
         // Clean up the instancePath for the user (e.g., /data/project/forms/1 -> data > project > forms > 1)
         const friendlyPath = err.instancePath
             .replace(/^\//, '')
             .replace(/\//g, ' → ');
-        
+
         let affectedJson = '';
         if (data && err.instancePath) {
             try {
                 // Remove leading slash and split by /
                 const pathParts = err.instancePath.split('/').filter((p) => p !== '');
-                
+
                 // Show from 1 level up for better context
                 const parentPathParts = pathParts.slice(0, -1);
                 let current = data;
-                
+
                 for (const part of parentPathParts) {
                     if (current && typeof current === 'object') {
                         current = current[part];

@@ -5,6 +5,7 @@ import projectJSONSchema from '@/schemas/project.schema.json';
 import {LIMITS, PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
 import {utilsService} from '@/services/utilities/utils-service';
+import {escapeHtml} from '@/services/errors-service';
 
 export const projectJsonValidate = {
     getValidationErrors(language = PARAMETERS.DEFAULT_LANGUAGE) {
@@ -20,7 +21,7 @@ export const projectJsonValidate = {
 
         return template.replace(/\{\{(\w+)\}\}/g, (match, name) => {
             if (Object.prototype.hasOwnProperty.call(params, name)) {
-                return String(params[name]);
+                return escapeHtml(params[name]);
             }
 
             return match;
@@ -84,7 +85,7 @@ export const projectJsonValidate = {
         if (typeof str !== 'string') return false;
 
         // eslint-disable-next-line no-misleading-character-class
-        const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}]/u;
+        const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{1FA00}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}]/u;
         return emojiRegex.test(str);
     },
 
@@ -284,6 +285,14 @@ export const projectJsonValidate = {
         // 1. Cross-Field Equality
         if (data.id !== project.ref) {
             throw new Error(projectJsonValidate.formatValidationError(language, 'deep_id_mismatch'));
+        }
+
+        // 1a. Defense-in-depth: enforce max forms (schema also enforces this)
+        if (project.forms.length > LIMITS.MAX_FORMS) {
+            throw new Error(projectJsonValidate.formatValidationError(language, 'deep_form_limit_exceeded', {
+                formsCount: project.forms.length,
+                maxForms: LIMITS.MAX_FORMS
+            }));
         }
 
         // --- Integrity: Each form.ref starts with project.ref + '_' and 13 hex chars, and is unique ---
@@ -542,38 +551,6 @@ export const projectJsonValidate = {
                         const INT_MAX = 2147483647;
                         const DEC_MIN = -1e12;
                         const DEC_MAX = 1e12;
-                        if (minNum !== undefined) {
-                            if (input.type === 'integer' && minNum < INT_MIN) {
-                                throw new Error(projectJsonValidate.formatValidationError(language, 'deep_min_out_of_range', {
-                                    inputRef: input.ref,
-                                    min: minNum,
-                                    inputType: input.type
-                                }));
-                            }
-                            if (input.type === 'decimal' && minNum < DEC_MIN) {
-                                throw new Error(projectJsonValidate.formatValidationError(language, 'deep_min_out_of_range', {
-                                    inputRef: input.ref,
-                                    min: minNum,
-                                    inputType: input.type
-                                }));
-                            }
-                        }
-                        if (maxNum !== undefined) {
-                            if (input.type === 'integer' && maxNum > INT_MAX) {
-                                throw new Error(projectJsonValidate.formatValidationError(language, 'deep_max_out_of_range', {
-                                    inputRef: input.ref,
-                                    max: maxNum,
-                                    inputType: input.type
-                                }));
-                            }
-                            if (input.type === 'decimal' && maxNum > DEC_MAX) {
-                                throw new Error(projectJsonValidate.formatValidationError(language, 'deep_max_out_of_range', {
-                                    inputRef: input.ref,
-                                    max: maxNum,
-                                    inputType: input.type
-                                }));
-                            }
-                        }
                         const [lowerBound, upperBound] = input.type === 'integer'
                             ? [INT_MIN, INT_MAX]
                             : [DEC_MIN, DEC_MAX];

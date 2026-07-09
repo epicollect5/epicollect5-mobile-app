@@ -91,7 +91,7 @@
 
 <script>
 import {chevronBackOutline, documentText, desktopOutline} from 'ionicons/icons';
-import {reactive} from '@vue/reactivity';
+import { reactive } from 'vue';
 import {STRINGS} from '@/config/strings';
 
 import {useRootStore} from '@/stores/root-store';

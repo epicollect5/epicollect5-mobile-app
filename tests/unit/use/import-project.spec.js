@@ -82,13 +82,6 @@ vi.mock('@/services/validation/project-json-sanitise', () => ({
     }
 }));
 
-vi.mock('@/models/project-model.js', () => ({
-    projectModel: {
-        loadExtraStructure: vi.fn(),
-        destroy: vi.fn()
-    }
-}));
-
 const createBasePayload = () => ({
     data: {
         id: 'a'.repeat(32),
@@ -330,7 +323,7 @@ describe('importProject', () => {
         const rootStore = useRootStore();
 
         expect(result).toBe(true);
-        expect(rootStore.wasProjectImportedFromFile).toBe(false);
+        expect(rootStore.wasProjectImportedFromFile).toBe(true);
         expect(router.replace).toHaveBeenCalledWith(
             expect.objectContaining({
                 query: {

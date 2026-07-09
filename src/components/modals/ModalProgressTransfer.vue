@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import { computed } from '@vue/reactivity';
+import { computed } from 'vue';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
 import { closeOutline } from 'ionicons/icons';

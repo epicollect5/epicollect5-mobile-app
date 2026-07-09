@@ -171,7 +171,7 @@
 
 <script>
 import { enter, document, bookmark, personCircle, book, people, settings } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
+import { computed, reactive } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';

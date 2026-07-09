@@ -4,15 +4,7 @@ import {tempDirsService} from '@/services/filesystem/temp-dirs-service';
 import {Filesystem} from '@capacitor/filesystem';
 import {FilePicker} from '@capawesome/capacitor-file-picker';
 import {useRootStore} from '@/stores/root-store';
-
-function escapeHtml(value) {
-    return String(value)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll('\'', '&#39;');
-}
+import {escapeHtml} from '@/services/errors-service';
 
 function buildReport(results) {
     const total = results.length;

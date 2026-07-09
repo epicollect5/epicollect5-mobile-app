@@ -113,12 +113,11 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive, readonly } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 
 import { useRootStore } from '@/stores/root-store';
 import { addSharp, removeSharp } from 'ionicons/icons';
-import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject } from 'vue';
 import { utilsService } from '@/services/utilities/utils-service';
 import { questionCommonService } from '@/services/entry/question-common-service';

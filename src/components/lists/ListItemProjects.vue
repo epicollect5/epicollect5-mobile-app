@@ -31,9 +31,8 @@
 </template>
 
 <script>
-import {reactive} from '@vue/reactivity';
+import { computed, reactive, readonly } from 'vue';
 import {PARAMETERS} from '@/config';
-import {computed, readonly} from '@vue/reactivity';
 import {cloudOutline, documentOutline} from 'ionicons/icons';
 
 export default {

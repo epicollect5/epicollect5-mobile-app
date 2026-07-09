@@ -62,11 +62,12 @@ export const projectLogoService = {
     // Simple hash function to convert name to a consistent color index
     _getColorFromName(name) {
         let hash = 0;
-        for (let i = 0; i < name.length; i++) {
-            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        const safe = name || '';
+        for (let i = 0; i < safe.length; i++) {
+            hash = safe.charCodeAt(i) + ((hash << 5) - hash);
         }
         // Consistent with how Laravolt picks from the array
-        const index = Math.abs(hash) % this.palette.length;
+        const index = (hash >>> 0) % this.palette.length;
         return this.palette[index];
     },
 
@@ -82,8 +83,8 @@ export const projectLogoService = {
                         //remember to add cordova whitelist plugin as if affects other plugins
                         //see t.ly/Opox
                         const fileTransfer = new window.FileTransfer();
-                        const uri = encodeURI(webService.getProjectImageUrl(slug));
-                        const appStorePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectRef + '/mobile-logo.jpg?' + new Date().getTime();
+                        const uri = encodeURI(webService.getProjectImageUrl(slug)) + '?v=' + new Date().getTime();
+                        const appStorePath = rootStore.persistentDir + PARAMETERS.LOGOS_DIR + projectRef + '/mobile-logo.jpg';
 
                         fileTransfer.download(
                             uri,
@@ -137,10 +138,11 @@ export const projectLogoService = {
         ctx.fillRect(0, 0, size, size);
 
         // 2. Prepare Initials (Max 2 chars)
-        const words = projectName.trim().split(/\s+/);
-        const initials = words.length >= 2
+        const trimmed = (projectName || '').trim();
+        const words = trimmed ? trimmed.split(/\s+/) : [];
+        const initials = words.length >= 2 && words[0] && words[1]
             ? (words[0][0] + words[1][0]).toUpperCase()
-            : projectName.substring(0, 2).toUpperCase();
+            : (trimmed.substring(0, 2) || '?').toUpperCase();
 
         // 3. Proportional Font (Server 128px / 1024px = 0.125 ratio)
         // 128 * 0.25 = 32px font size, which looks good for 2 chars. We can adjust if needed.
@@ -155,7 +157,15 @@ export const projectLogoService = {
         ctx.fillText(initials, size / 2, size / 2);
 
         // 4. Convert to Blob
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.8));
+        const blob = await new Promise((resolve, reject) => {
+            canvas.toBlob((result) => {
+                if (result) {
+                    resolve(result);
+                } else {
+                    reject(new Error('Canvas toBlob returned null (tainted or zero-sized canvas)'));
+                }
+            }, 'image/jpeg', 0.8);
+        });
 
         // 5. Save using Async Cordova File API
         try {

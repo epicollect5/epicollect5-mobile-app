@@ -75,13 +75,12 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { modalController } from '@ionic/vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { mic, playSharp } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import ModalAudioPlay from '@/components/modals/ModalAudioPlay';
 import ModalAudioRecord from '@/components/modals/ModalAudioRecord';

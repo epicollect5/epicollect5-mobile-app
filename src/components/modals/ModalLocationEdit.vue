@@ -57,7 +57,7 @@
 
 <script>
 import { closeOutline, locate, mapSharp } from 'ionicons/icons';
-import { reactive } from '@vue/reactivity';
+import { reactive } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';

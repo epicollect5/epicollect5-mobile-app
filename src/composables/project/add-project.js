@@ -130,14 +130,12 @@ export async function addProject(project, router) {
                      ec5_77: user is not logged in (or jwt expired)
                      ec5_78: user is logged but cannot access the project
                      */
-                const errorCode = error.data.errors[0].code;
+                const errorCode = error?.data?.errors?.[0]?.code;
 
                 // Check if we have an auth error
-                if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
+                if (authErrors.indexOf(error?.data?.errors?.[0]?.code) >= 0) {
                     const confirmed = await notificationService.confirmSingle(
-                        STRINGS[rootStore.language].status_codes[
-                        error.data.errors[0].code
-                        ]
+                        STRINGS[rootStore.language].status_codes[errorCode || 'ec5_116']
                     );
 
                     if (confirmed) {

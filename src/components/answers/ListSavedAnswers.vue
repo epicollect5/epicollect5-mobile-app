@@ -60,7 +60,7 @@
 <script>
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
-import { reactive, toRefs } from '@vue/reactivity';
+import { reactive, toRefs } from 'vue';
 import { PARAMETERS } from '@/config';
 export default {
 	props: {

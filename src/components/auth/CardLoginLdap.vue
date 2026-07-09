@@ -49,7 +49,7 @@
 
 <script>
 import { eye } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
+import { computed, reactive } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
 

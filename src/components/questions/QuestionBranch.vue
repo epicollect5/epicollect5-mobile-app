@@ -251,12 +251,11 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive, readonly } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { trash, cloudUpload, create, add, archive, cloudy, alertCircle } from 'ionicons/icons';
-import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject, watch } from 'vue';
 import { modalController } from '@ionic/vue';
 import { useRouter, useRoute } from 'vue-router';

@@ -58,11 +58,10 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
 import { addOutline, arrowBackOutline } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import { PARAMETERS } from '@/config';
 

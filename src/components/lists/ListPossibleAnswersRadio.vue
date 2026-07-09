@@ -61,10 +61,9 @@
 </template>
 
 <script>
-import { watch } from 'vue';
+import { computed, reactive, readonly, toRefs, watch } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
-import { reactive, readonly, toRefs, computed } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 export default {
 	props: {

@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { reactive } from '@vue/reactivity';
+import { reactive } from 'vue';
 import { IonicSlides } from '@ionic/vue';
 import { modalController } from '@ionic/vue';
 import { Share } from '@capacitor/share';

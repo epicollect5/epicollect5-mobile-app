@@ -150,30 +150,31 @@ export default {
       async openFilePicker() {
         try {
           const result = await FilePicker.pickFiles({
-            // "application/json" is the standard for .json files
-            types: ['application/json'],
+            types: ['application/json', 'text/plain', 'application/octet-stream'],
             multiple: false,
-            readData: true// Set to true if you want the file content (base64)
+            readData: true
           });
+
+          const file = result.files?.[0];
+
+          if (!file?.data) {
+            return;
+          }
 
           await notificationService.showProgressDialog(
               STRINGS[rootStore.language].labels.wait,
               STRINGS[rootStore.language].labels.loading_project
           );
 
-          const file = result.files[0];
+          // Decode base64 to UTF-8 string properly
+          const binaryString = atob(file.data);
+          const bytes = Uint8Array.from(binaryString, (c) => c.charCodeAt(0));
+          const decodedData = new TextDecoder('utf-8').decode(bytes);
+          const jsonData = JSON.parse(decodedData);
 
-          if (file && file.data) {
-            // Decode base64 to UTF-8 string properly
-            const binaryString = atob(file.data);
-            const bytes = Uint8Array.from(binaryString, (c) => c.charCodeAt(0));
-            const decodedData = new TextDecoder('utf-8').decode(bytes);
-            const jsonData = JSON.parse(decodedData);
+          console.log('Parsed JSON:', jsonData);
 
-            console.log('Parsed JSON:', jsonData);
-
-            await importProject(jsonData, router);
-          }
+          await importProject(jsonData, router);
         } catch (e) {
           notificationService.hideProgressDialog();
           // FilePicker throws when user cancels - this is expected

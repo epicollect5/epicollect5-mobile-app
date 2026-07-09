@@ -36,7 +36,7 @@
 
 <script>
 import { star, filter } from 'ionicons/icons';
-import { readonly } from '@vue/reactivity';
+import { readonly } from 'vue';
 import ModalEntriesFilter from '@/components/modals/ModalEntriesFilter.vue';
 import { modalController } from '@ionic/vue';
 

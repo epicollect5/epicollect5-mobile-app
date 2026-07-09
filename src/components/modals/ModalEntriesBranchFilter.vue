@@ -107,10 +107,9 @@ import { closeOutline, filter, cloud, removeCircle, cloudOutline } from 'ionicon
 import { STRINGS } from '@/config/strings';
 
 import { useRootStore } from '@/stores/root-store';
-import { reactive, computed } from '@vue/reactivity';
 import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
-import { readonly } from 'vue';
+import { computed, reactive, readonly } from 'vue';
 import { databaseSelectService } from '@/services/database/database-select-service';
 
 export default {

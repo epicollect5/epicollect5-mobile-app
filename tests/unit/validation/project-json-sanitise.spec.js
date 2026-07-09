@@ -262,6 +262,22 @@ describe('projectJsonSanitise', () => {
             expect(project.data.project.description).toBe('Desc');
         });
 
+        it('handles undefined description (description is optional per schema)', () => {
+            const project = createMinimalProject();
+            project.data.project.small_description = '  Test  \n\n';
+            delete project.data.project.description;
+            expect(() => projectJsonSanitise.sanitiseProjectDefinitionForImport(project.data)).not.toThrow();
+            expect(project.data.project.description).toBe('');
+            expect(project.data.project.small_description).toBe('Test___________');
+        });
+
+        it('handles null description (defensive)', () => {
+            const project = createMinimalProject();
+            project.data.project.description = null;
+            expect(() => projectJsonSanitise.sanitiseProjectDefinitionForImport(project.data)).not.toThrow();
+            expect(project.data.project.description).toBe('');
+        });
+
         it('pads small_description to minimum 15 chars with underscores', () => {
             const project = createMinimalProject();
             project.data.project.small_description = 'Short';

@@ -11,6 +11,11 @@ export const clipboardService = {
     async copyText(text) {
         try {
             if (!Capacitor.isNativePlatform()) {
+                // Note: the Capacitor Clipboard plugin does not bridge to
+                // navigator.clipboard, which requires a user gesture and a
+                // secure context (HTTPS or localhost). The "Copy" button in
+                // showValidationErrorAlert therefore shows the
+                // "Unknown error" toast on PWA/web. Native platforms only.
                 return false;
             } else {
                 // Native platforms: use Capacitor Clipboard

@@ -309,5 +309,34 @@ describe('Project Extra Service', () => {
         expect(result.forms['for_123'].lists.multiple_choice_inputs.branch['bra_g1'].order).toContain('inp_gb2');
         expect(result.forms['for_123'].lists.multiple_choice_inputs.branch['bra_g1']['inp_gb2'].question).toBe('GB Radio');
     });
+
+    describe('null guards', () => {
+        it('throws when projectDefinition is null', () => {
+            expect(() => projectExtraService.generateExtraStructure(null))
+                .toThrow(/projectDefinition is missing or not an object/);
+        });
+
+        it('throws when projectDefinition is undefined', () => {
+            expect(() => projectExtraService.generateExtraStructure(undefined))
+                .toThrow(/projectDefinition is missing or not an object/);
+        });
+
+        it('throws when projectDefinition is a non-object', () => {
+            expect(() => projectExtraService.generateExtraStructure('a string'))
+                .toThrow(/projectDefinition is missing or not an object/);
+        });
+
+        it('throws when project.forms is missing', () => {
+            const payload = {data: {project: {ref: 'pro_123', name: 'Test'}}};
+            expect(() => projectExtraService.generateExtraStructure(payload))
+                .toThrow(/project.forms is missing or not an array/);
+        });
+
+        it('throws when project.forms is not an array', () => {
+            const payload = {data: {project: {ref: 'pro_123', name: 'Test', forms: 'not an array'}}};
+            expect(() => projectExtraService.generateExtraStructure(payload))
+                .toThrow(/project.forms is missing or not an array/);
+        });
+    });
 });
 

@@ -105,12 +105,11 @@
 
 <script>
 import { modalController } from '@ionic/vue';
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { locate } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import GridQuestionWide from '@/components/ui/GridQuestionWide.vue';
 import QuestionLocationPwa from '@/components/questions/QuestionLocationPwa.vue';

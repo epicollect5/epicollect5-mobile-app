@@ -44,10 +44,9 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive, readonly } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
-import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject } from 'vue';
 import QuestionLabelPossibleAnswers from '@/components/questions/QuestionLabelPossibleAnswers.vue';
 import ListPossibleAnswersCheckbox from '@/components/lists/ListPossibleAnswersCheckbox.vue';

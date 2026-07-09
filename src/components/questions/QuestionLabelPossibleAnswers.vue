@@ -35,7 +35,7 @@
 <script>
 import { STRINGS } from '@/config/strings';
 import { filter } from 'ionicons/icons';
-import { readonly, toRefs } from '@vue/reactivity';
+import { readonly, toRefs } from 'vue';
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 import ModalPossibleAnswers from '@/components/modals/ModalPossibleAnswers.vue';

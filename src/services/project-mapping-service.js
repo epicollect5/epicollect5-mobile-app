@@ -205,25 +205,6 @@ function validateMappedInputsReferences(mappedInputs, validInputRefs) {
         return true;
     }
 
-    if (Array.isArray(mappedInputs)) {
-        mappedInputs.forEach((mappedEntry) => {
-            const inputRef = mappedEntry?.ref;
-            if (!validInputRefs.has(inputRef)) {
-                throw new Error(`Invalid meta.project_mapping: input ref "${inputRef}" does not exist in project definition.`);
-            }
-
-            if (mappedEntry.group) {
-                validateMappedInputsReferences(mappedEntry.group, validInputRefs);
-            }
-
-            if (mappedEntry.branch) {
-                validateMappedInputsReferences(mappedEntry.branch, validInputRefs);
-            }
-        });
-
-        return true;
-    }
-
     for (const [inputRef, mappedEntry] of Object.entries(mappedInputs)) {
         if (inputRef === 'order') {
             continue;

@@ -81,7 +81,7 @@
 
 <script>
 import {open, closeOutline} from 'ionicons/icons';
-import {reactive, computed} from '@vue/reactivity';
+import { computed, reactive } from 'vue';
 import {STRINGS} from '@/config/strings';
 
 import {useRootStore} from '@/stores/root-store';

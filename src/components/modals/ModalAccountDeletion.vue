@@ -79,7 +79,7 @@
 
 <script>
 import { modalController } from '@ionic/vue';
-import { reactive } from '@vue/reactivity';
+import { reactive } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';

@@ -63,9 +63,8 @@
 
 <script>
 import { STRINGS } from '@/config/strings.js';
-import { onMounted, onUpdated } from 'vue';
+import { computed, onMounted, onUpdated, reactive, readonly, toRefs } from 'vue';
 import { useRootStore } from '@/stores/root-store';
-import { reactive, readonly, toRefs, computed } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';
 
 export default {

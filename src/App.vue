@@ -107,6 +107,7 @@ export default {
               .then((response) => {
                 //if Project does not exist, error out
                 if (response.data.data.length === 0) {
+                  notificationService.hideProgressDialog();
                   // Show 'Project does not exist' message
                   notificationService.showAlert(STRINGS[rootStore.language].status_codes.ec5_11);
                   //go back to projects list
@@ -122,9 +123,12 @@ export default {
                     ref: response.data.data[0].project.ref
                   };
                   //try to load the project in
+                  rootStore.wasProjectImportedFromFile = false;
+                  notificationService.hideProgressDialog();
                   addProject(project, router);
                 }
               }, (error) => {
+                notificationService.hideProgressDialog();
                 errorsService.handleWebError(error);
                 // No projects?
                 try {
@@ -133,7 +137,8 @@ export default {
                     notificationService.showAlert(STRINGS[rootStore.language].labels.no_projects_found);
                   }
                 } catch (error) {
-                  notificationService.showAlert(JSON.stringify(error), STRINGS[rootStore.language].labels.unknown_error);
+                  console.error('Deep-link search error:', error);
+                  notificationService.showAlert(STRINGS[rootStore.language].labels.unknown_error);
                 }
 
                 //just launch app
@@ -144,6 +149,7 @@ export default {
               });
         }
       } else {
+        notificationService.hideProgressDialog();
         //otherwise just project list
         await router.replace({
           name: PARAMETERS.ROUTES.PROJECTS,

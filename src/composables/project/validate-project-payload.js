@@ -42,6 +42,7 @@ async function normalizeProjectData(input) {
 
 export async function validateProjectPayload(input, language) {
     let content = await normalizeProjectData(input);
+    content = JSON.parse(JSON.stringify(content));
     const fallbackLabel = getProjectIdentityFromEnvelope(content);
 
     projectJsonValidate.preValidateProjectStructure(content, language);

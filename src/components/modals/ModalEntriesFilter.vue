@@ -137,10 +137,9 @@ import {
 import { STRINGS } from '@/config/strings';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { useRootStore } from '@/stores/root-store';
-import { reactive, computed } from '@vue/reactivity';
 import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
-import { readonly } from 'vue';
+import { computed, reactive, readonly } from 'vue';
 
 export default {
 	props: {

@@ -125,9 +125,9 @@ export const projectJsonSanitise = {
     sanitiseProjectDefinitionForImport(projectDefinition) {
         const SMALL_DESC_MIN_LENGTH = 15;
 
-        // Trim newlines from descriptions
-        projectDefinition.project.small_description = projectDefinition.project.small_description.trim();
-        projectDefinition.project.description = projectDefinition.project.description.trim();
+        // Trim newlines from descriptions (description is optional per schema)
+        projectDefinition.project.small_description = (projectDefinition.project.small_description || '').trim();
+        projectDefinition.project.description = (projectDefinition.project.description || '').trim();
 
         // Pad small_description to minimum length (15 chars) with underscores
         const smallDesc = projectDefinition.project.small_description;

@@ -31,11 +31,10 @@
 import { popoverController } from '@ionic/vue';
 import { trash, shareSocial } from 'ionicons/icons';
 import { PARAMETERS } from '@/config';
-import { readonly } from 'vue';
+import { computed, readonly } from 'vue';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
 import { Share } from '@capacitor/share';
-import { computed } from '@vue/reactivity';
 import { projectModel } from '@/models/project-model';
 import { notificationService } from '@/services/notification-service';
 import { deleteFileService } from '@/services/filesystem/delete-file-service';

@@ -324,7 +324,7 @@ import {deleteEntries} from '@/composables/entries/delete-entries';
 import {projectModel} from '@/models/project-model.js';
 import {formModel} from '@/models/form-model.js';
 import {modalController, menuController} from '@ionic/vue';
-import {ref, reactive, computed} from '@vue/reactivity';
+import { computed, reactive, ref } from 'vue';
 import ModalProjectInfo from '@/components/modals/ModalProjectInfo';
 import ModalBookmarkAdd from '@/components/modals/ModalBookmarkAdd';
 import {notificationService} from '@/services/notification-service';

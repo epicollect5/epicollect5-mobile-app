@@ -109,8 +109,7 @@
 
 <script>
 import { nuclear, chevronBackOutline, add, remove, checkmark } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { useRouter } from 'vue-router';

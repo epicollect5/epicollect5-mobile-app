@@ -1,6 +1,5 @@
 import {DB_ERRORS, PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
-import {projectModel} from '@/models/project-model.js';
 import {useRootStore} from '@/stores/root-store';
 import {databaseInsertService} from '@/services/database/database-insert-service';
 import {databaseSelectService} from '@/services/database/database-select-service';
@@ -13,11 +12,8 @@ export async function importProject(file, router) {
     const rootStore = useRootStore();
 
     // Helper to finish import with delay, navigation, and toast
-    const finishImport = async (refresh, markImported = false) => {
+    const finishImport = async (refresh) => {
         await new Promise((resolve) => window.setTimeout(resolve, PARAMETERS.DELAY_MEDIUM));
-        if (markImported) {
-            rootStore.wasProjectImportedFromFile = true;
-        }
         notificationService.hideProgressDialog();
         notificationService.showToast(
             STRINGS[rootStore.language].status_codes.ec5_112
@@ -35,11 +31,6 @@ export async function importProject(file, router) {
             projectDefinition,
             project
         } = await validateProjectPayload(file, rootStore.language);
-
-        // Load project extra structure into project model
-        projectModel.loadExtraStructure(projectDefinition.meta.project_extra);
-        // Remove project model
-        projectModel.destroy();
 
         try {
 
@@ -84,10 +75,12 @@ export async function importProject(file, router) {
                 JSON.stringify(projectDefinition.meta.project_mapping)
             );
 
+            rootStore.wasProjectImportedFromFile = true;
+
             try {
                 // Generate and Save Logo
                 await projectLogoService.generateLocally(project.name, project.ref);
-                return await finishImport(true, true);
+                return await finishImport(true);
             } catch (error) {
                 // Logo download failed — continue without blocking
                 notificationService.showToast(

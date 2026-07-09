@@ -61,11 +61,10 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import { projectModel } from '@/models/project-model.js';
 import { formModel } from '@/models/form-model.js';

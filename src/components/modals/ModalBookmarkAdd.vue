@@ -72,13 +72,12 @@
 
 <script>
 import { add } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
-import { readonly } from 'vue';
+import { computed, reactive, readonly } from 'vue';
 import { projectModel } from '@/models/project-model.js';
 import HeaderModal from '@/components/ui/HeaderModal.vue';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
