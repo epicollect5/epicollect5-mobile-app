@@ -3,6 +3,8 @@
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
+import { STRINGS } from '@/config/strings';
+import { PARAMETERS } from '@/config';
 
 export const databaseInsertService = {
 
@@ -50,9 +52,7 @@ export const databaseInsertService = {
         return await this.insertRows(query, params);
     },
 
-    //Function to save a complete entry
-    async insertEntry(entry, syncType) {
-        let params = [];
+    getEntryInsertQuery() {
         let query = '';
         query += 'INSERT OR REPLACE INTO entries (';
         query += 'entry_uuid, ';
@@ -70,7 +70,11 @@ export const databaseInsertService = {
         query += 'title) ';
         query += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)';
 
-        params = [
+        return query;
+    },
+
+    getEntryInsertParams(entry, syncType) {
+        return [
             entry.entryUuid,
             entry.parentEntryUuid,
             entry.projectRef,
@@ -85,8 +89,42 @@ export const databaseInsertService = {
             entry.updatedAt ? entry.updatedAt : utilsService.getISODateTime(),//updated_at
             (entry.title !== '' ? entry.title.trim() : entry.entryUuid)
         ];
+    },
+
+    //Function to save a complete entry
+    async insertEntry(entry, syncType) {
+        const query = this.getEntryInsertQuery();
+        const params = this.getEntryInsertParams(entry, syncType);
 
         return await this.insertRows(query, params);
+    },
+
+    async insertEntries(entries, syncType) {
+        const dbStore = useDBStore();
+        const query = this.getEntryInsertQuery();
+        const paramsList = entries.map((entry) => this.getEntryInsertParams(entry, syncType));
+
+        return new Promise((resolve, reject) => {
+            function _onError(tx, error) {
+                const rootStore = useRootStore();
+                const language = rootStore.language || PARAMETERS.DEFAULT_LANGUAGE;
+                const strings = STRINGS[language] || STRINGS[PARAMETERS.DEFAULT_LANGUAGE];
+                const dbError = error || (tx && !tx.executeSql ? tx : new Error(strings.status_codes.ec5_104));
+                console.log('*** ' + query + '--------------------***');
+                console.log(dbError);
+                reject(dbError);
+                return true;
+            }
+
+            dbStore.db.transaction(function (tx) {
+                paramsList.forEach((params) => {
+                    tx.executeSql(query, params, function () {
+                    }, _onError);
+                });
+            }, _onError, function () {
+                resolve();
+            });
+        });
     },
 
     async insertMedia(entry, files, syncType) {
@@ -219,7 +257,7 @@ export const databaseInsertService = {
         query += 'FROM temp_branch_entries';
 
         console.log('Moving temp branches: ');
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             this.insertRows(query, []).then(() => {
                 // Now remove entries from the temporary table
                 query = 'DELETE FROM temp_branch_entries';

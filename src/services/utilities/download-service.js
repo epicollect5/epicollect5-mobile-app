@@ -10,10 +10,11 @@ import { webService } from '@/services/web-service';
 export const downloadService = {
 
     //Download entries for a given formRef
-    downloadFormEntries (formRef) {
+    async downloadFormEntries (formRef, options = {}) {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
+        const delayMs = options.delayMs ?? 3 * PARAMETERS.DELAY_LONG;
 
         // Default error object
         const errorObj = {
@@ -24,79 +25,146 @@ export const downloadService = {
             }]
         };
 
-        return new Promise((resolve, reject) => {
-            const slug = projectModel.getSlug();
-            let totalEntries = 0;
-            let entryNumber = 0;
+        const slug = projectModel.getSlug();
+        let totalEntries = options.initialTotalEntries ?? 0;
+        let entryNumber = options.initialEntryNumber ?? 0;
+        let url = options.startUrl;
+        let hasEntries = entryNumber > 0;
+        const cancellationError = {
+            cancelled: true
+        };
 
-            function _download (url) {
+        function _wait (ms) {
+            return new Promise((resolve) => {
+                window.setTimeout(resolve, ms);
+            });
+        }
 
-                webService.downloadEntries(slug, formRef, url).then(
-                    function (response) {
+        async function _waitUnlessCancelled(ms) {
+            const intervalMs = 100;
+            let remainingMs = ms;
 
-                        if (response.data.data) {
+            while (remainingMs > 0) {
+                _throwIfCancelled();
+                const nextDelayMs = Math.min(intervalMs, remainingMs);
+                await _wait(nextDelayMs);
+                remainingMs -= nextDelayMs;
+            }
 
-                            const entries = response.data.data.entries;
-                            const nextUrl = response.data.links.next;
-                            totalEntries = response.data.meta.total;
+            _throwIfCancelled();
+        }
 
-                            let hasEntries = false;
+        function _throwIfCancelled() {
+            if (options.isCancelled?.()) {
+                throw cancellationError;
+            }
+        }
 
-                            // Do we have any entries?
-                            if (entries.length > 0) {
+        function _normalizeNextUrlProtocol(nextUrl, currentUrl) {
+            if (!PARAMETERS.DEBUG) {
+                return nextUrl;
+            }
 
-                                hasEntries = true;
+            if (!nextUrl || !currentUrl) {
+                return nextUrl;
+            }
 
-                                // Loop entries
-                                entries.forEach((entry) => {
-                                    // Insert into the db
-                                    const flattenedEntry = JSONTransformerService.flattenJsonEntry(entry, PARAMETERS.EDIT_CODES.CANT, PARAMETERS.REMOTE_CODES.IS);
-                                    // Add the projectRef
-                                    flattenedEntry.projectRef = projectModel.getProjectRef();
-                                    databaseInsertService.insertEntry(flattenedEntry, PARAMETERS.SYNCED_CODES.SYNCED).then(
-                                        function () {
-                                            console.log('inserted');
-                                        },
-                                        function (error) {
-                                            console.log('error', error);
-                                        }
-                                    );
-                                    entryNumber++;
-                                });
+            try {
+                const nextUrlObject = new URL(nextUrl);
+                const currentUrlObject = new URL(currentUrl);
 
-                                // Update the progress and counter
-                                _updateProgress(entryNumber);
+                if (currentUrlObject.protocol === 'https:' && nextUrlObject.protocol === 'http:' && nextUrlObject.host === currentUrlObject.host) {
+                    nextUrlObject.protocol = 'https:';
+                    return nextUrlObject.toString();
+                }
+            } catch (_error) {
+                return nextUrl;
+            }
 
-                                // Check if we have any more entries
-                                // Use the nextUrl to download the next set
-                                if (nextUrl) {
-                                    _download(nextUrl);
-                                } else {
-                                    // Otherwise resolve
-                                    resolve(hasEntries);
-                                }
+            return nextUrl;
+        }
 
-                            } else {
-                                // No entries
-                                resolve(hasEntries);
-                            }
-                        } else {
-                            // Server error
-                            reject(errorObj);
-                        }
-                    }, function (response) {
-                        console.log('error');
-                        reject(response);
+        //Update the progress counter
+        function _updateProgress (entryNumber) {
+            notificationService.setProgressTransfer({ total: totalEntries, done: entryNumber });
+        }
+
+        let shouldContinue = true;
+
+        while (shouldContinue) {
+            _throwIfCancelled();
+
+            if (options.shouldSkipUrl && url && options.shouldSkipUrl(url)) {
+                const cachedNextUrl = options.getCachedNextUrl?.(url);
+
+                if (cachedNextUrl) {
+                    url = _normalizeNextUrlProtocol(cachedNextUrl, url);
+                    continue;
+                }
+
+                return hasEntries;
+            }
+
+            const response = await webService.downloadEntries(slug, formRef, url);
+
+            _throwIfCancelled();
+
+            if (!response.data.data) {
+                throw errorObj;
+            }
+
+            const entries = response.data.data.entries;
+            const currentUrl = response.config?.url || url;
+            const nextUrl = _normalizeNextUrlProtocol(response.data.links.next, currentUrl);
+            totalEntries = response.data.meta.total;
+
+            if (options.onProgress) {
+                options.onProgress({
+                    totalEntries,
+                    processedEntries: entryNumber
+                });
+            }
+
+            // Do we have any entries?
+            if (entries.length > 0) {
+
+                hasEntries = true;
+
+                const flattenedEntries = entries.map((entry) => {
+                    const flattenedEntry = JSONTransformerService.flattenJsonEntry(entry, PARAMETERS.EDIT_CODES.CANT, PARAMETERS.REMOTE_CODES.IS);
+                    // Add the projectRef
+                    flattenedEntry.projectRef = projectModel.getProjectRef();
+                    return flattenedEntry;
+                });
+
+                _throwIfCancelled();
+                await databaseInsertService.insertEntries(flattenedEntries, PARAMETERS.SYNCED_CODES.SYNCED);
+
+                entryNumber += entries.length;
+
+                // Update the progress and counter
+                _updateProgress(entryNumber);
+
+                if (options.onPageDownloaded && currentUrl) {
+                    options.onPageDownloaded(currentUrl, nextUrl, {
+                        totalEntries,
+                        processedEntries: entryNumber
                     });
+                }
+
+                _throwIfCancelled();
+
+                // Check if we have any more entries
+                // Use the nextUrl to download the next set
+                if (nextUrl) {
+                    await _waitUnlessCancelled(delayMs);
+                    url = nextUrl;
+                    continue;
+                }
             }
 
-            //Update the progress counter
-            function _updateProgress (entryNumber) {
-                notificationService.setProgressTransfer({ total: totalEntries, done: entryNumber });
-            }
-
-            // Start the first download
-            _download();
-        });
+            shouldContinue = false;
+            return hasEntries;
+        }
     }
 };

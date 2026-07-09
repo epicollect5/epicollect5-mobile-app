@@ -5,6 +5,7 @@ import {STRINGS} from '@/config/strings';
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {deleteFileService} from '@/services/filesystem/delete-file-service';
 import {rollbarService} from '@/services/utilities/rollbar-service';
+import {entriesDownloadProgressService} from '@/services/utilities/entries-download-progress-service';
 
 export async function deleteEntryBranch(state, language, labels, goBack) {
     const confirmed = await notificationService.confirmSingle(
@@ -31,6 +32,7 @@ export async function deleteEntryBranch(state, language, labels, goBack) {
 
             if (allMediaFiles.length === 0) {
                 // Go back
+                entriesDownloadProgressService.clearProject(projectModel.getProjectRef());
                 notificationService.showToast(labels.entry_deleted);
                 goBack();
                 return;
@@ -40,6 +42,7 @@ export async function deleteEntryBranch(state, language, labels, goBack) {
             //remove all related rows from media table
             await databaseDeleteService.deleteEntryMedia(state.entryUuid);
             //navigate back
+            entriesDownloadProgressService.clearProject(projectModel.getProjectRef());
             notificationService.showToast(labels.entry_deleted);
             goBack();
         } catch (error) {

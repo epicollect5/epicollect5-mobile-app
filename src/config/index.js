@@ -304,7 +304,7 @@ export const PARAMETERS = {
         NOT_FOUND: 'not-found'
     },
 
-    ENTRIES_REMOTE_PER_PAGE: 50,//this for the remote entries download
+    ENTRIES_REMOTE_PER_PAGE: 250,//this for the remote entries download
     ENTRIES_PER_PAGE: 25,//Entries
     ANSWERS_PER_PAGE: 25,//EntriesView
     POSSIBLE_ANSWERS_PER_PAGE: 25,
@@ -341,7 +341,9 @@ export const PARAMETERS = {
         FILE_DELETED: 'file-deleted',
         FILE_QUEUED: 'file-queued',
         ENTRY_QUIT: 'entry-quit',
-        ENTRY_SAVE: 'entry-save'
+        ENTRY_SAVE: 'entry-save',
+        DOWNLOAD_RESUME: 'download-resume',
+        DOWNLOAD_RESTART: 'download-restart'
     },
     SETTINGS_KEYS: {
         SERVER_URL: 'server_url',

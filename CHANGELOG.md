@@ -1,24 +1,34 @@
 ## Release Notes
 
-### 88.9.6 - build 8896
+# 88.9.8 - build 8898
+
+ - Fixed bug with upload progress (delays too long)
+
+# 88.9.7 - build 8897
+
+- Added entries download progress service
+- Resume interrupted downloads with per-form progress UI, resume/restart prompts.
+- Added clear-progress action and progress modal with cancel.
+
+# 88.9.6 - build 8896
 
 - Export entries as a compressed archive for sharing
 - "Send to Device" export to store project data on the device
 - Real-time progress modal with percentage during exports
 
-### 88.9.5 - build 8895
+# 88.9.5 - build 8895
 
 - Added ability to export project entries to CSV files.
 - Integrated geographic coordinate conversion to UTM format for location.
 - Enhanced file export mechanism with better directory management across Android and iOS platforms.
 - Expanded multi-language support with localized labels for entry export functionality.
 
-### 88.9.4 - build 8894
+# 88.9.4 - build 8894
 
 - Added PWA support
 - Fixed bugs and stability improvements
 
-### 88.9.3 - build 8893
+# 88.9.3 - build 8893
 
 - Added Media export option.
 - Entry-limit checks removed from the app.

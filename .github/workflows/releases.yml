@@ -19,11 +19,17 @@ jobs:
           TAG_VERSION=${GITHUB_REF#refs/tags/}
           echo "Extracting release notes for version: $TAG_VERSION"
           
-          # Extract release notes using awk
           RELEASE_NOTES=$(awk -v version="$TAG_VERSION" '
-          $0 ~ "^# " version "( |$)" {flag=1; next}
-          $0 ~ "^# " && flag {exit}
-          flag {print}
+          BEGIN {
+          # match headings like:
+          # "# 1.2.3", "## [1.2.3]", "### v1.2.3 - date"
+          regex = "^#{1,6}[[:space:]]*\\[?v?" version "\\]?($|[[:space:]]|[-–—])"
+          }
+          # start capturing when a header matches the version
+          match($0, regex) { flag = 1; next }
+          # stop capturing at the next header
+          $0 ~ "^#{1,6}" && flag { exit }
+          flag { print }
           ' CHANGELOG.md)
           
           # Guard against missing or empty release notes

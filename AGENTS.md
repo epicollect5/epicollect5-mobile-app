@@ -32,6 +32,23 @@
 - docs/CODE-STYLE.md overrides generic Vue best practices
 - Always follow existing patterns in the codebase over external examples
 
+## System Risks Check (MANDATORY)
+
+For any feature, do NOT assume correctness. Identify how it can break.
+
+You MUST:
+
+* List ways data can become stale or inconsistent
+* Check what happens when underlying data changes or are removed
+* Consider failures: network, partial execution, concurrency
+* Identify anything cached/stored and when it becomes invalid
+* Consider side effects on other parts of the system
+
+List at least three concrete risks.
+If none, justify why for each point.
+
+Assume this runs at scale and causes inconsistencies after months in production.
+
 ## Source of Truth
 
 - Architecture → docs/ARCHITECTURE.md

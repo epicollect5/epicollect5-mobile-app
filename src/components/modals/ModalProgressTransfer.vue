@@ -4,6 +4,17 @@
 			<ion-title class="ion-text-center"
 					   color="dark">{{ header }}
 			</ion-title>
+			<ion-buttons
+				v-if="showCloseButton"
+				slot="end"
+			>
+				<ion-button @click="closeModal()">
+					<ion-icon
+						slot="icon-only"
+						:icon="closeOutline"
+					></ion-icon>
+				</ion-button>
+			</ion-buttons>
 		</ion-toolbar>
 	</ion-header>
 	<ion-content class="ion-text-center">
@@ -24,12 +35,23 @@
 import { computed } from '@vue/reactivity';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
+import { closeOutline } from 'ionicons/icons';
+import { modalController } from '@ionic/vue';
+import { notificationService } from '@/services/notification-service';
 
 export default {
 	props: {
 		header: {
 			type: String,
 			required: true
+		},
+		showCloseButton: {
+			type: Boolean,
+			default: false
+		},
+		onClose: {
+			type: Function,
+			default: null
 		}
 	},
 	setup (props) {
@@ -50,11 +72,27 @@ export default {
 				const progress = rootStore.progressTransfer;
 				return progress.done;
 			}),
-			header: props.header
+			header: props.header,
+			showCloseButton: props.showCloseButton
+		};
+
+		const methods = {
+			async closeModal() {
+				const confirmed = await notificationService.confirmSingle(labels.are_you_sure);
+
+				if (confirmed) {
+					if (props.onClose) {
+						await props.onClose();
+					}
+					await modalController.dismiss(null, 'cancel');
+				}
+			}
 		};
 		return {
 			labels,
-			...computedScope
+			...computedScope,
+			...methods,
+			closeOutline
 		};
 	}
 };

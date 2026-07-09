@@ -6,6 +6,7 @@ import {PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {deleteFileService} from '@/services/filesystem/delete-file-service';
+import {entriesDownloadProgressService} from '@/services/utilities/entries-download-progress-service';
 
 export async function deleteEntry(state, router, bookmarkStore, rootStore, language, labels) {
     const projectRef = projectModel.getProjectRef();
@@ -43,6 +44,8 @@ export async function deleteEntry(state, router, bookmarkStore, rootStore, langu
             bookmarkStore.setBookmarks([]);
             return;
         }
+
+        entriesDownloadProgressService.clearProject(projectRef);
 
         //back to entries list with refresh
         if (rootStore.nextRoute) {

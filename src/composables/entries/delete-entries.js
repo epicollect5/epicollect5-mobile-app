@@ -10,6 +10,7 @@ import { databaseDeleteService } from '@/services/database/database-delete-servi
 import { notificationService } from '@/services/notification-service';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { deleteFileService } from '@/services/filesystem/delete-file-service';
+import { entriesDownloadProgressService } from '@/services/utilities/entries-download-progress-service';
 /**
  * Delete all entries and redirect to entries page
  */
@@ -69,6 +70,7 @@ export async function deleteEntries (router) {
     async function _onDeleteSuccess () {
         const bookmarkStore = useBookmarkStore();
         const projectRef = projectModel.getProjectRef();
+        entriesDownloadProgressService.clearProject(projectRef);
         // Refresh bookmarks after deletion
         try {
             await bookmarksService.deleteBookmarks(projectRef);
