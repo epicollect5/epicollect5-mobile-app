@@ -1,0 +1,31 @@
+src/services/upload-data-service.js
+  s_6a14a245f4948d::t_fc2921e827b233 256
+  s_6a14a245f4948d::t_b9d0b359fc1340 240
+  s_6a14a245f4948d::t_be5728275316fe 229
+AGENTS.md
+  s_6a14a245f4948d::t_5bbaec8ef65a50 42
+  s_6a14a245f4948d::t_ce8f8c267f4dfe 39-41
+  s_6a14a245f4948d::t_98fd7e83afa3d8 43-45
+src/services/entries-download-service.js
+  s_6a14a245f4948d::t_1e5bb97e5aa092 5
+  s_6a14a245f4948d::t_3f14dd99610f7a 10
+  s_6a14a245f4948d::t_cb48f55bc27384 2-4
+  s_6a14a245f4948d::t_f2201f41343fa8 6-9
+  s_6a14a245f4948d::t_35e6693198a3e5 11-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "77ffc2bb686a2ee4b59f076fce8d2718f0c818f6",
+  "prompts": {},
+  "sessions": {
+    "s_6a14a245f4948d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0b9f304c6ffePJ2ma7vcNoclAb",
+        "model": "glm-5.2"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
