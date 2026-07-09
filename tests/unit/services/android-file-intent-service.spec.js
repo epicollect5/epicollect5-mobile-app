@@ -1,11 +1,17 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { Filesystem } from '@capacitor/filesystem';
+import { STRINGS } from '@/config/strings';
 
 // Mock Capacitor Filesystem
 vi.mock('@capacitor/filesystem', () => ({
     Filesystem: {
         readFile: vi.fn()
     }
+}));
+
+// Mock root store for localized error strings
+vi.mock('@/stores/root-store', () => ({
+    useRootStore: vi.fn(() => ({ language: 'en' }))
 }));
 
 // Mock Config
@@ -140,7 +146,7 @@ describe('Android File Intent Service', () => {
 
                 await expect(
                     androidFileIntentService.extractJsonFromIntent('file:///storage/emulated/0/nonexistent.json')
-                ).rejects.toThrow('Failed to read or parse JSON file: File not found');
+                ).rejects.toThrow(STRINGS['en'].labels.cannot_read_file);
             });
 
             it('throws error when JSON is invalid in file:// URL', async () => {
@@ -148,7 +154,7 @@ describe('Android File Intent Service', () => {
 
                 await expect(
                     androidFileIntentService.extractJsonFromIntent('file:///storage/emulated/0/project.json')
-                ).rejects.toThrow('Failed to read or parse JSON file');
+                ).rejects.toThrow(STRINGS['en'].labels.invalid_project_json);
             });
         });
 
@@ -170,7 +176,7 @@ describe('Android File Intent Service', () => {
 
                 await expect(
                     androidFileIntentService.extractJsonFromIntent('content://media/external/file/15025')
-                ).rejects.toThrow('Failed to read or parse JSON file: Permission denied');
+                ).rejects.toThrow(STRINGS['en'].labels.cannot_read_file);
             });
 
             it('throws error when JSON is invalid in content:// URI', async () => {
@@ -178,7 +184,7 @@ describe('Android File Intent Service', () => {
 
                 await expect(
                     androidFileIntentService.extractJsonFromIntent('content://media/external/file/15025')
-                ).rejects.toThrow('Failed to read or parse JSON file');
+                ).rejects.toThrow(STRINGS['en'].labels.invalid_project_json);
             });
         });
 

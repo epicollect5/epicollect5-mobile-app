@@ -558,10 +558,6 @@ export const webService = {
                     url: self.getServerUrl() + PARAMETERS.API.ROUTES.ROOT + PARAMETERS.API.ROUTES.PROJECT_VERSION + projectSlug,
                     headers: headers
                 }).then(function (response) {
-
-
-
-
                     resolve(response);
                 }, function (error) {
                     reject(error.response);
