@@ -1,0 +1,219 @@
+src/services/validation/project-json-validate.js
+  s_08a2ab92602a18::t_1a6cb85f3fac0c 8,24
+  s_08a2ab92602a18::t_8bbca8fbf9714f 88
+  s_08a2ab92602a18::t_708235b7e67e1f 290-297
+src/components/auth/CardLoginLocal.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 59
+src/components/modals/ModalEntriesBranchFilter.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 112
+src/components/questions/QuestionPhone.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 59
+src/components/questions/QuestionSearch.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 87
+src/components/modals/ModalPossibleAnswers.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 63
+src/composables/project/validate-project-payload.js
+  s_08a2ab92602a18::t_68ee2e49c6ff6e 45
+src/components/globals/RightDrawer.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 327
+src/services/errors-service.js
+  s_08a2ab92602a18::t_39dae49ba37eb0 7-15
+  s_08a2ab92602a18::t_257cedb74da8d2 142,148,152
+src/components/questions/QuestionReadme.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 17
+src/pages/EntriesErrors.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 153
+src/components/modals/ModalProgressTransfer.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 35
+src/components/questions/QuestionCheckbox.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 47
+src/components/auth/CardLoginLdap.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 52
+src/composables/project/bulk-validate-projects.js
+  s_08a2ab92602a18::t_e5eb13c56db83c 7
+src/components/questions/QuestionVideo.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 71
+src/components/answers/ListSavedAnswers.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 63
+src/components/modals/ModalPasswordlessSend.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 65
+src/pages/Settings.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 168
+src/components/answers/AnswerLocation.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 48
+src/components/popovers/PopoverQuestionLocation.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 72
+tests/unit/services/project-logo-service.spec.js
+  s_08a2ab92602a18::t_cd510ef99fc643 1-250
+src/components/modals/ModalSavedAnswers.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 63
+src/components/questions/QuestionGroup.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 152
+src/components/ui/ToolbarFormName.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 39
+src/services/validation/project-json-sanitise.js
+  s_08a2ab92602a18::t_abbd34bd4a316f 128-130
+src/components/questions/QuestionBarcode.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 104
+src/pages/EntriesAdd.vue
+  s_08a2ab92602a18::t_6892807400d863 69
+  s_08a2ab92602a18::t_a0c5af5fc7a849 309
+  s_08a2ab92602a18::t_1def33a8aad4d8 416-421
+src/services/clipboard-service.js
+  s_08a2ab92602a18::t_959fbf3c4743a8 14-18
+src/components/modals/ModalLogin.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 19
+src/components/modals/ModalBookmarkAdd.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 80
+src/pages/Profile.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 112
+src/services/entry/question-common-service.js
+  s_08a2ab92602a18::t_a0c5af5fc7a849 3
+src/components/questions/QuestionAudio.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 78
+src/components/questions/QuestionInteger.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 116
+src/components/modals/ModalAccountDeletion.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 82
+.gitignore
+  h_2231ff2aa93473 54
+src/components/popovers/PopoverQuestionMedia.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 34
+src/components/modals/ModalPhoto.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 53
+src/composables/project/add-project.js
+  s_08a2ab92602a18::t_353e93a5a38aa6 133,136,138
+src/components/lists/ListPossibleAnswersCheckbox.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 66
+src/pages/Projects.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 89
+src/components/questions/QuestionRadio.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 45
+src/components/globals/LeftDrawer.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 174
+src/components/modals/ModalProgressEncoding.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 35
+src/services/project-extra-service.js
+  s_08a2ab92602a18::t_a7af9a75b22f83 64-67,73-75
+  s_08a2ab92602a18::t_a5d9a83eadd1bb 76
+src/pages/ProjectsAdd.vue
+  s_08a2ab92602a18::t_5af06f5f972693 158-163,169-173,175,177
+  s_08a2ab92602a18::t_5676e24697847d 153,155
+src/components/questions/QuestionLocation.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 108
+src/components/modals/ModalEntriesFilter.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 142
+src/pages/EntriesDownload.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 94
+src/pages/Entries.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 161
+src/components/questions/QuestionBranch.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 254
+src/components/questions/QuestionTime.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 112
+src/components/modals/ModalProjectInfo.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 84
+src/components/questions/QuestionSaved.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 61
+src/composables/project/import-project.js
+  s_08a2ab92602a18::t_55b4dc8f1076da 15,78-79,83
+src/services/project-logo-service.js
+  s_08a2ab92602a18::t_0cfb46e827aef8 160-168
+  s_08a2ab92602a18::t_5b16740331ca5c 70
+  s_08a2ab92602a18::t_d4ca56e02ff014 141-143,145
+  s_08a2ab92602a18::t_cd1b1904cbf2ba 65-67
+  s_08a2ab92602a18::t_d4e81a6ead4209 86-87
+src/components/modals/ModalPasswordlessLogin.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 61
+src/components/questions/QuestionTextarea.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 64
+src/config/strings.js
+  s_08a2ab92602a18::t_66836f25c7d2a3 1660
+  s_08a2ab92602a18::t_573a22bc06578c 2589
+  s_08a2ab92602a18::t_f1a286ec28b398 1984
+  s_08a2ab92602a18::t_de5f99181862d7 969
+  s_08a2ab92602a18::t_c2ea365251043b 40
+  s_08a2ab92602a18::t_2ed4fa357fb69e 321
+  s_08a2ab92602a18::t_97b9bd5c458915 645
+  s_08a2ab92602a18::t_e91efecab8aa41 2265
+  s_08a2ab92602a18::t_a13b4658dee8ed 688
+  s_08a2ab92602a18::t_da1c8e303bb5da 1336
+  s_08a2ab92602a18::t_c4aba0aa567371 2308
+  s_08a2ab92602a18::t_f14138ba974433 2913
+  s_08a2ab92602a18::t_6dc256660b312c 1941
+  s_08a2ab92602a18::t_2f9a3a4998bb57 1617
+  s_08a2ab92602a18::t_fd07164a924d66 1012
+  s_08a2ab92602a18::t_c2b36fa102788c 1293
+  s_08a2ab92602a18::t_cf72a8ebee4ff0 364
+  s_08a2ab92602a18::t_bdbdb2195e7038 2632
+src/App.vue
+  s_08a2ab92602a18::t_f23bd42dcad6ce 110,127,131,152
+  s_08a2ab92602a18::t_f1d1e03b2e2e53 126
+  s_08a2ab92602a18::t_5359c6b823bab7 140-141
+src/components/modals/ModalConfirmEmail.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 75
+src/components/auth/CardLoginDefault.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 65
+src/components/questions/QuestionLocationCapacitor.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 79
+src/pages/EntriesUpload.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 248
+src/components/questions/QuestionSave.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 51
+src/components/lists/ListItemProjects.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 34
+tests/unit/validation/project-json-validate.spec.js
+  s_08a2ab92602a18::t_0ac7744deeed60 640-642,662-663
+  s_08a2ab92602a18::t_9028d19b6d42d9 209
+  s_08a2ab92602a18::t_73a63132a2876d 667
+  s_08a2ab92602a18::t_293a7653361fd8 620-621,623-638,643-644,646-661,664-666,668-704,709-726
+  s_08a2ab92602a18::t_4c1e4ebffc489c 622,639,645,705-708
+  s_08a2ab92602a18::t_6d17cc42ef9bd3 162-178
+src/components/questions/QuestionLabelPossibleAnswers.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 38
+src/components/lists/ListPossibleAnswersRadio.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 64
+src/components/questions/QuestionDecimal.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 130
+src/components/globals/BaseLayout.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 31
+src/components/modals/ModalConfirmPassword.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 77
+tests/unit/use/import-project.spec.js
+  s_08a2ab92602a18::t_2049a085f938e8 326
+src/components/modals/ModalLocationEdit.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 60
+src/components/answers/ListAnswers.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 97
+src/components/questions/QuestionDate.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 86
+tests/unit/validation/project-json-sanitise.spec.js
+  s_08a2ab92602a18::t_7d618149e6fc98 265-280
+src/components/questions/QuestionDropdown.vue
+  s_08a2ab92602a18::t_a0c5af5fc7a849 50
+tests/unit/services/project-extra-service.spec.js
+  s_08a2ab92602a18::t_456223b08a813b 312-340
+ios/App/Podfile.lock
+  s_08a2ab92602a18::t_dbd2d7a70f90da 238
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1bc4d561eae3c297b4266989f4bfb441228e72ea",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_08a2ab92602a18": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ba0fb50dffe07SJY0Ww67cd58",
+        "model": "minimax-m3"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
