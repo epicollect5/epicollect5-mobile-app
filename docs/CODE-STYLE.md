@@ -95,14 +95,14 @@ Use the structure rules:
 
 ## Reference Implementation
 
-See: `ExampleComponent.vue`
+See: `.opencode/skills/generate-component/assets/ExampleComponent.vue`
 
 - This file is the **canonical pattern**.
 - Always start from its structure.
 - Prefer copying it over using generic Vue examples.
 
 When generating Vue components:
-- Start by copying `ExampleComponent.vue`.
+- Start by copying `.opencode/skills/generate-component/assets/ExampleComponent.vue`.
 - Then adapt it to the specific feature.
 
 ---
@@ -227,7 +227,7 @@ Do **NOT**:
 ## Priority Order
 
 When in doubt:
-1. Follow `ExampleComponent.vue`
+1. Follow `.opencode/skills/generate-component/assets/ExampleComponent.vue`
 2. Follow this file
 3. Then consider general Vue guidance
 

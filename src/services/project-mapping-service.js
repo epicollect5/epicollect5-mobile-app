@@ -81,19 +81,6 @@ function getMappedInputs(projectExtra, formRef, inputRefs, counter) {
     return mappedInputs;
 }
 
-function getMappedNestedInputs(projectExtra, formRef, inputRefs, counter) {
-    const mappedInputs = {};
-    for (const inputRef of inputRefs) {
-        const inputData = projectExtra.inputs[inputRef].data;
-        if (EXCLUDE_FROM_MAPPING.has(inputData.type)) {
-            continue;
-        }
-        counter.value++;
-        mappedInputs[inputRef] = getMappedInput(projectExtra, formRef, inputData, counter);
-    }
-    return mappedInputs;
-}
-
 /**
  * Map a single input.
  *
@@ -120,7 +107,7 @@ function getMappedInput(projectExtra, formRef, inputData, counter) {
             const inputRef = inputData.ref;
             const groupInputRefs = projectExtra.forms[formRef].group[inputRef] || [];
             if (groupInputRefs.length > 0) {
-                entry.group = getMappedNestedInputs(projectExtra, formRef, groupInputRefs, counter);
+                entry.group = getMappedInputs(projectExtra, formRef, groupInputRefs, counter);
             }
             break;
         }
@@ -128,7 +115,7 @@ function getMappedInput(projectExtra, formRef, inputData, counter) {
             const inputRef = inputData.ref;
             const branchInputRefs = projectExtra.forms[formRef].branch[inputRef] || [];
             if (branchInputRefs.length > 0) {
-                entry.branch = getMappedNestedInputs(projectExtra, formRef, branchInputRefs, counter);
+                entry.branch = getMappedInputs(projectExtra, formRef, branchInputRefs, counter);
             }
             break;
         }

@@ -5,6 +5,8 @@
 
 import {Filesystem} from '@capacitor/filesystem';
 import {PARAMETERS} from '@/config';
+import {STRINGS} from '@/config/strings';
+import {useRootStore} from '@/stores/root-store';
 
 export const androidFileIntentService = {
     /**
@@ -25,7 +27,11 @@ export const androidFileIntentService = {
         if (url.startsWith('file://')) {
             return url.toLowerCase().endsWith('.json');
         }
-        // Handle content:// URIs - they typically come from file managers/providers
+        // Handle content:// URIs - they typically come from file managers/providers.
+        // content:// URIs (e.g. content://com.android.providers.downloads.documents/document/123)
+        // carry no filename, extension or MIME type in the string, so the type cannot be
+        // derived here. Accept unconditionally and validate later in extractJsonFromIntent:
+        // a non-JSON file fails JSON.parse and is surfaced as a generic "invalid" alert in App.vue.
         if (url.startsWith('content://')) {
             return true;
         }
@@ -39,9 +45,10 @@ export const androidFileIntentService = {
      * @throws {Error} - If file cannot be read or is not valid JSON
      */
     async extractJsonFromIntent(fileUrl) {
-        try {
-            let fileContent;
+        const language = useRootStore().language;
+        let fileContent;
 
+        try {
             if (fileUrl.startsWith('content://')) {
                 // Handle content:// URIs using Capacitor's Filesystem readFile
                 // which can handle content provider URIs
@@ -57,12 +64,17 @@ export const androidFileIntentService = {
                     encoding: 'utf8'
                 });
             }
-
-            // Parse and return the JSON data
-            return JSON.parse(fileContent.data);
         } catch (error) {
-            console.error('Failed to extract JSON from file intent:', error);
-            throw new Error(`Failed to read or parse JSON file: ${error.message}`);
+            console.error('Failed to read file from intent:', error);
+            throw new Error(STRINGS[language].labels.cannot_read_file);
+        }
+
+        // Parse and return the JSON data
+        try {
+            return JSON.parse(fileContent.data);
+        } catch (parseError) {
+            console.error('Failed to parse JSON from file intent:', parseError);
+            throw new Error(STRINGS[language].labels.invalid_project_json);
         }
     }
 };

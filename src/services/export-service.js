@@ -307,6 +307,7 @@ export const exportService = {
             //if total is 0, bail out
             if (total === 0) {
                 notificationService.setProgressExport({total: 0, done: 0});
+                // noinspection ExceptionCaughtLocallyJS
                 throw new Error(labels.no_entries_found);
             }
 
@@ -382,7 +383,7 @@ export const exportService = {
         } catch (error) {
             console.error('Archive failed:', error);
             await notificationService.hideProgressExportModal();
-            await notificationService.showAlert(error);
+            await notificationService.showAlert(error?.message ?? String(error));
             return false;
         } finally {
             // Always cleanup
@@ -416,6 +417,7 @@ export const exportService = {
             //if total is 0, bail out
             if (total === 0) {
                 notificationService.setProgressExport({total: 0, done: 0});
+                // noinspection ExceptionCaughtLocallyJS
                 throw new Error(labels.no_entries_found);
             }
 
