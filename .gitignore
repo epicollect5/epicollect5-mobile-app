@@ -50,3 +50,4 @@ git-commits.csv
 .vscode
 deploy-pwa.sh
 scripts/projects
+docs/QA-*
