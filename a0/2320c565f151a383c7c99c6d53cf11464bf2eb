@@ -1,0 +1,57 @@
+src/config/strings.js
+  s_241f4b9bfda07f::t_d4e4cede708429 473-474
+  s_241f4b9bfda07f::t_7ae6891d5a812b 2103-2104
+  s_241f4b9bfda07f::t_6285f7ee2720e4 799-800
+  s_241f4b9bfda07f::t_3eb37443d68508 1125-1126
+  s_241f4b9bfda07f::t_fe689a089aadda 2755-2756
+  s_241f4b9bfda07f::t_9ad01ad36bfcf3 1451-1452
+  s_241f4b9bfda07f::t_d9b87c0476f046 1777-1778
+  s_241f4b9bfda07f::t_6dfdc2595aaeb1 2429-2430
+  s_241f4b9bfda07f::t_dbcf7a9ff35e56 147-148
+src/services/android-file-intent-service.js
+  s_241f4b9bfda07f::t_d65973487f4915 8-9
+  s_241f4b9bfda07f::t_86998beecea9e1 48-49,51,67-68,70,72-73,75-77
+  s_241f4b9bfda07f::t_90b21853b33db7 69
+  s_241f4b9bfda07f::t_2a5b221a9aca67 30-34
+src/services/project-mapping-service.js
+  s_940dbb791e6255::t_022918ff312e42 110
+  s_940dbb791e6255::t_94d6161ba0c98e 118
+tests/unit/services/android-file-intent-service.spec.js
+  s_241f4b9bfda07f::t_2732117d314d81 12-16
+  s_241f4b9bfda07f::t_6cc3056fed1776 157
+  s_241f4b9bfda07f::t_d6b950c960ac23 179
+  s_241f4b9bfda07f::t_863f8c17050be1 187
+  s_241f4b9bfda07f::t_a30fec1656834c 149
+  s_241f4b9bfda07f::t_0c48867c9f2e11 3
+src/services/export-service.js
+  h_2231ff2aa93473 310,386,420
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "a02320c565f151a383c7c99c6d53cf11464bf2eb",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_241f4b9bfda07f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0b8267c99ffeps5PiZxEJ75sD1",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_940dbb791e6255": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0b82e3e86ffe5LqfejMeWN0jFy",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
