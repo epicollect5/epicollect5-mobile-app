@@ -1,0 +1,31 @@
+docs/code-style.md
+  s_10ee48c58d1749::t_86a5a88d501a96 105
+  s_10ee48c58d1749::t_dfd33be4e6288c 98
+  s_10ee48c58d1749::t_ae07efc00ab93b 230
+.opencode/skills/generate-component/assets/ExampleComponent.vue
+  s_10ee48c58d1749::t_f35217a5def720 1-75
+.opencode/skills/conventions-check/SKILL.md
+  s_10ee48c58d1749::t_00826171c0b683 1-53
+.opencode/skills/system-risks/SKILL.md
+  s_10ee48c58d1749::t_70fd9384259078 1-71
+.opencode/skills/scaffold-test/SKILL.md
+  s_10ee48c58d1749::t_9a999e36707f76 1-50
+.opencode/skills/generate-component/SKILL.md
+  s_10ee48c58d1749::t_fa193fdb56551c 1-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "5c5fc4c171a87f5ef9ea0fc35dcc21fc5ba87373",
+  "prompts": {},
+  "sessions": {
+    "s_10ee48c58d1749": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_090815a6affecn1ny0OLRiEWpd",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
