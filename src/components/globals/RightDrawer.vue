@@ -22,6 +22,7 @@
       <ion-list>
         <ion-item
             button
+            :disabled="wasProjectImportedFromFile"
             data-test="upload-page"
             @click="goToUploadPage()"
         >
@@ -36,6 +37,7 @@
         </ion-item>
         <ion-item
             button
+            :disabled="wasProjectImportedFromFile"
             data-test="download-page"
             @click="goToDownloadPage()"
         >
@@ -50,6 +52,7 @@
 
         <ion-item
             button
+            :disabled="wasProjectImportedFromFile"
             data-test="unsync-entries"
             @click="unsyncAllEntries()"
         >
@@ -106,6 +109,7 @@
         </ion-item>
         <ion-item
             button
+            :disabled="wasProjectImportedFromFile"
             data-test="edit-remote-entries"
             @click="editRemoteEntries()"
         >
@@ -315,12 +319,12 @@ import {
 } from 'ionicons/icons';
 import {useRouter} from 'vue-router';
 import {PARAMETERS} from '@/config';
-import {deleteProject} from '@/use/project/delete-project';
-import {deleteEntries} from '@/use/entries/delete-entries';
+import {deleteProject} from '@/composables/project/delete-project';
+import {deleteEntries} from '@/composables/entries/delete-entries';
 import {projectModel} from '@/models/project-model.js';
 import {formModel} from '@/models/form-model.js';
 import {modalController, menuController} from '@ionic/vue';
-import {ref, reactive, computed} from '@vue/reactivity';
+import { computed, reactive, ref } from 'vue';
 import ModalProjectInfo from '@/components/modals/ModalProjectInfo';
 import ModalBookmarkAdd from '@/components/modals/ModalBookmarkAdd';
 import {notificationService} from '@/services/notification-service';
@@ -346,6 +350,9 @@ export default {
     const computedScope = {
       isBookmarked: computed(() => {
         return bookmarkStore.bookmarkId !== null;
+      }),
+      wasProjectImportedFromFile: computed(() => {
+        return rootStore.wasProjectImportedFromFile;
       })
     };
 

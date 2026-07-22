@@ -1,7 +1,7 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {setActivePinia, createPinia} from 'pinia';
-import {cloneEntry} from '@/use/entry/clone-entry';
-import {cloneEntryBranch} from '@/use/entry/clone-entry-branch';
+import {cloneEntry} from '@/composables/entry/clone-entry';
+import {cloneEntryBranch} from '@/composables/entry/clone-entry-branch';
 import {notificationService} from '@/services/notification-service';
 import {databaseInsertService} from '@/services/database/database-insert-service';
 import {PARAMETERS} from '@/config';

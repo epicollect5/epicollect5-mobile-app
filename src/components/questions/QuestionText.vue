@@ -70,7 +70,7 @@ import { projectModel } from '@/models/project-model.js';
 import { formModel } from '@/models/form-model.js';
 import { modalController } from '@ionic/vue';
 import ModalSavedAnswers from '@/components/modals/ModalSavedAnswers.vue';
-import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
+import QuestionLabelAction from '@/components/questions/QuestionLabelAction.vue';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { questionCommonService } from '@/services/entry/question-common-service';

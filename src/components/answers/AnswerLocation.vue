@@ -45,7 +45,7 @@
 <script>
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
-import { computed } from '@vue/reactivity';
+import { computed } from 'vue';
 
 export default {
 	props: {

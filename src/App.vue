@@ -1,7 +1,7 @@
 <template>
   <ion-app>
     <left-drawer v-if="needsDrawers"></left-drawer>
-    <right-drawer v-if="needsDrawers"></right-drawer>
+    <right-drawer v-if="needsDrawers" :key="projectRef"></right-drawer>
     <ion-router-outlet id="main"/>
   </ion-app>
 </template>
@@ -14,11 +14,13 @@ import {useRouter} from 'vue-router';
 import {PARAMETERS} from '@/config';
 import {onMounted, computed} from 'vue';
 import {App as CapacitorApp} from '@capacitor/app'; // Alias the Capacitor App module as CapacitorApp
-import {addProject} from '@/use/project/add-project';
+import {addProject} from '@/composables/project/add-project';
+import {importProject} from '@/composables/project/import-project';
 import {utilsService} from '@/services/utilities/utils-service';
 import {webService} from '@/services/web-service';
 import {notificationService} from '@/services/notification-service';
 import {errorsService} from '@/services/errors-service';
+import {androidFileIntentService} from '@/services/android-file-intent-service';
 
 export default {
   name: 'App',
@@ -32,6 +34,9 @@ export default {
     const computedScope = {
       needsDrawers: computed(() => {
         return rootStore.device.platform !== PARAMETERS.PWA;
+      }),
+      projectRef: computed(() => {
+        return rootStore.routeParams.projectRef;
       })
     };
 
@@ -44,6 +49,32 @@ export default {
           STRINGS[rootStore.language].labels.wait,
           STRINGS[rootStore.language].labels.loading_project
       );
+
+      // Check if this is a JSON file intent from Android file manager
+      if (androidFileIntentService.isJsonFileIntent(data.url, rootStore.device.platform)) {
+        try {
+          await router.replace({
+            name: PARAMETERS.ROUTES.PROJECTS_ADD,
+            query: {refresh: true}
+          });
+
+          // Extract and parse the JSON file
+          const jsonData = await androidFileIntentService.extractJsonFromIntent(data.url);
+
+          // Run the import flow with the JSON data
+          await importProject(jsonData, router);
+          return;
+        } catch (error) {
+          console.error('Failed to handle JSON file intent:', error);
+          notificationService.hideProgressDialog();
+          await notificationService.showAlert(STRINGS[rootStore.language].labels.invalid);
+          await router.replace({
+            name: PARAMETERS.ROUTES.PROJECTS,
+            query: {refresh: true}
+          });
+          return;
+        }
+      }
 
       //Send app to add project page to re-use everything
       //like we are adding a project manually
@@ -76,6 +107,7 @@ export default {
               .then((response) => {
                 //if Project does not exist, error out
                 if (response.data.data.length === 0) {
+                  notificationService.hideProgressDialog();
                   // Show 'Project does not exist' message
                   notificationService.showAlert(STRINGS[rootStore.language].status_codes.ec5_11);
                   //go back to projects list
@@ -91,9 +123,12 @@ export default {
                     ref: response.data.data[0].project.ref
                   };
                   //try to load the project in
+                  rootStore.wasProjectImportedFromFile = false;
+                  notificationService.hideProgressDialog();
                   addProject(project, router);
                 }
               }, (error) => {
+                notificationService.hideProgressDialog();
                 errorsService.handleWebError(error);
                 // No projects?
                 try {
@@ -102,7 +137,8 @@ export default {
                     notificationService.showAlert(STRINGS[rootStore.language].labels.no_projects_found);
                   }
                 } catch (error) {
-                  notificationService.showAlert(JSON.stringify(error), STRINGS[rootStore.language].labels.unknown_error);
+                  console.error('Deep-link search error:', error);
+                  notificationService.showAlert(STRINGS[rootStore.language].labels.unknown_error);
                 }
 
                 //just launch app
@@ -113,6 +149,7 @@ export default {
               });
         }
       } else {
+        notificationService.hideProgressDialog();
         //otherwise just project list
         await router.replace({
           name: PARAMETERS.ROUTES.PROJECTS,

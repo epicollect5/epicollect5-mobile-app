@@ -39,7 +39,7 @@ For any feature, do NOT assume correctness. Identify how it can break.
 You MUST:
 
 * List ways data can become stale or inconsistent
-* Check what happens when underlying data changes or is removed
+* Check what happens when underlying data changes or are removed
 * Consider failures: network, partial execution, concurrency
 * Identify anything cached/stored and when it becomes invalid
 * Consider side effects on other parts of the system

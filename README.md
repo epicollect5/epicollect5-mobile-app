@@ -36,7 +36,6 @@ Create a `.env.local` file based on `.env-example.local`:
 
 - **`VUE_APP_GOOGLE_CLIENT_ID_WEB`** - Google OAuth client ID for web authentication
 - **`VUE_APP_GOOGLE_SIGNIN_SCOPE`** - OAuth scopes for Google Sign-In
-- **`VUE_APP_MAPBOX_API_TOKEN`** - API token for Mapbox integration
 - **`VUE_APP_ESRI_API_TOKEN`** - API token for ESRI/ArcGIS integration
 
 ### Build Mode Variables

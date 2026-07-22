@@ -3,7 +3,7 @@ import { useRootStore } from '@/stores/root-store';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { databaseUpdateService } from '@/services/database/database-update-service';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
-import { downloadFileService } from '@/services/download-file-service';
+import { projectLogoService } from '@/services/project-logo-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { webService } from '@/services/web-service';
 import { projectModel } from '@/models/project-model.js';
@@ -19,7 +19,14 @@ export const versioningService = {
 
     // Check project version is current
     async checkProjectVersion() {
+        const rootStore = useRootStore();
         try {
+
+            //if it is a locally imported project, return true as we can't check for updates
+            if (rootStore.wasProjectImportedFromFile) {
+                return true;
+            }
+
             // 1. Check for internet connection
             const hasInternet = await utilsService.hasInternetConnection();
 
@@ -131,7 +138,7 @@ export const versioningService = {
                                     function () {
                                         // Then resolve
                                         // Attempt to update the project logo
-                                        downloadFileService.downloadProjectLogo(projectModel.getSlug(), projectModel.getProjectRef()).then(
+                                        projectLogoService.downloadFromServer(projectModel.getSlug(), projectModel.getProjectRef()).then(
                                             function () {
                                                 console.log('downloaded logo');
                                                 resolve(self.changeMade);

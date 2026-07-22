@@ -8,7 +8,9 @@
     </template>
 
     <template #actions-end>
-      <ion-button @click="goToUploadPage()">
+      <ion-button
+          v-if="!wasProjectImportedFromFile"
+          @click="goToUploadPage()">
         <ion-icon
             slot="icon-only"
             :icon="cloudUpload"
@@ -77,7 +79,7 @@
 
       <!-- entries unsynced toolbar -->
       <ion-item
-          v-if="state.hasUnsyncedEntries && !state.isFetching"
+          v-if="state.hasUnsyncedEntries && !state.isFetching && !wasProjectImportedFromFile"
           class="item-warning ion-text-center animate__animated animate__fadeIn"
           lines="full"
       >
@@ -152,18 +154,17 @@ import {
   chevronBackOutline,
   ellipsisVertical
 } from 'ionicons/icons';
-import {reactive} from '@vue/reactivity';
 import {PARAMETERS} from '@/config';
 import {projectModel} from '@/models/project-model.js';
 import {formModel} from '@/models/form-model.js';
 import {useRouter, useRoute} from 'vue-router';
-import {onMounted, watch} from 'vue';
-import {updateLocalProject} from '@/use/project/update-local-project';
-import {addFakeEntries} from '@/use/entries/add-fake-entries';
+import { computed, onMounted, reactive, watch } from 'vue';
+import {updateLocalProject} from '@/composables/project/update-local-project';
+import {addFakeEntries} from '@/composables/entries/add-fake-entries';
 import {format} from 'date-fns';
-import {fetchEntries} from '@/use/entries/fetch-entries.js';
-import ListEntries from '@/components/ListEntries.vue';
-import ToolbarFormName from '@/components/ToolbarFormName.vue';
+import {fetchEntries} from '@/composables/entries/fetch-entries.js';
+import ListEntries from '@/components/lists/ListEntries.vue';
+import ToolbarFormName from '@/components/ui/ToolbarFormName.vue';
 import {provide} from 'vue';
 import {useBackButton} from '@ionic/vue';
 import {databaseSelectService} from '@/services/database/database-select-service';
@@ -538,6 +539,12 @@ export default {
       }
     };
 
+    const computedScope = {
+      wasProjectImportedFromFile: computed(() => {
+        return rootStore.wasProjectImportedFromFile;
+      })
+    };
+
     //re-fetch entries list when needed (after add or delete)
     watch(
         () => [
@@ -593,6 +600,7 @@ export default {
       labels,
       ...methods,
       ...scope,
+      ...computedScope,
       state,
       //icons
       cloudUpload,

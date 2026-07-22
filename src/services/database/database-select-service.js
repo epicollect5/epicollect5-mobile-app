@@ -44,10 +44,33 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
 
+    async projectRefExists(projectRef) {
+        const query = 'SELECT 1 FROM projects WHERE project_ref = ? LIMIT 1';
+        const params = [projectRef];
+        const res = await this.getRows(query, params);
+
+        return res.rows.length > 0;
+    },
+    async projectNameExists(name) {
+        const query = 'SELECT 1 FROM projects WHERE name = ? LIMIT 1';
+        const params = [name];
+        const res = await this.getRows(query, params);
+
+        return res.rows.length > 0;
+    },
+
+    async projectSlugExists(slug) {
+        const query = 'SELECT 1 FROM projects WHERE slug = ? LIMIT 1';
+        const params = [slug];
+        const res = await this.getRows(query, params);
+
+        return res.rows.length > 0;
+    },
+
     // Function to get all stored projects
 
     async selectProjects() {
-        const query = 'SELECT project_ref, name FROM projects';
+        const query = 'SELECT project_ref, name, server_url FROM projects';
         return await this.getRows(query, []);
     },
     //Get one entry for a given form ref or parent entry uuid

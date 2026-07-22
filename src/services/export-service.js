@@ -9,7 +9,6 @@ import {mediaDirsService} from '@/services/filesystem/media-dirs-service';
 import {writeFileService} from '@/services/filesystem/write-file-service';
 import {PARAMETERS} from '@/config';
 import {Capacitor} from '@capacitor/core';
-import {CapacitorZip} from '@capgo/capacitor-zip';
 import {Directory, Filesystem} from '@capacitor/filesystem';
 import {Share} from '@capacitor/share';
 import {notificationService} from '@/services/notification-service';
@@ -288,6 +287,7 @@ export const exportService = {
     },
     async exportEntriesZipArchive(projectRef, projectSlug) {
         const rootStore = useRootStore();
+        const labels = STRINGS[rootStore.language].labels;
         const projectName = projectModel.getProjectName();
         const archiveDirectory = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
         const archivePath = utilsService.getExportPath(projectSlug, archiveDirectory); // ← not hardcoded
@@ -302,6 +302,14 @@ export const exportService = {
             let total = totalEntries + totalBranchEntries + totalMedia;
             const buffer = total > 0 ? Math.ceil(total * 0.10) : 0; // 10% buffer
             total += buffer; // Add buffer to total for progress bar
+
+
+            //if total is 0, bail out
+            if (total === 0) {
+                notificationService.setProgressExport({total: 0, done: 0});
+                // noinspection ExceptionCaughtLocallyJS
+                throw new Error(labels.no_entries_found);
+            }
 
             notificationService.setProgressExport({total, done: 0});
 
@@ -336,6 +344,7 @@ export const exportService = {
 
             const sourcePath = sourceResult.uri.replace('file://', '');
             const destPath = destResult.uri.replace('file://', '');
+            const {CapacitorZip} = await import(/* webpackChunkName: "vendor-native-zip" */ '@capgo/capacitor-zip');
 
             await CapacitorZip.zip({
                 source: sourcePath,
@@ -373,6 +382,8 @@ export const exportService = {
 
         } catch (error) {
             console.error('Archive failed:', error);
+            await notificationService.hideProgressExportModal();
+            await notificationService.showAlert(error?.message ?? String(error));
             return false;
         } finally {
             // Always cleanup
@@ -390,6 +401,8 @@ export const exportService = {
     },
 
     async sendToDevice(projectRef, projectSlug) {
+        const rootStore = useRootStore();
+        const labels = STRINGS[rootStore.language].labels;
         const documentsDirectory = Directory.Documents;
         const deviceExportPath = utilsService.getExportPath(projectSlug, documentsDirectory);
         let success = true; // Assume success unless an error occurs
@@ -400,6 +413,13 @@ export const exportService = {
             const totalBranchEntries = await databaseSelectService.countAllBranchEntries(projectRef);
             const totalMedia = await databaseSelectService.countAllMedia(projectRef);
             const total = totalEntries + totalBranchEntries + totalMedia;
+
+            //if total is 0, bail out
+            if (total === 0) {
+                notificationService.setProgressExport({total: 0, done: 0});
+                // noinspection ExceptionCaughtLocallyJS
+                throw new Error(labels.no_entries_found);
+            }
 
             notificationService.setProgressExport({total, done: 0});
             await notificationService.showProgressExportModal(); // Use the showModal from the composable
@@ -416,7 +436,6 @@ export const exportService = {
             //Export media last as it can be the most time-consuming, and we want the progress bar to reflect that
             await exportService.exportMedia(projectRef, projectSlug, documentsDirectory);
             // Update progress for media files
-            const rootStore = useRootStore();
             const progress = rootStore.progressExport;
             notificationService.setProgressExport({
                 total: progress.total,

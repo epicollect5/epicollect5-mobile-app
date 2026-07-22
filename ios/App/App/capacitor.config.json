@@ -56,6 +56,7 @@
 		"SplashScreenPlugin",
 		"StatusBarPlugin",
 		"ToastPlugin",
+		"FilePickerPlugin",
 		"CapacitorZipPlugin",
 		"VideoEditorPlugin",
 		"CDVPlugin"

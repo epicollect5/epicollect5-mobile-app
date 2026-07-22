@@ -105,23 +105,22 @@
 
 <script>
 import { modalController } from '@ionic/vue';
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { locate } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
-import GridQuestionWide from '@/components/GridQuestionWide';
-import LocationPwa from '@/components/LocationPwa';
-import QuestionLabelAction from '@/components/QuestionLabelAction';
+import GridQuestionWide from '@/components/ui/GridQuestionWide.vue';
+import QuestionLocationPwa from '@/components/questions/QuestionLocationPwa.vue';
+import QuestionLabelAction from '@/components/questions/QuestionLabelAction.vue';
 import ModalLocationHelp from '@/components/modals/ModalLocationHelp.vue';
 import ModalLocationEdit from '@/components/modals/ModalLocationEdit.vue';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { locationService } from '@/services/utilities/location-cordova-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
-import { popoverLocationHandler } from '@/use/questions/popover-location-handler';
+import { popoverLocationHandler } from '@/composables/questions/popover-location-handler';
 
 /**
  * imp: we use Cordova implementation (basically Geolocatiom API https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API)
@@ -131,7 +130,7 @@ export default {
 	components: {
 		GridQuestionWide,
 		QuestionLabelAction,
-		LocationPwa
+		LocationPwa: QuestionLocationPwa
 	},
 	props: {
 		inputRef: {

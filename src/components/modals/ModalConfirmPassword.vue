@@ -72,12 +72,11 @@
 <script>
 import { eye, eyeOff } from 'ionicons/icons';
 import { modalController } from '@ionic/vue';
-import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
-import { readonly } from 'vue';
-import { loginLocal } from '@/use/auth/login-local';
-import HeaderModal from '@/components/HeaderModal.vue';
+import { reactive, readonly } from 'vue';
+import { loginLocal } from '@/composables/auth/login-local';
+import HeaderModal from '@/components/ui/HeaderModal.vue';
 
 export default {
 	components: {

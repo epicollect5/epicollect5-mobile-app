@@ -66,7 +66,7 @@
 			<div>
 				<item-divider-error
 					v-if="isPWA && hasGlobalError"
-					:message="state.errorGlobal"
+					:message="errorGlobal"
 				></item-divider-error>
 
 				<ion-item-divider
@@ -283,7 +283,6 @@ import { closeOutline, power, chevronBackOutline, chevronForwardOutline } from '
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
 import { useRouter } from 'vue-router';
-import { reactive, computed } from '@vue/reactivity';
 import { formModel } from '@/models/form-model.js';
 import { projectModel } from '@/models/project-model.js';
 import questionAudio from '@/components/questions/QuestionAudio';
@@ -307,12 +306,12 @@ import questionTime from '@/components/questions/QuestionTime';
 import questionVideo from '@/components/questions/QuestionVideo';
 import questionSave from '@/components/questions/QuestionSave';
 import questionSaved from '@/components/questions/QuestionSaved';
-import { provide } from 'vue';
-import { initialSetup } from '@/use/questions/initial-setup';
-import { handleNext } from '@/use/questions/handle-next';
-import { handlePrev } from '@/use/questions/handle-prev';
+import { computed, provide, reactive } from 'vue';
+import { initialSetup } from '@/composables/questions/initial-setup';
+import { handleNext } from '@/composables/questions/handle-next';
+import { handlePrev } from '@/composables/questions/handle-prev';
 import { useBackButton } from '@ionic/vue';
-import { setupPWAEntry } from '@/use/entry/setup-pwa-entry';
+import { setupPWAEntry } from '@/composables/entry/setup-pwa-entry';
 import NotFound from '@/pages/NotFound';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
@@ -320,9 +319,9 @@ import { locationService } from '@/services/utilities/location-cordova-service';
 import { errorsService } from '@/services/errors-service';
 import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
-import ItemDividerError from '@/components/ItemDividerError.vue';
+import ItemDividerError from '@/components/ui/ItemDividerError.vue';
 import { questionCommonService } from '@/services/entry/question-common-service';
-import ToolbarEntriesAddNavigation from '@/components/ToolbarEntriesAddNavigation.vue';
+import ToolbarEntriesAddNavigation from '@/components/entries/ToolbarEntriesAddNavigation.vue';
 import {saveEntryPWA} from '@/services/entry/save-entry-pwa';
 import {saveEntryNative} from '@/services/entry/save-entry-native';
 
@@ -384,7 +383,6 @@ export default {
 				errors: {}
 			},
 
-			errorGlobal: '',
 			// Allow saving by default (via quit button)
 			//this is to allow saving halfway through
 			//can be disabled when user edits jumps
@@ -415,15 +413,12 @@ export default {
 				return rootStore.isPWA;
 			}),
 			hasGlobalError: computed(() => {
-				//show errors at the top when they do not belong to a question,
-				//but they are global
-
-				if (rootStore.queueGlobalUploadErrorsPWA.length > 0) {
-					state.errorGlobal = rootStore.queueGlobalUploadErrorsPWA[0].title;
-					return true;
-				}
-
-				return false;
+				return rootStore.queueGlobalUploadErrorsPWA.length > 0;
+			}),
+			errorGlobal: computed(() => {
+				return rootStore.queueGlobalUploadErrorsPWA.length > 0
+					? rootStore.queueGlobalUploadErrorsPWA[0].title
+					: '';
 			})
 		};
 

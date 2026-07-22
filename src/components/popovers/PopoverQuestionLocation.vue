@@ -69,7 +69,7 @@
 import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
 import { popoverController } from '@ionic/vue';
-import { reactive, computed } from '@vue/reactivity';
+import { computed, reactive } from 'vue';
 import { trash, shareSocial, create, mapOutline, location, navigateCircleOutline } from 'ionicons/icons';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';

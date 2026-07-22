@@ -75,20 +75,19 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { modalController } from '@ionic/vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { mic, playSharp } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import ModalAudioPlay from '@/components/modals/ModalAudioPlay';
 import ModalAudioRecord from '@/components/modals/ModalAudioRecord';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow';
-import { popoverMediaHandler } from '@/use/questions/popover-media-handler';
-import QuestionLabelAction from '@/components/QuestionLabelAction';
-import Dropzone from '@/components/Dropzone';
+import GridQuestionNarrow from '@/components/ui/GridQuestionNarrow.vue';
+import { popoverMediaHandler } from '@/composables/questions/popover-media-handler';
+import QuestionLabelAction from '@/components/questions/QuestionLabelAction.vue';
+import Dropzone from '@/components/pwa/Dropzone.vue';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
@@ -188,7 +187,7 @@ export default {
 		const entryUuid = !entriesAddState.questionParams.isBranch
 			? entriesAddScope.entryService.entry.entryUuid //use entry_uuid
 			: entriesAddScope.branchEntryService.entry.
-				entryUuid;//use branch entry_uuid 
+				entryUuid;//use branch entry_uuid
 
 		media[entryUuid] = media[entryUuid] || {};
 

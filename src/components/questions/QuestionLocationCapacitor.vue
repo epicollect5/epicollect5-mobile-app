@@ -76,14 +76,13 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { locate } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
-import GridQuestionWide from '@/components/GridQuestionWide';
+import GridQuestionWide from '@/components/ui/GridQuestionWide.vue';
 import { Geolocation } from '@capacitor/geolocation';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';

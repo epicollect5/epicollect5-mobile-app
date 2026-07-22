@@ -2,10 +2,11 @@ import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { menuController } from '@ionic/vue';
-import { showModalLogin } from '@/use/auth/show-modal-login';
+import { showModalLogin } from '@/composables/auth/show-modal-login';
 import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
-import { logout } from '@/use/auth/logout';
+import { logout } from '@/composables/auth/logout';
+import { databaseSelectService } from '@/services/database/database-select-service';
 import LeftDrawer from '@/components/globals/LeftDrawer.vue';
 import { mount, shallowMount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
@@ -14,7 +15,7 @@ import flushPromises from 'flush-promises';
 import { createTestingPinia } from '@pinia/testing';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 
-vi.mock('@/use/auth/logout', () => ({
+vi.mock('@/composables/auth/logout', () => ({
     logout: vi.fn().mockResolvedValue(true)
 }));
 
@@ -23,8 +24,14 @@ vi.mock('@/components/modals/ModalLogin', () => ({
     template: '<div></div>'
 }));
 
-vi.mock('@/use/auth/show-modal-login', () => ({
+vi.mock('@/composables/auth/show-modal-login', () => ({
     showModalLogin: vi.fn()
+}));
+
+vi.mock('@/services/database/database-select-service', () => ({
+    databaseSelectService: {
+        selectProject: vi.fn()
+    }
 }));
 
 const routerReplaceMock = vi.fn();
@@ -45,6 +52,14 @@ beforeEach(() => {
     vi.useFakeTimers();
     setActivePinia(createPinia());
     vi.resetAllMocks();
+    databaseSelectService.selectProject.mockResolvedValue({
+        rows: {
+            length: 1,
+            item: () => ({
+                server_url: 'https://five.epicollect.net'
+            })
+        }
+    });
 });
 
 afterEach(() => {
@@ -393,6 +408,14 @@ describe('LeftDrawer component', () => {
             projectRef: '507372e7cdd546baa5df0b182cad4ebc',
             title: 'Test bookmark'
         };
+        databaseSelectService.selectProject.mockResolvedValue({
+            rows: {
+                length: 1,
+                item: () => ({
+                    server_url: 'https://five.epicollect.net'
+                })
+            }
+        });
 
          wrapper = mount(LeftDrawer, {
             attachTo: document.body
@@ -431,7 +454,7 @@ describe('LeftDrawer component', () => {
         const elements = wrapper.findAll('[data-test="bookmarks"]');
 
         // Loop through the elements and perform assertions
-        elements.forEach((element, index) => {
+        for (const [index, element] of elements.entries()) {
             // Assert the presence of ion-icon component
             const iconComponent = element.find('ion-icon');
             expect(iconComponent.exists()).toBe(true);
@@ -441,10 +464,12 @@ describe('LeftDrawer component', () => {
             expect(labelComponent.exists()).toBe(true);
             expect(labelComponent.text()).toBe(bookmarkStore.bookmarks[index].title);
 
-            element.trigger('click');
+            await element.trigger('click');
+            await flushPromises();
 
             expect(rootStore.routeParams.projectRef).toBe(bookmarkStore.bookmarks[index].projectRef);
             expect(rootStore.routeParams.formRef).toBe(bookmarkStore.bookmarks[index].formRef);
+            expect(rootStore.wasProjectImportedFromFile).toBe(false);
             expect(routerReplaceMock).toHaveBeenCalled(elements.length);
             expect(routerReplaceMock).toHaveBeenCalledWith({
                 name: PARAMETERS.ROUTES.ENTRIES,
@@ -454,6 +479,49 @@ describe('LeftDrawer component', () => {
                 }
             });
             expect(menuController.close).toHaveBeenCalled(elements.length);
+        }
+    });
+
+    it('should mark bookmarked imported projects as local-only before navigating', async () => {
+        const rootStore = useRootStore();
+        const bookmarkStore = useBookmarkStore();
+        rootStore.wasProjectImportedFromFile = false;
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+
+        bookmarkStore.addBookmark({
+            hierarchyNavigation: [],
+            formRef: 'project_1_form_1',
+            id: 1,
+            projectRef: 'project_1',
+            title: 'Imported project'
+        });
+
+        databaseSelectService.selectProject.mockResolvedValue({
+            rows: {
+                length: 1,
+                item: () => ({
+                    server_url: ''
+                })
+            }
+        });
+
+        wrapper = mount(LeftDrawer, {
+            attachTo: document.body
+        });
+
+        await wrapper.get('[data-test="bookmarks"]').trigger('click');
+        await flushPromises();
+
+        expect(databaseSelectService.selectProject).toHaveBeenCalledWith('project_1');
+        expect(rootStore.wasProjectImportedFromFile).toBe(true);
+        expect(routerReplaceMock).toHaveBeenCalledWith({
+            name: PARAMETERS.ROUTES.ENTRIES,
+            query: {
+                refreshEntries: 'true',
+                timestamp: Date.now()
+            }
         });
     });
 
@@ -525,7 +593,7 @@ describe('LeftDrawer component', () => {
         const elements = wrapper.findAll('[data-test="bookmarks"]');
 
         // Loop through the elements and perform assertions
-        elements.forEach((element, index) => {
+        for (const [index, element] of elements.entries()) {
             // Assert the presence of ion-icon component
             const iconComponent = element.find('ion-icon');
             expect(iconComponent.exists()).toBe(true);
@@ -535,7 +603,8 @@ describe('LeftDrawer component', () => {
             expect(labelComponent.exists()).toBe(true);
             expect(labelComponent.text()).toBe(bookmarkStore.bookmarks[index].title);
 
-            element.trigger('click');
+            await element.trigger('click');
+            await flushPromises();
 
             expect(rootStore.routeParams.projectRef).toBe(bookmarkStore.bookmarks[index].projectRef);
             expect(rootStore.routeParams.formRef).toBe(bookmarkStore.bookmarks[index].formRef);
@@ -548,7 +617,7 @@ describe('LeftDrawer component', () => {
                 }
             });
             expect(menuController.close).toHaveBeenCalled(elements.length);
-        });
+        }
 
         //delete one by one and test list
         bookmarkStore.deleteBookmark(11);

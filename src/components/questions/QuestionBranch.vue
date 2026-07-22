@@ -251,22 +251,21 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive, readonly } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { trash, cloudUpload, create, add, archive, cloudy, alertCircle } from 'ionicons/icons';
-import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject, watch } from 'vue';
 import { modalController } from '@ionic/vue';
 import { useRouter, useRoute } from 'vue-router';
 import { projectModel } from '@/models/project-model.js';
 import { format } from 'date-fns';
-import { fetchBranchEntries } from '@/use/entries/fetch-branch-entries';
+import { fetchBranchEntries } from '@/composables/entries/fetch-branch-entries';
 import ModalEntriesBranchFilter from '@/components/modals/ModalEntriesBranchFilter';
-import ToolbarEntriesFilters from '@/components/ToolbarEntriesFilters';
-import IconEntry from '@/components/IconEntry';
-import QuestionLabelAction from '@/components/QuestionLabelAction';
+import ToolbarEntriesFilters from '@/components/entries/ToolbarEntriesFilters.vue';
+import IconEntry from '@/components/entries/IconEntry.vue';
+import QuestionLabelAction from '@/components/questions/QuestionLabelAction.vue';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';

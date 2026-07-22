@@ -40,7 +40,7 @@ export const projectModel = {
         this.project_extra = projectExtra;
     },
     hasInitialised() {
-        return (this.project_extra.project ? true : false);
+        return (!!this.project_extra.project);
     },
     getProjectExtra() {
         return this.project_extra;

@@ -2,12 +2,12 @@ import {PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
 import ModalProgressTransfer from '@/components/modals/ModalProgressTransfer';
 import {modalController} from '@ionic/vue';
-import {showModalLogin} from '@/use/auth/show-modal-login';
+import {showModalLogin} from '@/composables/auth/show-modal-login';
 import {notificationService} from '@/services/notification-service';
 import {errorsService} from '@/services/errors-service';
 import {downloadService} from '@/services/utilities/download-service';
 import {entriesDownloadProgressService} from '@/services/utilities/entries-download-progress-service';
-import {logout} from '@/use/auth/logout';
+import {logout} from '@/composables/auth/logout';
 
 function initDownloader({state, rootStore, labels, language, projectModel}) {
   function resetDownloadButtonState() {

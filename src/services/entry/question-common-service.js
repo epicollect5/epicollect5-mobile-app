@@ -1,6 +1,6 @@
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model.js';
-import { toRaw } from '@vue/reactivity';
+import { toRaw } from 'vue';
 import { useRootStore } from '@/stores/root-store';
 import { entryModel } from '@/models/entry-model';
 

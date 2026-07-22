@@ -56,15 +56,14 @@
 </template>
 
 <script>
-import { reactive, computed, toRefs } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
-import { readonly } from 'vue';
-import ListPossibleAnswersCheckbox from '@/components/ListPossibleAnswersCheckbox';
-import ListPossibleAnswersRadio from '@/components/ListPossibleAnswersRadio';
-import HeaderModal from '@/components/HeaderModal.vue';
+import { computed, reactive, readonly, toRefs } from 'vue';
+import ListPossibleAnswersCheckbox from '@/components/lists/ListPossibleAnswersCheckbox.vue';
+import ListPossibleAnswersRadio from '@/components/lists/ListPossibleAnswersRadio.vue';
+import HeaderModal from '@/components/ui/HeaderModal.vue';
 
 export default {
 	components: { ListPossibleAnswersCheckbox, ListPossibleAnswersRadio, HeaderModal },

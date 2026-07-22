@@ -56,14 +56,13 @@
 </template>
 
 <script>
-import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
-import { readonly } from 'vue';
-import ListSavedAnswers from '@/components/ListSavedAnswers';
-import HeaderModal from '@/components/HeaderModal.vue';
+import { reactive, readonly } from 'vue';
+import ListSavedAnswers from '@/components/answers/ListSavedAnswers.vue';
+import HeaderModal from '@/components/ui/HeaderModal.vue';
 import { answerService } from '@/services/entry/answer-service';
 import { errorsService } from '@/services/errors-service';
 

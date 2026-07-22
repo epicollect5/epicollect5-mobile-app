@@ -16,6 +16,9 @@ export const createDatabaseService = {
             db.transaction((tx) => {
                 // projects table
                 tx.executeSql(
+                    // NOTE: the app treats project_ref as the real project identity.
+                    // This DB constraint still allows duplicates when server_url differs,
+                    // so import/download flows must guard with projectExists(projectRef).
                     'CREATE TABLE IF NOT EXISTS projects (' +
                     'id integer primary key, ' +
                     'name text, ' +
@@ -200,5 +203,4 @@ export const createDatabaseService = {
         });
     }
 };
-
 

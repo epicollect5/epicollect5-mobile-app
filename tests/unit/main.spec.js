@@ -86,8 +86,8 @@ vi.mock('@/App.vue', () => ({default: {name: 'App', render: () => null}}));
 vi.mock('@/components/globals/BaseLayout.vue', () => ({default: {}}));
 vi.mock('@/components/globals/LeftDrawer.vue', () => ({default: {}}));
 vi.mock('@/components/globals/RightDrawer.vue', () => ({default: {}}));
-vi.mock('@/components/ListAnswers.vue', () => ({default: {}}));
-vi.mock('@/components/ListItemAnswer.vue', () => ({default: {}}));
+vi.mock('@/components/answers/ListAnswers.vue', () => ({default: {}}));
+vi.mock('@/components/answers/ListItemAnswer.vue', () => ({default: {}}));
 vi.mock('@/theme/variables.css', () => ({}));
 vi.mock('@/theme/core.scss', () => ({}));
 vi.mock('@/theme/animate.min.css', () => ({}));
@@ -141,7 +141,7 @@ vi.mock('@/services/filesystem/temp-dirs-service', () => ({
 }));
 vi.mock('@/services/filesystem/persistent-dirs-service', () => ({persistentDirsService: {execute: vi.fn()}}));
 vi.mock('@/models/project-model.js', () => ({projectModel: {initialisePWA: vi.fn()}}));
-vi.mock('@/use/entry/setup-pwa-entry', () => ({setupPWAEntry: vi.fn()}));
+vi.mock('@/composables/entry/setup-pwa-entry', () => ({setupPWAEntry: vi.fn()}));
 
 describe('Main.js Architecture', () => {
 
@@ -176,7 +176,7 @@ describe('Main.js Architecture', () => {
         PARAMETERS.PRODUCTION_SERVER_URL = 'https://prod.server.com';
 
         // Default setupPWAEntry mock implementation
-        const { setupPWAEntry } = await import('@/use/entry/setup-pwa-entry');
+        const { setupPWAEntry } = await import('@/composables/entry/setup-pwa-entry');
         setupPWAEntry.mockImplementation(async (action, isBranch) => {
             const { useRootStore } = await import('@/stores/root-store');
             const { PARAMETERS } = await import('@/config');

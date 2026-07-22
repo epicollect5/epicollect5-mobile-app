@@ -27,7 +27,6 @@ vi.mock('@/services/filesystem/export-media-service');
 vi.mock('@/services/filesystem/write-file-service');
 vi.mock('@/services/utilities/json-transformer-service');
 vi.mock('@/models/project-model');
-vi.mock('@/use/modals/use-modal-progress-export');
 vi.mock('@capgo/capacitor-zip', () => ({CapacitorZip: {zip: vi.fn()}}));
 vi.mock('@capacitor/share', () => ({Share: {share: vi.fn()}}));
 vi.mock('@/services/filesystem/delete-file-service', () => ({

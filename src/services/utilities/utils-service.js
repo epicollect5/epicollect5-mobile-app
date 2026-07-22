@@ -7,7 +7,6 @@ import slugify from 'slugify';
 import {isValidCoordsService} from '@/services/utilities/is-valid-coords-service';
 import {initService} from '@/services/init-service';
 import {STRINGS} from '@/config/strings';
-import {CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint} from '@capacitor/barcode-scanner';
 import {v4 as uuidv4} from 'uuid';
 import {notificationService} from '@/services/notification-service';
 import {Directory} from '@capacitor/filesystem';
@@ -475,7 +474,13 @@ export const utilsService = {
 
                 if (rootStore.device.platform === PARAMETERS.WEB) {
                     resolve('');
+                    return;
                 }
+
+                const {
+                    CapacitorBarcodeScanner,
+                    CapacitorBarcodeScannerTypeHint
+                } = await import(/* webpackChunkName: "vendor-native-barcode" */ '@capacitor/barcode-scanner');
 
                 CapacitorBarcodeScanner.scanBarcode({
                     hint: CapacitorBarcodeScannerTypeHint.ALL
@@ -899,6 +904,29 @@ export const utilsService = {
     inverseSlug(slug) {
         // Replace hyphens with spaces using a regular expression
         return slug.replace(/-/g, ' ');
+    },
+    laravelSlug(title, separator = '-', dictionary = {'@': 'at'}) {
+        if (typeof title !== 'string') {
+            return '';
+        }
+
+        const flip = separator === '-' ? '_' : '-';
+        let slug = title.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+
+        slug = slug.replace(new RegExp(`[${flip}]+`, 'g'), separator);
+
+        Object.entries(dictionary).forEach(([key, value]) => {
+            slug = slug.split(key).join(`${separator}${value}${separator}`);
+        });
+
+        slug = slug.toLowerCase();
+        slug = slug.replace(new RegExp(`[^${separator}a-z0-9\\s]+`, 'g'), '');
+        slug = slug.replace(new RegExp(`[${separator}\\s]+`, 'g'), separator);
+
+        const escapedSeparator = separator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        slug = slug.replace(new RegExp(`^${escapedSeparator}+|${escapedSeparator}+$`, 'g'), '');
+
+        return slug;
     },
     //add 'file://' protocol if it is missing in the URI
     getProtocol(uri) {

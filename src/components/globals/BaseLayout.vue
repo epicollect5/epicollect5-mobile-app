@@ -28,7 +28,7 @@
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { useRoute } from 'vue-router';
-import { computed } from '@vue/reactivity';
+import { computed } from 'vue';
 
 export default {
 	props: {

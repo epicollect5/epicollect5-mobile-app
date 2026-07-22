@@ -57,15 +57,15 @@
 
 <script>
 import { closeOutline, locate, mapSharp } from 'ionicons/icons';
-import { reactive } from '@vue/reactivity';
+import { reactive } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
-import HeaderModal from '@/components/HeaderModal.vue';
-import GridQuestionWide from '@/components/GridQuestionWide';
+import HeaderModal from '@/components/ui/HeaderModal.vue';
+import GridQuestionWide from '@/components/ui/GridQuestionWide.vue';
 import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
-import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
+import QuestionLabelAction from '@/components/questions/QuestionLabelAction.vue';
 import { PARAMETERS } from '@/config';
 import { Clipboard } from '@capacitor/clipboard';
 

@@ -68,19 +68,18 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { videocam } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import { Capacitor } from '@capacitor/core';
-import { videoShoot } from '@/use/questions/video-shoot';
-import { popoverMediaHandler } from '@/use/questions/popover-media-handler';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow';
-import QuestionLabelAction from '@/components/QuestionLabelAction';
-import Dropzone from '@/components/Dropzone';
+import { videoShoot } from '@/composables/questions/video-shoot';
+import { popoverMediaHandler } from '@/composables/questions/popover-media-handler';
+import GridQuestionNarrow from '@/components/ui/GridQuestionNarrow.vue';
+import QuestionLabelAction from '@/components/questions/QuestionLabelAction.vue';
+import Dropzone from '@/components/pwa/Dropzone.vue';
 import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
@@ -152,7 +151,7 @@ export default {
 		// Check whether we want to index the media object using the main entry uuid, or branch entry uuid
 		const entryUuid = !entriesAddState.questionParams.isBranch
 			? entriesAddScope.entryService.entry.entryUuid //use entry_uuid
-			: entriesAddScope.branchEntryService.entry.entryUuid;//use branch entry_uuid 
+			: entriesAddScope.branchEntryService.entry.entryUuid;//use branch entry_uuid
 
 		media[entryUuid] = media[entryUuid] || {};
 

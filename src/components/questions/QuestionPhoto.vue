@@ -87,7 +87,7 @@
 </template>
 
 <script>
-import {popoverMediaHandler} from '@/use/questions/popover-media-handler';
+import {popoverMediaHandler} from '@/composables/questions/popover-media-handler';
 import {modalController} from '@ionic/vue';
 import {STRINGS} from '@/config/strings.js';
 import {PARAMETERS} from '@/config';
@@ -96,10 +96,10 @@ import {camera, images} from 'ionicons/icons';
 import {inject, reactive, computed, onMounted} from 'vue';
 import {Capacitor} from '@capacitor/core';
 import ModalPhoto from '@/components/modals/ModalPhoto.vue';
-import {photoTake} from '@/use/questions/photo-take';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
-import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
-import Dropzone from '@/components/Dropzone.vue';
+import {photoTake} from '@/composables/questions/photo-take';
+import GridQuestionNarrow from '@/components/ui/GridQuestionNarrow.vue';
+import QuestionLabelAction from '@/components/questions/QuestionLabelAction.vue';
+import Dropzone from '@/components/pwa/Dropzone.vue';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {questionCommonService} from '@/services/entry/question-common-service';
