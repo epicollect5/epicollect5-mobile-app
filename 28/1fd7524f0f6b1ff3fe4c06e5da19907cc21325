@@ -1,0 +1,16 @@
+.codegraph/.gitignore
+  h_2231ff2aa93473 1-5
+.gitignore
+  h_2231ff2aa93473 53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "281fd7524f0f6b1ff3fe4c06e5da19907cc21325",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
