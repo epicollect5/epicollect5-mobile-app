@@ -1,0 +1,366 @@
+src/theme/components/lists/ListItemProjects.scss
+  s_2471c82abbf12d::t_d6d8189a313d50 1-12
+src/theme/components/questions/QuestionLocationCapacitor.scss
+  s_2471c82abbf12d::t_e6226107b158ba 1-13
+src/components/questions/QuestionTextarea.vue
+  s_d11ccbc5694450::t_b9ba7fc475f8ec 204
+src/theme/pages/Settings.scss
+  s_2471c82abbf12d::t_0d1ec2c9926a39 1-9
+src/components/questions/QuestionInteger.vue
+  s_d11ccbc5694450::t_50970deadce9fb 238
+src/components/GridQuestionNarrow.vue
+  s_d11ccbc5694450::t_bf53512d04d526 29
+src/components/ToolbarFormName.vue
+  s_d11ccbc5694450::t_6729268bcbd787 127
+src/theme/components/modals/ModalAudioPlay.scss
+  s_2471c82abbf12d::t_4e13ee6782e5b5 1-6
+src/theme/components/modals/ModalAudioRecord.scss
+  s_2471c82abbf12d::t_5c6d3ed5619eab 1-6
+src/theme/components/questions/QuestionPhone.scss
+  s_2471c82abbf12d::t_7e96218682e74b 1-13
+src/pages/EntriesDownload.vue
+  s_d11ccbc5694450::t_7fbfff29af2edb 229
+src/theme/components/modals/ModalAccountDeletion.scss
+  s_2471c82abbf12d::t_cbdc0eb04913a5 1
+src/theme/components/modals/ModalProgressTransfer.scss
+  s_2471c82abbf12d::t_60253c71481bb1 1-14
+src/components/questions/QuestionDate.vue
+  s_d11ccbc5694450::t_08f3b5a2a03676 262
+src/components/modals/ModalPhoto.vue
+  s_d11ccbc5694450::t_5fa0eee3febbc2 121
+src/theme/components/questions/QuestionLocation.scss
+  s_2471c82abbf12d::t_db5403bafc6ba5 1-13
+src/components/CardLoginLocal.vue
+  s_d11ccbc5694450::t_c434f705ac3500 127
+src/theme/components/entries/IconEntry.scss
+  s_2471c82abbf12d::t_f9fce1460d3937 1-24
+src/theme/pages/Projects.scss
+  s_2471c82abbf12d::t_62f487300d41da 1
+src/components/modals/ModalConfirmPassword.vue
+  s_d11ccbc5694450::t_456cedfc3a716f 134
+src/components/questions/QuestionBranch.vue
+  s_d11ccbc5694450::t_d9ef6c4870c52e 735
+src/components/modals/ModalEntriesBranchFilter.vue
+  s_d11ccbc5694450::t_5b468c8fe24aee 297
+src/pages/EntriesAdd.vue
+  s_d11ccbc5694450::t_91e328f72c914d 814
+src/components/ListItemAnswer.vue
+  s_d11ccbc5694450::t_54dae3e636d735 81
+src/components/modals/ModalPasswordlessLogin.vue
+  s_d11ccbc5694450::t_7196ffe124bbec 141
+src/theme/components/answers/AnswerLocation.scss
+  s_2471c82abbf12d::t_b17dfa9ebc56b4 1
+src/theme/pages/EntriesDownload.scss
+  s_2471c82abbf12d::t_a51d03522b6f77 1-17
+src/theme/components/modals/ModalEntriesBranchFilter.scss
+  s_2471c82abbf12d::t_eed48182bb7db4 1-9
+src/main.js
+  s_2471c82abbf12d::t_98bd462799d20a 42-64
+  s_2471c82abbf12d::t_386b3fefaaebd4 65
+src/components/QuestionLabelPossibleAnswers.vue
+  s_d11ccbc5694450::t_021ab83d1b9921 116
+src/components/modals/ModalProgressTransfer.vue
+  s_d11ccbc5694450::t_d3364d190055b6 101
+src/components/ListPossibleAnswersCheckbox.vue
+  s_d11ccbc5694450::t_52c823069839e6 209
+src/components/questions/QuestionSave.vue
+  s_d11ccbc5694450::t_29fcb60605f6ac 122
+src/pages/Settings.vue
+  s_d11ccbc5694450::t_0af96e95906f95 311
+src/components/questions/QuestionGroup.vue
+  s_d11ccbc5694450::t_9a3bc10b618bc8 307
+src/components/questions/QuestionDropdown.vue
+  s_d11ccbc5694450::t_42098fad167cf9 202
+src/components/ToolbarEntriesFilters.vue
+  s_d11ccbc5694450::t_116a3183f627da 70
+src/theme/components/modals/ModalLogin.scss
+  s_2471c82abbf12d::t_052b1de5acf485 1-5
+src/theme/components/modals/ModalLocationHelp.scss
+  s_2471c82abbf12d::t_85b260beb2866e 1-5
+src/theme/components/questions/QuestionDecimal.scss
+  s_2471c82abbf12d::t_2688d7e3ce621b 1-17
+src/components/modals/ModalAudioPlay.vue
+  s_d11ccbc5694450::t_4ff161e8dec5cc 154
+src/theme/components/questions/QuestionTextarea.scss
+  s_2471c82abbf12d::t_4a8e5e21389722 1-21
+src/components/answers/AnswerLocation.vue
+  s_d11ccbc5694450::t_51932cc3d152e0 80
+src/components/modals/ModalConfirmEmail.vue
+  s_d11ccbc5694450::t_66d52fbdde2570 157
+src/theme/components/modals/ModalProgressExport.scss
+  s_2471c82abbf12d::t_6b76a902daf4df 1-14
+src/pages/NotFound.vue
+  s_d11ccbc5694450::t_857b4320f760e4 57
+src/theme/components/questions/QuestionReadme.scss
+  s_2471c82abbf12d::t_4f63487b19c980 1-13
+src/theme/pages/NotFound.scss
+  s_2471c82abbf12d::t_e6dcecaec327b8 1
+src/theme/components/questions/QuestionText.scss
+  s_2471c82abbf12d::t_5064a3ba8a529c 1-21
+src/theme/components/questions/QuestionSaved.scss
+  s_2471c82abbf12d::t_b59c729b2d7903 1-5
+src/theme/components/questions/QuestionSave.scss
+  s_2471c82abbf12d::t_584975ca3e9617 1-5
+src/theme/components/modals/ModalPossibleAnswers.scss
+  s_2471c82abbf12d::t_e023713047495b 1-5
+src/components/questions/QuestionReadme.vue
+  s_d11ccbc5694450::t_3ec03a0f1eb67b 92
+src/pages/EntriesView.vue
+  s_d11ccbc5694450::t_47919b000e2dc1 312
+src/theme/components/lists/ListPossibleAnswersRadio.scss
+  s_2471c82abbf12d::t_f6edcaede8257c 1
+src/theme/components/questions/QuestionDate.scss
+  s_2471c82abbf12d::t_980db6e68653f2 1-26
+src/components/ToolbarEntriesAddNavigation.vue
+  s_d11ccbc5694450::t_b125064dabc1a1 91
+src/components/modals/ModalAccountDeletion.vue
+  s_d11ccbc5694450::t_a56b7ab5041190 178
+src/pages/EntriesUpload.vue
+  s_d11ccbc5694450::t_ac08a1ed2a2438 601
+src/theme/components/modals/ModalProgressEncoding.scss
+  s_2471c82abbf12d::t_9fcc4d1cc7afee 1-14
+src/theme/components/pwa/Dropzone.scss
+  s_2471c82abbf12d::t_8f7ab1811403d9 1-13
+src/components/popovers/PopoverQuestionLocation.vue
+  s_d11ccbc5694450::t_a4e8561b799acc 190
+src/theme/components/globals/BaseLayout.scss
+  s_2471c82abbf12d::t_bf4f0660202656 1-14
+src/pages/Profile.vue
+  s_d11ccbc5694450::t_f4960cc2380eec 186
+src/theme/components/modals/ModalProjectInfo.scss
+  s_2471c82abbf12d::t_a65d1a320e67a2 1-5
+src/theme/pages/EntriesAdd.scss
+  s_2471c82abbf12d::t_362e31aa84dd5a 1-5
+src/theme/pages/EntriesErrors.scss
+  s_2471c82abbf12d::t_542c4f6454669d 1-28
+src/theme/components/questions/QuestionBranch.scss
+  s_2471c82abbf12d::t_babad65236a37d 1-18
+src/theme/components/questions/QuestionLabelPossibleAnswers.scss
+  s_2471c82abbf12d::t_256cd3b0384691 1-5
+src/components/modals/ModalLogin.vue
+  s_d11ccbc5694450::t_ab42646d720d31 76
+src/theme/components/ui/ToolbarFormName.scss
+  s_2471c82abbf12d::t_f9fe098cad08ff 1-9
+src/components/GridQuestionWide.vue
+  s_d11ccbc5694450::t_258980e6b5b66f 29
+src/components/modals/ModalAudioRecord.vue
+  s_d11ccbc5694450::t_d92049cf1a49e9 177
+src/components/LocationPwa.vue
+  s_d11ccbc5694450::t_8955937f2580fb 453
+src/theme/components/pwa/LocationPwa.scss
+  s_2471c82abbf12d::t_1e7b1c04cf5b84 1
+src/components/ListAnswers.vue
+  s_d11ccbc5694450::t_87d1952f02d2e4 247
+src/theme/mixins.scss
+  s_2471c82abbf12d::t_25452768092d69 1-1297
+src/theme/components/ui/ItemDividerError.scss
+  s_2471c82abbf12d::t_493fa5bdbb151f 1-15
+src/theme/components/questions/QuestionCheckbox.scss
+  s_2471c82abbf12d::t_54da81b8b22ea3 1-21
+src/theme/components/auth/CardLoginLocal.scss
+  s_2471c82abbf12d::t_91e7f954d2bc0e 1
+src/components/questions/QuestionSearch.vue
+  s_d11ccbc5694450::t_245ef42b18b30c 254
+src/components/ListEntries.vue
+  s_d11ccbc5694450::t_cd17a00ac194c0 287-288
+src/components/questions/QuestionRadio.vue
+  s_d11ccbc5694450::t_3af8496efcf76e 159
+src/theme/components/answers/ListAnswers.scss
+  s_2471c82abbf12d::t_71961ea7adafa6 1-34
+src/components/Dropzone.vue
+  s_d11ccbc5694450::t_44957238008fe6 310
+src/theme/components/questions/QuestionTime.scss
+  s_2471c82abbf12d::t_f73e30394cb546 1-26
+src/theme/components/answers/ListSavedAnswers.scss
+  s_2471c82abbf12d::t_d886406507f6b3 1
+src/theme/components/modals/ModalBookmarkAdd.scss
+  s_2471c82abbf12d::t_12bacaf1e0bc77 1-5
+src/theme/components/questions/QuestionLocationPwa.scss
+  s_2471c82abbf12d::t_df6587ee607971 1-57
+src/components/CardLoginDefault.vue
+  s_d11ccbc5694450::t_ea9e53b25cf2a5 181
+src/components/modals/ModalProgressExport.vue
+  s_d11ccbc5694450::t_6925ae0d1eefae 68
+src/components/questions/QuestionCheckbox.vue
+  s_d11ccbc5694450::t_d3e026f8cde96d 145
+src/components/questions/QuestionAudio.vue
+  s_d11ccbc5694450::t_173da58e571185 362
+src/pages/Entries.vue
+  s_d11ccbc5694450::t_eeefd7e3dd0f43 607
+src/components/globals/RightDrawer.vue
+  s_d11ccbc5694450::t_d850b7d8f216da 597
+src/components/questions/QuestionPhone.vue
+  s_d11ccbc5694450::t_6b9d4611798274 154
+src/theme/components/entries/ToolbarEntriesFilters.scss
+  s_2471c82abbf12d::t_1de246ba8ddf07 1
+src/components/ListPossibleAnswersRadio.vue
+  s_d11ccbc5694450::t_5b2f4c81d87b3f 206
+src/components/modals/ModalProgressEncoding.vue
+  s_d11ccbc5694450::t_cab1851015e248 66
+src/pages/EntriesErrors.vue
+  s_d11ccbc5694450::t_e60070510f9407 398
+src/theme/components/lists/ListEntries.scss
+  s_2471c82abbf12d::t_9842b3094a1b34 1-33
+src/theme/components/modals/ModalConfirmPassword.scss
+  s_2471c82abbf12d::t_97051ba20fe42f 1-5
+src/theme/components/questions/QuestionDropdown.scss
+  s_2471c82abbf12d::t_0fbee5c23ddd30 1-33
+src/theme/components/answers/QuestionLabelPossibleAnswers.scss
+  s_2471c82abbf12d::t_1456bc18f192af 1-5
+src/theme/pages/Entries.scss
+  s_2471c82abbf12d::t_1babaab06222e8 1-26
+src/components/popovers/PopoverQuestionMedia.vue
+  s_d11ccbc5694450::t_f7af5df00c0cbc 273
+src/components/questions/QuestionDecimal.vue
+  s_d11ccbc5694450::t_6adea1dc3978c0 316
+src/theme/components/answers/AnswerGroup.scss
+  s_2471c82abbf12d::t_678f642ce64a59 1
+src/theme/components/auth/CardLoginLdap.scss
+  s_2471c82abbf12d::t_310c3968894de2 1
+src/theme/components/questions/QuestionAudio.scss
+  s_2471c82abbf12d::t_cf68a6254b48d4 1-9
+src/theme/pages/ProjectsAdd.scss
+  s_2471c82abbf12d::t_f3a52d9ccaa9c9 1
+src/theme/components/globals/RightDrawer.scss
+  s_2471c82abbf12d::t_08069a3afa24cf 1
+src/components/modals/ModalBookmarkAdd.vue
+  s_d11ccbc5694450::t_16d5e3298308e6 164
+src/theme/components/modals/ModalConfirmEmail.scss
+  s_2471c82abbf12d::t_c83f95e6fad5ae 1
+src/theme/components/modals/ModalPasswordlessLogin.scss
+  s_2471c82abbf12d::t_025b198e017ef6 1-5
+src/components/ListSavedAnswers.vue
+  s_d11ccbc5694450::t_9655bc85507aa9 147
+src/components/questions/QuestionBarcode.vue
+  s_d11ccbc5694450::t_4bce8e571da8ef 321
+src/components/questions/QuestionLocation.vue
+  s_d11ccbc5694450::t_fb49a983548e3b 435
+src/components/questions/QuestionPhoto.vue
+  s_d11ccbc5694450::t_f1c0503f9e8005 351
+src/components/questions/QuestionVideo.vue
+  s_d11ccbc5694450::t_49ed6717752dd2 275
+src/components/modals/ModalLocationEdit.vue
+  s_d11ccbc5694450::t_41efec4e74dc82 143-144
+src/components/globals/LeftDrawer.vue
+  s_d11ccbc5694450::t_fb1d7aeef4599f 348
+src/theme/pages/Profile.scss
+  s_2471c82abbf12d::t_556c035a134040 1-13
+src/components/modals/ModalLocationHelp.vue
+  s_d11ccbc5694450::t_15123cfebcede7 115
+src/components/ItemDividerError.vue
+  s_d11ccbc5694450::t_508ae59b8732f5 29
+src/theme/components/questions/QuestionGroup.scss
+  s_2471c82abbf12d::t_d0f05224f83280 1-18
+src/pages/Projects.vue
+  s_d11ccbc5694450::t_1492a3fc2cf288 226
+src/theme/core.scss
+  s_2471c82abbf12d::t_9028a5d3a0b416 4,9,24,36,40,44,48,53,57-58,60,82-94,100-101,104-111,114-120
+src/theme/components/ui/GridQuestionWide.scss
+  s_2471c82abbf12d::t_67b760e2fd3e74 1
+src/theme/components/globals/LeftDrawer.scss
+  s_2471c82abbf12d::t_3375669a93fcb3 1
+src/theme/components/ui/HeaderModal.scss
+  s_2471c82abbf12d::t_b6cf9251698149 1
+src/theme/components/questions/QuestionSearch.scss
+  s_2471c82abbf12d::t_c35e6ea03f38c5 1-15
+src/components/modals/ModalProjectInfo.vue
+  s_d11ccbc5694450::t_a2bff565d13fbf 144
+src/components/modals/ModalEntriesFilter.vue
+  s_d11ccbc5694450::t_5db51e3f71206c 339
+src/theme/components/questions/QuestionInteger.scss
+  s_2471c82abbf12d::t_bb847bd88b1c6e 1-17
+src/components/IconEntry.vue
+  s_d11ccbc5694450::t_cbb86d49915ea8 70
+src/theme/components/questions/QuestionLabelAction.scss
+  s_2471c82abbf12d::t_147248bcfae657 1-17
+src/components/modals/ModalSavedAnswers.vue
+  s_d11ccbc5694450::t_228540136de777 249
+src/components/questions/QuestionLocationCapacitor.vue
+  s_d11ccbc5694450::t_24836350ac4f99 348
+src/theme/pages/EntriesUpload.scss
+  s_2471c82abbf12d::t_54595b8285473b 1-9
+src/components/ListItemProjects.vue
+  s_d11ccbc5694450::t_5f17daaa9a05ca 94
+src/theme/components/questions/QuestionBarcode.scss
+  s_2471c82abbf12d::t_86da6daaa5a6ff 1-17
+src/theme/components/answers/ListItemAnswer.scss
+  s_2471c82abbf12d::t_dbb9da22e8b09c 1
+src/theme/pages/EntriesView.scss
+  s_2471c82abbf12d::t_863b580f6b726b 1
+src/pages/EntriesViewBranch.vue
+  s_d11ccbc5694450::t_43755c3ce4bf24 253
+src/theme/components/popovers/PopoverQuestionMedia.scss
+  s_2471c82abbf12d::t_0135910da059a1 1
+src/components/HeaderModal.vue
+  s_d11ccbc5694450::t_9ff05289eb40fd 44
+src/components/answers/AnswerGroup.vue
+  s_d11ccbc5694450::t_b517e6d2255a62 49
+src/theme/components/modals/ModalPhoto.scss
+  s_2471c82abbf12d::t_1df2a2a913b8c8 1-6
+src/components/modals/ModalPasswordlessSend.vue
+  s_d11ccbc5694450::t_805666d729583a 140
+src/theme/components/modals/ModalLocationEdit.scss
+  s_2471c82abbf12d::t_2c1dcb28a0934b 1-5
+src/theme/components/modals/ModalPasswordlessSend.scss
+  s_2471c82abbf12d::t_08b4f79480ce11 1-5
+src/pages/ProjectsAdd.vue
+  s_d11ccbc5694450::t_052ace649325e2 173
+src/theme/components/auth/CardLoginDefault.scss
+  s_2471c82abbf12d::t_c0facf0db3b7b5 1-23
+src/components/questions/QuestionSaved.vue
+  s_d11ccbc5694450::t_43961a828db194 135
+src/theme/components/modals/ModalEntriesFilter.scss
+  s_2471c82abbf12d::t_86009a9f9411a5 1-5
+src/theme/components/ui/GridQuestionNarrow.scss
+  s_2471c82abbf12d::t_84d7e92db47b7f 1
+src/theme/components/lists/ListPossibleAnswersCheckbox.scss
+  s_2471c82abbf12d::t_3daa67720353c7 1
+src/components/CardLoginLdap.vue
+  s_d11ccbc5694450::t_ba2bc070c8fc73 90
+src/theme/components/questions/QuestionVideo.scss
+  s_2471c82abbf12d::t_ff7da953f8683c 1-13
+src/components/globals/BaseLayout.vue
+  s_d11ccbc5694450::t_9ddbcc0655c1a0 90
+src/components/questions/QuestionText.vue
+  s_d11ccbc5694450::t_6971f5ed3155cc 203
+src/theme/components/questions/QuestionRadio.scss
+  s_2471c82abbf12d::t_17bcfdcbfecf4e 1-21
+src/theme/components/entries/ToolbarEntriesAddNavigation.scss
+  s_2471c82abbf12d::t_ce79b80fe3f43c 1
+src/theme/components/popovers/PopoverQuestionLocation.scss
+  s_2471c82abbf12d::t_bd57888513460c 1-5
+src/theme/components/questions/QuestionPhoto.scss
+  s_2471c82abbf12d::t_21b23c3045fd6e 1-13
+src/theme/pages/EntriesViewBranch.scss
+  s_2471c82abbf12d::t_c9fb61db857a18 1
+src/components/modals/ModalPossibleAnswers.vue
+  s_d11ccbc5694450::t_df6c6a74d04535 182
+src/theme/components/modals/ModalSavedAnswers.scss
+  s_2471c82abbf12d::t_fc2f3c5811beea 1-5
+src/components/questions/QuestionTime.vue
+  s_d11ccbc5694450::t_6efe3398f0891b 422
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "e223561ac5ce7c101d22e523c604db226687571a",
+  "prompts": {},
+  "sessions": {
+    "s_2471c82abbf12d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0527788c9ffe1mE5p65I5dY7i9",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_d11ccbc5694450": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04d94a47affeNy7xLstzvOVSwl",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
