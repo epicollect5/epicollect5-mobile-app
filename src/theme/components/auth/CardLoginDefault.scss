@@ -1,23 +1,23 @@
-@use '@/theme/mixins' as *;
-
 .hr-divider {
     display: flex;
+    flex-basis: 100%;
     align-items: center;
-    text-align: center;
-    margin: 16px 0;
+    color: #333;
+    margin: 8px 0px;
+}
 
-    &:before,
-    &:after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid var(--ion-color-light-shade);
-    }
+.hr-divider:before,
+.hr-divider:after {
+    content: "";
+    flex-grow: 1;
+    background: #333;
+    height: 1px;
+    font-size: 0px;
+    line-height: 0px;
+    margin: 0px 8px;
+}
 
-    &:before {
-        margin-right: 8px;
-    }
-
-    &:after {
-        margin-left: 8px;
-    }
+.hr-divider-wrapper {
+    max-width: 210px;
+    margin: 0 auto;
 }
