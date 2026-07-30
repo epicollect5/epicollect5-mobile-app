@@ -3,3 +3,7 @@
 .modal-location-edit {
     @include modal-transparent-header-base;
 }
+
+.item-question-location-edit {
+    @include item-question-location-edit-base;
+}
