@@ -3,3 +3,7 @@
 .modal-search {
     @include modal-search-base;
 }
+
+.modal-entries-filter {
+    @include modal-transparent-header-base;
+}

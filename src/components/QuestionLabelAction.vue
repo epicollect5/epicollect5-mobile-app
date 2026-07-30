@@ -104,3 +104,5 @@ export default {
   }
 };
 </script>
+
+<style src="@/theme/components/questions/QuestionLabelAction.scss" lang="scss"></style>
