@@ -1,0 +1,19 @@
+vue.config.js
+  s_2471c82abbf12d::t_e83704963d721b 10-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "5822b4c87e9b68f10c3b8882a743c9f365622ee3",
+  "prompts": {},
+  "sessions": {
+    "s_2471c82abbf12d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0527788c9ffe1mE5p65I5dY7i9",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
