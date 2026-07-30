@@ -1,0 +1,25 @@
+src/theme/components/pwa/LocationPwa.scss
+  s_91840d4059855b::t_e453466d865322 2-41
+src/theme/components/lists/ListPossibleAnswersCheckbox.scss
+  s_91840d4059855b::t_0b2c9223abe120 2-13
+src/theme/components/lists/ListPossibleAnswersRadio.scss
+  s_91840d4059855b::t_21064da22e295b 2-13
+src/theme/components/modals/ModalLocationEdit.scss
+  s_91840d4059855b::t_6e88de91d6af01 6-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "2e136452b1802a9ee92c44126e7112568a5451ca",
+  "prompts": {},
+  "sessions": {
+    "s_91840d4059855b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04ce2ab8cffeWM7RzLP54OM8tC",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
