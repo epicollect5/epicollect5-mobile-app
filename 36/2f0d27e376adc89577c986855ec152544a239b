@@ -1,0 +1,189 @@
+src/theme/components/ui/ItemDividerError.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/EntriesUpload.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalPhoto.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionLabelAction.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionLabelPossibleAnswers.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/NotFound.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalAccountDeletion.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalAudioPlay.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/ui/GridQuestionNarrow.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalSavedAnswers.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalProgressExport.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/auth/CardLoginDefault.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/answers/ListSavedAnswers.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/lists/ListItemProjects.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/auth/CardLoginLdap.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalProgressEncoding.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalBookmarkAdd.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalProjectInfo.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalConfirmEmail.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/pwa/LocationPwa.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/EntriesView.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/EntriesAdd.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/Projects.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/answers/AnswerGroup.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/answers/ListAnswers.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalLocationEdit.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/lists/ListEntries.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionLocation.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionBarcode.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalLogin.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalProgressTransfer.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/answers/QuestionLabelPossibleAnswers.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/answers/AnswerLocation.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalAudioRecord.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/entries/ToolbarEntriesAddNavigation.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/popovers/PopoverQuestionLocation.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/popovers/PopoverQuestionMedia.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionCheckbox.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/globals/RightDrawer.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionDate.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionGroup.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalPasswordlessLogin.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalPossibleAnswers.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionSaved.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionLocationCapacitor.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionText.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionReadme.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionVideo.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/ui/ToolbarFormName.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionPhone.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/Entries.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/EntriesViewBranch.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalEntriesBranchFilter.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalLocationHelp.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionPhoto.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionSave.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalConfirmPassword.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/EntriesDownload.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionLocationPwa.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionBranch.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionDecimal.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/Settings.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/ui/HeaderModal.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/answers/ListItemAnswer.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/globals/LeftDrawer.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/ProjectsAdd.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/pwa/Dropzone.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionAudio.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionRadio.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/lists/ListPossibleAnswersRadio.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionTime.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/Profile.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionDropdown.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/auth/CardLoginLocal.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/entries/ToolbarEntriesFilters.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/globals/BaseLayout.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/entries/IconEntry.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/pages/EntriesErrors.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/modals/ModalPasswordlessSend.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionSearch.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/ui/GridQuestionWide.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/core.scss
+  s_2471c82abbf12d::t_ecef51aa1d894c 22-54,57-67,70-167,187-201,203-214,217-246,249-310,314-317,319-440,446-447,449-457,459-501,504-530,532,534-578,583-597,600-606,609-623,628-637,639-650,653-658
+src/theme/components/modals/ModalEntriesFilter.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/lists/ListPossibleAnswersCheckbox.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionInteger.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+src/theme/components/questions/QuestionTextarea.scss
+  s_2471c82abbf12d::t_74d74348a529e6 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "362f0d27e376adc89577c986855ec152544a239b",
+  "prompts": {},
+  "sessions": {
+    "s_2471c82abbf12d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0527788c9ffe1mE5p65I5dY7i9",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
