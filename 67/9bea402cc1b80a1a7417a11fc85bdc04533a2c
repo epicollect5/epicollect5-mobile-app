@@ -1,0 +1,21 @@
+src/components/QuestionLabelAction.vue
+  s_91840d4059855b::t_968c875aee4cbd 107-108
+src/theme/components/modals/ModalEntriesFilter.scss
+  s_91840d4059855b::t_a97ecdf85e05a8 6-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "679bea402cc1b80a1a7417a11fc85bdc04533a2c",
+  "prompts": {},
+  "sessions": {
+    "s_91840d4059855b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04ce2ab8cffeWM7RzLP54OM8tC",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
