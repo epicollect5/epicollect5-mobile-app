@@ -1,4 +1,4 @@
-@import '@/theme/mixins';
+@use '@/theme/mixins' as *;
 
 .subheader-error {
     @include subheader-error-base;

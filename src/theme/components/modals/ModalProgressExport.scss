@@ -1,4 +1,4 @@
-@import '@/theme/mixins';
+@use '@/theme/mixins' as *;
 
 .modal-progress-export {
     @include modal-transparent-header-base;

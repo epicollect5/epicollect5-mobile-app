@@ -1,4 +1,4 @@
-@import '@/theme/mixins';
+@use '@/theme/mixins' as *;
 
 .settings-label {
     @include settings-label-base;

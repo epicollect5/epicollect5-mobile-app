@@ -1,4 +1,4 @@
-@import '@/theme/mixins';
+@use '@/theme/mixins' as *;
 
 ion-toolbar.form-name {
     @include form-name-toolbar-base;

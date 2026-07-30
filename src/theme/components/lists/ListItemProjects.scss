@@ -1,4 +1,4 @@
-@import '@/theme/mixins';
+@use '@/theme/mixins' as *;
 
 .projects-list {
     @include projects-list-base;
