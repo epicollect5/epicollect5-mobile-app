@@ -1,0 +1,13 @@
+@import '@/theme/mixins';
+
+.profile {
+    @include profile-base;
+}
+
+.settings-label {
+    @include settings-label-base;
+}
+
+.danger-label {
+    @include danger-label-base;
+}

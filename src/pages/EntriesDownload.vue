@@ -226,26 +226,4 @@ export default {
 };
 </script>
 
-<style
-    lang="scss"
-    scoped
->
-.download-progress-grid {
-  padding: 0;
-  width: 100%;
-}
-
-.download-progress-value {
-  display: inline-flex;
-  align-items: center;
-  height: 100%;
-  color: var(--ion-color-medium);
-  font-size: 0.875rem;
-}
-
-.download-progress-action {
-  display: flex;
-  justify-content: flex-end;
-  padding: 0;
-}
-</style>
+<style src="@/theme/pages/EntriesDownload.scss" lang="scss"></style>

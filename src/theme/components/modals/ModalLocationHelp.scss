@@ -1,0 +1,5 @@
+@import '@/theme/mixins';
+
+.modal-location-help {
+    @include modal-location-help-base;
+}

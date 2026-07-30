@@ -1,0 +1,13 @@
+@import '@/theme/mixins';
+
+.dropzone {
+    @include dropzone-base;
+}
+
+.dropzone-active {
+    @include dropzone-active-base;
+}
+
+.dropzone-preview {
+    @include dropzone-preview-base;
+}

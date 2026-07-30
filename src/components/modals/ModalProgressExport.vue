@@ -65,4 +65,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style src="@/theme/components/modals/ModalProgressExport.scss" lang="scss"></style>

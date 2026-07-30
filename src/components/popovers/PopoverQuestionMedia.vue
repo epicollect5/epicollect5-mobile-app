@@ -270,7 +270,4 @@ export default {
 };
 </script>
 
-<style
-	lang="scss"
-	scoped
-></style>
+<style src="@/theme/components/popovers/PopoverQuestionMedia.scss" lang="scss"></style>

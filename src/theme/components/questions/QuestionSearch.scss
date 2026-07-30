@@ -1,0 +1,15 @@
+@import '@/theme/mixins';
+
+.question-card {
+    @include question-card-base;
+}
+
+.question-label {
+    @include question-label-base;
+}
+
+.question-search-remove-pick,
+.question-branch-edit,
+.question-branch-remove {
+    @include question-search-remove-pick-base;
+}

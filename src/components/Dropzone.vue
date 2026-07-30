@@ -307,5 +307,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style src="@/theme/components/pwa/Dropzone.scss" lang="scss"></style>

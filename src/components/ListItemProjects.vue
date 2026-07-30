@@ -91,14 +91,4 @@ export default {
 };
 </script>
 
-<style
-	lang="scss"
-	scoped
->
-.spinner {
-	position: absolute;
-	top: 15px;
-	left: 22px;
-	// color: var(--ion-color-light-shade);
-}
-</style>
+<style src="@/theme/components/lists/ListItemProjects.scss" lang="scss"></style>

@@ -604,7 +604,4 @@ export default {
 };
 </script>
 
-<style
-    lang="scss"
-    scoped
-></style>
+<style src="@/theme/pages/Entries.scss" lang="scss"></style>

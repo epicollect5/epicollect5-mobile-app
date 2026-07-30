@@ -1,0 +1,23 @@
+@import '@/theme/mixins';
+
+.hr-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 16px 0;
+
+    &:before,
+    &:after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--ion-color-light-shade);
+    }
+
+    &:before {
+        margin-right: 8px;
+    }
+
+    &:after {
+        margin-left: 8px;
+    }
+}

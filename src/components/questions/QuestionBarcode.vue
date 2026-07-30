@@ -318,7 +318,4 @@ export default {
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
-></style>
+<style src="@/theme/components/questions/QuestionBarcode.scss" lang="scss"></style>

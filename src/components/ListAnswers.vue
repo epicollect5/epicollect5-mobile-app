@@ -244,8 +244,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-.question-popover-button {
-	position: relative;
-}
-</style>
+<style src="@/theme/components/answers/ListAnswers.scss" lang="scss"></style>

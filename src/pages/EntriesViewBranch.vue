@@ -250,7 +250,4 @@ export default {
 };
 </script>
 
-<style
-    lang="scss"
-    scoped
-></style>
+<style src="@/theme/pages/EntriesViewBranch.scss" lang="scss"></style>

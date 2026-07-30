@@ -1,0 +1,5 @@
+@import '@/theme/mixins';
+
+.question-card {
+    @include question-card-base;
+}

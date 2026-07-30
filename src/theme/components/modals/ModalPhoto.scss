@@ -1,0 +1,6 @@
+@import '@/theme/mixins';
+
+.modal-photo {
+    @include modal-transparent-header-base;
+    @include modal-photo-base;
+}

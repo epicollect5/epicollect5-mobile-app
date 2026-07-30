@@ -246,7 +246,4 @@ export default {
 };
 </script>
 
-<style
-	lang="scss"
-	scoped
-></style>
+<style src="@/theme/components/modals/ModalSavedAnswers.scss" lang="scss"></style>

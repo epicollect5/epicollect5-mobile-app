@@ -37,10 +37,31 @@ import '@ionic/vue/css/display.css';
 import '@/theme/variables.css';
 import '@/theme/animate.min.css';
 import '@/theme/core.scss';
-import '@/theme/question.scss';
-import '@/theme/modal.scss';
-import '@/theme/popover.scss';
 import '@/theme/zoom.scss';
+
+/* Component SCSS (overlay styles must be global) */
+import '@/theme/components/modals/ModalPhoto.scss';
+import '@/theme/components/modals/ModalAudioRecord.scss';
+import '@/theme/components/modals/ModalAudioPlay.scss';
+import '@/theme/components/modals/ModalEntriesFilter.scss';
+import '@/theme/components/modals/ModalEntriesBranchFilter.scss';
+import '@/theme/components/modals/ModalBookmarkAdd.scss';
+import '@/theme/components/modals/ModalProjectInfo.scss';
+import '@/theme/components/modals/ModalLogin.scss';
+import '@/theme/components/modals/ModalPasswordlessSend.scss';
+import '@/theme/components/modals/ModalPasswordlessLogin.scss';
+import '@/theme/components/modals/ModalAccountDeletion.scss';
+import '@/theme/components/modals/ModalConfirmEmail.scss';
+import '@/theme/components/modals/ModalConfirmPassword.scss';
+import '@/theme/components/modals/ModalProgressTransfer.scss';
+import '@/theme/components/modals/ModalProgressExport.scss';
+import '@/theme/components/modals/ModalProgressEncoding.scss';
+import '@/theme/components/modals/ModalLocationEdit.scss';
+import '@/theme/components/modals/ModalLocationHelp.scss';
+import '@/theme/components/modals/ModalSavedAnswers.scss';
+import '@/theme/components/modals/ModalPossibleAnswers.scss';
+import '@/theme/components/popovers/PopoverQuestionMedia.scss';
+import '@/theme/components/popovers/PopoverQuestionLocation.scss';
 
 import BaseLayout from '@/components/globals/BaseLayout.vue';
 import LeftDrawer from '@/components/globals/LeftDrawer.vue';

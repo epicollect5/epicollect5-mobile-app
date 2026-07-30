@@ -450,4 +450,4 @@ export default {
 };
 </script>
 
-<style lang="scss"></style>
+<style src="@/theme/components/pwa/LocationPwa.scss" lang="scss"></style>

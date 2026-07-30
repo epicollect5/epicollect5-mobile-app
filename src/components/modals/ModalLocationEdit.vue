@@ -140,3 +140,5 @@ export default {
 	}
 };
 </script>
+
+<style src="@/theme/components/modals/ModalLocationEdit.scss" lang="scss"></style>

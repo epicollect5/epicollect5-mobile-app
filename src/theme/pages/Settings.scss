@@ -1,0 +1,9 @@
+@import '@/theme/mixins';
+
+.settings-label {
+    @include settings-label-base;
+}
+
+.settings-input-label {
+    @include settings-input-label-base;
+}

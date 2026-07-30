@@ -201,5 +201,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style src="@/theme/components/questions/QuestionTextarea.scss" lang="scss"></style>

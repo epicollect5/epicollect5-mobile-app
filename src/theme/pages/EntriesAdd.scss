@@ -1,0 +1,5 @@
+@import '@/theme/mixins';
+
+.pwa-margin-fix {
+    @include pwa-margin-fix-base;
+}

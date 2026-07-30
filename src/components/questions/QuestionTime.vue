@@ -419,5 +419,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style src="@/theme/components/questions/QuestionTime.scss" lang="scss"></style>

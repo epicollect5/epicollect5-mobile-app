@@ -1,0 +1,6 @@
+@import '@/theme/mixins';
+
+.modal-audio-record {
+    @include modal-transparent-header-base;
+    @include modal-audio-record-base;
+}

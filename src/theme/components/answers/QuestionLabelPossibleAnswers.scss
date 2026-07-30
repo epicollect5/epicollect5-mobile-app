@@ -1,0 +1,5 @@
+@import '@/theme/mixins';
+
+.question-label {
+    @include question-label-base;
+}

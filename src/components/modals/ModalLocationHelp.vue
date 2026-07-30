@@ -112,7 +112,4 @@ export default {
 };
 </script>
 
-<style
-    lang="scss"
-    scoped
-></style>
+<style src="@/theme/components/modals/ModalLocationHelp.scss" lang="scss"></style>

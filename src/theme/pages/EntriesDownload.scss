@@ -1,0 +1,17 @@
+@import '@/theme/mixins';
+
+.download-progress-grid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+.download-progress-value {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.download-progress-action {
+    font-size: 14px;
+}

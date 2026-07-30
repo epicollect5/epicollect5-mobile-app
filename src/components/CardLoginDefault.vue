@@ -178,31 +178,4 @@ export default {
 };
 </script>
 
-<style
-	lang="scss"
-	scoped
->
-.hr-divider {
-	display: flex;
-	flex-basis: 100%;
-	align-items: center;
-	color: #333;
-	margin: 8px 0px;
-}
-
-.hr-divider:before,
-.hr-divider:after {
-	content: "";
-	flex-grow: 1;
-	background: #333;
-	height: 1px;
-	font-size: 0px;
-	line-height: 0px;
-	margin: 0px 8px;
-}
-
-.hr-divider-wrapper {
-	max-width: 210px;
-	margin: 0 auto;
-}
-</style>
+<style src="@/theme/components/auth/CardLoginDefault.scss" lang="scss"></style>

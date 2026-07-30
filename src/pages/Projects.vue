@@ -223,7 +223,4 @@ export default {
 };
 </script>
 
-<style
-    lang="scss"
-    scoped
-></style>
+<style src="@/theme/pages/Projects.scss" lang="scss"></style>

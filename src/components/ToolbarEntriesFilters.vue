@@ -67,7 +67,4 @@ export default {
 };
 </script>
 
-<style
-	lang="scss"
-	scoped
-></style>
+<style src="@/theme/components/entries/ToolbarEntriesFilters.scss" lang="scss"></style>

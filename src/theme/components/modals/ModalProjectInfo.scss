@@ -1,0 +1,5 @@
+@import '@/theme/mixins';
+
+.modal-project-info {
+    @include modal-transparent-header-base;
+}

@@ -1,0 +1,5 @@
+@import '@/theme/mixins';
+
+.modal-login {
+    @include modal-login-base;
+}
