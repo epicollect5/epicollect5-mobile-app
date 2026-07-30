@@ -1,0 +1,25 @@
+src/theme/pages/EntriesDownload.scss
+  s_91840d4059855b::t_dee69921e4f59d 4-5,9-13,17-19
+src/theme/components/lists/ListItemProjects.scss
+  s_91840d4059855b::t_ebf576355a1a9c 9-10
+src/theme/components/auth/CardLoginDefault.scss
+  s_91840d4059855b::t_745fe13c557a36 3,5-7,9-18,20-22
+src/theme/core.scss
+  s_91840d4059855b::t_bbd8d75297b5a1 217-224
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "122256a0b028b19315b5fd8839fb3d45f8d25a71",
+  "prompts": {},
+  "sessions": {
+    "s_91840d4059855b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04ce2ab8cffeWM7RzLP54OM8tC",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
