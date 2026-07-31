@@ -6,6 +6,7 @@ import {STRINGS} from '@/config/strings';
 import {errorsService} from '@/services/errors-service';
 import {showModalLogin} from '@/use/auth/show-modal-login';
 import {logout} from '@/use/auth/logout';
+import {projectModel} from '@/models/project-model';
 
 export async function updateLocalProject() {
     const rootStore = useRootStore();
@@ -17,6 +18,13 @@ export async function updateLocalProject() {
          * Handles errors from updating the project, like setting a login callback
          */
         const authErrors = PARAMETERS.AUTH_ERROR_CODES;
+
+        //no active project loaded: a deferred retry after login can fire on a page with no project,
+        //so skip silently instead of crashing on an empty project model
+        if (!projectModel.hasInitialised()) {
+            console.warn('updateProject skipped: no active project');
+            return false;
+        }
 
         await notificationService.showProgressDialog(
             STRINGS[language].labels.wait,
