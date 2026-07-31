@@ -1,0 +1,14 @@
+package.json
+  h_2231ff2aa93473 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "0e4fe5c15ab5c153751f11d943bd32b7897f344f",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
