@@ -1,0 +1,27 @@
+src/use/answers/fetch-answers.js
+  s_e985e84118ca4b::t_09e7f17a55c86d 145-146
+  s_e985e84118ca4b::t_bc515c16db056b 148
+src/use/answers/fetch-branch-answers.js
+  s_e985e84118ca4b::t_ac19440d73014e 56-57,59
+tests/unit/use/fetch-answers.spec.js
+  s_e985e84118ca4b::t_28f7a145c996ee 1-180,188-219,221-247,249-272,274-360
+  s_e985e84118ca4b::t_cb1bb1afff16c7 181-187
+  s_e985e84118ca4b::t_e9604bbcf4758f 220,248
+  s_e985e84118ca4b::t_6697968674c449 273
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "9f709a882682510b5915343c15aefc02c900e1aa",
+  "prompts": {},
+  "sessions": {
+    "s_e985e84118ca4b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0472bceafffeInwGWPtpfTu9BB",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
