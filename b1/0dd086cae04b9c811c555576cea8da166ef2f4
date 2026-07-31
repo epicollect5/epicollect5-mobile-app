@@ -1,0 +1,32 @@
+tests/unit/services/utilities/versioning-service.spec.js
+  s_4eb9ec81a298a8::t_c423fb3a977b50 1-117
+src/use/project/update-project.js
+  s_4eb9ec81a298a8::t_78289808675ae5 14-20
+src/use/project/update-local-project.js
+  s_4eb9ec81a298a8::t_c9a2bac01a0fab 9
+  s_4eb9ec81a298a8::t_4f09f90f9cc41a 22-27
+  s_4eb9ec81a298a8::t_782155b7d36df5 28
+tests/unit/use/update-local-project.spec.js
+  s_4eb9ec81a298a8::t_9761a3e71a919c 70,72
+  s_4eb9ec81a298a8::t_b902babcbeb926 11
+  s_4eb9ec81a298a8::t_4e8274ab91c65d 71,73
+  s_4eb9ec81a298a8::t_eb999a5d0c45e8 212-261
+src/services/utilities/versioning-service.js
+  s_4eb9ec81a298a8::t_9f7de32af1cf10 60-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "b10dd086cae04b9c811c555576cea8da166ef2f4",
+  "prompts": {},
+  "sessions": {
+    "s_4eb9ec81a298a8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_046fdf7d0ffeZogWg9ZHJ15Rdd",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
