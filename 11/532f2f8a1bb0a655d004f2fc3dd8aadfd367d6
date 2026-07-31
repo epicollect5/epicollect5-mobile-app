@@ -1,0 +1,28 @@
+src/services/auth/auth-login-service.js
+  h_2231ff2aa93473 54
+src/services/modals/modals-handler-service.js
+  s_f84876f32a5bb2::t_8188daf67c9fd3 41-48,50,52
+tests/unit/services/modals/modals-handler-service.spec.js
+  s_f84876f32a5bb2::t_fefbf03f7f90b9 1-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "11532f2f8a1bb0a655d004f2fc3dd8aadfd367d6",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_f84876f32a5bb2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_046b040d1ffeiMa1hEY5WtFejZ",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
