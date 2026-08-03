@@ -113,7 +113,7 @@
 					>
 						<ion-button
 							class="ion-text-nowrap"
-							:disabled="!state.canUploadData"
+							:disabled="!state.canUploadData || state.isUploading"
 							color="secondary"
 							expand="block"
 							@click="uploadData()"
@@ -141,7 +141,7 @@
 					>
 						<ion-button
 							class="ion-text-nowrap"
-							:disabled="state.photos.length === 0"
+							:disabled="state.photos.length === 0 || state.isUploading"
 							color="secondary"
 							expand="block"
 							@click="uploadMedia(PARAMETERS.QUESTION_TYPES.PHOTO)"
@@ -169,7 +169,7 @@
 					>
 						<ion-button
 							class="ion-text-nowrap"
-							:disabled="state.audios.length === 0"
+							:disabled="state.audios.length === 0 || state.isUploading"
 							color="secondary"
 							expand="block"
 							@click="uploadMedia(PARAMETERS.QUESTION_TYPES.AUDIO)"
@@ -197,7 +197,7 @@
 					>
 						<ion-button
 							class="ion-text-nowrap"
-							:disabled="state.videos.length === 0"
+							:disabled="state.videos.length === 0 || state.isUploading"
 							color="secondary"
 							expand="block"
 							@click="uploadMedia(PARAMETERS.QUESTION_TYPES.VIDEO)"
@@ -414,21 +414,27 @@ export default {
 			 * Then move on to related children, child branches and repeat
 			 */
 			async uploadData() {
+				//upload already in progress -> bail out
+				if (state.isUploading) {
+					return false;
+				}
+				state.isUploading = true;
 				//no internet connection -> bail out
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
+					state.isUploading = false;
 					notificationService.showAlert(STRINGS[language].labels.connect_to_internet_to_upload);
 					return false;
 				}
 				//no entries to upload -> bail out
 				if (state.totalEntriesUnsynced === 0) {
+					state.isUploading = false;
 					notificationService.showToast(STRINGS[language].status_codes.ec5_119);
 					return false;
 				}
 				// If we have entries to upload, upload
 				if (state.totalEntriesUnsynced > 0) {
 					rootStore.attemptedUploadOrErrorFix = true;
-					state.isUploading = true;
 					await _showModalProgressTransfer(labels.uploading_entries, state.totalEntriesUnsynced);
 
 					uploadDataService.execute(state.totalEntriesUnsynced).then(
@@ -461,16 +467,23 @@ export default {
 				}
 			},
 			async uploadMedia(type) {
+				//upload already in progress -> bail out
+				if (state.isUploading) {
+					return false;
+				}
+				state.isUploading = true;
 				const mediaCount = state[type + 's'].length;
 				let header = labels.uploading_entries;
 				//no internet connection -> bail out
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
+					state.isUploading = false;
 					notificationService.showAlert(STRINGS[language].labels.connect_to_internet_to_upload);
 					return false;
 				}
 				//no media files to upload -> bail out
 				if (mediaCount === 0) {
+					state.isUploading = false;
 					notificationService.showToast(STRINGS[language].status_codes.ec5_119);
 					return false;
 				}
@@ -488,7 +501,6 @@ export default {
 						header = labels.uploading_photos;
 				}
 				await _showModalProgressTransfer(header, mediaCount);
-				state.isUploading = true;
 
 				uploadMediaService.execute(state[type + 's'], mediaCount, 0).then(
 					async function (errors) {

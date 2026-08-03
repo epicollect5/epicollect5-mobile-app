@@ -26,8 +26,9 @@ export default defineConfig({
     plugins: [vue({
         template: {
             compilerOptions: {
-                // treat all tags with a dash as custom elements
-                isCustomElement: (tag) => tag.includes('-')
+                // treat all tags with a dash as custom elements, except base-layout
+                // which is a real component enclosing named slots (see main.js)
+                isCustomElement: (tag) => tag.includes('-') && tag !== 'base-layout'
             }
         }
     }), viteCommonjs()]
