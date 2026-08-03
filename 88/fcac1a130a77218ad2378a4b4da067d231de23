@@ -1,0 +1,31 @@
+src/use/project/add-project.js
+  h_2231ff2aa93473 24,42,45,103,112,120,154
+  s_0568779fdcb570::t_8a0e20f44d6bdd 118-119,121-123
+tests/unit/use/add-project.spec.js
+  s_0568779fdcb570::t_6ab1a8c91dcf05 176-180,186-187
+  s_0568779fdcb570::t_6eb21edb1466b5 1-166,168-175,181-182,184-185,188-207,209-215
+  s_0568779fdcb570::t_5103755e0e6d7f 208
+  s_0568779fdcb570::t_3d9d53f4e23282 167
+  s_0568779fdcb570::t_4a578984b8922c 183
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "88fcac1a130a77218ad2378a4b4da067d231de23",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_0568779fdcb570": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0391af776ffeXHBUM6bAzx9Mr0",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
