@@ -1,0 +1,37 @@
+tests/unit/upload-media-service.spec.js
+  s_90094724b9a0f3::t_9084ae8dd511d6 35-48
+  s_90094724b9a0f3::t_f0e9e0898977e0 108-112,114-122,124,126,129
+  s_90094724b9a0f3::t_285cc1330b9c22 1-34,49-107,113,123,125,127-128,130-131
+tests/unit/pages/EntriesUpload.spec.js
+  s_90094724b9a0f3::t_7a86cfaf30cd77 1-77,85-142,144-154
+  s_90094724b9a0f3::t_4fba4df91c98bd 143
+  s_90094724b9a0f3::t_b6d0ed80192c8c 78-84
+vitest.config.js
+  s_90094724b9a0f3::t_0ebb85cd47e346 29-31
+src/pages/EntriesUpload.vue
+  s_90094724b9a0f3::t_f1131123b0e910 417-421,425,431
+  s_90094724b9a0f3::t_8755f6e748fce0 144
+  s_90094724b9a0f3::t_457dbb435e5564 470-473
+  s_90094724b9a0f3::t_1106a02ccdb199 474,480,486
+  s_90094724b9a0f3::t_09e48526238c54 172
+  s_90094724b9a0f3::t_586d1c916734e8 116
+  s_90094724b9a0f3::t_fc52acab3173ed 200
+src/services/upload-media-service.js
+  s_90094724b9a0f3::t_4262379e2bdf72 170-175,227-232
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "fab09edb761d951c3a7b541879541fc092fe473b",
+  "prompts": {},
+  "sessions": {
+    "s_90094724b9a0f3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0391e1a43ffe6E2qVU1FPh1XMF",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
