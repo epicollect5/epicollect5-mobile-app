@@ -7,6 +7,8 @@ import {notificationService} from '@/services/notification-service';
 import {errorsService} from '@/services/errors-service';
 import {downloadService} from '@/services/utilities/download-service';
 import {entriesDownloadProgressService} from '@/services/utilities/entries-download-progress-service';
+import {databaseDeleteService} from '@/services/database/database-delete-service';
+import {versioningService} from '@/services/utilities/versioning-service';
 import {logout} from '@/use/auth/logout';
 
 function initDownloader({state, rootStore, labels, language, projectModel}) {
@@ -100,12 +102,57 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     state.downloadCache = {};
   }
 
+  function clearProjectDownloadCache() {
+    clearDownloadCache();
+    entriesDownloadProgressService.clearProject(projectModel.getProjectRef());
+    state.forms.forEach((form) => {
+      state.resumeAvailable[form.formRef] = false;
+    });
+  }
+
   async function clearDownloadProgress(formRef) {
     const confirmed = await notificationService.confirmSingle(labels.are_you_sure, labels.clear_download_progress);
 
     if (confirmed) {
       clearFormDownloadCache(formRef);
     }
+  }
+
+  async function checkProjectVersion(formRef) {
+    const isUpToDate = await versioningService.checkProjectVersion();
+
+    if (!isUpToDate) {
+      const confirmed = await notificationService.confirmSingle(
+        STRINGS[language].labels.update_project,
+        STRINGS[language].labels.project_outdated
+      );
+
+      if (confirmed) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, PARAMETERS.DELAY_LONG);
+        });
+
+        try {
+          await notificationService.showProgressDialog(
+            STRINGS[language].labels.wait,
+            STRINGS[language].labels.updating_project
+          );
+          await versioningService.updateProject();
+          await notificationService.hideProgressDialog(0);
+          // Project changes invalidate cached page URLs and entry counts.
+          clearProjectDownloadCache();
+          return {shouldProceed: true, projectUpdated: true};
+        } catch (error) {
+          await notificationService.hideProgressDialog(0);
+          await errorsService.handleWebError(error);
+          return {shouldProceed: false, projectUpdated: false};
+        }
+      } else {
+        return {shouldProceed: false, projectUpdated: false};
+      }
+    }
+
+    return {shouldProceed: true, projectUpdated: false};
   }
 
   async function downloadEntries(formRef, shouldResume = false) {
@@ -130,20 +177,36 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
       return modal.present();
     }
 
-    const beginDownload = (resumeDownload = false) => {
+    const beginDownload = async (resumeDownload = false) => {
       if (state.isFetching) {
         return;
       }
 
-      state.wasAttemptedDownload = true;
-      startDownload(resumeDownload);
+      state.isFetching = true;
+
+      try {
+        const versionCheck = await checkProjectVersion(formRef);
+        if (!versionCheck.shouldProceed) {
+          state.isFetching = false;
+          return;
+        }
+
+        state.wasAttemptedDownload = true;
+        // A resumed download is only safe when the project structure did not change.
+        await startDownload(resumeDownload && !versionCheck.projectUpdated);
+      } catch (error) {
+        state.isFetching = false;
+        await errorsService.handleWebError(error);
+      }
     };
 
     const startDownload = async (resumeDownload = false) => {
       const formCache = getFormDownloadCache(formRef);
-      state.isFetching = true;
-
       try {
+        if (!resumeDownload) {
+          await databaseDeleteService.deleteRemoteEntries(projectModel.getProjectRef(), formRef);
+        }
+
         await showModalUploadProgress({
           total: resumeDownload ? formCache.totalEntries : 0,
           done: resumeDownload ? formCache.processedEntries : 0

@@ -188,14 +188,20 @@ buttons
     //Hide the progress dialog (global object)
     hideProgressDialog(delay) {
         const rootStore = useRootStore();
-        const set_delay = delay || PARAMETERS.DELAY_MEDIUM;
+        const set_delay = delay ?? PARAMETERS.DELAY_MEDIUM;
 
-        setTimeout(async function () {
-            if (rootStore.ec5LoadingDialog !== null) {
-                console.log('dismiss dialog called');
-                await rootStore.ec5LoadingDialog.dismiss();
-            }
-        }, set_delay);
+        return new Promise((resolve) => {
+            setTimeout(async function () {
+                try {
+                    if (rootStore.ec5LoadingDialog !== null) {
+                        console.log('dismiss dialog called');
+                        await rootStore.ec5LoadingDialog.dismiss();
+                    }
+                } finally {
+                    resolve();
+                }
+            }, set_delay);
+        });
     },
     //start a foreground service (with notification)
     //to avoid Android killing the app

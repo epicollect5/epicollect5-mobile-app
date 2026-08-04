@@ -156,7 +156,7 @@ export default {
         return entriesDownloader.getDownloadProgressLabel(formRef);
       },
       isDownloadDisabled(formRef) {
-        return !state.enabledButtons[formRef] || state.entriesDownloaded[formRef] || state.noEntriesFound || state.completed;
+        return state.isFetching || state.promptOpen || !state.enabledButtons[formRef] || state.entriesDownloaded[formRef] || state.noEntriesFound || state.completed;
       },
       async clearDownloadProgress(formRef) {
         await entriesDownloader.clearDownloadProgress(formRef);

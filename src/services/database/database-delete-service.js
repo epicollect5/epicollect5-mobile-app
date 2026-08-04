@@ -1,5 +1,6 @@
 
 import { useDBStore } from '@/stores/db-store';
+import { PARAMETERS } from '@/config';
 
 export const databaseDeleteService = {
 
@@ -105,6 +106,40 @@ export const databaseDeleteService = {
         };
 
         return await this.deleteRowsFromMultipleTables(query, options, tables);
+    },
+
+    //Remove downloaded remote entries for a project form while preserving local entries
+    async deleteRemoteEntries(projectRef, formRef) {
+        const dbStore = useDBStore();
+        const remoteEntries = 'SELECT entry_uuid FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?';
+        const statements = [
+            {
+                query: 'DELETE FROM media WHERE project_ref=? AND form_ref=? AND entry_uuid IN (' + remoteEntries + ')',
+                params: [projectRef, formRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
+            },
+            {
+                query: 'DELETE FROM unique_answers WHERE project_ref=? AND entry_uuid IN (' + remoteEntries + ')',
+                params: [projectRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
+            },
+            {
+                query: 'DELETE FROM bookmarks WHERE project_ref=? AND form_ref=? AND parent_entry_uuid IN (' + remoteEntries + ')',
+                params: [projectRef, formRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
+            },
+            {
+                query: 'DELETE FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?',
+                params: [projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
+            }
+        ];
+
+        return new Promise((resolve, reject) => {
+            dbStore.db.transaction((tx) => {
+                statements.forEach((statement) => {
+                    tx.executeSql(statement.query, statement.params, () => {}, (transaction, error) => {
+                        reject(error);
+                    });
+                });
+            }, reject, resolve);
+        });
     },
 
     //Function to remove all entries for the given array of forms
