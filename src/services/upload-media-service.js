@@ -167,7 +167,12 @@ export const uploadMediaService = {
                                     }
                                     else {
                                         //connection is good, go on even if there is an error
-                                        _uploadOneFile(files.pop(), total, currentEntryIndex);
+                                        const file = files.pop();
+                                        if (file) {
+                                            _uploadOneFile(file, total, currentEntryIndex);
+                                        } else {
+                                            resolve(errors);
+                                        }
                                     }
                                 }, 2 * PARAMETERS.DELAY_LONG);
                             }
@@ -219,7 +224,12 @@ export const uploadMediaService = {
                 if (files.length > 0) {
                     // Begin file upload (throttle to wait between each upload)
                     window.setTimeout(function () {
-                        _uploadOneFile(files.pop(), total, currentEntryIndex);
+                        const file = files.pop();
+                        if (file) {
+                            _uploadOneFile(file, total, currentEntryIndex);
+                        } else {
+                            resolve(errors);
+                        }
                     }, 2 * PARAMETERS.DELAY_LONG);
                 }
             });
