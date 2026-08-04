@@ -51,6 +51,13 @@ Key behavior:
 - `rootStore.isPWA` is derived from `device.platform === PARAMETERS.PWA`.
 - The boot path diverges immediately after platform detection.
 
+**Server URL resolution** (`src/main.js`, `src/services/init-service.js`, `src/pages/Settings.vue`):
+
+- When `PARAMETERS.DEBUG` is falsy (production builds), `DEFAULT_SERVER_URL` is forced to `PRODUCTION_SERVER_URL` at boot
+- The server URL input in Settings is only visible when `PARAMETERS.DEBUG` is truthy or the Easter Egg project is active
+- Each project stores its own server URL when downloaded; uploads always go to the originating server via `projectModel.getServerUrl()`
+- Resolution priority: project's stored URL → `rootStore.serverUrl` (from DB or default)
+
 ### 2. Router Layer
 
 Primary file:
