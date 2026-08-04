@@ -41,6 +41,7 @@ export default {
 	emits: ['project-selected'],
 	setup(props, context) {
 		const privateLogo = PARAMETERS.PROJECT_LOGO_PRIVATE;
+		const placeholderLogo = PARAMETERS.PROJECT_LOGO_PLACEHOLDER;
 		const projects = readonly(props.projects);
 
 		const state = reactive({
@@ -61,9 +62,11 @@ export default {
 				if (props.page === 'add-project') {
 					if (project.access === 'private') {
 						logo = privateLogo;
-					}
-					if (project.access === 'public') {
-						logo = project.logo;
+					} else if (project.access === 'public') {
+						// Public projects: logo carries the base64 data URI
+						// embedded in the search payload. Fall back to the
+						// generic placeholder if the field is missing.
+						logo = project.logo || placeholderLogo;
 					}
 				}
 				if (props.page === 'projects') {

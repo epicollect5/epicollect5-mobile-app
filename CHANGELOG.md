@@ -1,5 +1,13 @@
 ## Release Notes
 
+# 88.9.9 - build 8899
+
+ - Project search now reads the project logo as a base64 data URI embedded in the search response payload (`logo_base64`), avoiding one HTTP request per hit.
+ - When the server-side feature flag is off and the payload omits the `logo_base64` key, the app falls back to constructing the logo URL client-side, preserving the previous behavior.
+ - Private projects still show the locked placeholder (server returns `logo_base64: null`).
+ - Defensive fallback to a local placeholder for public projects with an explicitly null or empty `logo_base64`.
+ - The post-add download flow (logo fetched on selection) is unchanged.
+
 # 88.9.8 - build 8898
 
  - Fixed bug with upload progress (delays too long)

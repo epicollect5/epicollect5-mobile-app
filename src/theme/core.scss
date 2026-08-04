@@ -80,6 +80,15 @@ ion-card-content {
 //Projects list
 .projects-list {
     padding-top: 0;
+    //Override Ionic's slotted avatar size (40x40 in MD, 36x36 in iOS) so the
+    //project logo renders at 32x32 in the project hits and local projects list.
+    //position: relative makes the avatar a positioning context for the
+    //absolutely-positioned loading spinner inside it (see ListItemProjects.vue).
+    ion-item ion-avatar {
+        width: 32px;
+        height: 32px;
+        position: relative;
+    }
     ion-avatar img,
     ion-avatar ion-img {
         border: 1px solid var(--ion-color-primary);

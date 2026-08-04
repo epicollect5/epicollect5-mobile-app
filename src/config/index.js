@@ -52,6 +52,7 @@ export const PARAMETERS = {
     },
 
     PROJECT_LOGO_PRIVATE: './assets/images/ec5-locked.png',
+    PROJECT_LOGO_PLACEHOLDER: './assets/images/ec5-placeholder-100x100.jpg',
     GOOGLE_SIGNIN_BUTTON_IMAGE: './assets/images/login-google@2x.png',
     APPLE_SIGNIN_BUTTON_IMAGE: './assets/images/login-apple@2x.png',
     EMAIL_SIGNIN_BUTTON_IMAGE: './assets/images/email-signin-128x128.png',
