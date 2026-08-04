@@ -1,0 +1,20 @@
+docs/ARCHITECTURE.md
+  s_441e85f228887f::t_e658f2886f20a7 111
+  s_441e85f228887f::t_a26dceddebb016 477,479-484
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "2fe607c0053ef012f9b4f65e16416d7009672dee",
+  "prompts": {},
+  "sessions": {
+    "s_441e85f228887f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03920bd6affeX9kQ8305WUry13",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
