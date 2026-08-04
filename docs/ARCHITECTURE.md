@@ -108,7 +108,7 @@ The service layer is organized by concern, mostly as exported object literals.
 
 Major groups:
 
-- `src/services/database/`: SQLite create/select/insert/update/delete/migrate
+- `src/services/database/`: SQLite create/select/insert/update/delete/migrate, including `deleteRemoteEntries()` for cleaning up remote entries before re-download
 - `src/services/entry/`: entry editing, answer handling, jumps, media handling, save behavior
 - `src/services/filesystem/`: media directories, temp/persistent storage, file writes/moves/deletes
 - `src/services/auth/`: login providers and auth workflows
@@ -474,12 +474,14 @@ This ordering is important because branch and child rows depend on parent UUID r
 
 ### Native Download
 
-`downloadService.downloadFormEntries(formRef)`:
+`entriesDownloadService` orchestrates the download flow:
 
-- fetches paginated entry data from the server
-- flattens JSON entries into local DB row shape
-- inserts them as synced remote entries
-- updates progress through `notificationService`
+1. **Version check**: before downloading, the service compares local `projectModel` version with the remote `structure_last_updated`. If out of date, the user is prompted to update the project first. This prevents downloaded entries from being rendered against a stale project model (which caused group questions added after entry collection to be skipped silently).
+2. **Cache clearing**: after a project update, the download cache (page URLs, progress, resume state) is cleared so stale data is not reused.
+3. **Duplicate prevention**: existing remote entries for the target form are deleted via `databaseDeleteService.deleteRemoteEntries()` before downloading, avoiding duplicate rows.
+4. `downloadService.downloadFormEntries(formRef)` fetches paginated entry data from the server, flattens JSON entries into local DB row shape, inserts them as synced remote entries, and updates progress through `notificationService`.
+
+This version-check-then-download pattern is the key safeguard against stale project models in the native download flow.
 
 ## Versioning and Project Updates
 
