@@ -1,0 +1,51 @@
+src/pages/EntriesDownload.vue
+  s_9bd6763ca484e6::t_ed4783eef2d575 211-213
+  s_9bd6763ca484e6::t_4d2258d939e9ba 89-105
+  s_9bd6763ca484e6::t_9ace842821ddb6 110
+  s_9bd6763ca484e6::t_f9331fca6e6655 243-244
+src/config/index.js
+  s_9bd6763ca484e6::t_5b2cfacb5df1d6 9
+src/config/strings.js
+  s_9bd6763ca484e6::t_e88b90c28d8553 1127
+  s_9bd6763ca484e6::t_718def75bd5f29 2167
+  s_9bd6763ca484e6::t_552568e8c722df 277
+  s_9bd6763ca484e6::t_8bef33cf4834dc 17
+  s_9bd6763ca484e6::t_82ef0fd0b3b435 797
+  s_9bd6763ca484e6::t_e5837cc270e6b2 1057
+  s_9bd6763ca484e6::t_f5d1d3b38d8a7b 1907
+  s_9bd6763ca484e6::t_d193b91d46e5cf 537
+  s_9bd6763ca484e6::t_1b50eb379d3dfb 87
+  s_9bd6763ca484e6::t_f6008b4e6ca96d 2097
+  s_9bd6763ca484e6::t_06ab8113ddfec1 1837
+  s_9bd6763ca484e6::t_dcd7c019cfb04a 1577
+  s_9bd6763ca484e6::t_47c7adc7d1865b 1317
+  s_9bd6763ca484e6::t_078568197d834c 1647
+  s_9bd6763ca484e6::t_1587585c4332aa 347
+  s_9bd6763ca484e6::t_b86c007cb8e4b7 1387
+  s_9bd6763ca484e6::t_18dd7db51996b8 607
+  s_9bd6763ca484e6::t_0b0364d2535056 867
+src/components/globals/BaseLayout.vue
+  s_9bd6763ca484e6::t_2105bec56fee9f 79-81
+  s_9bd6763ca484e6::t_5523030e7084b7 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "70b33b4ce9d4d2ec12c7a5be808b1e2cce8eefad",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_9bd6763ca484e6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_031ad4dbfffe74WmjorZu1q5WO",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
