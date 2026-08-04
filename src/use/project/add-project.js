@@ -21,7 +21,7 @@ export async function addProject(project, router) {
         STRINGS[rootStore.language].labels.wait,
         STRINGS[rootStore.language].labels.loading_project
     );
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
         (async () => {
             try {
                 const response = await webService.getProject(project.slug);
@@ -39,9 +39,10 @@ export async function addProject(project, router) {
                     // If no inputs, do not allow user to add this project
                     if (noInputs) {
                         notificationService.hideProgressDialog();
-                        notificationService.showAlert(
+                        await notificationService.showAlert(
                             STRINGS[rootStore.language].status_codes.ec5_133
                         );
+                        resolve();
                     } else {
                         try {
                             //insert project to sqlite database
@@ -99,7 +100,7 @@ export async function addProject(project, router) {
                                 errorCode = 'ec5_111';
                             }
                             notificationService.hideProgressDialog();
-                            notificationService.showAlert(
+                            await notificationService.showAlert(
                                 STRINGS[rootStore.language].status_codes[errorCode]
                             );
                             resolve();
@@ -108,12 +109,18 @@ export async function addProject(project, router) {
                 } else {
                     // Web error
                     notificationService.hideProgressDialog();
-                    errorsService.handleWebError({ data: 'ec5_116' });
+                    await errorsService.handleWebError({data: 'ec5_116'});
                     resolve();
                 }
             } catch (error) {
                 // Web error
                 notificationService.hideProgressDialog();
+                // Network error/timeout: webService rejects with undefined (no HTTP response)
+                if (!error || !error.data) {
+                    await errorsService.handleWebError(error);
+                    resolve();
+                    return;
+                }
                 /*
                      ec5_77: user is not logged in (or jwt expired)
                      ec5_78: user is logged but cannot access the project
@@ -144,7 +151,7 @@ export async function addProject(project, router) {
                     }
                 } else {
                     // Other error
-                    errorsService.handleWebError(error);
+                    await errorsService.handleWebError(error);
                 }
                 resolve();
             }
