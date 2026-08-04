@@ -57,6 +57,20 @@ export const versioningService = {
         const rootStore = useRootStore();
         const language = rootStore.language;
 
+        //no active project loaded: nothing to update, reject cleanly
+        //instead of crashing on an empty project model (getSlug() would throw)
+        if (!projectModel.hasInitialised()) {
+            return Promise.reject({
+                data: {
+                    errors: [{
+                        code: 'ec5_116',
+                        source: '',
+                        title: STRINGS[language].status_codes.ec5_116
+                    }]
+                }
+            });
+        }
+
         return new Promise((resolve, reject) => {
 
             // Fetch the updated project

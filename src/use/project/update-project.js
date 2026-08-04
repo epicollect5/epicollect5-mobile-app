@@ -11,6 +11,13 @@ import { entriesDownloadProgressService } from '@/services/utilities/entries-dow
 
 
 export async function updateProject () {
+    //no active project loaded: a deferred retry after login can fire on a page with no project,
+    //so skip silently instead of crashing on an empty project model
+    if (!projectModel.hasInitialised()) {
+        console.warn('updateProject skipped: no active project');
+        return;
+    }
+
     const rootStore = useRootStore();
     const language = rootStore.language;
     const labels = STRINGS[language].labels;

@@ -8,6 +8,7 @@ import { showModalLogin } from '@/use/auth/show-modal-login';
 import { updateLocalProject } from '@/use/project/update-local-project';
 import { PARAMETERS } from '@/config';
 import { errorsService } from '@/services/errors-service';
+import { projectModel } from '@/models/project-model';
 
 // Mocking the services using your preferred style
 vi.mock('@/services/utilities/versioning-service', () => ({
@@ -66,6 +67,10 @@ describe('updateLocalProject()', () => {
         const rootStore = useRootStore();
         rootStore.language = 'en';
         rootStore.continueProjectVersionUpdate = true;
+
+        // Start with a clean but loaded project model so the update flow guard passes
+        projectModel.destroy();
+        projectModel.loadExtraStructure({ project: { details: {} } });
     });
 
     it('returns false immediately if project is up to date', async () => {
@@ -203,6 +208,56 @@ describe('updateLocalProject()', () => {
         // Ensure auth logic was skipped
         expect(logout).not.toHaveBeenCalled();
         expect(showModalLogin).not.toHaveBeenCalled();
+    });
+
+    it('skips the deferred update after login when no project is loaded', async () => {
+        const rootStore = useRootStore();
+        versioningService.checkProjectVersion.mockResolvedValue(false);
+        notificationService.confirmSingle.mockResolvedValue(true);
+
+        // Simulate an Auth Error so the retry callback gets stored
+        const authError = {
+            data: {
+                errors: [{ code: 'ec5_70' }]
+            }
+        };
+        versioningService.updateProject.mockRejectedValue(authError);
+
+        await updateLocalProject();
+        expect(rootStore.afterUserIsLoggedIn.callback).toBeDefined();
+
+        // Empty project model, as when the user is on a page with no active project
+        projectModel.destroy();
+
+        // The retry must not crash nor hit the versioning service again
+        await expect(rootStore.afterUserIsLoggedIn.callback()).resolves.toBe(false);
+        expect(versioningService.updateProject).toHaveBeenCalledTimes(1);
+        expect(notificationService.showAlert).not.toHaveBeenCalled();
+    });
+
+    it('runs the deferred update after login when a project is loaded', async () => {
+        const rootStore = useRootStore();
+        versioningService.checkProjectVersion.mockResolvedValue(false);
+        notificationService.confirmSingle.mockResolvedValue(true);
+
+        const authError = {
+            data: {
+                errors: [{ code: 'ec5_70' }]
+            }
+        };
+        versioningService.updateProject.mockRejectedValue(authError);
+
+        await updateLocalProject();
+        expect(rootStore.afterUserIsLoggedIn.callback).toBeDefined();
+
+        // A project is loaded in the model, e.g. the user is still on the project's entries page
+        projectModel.loadExtraStructure({ project: { details: {} } });
+
+        // The retry update now succeeds
+        versioningService.updateProject.mockResolvedValue(false);
+
+        await expect(rootStore.afterUserIsLoggedIn.callback()).resolves.toBe(true);
+        expect(versioningService.updateProject).toHaveBeenCalledTimes(2);
     });
 });
 

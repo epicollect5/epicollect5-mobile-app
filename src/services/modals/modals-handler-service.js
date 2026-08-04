@@ -38,11 +38,17 @@ export const modalsHandlerService = {
         return this.modals.confirmEmail;
     },
     //dismiss all modals
-    dismissAll () {
-        Object.values(this.modals).forEach((modal) => {
+    //imp: dismiss stacked modals from the topmost (last presented) to the bottom one,
+    //imp: waiting for each to be fully removed. Dismissing all of them at once
+    //imp: causes a DOM unmount race in the Ionic/Vue overlay (teleport) teardown,
+    //imp: resulting in "Cannot read properties of null (reading 'nextSibling')".
+    async dismissAll () {
+        const ordered = ['login', 'passwordlessSend', 'passwordlessLogin', 'confirmPassword', 'confirmEmail'];
+        for (let i = ordered.length - 1; i >= 0; i--) {
+            const modal = this.modals[ordered[i]];
             if (modal) {
-                modal.dismiss();
+                await modal.dismiss();
             }
-        });
+        }
     }
 };
