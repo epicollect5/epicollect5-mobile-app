@@ -1,0 +1,24 @@
+.opencode/command/commit.md
+  s_df8f2ee93fd053::t_2fdd6d6e33e50b 1-5,7-19
+  s_df8f2ee93fd053::t_792bab3c5f24f9 6
+docs/ARCHITECTURE.md
+  s_df8f2ee93fd053::t_be186d41d62a21 54-60
+AGENTS.md
+  s_df8f2ee93fd053::t_f8ffbd7d223e2f 52-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "35d12f6d8b0213bf69c36101258b4d1e962207e3",
+  "prompts": {},
+  "sessions": {
+    "s_df8f2ee93fd053": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0322af0bcffeluUyF6PBtGm3M8",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
