@@ -1,0 +1,19 @@
+src/theme/components/lists/ListItemProjects.scss
+  s_441e85f228887f::t_9514aaf9372bf6 9-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "2296fd839fa430e90728e2a4df3dbdbe21496784",
+  "prompts": {},
+  "sessions": {
+    "s_441e85f228887f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03920bd6affeX9kQ8305WUry13",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
