@@ -287,7 +287,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     };
 
     const confirmDownloadWarning = async () => {
-      const confirmed = await notificationService.confirmSingle(labels.download_warning, labels.download_remote_entries);
+      const confirmed = await notificationService.confirmSingle(labels.download_warning, labels.download_remote_entries, PARAMETERS.DOWNLOAD_ENTRIES_DOCS_URL);
 
       if (confirmed) {
         state.showWarning = false;

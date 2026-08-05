@@ -86,28 +86,11 @@
       </ion-list>
 
     </template>
-
-    <template #footer>
-      <div>
-        <ion-card>
-          <ion-card-content class="ion-text-center">
-            <p><strong>{{labels.download_warning_help_text}}</strong></p>
-            <ion-button color="warning" @click="openDownloadEntriesDocs()">
-              <ion-icon
-                  slot="start"
-                  :icon="openOutline"
-              ></ion-icon>
-              {{labels.learn_more}}
-            </ion-button>
-          </ion-card-content>
-        </ion-card>
-      </div>
-    </template>
   </base-layout>
 </template>
 
 <script>
-import {chevronBackOutline, documentText, desktopOutline, openOutline} from 'ionicons/icons';
+import {chevronBackOutline, documentText, desktopOutline} from 'ionicons/icons';
 import {reactive} from '@vue/reactivity';
 import {STRINGS} from '@/config/strings';
 
@@ -208,9 +191,6 @@ export default {
       },
       async downloadEntries(formRef, shouldResume = false) {
         await entriesDownloader.downloadEntries(formRef, shouldResume);
-      },
-      openDownloadEntriesDocs() {
-        window.open(PARAMETERS.DOWNLOAD_ENTRIES_DOCS_URL, '_system', 'location=yes');
       }
     };
 
@@ -240,8 +220,7 @@ export default {
       //icons
       chevronBackOutline,
       desktopOutline,
-      documentText,
-      openOutline
+      documentText
     };
   }
 };

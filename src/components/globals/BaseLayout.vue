@@ -18,7 +18,7 @@
 		<ion-content>
 			<slot name="content"></slot>
 		</ion-content>
-    <ion-footer v-if="isProjectsPage || isEntriesUploadPage || isEntriesDownloadPage">
+    <ion-footer v-if="isProjectsPage || isEntriesUploadPage">
       <slot name="footer"></slot>
     </ion-footer>
 	</ion-page>
@@ -76,9 +76,6 @@ export default {
       }),
       isEntriesUploadPage: computed(() => {
         return route.name === PARAMETERS.ROUTES.ENTRIES_UPLOAD;
-      }),
-      isEntriesDownloadPage: computed(() => {
-        return route.name === PARAMETERS.ROUTES.ENTRIES_DOWNLOAD;
       })
 		};
 

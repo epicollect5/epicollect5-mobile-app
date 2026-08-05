@@ -55,31 +55,52 @@ export const notificationService = {
             });
         await alert.present();
     },
-    async confirmSingle(message, title) {
+    async confirmSingle(message, title, learnMoreUrl = null) {
         const rootStore = useRootStore();
         const language = rootStore.language;
+        const platform = (rootStore.device.platform).toLowerCase();
         return new Promise((resolve) => {
             (async () => {
-                const alert = await alertController
-                    .create({
-                        header: title,
-                        message,
-                        buttons: [
-                            {
-                                text: STRINGS[language].labels.cancel,
-                                role: 'cancel',
-                                handler: () => {
-                                    resolve(false);
-                                }
-                            },
-                            {
-                                text: STRINGS[language].labels.ok,
-                                handler: () => {
-                                    resolve(true);
-                                }
-                            }
-                        ]
+                const buttons = [];
+
+                if (learnMoreUrl) {
+                    buttons.push({
+                        text: STRINGS[language].labels.learn_more,
+                        handler: () => {
+                            window.open(learnMoreUrl, '_system', 'location=yes');
+                            return false;
+                        }
                     });
+                }
+
+                buttons.push(
+                    {
+                        text: STRINGS[language].labels.cancel,
+                        role: 'cancel',
+                        handler: () => {
+                            resolve(false);
+                        }
+                    },
+                    {
+                        text: STRINGS[language].labels.ok,
+                        handler: () => {
+                            resolve(true);
+                        }
+                    }
+                );
+
+                const alertOptions = {
+                    header: title,
+                    message,
+                    buttons
+                };
+
+                if (learnMoreUrl) {
+                    alertOptions.cssClass = 'alert-confirm-multiple-' + platform;
+                }
+
+                const alert = await alertController
+                    .create(alertOptions);
                 return alert.present();
             })();
         });
