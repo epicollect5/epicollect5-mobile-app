@@ -1,0 +1,32 @@
+src/services/entries-download-service.js
+  s_9bd6763ca484e6::t_5722edaea04b7d 290
+src/components/globals/BaseLayout.vue
+  s_9bd6763ca484e6::t_9f526b1ab78dbe 21
+src/services/notification-service.js
+  s_9bd6763ca484e6::t_6fc314a1fd0c0b 58,64-72,74-91
+  s_9bd6763ca484e6::t_b8fad13d6a1ff3 61,92-103
+src/pages/EntriesDownload.vue
+  s_9bd6763ca484e6::t_48d145de794851 223
+  s_9bd6763ca484e6::t_00cf2e5741ac2a 93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "b73ce49c6a208aa323f14b186658d46506fa63d3",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_9bd6763ca484e6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_031ad4dbfffe74WmjorZu1q5WO",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
