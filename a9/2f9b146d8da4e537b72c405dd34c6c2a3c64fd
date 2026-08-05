@@ -1,0 +1,29 @@
+tests/unit/services/database/database-update-service.spec.js
+  s_441e85f228887f::t_198c1b5e82d3d7 1-104
+src/services/database/database-update-service.js
+  s_441e85f228887f::t_1e3be69f45356b 104,107
+  s_441e85f228887f::t_517e432ac87955 124,126
+  s_441e85f228887f::t_eb8ba34d2c66f5 133
+src/services/database/database-select-service.js
+  s_441e85f228887f::t_5993e1245c1db2 191,195,199
+  s_441e85f228887f::t_39a0d5d4e45626 371,374
+tests/unit/services/database/database-select-service.spec.js
+  s_441e85f228887f::t_930a10001ba9ce 1-35,40-94
+  s_441e85f228887f::t_802813ef277a5f 36-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "a92f9b146d8da4e537b72c405dd34c6c2a3c64fd",
+  "prompts": {},
+  "sessions": {
+    "s_441e85f228887f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03920bd6affeX9kQ8305WUry13",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
