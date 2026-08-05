@@ -188,15 +188,15 @@ export const databaseSelectService = {
         query += 'AND synced=?)) as total_number_of_entries_with_errors,';
         //---------------------------------------------------------------
 
-        //total_number_of_entries_unsynced (exclude remote entries — they cannot be re-uploaded)
+        //total_number_of_entries_unsynced
         query += '((SELECT COUNT(entry_uuid) as no_entries ';
         query += 'FROM entries ';
         query += 'WHERE project_ref = ? ';
-        query += 'AND (synced = ? OR synced = ?) AND is_remote = 0) + ';
+        query += 'AND (synced = ? OR synced = ?)) + ';//todo: is this needed for branches?
         query += '(SELECT COUNT(entry_uuid) as no_entries ';
         query += 'FROM branch_entries ';
         query += 'WHERE project_ref = ? ';
-        query += 'AND synced=? AND is_remote = 0)) as total_number_of_entries_unsynced,';
+        query += 'AND synced=?)) as total_number_of_entries_unsynced,';
         //-------------------------------------------------------------
 
         //total_number_of_incomplete_entries
@@ -368,10 +368,10 @@ export const databaseSelectService = {
     async countEntriesUnsynced(projectRef) {
         let query = 'SELECT SUM(total) as total from ( ';
         query += ' SELECT count(id) as total FROM entries ';
-        query += ' WHERE project_ref = ? AND (synced = ? OR synced = ? OR synced = ? ) AND is_remote = 0 ';
+        query += ' WHERE project_ref = ? AND (synced = ? OR synced = ? OR synced = ? ) ';
         query += ' UNION ALL ';
         query += ' SELECT count(id) as total FROM branch_entries ';
-        query += ' WHERE project_ref = ? AND (synced = ? OR synced = ? OR synced = ? ) AND is_remote = 0 ';
+        query += ' WHERE project_ref = ? AND (synced = ? OR synced = ? OR synced = ? ) ';
         query += ' ) ';
 
         const params = [
