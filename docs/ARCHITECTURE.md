@@ -479,6 +479,8 @@ Native sync is a staged process:
 
 This ordering is important because branch and child rows depend on parent UUID relationships.
 
+**Remote entries (`is_remote=1`) are never uploaded.** Downloaded entries are inserted with `can_edit=0`, which causes `_uploadEntry` to skip the POST entirely. The unsync and upload-count queries also filter out remote entries (`AND is_remote = 0`), so they don't inflate the upload counter or enable the upload button when no locally-created entries are pending.
+
 ### Native Download
 
 `entriesDownloadService` orchestrates the download flow:
