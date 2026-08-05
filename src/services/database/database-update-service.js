@@ -101,10 +101,10 @@ export const databaseUpdateService = {
 
         return await this.updateRows(query, params);
     },
-    //Unsync all entries (that aren't incomplete)
+    //Unsync all entries (that aren't incomplete, skip remote entries)
     async unsyncAllEntries(projectRef) {
 
-        const query = 'UPDATE entries SET synced=?, synced_error=? WHERE project_ref=? AND synced <?';
+        const query = 'UPDATE entries SET synced=?, synced_error=? WHERE project_ref=? AND synced <? AND is_remote = 0';
         const params = [0, '', projectRef, PARAMETERS.SYNCED_CODES.INCOMPLETE];
 
         return await this.updateRows(query, params);
@@ -121,16 +121,16 @@ export const databaseUpdateService = {
      * Otherwise ignored
      */
     async unsyncParentEntry(projectRef, parentEntryUuid) {
-        // We only want to update the parent synced flag if it is SYNCED
+        // We only want to update the parent synced flag if it is SYNCED and not remote
         // All other statuses need to be resolved (incomplete, error) and if it is already UNSYNCED, we can ignore
-        const query = 'UPDATE entries SET synced=?, synced_error=? WHERE project_ref=? AND entry_uuid=? AND synced =?';
+        const query = 'UPDATE entries SET synced=?, synced_error=? WHERE project_ref=? AND entry_uuid=? AND synced =? AND is_remote = 0';
         const params = [PARAMETERS.SYNCED_CODES.HAS_UNSYNCED_CHILD_ENTRIES, '', projectRef, parentEntryUuid, PARAMETERS.SYNCED_CODES.SYNCED];
 
         return await this.updateRows(query, params);
     },
     async unsyncAllBranchEntries(projectRef) {
 
-        const query = 'UPDATE branch_entries SET synced=?, synced_error=? WHERE project_ref=? AND synced <?';
+        const query = 'UPDATE branch_entries SET synced=?, synced_error=? WHERE project_ref=? AND synced <? AND is_remote = 0';
         const params = [0, '', projectRef, PARAMETERS.SYNCED_CODES.INCOMPLETE];
 
         return await this.updateRows(query, params);
