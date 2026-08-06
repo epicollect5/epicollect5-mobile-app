@@ -198,6 +198,24 @@ describe('answerValidateService', () => {
         });
         params.input_details.uniqueness = 'none';
     });
+    it('PHONE numeric answer uniqueness none', async () => {
+
+        params.answer.answer = 5088;
+        params.input_details.uniqueness = 'none';
+
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+    });
+    it('PHONE numeric answer uniqueness hierarchy', async () => {
+
+        params.answer.answer = 5088;
+        params.input_details.uniqueness = 'hierarchy';
+        databaseSelectService.isUnique.mockResolvedValue({ rows: [] });
+
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+        params.input_details.uniqueness = 'none';
+    });
     it('PHONE answer double entry verification missing', async () => {
 
         params.answer.answer = '4567890';

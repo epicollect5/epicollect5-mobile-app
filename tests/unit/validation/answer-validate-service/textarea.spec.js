@@ -195,6 +195,24 @@ describe('answerValidateService', () => {
         });
         params.input_details.uniqueness = 'none';
     });
+    it('TEXTBOX numeric answer uniqueness none', async () => {
+
+        params.answer.answer = 9999;
+        params.input_details.uniqueness = 'none';
+
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+    });
+    it('TEXTBOX numeric answer uniqueness hierarchy', async () => {
+
+        params.answer.answer = 9999;
+        params.input_details.uniqueness = 'hierarchy';
+        databaseSelectService.isUnique.mockResolvedValue({ rows: [] });
+
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+        params.input_details.uniqueness = 'none';
+    });
     it('TEXTBOX answer double entry verification missing', async () => {
 
         params.answer.answer = 'Mirko';
