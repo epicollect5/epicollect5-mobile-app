@@ -1,0 +1,28 @@
+tests/unit/validation/answer-validate-service/barcode.spec.js
+  s_103907695e2b94::t_588ad8bf31033d 157-179
+tests/unit/validation/answer-validate-service/text.spec.js
+  s_103907695e2b94::t_1dc285f25970c8 173-191
+  s_103907695e2b94::t_ff955a59f52e5f 170-172
+tests/unit/validation/answer-validate-service/phone.spec.js
+  s_103907695e2b94::t_8c5020401836c6 176-194
+  s_103907695e2b94::t_7886f2691a2abf 173-175
+tests/unit/validation/answer-validate-service/textarea.spec.js
+  s_103907695e2b94::t_956dd0f287b22f 173-191
+  s_103907695e2b94::t_3dd24021cd5e72 170-172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "f7831cfc103c8cc56ac74cd297bec61dcb94ecb5",
+  "prompts": {},
+  "sessions": {
+    "s_103907695e2b94": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_028838438ffe6bvsz4MThjJGwF",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
