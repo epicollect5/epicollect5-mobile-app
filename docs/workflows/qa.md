@@ -61,11 +61,14 @@ Grouped by feature or area.
 
 ### 2. QA CSV file (.csv)
 
-Columns: `Action Description` | `Expected`
+Columns: `Action Description` | `Expected` | `Android` | `iOS` | `PWA`
 
 - One row per QA check.
 - Action must describe a human action in staging.
 - Expected must describe observable result.
+- The platform columns (`Android`, `iOS`, `PWA`) are filled in during the QA process to record the outcome per platform (e.g. PASS/FAIL or any device-specific notes).
+- Android and iOS are always targeted. PWA is a smaller subset: rows whose feature is absent on PWA (inferred from the code) are pre-filled `N/A` at generation time; the remaining rows are executed on PWA and their cell is filled during QA.
+- If a check is not applicable on a given platform, record that explicitly (e.g. N/A) instead of leaving it blank.
 
 ## Validation Rules
 
