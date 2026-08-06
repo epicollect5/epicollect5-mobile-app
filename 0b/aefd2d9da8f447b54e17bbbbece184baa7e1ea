@@ -1,0 +1,55 @@
+tests/unit/services/database/database-select-service.spec.js
+  s_d69b97ce30c9cc::t_da89e44fd92018 1-84
+src/services/entries-download-service.js
+  s_d69b97ce30c9cc::t_4ab6da768983ef 209-218
+  s_d69b97ce30c9cc::t_f5504e3feeeb76 11
+src/services/entry/branch-entry-service.js
+  s_d69b97ce30c9cc::t_91786940748f2e 11
+  s_d69b97ce30c9cc::t_dd0f4057273eb3 126-133
+tests/unit/services/entry/entry-service.spec.js
+  s_d69b97ce30c9cc::t_52d0352ad0f341 1-84
+src/config/strings.js
+  s_d69b97ce30c9cc::t_849eedb9be7c6e 1127
+  s_d69b97ce30c9cc::t_439c54b4c40627 1907
+  s_d69b97ce30c9cc::t_8288722eb03b70 607
+  s_d69b97ce30c9cc::t_4a242f9ef8d711 87
+  s_d69b97ce30c9cc::t_73a4084b5fa8ea 347
+  s_d69b97ce30c9cc::t_d7f12d05875f24 867
+  s_d69b97ce30c9cc::t_ff4cc5dcfcee34 1647
+  s_d69b97ce30c9cc::t_92ce67435d6010 1387
+  s_d69b97ce30c9cc::t_c32e8df52db4de 2167
+src/services/notification-service.js
+  s_d69b97ce30c9cc::t_9875b589c45246 108-136
+src/services/entry/entry-service.js
+  s_d69b97ce30c9cc::t_124185af862bcb 12
+  s_d69b97ce30c9cc::t_0115d4111fe8c8 172-181
+tests/unit/services/entries-download-service.spec.js
+  s_d69b97ce30c9cc::t_295a2206cf0eb1 222-241
+  s_d69b97ce30c9cc::t_450fb8d2486444 26
+  s_d69b97ce30c9cc::t_68ece230c113b3 10
+  s_d69b97ce30c9cc::t_6e972fdd680d10 46-47
+  s_d69b97ce30c9cc::t_066b14b91cd4a3 149
+  s_d69b97ce30c9cc::t_3b9c20702fd2a5 94
+  s_d69b97ce30c9cc::t_f547e979d044d2 113-118
+  s_d69b97ce30c9cc::t_6b926af960743b 183-184
+src/services/database/database-select-service.js
+  s_d69b97ce30c9cc::t_6c0c8f5d6fafb0 93-113
+tests/unit/services/entry/branch-entry-service.spec.js
+  s_d69b97ce30c9cc::t_09eccd763f6d02 1-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "0baefd2d9da8f447b54e17bbbbece184baa7e1ea",
+  "prompts": {},
+  "sessions": {
+    "s_d69b97ce30c9cc": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02ccfc2e8ffe7x0fYn7Qw59Cj5",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
