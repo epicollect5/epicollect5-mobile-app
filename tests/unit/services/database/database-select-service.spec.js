@@ -45,7 +45,6 @@ describe('databaseSelectService.remoteEntryHasUnsyncedDescendant', () => {
         expect(query).toContain('is_remote=?');
         expect(query).toContain('synced<>?');
         expect(params).toEqual([
-            'project-ref', 'form-ref', PARAMETERS.REMOTE_CODES.IS,
             'project-ref', 'project-ref', 'form-ref', PARAMETERS.REMOTE_CODES.IS, PARAMETERS.SYNCED_CODES.SYNCED,
             'project-ref', 'project-ref', 'form-ref', PARAMETERS.REMOTE_CODES.IS, PARAMETERS.SYNCED_CODES.SYNCED
         ]);

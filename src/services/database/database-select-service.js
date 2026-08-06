@@ -101,7 +101,6 @@ export const databaseSelectService = {
             ') as total';
 
         const params = [
-            projectRef, formRef, PARAMETERS.REMOTE_CODES.IS,
             projectRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS, PARAMETERS.SYNCED_CODES.SYNCED,
             projectRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS, PARAMETERS.SYNCED_CODES.SYNCED
         ];
