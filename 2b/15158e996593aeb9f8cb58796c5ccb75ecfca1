@@ -1,0 +1,19 @@
+src/services/validation/answer-validate-service.js
+  s_103907695e2b94::t_83d33c9f9dbece 156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "2b15158e996593aeb9f8cb58796c5ccb75ecfca1",
+  "prompts": {},
+  "sessions": {
+    "s_103907695e2b94": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_028838438ffe6bvsz4MThjJGwF",
+        "model": "mimo-v2.5-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
