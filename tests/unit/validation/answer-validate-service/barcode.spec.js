@@ -154,7 +154,29 @@ describe('answerValidateService', () => {
         databaseSelectService.isUnique.mockResolvedValue({ rows: [1, 2, 3] });
 
         await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
-        console.log(answerValidateService.getErrors());
+        expect(answerValidateService.getErrors()).toMatchObject({
+            //"ec5_22": "Answer is not unique."
+            [inputRef]: ['ec5_22']
+        });
+        params.input_details.uniqueness = 'none';
+    });
+    it('BARCODE numeric answer unique', async () => {
+
+        params.answer.answer = 123456;
+        params.input_details.uniqueness = 'form';
+        databaseSelectService.isUnique.mockResolvedValue({ rows: [] });
+
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+        params.input_details.uniqueness = 'none';
+    });
+    it('BARCODE numeric answer NOT unique', async () => {
+
+        params.answer.answer = 123456;
+        params.input_details.uniqueness = 'form';
+        databaseSelectService.isUnique.mockResolvedValue({ rows: [1, 2, 3] });
+
+        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
         expect(answerValidateService.getErrors()).toMatchObject({
             //"ec5_22": "Answer is not unique."
             [inputRef]: ['ec5_22']

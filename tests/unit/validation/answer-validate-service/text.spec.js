@@ -172,6 +172,29 @@ describe('answerValidateService', () => {
         });
         params.input_details.uniqueness = 'none';
     });
+    it('TEXT numeric answer unique', async () => {
+
+        params.answer.answer = 1234;
+        params.input_details.uniqueness = 'form';
+        databaseSelectService.isUnique.mockResolvedValue({ rows: [] });
+
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+        params.input_details.uniqueness = 'none';
+    });
+    it('TEXT numeric answer NOT unique', async () => {
+
+        params.answer.answer = 1234;
+        params.input_details.uniqueness = 'form';
+        databaseSelectService.isUnique.mockResolvedValue({ rows: [1, 2, 3] });
+
+        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({
+            //"ec5_22": "Answer is not unique."
+            [inputRef]: ['ec5_22']
+        });
+        params.input_details.uniqueness = 'none';
+    });
     it('TEXT answer double entry verification missing', async () => {
 
         params.answer.answer = 'Mirko';
