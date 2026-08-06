@@ -8,6 +8,7 @@ import {errorsService} from '@/services/errors-service';
 import {downloadService} from '@/services/utilities/download-service';
 import {entriesDownloadProgressService} from '@/services/utilities/entries-download-progress-service';
 import {databaseDeleteService} from '@/services/database/database-delete-service';
+import {databaseSelectService} from '@/services/database/database-select-service';
 import {versioningService} from '@/services/utilities/versioning-service';
 import {logout} from '@/use/auth/logout';
 
@@ -205,6 +206,16 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
       const formCache = getFormDownloadCache(formRef);
       try {
         if (!resumeDownload) {
+          const hasUnsyncedDescendants = await databaseSelectService.remoteEntryHasUnsyncedDescendant(projectModel.getProjectRef(), formRef);
+          if (hasUnsyncedDescendants) {
+            await notificationService.showDismissAlert(
+                labels.remote_entries_out_of_sync,
+                labels.download_remote_entries,
+                PARAMETERS.DOWNLOAD_ENTRIES_DOCS_URL
+            );
+            state.resumeAvailable[formRef] = false;
+            return;
+          }
           await databaseDeleteService.deleteRemoteEntries(projectModel.getProjectRef(), formRef);
         }
 

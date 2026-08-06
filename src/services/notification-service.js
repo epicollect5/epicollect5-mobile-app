@@ -105,6 +105,35 @@ export const notificationService = {
             })();
         });
     },
+    //Informational alert that can only be dismissed, with an optional learn more link
+    async showDismissAlert(message, title, learnMoreUrl = null) {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const buttons = [];
+
+        if (learnMoreUrl) {
+            buttons.push({
+                text: STRINGS[language].labels.learn_more,
+                handler: () => {
+                    window.open(learnMoreUrl, '_system', 'location=yes');
+                    return false;
+                }
+            });
+        }
+
+        buttons.push({
+            text: STRINGS[language].labels.dismiss,
+            role: 'cancel'
+        });
+
+        const alert = await alertController
+            .create({
+                header: title,
+                message,
+                buttons
+            });
+        return alert.present();
+    },
     //multiple options modal
     async confirmMultiple(message, title, yesButton, noButton, yesAction, noAction) {
 

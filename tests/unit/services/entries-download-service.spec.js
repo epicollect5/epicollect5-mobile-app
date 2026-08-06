@@ -7,6 +7,7 @@ import { entriesDownloadProgressService } from '@/services/utilities/entries-dow
 import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
+import { databaseSelectService } from '@/services/database/database-select-service';
 import { modalController } from '@ionic/vue';
 
 vi.mock('@/config/strings', () => ({
@@ -22,6 +23,7 @@ vi.mock('@/config/strings', () => ({
                 updating_project: 'Updating Forms.',
                 download_warning: 'Download warning',
                 download_remote_entries: 'Download remote entries',
+                remote_entries_out_of_sync: 'Remote entries on your device are out of sync. Upload your entries before re-downloading.',
                 resume_last_download_message: 'Resume last download',
                 resume_last_download: 'Resume',
                 restart_download: 'Restart'
@@ -41,7 +43,8 @@ vi.mock('@/config', () => ({
             DOWNLOAD_RESTART: 'restart'
         },
         AUTH_ERROR_CODES: [],
-        DELAY_LONG: 1
+        DELAY_LONG: 1,
+        DOWNLOAD_ENTRIES_DOCS_URL: 'https://docs.epicollect.net/mobile-application/download-entries'
     }
 }));
 
@@ -88,6 +91,7 @@ vi.mock('@/services/notification-service', () => ({
     notificationService: {
         confirmSingle: vi.fn(),
         confirmMultiple: vi.fn(),
+        showDismissAlert: vi.fn(),
         showToast: vi.fn(),
         showProgressDialog: vi.fn(),
         hideProgressDialog: vi.fn()
@@ -103,6 +107,12 @@ vi.mock('@/services/errors-service', () => ({
 vi.mock('@/services/database/database-delete-service', () => ({
     databaseDeleteService: {
         deleteRemoteEntries: vi.fn()
+    }
+}));
+
+vi.mock('@/services/database/database-select-service', () => ({
+    databaseSelectService: {
+        remoteEntryHasUnsyncedDescendant: vi.fn()
     }
 }));
 
@@ -136,6 +146,7 @@ const labels = {
     downloading_entries: 'Downloading entries',
     download_warning: 'Download warning',
     download_remote_entries: 'Download remote entries',
+    remote_entries_out_of_sync: 'Remote entries on your device are out of sync. Upload your entries before re-downloading.',
     resume_last_download_message: 'Resume last download',
     resume_last_download: 'Resume',
     restart_download: 'Restart'
@@ -169,6 +180,8 @@ describe('entriesDownloadService project version checks', () => {
         notificationService.confirmSingle.mockResolvedValue(true);
         notificationService.showProgressDialog.mockResolvedValue();
         databaseDeleteService.deleteRemoteEntries.mockResolvedValue();
+        databaseSelectService.remoteEntryHasUnsyncedDescendant.mockResolvedValue(false);
+        notificationService.showDismissAlert.mockResolvedValue();
         modalController.create.mockResolvedValue({present: vi.fn().mockResolvedValue()});
     });
 
@@ -204,6 +217,26 @@ describe('entriesDownloadService project version checks', () => {
             .toBeLessThan(downloadService.downloadFormEntries.mock.invocationCallOrder[0]);
         expect(versioningService.updateProject.mock.invocationCallOrder[0])
             .toBeLessThan(downloadService.downloadFormEntries.mock.invocationCallOrder[0]);
+    });
+
+    it('blocks a fresh download when remote entries have unsynced descendants', async () => {
+        const state = createState();
+        databaseSelectService.remoteEntryHasUnsyncedDescendant.mockResolvedValue(true);
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
+        expect(databaseSelectService.remoteEntryHasUnsyncedDescendant).toHaveBeenCalledWith('project-ref', 'form-a');
+        expect(databaseDeleteService.deleteRemoteEntries).not.toHaveBeenCalled();
+        expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
+        expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
+            'Remote entries on your device are out of sync. Upload your entries before re-downloading.',
+            'Download remote entries',
+            'https://docs.epicollect.net/mobile-application/download-entries'
+        );
+        expect(state.resumeAvailable['form-a']).toBe(false);
+        expect(state.isFetching).toBe(false);
     });
 
     it('clears project download progress and restarts instead of resuming after an update', async () => {
