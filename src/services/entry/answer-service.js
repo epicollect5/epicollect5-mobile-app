@@ -8,6 +8,7 @@ import { useRootStore } from '@/stores/root-store';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { webService } from '@/services/web-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 export const answerService = {
 
@@ -125,6 +126,9 @@ export const answerService = {
                 if (error) {
                     //here we probably got a database error
                     console.log(error);
+                    if (error instanceof Error) {
+                        rollbarService.critical(error);
+                    }
                     const inputRef = params.input_details.ref;
                     answerValidateService.errors[inputRef] = ['ec5_104'];
                 }
