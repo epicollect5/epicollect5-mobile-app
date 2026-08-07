@@ -1,0 +1,37 @@
+src/services/database/database-select-service.js
+  h_2231ff2aa93473 1038
+tests/unit/services/entries-download-service.spec.js
+  s_441e85f228887f::t_10d111ac279a5f 96
+  s_441e85f228887f::t_b27adc75a2fa04 201,203,207,216-238,241
+  s_441e85f228887f::t_c700e130a84576 161-162
+  s_441e85f228887f::t_a96ce9c567474f 264,281,283
+  s_441e85f228887f::t_e75931ffd1f760 150
+  s_441e85f228887f::t_83a4ceb04ef3ae 32
+  s_441e85f228887f::t_833825ff5bb8a7 257
+  s_441e85f228887f::t_1b58d70b002326 25
+src/services/entries-download-service.js
+  s_441e85f228887f::t_d5f1aa09486f07 220
+  s_441e85f228887f::t_3de40fb8f31ec8 192-202,205
+  h_2231ff2aa93473 122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "7653866725cb9e3cca997ec2789ce684bc357920",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_441e85f228887f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03920bd6affeX9kQ8305WUry13",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
