@@ -1,0 +1,24 @@
+tests/unit/services/entries-download-service.spec.js
+  s_3daf51bd8c0c3a::t_d68637cf712a39 117
+  s_3daf51bd8c0c3a::t_f7895e05026106 252,254-262,268,280-299
+  s_3daf51bd8c0c3a::t_308d70cecd98ef 186-194
+  s_3daf51bd8c0c3a::t_a5c79d9537c788 300-301
+src/services/entries-download-service.js
+  s_3daf51bd8c0c3a::t_0d083d8bdb9e3d 216-220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "3f3953aafc502285da7c9a297541a5ebb3c7b80e",
+  "prompts": {},
+  "sessions": {
+    "s_3daf51bd8c0c3a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02327cfbfffeislls33yPr6deo",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
