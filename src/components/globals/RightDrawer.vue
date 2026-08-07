@@ -384,7 +384,7 @@ export default {
           }
         } catch (error) {
           console.log(error);
-          await notificationService.showAlert(error);
+          await notificationService.showAlert(error.message || error);
         } finally {
           menuController.close();
         }
@@ -400,7 +400,7 @@ export default {
           }
         } catch (error) {
           console.log(error);
-          await notificationService.showAlert(error);
+          await notificationService.showAlert(error.message || error);
         } finally {
           menuController.close();
         }

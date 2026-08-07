@@ -20,6 +20,7 @@ vi.mock('@/services/database/database-select-service', () => ({
     }
 }));
 vi.mock('@/services/notification-service');
+vi.mock('@/services/utilities/rollbar-service');
 vi.mock('@/services/filesystem/media-dirs-service');
 vi.mock('@/services/filesystem/delete-file-service', () => ({
     deleteFileService: { removeDirectoryIfExists: vi.fn() }
@@ -157,11 +158,11 @@ describe('exportService.sendToDevice', () => {
         expect(result).toBe(MOCK_EXPORT_PATH);
     });
 
-    it('should return false if removeDirectoryIfExists throws unexpected error', async () => {
+    it('should report the error and throw a generic message when removeDirectoryIfExists throws', async () => {
         deleteFileService.removeDirectoryIfExists.mockRejectedValueOnce(new Error('Permission denied'));
 
         await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
-            .rejects.toThrow('Permission denied');
+            .rejects.toThrow('Unknown error');
     });
 
     it('should always hide modal on failure', async () => {
@@ -172,7 +173,7 @@ describe('exportService.sendToDevice', () => {
 
         const promise = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
 
-        await expect(promise).rejects.toThrow('export failed');
+        await expect(promise).rejects.toThrow('Unknown error');
 
         await flushPromises();
 
