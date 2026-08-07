@@ -114,4 +114,42 @@ describe('versioningService.updateProject()', () => {
         expect(databaseDeleteService.deleteFormEntries).toHaveBeenCalled();
         expect(downloadFileService.downloadProjectLogo).toHaveBeenCalledWith('test-project', 'test-ref');
     });
+
+    it('keeps the in-memory mapping in sync with the updated structure', async () => {
+        projectModel.loadExtraStructure({
+            project: {
+                details: { slug: 'test-project', ref: 'test-ref' },
+                forms: []
+            },
+            forms: {},
+            inputs: {}
+        });
+        projectModel.loadMappings({
+            forms: { old_form_ref: [] }
+        });
+
+        const newMapping = {
+            forms: { 'new_form_ref_6a75fca832beb': { inputs: {} } }
+        };
+
+        webService.getProject.mockResolvedValue({
+            data: {
+                meta: {
+                    project_extra: {
+                        project: {
+                            details: { slug: 'test-project', ref: 'test-ref' },
+                            forms: []
+                        },
+                        forms: {},
+                        inputs: {}
+                    },
+                    project_mapping: newMapping,
+                    project_stats: { structure_last_updated: '2024-01-01' }
+                }
+            }
+        });
+
+        await expect(versioningService.updateProject()).resolves.toBe(false);
+        expect(projectModel.getProjectMappings()).toEqual(newMapping);
+    });
 });

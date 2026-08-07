@@ -39,6 +39,10 @@ export const projectModel = {
     loadExtraStructure(projectExtra) {
         this.project_extra = projectExtra;
     },
+    //Load in the project mapping only
+    loadMappings(mapping) {
+        this.mapping = mapping;
+    },
     hasInitialised() {
         return (this.project_extra.project ? true : false);
     },

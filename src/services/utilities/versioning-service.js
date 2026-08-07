@@ -107,6 +107,9 @@ export const versioningService = {
                     self.previousProjectStructure = projectModel.getProjectExtra();
                     // Load updated project extra structure into project model
                     projectModel.loadExtraStructure(response.data.meta.project_extra);
+                    // Keep the in-memory mapping in sync with the updated structure,
+                    // otherwise exports use a stale mapping and crash on new inputs
+                    projectModel.loadMappings(response.data.meta.project_mapping);
                     projectModel.setLastUpdated(lastUpdated);
 
                     console.log('updating project');
