@@ -1,0 +1,31 @@
+tests/unit/services/export-service/send-to-device.spec.js
+  s_3daf51bd8c0c3a::t_2b9f8a3095d16c 23
+  s_3daf51bd8c0c3a::t_cfdd9c127eb864 161,165,176
+src/components/globals/RightDrawer.vue
+  s_3daf51bd8c0c3a::t_238d6d60f393e7 387,403
+src/services/export-service.js
+  s_3daf51bd8c0c3a::t_944812b055dbf7 444
+  s_3daf51bd8c0c3a::t_260318e85953fd 292
+  s_3daf51bd8c0c3a::t_a221358a9560f5 397-398
+  s_3daf51bd8c0c3a::t_5bdd0ef2744206 446
+  s_3daf51bd8c0c3a::t_34d5b452100515 16
+  s_3daf51bd8c0c3a::t_42a00a47a2a5b1 378-379
+tests/unit/services/export-service/export-entries.spec.js
+  s_3daf51bd8c0c3a::t_248fb8b0f518d1 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "bbf9727ea63cfabac7b8d566eabb7ecaa539f82c",
+  "prompts": {},
+  "sessions": {
+    "s_3daf51bd8c0c3a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02327cfbfffeislls33yPr6deo",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
