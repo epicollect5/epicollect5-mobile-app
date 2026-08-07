@@ -90,26 +90,6 @@ export const databaseSelectService = {
         return await this.getRows(query, params);
     },
 
-    //Check whether any remote parent entry of a given form has unsynced
-    //child or branch entries on the device
-    async remoteEntryHasUnsyncedDescendant(projectRef, formRef) {
-
-        const remoteParents = 'SELECT entry_uuid FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?';
-        const query = 'SELECT (' +
-            '(SELECT COUNT(*) FROM entries WHERE project_ref=? AND parent_entry_uuid IN (' + remoteParents + ') AND synced<>?) + ' +
-            '(SELECT COUNT(*) FROM branch_entries WHERE project_ref=? AND owner_entry_uuid IN (' + remoteParents + ') AND synced<>?)' +
-            ') as total';
-
-        const params = [
-            projectRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS, PARAMETERS.SYNCED_CODES.SYNCED,
-            projectRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS, PARAMETERS.SYNCED_CODES.SYNCED
-        ];
-
-        const res = await this.getRows(query, params);
-
-        return res.rows.length > 0 && res.rows.item(0).total > 0;
-    },
-
     async selectOneBranchEntry(projectRef, ownerEntryUuid, synced) {
 
         let query = '';

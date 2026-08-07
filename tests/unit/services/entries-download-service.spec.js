@@ -114,7 +114,7 @@ vi.mock('@/services/database/database-delete-service', () => ({
 
 vi.mock('@/services/database/database-select-service', () => ({
     databaseSelectService: {
-        remoteEntryHasUnsyncedDescendant: vi.fn()
+        countUnsyncedEntries: vi.fn()
     }
 }));
 
@@ -183,7 +183,15 @@ describe('entriesDownloadService project version checks', () => {
         notificationService.confirmSingle.mockResolvedValue(true);
         notificationService.showProgressDialog.mockResolvedValue();
         databaseDeleteService.deleteRemoteEntries.mockResolvedValue();
-        databaseSelectService.remoteEntryHasUnsyncedDescendant.mockResolvedValue(false);
+        databaseSelectService.countUnsyncedEntries.mockResolvedValue({
+            rows: {
+                item: () => ({
+                    total_number_of_entries_unsynced: 0,
+                    total_number_of_entries_with_errors: 0,
+                    total_number_of_incomplete_entries: 0
+                })
+            }
+        });
         notificationService.showDismissAlert.mockResolvedValue();
         modalController.create.mockResolvedValue({present: vi.fn().mockResolvedValue()});
     });
@@ -241,15 +249,23 @@ describe('entriesDownloadService project version checks', () => {
         expect(state.enabledButtons['form-a']).toBe(true);
     });
 
-    it('blocks a fresh download when remote entries have unsynced descendants', async () => {
+    it('blocks a fresh download when any entries are unsynced, with errors or incomplete', async () => {
         const state = createState();
-        databaseSelectService.remoteEntryHasUnsyncedDescendant.mockResolvedValue(true);
+        databaseSelectService.countUnsyncedEntries.mockResolvedValue({
+            rows: {
+                item: () => ({
+                    total_number_of_entries_unsynced: 1,
+                    total_number_of_entries_with_errors: 0,
+                    total_number_of_incomplete_entries: 0
+                })
+            }
+        });
         const downloader = createDownloader(state);
 
         await downloader.downloadEntries('form-a');
         await settleDownload();
 
-        expect(databaseSelectService.remoteEntryHasUnsyncedDescendant).toHaveBeenCalledWith('project-ref', 'form-a');
+        expect(databaseSelectService.countUnsyncedEntries).toHaveBeenCalledWith('project-ref');
         expect(databaseDeleteService.deleteRemoteEntries).not.toHaveBeenCalled();
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
         expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
@@ -259,6 +275,28 @@ describe('entriesDownloadService project version checks', () => {
         );
         expect(state.resumeAvailable['form-a']).toBe(false);
         expect(state.isFetching).toBe(false);
+    });
+
+    it('blocks a fresh download when there are incomplete entries', async () => {
+        const state = createState();
+        databaseSelectService.countUnsyncedEntries.mockResolvedValue({
+            rows: {
+                item: () => ({
+                    total_number_of_entries_unsynced: 0,
+                    total_number_of_entries_with_errors: 0,
+                    total_number_of_incomplete_entries: 2
+                })
+            }
+        });
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
+        expect(databaseDeleteService.deleteRemoteEntries).not.toHaveBeenCalled();
+        expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
+        expect(notificationService.showDismissAlert).toHaveBeenCalled();
+        expect(state.resumeAvailable['form-a']).toBe(false);
     });
 
     it('clears project download progress and does not resume after an update', async () => {

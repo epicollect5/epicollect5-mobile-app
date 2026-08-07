@@ -213,8 +213,11 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
       const formCache = getFormDownloadCache(formRef);
       try {
         if (!resumeDownload) {
-          const hasUnsyncedDescendants = await databaseSelectService.remoteEntryHasUnsyncedDescendant(projectModel.getProjectRef(), formRef);
-          if (hasUnsyncedDescendants) {
+          const unsyncedCount = await databaseSelectService.countUnsyncedEntries(projectModel.getProjectRef());
+          const totalUnsynced = unsyncedCount.rows.item(0).total_number_of_entries_with_errors
+              + unsyncedCount.rows.item(0).total_number_of_entries_unsynced
+              + unsyncedCount.rows.item(0).total_number_of_incomplete_entries;
+          if (totalUnsynced > 0) {
             await notificationService.showDismissAlert(
                 labels.remote_entries_out_of_sync,
                 labels.unsynced_entries,
