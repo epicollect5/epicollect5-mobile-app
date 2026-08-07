@@ -1035,7 +1035,7 @@ export const databaseSelectService = {
     },
     /**
          * When deleting an entry, we have to delete all the children down to nested levels
-         * We also need to collect the branch entries for current entry and each child entry,
+         * We also need to collect the branch entries for current entry and each child entry
          * to delete any media: branch entries are deleted directly passing the uuid as branch_owner_uuid
          */
     async getHierarchyEntries(entryUuid) {

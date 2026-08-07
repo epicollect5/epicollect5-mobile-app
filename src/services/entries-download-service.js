@@ -119,7 +119,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     }
   }
 
-  async function checkProjectVersion(formRef) {
+  async function checkProjectVersion() {
     const isUpToDate = await versioningService.checkProjectVersion();
 
     if (!isUpToDate) {
@@ -129,10 +129,6 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
       );
 
       if (confirmed) {
-        await new Promise((resolve) => {
-          setTimeout(resolve, PARAMETERS.DELAY_LONG);
-        });
-
         try {
           await notificationService.showProgressDialog(
             STRINGS[language].labels.wait,
@@ -193,9 +189,20 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           return;
         }
 
+        if (versionCheck.projectUpdated) {
+          //Project structure changed: refresh the form buttons and clear all
+          //download progress. Do not start a download automatically, the user
+          //must start again from the first form button.
+          state.forms = projectModel.getFormsInOrder();
+          resetDownloadButtonState();
+          await notificationService.showAlert(STRINGS[language].status_codes.ec5_137);
+          state.isFetching = false;
+          return;
+        }
+
         state.wasAttemptedDownload = true;
         // A resumed download is only safe when the project structure did not change.
-        await startDownload(resumeDownload && !versionCheck.projectUpdated);
+        await startDownload(resumeDownload);
       } catch (error) {
         state.isFetching = false;
         await errorsService.handleWebError(error);
@@ -210,7 +217,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           if (hasUnsyncedDescendants) {
             await notificationService.showDismissAlert(
                 labels.remote_entries_out_of_sync,
-                labels.download_remote_entries,
+                labels.unsynced_entries,
                 PARAMETERS.DOWNLOAD_ENTRIES_DOCS_URL
             );
             state.resumeAvailable[formRef] = false;

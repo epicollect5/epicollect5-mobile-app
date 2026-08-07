@@ -22,13 +22,14 @@ vi.mock('@/config/strings', () => ({
                 wait: 'Please Wait...',
                 updating_project: 'Updating Forms.',
                 download_warning: 'Download warning',
-                download_remote_entries: 'Download remote entries',
+                unsynced_entries: 'Unsynced entries',
                 remote_entries_out_of_sync: 'Remote entries on your device are out of sync. Upload your entries before re-downloading.',
                 resume_last_download_message: 'Resume last download',
                 resume_last_download: 'Resume',
                 restart_download: 'Restart'
             },
             status_codes: {
+                ec5_137: 'Forms updated.',
                 ec5_143: 'Entries downloaded',
                 ec5_144: 'No entries found'
             }
@@ -92,6 +93,7 @@ vi.mock('@/services/notification-service', () => ({
         confirmSingle: vi.fn(),
         confirmMultiple: vi.fn(),
         showDismissAlert: vi.fn(),
+        showAlert: vi.fn(),
         showToast: vi.fn(),
         showProgressDialog: vi.fn(),
         hideProgressDialog: vi.fn()
@@ -145,7 +147,7 @@ const labels = {
     clear_download_progress: 'Clear download progress',
     downloading_entries: 'Downloading entries',
     download_warning: 'Download warning',
-    download_remote_entries: 'Download remote entries',
+    unsynced_entries: 'Unsynced entries',
     remote_entries_out_of_sync: 'Remote entries on your device are out of sync. Upload your entries before re-downloading.',
     resume_last_download_message: 'Resume last download',
     resume_last_download: 'Resume',
@@ -156,7 +158,8 @@ const projectModel = {
     getProjectRef: vi.fn(() => 'project-ref'),
     getFirstFormRef: vi.fn(() => 'form-a'),
     getLastFormRef: vi.fn(() => 'form-a'),
-    getNextFormRef: vi.fn(() => 'form-b')
+    getNextFormRef: vi.fn(() => 'form-b'),
+    getFormsInOrder: vi.fn(() => [{formRef: 'form-a'}, {formRef: 'form-b'}])
 };
 
 function createDownloader(state) {
@@ -195,12 +198,13 @@ describe('entriesDownloadService project version checks', () => {
         await flushPromises();
     }
 
-    it('updates an outdated project before downloading entries', async () => {
+    it('updates an outdated project but does not start a download until the user taps again', async () => {
         const state = createState();
+        state.enabledButtons['form-b'] = true;
         versioningService.checkProjectVersion.mockResolvedValue(false);
         const downloader = createDownloader(state);
 
-        await downloader.downloadEntries('form-a');
+        await downloader.downloadEntries('form-b');
         await settleDownload();
 
         expect(versioningService.updateProject).toHaveBeenCalledTimes(1);
@@ -209,14 +213,32 @@ describe('entriesDownloadService project version checks', () => {
             'Updating Forms.'
         );
         expect(notificationService.hideProgressDialog).toHaveBeenCalledWith(0);
+        expect(notificationService.showAlert).toHaveBeenCalledWith('Forms updated.');
+        expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
+        expect(databaseDeleteService.deleteRemoteEntries).not.toHaveBeenCalled();
+        expect(state.enabledButtons['form-a']).toBe(true);
+        expect(state.enabledButtons['form-b']).toBe(false);
+        expect(state.resumeAvailable['form-a']).toBe(false);
+        expect(state.isFetching).toBe(false);
+    });
+
+    it('downloads the first form again after the update has reset the buttons', async () => {
+        const state = createState();
+        versioningService.checkProjectVersion
+            .mockResolvedValueOnce(false)
+            .mockResolvedValueOnce(true);
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+        expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
         expect(downloadService.downloadFormEntries).toHaveBeenCalledTimes(1);
-        expect(notificationService.hideProgressDialog.mock.invocationCallOrder[0])
-            .toBeLessThan(downloadService.downloadFormEntries.mock.invocationCallOrder[0]);
         expect(databaseDeleteService.deleteRemoteEntries).toHaveBeenCalledWith('project-ref', 'form-a');
-        expect(databaseDeleteService.deleteRemoteEntries.mock.invocationCallOrder[0])
-            .toBeLessThan(downloadService.downloadFormEntries.mock.invocationCallOrder[0]);
-        expect(versioningService.updateProject.mock.invocationCallOrder[0])
-            .toBeLessThan(downloadService.downloadFormEntries.mock.invocationCallOrder[0]);
+        expect(state.enabledButtons['form-a']).toBe(true);
     });
 
     it('blocks a fresh download when remote entries have unsynced descendants', async () => {
@@ -232,14 +254,14 @@ describe('entriesDownloadService project version checks', () => {
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
         expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
             'Remote entries on your device are out of sync. Upload your entries before re-downloading.',
-            'Download remote entries',
+            'Unsynced entries',
             'https://docs.epicollect.net/mobile-application/download-entries'
         );
         expect(state.resumeAvailable['form-a']).toBe(false);
         expect(state.isFetching).toBe(false);
     });
 
-    it('clears project download progress and restarts instead of resuming after an update', async () => {
+    it('clears project download progress and does not resume after an update', async () => {
         const state = createState();
         state.downloadCache['form-a'] = {
             ...emptyProgress,
@@ -256,13 +278,9 @@ describe('entriesDownloadService project version checks', () => {
         await settleDownload();
 
         expect(entriesDownloadProgressService.clearProject).toHaveBeenCalledWith('project-ref');
-        expect(databaseDeleteService.deleteRemoteEntries).toHaveBeenCalledWith('project-ref', 'form-a');
-        expect(downloadService.downloadFormEntries).toHaveBeenCalledWith('form-a', expect.objectContaining({
-            startUrl: null,
-            initialTotalEntries: 0,
-            initialEntryNumber: 0
-        }));
+        expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
         expect(state.resumeAvailable['form-a']).toBe(false);
+        expect(state.enabledButtons['form-a']).toBe(true);
     });
 
     it('does not download when the user declines the project update', async () => {
