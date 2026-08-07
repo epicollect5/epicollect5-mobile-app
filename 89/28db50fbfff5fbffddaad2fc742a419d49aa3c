@@ -1,0 +1,23 @@
+src/models/project-model.js
+  s_3daf51bd8c0c3a::t_681771a62cb376 42-45
+tests/unit/services/utilities/versioning-service.spec.js
+  s_3daf51bd8c0c3a::t_e295ebc347672c 117-154
+src/services/utilities/versioning-service.js
+  s_3daf51bd8c0c3a::t_4e7dd6cd2b2d7a 110-112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "8928db50fbfff5fbffddaad2fc742a419d49aa3c",
+  "prompts": {},
+  "sessions": {
+    "s_3daf51bd8c0c3a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02327cfbfffeislls33yPr6deo",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
