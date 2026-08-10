@@ -1,0 +1,25 @@
+src/components/globals/RightDrawer.vue
+  s_b8c7646cd8de8c::t_b0c7c8001a51d5 377-378
+  s_b8c7646cd8de8c::t_eb5f0089546011 383-384
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "2c4487ac9f6fd9cd3d4959e2fe3a185bf3ec7458",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_b8c7646cd8de8c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0134faee6ffeTp6ztV71LMf82a",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
