@@ -374,12 +374,14 @@ export default {
             //Show path for Android
             const message = documentsFolder + ' > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug;
             await notificationService.showAlert(
-                message
+                message,
+                labels.exported_to
             );
           }
           if (rootStore.device.platform === PARAMETERS.IOS) {
             await notificationService.showAlert(
-                '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug
+                '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug,
+                labels.exported_to
             );
           }
         } catch (error) {
