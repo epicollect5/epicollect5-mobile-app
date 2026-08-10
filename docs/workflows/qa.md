@@ -69,6 +69,9 @@ Columns: `Action Description` | `Expected` | `Android` | `iOS` | `PWA`
 - The platform columns (`Android`, `iOS`, `PWA`) are filled in during the QA process to record the outcome per platform (e.g. PASS/FAIL or any device-specific notes).
 - Android and iOS are always targeted. PWA is a smaller subset: rows whose feature is absent on PWA (inferred from the code) are pre-filled `N/A` at generation time; the remaining rows are executed on PWA and their cell is filled during QA.
 - If a check is not applicable on a given platform, record that explicitly (e.g. N/A) instead of leaving it blank.
+- Commas are used only as column separators, never inside cell text.
+- Inside `Action Description` and `Expected`, replace commas with `;` (preferred, since `|` already denotes the column list in this doc) to separate step lists or clauses, so the CSV imports cleanly into Google Sheets.
+- Cell text must stay comma-free; no quoted/escaped fields are needed.
 
 ## Validation Rules
 
@@ -78,3 +81,4 @@ Before output, ensure:
 - No duplicates.
 - All steps reproducible in staging.
 - Diff fully mapped to QA checks.
+- No commas inside CSV cell text; commas only separate columns.
