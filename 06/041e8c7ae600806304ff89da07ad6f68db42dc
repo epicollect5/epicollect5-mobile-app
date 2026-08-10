@@ -1,0 +1,20 @@
+docs/workflows/qa.md
+  s_19421487da0ec4::t_a2523e2e3c8530 72-74
+  s_19421487da0ec4::t_c221414a2190bf 84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "06041e8c7ae600806304ff89da07ad6f68db42dc",
+  "prompts": {},
+  "sessions": {
+    "s_19421487da0ec4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_014db445affeG22z23iNvUHTJX",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
