@@ -169,9 +169,11 @@ export const fakeAnswerService = {
                 case 'photo':
                     if (rootStore.device.platform !== PARAMETERS.WEB) {
                         window.setTimeout(function () {
+                            console.log('fake photo for ' + entry.entryUuid + ' - heap: ' + utilsService.getHeapMemoryUsage());
                             //generate a fake file and save it
                             fakeFilePhotoService.createFile(entry, 'photo').then(function (filename) {
                                 answer.answer = filename;
+                                console.log('fake photo written for ' + entry.entryUuid + ' - heap: ' + utilsService.getHeapMemoryUsage());
 
                                 //save file metadata to media table
                                 const media = {
@@ -198,9 +200,11 @@ export const fakeAnswerService = {
                 case 'audio':
                     if (rootStore.device.platform !== PARAMETERS.WEB) {
                         window.setTimeout(function () {
+                            console.log('fake audio for ' + entry.entryUuid + ' - heap: ' + utilsService.getHeapMemoryUsage());
                             //generate a fake file and save it
                             fakeFileAudioService.createFile(entry, 'audio').then(function (filename) {
                                 answer.answer = filename;
+                                console.log('fake audio written for ' + entry.entryUuid + ' - heap: ' + utilsService.getHeapMemoryUsage());
 
                                 //save file metadata to media table
                                 const media = {
@@ -227,9 +231,11 @@ export const fakeAnswerService = {
                 case 'video':
                     if (rootStore.device.platform !== PARAMETERS.WEB) {
                         window.setTimeout(function () {
+                            console.log('fake video for ' + entry.entryUuid + ' - heap: ' + utilsService.getHeapMemoryUsage());
                             //generate a fake file and save it
                             fakeFileVideoService.createFile(entry, 'video').then(function (filename) {
                                 answer.answer = filename;
+                                console.log('fake video written for ' + entry.entryUuid + ' - heap: ' + utilsService.getHeapMemoryUsage());
 
                                 //save file metadata to media table
                                 const media = {

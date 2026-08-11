@@ -12,13 +12,23 @@ import {useRootStore} from '@/stores/root-store';
 
 /**
  * Generate a random test image (1024x768) with random shapes and orientation
+ * The canvas is created once and reused so the native bitmap is not
+ * re-allocated for every fake photo
  */
+let _canvas = null;
+
 const generateRandomImage = (width = 1024, height = 768) => {
-    // Create offscreen canvas
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
+    // Reuse a single canvas
+    if (_canvas === null) {
+        _canvas = document.createElement('canvas');
+        _canvas.width = width;
+        _canvas.height = height;
+    }
+    const canvas = _canvas;
     const ctx = canvas.getContext('2d');
+
+    // Clear the previous drawing
+    ctx.clearRect(0, 0, width, height);
 
     // Fill background with random color
     ctx.fillStyle = `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;

@@ -27,7 +27,8 @@ vi.mock('@/services/utilities/utils-service', () => ({
             accuracy: 10
         })),
         getRandomInt: vi.fn((max) => Math.floor(max / 2)),
-        trunc: vi.fn((str, len) => str.substring(0, len))
+        trunc: vi.fn((str, len) => str.substring(0, len)),
+        getHeapMemoryUsage: vi.fn(() => '0MB / 0MB (used/total)')
     }
 }));
 
