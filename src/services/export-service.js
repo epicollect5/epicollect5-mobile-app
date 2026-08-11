@@ -157,14 +157,21 @@ export const exportService = {
                 try {
                     const result = await databaseSelectService.selectDistinctBranchRefs(projectRef);
 
+                    const projectExtra = projectModel.getProjectExtra();
                     if (result.rows.length > 0) {
                         for (let i = 0; i < result.rows.length; i++) {
                             const currentBranch = result.rows.item(i);
-                            branches.push({
-                                branchRef: currentBranch.owner_input_ref,
-                                formRef: currentBranch.form_ref
-                            });
+                            const formRef = currentBranch.form_ref;
+                            const branchRef = currentBranch.owner_input_ref;
+                            if (Object.keys(projectModel.getExtraForm(formRef)).length > 0 && projectExtra.inputs?.[branchRef]) {
+                                branches.push({
+                                    branchRef,
+                                    formRef
+                                });
+                            }
                         }
+                    }
+                    if (branches.length > 0) {
                         try {
                             await processBranch(branches.shift());
                         } catch (error) {
