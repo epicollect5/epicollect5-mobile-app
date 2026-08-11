@@ -1,0 +1,34 @@
+src/services/filesystem/fake-file-photo-service.js
+  s_d88bc8c57fead4::t_7d27fb10fc983a 15-16,18-19,21-27,30-31
+  s_d88bc8c57fead4::t_f192a513aac16b 32
+src/use/entries/add-fake-entries.js
+  s_d88bc8c57fead4::t_7fad6e034a932b 10
+  s_d88bc8c57fead4::t_77dacd2ce2ef27 114
+  s_d88bc8c57fead4::t_a10c57d5aee687 23
+  s_d88bc8c57fead4::t_3c5a5813a0ed0a 121
+src/services/utilities/utils-service.js
+  s_d88bc8c57fead4::t_ada8c8f89f6179 426,435-436,438,440-441,444
+  s_d88bc8c57fead4::t_d19ccba422bc95 583-591
+src/services/entry/fake-answer-service.js
+  s_d88bc8c57fead4::t_c2d7059ac82b6b 172,176
+  s_d88bc8c57fead4::t_848d2e4309768e 203,207
+  s_d88bc8c57fead4::t_dff2b23042a011 234,238
+tests/unit/entry/answer-service/fake-answer-service.spec.js
+  s_d88bc8c57fead4::t_85d87d582f033d 30-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "b226f7d91e511951ec4b556389835ebf7dad81fe",
+  "prompts": {},
+  "sessions": {
+    "s_d88bc8c57fead4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_00e9b2030ffeJKJG46AbQnCeDW",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
