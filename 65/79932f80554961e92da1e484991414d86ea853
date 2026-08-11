@@ -1,0 +1,19 @@
+src/services/export-service.js
+  s_a7762bcd6d7963::t_9702d708dc9091 160,164-171,173-174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "6579932f80554961e92da1e484991414d86ea853",
+  "prompts": {},
+  "sessions": {
+    "s_a7762bcd6d7963": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_01347aab2ffe5TYQ7DgRRxc9eZ",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
