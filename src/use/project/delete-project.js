@@ -3,7 +3,6 @@ import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { menuController } from '@ionic/vue';
-import { databaseSelectService } from '@/services/database/database-select-service';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
 import { notificationService } from '@/services/notification-service';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
@@ -14,7 +13,7 @@ import { entriesDownloadProgressService } from '@/services/utilities/entries-dow
 
 
 /**
- * Delete a project and redirect to projects page if success
+ * Delete a project and redirect to Projects page if success
  */
 export async function deleteProject (router) {
 
@@ -38,36 +37,15 @@ export async function deleteProject (router) {
         STRINGS[language].labels.deleting_project
     );
 
-    //get project media files
-    const projectMedia = await databaseSelectService.selectProjectMedia({
-        project_ref: projectRef,
-        synced: null,
-        entry_uuid: null
-    });
-
-    //if any media files
-    const files = projectMedia.audios.concat(projectMedia.videos).concat(projectMedia.photos);
-    console.log(files);
-
-    if (files.length > 0) {
-        try {
-            await deleteFileService.removeFiles(files);
-            await databaseDeleteService.deleteProject(projectRef);
-            _onDeleteSuccess();
-        } catch (error) {
-            console.log(error);
-            notificationService.hideProgressDialog();
-            notificationService.showAlert(labels.unknown_error, labels.error);
-        }
-    } else {
-        try {
-            await databaseDeleteService.deleteProject(projectRef);
-            _onDeleteSuccess();
-        } catch (error) {
-            console.log(error);
-            notificationService.hideProgressDialog();
-            notificationService.showAlert(labels.unknown_error, labels.error);
-        }
+    try {
+        //clear the media folders for this project regardless of the media table
+        await deleteFileService.removeProjectMediaDirectories(projectRef, true);
+        await databaseDeleteService.deleteProject(projectRef);
+        await _onDeleteSuccess();
+    } catch (error) {
+        console.log(error);
+        notificationService.hideProgressDialog();
+        await notificationService.showAlert(labels.unknown_error, labels.error);
     }
 
     async function _onDeleteSuccess () {
@@ -75,7 +53,7 @@ export async function deleteProject (router) {
         const projectRef = projectModel.getProjectRef();
         const bookmarkStore = useBookmarkStore();
         entriesDownloadProgressService.clearProject(projectRef);
-        //if we are deleting the easter egg project, reset server url to default
+        //if we are deleting the Easter egg project, reset server url to default
         if (projectRef === PARAMETERS.EASTER_EGG.PROJECT_REF) {
             await databaseInsertService.insertSetting(PARAMETERS.SETTINGS_KEYS.SERVER_URL, PARAMETERS.DEFAULT_SERVER_URL);
             rootStore.serverUrl = PARAMETERS.DEFAULT_SERVER_URL;
@@ -94,7 +72,7 @@ export async function deleteProject (router) {
             bookmarkStore.setBookmarks(bookmarks);
         }
         catch (error) {
-            notificationService.showAlert(labels.bookmarks_loading_error);
+            await notificationService.showAlert(labels.bookmarks_loading_error);
             bookmarkStore.setBookmarks([]);
         }
         // Destroy project model
@@ -104,7 +82,7 @@ export async function deleteProject (router) {
         notificationService.showToast(STRINGS[language].status_codes.ec5_114);
         //hide right drawer
         menuController.close();
-        // Go back to projects page
+        // Go back to Projects page
         router.replace({
             name: PARAMETERS.ROUTES.PROJECTS,
             query: { refresh: true }

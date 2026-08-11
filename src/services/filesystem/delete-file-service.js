@@ -1,6 +1,7 @@
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { Filesystem } from '@capacitor/filesystem';
+import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
 
 export const deleteFileService = {
 
@@ -67,6 +68,49 @@ export const deleteFileService = {
                 error.code === 1 ? resolve() : reject(error);
             });
         });
+    },
+    async removeProjectMediaDirectories(projectRef, includeLogos = false) {
+        const rootStore = useRootStore();
+
+        if (rootStore.device.platform === PARAMETERS.WEB) {
+            return true;
+        }
+
+        const mediaDirs = [
+            PARAMETERS.PHOTO_DIR,
+            PARAMETERS.AUDIO_DIR,
+            PARAMETERS.VIDEO_DIR
+        ];
+
+        if (includeLogos) {
+            mediaDirs.push(PARAMETERS.LOGOS_DIR);
+        }
+
+        for (const dir of mediaDirs) {
+            const cleanDir = dir.replace(/\//g, '');
+            const fullPath = cleanDir + '/' + projectRef;
+
+            try {
+                await Filesystem.rmdir({
+                    path: fullPath,
+                    directory: mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem(),
+                    recursive: true
+                });
+            } catch (error) {
+                const message = error?.message || '';
+                const code = error?.code || '';
+
+                // Ignore if directory doesn't exist
+                if (
+                    message.includes('does not exist') || // Android
+                    code === 'OS-PLUG-FILE-0013'      // iOS
+                ) {
+                    console.warn('Directory already removed or missing:', fullPath);
+                } else {
+                    throw error;
+                }
+            }
+        }
     },
     async removeDirectoryIfExists(path, directory) {
         try {

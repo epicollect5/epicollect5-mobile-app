@@ -460,14 +460,10 @@ describe('RightDrawer component', () => {
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         notificationService.showToast = vi.fn().mockResolvedValue(true);
         notificationService.confirmSingle = vi.fn().mockResolvedValue(true);
-        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
-            audios: [],
-            photos: [],
-            videos: []
-        });
+        deleteFileService.removeProjectMediaDirectories = vi.fn().mockResolvedValue(true);
         databaseDeleteService.deleteProject = vi.fn().mockResolvedValue(true);
         bookmarksService.deleteBookmarks = vi.fn();
-        bookmarksService.getBookmarks = vi.fn();
+        bookmarksService.getBookmarks = vi.fn().mockResolvedValue([]);
 
         await flushPromises();
         await wrapper.get('[data-test="delete-project"]').trigger('click');
@@ -479,11 +475,7 @@ describe('RightDrawer component', () => {
         await flushPromises();
         expect(notificationService.showProgressDialog).toHaveBeenCalledWith(labels.deleting_project);
         await flushPromises();
-        expect(databaseSelectService.selectProjectMedia).toHaveBeenCalledWith({
-            project_ref: projectRef,
-            synced: null,
-            entry_uuid: null
-        });
+        expect(deleteFileService.removeProjectMediaDirectories).toHaveBeenCalledWith(projectRef, true);
         await flushPromises();
         expect(databaseDeleteService.deleteProject).toHaveBeenCalledWith(projectRef);
         await flushPromises();
@@ -528,11 +520,7 @@ describe('RightDrawer component', () => {
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         notificationService.showToast = vi.fn().mockResolvedValue(true);
         notificationService.confirmSingle = vi.fn().mockResolvedValue(false);
-        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
-            audios: [],
-            photos: [],
-            videos: []
-        });
+        deleteFileService.removeProjectMediaDirectories = vi.fn().mockResolvedValue(true);
         databaseDeleteService.deleteProject = vi.fn().mockResolvedValue(true);
         bookmarksService.deleteBookmarks = vi.fn();
         bookmarksService.getBookmarks = vi.fn();
@@ -547,11 +535,7 @@ describe('RightDrawer component', () => {
         await flushPromises();
         expect(notificationService.showProgressDialog).not.toHaveBeenCalledWith(labels.deleting_project);
         await flushPromises();
-        expect(databaseSelectService.selectProjectMedia).not.toHaveBeenCalledWith({
-            project_ref: projectRef,
-            synced: null,
-            entry_uuid: null
-        });
+        expect(deleteFileService.removeProjectMediaDirectories).not.toHaveBeenCalled();
         await flushPromises();
         expect(databaseDeleteService.deleteProject).not.toHaveBeenCalledWith(projectRef);
         await flushPromises();
@@ -596,15 +580,10 @@ describe('RightDrawer component', () => {
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         notificationService.showToast = vi.fn().mockResolvedValue(true);
         notificationService.confirmSingle = vi.fn().mockResolvedValue(true);
-        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
-            audios: [{}],
-            photos: [{}],
-            videos: [{}]
-        });
-        deleteFileService.removeFiles = vi.fn();
+        deleteFileService.removeProjectMediaDirectories = vi.fn().mockResolvedValue(true);
         databaseDeleteService.deleteProject = vi.fn().mockResolvedValue(true);
         bookmarksService.deleteBookmarks = vi.fn();
-        bookmarksService.getBookmarks = vi.fn();
+        bookmarksService.getBookmarks = vi.fn().mockResolvedValue([]);
 
         await flushPromises();
         await wrapper.get('[data-test="delete-project"]').trigger('click');
@@ -616,13 +595,7 @@ describe('RightDrawer component', () => {
         await flushPromises();
         expect(notificationService.showProgressDialog).toHaveBeenCalledWith(labels.deleting_project);
         await flushPromises();
-        expect(databaseSelectService.selectProjectMedia).toHaveBeenCalledWith({
-            project_ref: projectRef,
-            synced: null,
-            entry_uuid: null
-        });
-        await flushPromises();
-        expect(deleteFileService.removeFiles).toHaveBeenCalled();
+        expect(deleteFileService.removeProjectMediaDirectories).toHaveBeenCalledWith(projectRef, true);
         await flushPromises();
         expect(databaseDeleteService.deleteProject).toHaveBeenCalledWith(projectRef);
         await flushPromises();
@@ -668,11 +641,7 @@ describe('RightDrawer component', () => {
         notificationService.showToast = vi.fn().mockResolvedValue(true);
         notificationService.showAlert = vi.fn().mockResolvedValue(true);
         notificationService.confirmSingle = vi.fn().mockResolvedValue(true);
-        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
-            audios: [],
-            photos: [],
-            videos: []
-        });
+        deleteFileService.removeProjectMediaDirectories = vi.fn().mockResolvedValue(true);
         databaseDeleteService.deleteProject = vi.fn().mockImplementation(() => {
             throw new Error('Mocked error');
         });
@@ -690,11 +659,7 @@ describe('RightDrawer component', () => {
         await flushPromises();
         expect(notificationService.showProgressDialog).toHaveBeenCalledWith(labels.deleting_project);
         await flushPromises();
-        expect(databaseSelectService.selectProjectMedia).toHaveBeenCalledWith({
-            project_ref: projectRef,
-            synced: null,
-            entry_uuid: null
-        });
+        expect(deleteFileService.removeProjectMediaDirectories).toHaveBeenCalledWith(projectRef, true);
         await flushPromises();
         expect(databaseDeleteService.deleteProject).toHaveBeenCalledWith(projectRef);
         await flushPromises();
@@ -737,12 +702,7 @@ describe('RightDrawer component', () => {
         notificationService.showToast = vi.fn().mockResolvedValue(true);
         notificationService.showAlert = vi.fn().mockResolvedValue(true);
         notificationService.confirmSingle = vi.fn().mockResolvedValue(true);
-        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
-            audios: [{}],
-            photos: [{}],
-            videos: [{}]
-        });
-        deleteFileService.removeFiles = vi.fn();
+        deleteFileService.removeProjectMediaDirectories = vi.fn().mockResolvedValue(true);
         databaseDeleteService.deleteProject = vi.fn().mockImplementation(() => {
             throw new Error('Mocked error');
         });
@@ -760,13 +720,7 @@ describe('RightDrawer component', () => {
         await flushPromises();
         expect(notificationService.showProgressDialog).toHaveBeenCalledWith(labels.deleting_project);
         await flushPromises();
-        expect(databaseSelectService.selectProjectMedia).toHaveBeenCalledWith({
-            project_ref: projectRef,
-            synced: null,
-            entry_uuid: null
-        });
-        await flushPromises();
-        expect(deleteFileService.removeFiles).toHaveBeenCalled();
+        expect(deleteFileService.removeProjectMediaDirectories).toHaveBeenCalledWith(projectRef, true);
         await flushPromises();
         expect(databaseDeleteService.deleteProject).toHaveBeenCalledWith(projectRef);
         await flushPromises();
@@ -808,13 +762,8 @@ describe('RightDrawer component', () => {
         notificationService.showToast = vi.fn().mockResolvedValue(true);
         notificationService.showAlert = vi.fn().mockResolvedValue(true);
         notificationService.confirmSingle = vi.fn().mockResolvedValue(true);
-        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
-            audios: [{}],
-            photos: [{}],
-            videos: [{}]
-        });
         databaseDeleteService.deleteProject = vi.fn();
-        deleteFileService.removeFiles = vi.fn().mockImplementation(() => {
+        deleteFileService.removeProjectMediaDirectories = vi.fn().mockImplementation(() => {
             throw new Error('Mocked error');
         });
 
@@ -831,13 +780,7 @@ describe('RightDrawer component', () => {
         await flushPromises();
         expect(notificationService.showProgressDialog).toHaveBeenCalledWith(labels.deleting_project);
         await flushPromises();
-        expect(databaseSelectService.selectProjectMedia).toHaveBeenCalledWith({
-            project_ref: projectRef,
-            synced: null,
-            entry_uuid: null
-        });
-        await flushPromises();
-        expect(deleteFileService.removeFiles).toHaveBeenCalled();
+        expect(deleteFileService.removeProjectMediaDirectories).toHaveBeenCalledWith(projectRef, true);
         await flushPromises();
         expect(databaseDeleteService.deleteProject).not.toHaveBeenCalledWith(projectRef);
         await flushPromises();
@@ -902,15 +845,10 @@ describe('RightDrawer component', () => {
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         notificationService.showToast = vi.fn().mockResolvedValue(true);
         notificationService.confirmSingle = vi.fn().mockResolvedValue(false);
-        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
-            audios: [],
-            photos: [],
-            videos: []
-        });
         databaseDeleteService.deleteEntries = vi.fn().mockResolvedValue(true);
         bookmarksService.deleteBookmarks = vi.fn();
         bookmarksService.getBookmarks = vi.fn();
-        deleteFileService.removeFiles = vi.fn().mockResolvedValue(true);
+        deleteFileService.removeProjectMediaDirectories = vi.fn().mockResolvedValue(true);
 
         await flushPromises();
         await wrapper.get('[data-test="delete-entries"]').trigger('click');
@@ -922,13 +860,7 @@ describe('RightDrawer component', () => {
         await flushPromises();
         expect(notificationService.showProgressDialog).not.toHaveBeenCalledWith(labels.deleting_entries);
         await flushPromises();
-        expect(databaseSelectService.selectProjectMedia).not.toHaveBeenCalledWith({
-            project_ref: projectRef,
-            synced: null,
-            entry_uuid: null
-        });
-        await flushPromises();
-        expect(deleteFileService.removeFiles).not.toHaveBeenCalled();
+        expect(deleteFileService.removeProjectMediaDirectories).not.toHaveBeenCalled();
         await flushPromises();
         expect(databaseDeleteService.deleteEntries).not.toHaveBeenCalledWith(projectRef);
         await flushPromises();
@@ -973,15 +905,10 @@ describe('RightDrawer component', () => {
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         notificationService.showToast = vi.fn().mockResolvedValue(true);
         notificationService.confirmSingle = vi.fn().mockResolvedValue(true);
-        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
-            audios: [],
-            photos: [],
-            videos: []
-        });
         databaseDeleteService.deleteEntries = vi.fn().mockResolvedValue(true);
         bookmarksService.deleteBookmarks = vi.fn();
         bookmarksService.getBookmarks = vi.fn();
-        deleteFileService.removeFiles = vi.fn().mockResolvedValue(true);
+        deleteFileService.removeProjectMediaDirectories = vi.fn().mockResolvedValue(true);
 
         await flushPromises();
         await wrapper.get('[data-test="delete-entries"]').trigger('click');
@@ -993,13 +920,7 @@ describe('RightDrawer component', () => {
         await flushPromises();
         expect(notificationService.showProgressDialog).toHaveBeenCalledWith(labels.deleting_entries);
         await flushPromises();
-        expect(databaseSelectService.selectProjectMedia).toHaveBeenCalledWith({
-            project_ref: projectRef,
-            synced: null,
-            entry_uuid: null
-        });
-        await flushPromises();
-        expect(deleteFileService.removeFiles).not.toHaveBeenCalled();
+        expect(deleteFileService.removeProjectMediaDirectories).toHaveBeenCalledWith(projectRef, false);
         await flushPromises();
         expect(databaseDeleteService.deleteEntries).toHaveBeenCalledWith(projectRef);
         await flushPromises();
@@ -1044,13 +965,8 @@ describe('RightDrawer component', () => {
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         notificationService.showToast = vi.fn().mockResolvedValue(true);
         notificationService.confirmSingle = vi.fn().mockResolvedValue(true);
-        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
-            audios: [{}],
-            photos: [{}],
-            videos: [{}]
-        });
         databaseDeleteService.deleteEntries = vi.fn().mockResolvedValue(true);
-        deleteFileService.removeFiles = vi.fn().mockResolvedValue(true);
+        deleteFileService.removeProjectMediaDirectories = vi.fn().mockResolvedValue(true);
         bookmarksService.deleteBookmarks = vi.fn();
         bookmarksService.getBookmarks = vi.fn();
 
@@ -1064,13 +980,7 @@ describe('RightDrawer component', () => {
         await flushPromises();
         expect(notificationService.showProgressDialog).toHaveBeenCalledWith(labels.deleting_entries);
         await flushPromises();
-        expect(databaseSelectService.selectProjectMedia).toHaveBeenCalledWith({
-            project_ref: projectRef,
-            synced: null,
-            entry_uuid: null
-        });
-        await flushPromises();
-        expect(deleteFileService.removeFiles).toHaveBeenCalled();
+        expect(deleteFileService.removeProjectMediaDirectories).toHaveBeenCalledWith(projectRef, false);
         await flushPromises();
         expect(databaseDeleteService.deleteEntries).toHaveBeenCalledWith(projectRef);
         await flushPromises();
@@ -1115,17 +1025,12 @@ describe('RightDrawer component', () => {
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         notificationService.showToast = vi.fn().mockResolvedValue(true);
         notificationService.confirmSingle = vi.fn().mockResolvedValue(true);
-        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
-            audios: [],
-            photos: [],
-            videos: []
-        });
         databaseDeleteService.deleteEntries = vi.fn().mockImplementation(() => {
             throw new Error('Mocked error');
         });
         bookmarksService.deleteBookmarks = vi.fn();
         bookmarksService.getBookmarks = vi.fn();
-        deleteFileService.removeFiles = vi.fn().mockResolvedValue(true);
+        deleteFileService.removeProjectMediaDirectories = vi.fn().mockResolvedValue(true);
 
         await flushPromises();
         await wrapper.get('[data-test="delete-entries"]').trigger('click');
@@ -1137,13 +1042,7 @@ describe('RightDrawer component', () => {
         await flushPromises();
         expect(notificationService.showProgressDialog).toHaveBeenCalledWith(labels.deleting_entries);
         await flushPromises();
-        expect(databaseSelectService.selectProjectMedia).toHaveBeenCalledWith({
-            project_ref: projectRef,
-            synced: null,
-            entry_uuid: null
-        });
-        await flushPromises();
-        expect(deleteFileService.removeFiles).not.toHaveBeenCalled();
+        expect(deleteFileService.removeProjectMediaDirectories).toHaveBeenCalledWith(projectRef, false);
         await flushPromises();
         expect(databaseDeleteService.deleteEntries).toHaveBeenCalledWith(projectRef);
         await flushPromises();
@@ -1192,13 +1091,8 @@ describe('RightDrawer component', () => {
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         notificationService.showToast = vi.fn().mockResolvedValue(true);
         notificationService.confirmSingle = vi.fn().mockResolvedValue(true);
-        databaseSelectService.selectProjectMedia = vi.fn().mockResolvedValue({
-            audios: [{}],
-            photos: [{}],
-            videos: [{}]
-        });
         databaseDeleteService.deleteEntries = vi.fn().mockResolvedValue(true);
-        deleteFileService.removeFiles = vi.fn().mockImplementation(() => {
+        deleteFileService.removeProjectMediaDirectories = vi.fn().mockImplementation(() => {
             throw new Error('Mocked error');
         });
         bookmarksService.deleteBookmarks = vi.fn();
@@ -1214,13 +1108,7 @@ describe('RightDrawer component', () => {
         await flushPromises();
         expect(notificationService.showProgressDialog).toHaveBeenCalledWith(labels.deleting_entries);
         await flushPromises();
-        expect(databaseSelectService.selectProjectMedia).toHaveBeenCalledWith({
-            project_ref: projectRef,
-            synced: null,
-            entry_uuid: null
-        });
-        await flushPromises();
-        expect(deleteFileService.removeFiles).toHaveBeenCalled();
+        expect(deleteFileService.removeProjectMediaDirectories).toHaveBeenCalledWith(projectRef, false);
         await flushPromises();
         expect(notificationService.hideProgressDialog).toHaveBeenCalledOnce();
         await flushPromises();
