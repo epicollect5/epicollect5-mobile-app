@@ -1,0 +1,45 @@
+src/use/project/delete-project.js
+  h_2231ff2aa93473 16,56,75,85
+  s_a7762bcd6d7963::t_06b7e7872bbbaa 40-48
+tests/unit/services/filesystem/delete-file-service.spec.js
+  s_a7762bcd6d7963::t_c749ec7de975bc 1-136
+src/services/filesystem/delete-file-service.js
+  s_a7762bcd6d7963::t_a7048272dad3bb 72-114
+  s_a7762bcd6d7963::t_1536139ca49b81 4
+src/use/entries/delete-entries.js
+  h_2231ff2aa93473 14,38,42,62,70
+  s_a7762bcd6d7963::t_71607e8ff7918b 34-37,39-41
+tests/unit/components/globals/RightDrawer.spec.js
+  s_a7762bcd6d7963::t_d0c4f69d41c974 583,598,644,662
+  s_a7762bcd6d7963::t_71d25014eb97f8 466
+  s_a7762bcd6d7963::t_b760a567a946b8 911,923
+  s_a7762bcd6d7963::t_da9ac44e939516 463,478,523,538
+  s_a7762bcd6d7963::t_d3a4cb969feb8d 851,863
+  s_a7762bcd6d7963::t_e58f1e63a49151 586
+  s_a7762bcd6d7963::t_96b20af0520618 969,983
+  s_a7762bcd6d7963::t_d22bafdac73216 1033,1045
+  s_a7762bcd6d7963::t_22c4d1d5276644 1095,1111
+  s_a7762bcd6d7963::t_4d007a67e59bb1 766,783
+  s_a7762bcd6d7963::t_ad8d94e7b319e6 705,723
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "ff77c1978f7802ba00efa44828a972b6ea3d328d",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_a7762bcd6d7963": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_01347aab2ffe5TYQ7DgRRxc9eZ",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
