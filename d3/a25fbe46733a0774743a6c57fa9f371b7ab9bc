@@ -1,0 +1,20 @@
+tests/unit/services/export-service/export-branch-entries.spec.js
+  s_a7762bcd6d7963::t_08e64ea351d893 81
+  s_a7762bcd6d7963::t_cbe738e824b45f 1-80,82-191
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "d3a25fbe46733a0774743a6c57fa9f371b7ab9bc",
+  "prompts": {},
+  "sessions": {
+    "s_a7762bcd6d7963": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_01347aab2ffe5TYQ7DgRRxc9eZ",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
