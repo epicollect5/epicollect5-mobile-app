@@ -1,43 +1,45 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {modalsHandlerService} from '@/services/modals/modals-handler-service';
 
-const EMPTY_MODALS = {
-    login: null,
-    passwordlessSend: null,
-    passwordlessLogin: null,
-    confirmPassword: null,
-    confirmEmail: null
-};
+const MODAL_KEYS = ['login', 'passwordlessSend', 'passwordlessLogin', 'confirmPassword', 'confirmEmail'];
+
+function setModal(key, dismissImplementation) {
+    modalsHandlerService[key] = {dismiss: vi.fn(dismissImplementation)};
+    return modalsHandlerService.modals[key];
+}
+
+function mockTransactionLikeDismiss() {
+    return {dismiss: vi.fn().mockResolvedValue(true)};
+}
 
 describe('modalsHandlerService', () => {
     beforeEach(() => {
-        modalsHandlerService.modals = {...EMPTY_MODALS};
+        for (const key of MODAL_KEYS) {
+            modalsHandlerService.modals[key] = null;
+        }
+        modalsHandlerService._presentationOrder = [];
     });
 
     describe('dismissAll', () => {
         it('dismisses each tracked modal exactly once', async () => {
             const modals = {};
-            for (const key of Object.keys(EMPTY_MODALS)) {
-                modals[key] = {dismiss: vi.fn().mockResolvedValue(true)};
+            for (const key of MODAL_KEYS) {
+                modals[key] = setModal(key, async () => true);
             }
-            modalsHandlerService.modals = modals;
 
             await modalsHandlerService.dismissAll();
 
-            for (const key of Object.keys(EMPTY_MODALS)) {
+            for (const key of MODAL_KEYS) {
                 expect(modals[key].dismiss).toHaveBeenCalledTimes(1);
             }
         });
 
-        it('dismisses stacked modals from the topmost to the bottom one', async () => {
+        it('dismisses stacked modals from the topmost (last presented) to the bottom one', async () => {
             const dismissed = [];
-            modalsHandlerService.modals = {
-                login: {dismiss: vi.fn().mockImplementation(async () => dismissed.push('login'))},
-                passwordlessSend: {dismiss: vi.fn().mockImplementation(async () => dismissed.push('passwordlessSend'))},
-                passwordlessLogin: {dismiss: vi.fn().mockImplementation(async () => dismissed.push('passwordlessLogin'))},
-                confirmPassword: null,
-                confirmEmail: null
-            };
+            //presented in the real order: login first, passwordless on top of it
+            setModal('login', async () => dismissed.push('login'));
+            setModal('passwordlessSend', async () => dismissed.push('passwordlessSend'));
+            setModal('passwordlessLogin', async () => dismissed.push('passwordlessLogin'));
 
             await modalsHandlerService.dismissAll();
 
@@ -50,35 +52,61 @@ describe('modalsHandlerService', () => {
                 resolveFirstDismiss = resolve;
             });
             const passwordlessSendDismiss = vi.fn().mockResolvedValue(true);
+            const loginDismiss = vi.fn().mockResolvedValue(true);
 
-            modalsHandlerService.modals = {
-                login: {dismiss: vi.fn().mockResolvedValue(true)},
-                passwordlessSend: {dismiss: passwordlessSendDismiss},
-                passwordlessLogin: {dismiss: vi.fn().mockImplementation(() => firstDismiss)},
-                confirmPassword: null,
-                confirmEmail: null
-            };
+            setModal('login', async () => loginDismiss());
+            setModal('passwordlessSend', async () => passwordlessSendDismiss());
+            setModal('passwordlessLogin', async () => firstDismiss);
 
             const dismissPromise = modalsHandlerService.dismissAll();
 
             //the topmost modal dismiss is pending, the next one must not be started yet
             expect(modalsHandlerService.modals.passwordlessLogin.dismiss).toHaveBeenCalledTimes(1);
             expect(passwordlessSendDismiss).not.toHaveBeenCalled();
+            expect(loginDismiss).not.toHaveBeenCalled();
 
             //once the topmost modal dismissal completes, the next one is dismissed
             resolveFirstDismiss(true);
             await dismissPromise;
 
             expect(passwordlessSendDismiss).toHaveBeenCalledTimes(1);
-            expect(modalsHandlerService.modals.login.dismiss).toHaveBeenCalledTimes(1);
+            expect(loginDismiss).toHaveBeenCalledTimes(1);
         });
 
-        it('skips modal references that are not set', async () => {
+        it('keeps dismissing the remaining modals when one dismissal fails', async () => {
             const loginDismiss = vi.fn().mockResolvedValue(true);
-            modalsHandlerService.modals = {
-                ...EMPTY_MODALS,
-                login: {dismiss: loginDismiss}
-            };
+            const passwordlessSendDismiss = vi.fn().mockRejectedValue(new Error('already dismissed'));
+            const passwordlessLoginDismiss = vi.fn().mockResolvedValue(true);
+
+            setModal('login', async () => loginDismiss());
+            setModal('passwordlessSend', async () => passwordlessSendDismiss());
+            setModal('passwordlessLogin', async () => passwordlessLoginDismiss());
+
+            await expect(modalsHandlerService.dismissAll()).resolves.toBeUndefined();
+
+            expect(passwordlessSendDismiss).toHaveBeenCalledTimes(1);
+            expect(loginDismiss).toHaveBeenCalledTimes(1);
+        });
+
+        it('clears all modal references and the presentation stack after dismissal', async () => {
+            setModal('login', async () => true);
+            setModal('passwordlessSend', async () => true);
+
+            await modalsHandlerService.dismissAll();
+
+            expect(modalsHandlerService.modals).toEqual({
+                login: null,
+                passwordlessSend: null,
+                passwordlessLogin: null,
+                confirmPassword: null,
+                confirmEmail: null
+            });
+            expect(modalsHandlerService._presentationOrder).toEqual([]);
+        });
+
+        it('skips modal references that were never presented', async () => {
+            const loginDismiss = vi.fn().mockResolvedValue(true);
+            setModal('login', async () => loginDismiss());
 
             await modalsHandlerService.dismissAll();
 
