@@ -121,10 +121,8 @@ export const databaseDeleteService = {
                 query: 'DELETE FROM unique_answers WHERE project_ref=? AND entry_uuid IN (' + remoteEntries + ')',
                 params: [projectRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
             },
-            {
-                query: 'DELETE FROM bookmarks WHERE project_ref=? AND form_ref=? AND parent_entry_uuid IN (' + remoteEntries + ')',
-                params: [projectRef, formRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
-            },
+            //Bookmarks are intentionally kept: re-downloaded entries keep the same
+            //UUIDs, so existing bookmarks remain valid
             {
                 query: 'DELETE FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?',
                 params: [projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]

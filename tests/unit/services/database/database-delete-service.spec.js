@@ -24,19 +24,35 @@ describe('databaseDeleteService.deleteRemoteEntries', () => {
 
         await databaseDeleteService.deleteRemoteEntries('project-ref', 'form-ref');
 
-        expect(executeSql).toHaveBeenCalledTimes(4);
+        expect(executeSql).toHaveBeenCalledTimes(3);
         expect(executeSql.mock.calls[0][0]).toContain('DELETE FROM media');
         expect(executeSql.mock.calls[1][0]).toContain('DELETE FROM unique_answers');
-        expect(executeSql.mock.calls[2][0]).toContain('DELETE FROM bookmarks');
-        expect(executeSql.mock.calls[3][0]).toBe(
+        expect(executeSql.mock.calls[2][0]).toBe(
             'DELETE FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?'
         );
-        expect(executeSql.mock.calls[3][1]).toEqual([
+        expect(executeSql.mock.calls[2][1]).toEqual([
             'project-ref',
             'form-ref',
             PARAMETERS.REMOTE_CODES.IS
         ]);
         expect(executeSql.mock.calls.every(([query]) => query.includes('project_ref'))).toBe(true);
+    });
+
+    it('never deletes bookmarks for re-downloaded entries', async () => {
+        executeSql.mockClear();
+        transaction.mockClear();
+        executeSql.mockImplementation((query, params, success) => {
+            success();
+            return undefined;
+        });
+        transaction.mockImplementation((callback, _error, success) => {
+            callback({executeSql});
+            success();
+        });
+
+        await databaseDeleteService.deleteRemoteEntries('project-ref', 'form-ref');
+
+        expect(executeSql.mock.calls.some(([query]) => query.includes('DELETE FROM bookmarks'))).toBe(false);
     });
 
     it('never targets local entries when local and remote rows coexist', async () => {
