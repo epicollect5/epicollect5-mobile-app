@@ -182,7 +182,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
       state.isFetching = true;
 
       try {
-        const versionCheck = await checkProjectVersion(formRef);
+        const versionCheck = await checkProjectVersion();
         if (!versionCheck.shouldProceed) {
           state.showWarning = true;
           state.isFetching = false;
