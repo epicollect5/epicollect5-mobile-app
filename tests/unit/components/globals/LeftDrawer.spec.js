@@ -722,4 +722,42 @@ describe('LeftDrawer component', () => {
         await flushPromises();
         expect(window.open).not.toHaveBeenCalled();
     });
+
+    it('should show bookmarks added to the store after mount (array replacement)', async () => {
+
+        const rootStore = useRootStore();
+        const bookmarkStore = useBookmarkStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+        const fakeBookmark = {
+            hierarchyNavigation: [],
+            formRef: '507372e7cdd546baa5df0b182cad4ebc_64d3954955dc1',
+            id: 1,
+            projectRef: '507372e7cdd546baa5df0b182cad4ebc',
+            title: 'Test bookmark'
+        };
+
+        wrapper = mount(LeftDrawer, {
+            attachTo: document.body
+        });
+        await flushPromises();
+
+        //no bookmarks yet
+        expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(false);
+
+        //store replaces the whole array (same as setBookmarks at app startup or after deletes)
+        bookmarkStore.setBookmarks([fakeBookmark]);
+        await wrapper.vm.$nextTick();
+        await flushPromises();
+
+        expect(wrapper.findAll('[data-test="bookmarks"]')).toHaveLength(1);
+        expect(wrapper.get('[data-test="bookmarks"]').text()).toContain('Test bookmark');
+
+        //and adding a bookmark in place still updates the list
+        bookmarkStore.addBookmark({...fakeBookmark, id: 2, title: 'Another Test bookmark'});
+        await wrapper.vm.$nextTick();
+        await flushPromises();
+        expect(wrapper.findAll('[data-test="bookmarks"]')).toHaveLength(2);
+    });
 });

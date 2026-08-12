@@ -194,7 +194,8 @@ export default {
 		const labels = STRINGS[language].labels;
 		const router = useRouter();
 		const state = reactive({
-			bookmarks: bookmarkStore.bookmarks
+			//computed so the list survives store array replacements (setBookmarks)
+			bookmarks: computed(() => bookmarkStore.bookmarks)
 		});
 
 		const methods = {
