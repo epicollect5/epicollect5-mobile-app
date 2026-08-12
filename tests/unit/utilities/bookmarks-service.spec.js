@@ -890,4 +890,75 @@ describe('bookmarksService deleteBookmarksForEntry', () => {
             '777e6745-d4d5-4277-ad89-2664be644f2c'
         )).toBe(null);
     });
+
+    describe('bookmarksService bookmarkHierarchyExists', () => {
+
+        it('should return true for a top level bookmark (no hierarchy navigation)', async () => {
+            const bookmark = {
+                id: 1,
+                projectRef,
+                formRef,
+                hierarchyNavigation: []
+            };
+
+            const exists = await bookmarksService.bookmarkHierarchyExists(bookmark);
+
+            expect(exists).toBe(true);
+        });
+
+        it('should return false when the bookmark hierarchy navigation is not an array', async () => {
+            const bookmark = {
+                id: 1,
+                projectRef,
+                formRef,
+                hierarchyNavigation: null
+            };
+
+            const exists = await bookmarksService.bookmarkHierarchyExists(bookmark);
+
+            expect(exists).toBe(false);
+        });
+
+        it('should return true when every entry in the hierarchy still exists', async () => {
+            databaseSelectService.selectEntry = vi.fn().mockResolvedValue({rows: [{entry_uuid: 'uuid-1'}]});
+
+            const bookmark = {
+                id: 1,
+                projectRef,
+                formRef,
+                hierarchyNavigation: [
+                    {parentEntryUuid: 'uuid-1'},
+                    {parentEntryUuid: 'uuid-2'}
+                ]
+            };
+
+            const exists = await bookmarksService.bookmarkHierarchyExists(bookmark);
+
+            expect(exists).toBe(true);
+            expect(databaseSelectService.selectEntry).toHaveBeenCalledTimes(2);
+            expect(databaseSelectService.selectEntry).toHaveBeenCalledWith('uuid-1');
+            expect(databaseSelectService.selectEntry).toHaveBeenCalledWith('uuid-2');
+        });
+
+        it('should return false when a hierarchy entry no longer exists', async () => {
+            databaseSelectService.selectEntry = vi.fn()
+                .mockResolvedValueOnce({rows: [{entry_uuid: 'uuid-1'}]})
+                .mockResolvedValueOnce({rows: []});
+
+            const bookmark = {
+                id: 1,
+                projectRef,
+                formRef,
+                hierarchyNavigation: [
+                    {parentEntryUuid: 'uuid-1'},
+                    {parentEntryUuid: 'uuid-2'}
+                ]
+            };
+
+            const exists = await bookmarksService.bookmarkHierarchyExists(bookmark);
+
+            expect(exists).toBe(false);
+            expect(databaseSelectService.selectEntry).toHaveBeenCalledTimes(2);
+        });
+    });
 });

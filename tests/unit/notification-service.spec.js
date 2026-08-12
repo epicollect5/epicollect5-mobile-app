@@ -96,5 +96,79 @@ describe('notificationService tests', () => {
         });
         expect(mocks.presentMock).toHaveBeenCalled();
     });
+
+    it('should create a confirm alert with dismiss and action buttons and call the action handler', async () => {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const message = 'Test confirmation message';
+        const title = 'Test title';
+        const actionHandler = vi.fn();
+
+        const promise = notificationService.confirmChoice(message, title, [
+            {text: 'Action', handler: actionHandler}
+        ]);
+        const createdButtons = [...alertController.create.mock.calls[0][0].buttons];
+
+        expect(createdButtons).toEqual([
+            {
+                text: STRINGS[language].labels.dismiss,
+                role: 'cancel',
+                handler: expect.any(Function)
+            },
+            {
+                text: 'Action',
+                handler: expect.any(Function)
+            }
+        ]);
+
+        createdButtons[1].handler();
+        const result = await promise;
+        expect(result).toBe(true);
+        expect(actionHandler).toHaveBeenCalledTimes(1);
+        expect(mocks.presentMock).toHaveBeenCalled();
+    });
+
+    it('should resolve false and not call the action handler when dismissed', async () => {
+        const message = 'Test confirmation message';
+        const title = 'Test title';
+        const actionHandler = vi.fn();
+
+        const promise = notificationService.confirmChoice(message, title, [
+            {text: 'Action', handler: actionHandler}
+        ]);
+
+        const dismissButton = alertController.create.mock.calls[0][0].buttons[0];
+        dismissButton.handler();
+        const resolved = await promise;
+
+        expect(resolved).toBe(false);
+        expect(actionHandler).not.toHaveBeenCalled();
+    });
+
+    it('should create a confirm alert with only the dismiss button if no action buttons are provided', async () => {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const message = 'Test confirmation message';
+        const title = 'Test title';
+
+        const promise = notificationService.confirmChoice(message, title);
+
+        const dismissButton = alertController.create.mock.calls[0][0].buttons[0];
+        dismissButton.handler();
+        await promise;
+
+        expect(alertController.create).toHaveBeenCalledWith({
+            header: title,
+            message: message,
+            buttons: [
+                {
+                    text: STRINGS[language].labels.dismiss,
+                    role: 'cancel',
+                    handler: expect.any(Function)
+                }
+            ]
+        });
+        expect(mocks.presentMock).toHaveBeenCalled();
+    });
 });
 
