@@ -1,0 +1,23 @@
+src/services/database/database-delete-service.js
+  s_089fbc924e5ee5::t_fb94c3ff8aa3c9 124-125
+tests/unit/services/database/database-delete-service.spec.js
+  s_089fbc924e5ee5::t_89df00d518fb6e 27,30,33,41
+  s_089fbc924e5ee5::t_567d784dd41e44 42-55
+  s_089fbc924e5ee5::t_192bcf15254943 56-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "cf90173ca40dc713703ff8351aad9a3d8bc09d1c",
+  "prompts": {},
+  "sessions": {
+    "s_089fbc924e5ee5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_00de26cfcffeGvGPfjUE9819Y7",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
