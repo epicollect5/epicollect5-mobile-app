@@ -1,0 +1,27 @@
+tests/unit/services/modals/modals-handler-service.spec.js
+  s_089fbc924e5ee5::t_ea4da357f725cf 109
+  s_089fbc924e5ee5::t_cd9369b0d72577 4-13,17-20,26-27,32,37,39-42,55,57-59,66,73-104,107
+src/services/modals/modals-handler-service.js
+  s_089fbc924e5ee5::t_4ca66bef6e292f 10-17,19,25,31,37,43,54-56,58-62,64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7f78190ded58e3df533cb661fed809cc88d6287d",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_089fbc924e5ee5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_00de26cfcffeGvGPfjUE9819Y7",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
