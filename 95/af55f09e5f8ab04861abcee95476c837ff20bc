@@ -1,0 +1,39 @@
+tests/unit/notification-service.spec.js
+  s_089fbc924e5ee5::t_e49779bb478979 99,101-104,106,111,129-130,151-153,159,171-172
+  s_089fbc924e5ee5::t_81faaa4143ba4c 154-158
+  s_089fbc924e5ee5::t_cc681f85c0fdd3 110,128
+  s_089fbc924e5ee5::t_262b7c49d3c75f 107,112-125,136,142,144
+  s_089fbc924e5ee5::t_b2f3c1fd590e3e 100,105,108-109,126-127,131-135,137-141,143,145-150,160-170
+tests/unit/components/globals/LeftDrawer.spec.js
+  s_089fbc924e5ee5::t_3c4c6c76d959fc 488-490
+  s_089fbc924e5ee5::t_7dc3569d56958e 10
+  s_089fbc924e5ee5::t_5b8d4abff2aa40 420
+  s_089fbc924e5ee5::t_bb7eef21a64e5e 492,506-507,509-510,514-520
+  s_089fbc924e5ee5::t_be7de85ec750b1 592,602-603,616
+  s_089fbc924e5ee5::t_fc148a185bbca7 508
+  s_089fbc924e5ee5::t_cf92fd00ddd862 585
+  s_089fbc924e5ee5::t_e305afe2f1a2fe 436,446-447,460-487,493-505,511-513
+tests/unit/utilities/bookmarks-service.spec.js
+  s_089fbc924e5ee5::t_2c603b7c0ea3a5 893-963
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "95af55f09e5f8ab04861abcee95476c837ff20bc",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_089fbc924e5ee5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_00de26cfcffeGvGPfjUE9819Y7",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
