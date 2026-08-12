@@ -140,5 +140,22 @@ export const bookmarksService = {
                 }
             });
         });
+    },
+    //Check whether every entry in the bookmark hierarchy still exists; used before navigating to a bookmark
+    async bookmarkHierarchyExists(bookmark) {
+
+        //top form level bookmark, nothing to check
+        if (!Array.isArray(bookmark.hierarchyNavigation) || bookmark.hierarchyNavigation.length === 0) {
+            return !Array.isArray(bookmark.hierarchyNavigation) ? false : true;
+        }
+
+        for (const navEntry of bookmark.hierarchyNavigation) {
+            const result = await databaseSelectService.selectEntry(navEntry.parentEntryUuid);
+            if (result.rows.length === 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 };

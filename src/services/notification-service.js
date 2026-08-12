@@ -185,6 +185,45 @@ buttons
             })();
         });
     },
+    //generic confirm alert with a dismiss button plus custom action buttons
+    async confirmChoice(message, title, buttons = []) {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+
+        return new Promise((resolve) => {
+            (async () => {
+                const confirmButtons = [
+                    {
+                        text: STRINGS[language].labels.dismiss,
+                        role: 'cancel',
+                        handler: () => {
+                            resolve(false);
+                        }
+                    }
+                ];
+
+                buttons.forEach((button) => {
+                    confirmButtons.push({
+                        text: button.text,
+                        handler: () => {
+                            if (button.handler) {
+                                button.handler();
+                            }
+                            resolve(true);
+                        }
+                    });
+                });
+
+                const alert = await alertController
+                    .create({
+                        header: title,
+                        message,
+                        buttons: confirmButtons
+                    });
+                await alert.present();
+            })();
+        });
+    },
     //todo: test the web approach on slow devices
     async showProgressDialog(message, title) {
         return new Promise((resolve) => {
