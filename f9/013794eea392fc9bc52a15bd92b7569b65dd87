@@ -1,0 +1,28 @@
+src/services/notification-service.js
+  s_089fbc924e5ee5::t_5f0f8a13306544 188-189,193-223
+  s_089fbc924e5ee5::t_73c6a7d184ffb9 190-192
+  s_089fbc924e5ee5::t_ab15c247170d40 185-187
+src/services/utilities/bookmarks-service.js
+  s_089fbc924e5ee5::t_8a2f093b96d3c3 143-159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f9013794eea392fc9bc52a15bd92b7569b65dd87",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_089fbc924e5ee5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_00de26cfcffeGvGPfjUE9819Y7",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
