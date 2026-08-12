@@ -1,0 +1,19 @@
+src/services/entries-download-service.js
+  s_089fbc924e5ee5::t_bf933e6ad12650 185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "23fc8cbd4b1def50fcdf4fe1ae121bfa869ab9ab",
+  "prompts": {},
+  "sessions": {
+    "s_089fbc924e5ee5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_00de26cfcffeGvGPfjUE9819Y7",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
