@@ -1,0 +1,27 @@
+src/components/globals/LeftDrawer.vue
+  s_089fbc924e5ee5::t_fec34bed718132 261-267
+  s_089fbc924e5ee5::t_cde506bb80cff5 256-259,268-269
+  s_089fbc924e5ee5::t_68e33c806e74ff 185
+  s_089fbc924e5ee5::t_89fb73e6b29b34 260
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ba3e92033674b257d691f9c6846b34a3a415da75",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_089fbc924e5ee5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_00de26cfcffeGvGPfjUE9819Y7",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
