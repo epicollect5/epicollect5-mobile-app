@@ -1,0 +1,57 @@
+src/pages/EntriesDownload.vue
+  s_cff8f3205c76cf::t_63c255173a31d2 232-236,242
+  s_cff8f3205c76cf::t_eaa89c1639e7c0 89-93,102-105
+  s_cff8f3205c76cf::t_888ad6706b907b 121
+  s_cff8f3205c76cf::t_b9dd80b8b85522 94-101
+  s_cff8f3205c76cf::t_2fea277e601ee8 182-193
+  s_cff8f3205c76cf::t_39569f61ba6103 261
+  s_cff8f3205c76cf::t_bb35e01f70e22e 110
+  s_cff8f3205c76cf::t_dc37a1e1d47168 260
+  s_cff8f3205c76cf::t_31f649b3157835 223-225
+src/components/globals/BaseLayout.vue
+  s_cff8f3205c76cf::t_0efdb6279a45cf 21
+  s_cff8f3205c76cf::t_7d53153f076435 79-81
+src/config/strings.js
+  s_cff8f3205c76cf::t_d48963c6f77767 2182-2184
+  s_cff8f3205c76cf::t_88cb9d8aba3143 1920-1922
+  s_cff8f3205c76cf::t_562747ef982b6a 872-874
+  s_cff8f3205c76cf::t_0795f1df9e7d7d 1658-1660
+  s_cff8f3205c76cf::t_7df55c702a0092 348-350
+  s_cff8f3205c76cf::t_1626cddae14adc 1396-1398
+  s_cff8f3205c76cf::t_9e541e3f7b1bbe 610-612
+  s_cff8f3205c76cf::t_9d6c704647536d 86-88
+  s_cff8f3205c76cf::t_e82e6c57dcd600 1134-1136
+tests/unit/services/entries-download-service.spec.js
+  s_cff8f3205c76cf::t_8a82ae6362835f 117-118
+  s_cff8f3205c76cf::t_37565db9d5a5d0 196-200
+  s_cff8f3205c76cf::t_2de952f0165431 306,308-320,327-334,336-356,358-359
+  s_cff8f3205c76cf::t_22dfdc92040c0e 111,186,232,254,275,302,321,335,357,393,417
+  s_cff8f3205c76cf::t_7388c3d0b06c5d 303-305,307
+tests/unit/services/database/database-delete-service.spec.js
+  s_cff8f3205c76cf::t_6587fed0557a93 15,27,38-45,49-60,62-68
+  s_cff8f3205c76cf::t_22dfdc92040c0e 14,25,61,83,105
+  s_cff8f3205c76cf::t_56786a677b80d9 69-70
+src/services/entries-download-service.js
+  s_cff8f3205c76cf::t_1b5c3d541532ae 239
+  s_cff8f3205c76cf::t_0ae7d8428b8044 396
+  s_cff8f3205c76cf::t_69f334bfafcb96 217,220-221,231-238
+src/services/database/database-delete-service.js
+  s_cff8f3205c76cf::t_2046042c028151 111-117
+  s_cff8f3205c76cf::t_0c1398b33c894a 119-123,126-127,130,133,136-141
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "23aa188a820ec78c789918ae71dce83e3904075a",
+  "prompts": {},
+  "sessions": {
+    "s_cff8f3205c76cf": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_00980015affehlLo3wZm6OFg35",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
