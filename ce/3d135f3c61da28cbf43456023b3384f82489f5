@@ -1,0 +1,43 @@
+src/config/strings.js
+  s_cff8f3205c76cf::t_923c73ed3385f5 89,352,615,878,1141,1404,1930,2193
+  s_cff8f3205c76cf::t_e82a05bb3a613b 1667
+tests/unit/services/entries-download-service.abort.spec.js
+  s_cff8f3205c76cf::t_c4acf359e97832 144-152
+  s_cff8f3205c76cf::t_54f3472ce59f90 1,4-114,116-143,153-197,199-203,205-219,221-232,234-251
+  s_cff8f3205c76cf::t_596e53b2e78a28 204
+  s_cff8f3205c76cf::t_f5437dcc334830 220
+  s_cff8f3205c76cf::t_3408ab9f41835c 115
+  s_cff8f3205c76cf::t_c7d0e27fb35619 3
+  s_cff8f3205c76cf::t_c9256715ea294f 198
+  s_cff8f3205c76cf::t_4f7019a251c60e 2
+  s_cff8f3205c76cf::t_5a77a09b874f64 233
+tests/unit/services/entries-download-service.spec.js
+  s_cff8f3205c76cf::t_85774596fd2fba 230
+src/services/utilities/download-service.js
+  s_cff8f3205c76cf::t_94b9eeb59231a7 97-103
+src/services/entries-download-service.js
+  s_cff8f3205c76cf::t_e22d83483667c5 319-327
+  s_cff8f3205c76cf::t_d38a1720c9154e 180
+  s_cff8f3205c76cf::t_a8d4fb08c5ffb4 202
+  s_cff8f3205c76cf::t_8dc6b7062a20bb 177-179,181-182
+  s_cff8f3205c76cf::t_6d30db67e95f67 235-241
+  s_cff8f3205c76cf::t_89044788ae2a18 262-271
+tests/unit/services/utilities/download-service.spec.js
+  s_cff8f3205c76cf::t_f9061110b5637f 304-345
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ce3d135f3c61da28cbf43456023b3384f82489f5",
+  "prompts": {},
+  "sessions": {
+    "s_cff8f3205c76cf": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_00980015affehlLo3wZm6OFg35",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
