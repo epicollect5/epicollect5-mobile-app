@@ -1,1 +1,5 @@
 @use '@/theme/mixins' as *;
+
+.question-progress-bar {
+    @include question-progress-bar-base;
+}
