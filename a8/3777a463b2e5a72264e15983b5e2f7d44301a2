@@ -1,0 +1,19 @@
+src/theme/components/entries/ToolbarEntriesAddNavigation.scss
+  s_089fbc924e5ee5::t_e93b57ab73bf88 2-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a83777a463b2e5a72264e15983b5e2f7d44301a2",
+  "prompts": {},
+  "sessions": {
+    "s_089fbc924e5ee5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_00de26cfcffeGvGPfjUE9819Y7",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
