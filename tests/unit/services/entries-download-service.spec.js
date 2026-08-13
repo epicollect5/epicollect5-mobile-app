@@ -227,7 +227,7 @@ describe('entriesDownloadService project version checks', () => {
             'Updating Forms.'
         );
         expect(notificationService.hideProgressDialog).toHaveBeenCalledWith(0);
-        expect(notificationService.showAlert).toHaveBeenCalledWith('Forms updated.');
+        expect(notificationService.showAlert).toHaveBeenCalledWith('Forms updated.', 'Project is outdated');
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
         expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
         expect(state.enabledButtons['form-a']).toBe(true);

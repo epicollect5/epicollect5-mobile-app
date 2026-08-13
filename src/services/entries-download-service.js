@@ -174,6 +174,12 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
       return modal.present();
     }
 
+    const handleProjectUpdated = async (message) => {
+      state.forms = projectModel.getFormsInOrder();
+      resetDownloadButtonState();
+      await notificationService.showAlert(message, STRINGS[language].labels.project_outdated);
+    };
+
     const beginDownload = async (resumeDownload = false) => {
       if (state.isFetching) {
         return;
@@ -193,9 +199,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           //Project structure changed: refresh the form buttons and clear all
           //download progress. Do not start a download automatically, the user
           //must start again from the first form button.
-          state.forms = projectModel.getFormsInOrder();
-          resetDownloadButtonState();
-          await notificationService.showAlert(STRINGS[language].status_codes.ec5_137);
+          await handleProjectUpdated(STRINGS[language].status_codes.ec5_137);
           state.isFetching = false;
           return;
         }
@@ -228,10 +232,13 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
             state.resumeAvailable[formRef] = false;
             return;
           }
-          //A fresh download replaces all remote entries (current form and every following form) with
-          //the current server state, so an interrupted download can never leave orphaned children.
-          //The download caches of the following forms are cleared as well: their rows are gone, so any
-          //stale resume state would skip pages whose rows no longer exist.
+          //A fresh download removes the remote entries of the selected form and of
+          //every form that follows it in the project. Only the selected form is
+          //re-downloaded now; the following forms are downloaded in turn, one at a
+          //time, so an interrupted download can never leave orphaned children.
+          //The download caches of the following forms are cleared as well: their rows
+          //are gone, so any stale resume state would skip pages whose rows no longer
+          //exist.
           const formsInOrder = projectModel.getFormsInOrder();
           const currentFormIndex = formsInOrder.findIndex((form) => form.formRef === formRef);
           const formRefs = formsInOrder.slice(currentFormIndex).map((form) => form.formRef);
@@ -251,6 +258,16 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           initialEntryNumber: resumeDownload ? formCache.processedEntries : 0,
           isCancelled() {
             return downloadCancelled;
+          },
+          //The project version is checked before each page download: if it changed
+          //on the server mid-download, rows already inserted may not match the new
+          //structure, so the download is aborted and the user is asked to restart.
+          shouldAbort: async () => {
+            const versionCheck = await checkProjectVersion();
+            if (!versionCheck.shouldProceed || versionCheck.projectUpdated) {
+              return {versionChanged: true, projectUpdated: versionCheck.projectUpdated};
+            }
+            return null;
           },
           shouldSkipUrl(url) {
             return Object.prototype.hasOwnProperty.call(formCache.urls, url);
@@ -296,6 +313,15 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
         syncResumeAvailability(formRef);
 
         if (error?.cancelled) {
+          return;
+        }
+
+        if (error?.versionChanged) {
+          //The project changed on the server while downloading: clear all progress
+          //and invite the user to update the project and restart the download, as
+          //the entries already downloaded might be invalid.
+          clearProjectDownloadCache();
+          await handleProjectUpdated(labels.download_interrupted_restart);
           return;
         }
 
