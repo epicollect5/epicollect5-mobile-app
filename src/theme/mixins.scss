@@ -436,31 +436,6 @@
     padding: 8px 0;
 }
 
-@mixin list-entries-filters-base {
-    padding: 6px 0;
-
-    .filters-count {
-        color: #333;
-        font-weight: 700;
-        font-size: 13px;
-        span {
-            font-weight: 700;
-            color: white;
-            padding: 3px 5px;
-            border-radius: 5px;
-            background-color: var(--ion-color-tertiary);
-            letter-spacing: 1px;
-        }
-    }
-    ion-button {
-        --opacity: 1 !important;
-    }
-    ion-note {
-        font-size: 14px;
-        font-weight: 700;
-    }
-}
-
 @mixin child-entries-item-button-base {
     margin: 4px 0;
     --border-radius: 4px;
@@ -649,17 +624,6 @@
         --padding-bottom: 0;
         --padding-top: 0;
         --min-height: 40px;
-    }
-}
-
-@mixin form-name-entry-divider-base {
-    background-color: #fff !important;
-    padding: 0;
-    ion-label {
-        width: 100%;
-        text-transform: uppercase;
-        font-weight: 700;
-        padding: 0 16px;
     }
 }
 
@@ -985,53 +949,6 @@
     }
 }
 
-// ==================== ION CARD CONTENT HACK ====================
-
-@mixin ion-card-content-hack-base {
-    padding-top: 16px;
-    .half-padding-start.radio-padding,
-    .half-padding.checkbox-padding {
-        ion-col {
-            padding: 4px;
-            .possible-answer-checkbox {
-                margin-right: 4px;
-            }
-        }
-    }
-}
-
-// ==================== TOOLBAR STYLES ====================
-
-@mixin toolbar-form-name-base {
-    ion-toolbar.form-name {
-        ion-title.form-name-label,
-        ion-title.form-name-label-errors {
-            text-transform: uppercase;
-            padding: 10px 10px 10px 13px;
-            font-weight: 700;
-        }
-        ion-title.form-name-label {
-            font-size: 14px;
-        }
-        ion-title.form-name-label-errors {
-            font-size: 12px;
-        }
-        --background: none;
-        --padding-bottom: 0;
-        --padding-top: 0;
-        --min-height: 40px;
-        border-bottom: 1px solid var(--ion-color-light-shade);
-    }
-}
-
-@mixin toolbar-spacer-base {
-    visibility: hidden;
-}
-
-@mixin toolbar-navigation-button-base {
-    max-width: 120px;
-}
-
 // ==================== BETA TOOLBAR STYLES ====================
 
 @mixin beta-toolbar-base {
@@ -1044,34 +961,6 @@
         text-transform: uppercase;
         font-size: 13px;
     }
-}
-
-// ==================== BOOKMARK STYLES ====================
-
-@mixin bookmark-title-error-base {
-    visibility: visible;
-    color: var(--ion-color-danger);
-    text-align: center;
-}
-
-@mixin bookmark-title-success-base {
-    visibility: hidden;
-}
-
-// ==================== WARNING ITEM STYLES ====================
-
-@mixin item-warning-base {
-    --background: var(--ion-color-warning);
-    font-size: 14px;
-    --padding-start: 12px;
-    --padding-end: 0px;
-}
-
-// ==================== CENTER ITEM CONTENT STYLES ====================
-
-@mixin center-item-content-wrapper-base {
-    text-align: center !important;
-    width: 100%;
 }
 
 // ==================== FILTER STYLES ====================
@@ -1144,42 +1033,8 @@
     }
 }
 
-// ==================== ITEM ANSWER ERROR STYLES ====================
-
-@mixin item-answer-error-base {
-    ion-card-header {
-    }
-}
-
 // ==================== PWA MARGIN FIX STYLES ====================
 
 @mixin pwa-margin-fix-base {
     margin-top: -15px !important;
-}
-
-// ==================== ION ITEM DIVIDER STYLES ====================
-
-@mixin ion-item-divider-entry-name-base {
-    background-color: #fff !important;
-    padding: 0;
-    ion-label {
-        width: 100%;
-        text-transform: uppercase;
-        font-weight: 700;
-        padding: 0 16px;
-    }
-}
-
-@mixin ion-item-divider-entry-error-base {
-    ion-label {
-        width: 100%;
-    }
-}
-
-@mixin ion-item-divider-entry-error-global-base {
-    --padding-start: 8px;
-    --padding-end: 8px;
-    ion-label {
-        margin: 16px auto;
-    }
 }
