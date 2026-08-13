@@ -847,12 +847,6 @@
     }
 }
 
-@mixin modal-barcode-base {
-    .button-container {
-        display: none !important;
-    }
-}
-
 @mixin modal-photo-base {
     .swiper {
         .swiper-slide {
@@ -968,31 +962,6 @@
     }
 }
 
-@mixin leaflet-control-layers-base {
-    .leaflet-control-layers-list {
-        text-align: left;
-    }
-    .leaflet-touch .leaflet-control-layers-toggle {
-        width: 30px;
-        height: 30px;
-    }
-    .leaflet-retina .leaflet-control-layers-toggle {
-        background-image: url(@/leaflet/images/layers@2x.png) !important;
-        background-size: 26px 26px !important;
-        width: 30px !important;
-        height: 30px !important;
-    }
-    .leaflet-control-layers-base {
-        label {
-            font-size: 16px;
-        }
-    }
-    input.leaflet-control-layers-selector {
-        margin: 5px;
-        accent-color: var(--ion-color-primary) !important;
-    }
-}
-
 @mixin item-question-location-edit-base {
     border: 1px solid var(--ion-color-medium);
     border-radius: 4px;
@@ -1014,37 +983,6 @@
         padding: 10px 0;
         border-bottom: 1px solid var(--ion-color-light-shade);
     }
-}
-
-// ==================== HALF PADDING STYLES ====================
-
-@mixin half-padding-base {
-    padding: 8px;
-    &.checkbox-padding {
-        padding: 8px 4px 8px 8px;
-    }
-}
-
-@mixin half-padding-start-base {
-    padding-left: 8px;
-    &.radio-padding {
-        padding: 8px !important;
-        ion-col {
-            padding: 8px;
-        }
-    }
-}
-
-@mixin half-padding-end-base {
-    padding-right: 8px;
-}
-
-@mixin half-padding-top-base {
-    padding-top: 8px;
-}
-
-@mixin half-padding-bottom-base {
-    padding-bottom: 8px;
 }
 
 // ==================== ION CARD CONTENT HACK ====================
@@ -1219,19 +1157,6 @@
     margin-top: -15px !important;
 }
 
-// ==================== LOADER STYLES ====================
-
-@mixin loader-base {
-    top: 50%;
-    left: 50%;
-    position: fixed;
-    transform: translate(-50%, -50%);
-    &.loader-questions {
-        position: relative;
-        top: 32px;
-    }
-}
-
 // ==================== ION ITEM DIVIDER STYLES ====================
 
 @mixin ion-item-divider-entry-name-base {
@@ -1257,41 +1182,4 @@
     ion-label {
         margin: 16px auto;
     }
-}
-
-// ==================== ION CHIP STYLES ====================
-
-@mixin ion-chip-base {
-    border-radius: 5px;
-    padding: 20px;
-    &:hover {
-        background-color: #fff !important;
-    }
-}
-
-// ==================== ALERT BUTTON GROUP STYLES ====================
-
-@mixin alert-confirm-multiple-base {
-    .alert-button-group {
-        flex-direction: row !important;
-    }
-}
-
-// ==================== TEXTAREA STYLES ====================
-
-@mixin textarea-base {
-    resize: none;
-    font-size: 16px;
-}
-
-// ==================== CARD CONTENT MD STYLES ====================
-
-@mixin card-content-md-base {
-    padding-top: 16px !important;
-}
-
-// ==================== EC5 LOADING STYLES ====================
-
-@mixin ec5-loading-title-base {
-    white-space: pre-line !important;
 }
