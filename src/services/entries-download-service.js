@@ -214,9 +214,11 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
       try {
         if (!resumeDownload) {
           const unsyncedCount = await databaseSelectService.countUnsyncedEntries(projectModel.getProjectRef());
+          const unsyncedMediaCount = await databaseSelectService.countMediaUnsynced(projectModel.getProjectRef());
           const totalUnsynced = unsyncedCount.rows.item(0).total_number_of_entries_with_errors
               + unsyncedCount.rows.item(0).total_number_of_entries_unsynced
-              + unsyncedCount.rows.item(0).total_number_of_incomplete_entries;
+              + unsyncedCount.rows.item(0).total_number_of_incomplete_entries
+              + unsyncedMediaCount.rows.item(0).total;
           if (totalUnsynced > 0) {
             await notificationService.showDismissAlert(
                 labels.remote_entries_out_of_sync,
@@ -226,7 +228,15 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
             state.resumeAvailable[formRef] = false;
             return;
           }
-          await databaseDeleteService.deleteRemoteEntries(projectModel.getProjectRef(), formRef);
+          //A fresh download replaces all remote entries (current form and every following form) with
+          //the current server state, so an interrupted download can never leave orphaned children.
+          //The download caches of the following forms are cleared as well: their rows are gone, so any
+          //stale resume state would skip pages whose rows no longer exist.
+          const formsInOrder = projectModel.getFormsInOrder();
+          const currentFormIndex = formsInOrder.findIndex((form) => form.formRef === formRef);
+          const formRefs = formsInOrder.slice(currentFormIndex).map((form) => form.formRef);
+          formRefs.slice(1).forEach((formRefToClear) => clearFormDownloadCache(formRefToClear));
+          await databaseDeleteService.deleteEntriesBeforeDownload(projectModel.getProjectRef(), formRefs);
         }
 
         await showModalUploadProgress({
@@ -383,6 +393,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     getDownloadProgressLabel,
     clearDownloadProgress,
     clearDownloadCache,
+    clearProjectDownloadCache,
     downloadEntries
   };
 }

@@ -108,13 +108,14 @@ vi.mock('@/services/errors-service', () => ({
 
 vi.mock('@/services/database/database-delete-service', () => ({
     databaseDeleteService: {
-        deleteRemoteEntries: vi.fn()
+        deleteEntriesBeforeDownload: vi.fn()
     }
 }));
 
 vi.mock('@/services/database/database-select-service', () => ({
     databaseSelectService: {
-        countUnsyncedEntries: vi.fn()
+        countUnsyncedEntries: vi.fn(),
+        countMediaUnsynced: vi.fn()
     }
 }));
 
@@ -182,7 +183,7 @@ describe('entriesDownloadService project version checks', () => {
         entriesDownloadProgressService.load.mockReturnValue({...emptyProgress});
         notificationService.confirmSingle.mockResolvedValue(true);
         notificationService.showProgressDialog.mockResolvedValue();
-        databaseDeleteService.deleteRemoteEntries.mockResolvedValue();
+        databaseDeleteService.deleteEntriesBeforeDownload.mockResolvedValue();
         databaseSelectService.countUnsyncedEntries.mockResolvedValue({
             rows: {
                 item: () => ({
@@ -190,6 +191,11 @@ describe('entriesDownloadService project version checks', () => {
                     total_number_of_entries_with_errors: 0,
                     total_number_of_incomplete_entries: 0
                 })
+            }
+        });
+        databaseSelectService.countMediaUnsynced.mockResolvedValue({
+            rows: {
+                item: () => ({total: 0})
             }
         });
         notificationService.showDismissAlert.mockResolvedValue();
@@ -223,7 +229,7 @@ describe('entriesDownloadService project version checks', () => {
         expect(notificationService.hideProgressDialog).toHaveBeenCalledWith(0);
         expect(notificationService.showAlert).toHaveBeenCalledWith('Forms updated.');
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
-        expect(databaseDeleteService.deleteRemoteEntries).not.toHaveBeenCalled();
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
         expect(state.enabledButtons['form-a']).toBe(true);
         expect(state.enabledButtons['form-b']).toBe(false);
         expect(state.resumeAvailable['form-a']).toBe(false);
@@ -245,7 +251,7 @@ describe('entriesDownloadService project version checks', () => {
         await settleDownload();
 
         expect(downloadService.downloadFormEntries).toHaveBeenCalledTimes(1);
-        expect(databaseDeleteService.deleteRemoteEntries).toHaveBeenCalledWith('project-ref', 'form-a');
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).toHaveBeenCalledWith('project-ref', ['form-a', 'form-b']);
         expect(state.enabledButtons['form-a']).toBe(true);
     });
 
@@ -266,7 +272,7 @@ describe('entriesDownloadService project version checks', () => {
         await settleDownload();
 
         expect(databaseSelectService.countUnsyncedEntries).toHaveBeenCalledWith('project-ref');
-        expect(databaseDeleteService.deleteRemoteEntries).not.toHaveBeenCalled();
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
         expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
             'Remote entries on your device are out of sync. Upload your entries before re-downloading.',
@@ -293,10 +299,62 @@ describe('entriesDownloadService project version checks', () => {
         await downloader.downloadEntries('form-a');
         await settleDownload();
 
-        expect(databaseDeleteService.deleteRemoteEntries).not.toHaveBeenCalled();
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
         expect(notificationService.showDismissAlert).toHaveBeenCalled();
         expect(state.resumeAvailable['form-a']).toBe(false);
+    });
+
+    it('blocks a fresh download when any media file is unsynced', async () => {
+        const state = createState();
+        databaseSelectService.countMediaUnsynced.mockResolvedValue({
+            rows: {
+                item: () => ({total: 1})
+            }
+        });
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
+        expect(databaseSelectService.countMediaUnsynced).toHaveBeenCalledWith('project-ref');
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
+        expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
+        expect(notificationService.showDismissAlert).toHaveBeenCalled();
+        expect(state.resumeAvailable['form-a']).toBe(false);
+    });
+
+    it('wipes the current form and all following forms on a fresh download', async () => {
+        const state = createState();
+        state.enabledButtons['form-b'] = true;
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-b');
+        await settleDownload();
+
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).toHaveBeenCalledWith('project-ref', ['form-b']);
+        expect(downloadService.downloadFormEntries).toHaveBeenCalledWith('form-b', expect.anything());
+    });
+
+    it('clears the download caches of the following forms on a fresh download', async () => {
+        const state = createState();
+        state.downloadCache['form-b'] = {
+            ...emptyProgress,
+            startUrl: 'page-1',
+            totalEntries: 10,
+            processedEntries: 5,
+            urls: {'page-1': 'page-2'}
+        };
+        state.resumeAvailable['form-b'] = true;
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
+        expect(entriesDownloadProgressService.clear).toHaveBeenCalledWith('project-ref', 'form-b');
+        expect(state.resumeAvailable['form-b']).toBe(false);
+        expect(state.downloadCache['form-b']).toBeUndefined();
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).toHaveBeenCalledWith('project-ref', ['form-a', 'form-b']);
     });
 
     it('clears project download progress and does not resume after an update', async () => {
@@ -332,7 +390,7 @@ describe('entriesDownloadService project version checks', () => {
 
         expect(versioningService.updateProject).not.toHaveBeenCalled();
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
-        expect(databaseDeleteService.deleteRemoteEntries).not.toHaveBeenCalled();
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
         expect(state.isFetching).toBe(false);
     });
 
@@ -356,7 +414,7 @@ describe('entriesDownloadService project version checks', () => {
             initialTotalEntries: 10,
             initialEntryNumber: 5
         }));
-        expect(databaseDeleteService.deleteRemoteEntries).not.toHaveBeenCalled();
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
     });
 
     it('does not download when updating the project fails', async () => {

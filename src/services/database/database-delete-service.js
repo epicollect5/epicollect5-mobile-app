@@ -108,26 +108,37 @@ export const databaseDeleteService = {
         return await this.deleteRowsFromMultipleTables(query, options, tables);
     },
 
-    //Remove downloaded remote entries for a project form while preserving local entries
-    async deleteRemoteEntries(projectRef, formRef) {
+    //Remove the data a fresh download will replace, for the given project forms, in a single
+    //transaction: remote entries with their media and unique answers, plus synced branch entries.
+    //Local entries (is_remote=LOCAL) are preserved. Branch entries are never re-downloaded
+    //(read-only references); they are only wiped when synced, since the download guard guarantees
+    //nothing unsynced can reach this point, and the synced filter is a safety net against
+    //deleting branch data that was never uploaded.
+    async deleteEntriesBeforeDownload(projectRef, formRefs) {
         const dbStore = useDBStore();
-        const remoteEntries = 'SELECT entry_uuid FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?';
-        const statements = [
-            {
+        const statements = [];
+
+        formRefs.forEach((formRef) => {
+            const remoteEntries = 'SELECT entry_uuid FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?';
+            statements.push({
                 query: 'DELETE FROM media WHERE project_ref=? AND form_ref=? AND entry_uuid IN (' + remoteEntries + ')',
                 params: [projectRef, formRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
-            },
-            {
+            });
+            statements.push({
                 query: 'DELETE FROM unique_answers WHERE project_ref=? AND entry_uuid IN (' + remoteEntries + ')',
                 params: [projectRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
-            },
+            });
             //Bookmarks are intentionally kept: re-downloaded entries keep the same
             //UUIDs, so existing bookmarks remain valid
-            {
+            statements.push({
                 query: 'DELETE FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?',
                 params: [projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
-            }
-        ];
+            });
+            statements.push({
+                query: 'DELETE FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?',
+                params: [projectRef, formRef, PARAMETERS.SYNCED_CODES.SYNCED]
+            });
+        });
 
         return new Promise((resolve, reject) => {
             dbStore.db.transaction((tx) => {

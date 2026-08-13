@@ -86,11 +86,28 @@
       </ion-list>
 
     </template>
+
+    <template #footer>
+      <div>
+        <ion-card>
+          <ion-card-content class="ion-text-center">
+            <p><strong>{{labels.leaving_download_page_warning}}</strong></p>
+            <ion-button color="warning" @click="openDownloadDocs()">
+              <ion-icon
+                  slot="start"
+                  :icon="openOutline"
+              ></ion-icon>
+              {{labels.learn_more}}
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </template>
   </base-layout>
 </template>
 
 <script>
-import {chevronBackOutline, documentText, desktopOutline} from 'ionicons/icons';
+import {chevronBackOutline, documentText, desktopOutline, openOutline} from 'ionicons/icons';
 import {reactive} from '@vue/reactivity';
 import {STRINGS} from '@/config/strings';
 
@@ -101,6 +118,7 @@ import {PARAMETERS} from '@/config';
 import {onIonViewWillEnter, onIonViewWillLeave, useBackButton} from '@ionic/vue';
 import {utilsService} from '@/services/utilities/utils-service';
 import {entriesDownloadService} from '@/services/entries-download-service';
+import {notificationService} from '@/services/notification-service';
 
 export default {
   setup() {
@@ -161,7 +179,18 @@ export default {
       async clearDownloadProgress(formRef) {
         await entriesDownloader.clearDownloadProgress(formRef);
       },
-      goBack() {
+      async goBack() {
+        //Leaving clears any download progress: warn the user before navigating away
+        const hasProgress = state.forms.some((form) => entriesDownloader.hasDownloadProgress(form.formRef));
+
+        if (hasProgress) {
+          const confirmed = await notificationService.confirmSingle(labels.leaving_download_clear_progress, labels.clear_download_progress);
+
+          if (!confirmed) {
+            return;
+          }
+        }
+
         const currentRouteName = router.currentRoute.value.name;
         if (!state.wasAttemptedDownload) {
           //if next route not specified or itself, default back to entries
@@ -191,18 +220,26 @@ export default {
       },
       async downloadEntries(formRef, shouldResume = false) {
         await entriesDownloader.downloadEntries(formRef, shouldResume);
+      },
+      openDownloadDocs() {
+        window.open(PARAMETERS.DOWNLOAD_ENTRIES_DOCS_URL, '_system', 'location=yes');
       }
     };
 
     _getFormButtons();
 
     onIonViewWillEnter(() => {
+      //Entering the page clears any persisted download progress (also covers an app
+      //killed while on this page), so the resume feature only works within this page
+      //visit. Every re-entry starts a fresh download from a clean state.
+      entriesDownloader.clearProjectDownloadCache();
+      state.showWarning = true;
       entriesDownloader.resetDownloadButtonState();
       entriesDownloader.syncResumeAvailabilityForForms();
     });
 
     onIonViewWillLeave(() => {
-      entriesDownloader.clearDownloadCache();
+      entriesDownloader.clearProjectDownloadCache();
     });
 
     //back with back button (Android)
@@ -220,7 +257,8 @@ export default {
       //icons
       chevronBackOutline,
       desktopOutline,
-      documentText
+      documentText,
+      openOutline
     };
   }
 };
