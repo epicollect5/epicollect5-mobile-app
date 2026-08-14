@@ -362,7 +362,7 @@ export default {
               state.isFetching = false;
               setTimeout(function () {
                 notificationService.hideProgressDialog();
-              }, PARAMETERS.DELAY_MEDIUM);
+              }, PARAMETERS.DELAY_LONG);
             });
           }, 0);
         });
