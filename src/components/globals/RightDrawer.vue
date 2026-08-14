@@ -429,7 +429,8 @@ export default {
           router.replace({
             name: PARAMETERS.ROUTES.ENTRIES,
             query: {
-              refreshEntries: true
+              refreshEntries: true,
+              timestamp: Date.now()
             }
           });
           //hide right drawer

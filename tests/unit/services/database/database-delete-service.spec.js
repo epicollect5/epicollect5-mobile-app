@@ -115,3 +115,75 @@ describe('databaseDeleteService.deleteEntriesBeforeDownload', () => {
         expect(targetedRows.map((entry) => entry.entryUuid)).not.toContain('local-entry');
     });
 });
+
+describe('databaseDeleteService.deleteRowsFromMultipleTables', () => {
+    const options = {
+        project_ref: 'project-ref',
+        form_ref: null,
+        entry_uuid: null
+    };
+    const tables = ['entries', 'branch_entries', 'unique_answers', 'media'];
+
+    it('resolves only after every table statement succeeds', async () => {
+        executeSql.mockClear();
+        transaction.mockClear();
+
+        let callCount = 0;
+        const deferred = {};
+        deferred.promise = new Promise((resolve) => {
+            deferred.resolve = resolve;
+        });
+
+        executeSql.mockImplementation((query, params, success) => {
+            callCount++;
+            if (callCount < tables.length) {
+                success();
+            } else {
+                //defer the last statement, the promise must stay pending until it succeeds
+                deferred.resolve(success);
+            }
+            return undefined;
+        });
+        transaction.mockImplementation((callback) => {
+            callback({executeSql});
+        });
+
+        let resolved = false;
+        const deletePromise = databaseDeleteService
+            .deleteRowsFromMultipleTables('', options, tables)
+            .then(() => {
+                resolved = true;
+            });
+
+        await Promise.resolve();
+        expect(resolved).toBe(false);
+        expect(executeSql).toHaveBeenCalledTimes(tables.length);
+
+        const lastSuccessCallback = await deferred.promise;
+        lastSuccessCallback();
+
+        await deletePromise;
+        expect(resolved).toBe(true);
+    });
+
+    it('rejects when a later table statement fails', async () => {
+        executeSql.mockClear();
+        transaction.mockClear();
+
+        executeSql.mockImplementation((query, params, success, error) => {
+            if (query.includes('branch_entries')) {
+                error(null, new Error('Mocked sql error'));
+            } else {
+                success();
+            }
+            return undefined;
+        });
+        transaction.mockImplementation((callback) => {
+            callback({executeSql});
+        });
+
+        await expect(
+            databaseDeleteService.deleteRowsFromMultipleTables('', options, tables)
+        ).rejects.toThrow('Mocked sql error');
+    });
+});

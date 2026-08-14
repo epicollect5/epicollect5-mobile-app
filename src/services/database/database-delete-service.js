@@ -16,7 +16,7 @@ export const databaseDeleteService = {
 
             dbStore.db.transaction(function (tx) {
 
-                tables.forEach((table) => {
+                const statementPromises = tables.map((table) => {
 
                     const params = [];
                     let query = 'DELETE FROM ' + table;
@@ -42,13 +42,21 @@ export const databaseDeleteService = {
                         }
                     }
 
-                    tx.executeSql(query, params, (tx, res) => {
-                        console.log(res);
-                        console.log('*** deleted ---------------***');
-                        // continue
-                        resolve(res);
-                    }, _onError);
+                    return new Promise((resolveStatement, rejectStatement) => {
+                        tx.executeSql(query, params, (tx, res) => {
+                            console.log(res);
+                            console.log('*** deleted ---------------***');
+                            // continue
+                            resolveStatement(res);
+                        }, (tx, error) => {
+                            console.log('*** ' + query + '--------------------***');
+                            console.log(error);
+                            rejectStatement(error);
+                        });
+                    });
                 });
+
+                Promise.all(statementPromises).then(resolve, reject);
             }, _onError);
         });
     },

@@ -274,9 +274,10 @@ describe('RightDrawer component', () => {
         expect(routerReplaceMock).toHaveBeenCalledOnce();
         expect(routerReplaceMock).toHaveBeenCalledWith({
             name: PARAMETERS.ROUTES.ENTRIES,
-            query: {
-                refreshEntries: true
-            }
+            query: expect.objectContaining({
+                refreshEntries: true,
+                timestamp: expect.any(Number)
+            })
         });
         expect(menuController.close).toHaveBeenCalledOnce();
     });
@@ -877,7 +878,10 @@ describe('RightDrawer component', () => {
         expect(routerReplaceMock).not.toHaveBeenCalledOnce();
         expect(routerReplaceMock).not.toHaveBeenCalledWith({
             name: PARAMETERS.ROUTES.ENTRIES,
-            query: { refreshEntries: true }
+            query: expect.objectContaining({
+                refreshEntries: true,
+                timestamp: expect.any(Number)
+            })
         });
     });
 
@@ -937,7 +941,10 @@ describe('RightDrawer component', () => {
         expect(routerReplaceMock).toHaveBeenCalledOnce();
         expect(routerReplaceMock).toHaveBeenCalledWith({
             name: PARAMETERS.ROUTES.ENTRIES,
-            query: { refreshEntries: true }
+            query: expect.objectContaining({
+                refreshEntries: true,
+                timestamp: expect.any(Number)
+            })
         });
     });
 
@@ -997,7 +1004,10 @@ describe('RightDrawer component', () => {
         expect(routerReplaceMock).toHaveBeenCalledOnce();
         expect(routerReplaceMock).toHaveBeenCalledWith({
             name: PARAMETERS.ROUTES.ENTRIES,
-            query: { refreshEntries: true }
+            query: expect.objectContaining({
+                refreshEntries: true,
+                timestamp: expect.any(Number)
+            })
         });
     });
 
@@ -1063,7 +1073,10 @@ describe('RightDrawer component', () => {
         expect(routerReplaceMock).not.toHaveBeenCalledOnce();
         expect(routerReplaceMock).not.toHaveBeenCalledWith({
             name: PARAMETERS.ROUTES.ENTRIES,
-            query: { refreshEntries: true }
+            query: expect.objectContaining({
+                refreshEntries: true,
+                timestamp: expect.any(Number)
+            })
         });
     });
 
@@ -1126,7 +1139,10 @@ describe('RightDrawer component', () => {
         expect(routerReplaceMock).not.toHaveBeenCalledOnce();
         expect(routerReplaceMock).not.toHaveBeenCalledWith({
             name: PARAMETERS.ROUTES.ENTRIES,
-            query: { refreshEntries: true }
+            query: expect.objectContaining({
+                refreshEntries: true,
+                timestamp: expect.any(Number)
+            })
         });
     });
 
