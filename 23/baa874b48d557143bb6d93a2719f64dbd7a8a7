@@ -1,0 +1,44 @@
+src/services/entries-download-service.js
+  s_fbdfbb393c2e2c::t_89fb75f493ee30 204-210
+  s_fbdfbb393c2e2c::t_e08fab62281f5d 123-130,132-135
+  s_fbdfbb393c2e2c::t_960760cbf6d322 287-291
+  s_fbdfbb393c2e2c::t_91fade218f3a2b 342-348
+  s_fbdfbb393c2e2c::t_9b6aeef897da54 131
+tests/unit/services/entries-download-service.abort.spec.js
+  s_fbdfbb393c2e2c::t_217f4c9786946a 23
+  s_fbdfbb393c2e2c::t_5a2ed2453ce8c2 264-270
+  s_fbdfbb393c2e2c::t_587f3bf34109c7 252-263,271-308
+tests/unit/services/utilities/versioning-service.spec.js
+  s_fbdfbb393c2e2c::t_28aebc83d5b548 9
+  s_fbdfbb393c2e2c::t_aff33950a62b33 160-166,168-228
+  s_fbdfbb393c2e2c::t_085d7923ace079 167
+  s_fbdfbb393c2e2c::t_bf11c5e2003625 29-31
+  s_fbdfbb393c2e2c::t_75f909964e19f9 70
+tests/unit/services/entries-download-service.spec.js
+  s_fbdfbb393c2e2c::t_9f276af39f2e00 32
+  s_fbdfbb393c2e2c::t_5cfac2e7352c75 471-521
+src/services/utilities/versioning-service.js
+  h_2231ff2aa93473 429
+  s_fbdfbb393c2e2c::t_b2493690fbf38c 42-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "23baa874b48d557143bb6d93a2719f64dbd7a8a7",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_fbdfbb393c2e2c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_000871e15ffevJKg5F6jTaa6ga",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
