@@ -29,6 +29,7 @@ vi.mock('@/config/strings', () => ({
                 restart_download: 'Restart'
             },
             status_codes: {
+                ec5_11: 'Project does not exist',
                 ec5_137: 'Forms updated.',
                 ec5_143: 'Entries downloaded',
                 ec5_144: 'No entries found'
@@ -465,6 +466,57 @@ describe('entriesDownloadService project version checks', () => {
         await settleDownload();
 
         expect(downloadService.downloadFormEntries).toHaveBeenCalledTimes(1);
+        expect(state.isFetching).toBe(false);
+    });
+
+    it('blocks a fresh download when the project was trashed (ec5_11)', async () => {
+        const state = createState();
+        versioningService.checkProjectVersion.mockRejectedValue({
+            data: {
+                errors: [{code: 'ec5_11'}]
+            },
+            status: 400
+        });
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
+        //Project trashed: no update prompt, no local wipe, no download
+        expect(versioningService.updateProject).not.toHaveBeenCalled();
+        expect(notificationService.confirmSingle).not.toHaveBeenCalled();
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
+        expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
+        //The user is told the project does not exist
+        expect(notificationService.showAlert).toHaveBeenCalledWith('Project does not exist');
+        expect(state.isFetching).toBe(false);
+    });
+
+    it('blocks a resumed download when the project was trashed (ec5_11)', async () => {
+        const state = createState();
+        state.downloadCache['form-a'] = {
+            ...emptyProgress,
+            startUrl: 'page-1',
+            totalEntries: 10,
+            processedEntries: 5,
+            urls: {'page-1': 'page-2'}
+        };
+        state.resumeAvailable['form-a'] = true;
+        versioningService.checkProjectVersion.mockRejectedValue({
+            data: {
+                errors: [{code: 'ec5_11'}]
+            },
+            status: 400
+        });
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a', true);
+        await settleDownload();
+
+        expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
+        expect(notificationService.showAlert).toHaveBeenCalledWith('Project does not exist');
+        expect(state.resumeAvailable['form-a']).toBe(true);
         expect(state.isFetching).toBe(false);
     });
 });

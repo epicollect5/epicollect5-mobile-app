@@ -20,6 +20,7 @@ vi.mock('@/config/strings', () => ({
                 updating_project: 'Updating Forms.'
             },
             status_codes: {
+                ec5_11: 'Project does not exist',
                 ec5_137: 'Not found'
             }
         }
@@ -247,5 +248,62 @@ describe('entriesDownloadService mid-download project update', () => {
         notificationService.confirmSingle.mockResolvedValue(true);
         versioningService.updateProject.mockResolvedValue();
         await expect(options.shouldAbort()).resolves.toEqual({ versionChanged: true, projectUpdated: true });
+    });
+
+    it('aborts without the restart prompt when the project was trashed mid-download', async () => {
+        const trashedError = {
+            data: {
+                errors: [{ code: 'ec5_11' }]
+            },
+            status: 400
+        };
+        //First check (before the download) passes, then the project is trashed
+        versioningService.checkProjectVersion
+            .mockResolvedValueOnce(true)
+            .mockRejectedValueOnce(trashedError);
+        //Simulate the real download loop: abort when the per-chunk check says so
+        downloadService.downloadFormEntries.mockImplementation(async (_formRef, options) => {
+            const abortReason = await options.shouldAbort();
+            if (abortReason) {
+                throw abortReason;
+            }
+            return true;
+        });
+        const state = createState();
+        const downloader = init(state);
+
+        await downloader.downloadEntries('form-a');
+        await flushPromises();
+
+        expect(downloadService.downloadFormEntries).toHaveBeenCalledTimes(1);
+        expect(modalController.dismiss).toHaveBeenCalled();
+        expect(entriesDownloadProgressService.clearProject).toHaveBeenCalledWith('project-ref');
+        //The trashed alert comes from the version check, not a restart prompt
+        expect(notificationService.showAlert).not.toHaveBeenCalledWith(
+            labels.download_interrupted_restart,
+            STRINGS.en.labels.project_outdated
+        );
+        expect(state.isFetching).toBe(false);
+    });
+
+    it('propagates projectTrashed from the per-chunk version check', async () => {
+        const downloader = init(createState());
+        await downloader.downloadEntries('form-a');
+        await flushPromises();
+
+        const options = downloadService.downloadFormEntries.mock.calls[0][1];
+
+        //Project trashed mid-download: abort with the trashed flag
+        versioningService.checkProjectVersion.mockRejectedValue({
+            data: {
+                errors: [{code: 'ec5_11'}]
+            },
+            status: 400
+        });
+        await expect(options.shouldAbort()).resolves.toEqual({
+            versionChanged: true,
+            projectUpdated: false,
+            projectTrashed: true
+        });
     });
 });

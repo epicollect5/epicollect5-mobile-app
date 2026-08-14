@@ -6,6 +6,7 @@ import { webService } from '@/services/web-service';
 import { databaseUpdateService } from '@/services/database/database-update-service';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
 import { downloadFileService } from '@/services/download-file-service';
+import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 
 vi.mock('@/services/database/database-select-service', () => ({
@@ -25,7 +26,9 @@ vi.mock('@/services/download-file-service', () => ({
 }));
 
 vi.mock('@/services/utilities/utils-service', () => ({
-    utilsService: {}
+    utilsService: {
+        hasInternetConnection: vi.fn()
+    }
 }));
 
 vi.mock('@/services/entry/answer-service', () => ({
@@ -64,6 +67,7 @@ describe('versioningService.updateProject()', () => {
         rootStore.language = 'en';
         projectModel.destroy();
         vi.clearAllMocks();
+        utilsService.hasInternetConnection.mockResolvedValue(true);
     });
 
     it('rejects cleanly instead of crashing when no project is loaded', async () => {
@@ -151,5 +155,74 @@ describe('versioningService.updateProject()', () => {
 
         await expect(versioningService.updateProject()).resolves.toBe(false);
         expect(projectModel.getProjectMappings()).toEqual(newMapping);
+    });
+});
+
+describe('versioningService.checkProjectVersion()', () => {
+
+    beforeEach(() => {
+        setActivePinia(createPinia());
+        const rootStore = useRootStore();
+        rootStore.language = 'en';
+        projectModel.destroy();
+        projectModel.loadExtraStructure({
+            project: {
+                details: { slug: 'test-project', ref: 'test-ref' },
+                forms: []
+            },
+            forms: {},
+            inputs: {}
+        });
+        vi.clearAllMocks();
+        utilsService.hasInternetConnection.mockResolvedValue(true);
+    });
+
+    it('resolves true when the remote and local versions match', async () => {
+        webService.getProjectVersion.mockResolvedValue({
+            data: {
+                data: {
+                    attributes: { structure_last_updated: projectModel.getLastUpdated() }
+                }
+            }
+        });
+
+        await expect(versioningService.checkProjectVersion()).resolves.toBe(true);
+    });
+
+    it('resolves false when the remote version differs from the local one', async () => {
+        webService.getProjectVersion.mockResolvedValue({
+            data: {
+                data: {
+                    attributes: { structure_last_updated: '2024-01-01' }
+                }
+            }
+        });
+
+        await expect(versioningService.checkProjectVersion()).resolves.toBe(false);
+    });
+
+    it('rejects when the project was trashed on the server (ec5_11)', async () => {
+        const trashedError = {
+            data: {
+                errors: [{ code: 'ec5_11' }]
+            },
+            status: 400
+        };
+        webService.getProjectVersion.mockRejectedValue(trashedError);
+
+        await expect(versioningService.checkProjectVersion()).rejects.toBe(trashedError);
+    });
+
+    it('resolves true on any other error to avoid blocking the user', async () => {
+        webService.getProjectVersion.mockRejectedValue(new Error('Network Fail'));
+
+        await expect(versioningService.checkProjectVersion()).resolves.toBe(true);
+    });
+
+    it('resolves true when there is no internet connection', async () => {
+        utilsService.hasInternetConnection.mockResolvedValue(false);
+
+        await expect(versioningService.checkProjectVersion()).resolves.toBe(true);
+        expect(webService.getProjectVersion).not.toHaveBeenCalled();
     });
 });

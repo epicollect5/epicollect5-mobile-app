@@ -39,7 +39,12 @@ export const versioningService = {
 
         } catch (error) {
             console.error('Error checking project version:', error);
-            // On error, we resolve true to prevent blocking the user
+            // Project has been trashed/deleted on the server: surface the error
+            // so uploads/downloads can be stopped instead of failing silently
+            if (error?.data?.errors?.[0]?.code === 'ec5_11') {
+                throw error;
+            }
+            // On any other error, we resolve true to prevent blocking the user
             return true;
         }
     },
@@ -421,7 +426,7 @@ export const versioningService = {
     },
 
     /**
-     * Organise the branch inputs into flat array
+     * Organise the branch inputs into a flat array
      */
     getBranchInputs (form) {
 

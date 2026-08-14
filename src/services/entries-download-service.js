@@ -120,7 +120,19 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
   }
 
   async function checkProjectVersion() {
-    const isUpToDate = await versioningService.checkProjectVersion();
+    let isUpToDate;
+    try {
+      isUpToDate = await versioningService.checkProjectVersion();
+    } catch (error) {
+      if (error?.data?.errors?.[0]?.code === 'ec5_11') {
+        //Project has been trashed/deleted on the server: stop the download,
+        //the remote entries are gone.
+        await notificationService.showAlert(STRINGS[language].status_codes.ec5_11);
+        return {shouldProceed: false, projectTrashed: true, projectUpdated: false};
+      }
+
+      throw error;
+    }
 
     if (!isUpToDate) {
       const confirmed = await notificationService.confirmSingle(
@@ -189,6 +201,13 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
 
       try {
         const versionCheck = await checkProjectVersion();
+        if (versionCheck.projectTrashed) {
+          //Alert already shown: the project was trashed on the server, do not
+          //offer the download warning nor wipe any local entries.
+          state.isFetching = false;
+          return;
+        }
+
         if (!versionCheck.shouldProceed) {
           state.showWarning = true;
           state.isFetching = false;
@@ -265,7 +284,11 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           shouldAbort: async () => {
             const versionCheck = await checkProjectVersion();
             if (!versionCheck.shouldProceed || versionCheck.projectUpdated) {
-              return {versionChanged: true, projectUpdated: versionCheck.projectUpdated};
+              return {
+                versionChanged: true,
+                projectUpdated: versionCheck.projectUpdated,
+                projectTrashed: versionCheck.projectTrashed
+              };
             }
             return null;
           },
@@ -313,6 +336,13 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
         syncResumeAvailability(formRef);
 
         if (error?.cancelled) {
+          return;
+        }
+
+        if (error?.projectTrashed) {
+          //The project was trashed on the server mid-download: clear all
+          //progress and stop. The alert was already shown by the version check.
+          clearProjectDownloadCache();
           return;
         }
 
