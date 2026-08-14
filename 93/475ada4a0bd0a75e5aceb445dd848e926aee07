@@ -1,0 +1,36 @@
+tests/unit/components/globals/RightDrawer.spec.js
+  s_61a6c897307ea7::t_dcdcbd2e28ea43 277-280
+  s_61a6c897307ea7::t_2db5f0f2d71679 1142-1145
+  s_61a6c897307ea7::t_f2a64eaacf3b7b 1007-1010
+  s_61a6c897307ea7::t_90cc6fb70511bd 944-947
+  s_61a6c897307ea7::t_a2369b36ade3d5 881-884
+  s_61a6c897307ea7::t_38713b480ba9a1 1076-1079
+src/services/database/database-delete-service.js
+  s_61a6c897307ea7::t_aae18666b5f004 19,45-56,58-59
+src/use/entries/delete-entries.js
+  s_61a6c897307ea7::t_321ffa934b721c 74-77
+src/components/globals/RightDrawer.vue
+  s_61a6c897307ea7::t_52fe190e277479 432-433
+src/pages/EntriesView.vue
+  s_61a6c897307ea7::t_a6a62b5c103347 233-234
+tests/unit/services/database/database-delete-service.spec.js
+  s_61a6c897307ea7::t_04ca67be258954 118-146,148-180,182-189
+  s_61a6c897307ea7::t_a4b101d64330ea 147
+  s_61a6c897307ea7::t_7eea15006feca1 181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "93475ada4a0bd0a75e5aceb445dd848e926aee07",
+  "prompts": {},
+  "sessions": {
+    "s_61a6c897307ea7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0007878c8ffeI8fRdfv8aM46l9",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
