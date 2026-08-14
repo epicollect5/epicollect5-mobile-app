@@ -1,0 +1,18 @@
+src/pages/Entries.vue
+  h_2231ff2aa93473 365
+src/pages/EntriesAdd.vue
+  h_2231ff2aa93473 520
+src/pages/EntriesUpload.vue
+  h_2231ff2aa93473 382,385,402,406,413,426,452-453,456,464,481,518,530
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "cfcac3f4f5a34a376b55f0dc347dbac11d7ab2f3",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
