@@ -1,0 +1,30 @@
+src/services/filesystem/delete-file-service.js
+  s_3d052721190090::t_a8730d1987f756 45
+  s_3d052721190090::t_0a304c5ac45507 5
+tests/unit/services/filesystem/delete-file-service.spec.js
+  s_3d052721190090::t_9db9ffd4f943cf 142-213
+  s_3d052721190090::t_b7236078734df2 22-27
+tests/unit/services/entry/entry-service.spec.js
+  s_3d052721190090::t_d169f834c82a90 58-63
+src/services/entry/entry-service.js
+  s_3d052721190090::t_b27afbf740705a 13
+  s_3d052721190090::t_a6de6a4106b7bb 155-160
+src/components/popovers/PopoverQuestionMedia.vue
+  s_3d052721190090::t_25279223d789e2 210-212
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "89b61c1b9bccb9c976c4f19b5d1c9934bc49ef13",
+  "prompts": {},
+  "sessions": {
+    "s_3d052721190090": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fffae126dffeW7A3bSRp5dH7LT",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
