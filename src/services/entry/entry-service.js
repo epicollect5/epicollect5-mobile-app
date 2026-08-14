@@ -10,6 +10,7 @@ import { databaseInsertService } from '@/services/database/database-insert-servi
 import { databaseDeleteService } from '@/services/database/database-delete-service';
 import { databaseUpdateService } from '@/services/database/database-update-service';
 import { entriesDownloadProgressService } from '@/services/utilities/entries-download-progress-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { locationService } from '@/services/utilities/location-cordova-service';
 import { entryCommonService } from '@/services/entry/entry-common-service';
@@ -151,6 +152,12 @@ export const entryService = {
 
             function _onError (error) {
                 console.log(error);
+                //File errors (eg. code 5) are plain objects without a message or stack,
+                //wrap them so Rollbar gets a usable report
+                const reportableError = error instanceof Error
+                    ? error
+                    : new Error('saveEntry: ' + JSON.stringify(error));
+                rollbarService.critical(reportableError);
                 reject(error);
             }
 

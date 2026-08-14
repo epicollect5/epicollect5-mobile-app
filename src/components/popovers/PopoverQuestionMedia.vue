@@ -207,13 +207,9 @@ export default {
 					//we have a stored file
 					if (filenames.filenameStored !== '') {
 						//put file in the queue and delete on save
-
-						let filePath = persistentDir + mediaFolder;
-						if (rootStore.device.platform === PARAMETERS.IOS) {
-							if (!filePath.startsWith('file://')) {
-								filePath = 'file://' + filePath;
-							}
-						}
+						//imp: deleteFileService.removeFiles() adds the protocol
+						//imp: if needed, so do not prefix it here
+						const filePath = persistentDir + mediaFolder;
 
 						console.log('queue file -> ', filenames.filenameStored);
 						rootStore.queueFilesToDelete.push({

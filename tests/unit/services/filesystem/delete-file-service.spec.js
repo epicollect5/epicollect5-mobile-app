@@ -19,6 +19,12 @@ vi.mock('@/services/filesystem/media-dirs-service', () => ({
     }
 }));
 
+vi.mock('@/services/utilities/utils-service', () => ({
+    utilsService: {
+        getProtocol: vi.fn((uri) => (uri.includes('file://') ? '' : 'file://'))
+    }
+}));
+
 vi.mock('@/config', () => ({
     PARAMETERS: {
         ANDROID: 'android',
@@ -131,6 +137,78 @@ describe('deleteFileService', () => {
             await expect(deleteFileService.removeProjectMediaDirectories(projectRef)).rejects.toEqual({
                 message: 'Permission denied'
             });
+        });
+    });
+
+    describe('removeFiles()', () => {
+        const queuedFile = {
+            file_path: 'file:///var/mobile/Containers/Data/Application/UUID/Library/NoCloud/photos/',
+            project_ref: 'project-ref',
+            file_name: 'photo.jpg'
+        };
+
+        beforeEach(() => {
+            window.resolveLocalFileSystemURL = vi.fn((url, success) => {
+                success({
+                    remove: vi.fn((removeSuccess) => removeSuccess())
+                });
+            });
+        });
+
+        it('does not duplicate the file:// protocol on iOS', async () => {
+            const rootStore = useRootStore();
+            rootStore.device = { platform: 'ios' };
+
+            await deleteFileService.removeFiles([queuedFile]);
+
+            const resolvedUrl = window.resolveLocalFileSystemURL.mock.calls[0][0];
+            expect(resolvedUrl.startsWith('file://file://')).toBe(false);
+            expect(resolvedUrl).toBe(
+                'file:///var/mobile/Containers/Data/Application/UUID/Library/NoCloud/photos/project-ref/photo.jpg'
+            );
+        });
+
+        it('leaves the file path untouched on Android', async () => {
+            const rootStore = useRootStore();
+            rootStore.device = { platform: 'android' };
+
+            await deleteFileService.removeFiles([queuedFile]);
+
+            const resolvedUrl = window.resolveLocalFileSystemURL.mock.calls[0][0];
+            expect(resolvedUrl).toBe(
+                'file:///var/mobile/Containers/Data/Application/UUID/Library/NoCloud/photos/project-ref/photo.jpg'
+            );
+        });
+
+        it('adds the file:// protocol when the file path has none', async () => {
+            const rootStore = useRootStore();
+            rootStore.device = { platform: 'android' };
+
+            await deleteFileService.removeFiles([{
+                ...queuedFile,
+                file_path: '/var/mobile/Containers/Data/Application/UUID/Library/NoCloud/photos/'
+            }]);
+
+            const resolvedUrl = window.resolveLocalFileSystemURL.mock.calls[0][0];
+            expect(resolvedUrl).toBe(
+                'file:///var/mobile/Containers/Data/Application/UUID/Library/NoCloud/photos/project-ref/photo.jpg'
+            );
+        });
+
+        it('resolves when the file is not found (error code 1)', async () => {
+            const rootStore = useRootStore();
+            rootStore.device = { platform: 'ios' };
+            window.resolveLocalFileSystemURL = vi.fn((url, success, fail) => fail({ code: 1 }));
+
+            await expect(deleteFileService.removeFiles([queuedFile])).resolves.toBeUndefined();
+        });
+
+        it('rejects on any other file error', async () => {
+            const rootStore = useRootStore();
+            rootStore.device = { platform: 'ios' };
+            window.resolveLocalFileSystemURL = vi.fn((url, success, fail) => fail({ code: 5 }));
+
+            await expect(deleteFileService.removeFiles([queuedFile])).rejects.toEqual({ code: 5 });
         });
     });
 });

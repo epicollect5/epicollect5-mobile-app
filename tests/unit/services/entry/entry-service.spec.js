@@ -55,6 +55,12 @@ vi.mock('@/services/utilities/entries-download-progress-service', () => ({
     }
 }));
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        critical: vi.fn()
+    }
+}));
+
 describe('entryService.saveEntry', () => {
 
     beforeEach(() => {

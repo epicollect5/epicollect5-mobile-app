@@ -2,6 +2,7 @@ import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { Filesystem } from '@capacitor/filesystem';
 import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
+import { utilsService } from '@/services/utilities/utils-service';
 
 export const deleteFileService = {
 
@@ -41,8 +42,7 @@ export const deleteFileService = {
             }
 
             function _execute(file) {
-                const rootStore = useRootStore();
-                const protocol = rootStore.device.platform === PARAMETERS.IOS ? 'file://' : '';
+                const protocol = utilsService.getProtocol(file.file_path);
 
                 console.log('Deleting file: n ' + file.file_path + file.project_ref + '/' + file.file_name);
                 window.resolveLocalFileSystemURL(protocol + file.file_path + file.project_ref + '/' + file.file_name, _onGetFileSuccess, _onGetFileError);
