@@ -330,7 +330,7 @@ buttons
                         id: 'ec5_notification',
                         name: PARAMETERS.APP_NAME,
                         description: labels.running,
-                        importance: Importance.Default
+                        importance: Importance.Low
                     });
                     await ForegroundService.startForegroundService({
                         id: 10,
