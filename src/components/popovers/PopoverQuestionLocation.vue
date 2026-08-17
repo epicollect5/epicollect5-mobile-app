@@ -94,7 +94,11 @@ export default {
 
 		const methods = {
 			async openModalLocationEdit() {
-				state.visible = false;
+				//imp: dismiss the popover first so we never stack overlays on top of each other,
+				//imp: dismissing a closed popover throws "overlay does not exist" and stacked
+				//imp: teardowns cause "Cannot read properties of null (reading 'nextSibling')"
+				await popoverController.dismiss();
+
 				scope.ModalLocationEdit = await modalController.create({
 					cssClass: 'modal-location-edit',
 					component: ModalLocationEdit,
@@ -107,12 +111,19 @@ export default {
 				});
 
 				//update location only when modal is dismiss with "Update Location"
-				//imp: using scope.ModalLocationEdit.onWillDismiss() thrown an error
-				//Uncaught (in promise) TypeError: Cannot read properties of null (reading 'nextSibling')
-				//maybe a race condition?
 				scope.ModalLocationEdit.onDidDismiss().then((response) => {
 					console.log('coords ->', response.data);
-					popoverController.dismiss(response.data ?? null);
+					if (response.data) {
+						//parentState is the reactive question state passed by the popover handler,
+						//writing to it is the intended way to propagate the updated answer
+						/* eslint-disable vue/no-mutating-props */
+						props.parentState.answer.answer = {
+							latitude: response.data.latitude,
+							longitude: response.data.longitude,
+							accuracy: PARAMETERS.GEOLOCATION_DEFAULT_ACCURACY
+						};
+						/* eslint-enable vue/no-mutating-props */
+					}
 				});
 
 				return scope.ModalLocationEdit.present();
