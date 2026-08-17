@@ -1,0 +1,20 @@
+src/components/popovers/PopoverQuestionLocation.vue
+  s_9bc58c8ad70e5b::t_e80991ec533fb9 97-101,116,120-124,126
+  s_9bc58c8ad70e5b::t_3eed0c3131fd1e 117-119,125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "5993985933758740e573f796c12e8880a90a03e9",
+  "prompts": {},
+  "sessions": {
+    "s_9bc58c8ad70e5b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ff04094deffe5jOiUsgGRg6yyo",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
