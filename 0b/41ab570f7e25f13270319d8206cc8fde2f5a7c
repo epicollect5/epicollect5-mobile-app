@@ -1,0 +1,14 @@
+src/use/questions/popover-location-handler.js
+  h_2231ff2aa93473 27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "0b41ab570f7e25f13270319d8206cc8fde2f5a7c",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
