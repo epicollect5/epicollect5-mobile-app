@@ -1,0 +1,51 @@
+src/services/utilities/versioning-service.js
+  s_2df79c78fb7496::t_faf3227bde45a3 217-221,223-241,245-247,249-267
+  s_2df79c78fb7496::t_de15d9ca1ec07d 143,145,153-156,158-161,164-183
+  s_2df79c78fb7496::t_d1bc63d4254d9d 157,222
+  s_2df79c78fb7496::t_2127a4f193c42d 242-244,248
+  s_2df79c78fb7496::t_8c48ca0f3c4589 216
+tests/unit/services/database/database-delete-service.spec.js
+  s_2df79c78fb7496::t_7dd7de0e19f2ef 201
+  s_2df79c78fb7496::t_70cf4efe2e9388 190-200,202-248
+src/pages/EntriesErrors.vue
+  s_2df79c78fb7496::t_015d242f42a26b 162-163
+  s_2df79c78fb7496::t_8795864ab7b6e2 378-406
+  s_2df79c78fb7496::t_5e044fc4fa9374 56
+  s_2df79c78fb7496::t_8abd4f7fee6249 207-220
+  s_2df79c78fb7496::t_dac27ebb188e47 171
+  s_2df79c78fb7496::t_09dec7442e94a2 112
+src/pages/EntriesView.vue
+  s_2df79c78fb7496::t_25d4b87c846e20 198-201,203,209-225
+src/services/database/database-delete-service.js
+  s_2df79c78fb7496::t_1af881ad500dbb 174-179
+src/config/strings.js
+  s_2df79c78fb7496::t_ad0321cc7b867d 2052
+  s_2df79c78fb7496::t_164c04fc7af252 2317
+  s_2df79c78fb7496::t_394c4d425eda15 462
+  s_2df79c78fb7496::t_c60264de158fea 727
+  s_2df79c78fb7496::t_1b600c57400cee 1257
+  s_2df79c78fb7496::t_a254dc05d1d11c 1522
+  s_2df79c78fb7496::t_daa780750b7c5c 1787
+  s_2df79c78fb7496::t_aa0080cf6ee43f 197
+  s_2df79c78fb7496::t_ac438a8ad95aba 992
+tests/unit/services/utilities/versioning-service.spec.js
+  s_2df79c78fb7496::t_d1c98bf297ae69 338,352-362
+  s_2df79c78fb7496::t_bb19ff78865c04 132-133
+  s_2df79c78fb7496::t_e5c03502fbe2ca 265-337,339-351,363-421
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "c149c98a4b04c13f2c1b8e6709e32b0424487089",
+  "prompts": {},
+  "sessions": {
+    "s_2df79c78fb7496": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fef87b99effe4UJMI3TPO7Ha5o",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
