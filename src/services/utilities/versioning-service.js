@@ -140,8 +140,9 @@ export const versioningService = {
                                 // Lastly, check if any forms have been removed and delete those entries
                                 for (previousFormRef in self.previousProjectStructure.forms) {
                                     if (Object.prototype.hasOwnProperty.call(self.previousProjectStructure.forms, previousFormRef)) {
+                                        const currentForm = projectModel.getExtraForm(previousFormRef);
                                         // Form doesn't exist in new structure, but did in previous structure
-                                        if (!projectModel.getExtraForm(previousFormRef)) {
+                                        if (!currentForm || Object.keys(currentForm).length === 0) {
                                             console.log('form ' + previousFormRef + ' to be removed');
                                             // Add this previous form ref into formsToBeRemoved array
                                             formsToBeRemoved.push(previousFormRef);
@@ -149,30 +150,37 @@ export const versioningService = {
                                     }
                                 }
 
-                                // Remove the form entries that are now redundant
-                                databaseDeleteService.deleteFormEntries(projectModel.getProjectRef(), formsToBeRemoved).then(
+                                // Remove the entries (and their media) of the removed forms,
+                                // then the entries of any branches that have been removed from the project.
+                                // A failure here must not block the project structure update,
+                                // the cleanup will simply be retried on the next update
+                                self._removeStaleFormsEntries(projectModel.getProjectRef(), formsToBeRemoved).catch(
+                                    function (error) {
+                                        console.error('Failed to remove entries of removed forms', error);
+                                    }
+                                ).then(
                                     function () {
                                         // Remove the entries of any branches that have been removed from the project
-                                        self._removeRemovedBranchesEntries().then(
-                                            function () {
-                                                // Then resolve
-                                                // Attempt to update the project logo
-                                                downloadFileService.downloadProjectLogo(projectModel.getSlug(), projectModel.getProjectRef()).then(
-                                                    function () {
-                                                        console.log('downloaded logo');
-                                                        resolve(self.changeMade);
-                                                        // Reset changeMade back to false
-                                                        self.changeMade = false;
-                                                    },
-                                                    function () {
-                                                        console.log('didnt download logo');
-                                                        resolve(self.changeMade);
-                                                        // Reset changeMade back to false
-                                                        self.changeMade = false;
-                                                    }
-                                                );
-                                            }
-                                        );
+                                        return self._removeRemovedBranchesEntries();
+                                    }
+                                ).then(
+                                    function () {
+                                        // Then resolve
+                                        // Attempt to update the project logo
+                                        return downloadFileService.downloadProjectLogo(projectModel.getSlug(), projectModel.getProjectRef());
+                                    }
+                                ).then(
+                                    function () {
+                                        console.log('downloaded logo');
+                                        resolve(self.changeMade);
+                                        // Reset changeMade back to false
+                                        self.changeMade = false;
+                                    },
+                                    function () {
+                                        console.log('didnt download logo');
+                                        resolve(self.changeMade);
+                                        // Reset changeMade back to false
+                                        self.changeMade = false;
                                     }
                                 );
                                 return;
@@ -203,6 +211,58 @@ export const versioningService = {
                     reject(error);
                 });
         });
+    },
+
+    /**
+     * Remove the entries (and their media) of any forms that have been removed from
+     * the project structure, as they can never be uploaded or edited again.
+     * Never rejects: a failure here must not block the project structure update,
+     * the cleanup will simply be retried on the next update.
+     */
+    async _removeStaleFormsEntries (projectRef, formRefs) {
+
+        for (const formRef of formRefs) {
+            try {
+                const [entriesResult, branchEntriesResult] = await Promise.all([
+                    databaseSelectService.selectEntries(projectRef, formRef),
+                    databaseSelectService.selectBranchEntries(projectRef, formRef)
+                ]);
+
+                // Collect all the entry uuids (entries and branch entries) for this form
+                const entryUuids = [];
+                for (let i = 0; i < entriesResult.rows.length; i++) {
+                    entryUuids.push(entriesResult.rows.item(i).entry_uuid);
+                }
+                for (let i = 0; i < branchEntriesResult.rows.length; i++) {
+                    entryUuids.push(branchEntriesResult.rows.item(i).entry_uuid);
+                }
+
+                // Delete all the media related to these entries
+                // (media rows must be fetched before deleting the entries)
+                // Note: selectProjectMedia only works with a single entry_uuid
+                // (multiple uuids get joined into one IN clause value)
+                for (const entryUuid of entryUuids) {
+                    const mediaFiles = await databaseSelectService.selectProjectMedia({
+                        project_ref: projectRef,
+                        synced: null,
+                        entry_uuid: [entryUuid]
+                    });
+
+                    const allMediaFiles = mediaFiles.photos
+                        .concat(mediaFiles.audios)
+                        .concat(mediaFiles.videos);
+
+                    if (allMediaFiles.length > 0) {
+                        await deleteFileService.removeFiles(allMediaFiles);
+                    }
+                }
+
+                // Now delete all the rows related to this form
+                await databaseDeleteService.deleteFormEntries(projectRef, [formRef]);
+            } catch (error) {
+                console.error('Failed to remove entries of removed form ' + formRef, error);
+            }
+        }
     },
 
     /**

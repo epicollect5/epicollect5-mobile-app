@@ -171,33 +171,12 @@ export const databaseDeleteService = {
             form_ref: null
         };
 
-        return new Promise(function (resolve, reject) {
-
-            function _deleteFormEntries(formRef) {
-
-                if (!formRef) {
-                    console.log('no form refs left');
-                    resolve();
-                    return;
-                }
-
-                options.form_ref = formRef;
-
-                this.deleteRowsFromMultipleTables(query, options, tables).then(() => {
-                    console.log('going through _deleteRowsFromMultipleTables with formref: ' + formRef);
-                    // Go to next form
-                    _deleteFormEntries(formRefs.pop());
-                });
-            }
-
-            if (formRefs.length === 0) {
-                console.log('resolving _deleteFormEntries');
-                resolve();
-            } else {
-                // Start with the first form in the formRefs array
-                _deleteFormEntries(formRefs.pop());
-            }
-        });
+        //Delete the entries of each removed form
+        for (const formRef of formRefs) {
+            options.form_ref = formRef;
+            console.log('deleting form entries for form: ' + formRef);
+            await this.deleteRowsFromMultipleTables(query, options, tables);
+        }
     },
 
     async deleteSyncedEntries(projectRef) {

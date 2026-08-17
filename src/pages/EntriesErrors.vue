@@ -53,7 +53,7 @@
 						mode="md"
 					>
 						<ion-title class="form-name-label-errors">
-							{{ state.refNames[key] }}
+							{{ state.refNames[key] || key }}
 						</ion-title>
 					</ion-toolbar>
 
@@ -109,7 +109,7 @@
 									mode="md"
 								>
 									<ion-title class="form-name-label-errors">
-										{{ state.refNames[branchRef] }}
+										{{ state.refNames[branchRef] || branchRef }}
 									</ion-title>
 								</ion-toolbar>
 
@@ -159,6 +159,8 @@ import { databaseSelectService } from '@/services/database/database-select-servi
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { entryService } from '@/services/entry/entry-service';
+import { deleteEntry } from '@/use/entry/delete-entry';
+import { useBookmarkStore } from '@/stores/bookmark-store';
 
 export default {
 	components: { IconEntry },
@@ -166,6 +168,7 @@ export default {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
+		const bookmarkStore = useBookmarkStore();
 
 		const router = useRouter();
 		const route = useRoute();
@@ -201,6 +204,20 @@ export default {
 				});
 			},
 			viewEntry(entry) {
+				// If the entry belongs to a form (or branch) that no longer exists in the
+				// project definition, it can never be opened, edited or uploaded again:
+				// offer to delete it instead of crashing on a missing form
+				const form = projectModel.getExtraForm(entry.form_ref);
+				const formExists = form && Object.keys(form).length > 0;
+				const branchExists =
+					!entry.is_branch ||
+					(formExists && projectModel.getFormBranches(entry.form_ref)[entry.owner_input_ref]);
+
+				if (!formExists || !branchExists) {
+					deleteOrphanedEntry(entry);
+					return;
+				}
+
 				// If the user edits an entry here, make sure they come back to this page when they're done
 				// Set this route as the next route after editing/viewing error entries
 				rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES_ERRORS;
@@ -356,6 +373,35 @@ export default {
 			state.isFetching = false;
 
 			console.log(state.entriesInvalid);
+		}
+
+		//Delete an entry whose form (or branch) no longer exists in the project definition,
+		//as it can never be opened, edited or uploaded again
+		async function deleteOrphanedEntry(entry) {
+			const confirmed = await notificationService.confirmSingle(labels.entry_form_removed);
+
+			if (!confirmed) {
+				return;
+			}
+
+			//Set this route as the next route after the deletion, so the user comes back here
+			rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES_ERRORS;
+
+			//Reuse the entry deletion flow with a minimal state
+			await deleteEntry(
+				{
+					entryUuid: entry.entry_uuid,
+					formRef: entry.form_ref
+				},
+				router,
+				bookmarkStore,
+				rootStore,
+				language,
+				labels
+			);
+
+			//Refresh the list of invalid entries (same-route navigation does not remount this page)
+			getEntriesInvalid();
 		}
 
 		watch(

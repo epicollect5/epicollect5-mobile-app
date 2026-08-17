@@ -187,3 +187,62 @@ describe('databaseDeleteService.deleteRowsFromMultipleTables', () => {
         ).rejects.toThrow('Mocked sql error');
     });
 });
+
+describe('databaseDeleteService.deleteFormEntries', () => {
+    const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'media', 'bookmarks'];
+
+    it('deletes every table for each given form', async () => {
+        executeSql.mockClear();
+        transaction.mockClear();
+        executeSql.mockImplementation((query, params, success) => {
+            success();
+            return undefined;
+        });
+        transaction.mockImplementation((callback) => {
+            callback({executeSql});
+        });
+
+        await databaseDeleteService.deleteFormEntries('project-ref', ['form-a', 'form-b']);
+
+        //6 tables per form -> 12 statements
+        expect(executeSql).toHaveBeenCalledTimes(tables.length * 2);
+        const entryDeletes = executeSql.mock.calls.filter(([query]) => query.startsWith('DELETE FROM entries'));
+        expect(entryDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b']);
+        const branchDeletes = executeSql.mock.calls.filter(([query]) => query.startsWith('DELETE FROM branch_entries'));
+        expect(branchDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b']);
+        const mediaDeletes = executeSql.mock.calls.filter(([query]) => query.startsWith('DELETE FROM media'));
+        expect(mediaDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b']);
+        //bookmarks of the removed forms are removed too
+        expect(executeSql.mock.calls.some(([query]) => query.includes('DELETE FROM bookmarks'))).toBe(true);
+    });
+
+    it('resolves without touching the database when no form refs are given', async () => {
+        executeSql.mockClear();
+        transaction.mockClear();
+
+        await databaseDeleteService.deleteFormEntries('project-ref', []);
+
+        expect(executeSql).not.toHaveBeenCalled();
+        expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects when a statement fails', async () => {
+        executeSql.mockClear();
+        transaction.mockClear();
+        executeSql.mockImplementation((query, params, success, error) => {
+            if (query.includes('media')) {
+                error(null, new Error('Mocked sql error'));
+            } else {
+                success();
+            }
+            return undefined;
+        });
+        transaction.mockImplementation((callback) => {
+            callback({executeSql});
+        });
+
+        await expect(
+            databaseDeleteService.deleteFormEntries('project-ref', ['form-a'])
+        ).rejects.toThrow('Mocked sql error');
+    });
+});

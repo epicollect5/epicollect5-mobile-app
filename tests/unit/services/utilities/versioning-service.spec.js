@@ -129,7 +129,8 @@ describe('versioningService.updateProject()', () => {
             expect.any(String),
             '2024-01-01'
         );
-        expect(databaseDeleteService.deleteFormEntries).toHaveBeenCalled();
+        //no form has been removed, so no cleanup is needed
+        expect(databaseDeleteService.deleteFormEntries).not.toHaveBeenCalled();
         expect(downloadFileService.downloadProjectLogo).toHaveBeenCalledWith('test-project', 'test-ref');
     });
 
@@ -258,6 +259,163 @@ describe('versioningService.updateProject()', () => {
         expect(deleteFileService.removeFiles).toHaveBeenCalledWith([
             { name: 'photo-1.jpg' }
         ]);
+        expect(downloadFileService.downloadProjectLogo).toHaveBeenCalledWith('test-project', 'test-ref');
+    });
+
+    it('removes the entries and media of forms removed from the project', async () => {
+        //previous structure: two forms (parent A, child B)
+        projectModel.loadExtraStructure({
+            project: {
+                details: { slug: 'test-project', ref: 'test-ref' },
+                forms: ['form_ref_a', 'form_ref_b']
+            },
+            forms: {
+                form_ref_a: {
+                    details: { name: 'Form A' },
+                    inputs: [],
+                    branch: {}
+                },
+                form_ref_b: {
+                    details: { name: 'Form B' },
+                    inputs: [],
+                    branch: {}
+                }
+            },
+            inputs: {}
+        });
+
+        //new structure: form B has been removed on the server
+        webService.getProject.mockResolvedValue({
+            data: {
+                meta: {
+                    project_extra: {
+                        project: {
+                            details: { slug: 'test-project', ref: 'test-ref' },
+                            forms: ['form_ref_a']
+                        },
+                        forms: {
+                            form_ref_a: {
+                                details: { name: 'Form A' },
+                                inputs: [],
+                                branch: {}
+                            }
+                        },
+                        inputs: {}
+                    },
+                    project_mapping: {},
+                    project_stats: { structure_last_updated: '2024-01-01' }
+                }
+            }
+        });
+
+        //form B has entries and media on the device
+        databaseSelectService.selectEntries.mockImplementation((projectRef, formRef) => {
+            if (formRef === 'form_ref_b') {
+                return Promise.resolve({
+                    rows: {
+                        length: 2,
+                        item: (i) => [
+                            { entry_uuid: 'entry-1' },
+                            { entry_uuid: 'entry-2' }
+                        ][i]
+                    }
+                });
+            }
+            return Promise.resolve({ rows: { length: 0 } });
+        });
+        databaseSelectService.selectBranchEntries.mockImplementation((projectRef, formRef) => {
+            if (formRef === 'form_ref_b') {
+                return Promise.resolve({
+                    rows: {
+                        length: 1,
+                        item: () => ({ entry_uuid: 'branch-entry-1' })
+                    }
+                });
+            }
+            return Promise.resolve({ rows: { length: 0 } });
+        });
+        databaseSelectService.selectProjectMedia.mockImplementation((options) => {
+            if (options.entry_uuid[0] === 'entry-1') {
+                return Promise.resolve({
+                    audios: [],
+                    photos: [{ name: 'photo-1.jpg' }],
+                    videos: []
+                });
+            }
+            return Promise.resolve({ audios: [], photos: [], videos: [] });
+        });
+
+        await expect(versioningService.updateProject()).resolves.toBe(false);
+
+        //cleanup only targets the removed form
+        expect(databaseDeleteService.deleteFormEntries).toHaveBeenCalledWith('test-ref', ['form_ref_b']);
+        //media is fetched one entry at a time (selectProjectMedia only supports a single entry_uuid)
+        expect(databaseSelectService.selectProjectMedia).toHaveBeenCalledWith({
+            project_ref: 'test-ref',
+            synced: null,
+            entry_uuid: ['entry-1']
+        });
+        expect(databaseSelectService.selectProjectMedia).toHaveBeenCalledWith({
+            project_ref: 'test-ref',
+            synced: null,
+            entry_uuid: ['branch-entry-1']
+        });
+        //media files are removed before the rows
+        expect(deleteFileService.removeFiles).toHaveBeenCalledWith([
+            { name: 'photo-1.jpg' }
+        ]);
+        expect(downloadFileService.downloadProjectLogo).toHaveBeenCalledWith('test-project', 'test-ref');
+    });
+
+    it('resolves even when the cleanup of removed forms fails', async () => {
+        projectModel.loadExtraStructure({
+            project: {
+                details: { slug: 'test-project', ref: 'test-ref' },
+                forms: ['form_ref_a', 'form_ref_b']
+            },
+            forms: {
+                form_ref_a: {
+                    details: { name: 'Form A' },
+                    inputs: [],
+                    branch: {}
+                },
+                form_ref_b: {
+                    details: { name: 'Form B' },
+                    inputs: [],
+                    branch: {}
+                }
+            },
+            inputs: {}
+        });
+
+        webService.getProject.mockResolvedValue({
+            data: {
+                meta: {
+                    project_extra: {
+                        project: {
+                            details: { slug: 'test-project', ref: 'test-ref' },
+                            forms: ['form_ref_a']
+                        },
+                        forms: {
+                            form_ref_a: {
+                                details: { name: 'Form A' },
+                                inputs: [],
+                                branch: {}
+                            }
+                        },
+                        inputs: {}
+                    },
+                    project_mapping: {},
+                    project_stats: { structure_last_updated: '2024-01-01' }
+                }
+            }
+        });
+
+        //cleanup failure must not block the project update
+        databaseDeleteService.deleteFormEntries.mockRejectedValue(new Error('db error'));
+
+        await expect(versioningService.updateProject()).resolves.toBe(false);
+        expect(databaseDeleteService.deleteFormEntries).toHaveBeenCalledWith('test-ref', ['form_ref_b']);
         expect(downloadFileService.downloadProjectLogo).toHaveBeenCalledWith('test-project', 'test-ref');
     });
 
