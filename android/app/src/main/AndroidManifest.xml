@@ -56,7 +56,8 @@
             android:name="io.capawesome.capacitorjs.plugins.foregroundservice.AndroidForegroundService"
             android:label="Service"
             android:exported="false"
-            android:foregroundServiceType="specialUse" />
+            android:foregroundServiceType="specialUse"
+            android:stopWithTask="true" />
 
         <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
             android:value="Avoid the OS from killing the app when it goes in the background while taking a photo, recording a video or scanning a barcode"/>
