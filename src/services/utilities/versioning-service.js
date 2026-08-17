@@ -6,6 +6,7 @@ import { databaseDeleteService } from '@/services/database/database-delete-servi
 import { downloadFileService } from '@/services/download-file-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { webService } from '@/services/web-service';
+import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
@@ -151,20 +152,25 @@ export const versioningService = {
                                 // Remove the form entries that are now redundant
                                 databaseDeleteService.deleteFormEntries(projectModel.getProjectRef(), formsToBeRemoved).then(
                                     function () {
-                                        // Then resolve
-                                        // Attempt to update the project logo
-                                        downloadFileService.downloadProjectLogo(projectModel.getSlug(), projectModel.getProjectRef()).then(
+                                        // Remove the entries of any branches that have been removed from the project
+                                        self._removeRemovedBranchesEntries().then(
                                             function () {
-                                                console.log('downloaded logo');
-                                                resolve(self.changeMade);
-                                                // Reset changeMade back to false
-                                                self.changeMade = false;
-                                            },
-                                            function () {
-                                                console.log('didnt download logo');
-                                                resolve(self.changeMade);
-                                                // Reset changeMade back to false
-                                                self.changeMade = false;
+                                                // Then resolve
+                                                // Attempt to update the project logo
+                                                downloadFileService.downloadProjectLogo(projectModel.getSlug(), projectModel.getProjectRef()).then(
+                                                    function () {
+                                                        console.log('downloaded logo');
+                                                        resolve(self.changeMade);
+                                                        // Reset changeMade back to false
+                                                        self.changeMade = false;
+                                                    },
+                                                    function () {
+                                                        console.log('didnt download logo');
+                                                        resolve(self.changeMade);
+                                                        // Reset changeMade back to false
+                                                        self.changeMade = false;
+                                                    }
+                                                );
                                             }
                                         );
                                     }
@@ -197,6 +203,81 @@ export const versioningService = {
                     reject(error);
                 });
         });
+    },
+
+    /**
+     * Remove the entries (and their media) of any branches that have been removed from
+     * the project structure, as they can never be uploaded or edited again.
+     * Never rejects: a failure here must not block the project structure update,
+     * the cleanup will simply be retried on the next update.
+     */
+    async _removeRemovedBranchesEntries () {
+
+        const self = this;
+        const projectRef = projectModel.getProjectRef();
+        const removedBranchRefs = [];
+
+        // Compare the previous and current structures to find removed branches
+        for (const previousFormRef in self.previousProjectStructure.forms) {
+            if (Object.prototype.hasOwnProperty.call(self.previousProjectStructure.forms, previousFormRef)) {
+                const currentForm = projectModel.getExtraForm(previousFormRef);
+                // Skip forms that have been removed entirely (handled by deleteFormEntries)
+                if (!currentForm) {
+                    continue;
+                }
+                const previousBranches = self.previousProjectStructure.forms[previousFormRef].branch || {};
+                const currentBranches = currentForm.branch || {};
+                for (const branchRef in previousBranches) {
+                    if (Object.prototype.hasOwnProperty.call(previousBranches, branchRef)) {
+                        // Branch doesn't exist in the new structure, but did in the previous one
+                        if (!currentBranches[branchRef]) {
+                            console.log('branch ' + branchRef + ' to be removed');
+                            removedBranchRefs.push({ formRef: previousFormRef, branchRef });
+                        }
+                    }
+                }
+            }
+        }
+
+        for (const removedBranch of removedBranchRefs) {
+            await self._removeRemovedBranchEntries(projectRef, removedBranch.formRef, removedBranch.branchRef);
+        }
+    },
+
+    async _removeRemovedBranchEntries (projectRef, formRef, branchRef) {
+
+        try {
+            const response = await databaseSelectService.selectBranchEntries(projectRef, formRef, branchRef);
+
+            for (let i = 0; i < response.rows.length; i++) {
+                const entryUuid = response.rows.item(i).entry_uuid;
+
+                try {
+                    // Delete all the media related to this branch entry
+                    // (media rows must be fetched before deleting the branch entry)
+                    const mediaFiles = await databaseSelectService.selectProjectMedia({
+                        project_ref: projectRef,
+                        synced: null,
+                        entry_uuid: [entryUuid]
+                    });
+
+                    const allMediaFiles = mediaFiles.photos
+                        .concat(mediaFiles.audios)
+                        .concat(mediaFiles.videos);
+
+                    if (allMediaFiles.length > 0) {
+                        await deleteFileService.removeFiles(allMediaFiles);
+                    }
+
+                    await databaseDeleteService.deleteEntryMedia(entryUuid);
+                    await databaseDeleteService.deleteBranchEntry(entryUuid);
+                } catch (error) {
+                    console.error('Failed to remove branch entry ' + entryUuid + ' for removed branch ' + branchRef, error);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to remove entries for removed branch ' + branchRef, error);
+        }
     },
 
     selectAndUpdateEntries (formRef) {

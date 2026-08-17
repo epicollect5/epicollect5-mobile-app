@@ -5,12 +5,18 @@ import { projectModel } from '@/models/project-model';
 import { webService } from '@/services/web-service';
 import { databaseUpdateService } from '@/services/database/database-update-service';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
+import { databaseSelectService } from '@/services/database/database-select-service';
+import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import { downloadFileService } from '@/services/download-file-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 
 vi.mock('@/services/database/database-select-service', () => ({
-    databaseSelectService: {}
+    databaseSelectService: {
+        selectEntries: vi.fn().mockResolvedValue({ rows: { length: 0 } }),
+        selectBranchEntries: vi.fn().mockResolvedValue({ rows: { length: 0 } }),
+        selectProjectMedia: vi.fn().mockResolvedValue({ audios: [], photos: [], videos: [] })
+    }
 }));
 
 vi.mock('@/services/database/database-update-service', () => ({
@@ -18,7 +24,15 @@ vi.mock('@/services/database/database-update-service', () => ({
 }));
 
 vi.mock('@/services/database/database-delete-service', () => ({
-    databaseDeleteService: { deleteFormEntries: vi.fn().mockResolvedValue() }
+    databaseDeleteService: {
+        deleteFormEntries: vi.fn().mockResolvedValue(),
+        deleteBranchEntry: vi.fn().mockResolvedValue(),
+        deleteEntryMedia: vi.fn().mockResolvedValue()
+    }
+}));
+
+vi.mock('@/services/filesystem/delete-file-service', () => ({
+    deleteFileService: { removeFiles: vi.fn().mockResolvedValue() }
 }));
 
 vi.mock('@/services/download-file-service', () => ({
@@ -155,6 +169,152 @@ describe('versioningService.updateProject()', () => {
 
         await expect(versioningService.updateProject()).resolves.toBe(false);
         expect(projectModel.getProjectMappings()).toEqual(newMapping);
+    });
+
+    it('removes the entries and media of branches removed from the project', async () => {
+        //previous structure: form with two branches (branch_a, branch_b)
+        projectModel.loadExtraStructure({
+            project: {
+                details: { slug: 'test-project', ref: 'test-ref' },
+                forms: ['form_ref_1']
+            },
+            forms: {
+                form_ref_1: {
+                    details: { name: 'Form' },
+                    inputs: [],
+                    branch: {
+                        branch_a: ['input_a'],
+                        branch_b: ['input_b']
+                    }
+                }
+            },
+            inputs: {}
+        });
+
+        //new structure: branch_b has been removed
+        webService.getProject.mockResolvedValue({
+            data: {
+                meta: {
+                    project_extra: {
+                        project: {
+                            details: { slug: 'test-project', ref: 'test-ref' },
+                            forms: ['form_ref_1']
+                        },
+                        forms: {
+                            form_ref_1: {
+                                details: { name: 'Form' },
+                                inputs: [],
+                                branch: {
+                                    branch_a: ['input_a']
+                                }
+                            }
+                        },
+                        inputs: {}
+                    },
+                    project_mapping: {},
+                    project_stats: { structure_last_updated: '2024-01-01' }
+                }
+            }
+        });
+
+        const branchEntries = [
+            { entry_uuid: 'branch-entry-1' },
+            { entry_uuid: 'branch-entry-2' }
+        ];
+
+        databaseSelectService.selectBranchEntries.mockResolvedValue({
+            rows: {
+                length: branchEntries.length,
+                item: (i) => branchEntries[i]
+            }
+        });
+
+        databaseSelectService.selectProjectMedia.mockImplementation((options) => {
+            if (options.entry_uuid[0] === 'branch-entry-1') {
+                return Promise.resolve({
+                    audios: [],
+                    photos: [{ name: 'photo-1.jpg' }],
+                    videos: []
+                });
+            }
+            return Promise.resolve({ audios: [], photos: [], videos: [] });
+        });
+
+        await expect(versioningService.updateProject()).resolves.toBe(false);
+
+        //cleanup only targets the removed branch
+        expect(databaseSelectService.selectBranchEntries).toHaveBeenCalledWith(
+            'test-ref', 'form_ref_1', 'branch_b'
+        );
+        expect(databaseSelectService.selectBranchEntries).not.toHaveBeenCalledWith(
+            'test-ref', 'form_ref_1', 'branch_a'
+        );
+
+        //media files are removed before the rows
+        expect(databaseDeleteService.deleteEntryMedia).toHaveBeenCalledWith('branch-entry-1');
+        expect(databaseDeleteService.deleteEntryMedia).toHaveBeenCalledWith('branch-entry-2');
+        expect(databaseDeleteService.deleteBranchEntry).toHaveBeenCalledWith('branch-entry-1');
+        expect(databaseDeleteService.deleteBranchEntry).toHaveBeenCalledWith('branch-entry-2');
+        expect(deleteFileService.removeFiles).toHaveBeenCalledWith([
+            { name: 'photo-1.jpg' }
+        ]);
+        expect(downloadFileService.downloadProjectLogo).toHaveBeenCalledWith('test-project', 'test-ref');
+    });
+
+    it('resolves even when the cleanup of removed branches fails', async () => {
+        projectModel.loadExtraStructure({
+            project: {
+                details: { slug: 'test-project', ref: 'test-ref' },
+                forms: ['form_ref_1']
+            },
+            forms: {
+                form_ref_1: {
+                    details: { name: 'Form' },
+                    inputs: [],
+                    branch: {
+                        branch_b: ['input_b']
+                    }
+                }
+            },
+            inputs: {}
+        });
+
+        webService.getProject.mockResolvedValue({
+            data: {
+                meta: {
+                    project_extra: {
+                        project: {
+                            details: { slug: 'test-project', ref: 'test-ref' },
+                            forms: ['form_ref_1']
+                        },
+                        forms: {
+                            form_ref_1: {
+                                details: { name: 'Form' },
+                                inputs: [],
+                                branch: {}
+                            }
+                        },
+                        inputs: {}
+                    },
+                    project_mapping: {},
+                    project_stats: { structure_last_updated: '2024-01-01' }
+                }
+            }
+        });
+
+        databaseSelectService.selectBranchEntries.mockResolvedValue({
+            rows: {
+                length: 1,
+                item: (i) => [{ entry_uuid: 'branch-entry-1' }][i]
+            }
+        });
+
+        //cleanup failure must not block the project update
+        databaseDeleteService.deleteBranchEntry.mockRejectedValue(new Error('db error'));
+
+        await expect(versioningService.updateProject()).resolves.toBe(false);
+        expect(databaseDeleteService.deleteBranchEntry).toHaveBeenCalledWith('branch-entry-1');
+        expect(downloadFileService.downloadProjectLogo).toHaveBeenCalledWith('test-project', 'test-ref');
     });
 });
 
