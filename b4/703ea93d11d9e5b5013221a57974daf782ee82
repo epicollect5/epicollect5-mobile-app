@@ -1,0 +1,19 @@
+android/app/src/main/AndroidManifest.xml
+  s_b9ea7307d3bccb::t_c55dd12dd1a24d 59-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "b4703ea93d11d9e5b5013221a57974daf782ee82",
+  "prompts": {},
+  "sessions": {
+    "s_b9ea7307d3bccb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ff104a11fffeyLoX64qdSindxa",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
