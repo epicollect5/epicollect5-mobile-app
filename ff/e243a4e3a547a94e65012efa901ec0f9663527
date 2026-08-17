@@ -1,0 +1,19 @@
+src/services/notification-service.js
+  s_b9ea7307d3bccb::t_3393c2ccd4d6c2 333
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ffe243a4e3a547a94e65012efa901ec0f9663527",
+  "prompts": {},
+  "sessions": {
+    "s_b9ea7307d3bccb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ff104a11fffeyLoX64qdSindxa",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
