@@ -1,0 +1,46 @@
+src/config/strings.js
+  s_b9ea7307d3bccb::t_76637a2d9d4bc8 652
+  s_b9ea7307d3bccb::t_3709b62307fdc7 124
+  s_b9ea7307d3bccb::t_c891b22eeb91ff 1180
+  s_b9ea7307d3bccb::t_48d5d9037a2d0a 1708
+  s_b9ea7307d3bccb::t_ec96595ea583c3 2236
+  s_b9ea7307d3bccb::t_93927b540cf54c 388
+  s_b9ea7307d3bccb::t_0110347391138b 916
+  s_b9ea7307d3bccb::t_35f493a1af2f44 1444
+  s_b9ea7307d3bccb::t_48dab41d516611 1972
+android/capacitor.settings.gradle
+  s_b9ea7307d3bccb::t_cd8fa4cba92177 62-64
+android/app/capacitor.build.gradle
+  s_b9ea7307d3bccb::t_cd8fa4cba92177 31
+package.json
+  s_b9ea7307d3bccb::t_d651f713b76cd1 63
+android/app/src/main/assets/capacitor.plugins.json
+  s_b9ea7307d3bccb::t_cd8fa4cba92177 79-81
+  s_b9ea7307d3bccb::t_694166f76d69e2 78
+android/app/src/main/AndroidManifest.xml
+  s_b9ea7307d3bccb::t_24d27512f28947 56,58
+src/services/notification-service.js
+  s_b9ea7307d3bccb::t_8a76bce3f6e183 333
+  s_b9ea7307d3bccb::t_774ff7ba156a70 329-331,334-337,339-341
+  s_b9ea7307d3bccb::t_4e034304d20c94 360
+  s_b9ea7307d3bccb::t_dc1de10ad7d871 332,338
+  s_b9ea7307d3bccb::t_57e918785cb21c 10
+package-lock.json
+  s_b9ea7307d3bccb::t_79a2c7e660d2bf 34,2395-2413
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "eced64d2fa00fa6ec2814143420223a3cf970277",
+  "prompts": {},
+  "sessions": {
+    "s_b9ea7307d3bccb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ff104a11fffeyLoX64qdSindxa",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
