@@ -7,6 +7,7 @@ import {Toast} from '@capacitor/toast';
 import {Capacitor} from '@capacitor/core';
 import {useToast} from '@/use/toast';
 import {modalController} from '@ionic/vue';
+import {ForegroundService, Importance} from '@capawesome-team/capacitor-android-foreground-service';
 import ModalProgressExport from '@/components/modals/ModalProgressExport.vue';
 
 export const notificationService = {
@@ -325,13 +326,19 @@ buttons
                 status = await PushNotifications.checkPermissions();
 
                 if (status.receive === 'granted') {
-                    cordova.plugins.foregroundService.start(
-                        PARAMETERS.APP_NAME,
-                        labels.loading,
-                        'ec5_notification',
-                        1,
-                        10
-                    );
+                    await ForegroundService.createNotificationChannel({
+                        id: 'ec5_notification',
+                        name: PARAMETERS.APP_NAME,
+                        description: labels.running,
+                        importance: Importance.Default
+                    });
+                    await ForegroundService.startForegroundService({
+                        id: 10,
+                        title: PARAMETERS.APP_NAME,
+                        body: labels.running,
+                        smallIcon: 'ec5_notification',
+                        notificationChannelId: 'ec5_notification'
+                    });
                     resolve();
                 } else {
                     resolve();
@@ -350,7 +357,7 @@ buttons
             //only for api >= 28 (Android 9)
             //app might crash on Android 8
             if (parseInt(rootStore.device.osVersion) >= 9) {
-                cordova.plugins.foregroundService.stop();
+                await ForegroundService.stopForegroundService();
             }
         }
     },

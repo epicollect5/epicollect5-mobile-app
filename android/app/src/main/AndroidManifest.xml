@@ -53,8 +53,9 @@
         </provider>
 
         <service
-            android:name="com.davidbriglio.foreground.ForegroundService"
+            android:name="io.capawesome.capacitorjs.plugins.foregroundservice.AndroidForegroundService"
             android:label="Service"
+            android:exported="false"
             android:foregroundServiceType="specialUse" />
 
         <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
