@@ -1,0 +1,19 @@
+.opencode/commands/publish-issue.md
+  s_91c459bb2936f9::t_7af50a9637c260 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a99b21c0439e17d1d0e530a1def74b5508fbe881",
+  "prompts": {},
+  "sessions": {
+    "s_91c459bb2936f9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01597-101d-73b1-a7fd-7798216482b9",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
