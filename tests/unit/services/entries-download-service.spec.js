@@ -477,7 +477,7 @@ describe('entriesDownloadService project version checks', () => {
         }));
         const downloader = createDownloader(state);
 
-        await downloader.downloadEntries('form-a');
+        const firstDownload = downloader.downloadEntries('form-a');
         await flushPromises();
         await downloader.downloadEntries('form-a');
 
@@ -487,6 +487,7 @@ describe('entriesDownloadService project version checks', () => {
 
         resolveVersionCheck(true);
         await settleDownload();
+        await firstDownload;
 
         expect(downloadService.downloadFormEntries).toHaveBeenCalledTimes(1);
         expect(state.isFetching).toBe(false);
