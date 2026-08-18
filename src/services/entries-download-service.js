@@ -263,6 +263,11 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           const formRefs = formsInOrder.slice(currentFormIndex).map((form) => form.formRef);
           formRefs.slice(1).forEach((formRefToClear) => clearFormDownloadCache(formRefToClear));
           await databaseDeleteService.deleteEntriesBeforeDownload(projectModel.getProjectRef(), formRefs);
+          state.completed = false;
+          formRefs.forEach((formRefToReset, formIndex) => {
+            state.enabledButtons[formRefToReset] = formIndex === 0;
+            state.entriesDownloaded[formRefToReset] = false;
+          });
         }
 
         await showModalUploadProgress({

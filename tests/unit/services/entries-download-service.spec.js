@@ -358,6 +358,29 @@ describe('entriesDownloadService project version checks', () => {
         expect(databaseDeleteService.deleteEntriesBeforeDownload).toHaveBeenCalledWith('project-ref', ['form-a', 'form-b']);
     });
 
+    it('resets the selected and following form state before a fresh download', async () => {
+        const state = createState();
+        state.completed = true;
+        state.enabledButtons['form-a'] = false;
+        state.enabledButtons['form-b'] = true;
+        state.entriesDownloaded['form-a'] = true;
+        state.entriesDownloaded['form-b'] = true;
+        downloadService.downloadFormEntries.mockImplementation(async () => {
+            expect(state.completed).toBe(false);
+            expect(state.enabledButtons['form-a']).toBe(true);
+            expect(state.entriesDownloaded['form-a']).toBe(false);
+            expect(state.enabledButtons['form-b']).toBe(false);
+            expect(state.entriesDownloaded['form-b']).toBe(false);
+            return true;
+        });
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
+        expect(databaseDeleteService.deleteEntriesBeforeDownload).toHaveBeenCalledWith('project-ref', ['form-a', 'form-b']);
+    });
+
     it('clears project download progress and does not resume after an update', async () => {
         const state = createState();
         state.downloadCache['form-a'] = {
