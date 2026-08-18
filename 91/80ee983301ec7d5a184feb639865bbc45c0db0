@@ -1,0 +1,19 @@
+tests/unit/services/entries-download-service.spec.js
+  s_192318d44ac191::t_c4f680fa17a07d 480,490
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9180ee983301ec7d5a184feb639865bbc45c0db0",
+  "prompts": {},
+  "sessions": {
+    "s_192318d44ac191": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a015b1-e22c-71b3-bee6-3761a1a51e12",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
