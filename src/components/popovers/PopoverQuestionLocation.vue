@@ -100,7 +100,9 @@ export default {
 				try {
 					await popoverController.dismiss();
 				} catch (error) {
-					if (error !== 'overlay does not exist') {
+					const overlayDoesNotExist = error === 'overlay does not exist'
+						|| error?.message === 'overlay does not exist';
+					if (!overlayDoesNotExist) {
 						throw error;
 					}
 				}
