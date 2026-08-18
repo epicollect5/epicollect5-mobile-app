@@ -15,7 +15,8 @@ const mocks = vi.hoisted(() => {
         checkPermissionsMock: vi.fn().mockResolvedValue({receive: 'granted'}),
         requestPermissionsMock: vi.fn(),
         createNotificationChannelMock: vi.fn().mockResolvedValue(),
-        startForegroundServiceMock: vi.fn().mockResolvedValue()
+        startForegroundServiceMock: vi.fn().mockResolvedValue(),
+        stopForegroundServiceMock: vi.fn().mockResolvedValue()
     };
 });
 
@@ -29,7 +30,8 @@ vi.mock('@capacitor/push-notifications', () => ({
 vi.mock('@capawesome-team/capacitor-android-foreground-service', () => ({
     ForegroundService: {
         createNotificationChannel: mocks.createNotificationChannelMock,
-        startForegroundService: mocks.startForegroundServiceMock
+        startForegroundService: mocks.startForegroundServiceMock,
+        stopForegroundService: mocks.stopForegroundServiceMock
     },
     Importance: {Low: 'low'}
 }));
@@ -230,5 +232,21 @@ describe('notificationService tests', () => {
 
         await expect(notificationService.startForegroundService()).resolves.toBeUndefined();
         expect(mocks.checkPermissionsMock).not.toHaveBeenCalled();
+    });
+
+    it('should stop the foreground service on Android', async () => {
+        const rootStore = useRootStore();
+        rootStore.device.platform = PARAMETERS.ANDROID;
+
+        await expect(notificationService.stopForegroundService()).resolves.toBeUndefined();
+        expect(mocks.stopForegroundServiceMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should skip foreground service shutdown on non-Android platforms', async () => {
+        const rootStore = useRootStore();
+        rootStore.device.platform = 'ios';
+
+        await expect(notificationService.stopForegroundService()).resolves.toBeUndefined();
+        expect(mocks.stopForegroundServiceMock).not.toHaveBeenCalled();
     });
 });
