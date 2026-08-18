@@ -1,0 +1,19 @@
+src/pages/EntriesDownload.vue
+  s_d6a3c5f4517d2f::t_17e8ea2abab7c9 183-188
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d54d4c6d5203662bf35ab695931e1bf112f0e666",
+  "prompts": {},
+  "sessions": {
+    "s_d6a3c5f4517d2f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_feaa15dc3ffeHyvwk19HfG798c",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
