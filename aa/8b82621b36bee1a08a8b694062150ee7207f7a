@@ -1,0 +1,20 @@
+src/pages/EntriesErrors.vue
+  s_1d53ea3fde8c9c::t_46223c038becf0 391-404
+  s_1d53ea3fde8c9c::t_8c6089a9c22c35 163
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "aa8b82621b36bee1a08a8b694062150ee7207f7a",
+  "prompts": {},
+  "sessions": {
+    "s_1d53ea3fde8c9c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_feaa0be4affepqeNHDCFo6lzEg",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
