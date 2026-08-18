@@ -143,6 +143,17 @@ export const databaseDeleteService = {
                 params: [projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
             });
             statements.push({
+                query: 'DELETE FROM unique_answers WHERE project_ref=? AND form_ref=? AND entry_uuid IN (' +
+                    'SELECT entry_uuid FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?)',
+                params: [
+                    projectRef,
+                    formRef,
+                    projectRef,
+                    formRef,
+                    PARAMETERS.SYNCED_CODES.SYNCED
+                ]
+            });
+            statements.push({
                 query: 'DELETE FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?',
                 params: [projectRef, formRef, PARAMETERS.SYNCED_CODES.SYNCED]
             });
