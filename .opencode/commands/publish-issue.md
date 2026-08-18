@@ -18,7 +18,7 @@ Follow the **Issue Publish Workflow** defined in `docs/workflows/publish-issue.m
 
 ## Safety
 
-This command is side-effecting (creates a public GitHub issue). The workflow always shows the user the resolved title, repo, labels, and draft status, and asks for explicit confirmation before running `gh issue create`. Do not skip the confirmation step.
+This command is side-effecting (creates a public GitHub issue). The workflow always shows the user the resolved title, repo, labels, and draft status, and asks for explicit confirmation before running `gh issue create`. Confirmation may be skipped only when the user explicitly supplies the `yes` argument.
 
 ## Inputs
 
