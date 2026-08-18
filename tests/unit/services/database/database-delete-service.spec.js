@@ -95,6 +95,39 @@ describe('databaseDeleteService.deleteEntriesBeforeDownload', () => {
         expect(executeSql.mock.calls[1][0]).toContain('DELETE FROM media');
     });
 
+    it('rejects when database cleanup fails after media has been removed', async () => {
+        executeSql.mockClear();
+        transaction.mockClear();
+        removeFiles.mockReset();
+        removeFiles.mockResolvedValue();
+
+        const mediaFile = {
+            file_path: 'file:///data/photos/',
+            project_ref: 'project-ref',
+            file_name: 'remote-photo.jpg'
+        };
+        const databaseError = { message: 'db error' };
+
+        executeSql.mockImplementation((query, params, success, error) => {
+            if (query.startsWith('SELECT * FROM media')) {
+                success(null, {rows: {length: 1, item: () => mediaFile}});
+            } else {
+                error?.(null, databaseError);
+            }
+        });
+        transaction.mockImplementation((callback, onError) => {
+            callback({executeSql});
+            onError?.(null, databaseError);
+        });
+
+        await expect(
+            databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-ref'])
+        ).rejects.toEqual(databaseError);
+
+        expect(removeFiles).toHaveBeenCalledWith([mediaFile]);
+        expect(executeSql.mock.calls[1][0]).toContain('DELETE FROM media');
+    });
+
     it('builds statements for every given form', async () => {
         executeSql.mockClear();
         transaction.mockClear();

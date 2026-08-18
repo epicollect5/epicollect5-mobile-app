@@ -432,6 +432,36 @@ describe('versioningService.updateProject()', () => {
         expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
     });
 
+    it('keeps cleanup retryable after media is removed but database cleanup fails', async () => {
+        const mediaFile = {
+            file_path: 'file:///data/photos/',
+            project_ref: 'test-ref',
+            file_name: 'photo-1.jpg'
+        };
+
+        databaseSelectService.selectEntries.mockResolvedValue({
+            rows: {
+                length: 1,
+                item: () => ({ entry_uuid: 'entry-1' })
+            }
+        });
+        databaseSelectService.selectBranchEntries.mockResolvedValue({ rows: { length: 0 } });
+        databaseSelectService.selectProjectMedia.mockResolvedValue({
+            audios: [],
+            photos: [mediaFile],
+            videos: []
+        });
+        databaseDeleteService.deleteFormEntries.mockRejectedValue(new Error('db error'));
+
+        await expect(
+            versioningService._removeStaleFormsEntries('test-ref', ['form_ref_b'])
+        ).rejects.toThrow('db error');
+
+        expect(deleteFileService.removeFiles).toHaveBeenCalledWith([mediaFile]);
+        expect(deleteFileService.removeFiles.mock.invocationCallOrder[0])
+            .toBeLessThan(databaseDeleteService.deleteFormEntries.mock.invocationCallOrder[0]);
+    });
+
     it('rejects when the cleanup of removed branches fails', async () => {
         projectModel.loadExtraStructure({
             project: {
