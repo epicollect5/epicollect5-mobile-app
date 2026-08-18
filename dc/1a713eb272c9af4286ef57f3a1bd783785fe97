@@ -1,0 +1,19 @@
+tests/unit/notification-service.spec.js
+  s_a913dc9248a4ec::t_89c37252531420 18-19,33-34,236-251
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "dc1a713eb272c9af4286ef57f3a1bd783785fe97",
+  "prompts": {},
+  "sessions": {
+    "s_a913dc9248a4ec": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01589-d6cd-7420-9020-a18889599809",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
