@@ -180,6 +180,12 @@ export default {
         await entriesDownloader.clearDownloadProgress(formRef);
       },
       async goBack() {
+        //Do not navigate while a download or prompt is in flight: leaving would
+        //clear the progress cache while the download keeps writing it back
+        if (state.isFetching || state.promptOpen) {
+          return;
+        }
+
         //Leaving clears any download progress: warn the user before navigating away
         const hasProgress = state.forms.some((form) => entriesDownloader.hasDownloadProgress(form.formRef));
 
