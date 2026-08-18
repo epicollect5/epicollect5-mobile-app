@@ -403,7 +403,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
         );
 
         if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESUME) {
-          beginDownload(true);
+          await beginDownload(true);
         }
 
         if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESTART) {
@@ -416,7 +416,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           }
 
           clearFormDownloadCache(formRef);
-          beginDownload(false);
+          await beginDownload(false);
         }
       } finally {
         state.promptOpen = false;
@@ -437,13 +437,13 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
 
       try {
         if (await confirmDownloadWarning()) {
-          beginDownload(false);
+          await beginDownload(false);
         }
       } finally {
         state.promptOpen = false;
       }
     } else {
-      beginDownload(shouldResume);
+      await beginDownload(shouldResume);
     }
   }
 
@@ -453,7 +453,6 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     hasDownloadProgress,
     getDownloadProgressLabel,
     clearDownloadProgress,
-    clearDownloadCache,
     clearProjectDownloadCache,
     downloadEntries
   };
