@@ -97,7 +97,13 @@ export default {
 				//imp: dismiss the popover first so we never stack overlays on top of each other,
 				//imp: dismissing a closed popover throws "overlay does not exist" and stacked
 				//imp: teardowns cause "Cannot read properties of null (reading 'nextSibling')"
-				await popoverController.dismiss();
+				try {
+					await popoverController.dismiss();
+				} catch (error) {
+					if (error !== 'overlay does not exist') {
+						throw error;
+					}
+				}
 
 				scope.ModalLocationEdit = await modalController.create({
 					cssClass: 'modal-location-edit',
