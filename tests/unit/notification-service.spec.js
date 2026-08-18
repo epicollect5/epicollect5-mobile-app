@@ -11,9 +11,28 @@ import { STRINGS } from '@/config/strings';
 
 const mocks = vi.hoisted(() => {
     return {
-        presentMock: vi.fn().mockResolvedValue(true)
+        presentMock: vi.fn().mockResolvedValue(true),
+        checkPermissionsMock: vi.fn().mockResolvedValue({receive: 'granted'}),
+        requestPermissionsMock: vi.fn(),
+        createNotificationChannelMock: vi.fn().mockResolvedValue(),
+        startForegroundServiceMock: vi.fn().mockResolvedValue()
     };
 });
+
+vi.mock('@capacitor/push-notifications', () => ({
+    PushNotifications: {
+        checkPermissions: mocks.checkPermissionsMock,
+        requestPermissions: mocks.requestPermissionsMock
+    }
+}));
+
+vi.mock('@capawesome-team/capacitor-android-foreground-service', () => ({
+    ForegroundService: {
+        createNotificationChannel: mocks.createNotificationChannelMock,
+        startForegroundService: mocks.startForegroundServiceMock
+    },
+    Importance: {Low: 'low'}
+}));
 
 vi.mock('@ionic/vue', () => {
     const alertController = vi.fn();
@@ -170,5 +189,46 @@ describe('notificationService tests', () => {
         });
         expect(mocks.presentMock).toHaveBeenCalled();
     });
-});
 
+    it('should propagate foreground service startup errors', async () => {
+        const rootStore = useRootStore();
+        rootStore.device.platform = PARAMETERS.ANDROID;
+        const error = new Error('foreground service failed');
+        mocks.startForegroundServiceMock.mockRejectedValueOnce(error);
+
+        await expect(notificationService.startForegroundService()).rejects.toBe(error);
+    });
+
+    it('should propagate notification channel creation errors', async () => {
+        const rootStore = useRootStore();
+        rootStore.device.platform = PARAMETERS.ANDROID;
+        const error = new Error('notification channel failed');
+        mocks.createNotificationChannelMock.mockRejectedValueOnce(error);
+
+        await expect(notificationService.startForegroundService()).rejects.toBe(error);
+    });
+
+    it('should propagate permission check errors', async () => {
+        const rootStore = useRootStore();
+        rootStore.device.platform = PARAMETERS.ANDROID;
+        const error = new Error('permission check failed');
+        mocks.checkPermissionsMock.mockRejectedValueOnce(error);
+
+        await expect(notificationService.startForegroundService()).rejects.toBe(error);
+    });
+
+    it('should resolve after starting the foreground service', async () => {
+        const rootStore = useRootStore();
+        rootStore.device.platform = PARAMETERS.ANDROID;
+
+        await expect(notificationService.startForegroundService()).resolves.toBeUndefined();
+    });
+
+    it('should skip foreground service startup on non-Android platforms', async () => {
+        const rootStore = useRootStore();
+        rootStore.device.platform = 'ios';
+
+        await expect(notificationService.startForegroundService()).resolves.toBeUndefined();
+        expect(mocks.checkPermissionsMock).not.toHaveBeenCalled();
+    });
+});

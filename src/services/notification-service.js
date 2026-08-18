@@ -305,7 +305,7 @@ buttons
             return;
         }
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             (async function () {
                 let status = await PushNotifications.checkPermissions();
                 switch (status.receive) {
@@ -343,7 +343,7 @@ buttons
                 } else {
                     resolve();
                 }
-            })();
+            })().catch(reject);
         });
     },
     async stopForegroundService() {
