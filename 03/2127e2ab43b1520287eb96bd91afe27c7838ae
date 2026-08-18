@@ -1,0 +1,21 @@
+tests/unit/services/utilities/versioning-service.spec.js
+  s_2c3506d34a05c1::t_4f372729dcde81 435-464
+tests/unit/services/database/database-delete-service.spec.js
+  s_2c3506d34a05c1::t_53718c8e4d68ea 98-130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "032127e2ab43b1520287eb96bd91afe27c7838ae",
+  "prompts": {},
+  "sessions": {
+    "s_2c3506d34a05c1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a016c7-6e9a-7ee1-802d-e2678603d43c",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
