@@ -1,8 +1,40 @@
 
 import { useDBStore } from '@/stores/db-store';
 import { PARAMETERS } from '@/config';
+import { deleteFileService } from '@/services/filesystem/delete-file-service';
 
 export const databaseDeleteService = {
+
+    async selectMediaBeforeDownload(projectRef, formRefs) {
+        const dbStore = useDBStore();
+        const placeholders = formRefs.map(() => '?').join(',');
+        const query = 'SELECT * FROM media WHERE project_ref=? AND form_ref IN (' + placeholders + ') AND (' +
+            'entry_uuid IN (SELECT entry_uuid FROM entries WHERE project_ref=? AND form_ref IN (' + placeholders + ') AND is_remote=?) OR ' +
+            'entry_uuid IN (SELECT entry_uuid FROM branch_entries WHERE project_ref=? AND form_ref IN (' + placeholders + ') AND synced=?)' +
+            ')';
+        const params = [
+            projectRef,
+            ...formRefs,
+            projectRef,
+            ...formRefs,
+            PARAMETERS.REMOTE_CODES.IS,
+            projectRef,
+            ...formRefs,
+            PARAMETERS.SYNCED_CODES.SYNCED
+        ];
+
+        return new Promise((resolve, reject) => {
+            dbStore.db.transaction((tx) => {
+                tx.executeSql(query, params, (transaction, result) => {
+                    const mediaFiles = [];
+                    for (let index = 0; index < (result?.rows?.length || 0); index++) {
+                        mediaFiles.push(result.rows.item(index));
+                    }
+                    resolve(mediaFiles);
+                }, reject);
+            }, reject);
+        });
+    },
 
     async deleteRowsFromMultipleTables(query, options, tables) {
         const dbStore = useDBStore();
@@ -125,6 +157,11 @@ export const databaseDeleteService = {
     async deleteEntriesBeforeDownload(projectRef, formRefs) {
         const dbStore = useDBStore();
         const statements = [];
+
+        const mediaFiles = await this.selectMediaBeforeDownload(projectRef, formRefs);
+        if (mediaFiles.length > 0) {
+            await deleteFileService.removeFiles(mediaFiles);
+        }
 
         formRefs.forEach((formRef) => {
             const remoteEntries = 'SELECT entry_uuid FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?';

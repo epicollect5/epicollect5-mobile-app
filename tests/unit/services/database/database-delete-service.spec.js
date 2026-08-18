@@ -11,6 +11,12 @@ vi.mock('@/stores/db-store', () => ({
     }))
 }));
 
+const removeFiles = vi.hoisted(() => vi.fn());
+
+vi.mock('@/services/filesystem/delete-file-service', () => ({
+    deleteFileService: {removeFiles}
+}));
+
 describe('databaseDeleteService.deleteEntriesBeforeDownload', () => {
     it('deletes only remote entries for the selected forms and related metadata', async () => {
         executeSql.mockImplementation((query, params, success) => {
@@ -24,38 +30,69 @@ describe('databaseDeleteService.deleteEntriesBeforeDownload', () => {
 
         await databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-ref']);
 
-        expect(executeSql).toHaveBeenCalledTimes(5);
-        expect(executeSql.mock.calls[0][0]).toContain('DELETE FROM media');
-        expect(executeSql.mock.calls[1][0]).toContain('DELETE FROM unique_answers');
-        expect(executeSql.mock.calls[2][0]).toBe(
-            'DELETE FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?'
-        );
-        expect(executeSql.mock.calls[2][1]).toEqual([
-            'project-ref',
-            'form-ref',
-            PARAMETERS.REMOTE_CODES.IS
-        ]);
+        expect(executeSql).toHaveBeenCalledTimes(6);
+        expect(executeSql.mock.calls[0][0]).toContain('SELECT * FROM media');
+        expect(executeSql.mock.calls[1][0]).toContain('DELETE FROM media');
+        expect(executeSql.mock.calls[2][0]).toContain('DELETE FROM unique_answers');
         expect(executeSql.mock.calls[3][0]).toBe(
-            'DELETE FROM unique_answers WHERE project_ref=? AND form_ref=? AND entry_uuid IN (' +
-            'SELECT entry_uuid FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?)'
+            'DELETE FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?'
         );
         expect(executeSql.mock.calls[3][1]).toEqual([
             'project-ref',
             'form-ref',
-            'project-ref',
-            'form-ref',
-            PARAMETERS.SYNCED_CODES.SYNCED
+            PARAMETERS.REMOTE_CODES.IS
         ]);
         expect(executeSql.mock.calls[4][0]).toBe(
-            'DELETE FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?'
+            'DELETE FROM unique_answers WHERE project_ref=? AND form_ref=? AND entry_uuid IN (' +
+            'SELECT entry_uuid FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?)'
         );
         expect(executeSql.mock.calls[4][1]).toEqual([
             'project-ref',
             'form-ref',
+            'project-ref',
+            'form-ref',
             PARAMETERS.SYNCED_CODES.SYNCED
         ]);
-        expect(executeSql.mock.calls[3][0]).not.toContain('temp_unique_answers');
+        expect(executeSql.mock.calls[5][0]).toBe(
+            'DELETE FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?'
+        );
+        expect(executeSql.mock.calls[5][1]).toEqual([
+            'project-ref',
+            'form-ref',
+            PARAMETERS.SYNCED_CODES.SYNCED
+        ]);
+        expect(executeSql.mock.calls[4][0]).not.toContain('temp_unique_answers');
         expect(executeSql.mock.calls.every(([query]) => query.includes('project_ref'))).toBe(true);
+    });
+
+    it('removes downloaded media files before deleting their rows', async () => {
+        executeSql.mockClear();
+        transaction.mockClear();
+        removeFiles.mockReset();
+        removeFiles.mockResolvedValue();
+
+        const mediaFile = {
+            file_path: 'file:///data/photos/',
+            project_ref: 'project-ref',
+            file_name: 'remote-photo.jpg'
+        };
+        executeSql.mockImplementation((query, params, success) => {
+            if (query.startsWith('SELECT * FROM media')) {
+                success(null, {rows: {length: 1, item: () => mediaFile}});
+            } else {
+                success();
+            }
+        });
+        transaction.mockImplementation((callback, _error, success) => {
+            callback({executeSql});
+            success?.();
+        });
+
+        await databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-ref']);
+
+        expect(removeFiles).toHaveBeenCalledWith([mediaFile]);
+        expect(executeSql.mock.calls[0][0]).toContain('SELECT * FROM media');
+        expect(executeSql.mock.calls[1][0]).toContain('DELETE FROM media');
     });
 
     it('builds statements for every given form', async () => {
@@ -72,11 +109,11 @@ describe('databaseDeleteService.deleteEntriesBeforeDownload', () => {
 
         await databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-a', 'form-b', 'form-c']);
 
-        expect(executeSql).toHaveBeenCalledTimes(15);
+        expect(executeSql).toHaveBeenCalledTimes(16);
         const entryDeletes = executeSql.mock.calls.filter(([query]) => query.startsWith('DELETE FROM entries'));
         expect(entryDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b', 'form-c']);
         const branchAnswerDeletes = executeSql.mock.calls.filter(([query]) =>
-            query.includes('SELECT entry_uuid FROM branch_entries')
+            query.startsWith('DELETE FROM unique_answers') && query.includes('SELECT entry_uuid FROM branch_entries')
         );
         expect(branchAnswerDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b', 'form-c']);
         expect(branchAnswerDeletes.every(([, params]) => params[4] === PARAMETERS.SYNCED_CODES.SYNCED)).toBe(true);
