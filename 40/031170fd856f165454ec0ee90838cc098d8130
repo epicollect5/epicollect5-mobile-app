@@ -1,0 +1,23 @@
+src/services/notification-service.js
+  s_c90966228a4e99::t_a0ad501a4eaf3b 308
+  s_c90966228a4e99::t_6cce40ca03106b 346
+tests/unit/notification-service.spec.js
+  s_c90966228a4e99::t_3cb74024fcddab 201-233
+  s_c90966228a4e99::t_4bb7f5480c3bef 14-18,22-36,193-200,234
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "40031170fd856f165454ec0ee90838cc098d8130",
+  "prompts": {},
+  "sessions": {
+    "s_c90966228a4e99": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01574-4c56-7a20-b08b-967d7e29ef27",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
