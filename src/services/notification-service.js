@@ -353,13 +353,7 @@ buttons
         if (rootStore.device.platform !== PARAMETERS.ANDROID) {
             return;
         }
-        if (rootStore.device.platform === PARAMETERS.ANDROID) {
-            //only for api >= 28 (Android 9)
-            //app might crash on Android 8
-            if (parseInt(rootStore.device.osVersion) >= 9) {
-                await ForegroundService.stopForegroundService();
-            }
-        }
+        await ForegroundService.stopForegroundService();
     },
 
     /**
