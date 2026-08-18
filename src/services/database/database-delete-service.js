@@ -226,12 +226,7 @@ export const databaseDeleteService = {
             await this.deleteRowsFromMultipleTables(query, options, tables);
         }
     },
-
-    async deleteSyncedEntries(projectRef) {
-        //todo: call deleteEntry recursively
-    },
-
-    //remove a single entry
+//remove a single entry
     async deleteEntry(entryUuid) {
 
         const dbStore = useDBStore();
