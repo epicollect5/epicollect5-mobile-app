@@ -308,6 +308,7 @@ describe('RightDrawer component', () => {
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         notificationService.showAlert = vi.fn().mockResolvedValue(true);
         const cleanupError = new Error('cleanup error');
+        cleanupError.isStaleCleanupError = true;
         versioningService.removeStaleEntries = vi.fn().mockRejectedValue(cleanupError);
         databaseUpdateService.unsyncAllEntries = vi.fn().mockResolvedValue(true);
         databaseUpdateService.unsyncAllBranchEntries = vi.fn().mockResolvedValue(true);
@@ -321,7 +322,7 @@ describe('RightDrawer component', () => {
         expect(databaseUpdateService.unsyncAllEntries).not.toHaveBeenCalled();
         expect(databaseUpdateService.unsyncAllBranchEntries).not.toHaveBeenCalled();
         expect(databaseUpdateService.unsyncAllFileEntries).not.toHaveBeenCalled();
-        expect(notificationService.showAlert).toHaveBeenCalledWith(cleanupError);
+        expect(notificationService.showAlert).toHaveBeenCalledWith(STRINGS[rootStore.language].labels.stale_cleanup_failed, STRINGS[rootStore.language].labels.error);
         expect(notificationService.hideProgressDialog).toHaveBeenCalled();
         expect(routerReplaceMock).not.toHaveBeenCalled();
     });

@@ -442,7 +442,14 @@ export default {
           menuController.close();
         } catch (error) {
           console.log(error);
-          await notificationService.showAlert(error);
+          if (error?.isStaleCleanupError) {
+            await notificationService.showAlert(
+                labels.stale_cleanup_failed,
+                labels.error
+            );
+          } else {
+            await notificationService.showAlert(error);
+          }
         } finally {
           notificationService.hideProgressDialog();
         }
