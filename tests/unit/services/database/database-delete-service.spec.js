@@ -189,7 +189,7 @@ describe('databaseDeleteService.deleteRowsFromMultipleTables', () => {
 });
 
 describe('databaseDeleteService.deleteFormEntries', () => {
-    const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'media', 'bookmarks'];
+    const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'temp_unique_answers', 'media', 'bookmarks'];
 
     it('deletes every table for each given form', async () => {
         executeSql.mockClear();
@@ -204,7 +204,7 @@ describe('databaseDeleteService.deleteFormEntries', () => {
 
         await databaseDeleteService.deleteFormEntries('project-ref', ['form-a', 'form-b']);
 
-        //6 tables per form -> 12 statements
+        //7 tables per form -> 14 statements
         expect(executeSql).toHaveBeenCalledTimes(tables.length * 2);
         const entryDeletes = executeSql.mock.calls.filter(([query]) => query.startsWith('DELETE FROM entries'));
         expect(entryDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b']);

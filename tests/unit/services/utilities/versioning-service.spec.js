@@ -15,7 +15,9 @@ vi.mock('@/services/database/database-select-service', () => ({
     databaseSelectService: {
         selectEntries: vi.fn().mockResolvedValue({ rows: { length: 0 } }),
         selectBranchEntries: vi.fn().mockResolvedValue({ rows: { length: 0 } }),
-        selectProjectMedia: vi.fn().mockResolvedValue({ audios: [], photos: [], videos: [] })
+        selectProjectMedia: vi.fn().mockResolvedValue({ audios: [], photos: [], videos: [] }),
+        selectDistinctFormRefs: vi.fn().mockResolvedValue([]),
+        selectDistinctBranchRefsIncludingTemp: vi.fn().mockResolvedValue([])
     }
 }));
 
@@ -218,6 +220,11 @@ describe('versioningService.updateProject()', () => {
             }
         });
 
+        //stored branch entries reference the removed branch_b
+        databaseSelectService.selectDistinctBranchRefsIncludingTemp.mockResolvedValue([
+            { formRef: 'form_ref_1', branchRef: 'branch_b' }
+        ]);
+
         const branchEntries = [
             { entry_uuid: 'branch-entry-1' },
             { entry_uuid: 'branch-entry-2' }
@@ -309,6 +316,7 @@ describe('versioningService.updateProject()', () => {
         });
 
         //form B has entries and media on the device
+        databaseSelectService.selectDistinctFormRefs.mockResolvedValue(['form_ref_b']);
         databaseSelectService.selectEntries.mockImplementation((projectRef, formRef) => {
             if (formRef === 'form_ref_b') {
                 return Promise.resolve({
@@ -367,7 +375,7 @@ describe('versioningService.updateProject()', () => {
         expect(downloadFileService.downloadProjectLogo).toHaveBeenCalledWith('test-project', 'test-ref');
     });
 
-    it('resolves even when the cleanup of removed forms fails', async () => {
+    it('rejects when the cleanup of removed forms fails', async () => {
         projectModel.loadExtraStructure({
             project: {
                 details: { slug: 'test-project', ref: 'test-ref' },
@@ -411,15 +419,20 @@ describe('versioningService.updateProject()', () => {
             }
         });
 
-        //cleanup failure must not block the project update
+        //stale entries of the removed form are still stored locally
+        databaseSelectService.selectDistinctFormRefs.mockResolvedValue(['form_ref_b']);
+        //no stale branches
+        databaseSelectService.selectDistinctBranchRefsIncludingTemp.mockResolvedValue([]);
+
+        //cleanup failure must block the project update
         databaseDeleteService.deleteFormEntries.mockRejectedValue(new Error('db error'));
 
-        await expect(versioningService.updateProject()).resolves.toBe(false);
+        await expect(versioningService.updateProject()).rejects.toMatchObject({ isStaleCleanupError: true });
         expect(databaseDeleteService.deleteFormEntries).toHaveBeenCalledWith('test-ref', ['form_ref_b']);
-        expect(downloadFileService.downloadProjectLogo).toHaveBeenCalledWith('test-project', 'test-ref');
+        expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
     });
 
-    it('resolves even when the cleanup of removed branches fails', async () => {
+    it('rejects when the cleanup of removed branches fails', async () => {
         projectModel.loadExtraStructure({
             project: {
                 details: { slug: 'test-project', ref: 'test-ref' },
@@ -460,6 +473,14 @@ describe('versioningService.updateProject()', () => {
             }
         });
 
+        //stored branch entries reference the removed branch_b
+        databaseSelectService.selectDistinctBranchRefsIncludingTemp.mockResolvedValue([
+            { formRef: 'form_ref_1', branchRef: 'branch_b' }
+        ]);
+        //no stale forms
+        databaseSelectService.selectDistinctFormRefs.mockResolvedValue([]);
+        databaseDeleteService.deleteFormEntries.mockResolvedValue();
+
         databaseSelectService.selectBranchEntries.mockResolvedValue({
             rows: {
                 length: 1,
@@ -467,12 +488,137 @@ describe('versioningService.updateProject()', () => {
             }
         });
 
-        //cleanup failure must not block the project update
+        //cleanup failure must block the project update
         databaseDeleteService.deleteBranchEntry.mockRejectedValue(new Error('db error'));
 
-        await expect(versioningService.updateProject()).resolves.toBe(false);
+        await expect(versioningService.updateProject()).rejects.toMatchObject({ isStaleCleanupError: true });
         expect(databaseDeleteService.deleteBranchEntry).toHaveBeenCalledWith('branch-entry-1');
+        expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
+    });
+
+    it('retries the cleanup of a form already absent from the persisted structure', async () => {
+        //the persisted structure already omits form B (a previous update persisted it
+        //without form B, but its cleanup failed and left stale entries behind)
+        projectModel.loadExtraStructure({
+            project: {
+                details: { slug: 'test-project', ref: 'test-ref' },
+                forms: ['form_ref_a']
+            },
+            forms: {
+                form_ref_a: {
+                    details: { name: 'Form A' },
+                    inputs: [],
+                    branch: {}
+                }
+            },
+            inputs: {}
+        });
+
+        webService.getProject.mockResolvedValue({
+            data: {
+                meta: {
+                    project_extra: {
+                        project: {
+                            details: { slug: 'test-project', ref: 'test-ref' },
+                            forms: ['form_ref_a']
+                        },
+                        forms: {
+                            form_ref_a: {
+                                details: { name: 'Form A' },
+                                inputs: [],
+                                branch: {}
+                            }
+                        },
+                        inputs: {}
+                    },
+                    project_mapping: {},
+                    project_stats: { structure_last_updated: '2024-01-01' }
+                }
+            }
+        });
+
+        //stale entries of form B are still stored locally
+        databaseSelectService.selectDistinctFormRefs.mockResolvedValue(['form_ref_b']);
+        //no stale branches
+        databaseSelectService.selectDistinctBranchRefsIncludingTemp.mockResolvedValue([]);
+        databaseDeleteService.deleteFormEntries.mockResolvedValue();
+        databaseDeleteService.deleteBranchEntry.mockResolvedValue();
+        databaseSelectService.selectEntries.mockImplementation((projectRef, formRef) => {
+            if (formRef === 'form_ref_b') {
+                return Promise.resolve({
+                    rows: {
+                        length: 1,
+                        item: () => ({ entry_uuid: 'entry-1' })
+                    }
+                });
+            }
+            return Promise.resolve({ rows: { length: 0 } });
+        });
+
+        await expect(versioningService.updateProject()).resolves.toBe(false);
+
+        //the cleanup is retried even though both structures omit form B
+        expect(databaseSelectService.selectDistinctFormRefs).toHaveBeenCalledWith('test-ref');
+        expect(databaseDeleteService.deleteFormEntries).toHaveBeenCalledWith('test-ref', ['form_ref_b']);
         expect(downloadFileService.downloadProjectLogo).toHaveBeenCalledWith('test-project', 'test-ref');
+    });
+
+    it('keeps the previous structure in the model when the persistence fails', async () => {
+        projectModel.loadExtraStructure({
+            project: {
+                details: { slug: 'test-project', ref: 'test-ref' },
+                forms: ['form_ref_a', 'form_ref_b']
+            },
+            forms: {
+                form_ref_a: {
+                    details: { name: 'Form A' },
+                    inputs: [],
+                    branch: {}
+                },
+                form_ref_b: {
+                    details: { name: 'Form B' },
+                    inputs: [],
+                    branch: {}
+                }
+            },
+            inputs: {}
+        });
+        projectModel.setLastUpdated('2023-01-01');
+
+        webService.getProject.mockResolvedValue({
+            data: {
+                meta: {
+                    project_extra: {
+                        project: {
+                            details: { slug: 'test-project', ref: 'test-ref' },
+                            forms: ['form_ref_a']
+                        },
+                        forms: {
+                            form_ref_a: {
+                                details: { name: 'Form A' },
+                                inputs: [],
+                                branch: {}
+                            }
+                        },
+                        inputs: {}
+                    },
+                    project_mapping: {},
+                    project_stats: { structure_last_updated: '2024-01-01' }
+                }
+            }
+        });
+
+        //persistence of the new structure fails
+        databaseUpdateService.updateProject.mockRejectedValue(new Error('db error'));
+
+        await expect(versioningService.updateProject()).rejects.toThrow('db error');
+
+        //model and database stay consistent with the previous structure
+        expect(projectModel.getProjectExtra().project.forms).toEqual(['form_ref_a', 'form_ref_b']);
+        expect(projectModel.getLastUpdated()).toBe('2023-01-01');
+        //no cleanup runs, no logo download, and the model keeps the old mappings
+        expect(databaseSelectService.selectDistinctFormRefs).not.toHaveBeenCalled();
+        expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
     });
 });
 

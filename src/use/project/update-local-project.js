@@ -55,8 +55,16 @@ export async function updateLocalProject() {
             notificationService.hideProgressDialog();
             // Web error
             if (authErrors.indexOf(error?.data?.errors?.[0]?.code) < 0) {
-                // Other error
-                await errorsService.handleWebError(error);
+                // Failed to remove the entries of forms/branches removed from the project
+                if (error?.isStaleCleanupError) {
+                    await notificationService.showAlert(
+                        STRINGS[language].labels.stale_cleanup_failed,
+                        STRINGS[language].labels.error
+                    );
+                } else {
+                    // Other error
+                    await errorsService.handleWebError(error);
+                }
                 return false;
             }
 

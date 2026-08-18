@@ -61,6 +61,12 @@ export async function updateProject () {
                 //2- Clear any token and ask user to login again
                 await logout();
                 showModalLogin();
+            } else if (error?.isStaleCleanupError) {
+                // Failed to remove the entries of forms/branches removed from the project
+                notificationService.showAlert(
+                    labels.stale_cleanup_failed,
+                    labels.error
+                );
             } else {
                 // Other error
                 errorsService.handleWebError(error);

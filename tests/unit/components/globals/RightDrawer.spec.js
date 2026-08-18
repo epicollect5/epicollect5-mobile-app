@@ -18,6 +18,7 @@ import { databaseUpdateService } from '@/services/database/database-update-servi
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
+import { versioningService } from '@/services/utilities/versioning-service';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import ModalProjectInfo from '@/components/modals/ModalProjectInfo';
@@ -94,6 +95,11 @@ vi.mock('@/services/database/database-select-service', () => {
 vi.mock('@/services/database/database-delete-service', () => {
     const databaseDeleteService = vi.fn();
     return { databaseDeleteService };
+});
+
+vi.mock('@/services/utilities/versioning-service', () => {
+    const versioningService = vi.fn();
+    return { versioningService };
 });
 
 const routerReplaceMock = vi.fn();
@@ -246,6 +252,7 @@ describe('RightDrawer component', () => {
         projectModel.getProjectRef = vi.fn().mockReturnValue(projectRef);
         notificationService.showProgressDialog = vi.fn().mockResolvedValue(true);
         dbStore.db.transaction = vi.fn();
+        versioningService.removeStaleEntries = vi.fn().mockResolvedValue(true);
         databaseUpdateService.unsyncAllEntries = vi.fn().mockResolvedValue(true);
         databaseUpdateService.unsyncAllBranchEntries = vi.fn().mockResolvedValue(true);
         databaseUpdateService.unsyncAllFileEntries = vi.fn().mockResolvedValue(true);
@@ -260,6 +267,8 @@ describe('RightDrawer component', () => {
         expect(projectModel.getProjectRef).toHaveBeenCalledOnce();
         await flushPromises();
         expect(notificationService.showProgressDialog).toHaveBeenCalledWith(labels.wait);
+        await flushPromises();
+        expect(versioningService.removeStaleEntries).toHaveBeenCalledOnce();
         await flushPromises();
         expect(databaseUpdateService.unsyncAllEntries).toHaveBeenCalledWith(projectRef);
         await flushPromises();
@@ -280,6 +289,41 @@ describe('RightDrawer component', () => {
             })
         });
         expect(menuController.close).toHaveBeenCalledOnce();
+    });
+
+    it('should abort unsync if the stale cleanup fails', async () => {
+
+        const rootStore = useRootStore();
+        const dbStore = useDBStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+        const wrapper = mount(RightDrawer);
+
+        //mocks
+        menuController.close = vi.fn().mockReturnValue(true);
+        projectModel.getProjectRef = vi.fn().mockReturnValue(projectRef);
+        notificationService.showProgressDialog = vi.fn().mockResolvedValue(true);
+        dbStore.db.transaction = vi.fn();
+        notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
+        notificationService.showAlert = vi.fn().mockResolvedValue(true);
+        const cleanupError = new Error('cleanup error');
+        versioningService.removeStaleEntries = vi.fn().mockRejectedValue(cleanupError);
+        databaseUpdateService.unsyncAllEntries = vi.fn().mockResolvedValue(true);
+        databaseUpdateService.unsyncAllBranchEntries = vi.fn().mockResolvedValue(true);
+        databaseUpdateService.unsyncAllFileEntries = vi.fn().mockResolvedValue(true);
+
+        await flushPromises();
+        await wrapper.get('[data-test="unsync-entries"]').trigger('click');
+        await flushPromises();
+        expect(versioningService.removeStaleEntries).toHaveBeenCalledOnce();
+        //the unsync must be aborted, otherwise stale entries would be marked as unsynced
+        expect(databaseUpdateService.unsyncAllEntries).not.toHaveBeenCalled();
+        expect(databaseUpdateService.unsyncAllBranchEntries).not.toHaveBeenCalled();
+        expect(databaseUpdateService.unsyncAllFileEntries).not.toHaveBeenCalled();
+        expect(notificationService.showAlert).toHaveBeenCalledWith(cleanupError);
+        expect(notificationService.hideProgressDialog).toHaveBeenCalled();
+        expect(routerReplaceMock).not.toHaveBeenCalled();
     });
 
     it('should sort AZ', async () => {

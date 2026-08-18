@@ -163,7 +163,7 @@ export const databaseDeleteService = {
     async deleteFormEntries(projectRef, formRefs) {
 
         const query = '';
-        const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'media', 'bookmarks'];
+        const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'temp_unique_answers', 'media', 'bookmarks'];
 
         const options = {
             project_ref: projectRef,

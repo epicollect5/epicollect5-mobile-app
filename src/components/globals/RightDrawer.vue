@@ -327,6 +327,7 @@ import {notificationService} from '@/services/notification-service';
 import {bookmarksService} from '@/services/utilities/bookmarks-service';
 import {databaseInsertService} from '@/services/database/database-insert-service';
 import {databaseUpdateService} from '@/services/database/database-update-service';
+import {versioningService} from '@/services/utilities/versioning-service';
 import {exportService} from '@/services/export-service';
 
 export default {
@@ -421,6 +422,10 @@ export default {
         await notificationService.showProgressDialog(labels.wait);
 
         try {
+          // Remove the entries of any forms/branches that have been removed from the
+          // project structure before unsyncing: if the cleanup fails, abort so stale
+          // entries are not marked as unsynced and the user can retry
+          await versioningService.removeStaleEntries();
           await databaseUpdateService.unsyncAllEntries(projectRef);
           await databaseUpdateService.unsyncAllBranchEntries(projectRef);
           await databaseUpdateService.unsyncAllFileEntries(projectRef);

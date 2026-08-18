@@ -1131,5 +1131,59 @@ export const databaseSelectService = {
         const query = 'SELECT DISTINCT(owner_input_ref), form_ref FROM branch_entries WHERE project_ref = ?';
         const params = [projectRef];
         return await this.getRows(query, params);
+    },
+    //Function to get all form refs stored in the local database for a project
+    //used to find the stale entries of forms that have been removed from the project structure
+    async selectDistinctFormRefs(projectRef) {
+
+        const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'temp_unique_answers', 'media', 'bookmarks'];
+        const formRefs = [];
+
+        for (const table of tables) {
+            const query = 'SELECT DISTINCT form_ref FROM ' + table + ' WHERE project_ref = ?';
+            const result = await this.getRows(query, [projectRef]);
+
+            for (let i = 0; i < result.rows.length; i++) {
+                const formRef = result.rows.item(i).form_ref;
+                if (formRef && formRefs.indexOf(formRef) === -1) {
+                    formRefs.push(formRef);
+                }
+            }
+        }
+
+        return formRefs;
+    },
+    //Function to get all branch refs stored in the local database for a project
+    //(including temp branches), used to find the stale branches of forms that
+    //have had branches removed from the project structure
+    async selectDistinctBranchRefsIncludingTemp(projectRef) {
+
+        const branchRefs = [];
+        const pairs = {};
+        const tables = ['branch_entries', 'temp_branch_entries'];
+
+        for (const table of tables) {
+            const query = 'SELECT DISTINCT form_ref, owner_input_ref FROM ' + table + ' WHERE project_ref = ?';
+            const result = await this.getRows(query, [projectRef]);
+
+            for (let i = 0; i < result.rows.length; i++) {
+                const formRef = result.rows.item(i).form_ref;
+                const ownerInputRef = result.rows.item(i).owner_input_ref;
+                if (formRef && ownerInputRef) {
+                    pairs[formRef + '|' + ownerInputRef] = {
+                        formRef,
+                        branchRef: ownerInputRef
+                    };
+                }
+            }
+        }
+
+        for (const key in pairs) {
+            if (Object.prototype.hasOwnProperty.call(pairs, key)) {
+                branchRefs.push(pairs[key]);
+            }
+        }
+
+        return branchRefs;
     }
 };
