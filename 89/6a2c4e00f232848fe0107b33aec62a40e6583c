@@ -1,0 +1,61 @@
+src/use/project/update-project.js
+  s_0ce5969475ceee::t_6dc42ebf1f10f3 64-69
+tests/unit/services/database/database-delete-service.spec.js
+  s_0ce5969475ceee::t_7b456c893cd812 192,207
+tests/unit/components/globals/RightDrawer.spec.js
+  s_0ce5969475ceee::t_7edfbad243a9db 21
+  s_0ce5969475ceee::t_cc96a5e4b4c4b8 272,294-328
+  s_0ce5969475ceee::t_14882d159266a8 255,271
+  s_0ce5969475ceee::t_b08028883967ff 100-104
+tests/unit/services/utilities/versioning-service.spec.js
+  s_0ce5969475ceee::t_ed7eb400ca3c92 319
+  s_0ce5969475ceee::t_18efc70aebac53 378,422-423,426-427,430,432,435
+  s_0ce5969475ceee::t_4cacba150a83af 542-545
+  s_0ce5969475ceee::t_1ad56599f7b1a2 223-227
+  s_0ce5969475ceee::t_2f114e9a7cd09a 424-425
+  s_0ce5969475ceee::t_915345ae52b8c8 476-479,483,491,494,496
+  s_0ce5969475ceee::t_82a8049433c40d 480-482
+  s_0ce5969475ceee::t_68fff12f2f6833 497-541,546-562,565-622
+  s_0ce5969475ceee::t_816e1d1757292a 18-20
+src/services/database/database-delete-service.js
+  s_0ce5969475ceee::t_f2ec76c99a5efe 166
+src/services/database/database-select-service.js
+  s_0ce5969475ceee::t_2cbd1b3f533d22 1134-1161,1163-1172,1177-1180
+  s_0ce5969475ceee::t_36e2493f9eab41 1162,1173-1176,1181-1187
+src/services/utilities/versioning-service.js
+  s_0ce5969475ceee::t_93a6b51a56148b 140-147,152-156
+  s_0ce5969475ceee::t_f57e792241cb5b 120-122,125-130
+  s_0ce5969475ceee::t_a1517a8b0952ef 205-206,211-223,225-234,236-238,240-241,243,245-265,268-269,273-274,276,278-292,296-324,330,332-333,335-341,343-348,350-352
+  s_0ce5969475ceee::t_928b000bd5b185 131
+src/config/strings.js
+  s_0ce5969475ceee::t_f27ccd6f3da25a 1243
+  s_0ce5969475ceee::t_bf0a3c58ae9b5a 1509
+  s_0ce5969475ceee::t_32e12e0fd888e8 1775
+  s_0ce5969475ceee::t_dc790d4225f182 445
+  s_0ce5969475ceee::t_87b13ef6aa59c8 2307
+  s_0ce5969475ceee::t_a6fd7f58375728 179
+  s_0ce5969475ceee::t_d448506fa8d991 711
+  s_0ce5969475ceee::t_4aa6661b4766c8 2041
+  s_0ce5969475ceee::t_04be6a2d5b0b4a 977
+src/use/project/update-local-project.js
+  s_0ce5969475ceee::t_6793c257565c97 58-67
+src/components/globals/RightDrawer.vue
+  s_0ce5969475ceee::t_669145ace56ddd 425-428
+  s_0ce5969475ceee::t_5d3a10c7f078bf 330
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "896a2c4e00f232848fe0107b33aec62a40e6583c",
+  "prompts": {},
+  "sessions": {
+    "s_0ce5969475ceee": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fec1eb893ffeWo2C57JjXsLuay",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
