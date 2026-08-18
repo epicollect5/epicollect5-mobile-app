@@ -144,4 +144,4 @@ export default {
 };
 </script>
 
-<style src="@/theme/components/answers/ListSavedAnswers.scss" lang="scss"></style>
+<style src="@/theme/components/answers/ListSavedAnswers.scss" lang="scss" scoped></style>

@@ -41,4 +41,4 @@ export default {
 };
 </script>
 
-<style src="@/theme/components/ui/HeaderModal.scss" lang="scss"></style>
+<style lang="scss" scoped></style>

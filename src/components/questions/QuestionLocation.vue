@@ -432,4 +432,4 @@ export default {
 };
 </script>
 
-<style src="@/theme/components/questions/QuestionLocation.scss" lang="scss"></style>
+<style src="@/theme/components/questions/QuestionLocation.scss" lang="scss" scoped></style>

@@ -183,4 +183,4 @@ export default {
 };
 </script>
 
-<style src="@/theme/pages/Profile.scss" lang="scss"></style>
+<style src="@/theme/pages/Profile.scss" lang="scss" scoped></style>

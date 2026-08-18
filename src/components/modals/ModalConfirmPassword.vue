@@ -131,4 +131,4 @@ export default {
 };
 </script>
 
-<style src="@/theme/components/modals/ModalConfirmPassword.scss" lang="scss"></style>
+<style src="@/theme/components/modals/ModalConfirmPassword.scss" lang="scss" scoped></style>

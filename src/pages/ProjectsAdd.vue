@@ -170,4 +170,4 @@ export default {
 };
 </script>
 
-<style src="@/theme/pages/ProjectsAdd.scss" lang="scss"></style>
+<style src="@/theme/pages/ProjectsAdd.scss" lang="scss" scoped></style>

@@ -348,4 +348,4 @@ export default {
 };
 </script>
 
-<style src="@/theme/components/questions/QuestionPhoto.scss" lang="scss"></style>
+<style src="@/theme/components/questions/QuestionPhoto.scss" lang="scss" scoped></style>

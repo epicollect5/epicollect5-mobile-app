@@ -179,4 +179,4 @@ export default {
 };
 </script>
 
-<style src="@/theme/components/modals/ModalPossibleAnswers.scss" lang="scss"></style>
+<style src="@/theme/components/modals/ModalPossibleAnswers.scss" lang="scss" scoped></style>

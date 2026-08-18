@@ -223,4 +223,4 @@ export default {
 };
 </script>
 
-<style src="@/theme/pages/Projects.scss" lang="scss"></style>
+<style lang="scss" scoped></style>
