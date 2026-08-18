@@ -61,7 +61,9 @@ export const modalsHandlerService = {
                     console.warn('Failed to dismiss modal:', key, error);
                 }
             }
-            this.modals[key] = null;
+            if (this.modals[key] === modal) {
+                this.modals[key] = null;
+            }
         }
     }
 };

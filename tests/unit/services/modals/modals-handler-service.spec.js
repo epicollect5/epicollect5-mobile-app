@@ -88,6 +88,28 @@ describe('modalsHandlerService', () => {
             expect(loginDismiss).toHaveBeenCalledTimes(1);
         });
 
+        it('does not clear a modal re-presented while awaiting the previous dismissal', async () => {
+            let resolveFirstDismiss;
+            const firstDismiss = new Promise((resolve) => {
+                resolveFirstDismiss = resolve;
+            });
+            const firstModal = setModal('login', async () => firstDismiss);
+
+            const dismissPromise = modalsHandlerService.dismissAll();
+
+            //the login modal is re-presented while its previous dismissal is pending
+            const secondModal = setModal('login', async () => true);
+            expect(modalsHandlerService.modals.login).toBe(secondModal);
+
+            resolveFirstDismiss(true);
+            await dismissPromise;
+
+            //the re-presented modal must be dismissed too, not orphaned by the stale clear
+            expect(secondModal.dismiss).toHaveBeenCalledTimes(1);
+            expect(firstModal.dismiss).toHaveBeenCalledTimes(1);
+            expect(modalsHandlerService.modals.login).toBeNull();
+        });
+
         it('clears all modal references and the presentation stack after dismissal', async () => {
             setModal('login', async () => true);
             setModal('passwordlessSend', async () => true);
