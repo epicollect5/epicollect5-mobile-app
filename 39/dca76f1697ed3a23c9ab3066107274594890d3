@@ -1,0 +1,21 @@
+src/models/project-model.js
+  s_5bc4963379c166::t_f5764953495761 91
+tests/unit/services/export-service/export-branch-entries.spec.js
+  s_5bc4963379c166::t_f5764953495761 122-137,207
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "39dca76f1697ed3a23c9ab3066107274594890d3",
+  "prompts": {},
+  "sessions": {
+    "s_5bc4963379c166": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0157c-c6ea-7712-9b43-3917947f0208",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
