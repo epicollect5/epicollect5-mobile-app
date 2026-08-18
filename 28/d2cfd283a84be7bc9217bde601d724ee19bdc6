@@ -1,0 +1,19 @@
+src/components/popovers/PopoverQuestionLocation.vue
+  s_91c459bb2936f9::t_77af466a99f0fa 103-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "28d2cfd283a84be7bc9217bde601d724ee19bdc6",
+  "prompts": {},
+  "sessions": {
+    "s_91c459bb2936f9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01597-101d-73b1-a7fd-7798216482b9",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
