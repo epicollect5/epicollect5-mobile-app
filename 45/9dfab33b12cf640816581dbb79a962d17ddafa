@@ -1,0 +1,19 @@
+src/services/database/database-delete-service.js
+  s_59875f6e883f75::t_b2eb3daee20bc5 229
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "459dfab33b12cf640816581dbb79a962d17ddafa",
+  "prompts": {},
+  "sessions": {
+    "s_59875f6e883f75": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a015a7-fb61-7e42-ae42-e241679f4dd6",
+        "model": "unknown"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
