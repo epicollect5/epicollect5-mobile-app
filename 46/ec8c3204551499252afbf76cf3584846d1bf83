@@ -1,0 +1,51 @@
+src/components/GridQuestionNarrow.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 29
+src/components/questions/QuestionLocation.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 435
+src/components/ListSavedAnswers.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 147
+src/components/answers/AnswerGroup.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 49
+src/components/GridQuestionWide.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 29
+src/pages/Projects.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 226
+src/components/modals/ModalConfirmPassword.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 134
+src/pages/Profile.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 186
+src/components/modals/ModalPossibleAnswers.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 182
+src/pages/ProjectsAdd.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 173
+src/components/ListPossibleAnswersRadio.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 206
+src/components/HeaderModal.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 44
+src/components/Dropzone.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 310
+src/components/ToolbarEntriesFilters.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 70
+src/components/questions/QuestionTime.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 422
+src/components/questions/QuestionPhoto.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 351
+src/components/ListAnswers.vue
+  s_91c459bb2936f9::t_3f58dbd795b95b 247
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "46ec8c3204551499252afbf76cf3584846d1bf83",
+  "prompts": {},
+  "sessions": {
+    "s_91c459bb2936f9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01597-101d-73b1-a7fd-7798216482b9",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
