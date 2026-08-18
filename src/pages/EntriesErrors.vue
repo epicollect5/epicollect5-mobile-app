@@ -160,6 +160,7 @@ import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { entryService } from '@/services/entry/entry-service';
 import { deleteEntry } from '@/use/entry/delete-entry';
+import { deleteEntryBranch } from '@/use/entry/delete-entry-branch';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 
 export default {
@@ -386,6 +387,20 @@ export default {
 
 			//Set this route as the next route after the deletion, so the user comes back here
 			rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES_ERRORS;
+
+			if (entry.is_branch) {
+				//Branch entries live in the branch_entries table, so the main entry
+				//deletion flow cannot remove them
+				await deleteEntryBranch(
+					{
+						entryUuid: entry.entry_uuid
+					},
+					language,
+					labels,
+					getEntriesInvalid
+				);
+				return;
+			}
 
 			//Reuse the entry deletion flow with a minimal state
 			await deleteEntry(
