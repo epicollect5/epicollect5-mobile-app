@@ -119,6 +119,22 @@ describe('exportService.exportBranchEntries', () => {
         );
     });
 
+    it('skips orphaned branches when the project forms are missing', async () => {
+        databaseSelectService.selectDistinctBranchRefs.mockResolvedValue(mockRows([
+            {form_ref: 'removed-form', owner_input_ref: 'branch-orphan'}
+        ]));
+        projectModel.getProjectExtra.mockReturnValue({
+            inputs: {
+                'branch-orphan': {data: {}}
+            }
+        });
+
+        await expect(exportService.exportBranchEntries(MOCK_PROJECT_REF)).resolves.toBeUndefined();
+
+        expect(writeFileService.appendCSVRow).not.toHaveBeenCalled();
+        expect(databaseSelectService.selectOneBranchEntryForExport).not.toHaveBeenCalled();
+    });
+
     it('skips orphaned branches whose input was removed from a kept form', async () => {
         databaseSelectService.selectDistinctBranchRefs.mockResolvedValue(mockRows([
             {form_ref: 'kept-form', owner_input_ref: 'branch-input-removed'},

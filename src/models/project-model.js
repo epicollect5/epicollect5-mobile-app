@@ -88,7 +88,7 @@ export const projectModel = {
         }));
     },
     getExtraForm(formRef) {
-        return (this.project_extra.forms[formRef]) ? this.project_extra.forms[formRef] : {};
+        return this.project_extra.forms?.[formRef] ? this.project_extra.forms[formRef] : {};
     },
     getFirstFormRef() {
         return (this.project_extra.project.forms[0]) ? this.project_extra.project.forms[0] : '';
