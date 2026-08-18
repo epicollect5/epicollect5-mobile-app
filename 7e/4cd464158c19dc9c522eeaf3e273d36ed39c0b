@@ -1,0 +1,24 @@
+tests/unit/components/globals/RightDrawer.spec.js
+  s_0ce5969475ceee::t_370ca8f138fb64 311,325
+src/config/strings.js
+  s_0ce5969475ceee::t_f8126ae0975a67 1775
+  s_0ce5969475ceee::t_ca0e3696ed097a 179,445,711,977,1243,1509,2041,2307
+src/components/globals/RightDrawer.vue
+  s_0ce5969475ceee::t_3bcf08ed138d3d 445-452
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7e4cd464158c19dc9c522eeaf3e273d36ed39c0b",
+  "prompts": {},
+  "sessions": {
+    "s_0ce5969475ceee": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fec1eb893ffeWo2C57JjXsLuay",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
