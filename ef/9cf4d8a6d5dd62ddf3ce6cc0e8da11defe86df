@@ -1,0 +1,19 @@
+src/services/entries-download-service.js
+  s_59875f6e883f75::t_559d683879c809 406,419,440,446
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ef9cf4d8a6d5dd62ddf3ce6cc0e8da11defe86df",
+  "prompts": {},
+  "sessions": {
+    "s_59875f6e883f75": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a015a7-fb61-7e42-ae42-e241679f4dd6",
+        "model": "unknown"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
