@@ -18,7 +18,7 @@ Follow the **Issue Publish Workflow** defined in `docs/workflows/publish-issue.m
 
 ## Safety
 
-This command is side-effecting (creates a public GitHub issue). The workflow always shows the user the resolved title, repo, labels, and draft status, and asks for explicit confirmation before running `gh issue create`. Confirmation may be skipped only when the user explicitly supplies the `yes` argument.
+This command is side-effecting (creates a public GitHub issue). The workflow always shows the user the resolved title, repo, and labels, and asks for explicit confirmation before running `gh issue create`. Confirmation may be skipped only when the user explicitly supplies the `yes` argument.
 
 ## Inputs
 
@@ -29,7 +29,6 @@ The user can pass arguments to override the interactive picker:
 - `/publish-issue <file> repo:<owner/name>` — publish to a specific repo instead of the default.
 - `/publish-issue <file> title:<text>` — override the title (otherwise extracted from the first H1).
 - `/publish-issue <file> labels:<csv>` — apply labels (comma-separated).
-- `/publish-issue <file> draft` — create the issue as a draft instead of publishing it.
 - `/publish-issue <file> yes` — skip the confirmation prompt. Use only when the user explicitly opts out.
 
 Multiple overrides can be combined.

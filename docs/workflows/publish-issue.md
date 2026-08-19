@@ -14,7 +14,6 @@ Recognised keys:
 - `repo:<owner/name>` — optional. Target repo. Defaults to `epicollect5/epicollect5-development-plan`.
 - `title:<text>` — optional. Override title. Defaults to the first H1 in the file.
 - `labels:<csv>` — optional. Comma-separated label names to apply.
-- `draft` — optional flag. If present, create the issue as a draft.
 - `yes` — optional flag. If present, skip the confirmation prompt. Only use when the user explicitly opts out.
 
 ## Source of truth
@@ -64,14 +63,8 @@ If any precondition fails, do not proceed to the confirmation step. Surface the 
 6. If `yes` is NOT in `$ARGUMENTS`, show the confirmation prompt (see below) and wait for the user's explicit go-ahead. If the user declines or times out, stop without running `gh` and without deleting the file.
 7. Run exactly one of the following:
 
-   **Default (no draft flag):**
    ```bash
    gh issue create --repo "$REPO" --title "$TITLE" --body-file "$FILE" [(--label "$LABEL")...]
-   ```
-
-   **With draft:**
-   ```bash
-   gh issue create --repo "$REPO" --title "$TITLE" --body-file "$FILE" --draft [(--label "$LABEL")...]
    ```
 
 8. On success, delete the source file (`rm <file>`). On failure, do NOT delete — leave the file in place so the user can retry.
@@ -92,15 +85,14 @@ After showing the body for review, use the `question` tool (or an equivalent pro
 - **Options** (one per line in the prompt body):
   - Title: `<title>`
   - Labels: `<labels or "none">`
-  - Draft: `<yes/no>`
 
 Choices:
 
 - `Yes, publish` — runs `gh issue create` and deletes the draft on success
 - `No, cancel` — stops without side effects, file is kept
-- `Edit and retry` — asks the user what to change (repo, title, labels, draft, body file) and restarts the workflow
+- `Edit and retry` — asks the user what to change (repo, title, labels, body file) and restarts the workflow
 
-The prompt MUST include the resolved title, repo, labels, and draft status. Never call `gh` before the user explicitly confirms.
+The prompt MUST include the resolved title, repo, and labels. Never call `gh` before the user explicitly confirms.
 
 ## Output format
 
@@ -108,13 +100,6 @@ After a successful publish, reply with two lines:
 
 ```
 Created issue <url>
-Removed draft: <file>
-```
-
-If the user passed `draft`, append `(draft)` to the first line:
-
-```
-Created issue <url> (draft)
 Removed draft: <file>
 ```
 
