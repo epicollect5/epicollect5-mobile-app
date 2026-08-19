@@ -52,7 +52,7 @@ If any precondition fails, do not proceed to the confirmation step. Surface the 
 
 1. Parse `$ARGUMENTS` into the recognised keys above.
 2. Resolve the file:
-   - If `<file>` is given, use it. If it is not an absolute path, resolve it relative to `docs/issues/draft/`.
+   - If `<file>` is given: use an absolute path as-is; use a path starting with `docs/issues/draft/` as-is (repo-root-relative); resolve any other relative path against `docs/issues/draft/`.
    - Otherwise, list every `*.md` file in `docs/issues/draft/`. For each, read the first H1 line and present a numbered picker to the user. If there is exactly one draft, skip the picker and proceed with it. If there are zero drafts, stop with a clear message.
 3. Resolve the target repo:
    - If `repo:` is set, use it verbatim.

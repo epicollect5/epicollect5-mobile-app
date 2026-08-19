@@ -25,7 +25,7 @@ This command is side-effecting (creates a public GitHub issue). The workflow alw
 The user can pass arguments to override the interactive picker:
 
 - `/publish-issue` (no args) — list pending drafts and ask which to publish.
-- `/publish-issue <file>` — skip the picker, use the file directly (path relative to repo root, inside `docs/issues/draft/` or absolute).
+- `/publish-issue <file>` — skip the picker, use the file directly (`foo.md` relative to `docs/issues/draft/`, `docs/issues/draft/foo.md`, or absolute).
 - `/publish-issue <file> repo:<owner/name>` — publish to a specific repo instead of the default.
 - `/publish-issue <file> title:<text>` — override the title (otherwise extracted from the first H1).
 - `/publish-issue <file> labels:<csv>` — apply labels (comma-separated).
