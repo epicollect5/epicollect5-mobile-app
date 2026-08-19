@@ -191,6 +191,17 @@ export const databaseDeleteService = {
                 ]
             });
             statements.push({
+                query: 'DELETE FROM media WHERE project_ref=? AND form_ref=? AND entry_uuid IN (' +
+                    'SELECT entry_uuid FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?)',
+                params: [
+                    projectRef,
+                    formRef,
+                    projectRef,
+                    formRef,
+                    PARAMETERS.SYNCED_CODES.SYNCED
+                ]
+            });
+            statements.push({
                 query: 'DELETE FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?',
                 params: [projectRef, formRef, PARAMETERS.SYNCED_CODES.SYNCED]
             });
