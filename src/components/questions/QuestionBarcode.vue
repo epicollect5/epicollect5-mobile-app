@@ -201,7 +201,11 @@ export default {
         notificationService.hideProgressDialog();
 
         //foreground service helps the app to not be killed
-        await notificationService.startForegroundService();
+        try {
+          await notificationService.startForegroundService();
+        } catch (error) {
+          console.log('Failed to start foreground service: ' + error);
+        }
 
         //request camera permission
         if (rootStore.device.platform === PARAMETERS.ANDROID) {
