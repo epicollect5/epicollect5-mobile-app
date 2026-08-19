@@ -109,6 +109,12 @@ export const versioningService = {
 
                     // Store the previous project structure for later comparison
                     self.previousProjectStructure = projectModel.getProjectExtra();
+                    // Save the current timestamp so it can be rolled back if
+                    // stale-entry cleanup fails: the database and in-memory
+                    // model will already carry the new value, but we need
+                    // checkProjectVersion() to detect a mismatch on the next
+                    // attempt so the cleanup is retried.
+                    const previousLastUpdated = projectModel.getLastUpdated();
                     console.log('updating project');
                     // Update the project
                     databaseUpdateService.updateProject(
@@ -152,8 +158,18 @@ export const versioningService = {
                                     },
                                     function (error) {
                                         // Failed to remove the entries of removed forms/branches:
-                                        // block the update so the user knows something is wrong
-                                        reject(error);
+                                        // roll back last_updated so the next version check
+                                        // detects a mismatch and retries the cleanup
+                                        projectModel.setLastUpdated(previousLastUpdated);
+                                        return databaseUpdateService.updateProject(
+                                            projectModel.getProjectRef(),
+                                            projectExtra,
+                                            projectMapping,
+                                            previousLastUpdated
+                                        ).then(
+                                            function () { reject(error); },
+                                            function () { reject(error); }
+                                        );
                                     }
                                 ).then(
                                     function () {

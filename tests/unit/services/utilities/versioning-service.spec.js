@@ -395,6 +395,7 @@ describe('versioningService.updateProject()', () => {
             },
             inputs: {}
         });
+        projectModel.setLastUpdated('2023-01-01');
 
         webService.getProject.mockResolvedValue({
             data: {
@@ -430,6 +431,14 @@ describe('versioningService.updateProject()', () => {
         await expect(versioningService.updateProject()).rejects.toMatchObject({ isStaleCleanupError: true });
         expect(databaseDeleteService.deleteFormEntries).toHaveBeenCalledWith('test-ref', ['form_ref_b']);
         expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
+        //last_updated must be rolled back so the next version check retries the cleanup
+        expect(projectModel.getLastUpdated()).toBe('2023-01-01');
+        expect(databaseUpdateService.updateProject).toHaveBeenLastCalledWith(
+            'test-ref',
+            expect.any(String),
+            expect.any(String),
+            '2023-01-01'
+        );
     });
 
     it('keeps cleanup retryable after media is removed but database cleanup fails', async () => {
@@ -479,6 +488,7 @@ describe('versioningService.updateProject()', () => {
             },
             inputs: {}
         });
+        projectModel.setLastUpdated('2023-01-01');
 
         webService.getProject.mockResolvedValue({
             data: {
@@ -524,6 +534,14 @@ describe('versioningService.updateProject()', () => {
         await expect(versioningService.updateProject()).rejects.toMatchObject({ isStaleCleanupError: true });
         expect(databaseDeleteService.deleteBranchEntry).toHaveBeenCalledWith('branch-entry-1');
         expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
+        //last_updated must be rolled back so the next version check retries the cleanup
+        expect(projectModel.getLastUpdated()).toBe('2023-01-01');
+        expect(databaseUpdateService.updateProject).toHaveBeenLastCalledWith(
+            'test-ref',
+            expect.any(String),
+            expect.any(String),
+            '2023-01-01'
+        );
     });
 
     it('retries the cleanup of a form already absent from the persisted structure', async () => {
