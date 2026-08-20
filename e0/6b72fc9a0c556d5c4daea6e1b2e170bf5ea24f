@@ -1,0 +1,19 @@
+docs/workflows/review.md
+  s_cad5e368ecfde5::t_2cf15beb078121 55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e06b72fc9a0c556d5c4daea6e1b2e170bf5ea24f",
+  "prompts": {},
+  "sessions": {
+    "s_cad5e368ecfde5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fdf29a0d9ffeSluU23EcMh2U28",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
