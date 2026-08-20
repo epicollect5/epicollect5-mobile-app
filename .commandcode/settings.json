@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(gh:*)",
+      "Shell(npx vitest *)",
+      "Shell(git status)",
+      "Shell(git diff *)",
+      "Shell(git log *)",
+      "Shell(git show *)",
+      "Shell(git branch *)",
+      "Shell(git rev-parse *)",
+      "Shell(git ls-files *)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}
