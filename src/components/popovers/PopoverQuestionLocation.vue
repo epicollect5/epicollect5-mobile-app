@@ -113,14 +113,13 @@ export default {
 					showBackdrop: true,
 					backdropDismiss: false,
 					componentProps: {
-						latitude: props.parentState.answer.answer.latitude,
-						longitude: props.parentState.answer.answer.longitude
+						latitude: props.parentState.answer?.answer?.latitude ?? '',
+						longitude: props.parentState.answer?.answer?.longitude ?? ''
 					}
 				});
 
 				//update location only when modal is dismiss with "Update Location"
 				scope.ModalLocationEdit.onDidDismiss().then((response) => {
-					console.log('coords ->', response.data);
 					if (response.data) {
 						//parentState is the reactive question state passed by the popover handler,
 						//writing to it is the intended way to propagate the updated answer
