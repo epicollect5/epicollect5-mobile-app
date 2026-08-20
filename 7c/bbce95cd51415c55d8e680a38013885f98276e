@@ -1,0 +1,24 @@
+src/services/database/database-delete-service.js
+  s_45d33bd6cd2833::t_050f14cf52ea36 178-189
+  s_45d33bd6cd2833::t_9e85b0281ed01f 110
+src/services/entry/branch-entry-service.js
+  s_45d33bd6cd2833::t_6676f30151c3a1 305-311
+src/services/entry/entry-service.js
+  s_45d33bd6cd2833::t_45165ccb8fa3e9 459-463
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7cbbce95cd51415c55d8e680a38013885f98276e",
+  "prompts": {},
+  "sessions": {
+    "s_45d33bd6cd2833": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fe04bb369ffe1u1SU0GSR8UhP3",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
