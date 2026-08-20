@@ -47,7 +47,7 @@ export const authAppleService = {
                             } catch (error) {
                                 console.log(error);
                                 // hide all auth modals
-                                modalsHandlerService.dismissAll();
+                                await modalsHandlerService.dismissAll();
                                 notificationService.hideProgressDialog();
                                 await errorsService.handleWebError(error);
                                 return;
@@ -76,10 +76,10 @@ export const authAppleService = {
                                         console.log('is', response.data);
                                     });
                                     return modalsHandlerService.confirmEmail.present();
-                                }, function (error) {
+                                }, async function (error) {
                                     console.log(error);
                                     // hide all auth modals
-                                    modalsHandlerService.dismissAll();
+                                    await modalsHandlerService.dismissAll();
                                     notificationService.hideProgressDialog();
                                     errorsService.handleWebError(error);
                                 });
@@ -107,7 +107,7 @@ export const authAppleService = {
 
                             if (errors[0].code !== 'ec5_390' && errors[0].code !== 'ec5_384') {
                                 // hide any modals
-                                modalsHandlerService.dismissAll();
+                                await modalsHandlerService.dismissAll();
                                 notificationService.hideProgressDialog();
                                 await errorsService.handleWebError(error);
                             }

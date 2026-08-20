@@ -101,7 +101,7 @@ export default {
 					await authLoginService.loginUser(response);
 
 					//dismiss all modals
-					modalsHandlerService.dismissAll();
+					await modalsHandlerService.dismissAll();
 
 					//any extra action to perform? (like addProject()...)
 					if (rootStore.afterUserIsLoggedIn.callback !== null) {

@@ -18,7 +18,7 @@ export async function loginLocal (credentials) {
 
         notificationService.showToast(STRINGS[language].status_codes.ec5_115);
         //user is logged in, dismiss all modals related to auth
-        modalsHandlerService.dismissAll();
+        await modalsHandlerService.dismissAll();
 
         //any extra action to perform? (like addProject()...)
         if (rootStore.afterUserIsLoggedIn.callback !== null) {
