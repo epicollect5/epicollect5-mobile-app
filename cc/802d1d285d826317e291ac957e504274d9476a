@@ -1,0 +1,19 @@
+.opencode/commands/commit.md
+  s_91232b6152d419::t_09c8db4dd670e0 2,6,8,10-14,16-18,24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "cc802d1d285d826317e291ac957e504274d9476a",
+  "prompts": {},
+  "sessions": {
+    "s_91232b6152d419": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fdf0e5b68ffeAMxRX9hzcgfj5x",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
