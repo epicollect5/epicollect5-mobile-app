@@ -456,8 +456,11 @@ export const entryService = {
                         databaseDeleteService.removeUniqueAnswers(res).then(function () {
                             // Then delete all temp branch entries
                             databaseDeleteService.deleteTempBranchEntries().then(function () {
-                                // Finished, resolve
-                                resolve();
+                                // Also clear temp unique answers so they don't leak
+                                databaseDeleteService.deleteTempUniqueAnswers().then(function () {
+                                    // Finished, resolve
+                                    resolve();
+                                });
                             });
                         });
                     } else {

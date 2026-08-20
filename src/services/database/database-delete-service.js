@@ -107,7 +107,7 @@ export const databaseDeleteService = {
     async deleteEntries(projectRef) {
 
         const query = '';
-        const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'media', 'bookmarks'];
+        const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'temp_unique_answers', 'unique_answers', 'media', 'bookmarks'];
 
         const options = {
             project_ref: projectRef,
@@ -174,6 +174,18 @@ export const databaseDeleteService = {
             statements.push({
                 query: 'DELETE FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?',
                 params: [projectRef, formRef, PARAMETERS.SYNCED_CODES.SYNCED]
+            });
+            // Clear abandoned in-progress branch edits for these forms. Leaving them
+            // would let moveBranchEntries/moveUniqueAnswers resurrect data on the next
+            // parent save after the committed copies were wiped by the download above,
+            // and let stale temp_unique_answers falsely reject new unique answers.
+            statements.push({
+                query: 'DELETE FROM temp_branch_entries WHERE project_ref=? AND form_ref=?',
+                params: [projectRef, formRef]
+            });
+            statements.push({
+                query: 'DELETE FROM temp_unique_answers WHERE project_ref=? AND form_ref=?',
+                params: [projectRef, formRef]
             });
         });
 
