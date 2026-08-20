@@ -492,6 +492,8 @@ This ordering is important because branch and child rows depend on parent UUID r
 
 This version-check-then-download pattern is the key safeguard against stale project models in the native download flow.
 
+**Mid-download version change**: the version check runs again before each page fetch; if it fails mid-download, the download is aborted and the user is asked to update the project and restart. The partially downloaded rows are intentionally left in place — they match the still-old local structure until `updateProject()` runs, so nothing is corrupt. On restart, the form buttons reset to the first form only, and `deleteEntriesBeforeDownload()` wipes all remote entries (with media and unique answers) for every form before re-downloading, so no old-structure rows survive an update plus restart. Offline or transient version-check failures cannot corrupt data either: downloads and uploads fail on their own network calls and are surfaced by `errorsService`, and uploads are additionally rejected server-side when the project is out of date.
+
 ## Versioning and Project Updates
 
 Project structure versioning is handled by `versioningService`.
