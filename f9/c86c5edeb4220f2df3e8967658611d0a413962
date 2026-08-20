@@ -1,0 +1,19 @@
+src/use/project/update-project.js
+  s_6cc4531cc8a71a::t_9f3393713489dd 52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f9c86c5edeb4220f2df3e8967658611d0a413962",
+  "prompts": {},
+  "sessions": {
+    "s_6cc4531cc8a71a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fe04c45a6ffe6t89t9TTbbL4a0",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
