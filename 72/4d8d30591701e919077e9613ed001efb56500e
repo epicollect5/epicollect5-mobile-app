@@ -1,0 +1,19 @@
+src/components/popovers/PopoverQuestionLocation.vue
+  s_4912292c2fe18b::t_00c553651c2477 116-117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "724d8d30591701e919077e9613ed001efb56500e",
+  "prompts": {},
+  "sessions": {
+    "s_4912292c2fe18b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fe0516021ffeatwzmvKMMC6iV2",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
