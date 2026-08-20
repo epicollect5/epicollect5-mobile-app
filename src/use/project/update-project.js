@@ -50,7 +50,7 @@ export async function updateProject () {
             console.log('fail');
             // Check if we have an auth error
             if (authErrors.indexOf(error?.data?.errors?.[0]?.code) >= 0) {
-                notificationService.showAlert(
+                await notificationService.showAlert(
                     STRINGS[language].status_codes[error.data.errors[0].code]
                 );
                 //1 - set a callback to add the project after logging in
@@ -63,13 +63,13 @@ export async function updateProject () {
                 showModalLogin();
             } else if (error?.isStaleCleanupError) {
                 // Failed to remove the entries of forms/branches removed from the project
-                notificationService.showAlert(
+                await notificationService.showAlert(
                     labels.stale_cleanup_failed,
                     labels.error
                 );
             } else {
                 // Other error
-                errorsService.handleWebError(error);
+                await errorsService.handleWebError(error);
             }
         }
     );
