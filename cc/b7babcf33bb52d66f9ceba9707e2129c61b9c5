@@ -1,0 +1,23 @@
+.commandcode/commands/commit.md
+  s_ea4381a8c1b61c::t_d9f28ade677d15 2,6,8,10-14,16-18,24
+.commandcode/commands/qa.md
+  s_ea4381a8c1b61c::t_d74188f3fd142c 1-4
+.commandcode/commands/review.md
+  s_ea4381a8c1b61c::t_7ff3d7ec2bc2aa 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ccb7babcf33bb52d66f9ceba9707e2129c61b9c5",
+  "prompts": {},
+  "sessions": {
+    "s_ea4381a8c1b61c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fdf10f300ffeViPlSJs394wXg0",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
