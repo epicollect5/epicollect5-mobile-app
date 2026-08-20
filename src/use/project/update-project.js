@@ -49,7 +49,7 @@ export async function updateProject () {
             // Web error
             console.log('fail');
             // Check if we have an auth error
-            if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
+            if (authErrors.indexOf(error?.data?.errors?.[0]?.code) >= 0) {
                 notificationService.showAlert(
                     STRINGS[language].status_codes[error.data.errors[0].code]
                 );
