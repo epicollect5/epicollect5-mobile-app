@@ -1,0 +1,16 @@
+src/services/database/database-delete-service.js
+  h_2231ff2aa93473 5,131
+src/services/database/database-select-service.js
+  h_2231ff2aa93473 1188-1217
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d15876ce167e5047694ed639493542782cdf19ce",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
