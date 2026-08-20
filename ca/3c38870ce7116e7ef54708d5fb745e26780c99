@@ -1,0 +1,14 @@
+src/use/project/update-project.js
+  h_2231ff2aa93473 53,66,72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ca3c38870ce7116e7ef54708d5fb745e26780c99",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
