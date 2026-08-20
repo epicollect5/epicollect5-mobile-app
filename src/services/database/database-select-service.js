@@ -1185,5 +1185,35 @@ export const databaseSelectService = {
         }
 
         return branchRefs;
+    },
+    async selectMediaBeforeDownload(projectRef, formRefs) {
+        const dbStore = useDBStore();
+        const placeholders = formRefs.map(() => '?').join(',');
+        const query = 'SELECT * FROM media WHERE project_ref=? AND form_ref IN (' + placeholders + ') AND (' +
+            'entry_uuid IN (SELECT entry_uuid FROM entries WHERE project_ref=? AND form_ref IN (' + placeholders + ') AND is_remote=?) OR ' +
+            'entry_uuid IN (SELECT entry_uuid FROM branch_entries WHERE project_ref=? AND form_ref IN (' + placeholders + ') AND synced=?)' +
+            ')';
+        const params = [
+            projectRef,
+            ...formRefs,
+            projectRef,
+            ...formRefs,
+            PARAMETERS.REMOTE_CODES.IS,
+            projectRef,
+            ...formRefs,
+            PARAMETERS.SYNCED_CODES.SYNCED
+        ];
+
+        return new Promise((resolve, reject) => {
+            dbStore.db.transaction((tx) => {
+                tx.executeSql(query, params, (transaction, result) => {
+                    const mediaFiles = [];
+                    for (let index = 0; index < (result?.rows?.length || 0); index++) {
+                        mediaFiles.push(result.rows.item(index));
+                    }
+                    resolve(mediaFiles);
+                }, reject);
+            }, reject);
+        });
     }
 };
