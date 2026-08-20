@@ -52,6 +52,7 @@ Do NOT comment on:
 
 For every finding:
 
+- **Number**: Each finding MUST be numbered sequentially starting at 1 (1, 2, 3, ...), in report order. Numbers must be unique, never skipped or reused, and are the identifier used to reference the finding anywhere else in the review (e.g., "see #3").
 - **Severity**: Critical | High | Medium | Low
 - **File**: `path/to/file.php:line`
 - **Explanation**: What is wrong and why it matters.
