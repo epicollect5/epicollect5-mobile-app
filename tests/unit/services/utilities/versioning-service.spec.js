@@ -441,6 +441,77 @@ describe('versioningService.updateProject()', () => {
         );
     });
 
+    it('still propagates the cleanup error when the rollback write fails', async () => {
+        projectModel.loadExtraStructure({
+            project: {
+                details: { slug: 'test-project', ref: 'test-ref' },
+                forms: ['form_ref_a', 'form_ref_b']
+            },
+            forms: {
+                form_ref_a: {
+                    details: { name: 'Form A' },
+                    inputs: [],
+                    branch: {}
+                },
+                form_ref_b: {
+                    details: { name: 'Form B' },
+                    inputs: [],
+                    branch: {}
+                }
+            },
+            inputs: {}
+        });
+        projectModel.setLastUpdated('2023-01-01');
+
+        webService.getProject.mockResolvedValue({
+            data: {
+                meta: {
+                    project_extra: {
+                        project: {
+                            details: { slug: 'test-project', ref: 'test-ref' },
+                            forms: ['form_ref_a']
+                        },
+                        forms: {
+                            form_ref_a: {
+                                details: { name: 'Form A' },
+                                inputs: [],
+                                branch: {}
+                            }
+                        },
+                        inputs: {}
+                    },
+                    project_mapping: {},
+                    project_stats: { structure_last_updated: '2024-01-01' }
+                }
+            }
+        });
+
+        //stale entries of the removed form are still stored locally
+        databaseSelectService.selectDistinctFormRefs.mockResolvedValue(['form_ref_b']);
+        //no stale branches
+        databaseSelectService.selectDistinctBranchRefsIncludingTemp.mockResolvedValue([]);
+
+        //cleanup fails AND the rollback write fails too: the original
+        //isStaleCleanupError error must still reach the callers
+        const cleanupError = new Error('cleanup db error');
+        databaseDeleteService.deleteFormEntries.mockRejectedValue(cleanupError);
+        //the first updateProject call is the main write (must resolve);
+        //only the rollback write (second call) fails
+        databaseUpdateService.updateProject
+            .mockResolvedValueOnce()
+            .mockRejectedValueOnce(new Error('rollback db error'));
+
+        await expect(versioningService.updateProject()).rejects.toBe(cleanupError);
+        //the rollback was attempted with the previous last_updated
+        expect(databaseUpdateService.updateProject).toHaveBeenLastCalledWith(
+            'test-ref',
+            expect.any(String),
+            expect.any(String),
+            '2023-01-01'
+        );
+        expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
+    });
+
     it('keeps cleanup retryable after media is removed but database cleanup fails', async () => {
         const mediaFile = {
             file_path: 'file:///data/photos/',

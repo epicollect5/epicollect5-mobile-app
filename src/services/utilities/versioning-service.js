@@ -157,12 +157,19 @@ export const versioningService = {
             // roll back last_updated so the next version check
             // detects a mismatch and retries the cleanup
             projectModel.setLastUpdated(previousLastUpdated);
-            await databaseUpdateService.updateProject(
-                projectModel.getProjectRef(),
-                projectExtra,
-                projectMapping,
-                previousLastUpdated
-            );
+            try {
+                await databaseUpdateService.updateProject(
+                    projectModel.getProjectRef(),
+                    projectExtra,
+                    projectMapping,
+                    previousLastUpdated
+                );
+            } catch (rollbackError) {
+                // The rollback write must not mask the cleanup error:
+                // callers rely on isStaleCleanupError to inform the user,
+                // and the failed rollback is logged for diagnostics
+                console.error('Failed to roll back last_updated after stale entry cleanup failure', rollbackError);
+            }
             throw error;
         }
 
