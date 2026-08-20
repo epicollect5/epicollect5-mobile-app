@@ -1,0 +1,21 @@
+.opencode/commands/review.md
+  s_ea4381a8c1b61c::t_5908c4f1414aa0 1-4
+.opencode/commands/qa.md
+  s_ea4381a8c1b61c::t_717b5026a6c8a9 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "708b3f0f66cb1242d64315ad03230f70f6983f06",
+  "prompts": {},
+  "sessions": {
+    "s_ea4381a8c1b61c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fdf10f300ffeViPlSJs394wXg0",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
