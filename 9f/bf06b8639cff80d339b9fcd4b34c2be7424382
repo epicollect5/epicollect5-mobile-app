@@ -1,0 +1,30 @@
+src/components/modals/ModalPasswordlessLogin.vue
+  s_ed37ca31f99184::t_43b886f5be5ff2 104
+src/use/auth/login-local.js
+  s_ed37ca31f99184::t_4dd5cb9ab47d87 21
+src/services/auth/auth-google-service.js
+  s_ed37ca31f99184::t_4a6e5ca32f39ac 135
+  s_ed37ca31f99184::t_3357bc5cf78b1f 104,107
+src/services/auth/auth-apple-service.js
+  s_ed37ca31f99184::t_726abee1c21975 50
+  s_ed37ca31f99184::t_8877d98d12b9fb 79,82
+  s_ed37ca31f99184::t_4b995af9afb89f 110
+src/components/modals/ModalConfirmEmail.vue
+  s_ed37ca31f99184::t_f00cab958ef1a6 120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9fbf06b8639cff80d339b9fcd4b34c2be7424382",
+  "prompts": {},
+  "sessions": {
+    "s_ed37ca31f99184": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fe057757bffec15SZ7Z626lfli",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
