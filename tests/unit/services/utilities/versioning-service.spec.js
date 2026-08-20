@@ -738,3 +738,123 @@ describe('versioningService.checkProjectVersion()', () => {
         expect(webService.getProjectVersion).not.toHaveBeenCalled();
     });
 });
+
+describe('versioningService.removeStaleEntries()', () => {
+
+    beforeEach(() => {
+        setActivePinia(createPinia());
+        const rootStore = useRootStore();
+        rootStore.language = 'en';
+        projectModel.destroy();
+        projectModel.loadExtraStructure({
+            project: {
+                details: { slug: 'test-project', ref: 'test-ref' },
+                forms: ['form_ref_a']
+            },
+            forms: {
+                form_ref_a: {
+                    details: { name: 'Form A' },
+                    inputs: [],
+                    branch: {}
+                }
+            },
+            inputs: {}
+        });
+        vi.clearAllMocks();
+    });
+
+    it('does nothing when there are no stale forms or branches', async () => {
+        databaseSelectService.selectDistinctFormRefs.mockResolvedValue([]);
+        databaseSelectService.selectDistinctBranchRefsIncludingTemp.mockResolvedValue([]);
+
+        await expect(versioningService.removeStaleEntries()).resolves.toBeUndefined();
+
+        expect(databaseDeleteService.deleteFormEntries).not.toHaveBeenCalled();
+        expect(databaseDeleteService.deleteBranchEntry).not.toHaveBeenCalled();
+        expect(deleteFileService.removeFiles).not.toHaveBeenCalled();
+    });
+
+    it('removes entries and media of stale forms', async () => {
+        databaseSelectService.selectDistinctFormRefs.mockResolvedValue(['form_ref_removed']);
+        databaseSelectService.selectDistinctBranchRefsIncludingTemp.mockResolvedValue([]);
+        databaseSelectService.selectEntries.mockResolvedValue({
+            rows: {
+                length: 1,
+                item: () => ({ entry_uuid: 'entry-1' })
+            }
+        });
+        databaseSelectService.selectBranchEntries.mockResolvedValue({ rows: { length: 0 } });
+        databaseSelectService.selectProjectMedia.mockResolvedValue({
+            audios: [],
+            photos: [{ name: 'photo.jpg' }],
+            videos: []
+        });
+        databaseDeleteService.deleteFormEntries.mockResolvedValue();
+
+        await expect(versioningService.removeStaleEntries()).resolves.toBeUndefined();
+
+        expect(databaseDeleteService.deleteFormEntries).toHaveBeenCalledWith('test-ref', ['form_ref_removed']);
+        expect(deleteFileService.removeFiles).toHaveBeenCalledWith([{ name: 'photo.jpg' }]);
+    });
+
+    it('removes entries of stale branches', async () => {
+        databaseSelectService.selectDistinctFormRefs.mockResolvedValue([]);
+        databaseSelectService.selectDistinctBranchRefsIncludingTemp.mockResolvedValue([
+            { formRef: 'form_ref_a', branchRef: 'branch_removed' }
+        ]);
+        databaseSelectService.selectBranchEntries.mockResolvedValue({
+            rows: {
+                length: 1,
+                item: () => ({ entry_uuid: 'branch-entry-1' })
+            }
+        });
+        databaseSelectService.selectProjectMedia.mockResolvedValue({
+            audios: [],
+            photos: [],
+            videos: [{ name: 'video.mp4' }]
+        });
+
+        await expect(versioningService.removeStaleEntries()).resolves.toBeUndefined();
+
+        expect(databaseDeleteService.deleteEntryMedia).toHaveBeenCalledWith('branch-entry-1');
+        expect(databaseDeleteService.deleteBranchEntry).toHaveBeenCalledWith('branch-entry-1');
+        expect(deleteFileService.removeFiles).toHaveBeenCalledWith([{ name: 'video.mp4' }]);
+    });
+
+    it('throws with isStaleCleanupError when form cleanup fails', async () => {
+        databaseSelectService.selectDistinctFormRefs.mockResolvedValue(['form_ref_removed']);
+        databaseSelectService.selectDistinctBranchRefsIncludingTemp.mockResolvedValue([]);
+        databaseSelectService.selectEntries.mockResolvedValue({ rows: { length: 0 } });
+        databaseSelectService.selectBranchEntries.mockResolvedValue({ rows: { length: 0 } });
+        databaseDeleteService.deleteFormEntries.mockRejectedValue(new Error('db error'));
+
+        await expect(versioningService.removeStaleEntries()).rejects.toMatchObject({
+            message: 'db error',
+            isStaleCleanupError: true
+        });
+    });
+
+    it('throws with isStaleCleanupError when branch cleanup fails', async () => {
+        databaseSelectService.selectDistinctFormRefs.mockResolvedValue([]);
+        databaseSelectService.selectDistinctBranchRefsIncludingTemp.mockResolvedValue([
+            { formRef: 'form_ref_a', branchRef: 'branch_removed' }
+        ]);
+        databaseSelectService.selectBranchEntries.mockResolvedValue({
+            rows: {
+                length: 1,
+                item: () => ({ entry_uuid: 'branch-entry-1' })
+            }
+        });
+        databaseSelectService.selectProjectMedia.mockResolvedValue({
+            audios: [],
+            photos: [],
+            videos: []
+        });
+        databaseDeleteService.deleteBranchEntry.mockRejectedValue(new Error('db error'));
+
+        await expect(versioningService.removeStaleEntries()).rejects.toMatchObject({
+            message: 'db error',
+            isStaleCleanupError: true
+        });
+    });
+});

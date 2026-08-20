@@ -51,12 +51,7 @@ export const versioningService = {
     },
 
     //Update the project and all entries
-    updateProject () {
-
-        let projectExtra = '';
-        let projectMapping = '';
-        let lastUpdated;
-        const self = this;
+    async updateProject () {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -64,7 +59,7 @@ export const versioningService = {
         //no active project loaded: nothing to update, reject cleanly
         //instead of crashing on an empty project model (getSlug() would throw)
         if (!projectModel.hasInitialised()) {
-            return Promise.reject({
+            throw {
                 data: {
                     errors: [{
                         code: 'ec5_116',
@@ -72,147 +67,117 @@ export const versioningService = {
                         title: STRINGS[language].status_codes.ec5_116
                     }]
                 }
-            });
+            };
         }
 
-        return new Promise((resolve, reject) => {
+        // Fetch the updated project
+        const response = await webService.getProject(projectModel.getSlug());
 
-            // Fetch the updated project
-            webService.getProject(projectModel.getSlug()).then(
-                function (response) {
+        // Check if we don't have project
+        if (!response.data) {
+            throw {
+                data: {
+                    errors: [{
+                        code: 'ec5_116',
+                        source: '',
+                        title: STRINGS[language].status_codes.ec5_116
+                    }]
+                }
+            };
+        }
 
-                    // Check if we don't have project
-                    if (!response.data) {
-                        // Error
-                        reject({
-                            data: {
-                                errors: [{
-                                    code: 'ec5_116',
-                                    source: '',
-                                    title: STRINGS[language].status_codes.ec5_116
-                                }]
-                            }
-                        });
-                        return;
-                    }
+        let projectExtra;
+        let projectMapping;
+        let lastUpdated;
 
-                    try {
-                        console.log(response.data.meta.project_extra);
-                        projectExtra = JSON.stringify(response.data.meta.project_extra);
-                        projectMapping = JSON.stringify(response.data.meta.project_mapping);
-                        lastUpdated = response.data.meta.project_stats.structure_last_updated;
-                    } catch (e) {
-                        console.log(e);
-                        reject();
-                        return;
-                    }
+        try {
+            console.log(response.data.meta.project_extra);
+            projectExtra = JSON.stringify(response.data.meta.project_extra);
+            projectMapping = JSON.stringify(response.data.meta.project_mapping);
+            lastUpdated = response.data.meta.project_stats.structure_last_updated;
+        } catch (e) {
+            console.log(e);
+            throw e;
+        }
 
-                    // Store the previous project structure for later comparison
-                    self.previousProjectStructure = projectModel.getProjectExtra();
-                    // Save the current timestamp so it can be rolled back if
-                    // stale-entry cleanup fails: the database and in-memory
-                    // model will already carry the new value, but we need
-                    // checkProjectVersion() to detect a mismatch on the next
-                    // attempt so the cleanup is retried.
-                    const previousLastUpdated = projectModel.getLastUpdated();
-                    console.log('updating project');
-                    // Update the project
-                    databaseUpdateService.updateProject(
-                        projectModel.getProjectRef(),
-                        projectExtra,
-                        projectMapping,
-                        lastUpdated
-                    ).then(function () {
-                        // Update the in-memory model only after the new structure has been
-                        // persisted: if the persistence fails, model and database stay
-                        // consistent with the previous structure and the update can be retried
-                        console.log('updated project');
+        // Store the previous project structure for later comparison
+        this.previousProjectStructure = projectModel.getProjectExtra();
+        // Save the current timestamp so it can be rolled back if
+        // stale-entry cleanup fails: the database and in-memory
+        // model will already carry the new value, but we need
+        // checkProjectVersion() to detect a mismatch on the next
+        // attempt so the cleanup is retried.
+        const previousLastUpdated = projectModel.getLastUpdated();
+        console.log('updating project');
 
-                        // Load updated project extra structure into project model
-                        projectModel.loadExtraStructure(response.data.meta.project_extra);
-                        // Keep the in-memory mapping in sync with the updated structure,
-                        // otherwise exports use a stale mapping and crash on new inputs
-                        projectModel.loadMappings(response.data.meta.project_mapping);
-                        projectModel.setLastUpdated(lastUpdated);
+        // Update the project
+        await databaseUpdateService.updateProject(
+            projectModel.getProjectRef(),
+            projectExtra,
+            projectMapping,
+            lastUpdated
+        );
 
-                        console.log('updating entries');
+        // Update the in-memory model only after the new structure has been
+        // persisted: if the persistence fails, model and database stay
+        // consistent with the previous structure and the update can be retried
+        console.log('updated project');
 
-                        // Get the entries for a given form ref
-                        function _getFormEntries (formRef) {
+        // Load updated project extra structure into project model
+        projectModel.loadExtraStructure(response.data.meta.project_extra);
+        // Keep the in-memory mapping in sync with the updated structure,
+        // otherwise exports use a stale mapping and crash on new inputs
+        projectModel.loadMappings(response.data.meta.project_mapping);
+        projectModel.setLastUpdated(lastUpdated);
 
-                            // If empty form ref, finished looping forms
-                            if (formRef === '') {
+        console.log('updating entries');
 
-                                // Lastly, remove the entries (and their media) of any forms or
-                                // branches that have been removed from the project structure,
-                                // comparing the stored entries against the current structure.
-                                // A failure here must block the update: the stale entries would
-                                // otherwise tamper with syncing, so the user is informed and
-                                // can retry (or export and delete the entries) and the cleanup
-                                // is retried on the next update or "unsync all entries"
-                                self.removeStaleEntries().then(
-                                    function () {
-                                        // Then resolve
-                                        // Attempt to update the project logo
-                                        return downloadFileService.downloadProjectLogo(projectModel.getSlug(), projectModel.getProjectRef());
-                                    },
-                                    function (error) {
-                                        // Failed to remove the entries of removed forms/branches:
-                                        // roll back last_updated so the next version check
-                                        // detects a mismatch and retries the cleanup
-                                        projectModel.setLastUpdated(previousLastUpdated);
-                                        return databaseUpdateService.updateProject(
-                                            projectModel.getProjectRef(),
-                                            projectExtra,
-                                            projectMapping,
-                                            previousLastUpdated
-                                        ).then(
-                                            function () { reject(error); },
-                                            function () { reject(error); }
-                                        );
-                                    }
-                                ).then(
-                                    function () {
-                                        console.log('downloaded logo');
-                                        resolve(self.changeMade);
-                                        // Reset changeMade back to false
-                                        self.changeMade = false;
-                                    },
-                                    function () {
-                                        console.log('didnt download logo');
-                                        resolve(self.changeMade);
-                                        // Reset changeMade back to false
-                                        self.changeMade = false;
-                                    }
-                                );
-                                return;
-                            }
+        // Update entries for each form
+        const forms = projectModel.getFormsInOrder();
+        for (const form of forms) {
+            try {
+                await this.selectAndUpdateEntries(form.formRef);
+                console.log('successfully updated entries for form: ' + form.formRef);
+            } catch (_) {
+                console.log('failed updated entries for form: ' + form.formRef);
+            }
+        }
 
-                            // Otherwise still forms to loop
-                            self.selectAndUpdateEntries(formRef).then(
-                                // Move on to the next form's entries
-                                function () {
-                                    console.log('successfully updated entries for form: ' + formRef);
-                                    _getFormEntries(projectModel.getNextFormRef(formRef));
-                                },
-                                function () {
-                                    console.log('failed updated entries for form: ' + formRef);
-                                    _getFormEntries(projectModel.getNextFormRef(formRef));
-                                });
-                        }
+        // Remove the entries (and their media) of any forms or
+        // branches that have been removed from the project structure,
+        // comparing the stored entries against the current structure.
+        // A failure here must block the update: the stale entries would
+        // otherwise tamper with syncing, so the user is informed and
+        // can retry (or export and delete the entries) and the cleanup
+        // is retried on the next update or "unsync all entries"
+        try {
+            await this.removeStaleEntries();
+        } catch (error) {
+            // Failed to remove the entries of removed forms/branches:
+            // roll back last_updated so the next version check
+            // detects a mismatch and retries the cleanup
+            projectModel.setLastUpdated(previousLastUpdated);
+            await databaseUpdateService.updateProject(
+                projectModel.getProjectRef(),
+                projectExtra,
+                projectMapping,
+                previousLastUpdated
+            );
+            throw error;
+        }
 
-                        // Start process of updating, via entries for first form
-                        _getFormEntries(projectModel.getFirstFormRef());
+        // Attempt to update the project logo (non-fatal)
+        try {
+            await downloadFileService.downloadProjectLogo(projectModel.getSlug(), projectModel.getProjectRef());
+            console.log('downloaded logo');
+        } catch (_) {
+            console.log('didnt download logo');
+        }
 
-                    }, function (error) {
-                        // Error
-                        reject(error);
-                    });
-                }, function (error) {
-                    // Error
-                    reject(error);
-                });
-        });
+        const result = this.changeMade;
+        // Reset changeMade back to false
+        this.changeMade = false;
+        return result;
     },
 
     /**
