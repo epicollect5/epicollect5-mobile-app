@@ -1,0 +1,26 @@
+docs/workflows/review.md
+  s_eae99827063427::t_c2a145a02a7a13 9
+  s_eae99827063427::t_323145e3ff1b34 10-11
+docs/ARCHITECTURE.md
+  s_eae99827063427::t_dad920afe604df 495-496
+src/services/entries-download-service.js
+  s_eae99827063427::t_1674104578f6c7 356-361
+docs/known-review-false-positives.md
+  s_eae99827063427::t_e4c17232d23924 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "6bad25751c943c60ae810bf2988c7af03062927c",
+  "prompts": {},
+  "sessions": {
+    "s_eae99827063427": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fdf224c0fffeNomPuzKX42LxMv",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
