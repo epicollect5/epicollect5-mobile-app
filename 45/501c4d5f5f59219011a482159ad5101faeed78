@@ -1,0 +1,21 @@
+tests/unit/services/utilities/versioning-service.spec.js
+  s_7239ac2c074020::t_cd62b516845001 434-435,437-438,441-442,462,497-501
+  s_7239ac2c074020::t_18627d35648aa3 718,726-727
+  s_7239ac2c074020::t_7e59851e8c4726 598-599,601-603
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "45501c4d5f5f59219011a482159ad5101faeed78",
+  "prompts": {},
+  "sessions": {
+    "s_7239ac2c074020": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fdf264c1dffeHKjWgZ0GipbuA8",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
