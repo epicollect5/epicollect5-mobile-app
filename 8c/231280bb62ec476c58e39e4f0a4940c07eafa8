@@ -1,0 +1,25 @@
+.agents/skills/false-positive/SKILL.md
+  s_63d405a9f78a4d::t_874716e98ab3e0 1-12
+docs/known-review-false-positives.md
+  s_63d405a9f78a4d::t_043f73a5741e6b 5,7,9
+docs/workflows/false-positive.md
+  s_63d405a9f78a4d::t_f4023b88a1cb16 1-121
+.opencode/commands/false-positive.md
+  s_63d405a9f78a4d::t_5fea92593c4da1 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8c231280bb62ec476c58e39e4f0a4940c07eafa8",
+  "prompts": {},
+  "sessions": {
+    "s_63d405a9f78a4d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fdc40f78cffeZJy35gI9mIf7wO",
+        "model": "muse-spark-1.2-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
