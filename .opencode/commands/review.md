@@ -2,8 +2,8 @@
 description: Review local changes against the repository base branch
 ---
 
-# Code Review
+Execute the `review` skill defined in `.agents/skills/review/SKILL.md` exactly as written.
 
-Review local changes against the repository base branch.
+Forward the arguments below verbatim to the skill as-is, without parsing, restructuring, or interpreting them:
 
-Follow the **Code Review Workflow** defined in `docs/workflows/review.md`.
+$ARGUMENTS

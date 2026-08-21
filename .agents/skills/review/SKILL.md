@@ -1,4 +1,5 @@
 ---
+name: review
 description: Review local changes against the repository base branch
 ---
 

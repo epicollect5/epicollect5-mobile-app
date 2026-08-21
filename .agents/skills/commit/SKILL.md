@@ -1,6 +1,6 @@
 ---
+name: commit
 description: Create Conventional Commits from changes, splitting by type and scope
-agent: build
 ---
 
 Analyze all changes and create one or more Conventional Commits, grouped by type and scope. Execute the commits yourself; never leave the work as a proposal.

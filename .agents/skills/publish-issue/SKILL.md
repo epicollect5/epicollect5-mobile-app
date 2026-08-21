@@ -1,4 +1,5 @@
 ---
+name: publish-issue
 description: Pick a pending issue from docs/issues/draft/, show it for review, then publish to GitHub on confirmation
 ---
 

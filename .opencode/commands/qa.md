@@ -2,8 +2,8 @@
 description: Generate QA documentation from a codebase change or QA spec file
 ---
 
-# QA Documentation
+Execute the `qa` skill defined in `.agents/skills/qa/SKILL.md` exactly as written.
 
-Generate QA documentation from a codebase change or QA spec file.
+Forward the arguments below verbatim to the skill as-is, without parsing, restructuring, or interpreting them:
 
-Follow the **QA Generation Workflow** defined in `docs/workflows/qa.md`.
+$ARGUMENTS

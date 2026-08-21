@@ -1,4 +1,5 @@
 ---
+name: qa
 description: Generate QA documentation from a codebase change or QA spec file
 ---
 

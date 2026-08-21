@@ -1,4 +1,5 @@
 ---
+name: issue
 description: Convert the current AI plan into a copy-paste-ready GitHub issue, and save the draft to docs/issues/draft/
 ---
 
