@@ -348,6 +348,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           //The project was trashed on the server mid-download: clear all
           //progress and stop. The alert was already shown by the version check.
           clearProjectDownloadCache();
+          resetDownloadButtonState();
           return;
         }
 
