@@ -1,0 +1,41 @@
+.opencode/commands/commit.md
+  s_236334a71080ad::t_e130f187188259 6,8,10
+.opencode/commands/publish-issue.md
+  s_236334a71080ad::t_dde117436bfe38 5,7,9
+.agents/skills/commit/SKILL.md
+  s_236334a71080ad::t_fc1a12fe5afd81 1-24
+.agents/skills/qa/SKILL.md
+  s_236334a71080ad::t_06cd4a68e84260 1-10
+.opencode/commands/qa.md
+  s_236334a71080ad::t_5efff9e96234c3 5,7,9
+.opencode/commands/review.md
+  s_236334a71080ad::t_d3db88e18eb10b 5,7,9
+.opencode/commands/issue.md
+  s_236334a71080ad::t_aba457206d66f0 5,7,9
+.agents/skills/issue/SKILL.md
+  s_236334a71080ad::t_1fc2c4b1908f0b 1-15
+.agents/skills/review/SKILL.md
+  s_236334a71080ad::t_62765ec1f8f4e9 1-10
+AGENTS.md
+  s_236334a71080ad::t_22132bf706b0de 70
+.agents/README.md
+  s_236334a71080ad::t_d4656ebb5849bd 1-28
+.agents/skills/publish-issue/SKILL.md
+  s_236334a71080ad::t_3c0691d89c82ca 1-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f2e872923ff739dac0ab88369cc59340f135ad37",
+  "prompts": {},
+  "sessions": {
+    "s_236334a71080ad": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fdeffe5d1ffeTvo6N2JtsIrdS6",
+        "model": "deepseek-v4-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
