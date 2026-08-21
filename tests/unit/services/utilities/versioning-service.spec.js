@@ -431,17 +431,15 @@ describe('versioningService.updateProject()', () => {
         await expect(versioningService.updateProject()).rejects.toMatchObject({ isStaleCleanupError: true });
         expect(databaseDeleteService.deleteFormEntries).toHaveBeenCalledWith('test-ref', ['form_ref_b']);
         expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
-        //last_updated must be rolled back so the next version check retries the cleanup
+        //model and database were never persisted, so only the in-memory
+        //model is restored — no second DB write is needed and cannot fail
         expect(projectModel.getLastUpdated()).toBe('2023-01-01');
-        expect(databaseUpdateService.updateProject).toHaveBeenLastCalledWith(
-            'test-ref',
-            expect.any(String),
-            expect.any(String),
-            '2023-01-01'
-        );
+        expect(projectModel.getProjectExtra().project.forms).toEqual(['form_ref_a', 'form_ref_b']);
+        expect(databaseUpdateService.updateProject).not.toHaveBeenCalled();
     });
 
-    it('still propagates the cleanup error when the rollback write fails', async () => {
+    it('restores the in-memory model when stale-entry cleanup fails (no DB rollback needed)', async () => {
+        const previousMapping = { forms: { old_form: [] } };
         projectModel.loadExtraStructure({
             project: {
                 details: { slug: 'test-project', ref: 'test-ref' },
@@ -461,6 +459,7 @@ describe('versioningService.updateProject()', () => {
             },
             inputs: {}
         });
+        projectModel.loadMappings(previousMapping);
         projectModel.setLastUpdated('2023-01-01');
 
         webService.getProject.mockResolvedValue({
@@ -491,24 +490,15 @@ describe('versioningService.updateProject()', () => {
         //no stale branches
         databaseSelectService.selectDistinctBranchRefsIncludingTemp.mockResolvedValue([]);
 
-        //cleanup fails AND the rollback write fails too: the original
-        //isStaleCleanupError error must still reach the callers
         const cleanupError = new Error('cleanup db error');
         databaseDeleteService.deleteFormEntries.mockRejectedValue(cleanupError);
-        //the first updateProject call is the main write (must resolve);
-        //only the rollback write (second call) fails
-        databaseUpdateService.updateProject
-            .mockResolvedValueOnce()
-            .mockRejectedValueOnce(new Error('rollback db error'));
 
         await expect(versioningService.updateProject()).rejects.toBe(cleanupError);
-        //the rollback was attempted with the previous last_updated
-        expect(databaseUpdateService.updateProject).toHaveBeenLastCalledWith(
-            'test-ref',
-            expect.any(String),
-            expect.any(String),
-            '2023-01-01'
-        );
+        //in-memory model is restored without touching the database
+        expect(projectModel.getProjectExtra().project.forms).toEqual(['form_ref_a', 'form_ref_b']);
+        expect(projectModel.getProjectMappings()).toEqual(previousMapping);
+        expect(projectModel.getLastUpdated()).toBe('2023-01-01');
+        expect(databaseUpdateService.updateProject).not.toHaveBeenCalled();
         expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
     });
 
@@ -605,14 +595,12 @@ describe('versioningService.updateProject()', () => {
         await expect(versioningService.updateProject()).rejects.toMatchObject({ isStaleCleanupError: true });
         expect(databaseDeleteService.deleteBranchEntry).toHaveBeenCalledWith('branch-entry-1');
         expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
-        //last_updated must be rolled back so the next version check retries the cleanup
+        //model and database were never persisted, so only the in-memory
+        //model is restored — no second DB write is needed and cannot fail
         expect(projectModel.getLastUpdated()).toBe('2023-01-01');
-        expect(databaseUpdateService.updateProject).toHaveBeenLastCalledWith(
-            'test-ref',
-            expect.any(String),
-            expect.any(String),
-            '2023-01-01'
-        );
+        expect(projectModel.getProjectExtra().project.forms).toEqual(['form_ref_1']);
+        expect(projectModel.getProjectExtra().forms.form_ref_1.branch).toEqual({ branch_b: ['input_b'] });
+        expect(databaseUpdateService.updateProject).not.toHaveBeenCalled();
     });
 
     it('retries the cleanup of a form already absent from the persisted structure', async () => {
@@ -727,7 +715,7 @@ describe('versioningService.updateProject()', () => {
             }
         });
 
-        //persistence of the new structure fails
+        //persistence of the new structure fails (after cleanup has succeeded)
         databaseUpdateService.updateProject.mockRejectedValue(new Error('db error'));
 
         await expect(versioningService.updateProject()).rejects.toThrow('db error');
@@ -735,8 +723,8 @@ describe('versioningService.updateProject()', () => {
         //model and database stay consistent with the previous structure
         expect(projectModel.getProjectExtra().project.forms).toEqual(['form_ref_a', 'form_ref_b']);
         expect(projectModel.getLastUpdated()).toBe('2023-01-01');
-        //no cleanup runs, no logo download, and the model keeps the old mappings
-        expect(databaseSelectService.selectDistinctFormRefs).not.toHaveBeenCalled();
+        //cleanup runs before the persisting write, so it is invoked even though the write fails
+        expect(databaseSelectService.selectDistinctFormRefs).toHaveBeenCalled();
         expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
     });
 });
