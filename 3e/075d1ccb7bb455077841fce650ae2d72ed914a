@@ -1,0 +1,19 @@
+src/services/entries-download-service.js
+  s_ad3b06ee7fd5f3::t_6f173c44c626bd 351
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "3e075d1ccb7bb455077841fce650ae2d72ed914a",
+  "prompts": {},
+  "sessions": {
+    "s_ad3b06ee7fd5f3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fdbbfa5f8ffeqzPmsKbfqeSjes",
+        "model": "muse-spark-1.2-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
