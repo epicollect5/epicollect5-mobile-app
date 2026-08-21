@@ -275,7 +275,13 @@ buttons
         const rootStore = useRootStore();
         rootStore.progressExport = progress;
     },
-    //Hide the progress dialog (global object)
+    /**
+     * Hide the progress dialog (global object).
+     * Optionally awaitable; fire-and-forget by design, await only when sequencing matters
+     * (e.g. checkProjectVersion clears cache after dismiss).
+     * @param {number} [delay] - ms before dismiss, defaults to PARAMETERS.DELAY_MEDIUM (500)
+     * @returns {Promise<void>} resolves after dismiss (or immediately if no dialog)
+     */
     hideProgressDialog(delay) {
         const rootStore = useRootStore();
         const set_delay = delay ?? PARAMETERS.DELAY_MEDIUM;
