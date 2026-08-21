@@ -102,28 +102,16 @@ export const versioningService = {
 
         // Store the previous project structure for later comparison
         this.previousProjectStructure = projectModel.getProjectExtra();
-        // Save the current timestamp so it can be rolled back if
-        // stale-entry cleanup fails: the database and in-memory
-        // model will already carry the new value, but we need
-        // checkProjectVersion() to detect a mismatch on the next
-        // attempt so the cleanup is retried.
+        const previousMapping = projectModel.getProjectMappings();
         const previousLastUpdated = projectModel.getLastUpdated();
         console.log('updating project');
-
-        // Update the project
-        await databaseUpdateService.updateProject(
-            projectModel.getProjectRef(),
-            projectExtra,
-            projectMapping,
-            lastUpdated
-        );
-
-        // Update the in-memory model only after the new structure has been
-        // persisted: if the persistence fails, model and database stay
-        // consistent with the previous structure and the update can be retried
         console.log('updated project');
 
-        // Load updated project extra structure into project model
+        // Load updated project extra structure into project model.
+        // The database row is persisted only after stale-entry cleanup
+        // succeeds (see below): this keeps model and database consistent
+        // on failure and avoids a second DB write whose own failure could
+        // leave the retry signal (old last_updated) lost after a restart.
         projectModel.loadExtraStructure(response.data.meta.project_extra);
         // Keep the in-memory mapping in sync with the updated structure,
         // otherwise exports use a stale mapping and crash on new inputs
@@ -153,23 +141,30 @@ export const versioningService = {
         try {
             await this.removeStaleEntries();
         } catch (error) {
-            // Failed to remove the entries of removed forms/branches:
-            // roll back last_updated so the next version check
-            // detects a mismatch and retries the cleanup
+            // Database was never updated, so only the in-memory model
+            // needs to be restored. This cannot fail and keeps model and
+            // database consistent (both on the old version), so the next
+            // checkProjectVersion() detects a mismatch and retries cleanup.
+            projectModel.loadExtraStructure(this.previousProjectStructure);
+            projectModel.loadMappings(previousMapping);
             projectModel.setLastUpdated(previousLastUpdated);
-            try {
-                await databaseUpdateService.updateProject(
-                    projectModel.getProjectRef(),
-                    projectExtra,
-                    projectMapping,
-                    previousLastUpdated
-                );
-            } catch (rollbackError) {
-                // The rollback write must not mask the cleanup error:
-                // callers rely on isStaleCleanupError to inform the user,
-                // and the failed rollback is logged for diagnostics
-                console.error('Failed to roll back last_updated after stale entry cleanup failure', rollbackError);
-            }
+            throw error;
+        }
+
+        // Persist the new project row only after cleanup has succeeded.
+        // If this write fails, restore the in-memory model so model and
+        // database stay consistent and the update can be retried.
+        try {
+            await databaseUpdateService.updateProject(
+                projectModel.getProjectRef(),
+                projectExtra,
+                projectMapping,
+                lastUpdated
+            );
+        } catch (error) {
+            projectModel.loadExtraStructure(this.previousProjectStructure);
+            projectModel.loadMappings(previousMapping);
+            projectModel.setLastUpdated(previousLastUpdated);
             throw error;
         }
 
