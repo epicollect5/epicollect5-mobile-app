@@ -352,13 +352,10 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
         }
 
         if (error?.versionChanged) {
-          //The project changed on the server while downloading: clear all progress
-          //and invite the user to update the project and restart the download.
-          //The rows already downloaded are intentionally NOT wiped here: they match
-          //the still-old local structure until updateProject() runs, so nothing is
-          //corrupt. On restart the buttons reset to the first form only, and
-          //deleteEntriesBeforeDownload() (in startDownload) wipes all remote entries
-          //for every form before re-downloading, so no old-structure rows survive.
+          /*
+           * False positive (review): mid-download abort intentionally keeps rows — by design. See docs/known-review-false-positives.md
+           * (`src/services/entries-download-service.js`, error?.versionChanged branch).
+           */
           clearProjectDownloadCache();
           await handleProjectUpdated(labels.download_interrupted_restart);
           return;
