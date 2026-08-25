@@ -1,0 +1,35 @@
+src/config/index.js
+  s_6a1aaddd2e2777::t_51b74b1acf6331 10
+src/use/project/update-local-project.js
+  s_6a1aaddd2e2777::t_aa0c5b5cc7bda6 109-110
+src/config/strings.js
+  s_6a1aaddd2e2777::t_86d967812303d1 1030-1031
+  s_6a1aaddd2e2777::t_af8b8373ab47fe 764-765
+  s_6a1aaddd2e2777::t_9b186b16113a08 2094-2095
+  s_6a1aaddd2e2777::t_9aaab798b5422d 1562-1563
+  s_6a1aaddd2e2777::t_15fdf06819fe99 232-233
+  s_6a1aaddd2e2777::t_f3ab2fab6f2166 1828-1829
+  s_6a1aaddd2e2777::t_2f5dc39c180a81 1296-1297
+  s_6a1aaddd2e2777::t_4421818ebcd991 498-499
+  s_6a1aaddd2e2777::t_0d7760a5141f8e 2360-2361
+tests/unit/use/update-local-project.spec.js
+  s_6a1aaddd2e2777::t_5107bfa3ab22a4 119-123
+  s_6a1aaddd2e2777::t_5f9924c79a9dd6 39-40
+  s_6a1aaddd2e2777::t_04b89610039065 47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "e901e42ff8e8d166a6b851f5f22d2a9c748e4353",
+  "prompts": {},
+  "sessions": {
+    "s_6a1aaddd2e2777": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc7f02e1effe7U77WFtSXldqxI",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
