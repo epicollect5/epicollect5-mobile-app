@@ -1,0 +1,28 @@
+src/theme/mixins.scss
+  s_8db4e4db7369b3::t_35f96f335b8281 112
+src/theme/components/questions/QuestionText.scss
+  s_8db4e4db7369b3::t_bb7ae9adb621f0 19-22,24-27
+  s_8db4e4db7369b3::t_8cdd66d0ed1930 23
+src/theme/components/questions/QuestionPhone.scss
+  s_8db4e4db7369b3::t_fa736f81d35e72 14-18,20-22
+  s_8db4e4db7369b3::t_29f24890eb044a 19
+src/theme/components/questions/QuestionTextarea.scss
+  s_8db4e4db7369b3::t_a1d63e306d460b 19-22,24-27
+  s_8db4e4db7369b3::t_5b13c84d77beaa 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "85c6c9178c5cc81879fd8c917aeac6e2a6c21790",
+  "prompts": {},
+  "sessions": {
+    "s_8db4e4db7369b3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc682ec4fffeNSjs75vndT52GL",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
