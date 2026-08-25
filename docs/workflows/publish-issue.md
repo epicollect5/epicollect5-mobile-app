@@ -59,16 +59,42 @@ If any precondition fails, do not proceed to the confirmation step. Surface the 
 4. Resolve the title:
    - If `title:` is set, use it verbatim.
    - Otherwise, read the first non-empty line of the file; if it starts with `# `, use the rest of the line (stripped) as the title.
-5. Show the body for review. If the file is under 200 lines, show it in full. If longer, show the first 50 lines, a `…` marker, and the last 20 lines.
-6. If `yes` is NOT in `$ARGUMENTS`, show the confirmation prompt (see below) and wait for the user's explicit go-ahead. If the user declines or times out, stop without running `gh` and without deleting the file.
-7. Run exactly one of the following:
+5. Resolve labels:
+   - If `labels:` was passed in `$ARGUMENTS`, use those labels verbatim — skip auto-detection.
+   - Otherwise, fetch the available labels from the target repo:
+     ```bash
+     gh label list --repo "$REPO" --json name
+     ```
+   - Analyse the issue title + body against the keyword mapping below. A keyword matches if it appears as a word (or substring for multi-word labels) in the text, case-insensitive. Only include labels that exist in the fetched label list. If zero keywords match, leave labels empty.
+
+     | Label         | Keywords                                                         |
+     |---------------|------------------------------------------------------------------|
+     | bug           | bug, error, broken, fix, crash, fail                            |
+     | enhancement   | feature, improvement, add, enhance, proposal                     |
+     | documentation | docs, documentation, readme, typo, spelling                      |
+     | question      | question, how to, why, unclear                                   |
+     | android       | android, play store                                              |
+     | ios           | ios, iphone, ipad, app store                                     |
+     | pwa           | pwa, progressive web app, service worker, manifest               |
+     | mobile        | cross-platform, all platforms, both android and ios              |
+     | server        | server, api, backend, endpoint                                   |
+     | formbuilder   | form, formbuilder, builder, template                             |
+     | dataeditor    | dataeditor, entry, record, edit                                  |
+     | dataviewer    | dataviewer, view, listing, filter, sort                          |
+     | critical      | urgent, critical, blocker, p0, p1                                |
+     | help wanted   | help wanted, contribution, community                             |
+
+   Labels that are purely workflow/status (`duplicate`, `invalid`, `wontfix`, `doing`, `done`, `to do`, `to discuss`) are never auto-applied.
+6. Show the body for review. If the file is under 200 lines, show it in full. If longer, show the first 50 lines, a `…` marker, and the last 20 lines.
+7. If `yes` is NOT in `$ARGUMENTS`, show the confirmation prompt (see below) and wait for the user's explicit go-ahead. If the user declines or times out, stop without running `gh` and without deleting the file.
+8. Run exactly one of the following:
 
    ```bash
    gh issue create --repo "$REPO" --title "$TITLE" --body-file "$FILE" [(--label "$LABEL")...]
    ```
 
-8. On success, delete the source file (`rm <file>`). On failure, do NOT delete — leave the file in place so the user can retry.
-9. Capture stdout. `gh issue create` prints the issue URL on success.
+9. On success, delete the source file (`rm <file>`). On failure, do NOT delete — leave the file in place so the user can retry.
+10. Capture stdout. `gh issue create` prints the issue URL on success.
 
 ## Interactive flow
 
