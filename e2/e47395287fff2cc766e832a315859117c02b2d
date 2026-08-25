@@ -1,0 +1,21 @@
+tests/unit/services/database/database-delete-service.spec.js
+  s_d836acdb12915c::t_2c27da7c37bee8 164
+  s_d836acdb12915c::t_b89bd27dce4c1f 33
+  s_d836acdb12915c::t_cbf4c0eb78c292 75-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "e2e47395287fff2cc766e832a315859117c02b2d",
+  "prompts": {},
+  "sessions": {
+    "s_d836acdb12915c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc61cf275ffes4Az7Y5dtIk8ea",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
