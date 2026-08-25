@@ -30,7 +30,7 @@ describe('databaseDeleteService.deleteEntriesBeforeDownload', () => {
 
         await databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-ref']);
 
-        expect(executeSql).toHaveBeenCalledTimes(7);
+        expect(executeSql).toHaveBeenCalledTimes(9);
         expect(executeSql.mock.calls[0][0]).toContain('SELECT * FROM media');
         expect(executeSql.mock.calls[1][0]).toContain('DELETE FROM media');
         expect(executeSql.mock.calls[2][0]).toContain('DELETE FROM unique_answers');
@@ -72,6 +72,14 @@ describe('databaseDeleteService.deleteEntriesBeforeDownload', () => {
             'form-ref',
             PARAMETERS.SYNCED_CODES.SYNCED
         ]);
+        expect(executeSql.mock.calls[7][0]).toBe(
+            'DELETE FROM temp_branch_entries WHERE project_ref=? AND form_ref=?'
+        );
+        expect(executeSql.mock.calls[7][1]).toEqual(['project-ref', 'form-ref']);
+        expect(executeSql.mock.calls[8][0]).toBe(
+            'DELETE FROM temp_unique_answers WHERE project_ref=? AND form_ref=?'
+        );
+        expect(executeSql.mock.calls[8][1]).toEqual(['project-ref', 'form-ref']);
         expect(executeSql.mock.calls[4][0]).not.toContain('temp_unique_answers');
         expect(executeSql.mock.calls.every(([query]) => query.includes('project_ref'))).toBe(true);
     });
@@ -153,7 +161,7 @@ describe('databaseDeleteService.deleteEntriesBeforeDownload', () => {
 
         await databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-a', 'form-b', 'form-c']);
 
-        expect(executeSql).toHaveBeenCalledTimes(19);
+        expect(executeSql).toHaveBeenCalledTimes(25);
         const entryDeletes = executeSql.mock.calls.filter(([query]) => query.startsWith('DELETE FROM entries'));
         expect(entryDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b', 'form-c']);
         const branchAnswerDeletes = executeSql.mock.calls.filter(([query]) =>
