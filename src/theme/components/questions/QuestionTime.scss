@@ -24,3 +24,12 @@
 .chip-datetimepicker {
     @include chip-datetimepicker-base;
 }
+
+.plt-ios {
+    .question-datetimepicker {
+        text-align: center !important;
+    }
+    .datetime-value input[type="time"] {
+        padding-left: 10px !important;
+    }
+}
