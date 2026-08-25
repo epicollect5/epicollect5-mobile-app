@@ -27,7 +27,7 @@
 			<input
 				type="tel"
 				inputmode="tel"
-				class="question-input"
+				class="question-input ios-fix-border"
 				:class="{'has-error' : hasError}"
 				:placeholder="labels.type_answer_here"
 				:value="state.answer.answer"
@@ -44,7 +44,7 @@
 				<input
 					type="tel"
 					inputmode="tel"
-					class="question-input"
+					class="question-input ios-fix-border"
 					:class="{'has-error' : hasError}"
 					:placeholder="labels.confirm_answer_here"
 					:value="state.confirmAnswer.answer"
