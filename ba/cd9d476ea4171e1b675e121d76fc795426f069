@@ -1,0 +1,19 @@
+docs/workflows/publish-issue.md
+  s_30f3b0dffb8565::t_5956498b28636a 62-90,96-97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "bacd9d476ea4171e1b675e121d76fc795426f069",
+  "prompts": {},
+  "sessions": {
+    "s_30f3b0dffb8565": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc5df8119ffeBIaQGt0a5JOwgi",
+        "model": "big-pickle"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
