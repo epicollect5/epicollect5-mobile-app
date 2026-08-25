@@ -7,6 +7,7 @@ export const PARAMETERS = {
     ADD_PROJECTS_DOCS_URL: 'https://docs.epicollect.net/mobile-application/add-projects',
     UPLOAD_MEDIA_DOCS_URL: 'https://docs.epicollect.net/mobile-application/upload-entries#uploading-media-files',
     DOWNLOAD_ENTRIES_DOCS_URL: 'https://docs.epicollect.net/mobile-application/download-entries',
+    UPDATE_PROJECT_DOCS_URL: 'https://docs.epicollect.net/mobile-application/updating-a-project-mobile',
     DEBUG: process.env.VUE_APP_DEBUG,
     IS_LOCALHOST: process.env.NODE_ENV === 'production' ? 0 : 1, //for debugging outside of Laravel(production), it is set to 1
     BYPASS_UNIQUENESS: process.env.VUE_APP_BYPASS_UNIQUENESS,

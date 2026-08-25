@@ -36,14 +36,15 @@ vi.mock('@/services/errors-service', () => ({
 
 vi.mock('@/config', () => ({
     PARAMETERS: {
-        AUTH_ERROR_CODES: ['ec5_70', 'ec5_71', 'ec5_77', 'ec5_78', 'ec5_50', 'ec5_51']
+        AUTH_ERROR_CODES: ['ec5_70', 'ec5_71', 'ec5_77', 'ec5_78', 'ec5_50', 'ec5_51'],
+        UPDATE_PROJECT_DOCS_URL: 'https://docs.epicollect.net/mobile-application/updating-a-project-mobile'
     }
 }));
 
 vi.mock('@/config/strings', () => ({
     STRINGS: {
         en: {
-            labels: { wait: 'wait', updating_project: 'updating', loading_entries: 'loading' },
+            labels: { wait: 'wait', updating_project: 'updating', loading_entries: 'loading', update_project: 'update', project_outdated: 'outdated' },
             status_codes: {
                 ec5_70: 'Please log in',
                 ec5_71: 'Permission denied',
@@ -115,6 +116,11 @@ describe('updateLocalProject()', () => {
         // This should now be true
         expect(result).toBe(true);
         expect(notificationService.showAlert).toHaveBeenCalled();
+        expect(notificationService.confirmSingle).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.any(String),
+            PARAMETERS.UPDATE_PROJECT_DOCS_URL
+        );
     });
 
     it('handles Auth Errors by setting callback and calling logout', async () => {

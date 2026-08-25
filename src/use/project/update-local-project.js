@@ -106,7 +106,8 @@ export async function updateLocalProject() {
         // Ask user if they want to upgrade the project
         const confirmed = await notificationService.confirmSingle(
             STRINGS[language].labels.update_project,
-            STRINGS[language].labels.project_outdated
+            STRINGS[language].labels.project_outdated,
+            PARAMETERS.UPDATE_PROJECT_DOCS_URL
         );
 
         if (confirmed) {
