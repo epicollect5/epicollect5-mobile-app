@@ -1,0 +1,20 @@
+src/theme/components/questions/QuestionTime.scss
+  s_8db4e4db7369b3::t_d62d129a0b2402 32-34
+  s_8db4e4db7369b3::t_614018d73f893c 27-31,35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "dddf5ed70bf621ea7fa30ffd59f8ebc4493239e0",
+  "prompts": {},
+  "sessions": {
+    "s_8db4e4db7369b3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc682ec4fffeNSjs75vndT52GL",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
