@@ -1,0 +1,20 @@
+src/theme/mixins.scss
+  s_8db4e4db7369b3::t_a510c290d1ff1a 113
+  s_8db4e4db7369b3::t_8c71ca81a7de52 71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "11bcd6468b46c7f3dd11f0cce43107957548c9cf",
+  "prompts": {},
+  "sessions": {
+    "s_8db4e4db7369b3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc682ec4fffeNSjs75vndT52GL",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
