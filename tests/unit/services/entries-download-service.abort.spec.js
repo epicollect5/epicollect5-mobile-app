@@ -115,7 +115,7 @@ vi.mock('@/services/utilities/versioning-service', () => ({
 const labels = {
     download_interrupted_restart: 'The project was updated while downloading. The download was stopped. Please restart the download, as the entries already downloaded might be invalid',
     download_warning: 'Download warning',
-    remote_entries_out_of_sync: 'Remote entries on your device are out of sync. Upload your entries before re-downloading.',
+    remote_entries_out_of_sync: 'Entries on your device are out of sync. Upload your entries before re-downloading.',
     unsynced_entries: 'Unsynced entries',
     resume_last_download_message: 'A previous download stopped before completion. Do you want to resume it or restart from the beginning?',
     resume_last_download: 'Resume',

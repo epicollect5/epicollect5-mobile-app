@@ -23,7 +23,7 @@ vi.mock('@/config/strings', () => ({
                 updating_project: 'Updating Forms.',
                 download_warning: 'Download warning',
                 unsynced_entries: 'Unsynced entries',
-                remote_entries_out_of_sync: 'Remote entries on your device are out of sync. Upload your entries before re-downloading.',
+                remote_entries_out_of_sync: 'Entries on your device are out of sync. Upload your entries before re-downloading.',
                 resume_last_download_message: 'Resume last download',
                 resume_last_download: 'Resume',
                 restart_download: 'Restart'
@@ -150,7 +150,7 @@ const labels = {
     downloading_entries: 'Downloading entries',
     download_warning: 'Download warning',
     unsynced_entries: 'Unsynced entries',
-    remote_entries_out_of_sync: 'Remote entries on your device are out of sync. Upload your entries before re-downloading.',
+    remote_entries_out_of_sync: 'Entries on your device are out of sync. Upload your entries before re-downloading.',
     resume_last_download_message: 'Resume last download',
     resume_last_download: 'Resume',
     restart_download: 'Restart'
@@ -276,7 +276,7 @@ describe('entriesDownloadService project version checks', () => {
         expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
         expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
-            'Remote entries on your device are out of sync. Upload your entries before re-downloading.',
+            'Entries on your device are out of sync. Upload your entries before re-downloading.',
             'Unsynced entries',
             'https://docs.epicollect.net/mobile-application/download-entries'
         );
