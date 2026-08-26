@@ -1,0 +1,21 @@
+tests/unit/main.spec.js
+  s_a5bdbe8055ca8d::t_5f50ef66877321 161-162
+tests/unit/components/globals/LeftDrawer.spec.js
+  s_a5bdbe8055ca8d::t_586e3b9a3d45c0 229-232
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "c435b4868e7f1fb2cb1ebcca9bb9453d4cfac997",
+  "prompts": {},
+  "sessions": {
+    "s_a5bdbe8055ca8d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc09428aaffeTWlJe1C7994pu0",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
