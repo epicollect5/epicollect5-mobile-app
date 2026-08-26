@@ -1,0 +1,60 @@
+src/router/index.js
+  s_a5bdbe8055ca8d::t_997ae1262c7f1a 120
+  s_a5bdbe8055ca8d::t_2d7aafbf8a9297 133
+  s_a5bdbe8055ca8d::t_8a9f092334d9bc 140
+  s_a5bdbe8055ca8d::t_92ffe49afcc047 19
+  s_a5bdbe8055ca8d::t_d51a39ba9ebfbc 141
+src/services/init-service.js
+  s_a5bdbe8055ca8d::t_0ec071a1a2ae85 356
+  s_a5bdbe8055ca8d::t_51ba935155ee85 22
+src/pages/EntriesAdd.vue
+  s_a5bdbe8055ca8d::t_74334341792fb0 647
+src/use/auth/show-modal-login.js
+  s_a5bdbe8055ca8d::t_ccd6bd071f6572 27-28
+src/main.js
+  s_a5bdbe8055ca8d::t_425ad665f2360d 127,131
+  s_a5bdbe8055ca8d::t_7b04892e3e6618 69
+src/App.vue
+  s_a5bdbe8055ca8d::t_65e08d6e69416b 126
+src/services/utilities/rollbar-service.js
+  s_a5bdbe8055ca8d::t_070585a54853f9 8
+src/services/web-service.js
+  s_a5bdbe8055ca8d::t_b0a36a0fd54138 45
+src/components/questions/QuestionDecimal.vue
+  s_a5bdbe8055ca8d::t_4c4aae460b08e2 244
+  s_a5bdbe8055ca8d::t_d6201d49972583 243
+  s_a5bdbe8055ca8d::t_1458e63533ba85 239,241-242,254,256-257
+  s_a5bdbe8055ca8d::t_43c24e6b712232 259
+src/components/LocationPwa.vue
+  s_a5bdbe8055ca8d::t_1dcb7a583edc21 109
+  s_a5bdbe8055ca8d::t_72bf780c7718f6 345-347
+src/components/globals/BaseLayout.vue
+  s_a5bdbe8055ca8d::t_3baa285471fb23 58
+src/components/modals/ModalLocationHelp.vue
+  s_a5bdbe8055ca8d::t_22bd35158b61c9 90-91
+  s_a5bdbe8055ca8d::t_fbbf6ab416b7f8 66
+  s_a5bdbe8055ca8d::t_d1cd871d52a019 78
+  s_a5bdbe8055ca8d::t_de49190d6cec0d 111-114
+src/config/index.js
+  s_a5bdbe8055ca8d::t_3941ca12a9cebe 389
+  s_a5bdbe8055ca8d::t_0a0e149c60a674 384
+  s_a5bdbe8055ca8d::t_7100df7a7accb3 11-13
+src/components/ListPossibleAnswersCheckbox.vue
+  s_a5bdbe8055ca8d::t_0cf5bd5ad06e24 105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "7e6b74c9e9fca463cfaa808327942cc64134b2b0",
+  "prompts": {},
+  "sessions": {
+    "s_a5bdbe8055ca8d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc09428aaffeTWlJe1C7994pu0",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
