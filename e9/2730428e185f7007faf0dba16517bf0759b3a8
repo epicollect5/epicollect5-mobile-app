@@ -1,0 +1,27 @@
+src/config/strings.js
+  s_537494766ede58::t_22627f91116229 90
+  s_537494766ede58::t_c66c6aa1e09421 1420
+  s_537494766ede58::t_6e6ef34593ae1a 356
+  s_537494766ede58::t_4c7da3256e45b6 1154
+  s_537494766ede58::t_467a047d6264ba 1686
+  s_537494766ede58::t_69fd33d3ac33ae 1952
+  s_537494766ede58::t_fb5fb674b77ad5 622
+  s_537494766ede58::t_1c59cacc0b9cae 888
+  s_537494766ede58::t_f587dca8cd9863 2218
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "e92730428e185f7007faf0dba16517bf0759b3a8",
+  "prompts": {},
+  "sessions": {
+    "s_537494766ede58": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc2a2a102ffeGfEIULTlyXvyd2",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
