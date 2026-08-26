@@ -7,6 +7,20 @@ This document describes the overall architecture of the Epicollect5 mobile app c
 
 The architecture is intentionally split early at boot. After platform detection, the app follows two materially different paths for data loading, routing assumptions, persistence, and save/upload behavior.
 
+## Build Targets
+
+The app is built with Vite into two deployment artifacts selected by the `VITE_MODE` environment variable:
+
+- **`WEBVIEW`** (native scripts: `native:*`, `android:*`, `ios:*`): a web bundle copied into the Capacitor native shell via `npx cap copy`, producing the mobile app.
+- **`PWA`** (website scripts: `pwa:*`): a plain **static** web bundle deployed to the project website. Despite the name, this target ships **no service worker, manifest, or offline support** — the label is historical. Do not add `serviceWorker` / `workbox` / `manifest` behavior unless explicitly requested.
+
+Build-time effects of `VITE_MODE=PWA`:
+
+- Alias stubs replace `src/services/entry/fake-answer-service` and the `an-array-of-*` word-list packages with empty modules, keeping the public web bundle lean (the in-app demo/fake-answer generator is disabled on web).
+- `VITE_MODE` also drives runtime branching in `src/router/index.js` and `src/services/init-service.js` (URL-driven web flow vs native flow).
+
+Both targets emit stable, unhashed filenames for self-managed versioning: `app.js`, `vendor-vue.js`, `vendor-ionic.js`, `vendor-capacitor.js`, `vendor-common.js`.
+
 ## High-Level Architecture
 
 ```mermaid
@@ -66,7 +80,7 @@ Primary file:
 
 Behavior:
 
-- Routes are built differently depending on `VUE_APP_MODE`.
+- Routes are built differently depending on `VITE_MODE`.
 - **PWA routes** are narrow and URL-driven.
 - **Native routes** expose the full multi-page app shell.
 - Native mode includes a router guard that redirects reloads back to the projects page, because direct reload of nested screens is not treated as a supported navigation entry point.

@@ -34,32 +34,32 @@ Create a `.env.local` file based on `.env-example.local`:
 
 ### Required Variables
 
-- **`VUE_APP_GOOGLE_CLIENT_ID_WEB`** - Google OAuth client ID for web authentication
-- **`VUE_APP_GOOGLE_SIGNIN_SCOPE`** - OAuth scopes for Google Sign-In
-- **`VUE_APP_MAPBOX_API_TOKEN`** - API token for Mapbox integration
-- **`VUE_APP_ESRI_API_TOKEN`** - API token for ESRI/ArcGIS integration
+- **`VITE_GOOGLE_CLIENT_ID_WEB`** - Google OAuth client ID for web authentication
+- **`VITE_GOOGLE_SIGNIN_SCOPE`** - OAuth scopes for Google Sign-In
+- **`VITE_MAPBOX_API_TOKEN`** - API token for Mapbox integration
+- **`VITE_ESRI_API_TOKEN`** - API token for ESRI/ArcGIS integration
 
 ### Build Mode Variables
 
-- **`VUE_APP_MODE`** - Controls the build target. Options:
+- **`VITE_MODE`** - Controls the build target. Options:
   - `WEBVIEW` (default) - For native Android & iOS builds
   - `PWA` - For Progressive Web App builds
   - Note: This is typically set by build scripts automatically
 
 ### Debug & Development Variables
 
-- **`VUE_APP_DEBUG`** - Enable debug mode
+- **`VITE_DEBUG`** - Enable debug mode
   - Set to `1` to enable debug features
   - Set to empty string `""` to disable (production builds)
   - Note: Environment variables are cast to strings, so use `1` or empty value
 
-- **`VUE_APP_PWA_DEVELOPMENT_SERVER`** - Local development server URL for PWA debugging (e.g., `http://localhost/`)
+- **`VITE_PWA_DEVELOPMENT_SERVER`** - Local development server URL for PWA debugging (e.g., `http://localhost/`)
 
-- **`VUE_APP_BYPASS_UNIQUENESS`** - Bypass uniqueness validation checks for testing
+- **`VITE_BYPASS_UNIQUENESS`** - Bypass uniqueness validation checks for testing
   - Set to `1` to bypass
   - Set to empty string for production
 
-- **`VUE_APP_DEPLOY`** - Deployment configuration (optional)
+- **`VITE_DEPLOY`** - Deployment configuration (optional)
 
 ## Build Scripts
 
@@ -71,16 +71,16 @@ Create a `.env.local` file based on `.env-example.local`:
 ### Native Development (Android & iOS)
 
 - **`npm run native:debug`** - Build & copy web assets to native platforms (debug mode)
-  - Sets `VUE_APP_MODE=WEBVIEW`
+  - Sets `VITE_MODE=WEBVIEW`
   - Includes debug features
 
 - **`npm run native:prod`** - Build & copy web assets to native platforms (production mode)
-  - Sets `VUE_APP_MODE=WEBVIEW`
+  - Sets `VITE_MODE=WEBVIEW`
   - Disables debug mode and uniqueness bypass
   - Runs tests before building (`prenative:prod`)
 
 - **`npm run native:browser`** - Serve app for testing in browser with native features
-  - Sets `VUE_APP_MODE=WEBVIEW`
+  - Sets `VITE_MODE=WEBVIEW`
   - Accessible on external network
 
 - **`npm run native:copy`** - Copy assets without rebuilding
@@ -99,12 +99,12 @@ Create a `.env.local` file based on `.env-example.local`:
 ### PWA (Progressive Web App)
 
 - **`npm run pwa:browser`** - Run PWA locally in development mode
-  - Sets `VUE_APP_MODE=PWA` and `VUE_APP_DEBUG=1`
+  - Sets `VITE_MODE=PWA` and `VITE_DEBUG=1`
   - Runs on `http://localhost:1234`
   - Use format: `http://localhost:1234/{project-slug}/add-entry` to add an entry
 
 - **`npm run pwa:prod`** - Build PWA for production
-  - Sets `VUE_APP_MODE=PWA`
+  - Sets `VITE_MODE=PWA`
   - Disables debug mode and uniqueness bypass
   - Runs tests before building (`prepwa:prod`)
   - Generates bundle analysis report
@@ -128,7 +128,7 @@ Create a `.env.local` file based on `.env-example.local`:
 
 ## Build Configuration
 
-The build process is configured in `vue.config.js` and behaves differently based on `VUE_APP_MODE`:
+The build process is configured in `vite.config.js` and behaves differently based on `VITE_MODE`:
 
 ### WEBVIEW Mode (Native Apps)
 - Generates source maps for debugging
@@ -138,7 +138,7 @@ The build process is configured in `vue.config.js` and behaves differently based
 ### PWA Mode
 - Limits chunks to 5 for optimal web performance
 - Removes console logs and debugger statements in production
-- Generates bundle analysis report (when `VUE_APP_DEBUG` is not `1`)
+- Generates bundle analysis report (when `VITE_DEBUG` is not `1`)
 - Ignores test-related dependencies in production builds
 
 ## Configuration
