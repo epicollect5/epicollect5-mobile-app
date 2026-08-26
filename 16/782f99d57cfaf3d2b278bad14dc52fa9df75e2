@@ -1,0 +1,19 @@
+vite.config.js
+  s_a5bdbe8055ca8d::t_236950a87958e9 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "16782f99d57cfaf3d2b278bad14dc52fa9df75e2",
+  "prompts": {},
+  "sessions": {
+    "s_a5bdbe8055ca8d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc09428aaffeTWlJe1C7994pu0",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
