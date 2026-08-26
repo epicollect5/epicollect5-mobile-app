@@ -2,6 +2,12 @@
 
 .modal-location-edit {
     @include modal-transparent-header-base;
+
+    // match the Prev/Next/Back button text size instead of the
+    // default large ion-title typography
+    ion-title {
+        font-size: 14px;
+    }
 }
 
 .item-question-location-edit {
