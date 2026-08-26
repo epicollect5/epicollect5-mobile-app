@@ -1,0 +1,31 @@
+ios/App/App.xcodeproj/project.pbxproj
+  h_2231ff2aa93473 387,395,417,425
+CHANGELOG.md
+  s_4f63714cbe3571::t_852d8ea7b334d9 5,10-11,13-15
+  h_2231ff2aa93473 6-9,12
+package.json
+  h_2231ff2aa93473 3
+android/app/build.gradle
+  h_2231ff2aa93473 16-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "5a8cae2007f02d776ca6a575548eccc06efc54bc",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_4f63714cbe3571": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc1207f5affeh5YoHzXddxrQD1",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
