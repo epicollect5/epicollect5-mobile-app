@@ -1,0 +1,38 @@
+src/__mocks__/empty-fake-service.js
+  s_a5bdbe8055ca8d::t_991bafc772a443 1-2
+index.html
+  s_a5bdbe8055ca8d::t_5ff42676acc685 1-46
+src/__mocks__/empty-array.js
+  s_a5bdbe8055ca8d::t_19a87d4b220354 1
+vite.config.js
+  s_a5bdbe8055ca8d::t_4da2f144575628 48-49,55-56
+  s_a5bdbe8055ca8d::t_f358c0d2876089 70
+  s_a5bdbe8055ca8d::t_177a1a526f3645 40
+  s_a5bdbe8055ca8d::t_cc739ea8eb7254 1-4,6,9-12,35-38,88-89
+  s_a5bdbe8055ca8d::t_6c2dd930c63c3a 13
+  s_a5bdbe8055ca8d::t_645684ede50f41 60-69
+  s_a5bdbe8055ca8d::t_82a27addd7afbf 5,7-8,14-34,39,41-45,47,50-54,57-59,71-87
+  s_a5bdbe8055ca8d::t_15cb52b16e545f 46
+eslint.config.js
+  s_a5bdbe8055ca8d::t_7773e4dbf92121 1-4,68
+  s_a5bdbe8055ca8d::t_ccd61cd328c2b8 66
+  s_a5bdbe8055ca8d::t_91e3b5e091ce95 34-36
+  s_a5bdbe8055ca8d::t_236c4d88c8be58 38-40
+  s_a5bdbe8055ca8d::t_833dc20dafb116 5-33,37,41-65,67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "a37350892401a0dbe0fb201977d86e9778b4c4c5",
+  "prompts": {},
+  "sessions": {
+    "s_a5bdbe8055ca8d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc09428aaffeTWlJe1C7994pu0",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
