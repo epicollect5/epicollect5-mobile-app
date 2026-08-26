@@ -1,0 +1,23 @@
+tests/unit/services/entries-download-service.spec.js
+  s_537494766ede58::t_8f837bd090c3fc 279
+  s_537494766ede58::t_d9c51ad3434324 153
+  s_537494766ede58::t_9ce96bb3e2e5be 26
+tests/unit/services/entries-download-service.abort.spec.js
+  s_537494766ede58::t_ed99fe1204963b 118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "73d4b335cf315229f08d06960fe556cffb45d13d",
+  "prompts": {},
+  "sessions": {
+    "s_537494766ede58": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc2a2a102ffeGfEIULTlyXvyd2",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
