@@ -3,7 +3,7 @@
   "integrations": {
     "capacitor": {}
   },
-  "type": "vue",
+  "type": "custom",
   "server": {
     "androidScheme": "http"
   }
