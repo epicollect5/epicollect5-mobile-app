@@ -327,6 +327,7 @@ import {notificationService} from '@/services/notification-service';
 import {bookmarksService} from '@/services/utilities/bookmarks-service';
 import {databaseInsertService} from '@/services/database/database-insert-service';
 import {databaseUpdateService} from '@/services/database/database-update-service';
+import {versioningService} from '@/services/utilities/versioning-service';
 import {exportService} from '@/services/export-service';
 
 export default {
@@ -374,17 +375,19 @@ export default {
             //Show path for Android
             const message = documentsFolder + ' > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug;
             await notificationService.showAlert(
-                message
+                message,
+                labels.exported_to
             );
           }
           if (rootStore.device.platform === PARAMETERS.IOS) {
             await notificationService.showAlert(
-                '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug
+                '📂 > 📱 > ' + PARAMETERS.APP_NAME + ' > ' + projectSlug,
+                labels.exported_to
             );
           }
         } catch (error) {
           console.log(error);
-          await notificationService.showAlert(error);
+          await notificationService.showAlert(error.message || error);
         } finally {
           menuController.close();
         }
@@ -400,7 +403,7 @@ export default {
           }
         } catch (error) {
           console.log(error);
-          await notificationService.showAlert(error);
+          await notificationService.showAlert(error.message || error);
         } finally {
           menuController.close();
         }
@@ -419,6 +422,10 @@ export default {
         await notificationService.showProgressDialog(labels.wait);
 
         try {
+          // Remove the entries of any forms/branches that have been removed from the
+          // project structure before unsyncing: if the cleanup fails, abort so stale
+          // entries are not marked as unsynced and the user can retry
+          await versioningService.removeStaleEntries();
           await databaseUpdateService.unsyncAllEntries(projectRef);
           await databaseUpdateService.unsyncAllBranchEntries(projectRef);
           await databaseUpdateService.unsyncAllFileEntries(projectRef);
@@ -427,14 +434,22 @@ export default {
           router.replace({
             name: PARAMETERS.ROUTES.ENTRIES,
             query: {
-              refreshEntries: true
+              refreshEntries: true,
+              timestamp: Date.now()
             }
           });
           //hide right drawer
           menuController.close();
         } catch (error) {
           console.log(error);
-          await notificationService.showAlert(error);
+          if (error?.isStaleCleanupError) {
+            await notificationService.showAlert(
+                labels.stale_cleanup_failed,
+                labels.error
+            );
+          } else {
+            await notificationService.showAlert(error);
+          }
         } finally {
           notificationService.hideProgressDialog();
         }
@@ -594,7 +609,4 @@ export default {
 };
 </script>
 
-<style
-    lang="scss"
-    scoped
-></style>
+<style src="@/theme/components/globals/RightDrawer.scss" lang="scss"></style>

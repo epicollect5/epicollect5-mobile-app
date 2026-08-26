@@ -182,6 +182,7 @@ import { formModel } from '@/models/form-model.js';
 import { menuController } from '@ionic/vue';
 import { showModalLogin } from '@/use/auth/show-modal-login';
 import { utilsService } from '@/services/utilities/utils-service';
+import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { notificationService } from '@/services/notification-service';
 import { logout } from '@/use/auth/logout';
 
@@ -193,7 +194,8 @@ export default {
 		const labels = STRINGS[language].labels;
 		const router = useRouter();
 		const state = reactive({
-			bookmarks: bookmarkStore.bookmarks
+			//computed so the list survives store array replacements (setBookmarks)
+			bookmarks: computed(() => bookmarkStore.bookmarks)
 		});
 
 		const methods = {
@@ -252,7 +254,20 @@ export default {
 				}
 				window.open(PARAMETERS.USER_GUIDE_URL, '_system', 'location=yes');
 			},
-			goToBookmark(bookmark) {
+			async goToBookmark(bookmark) {
+
+				const exists = await bookmarksService.bookmarkHierarchyExists(bookmark);
+				if (!exists) {
+					notificationService.confirmChoice(STRINGS[language].status_codes.ec5_239, labels.my_bookmarks, [
+						{
+							text: labels.remove_bookmark,
+							handler: () => {
+								bookmarksService.deleteBookmark(bookmark.id);
+							}
+						}
+					]);
+					return false;
+				}
 
 				console.log(bookmark);
 				// Remove current project from the store
@@ -345,7 +360,4 @@ export default {
 };
 </script>
 
-<style
-	lang="scss"
-	scoped
-></style>
+<style src="@/theme/components/globals/LeftDrawer.scss" lang="scss"></style>

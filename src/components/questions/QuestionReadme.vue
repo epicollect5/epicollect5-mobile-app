@@ -89,5 +89,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style src="@/theme/components/questions/QuestionReadme.scss" lang="scss"></style>

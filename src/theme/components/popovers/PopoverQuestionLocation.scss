@@ -1,0 +1,5 @@
+@use '@/theme/mixins' as *;
+
+.popover-question-location {
+    @include popover-question-location-base;
+}

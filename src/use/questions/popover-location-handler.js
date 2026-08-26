@@ -22,7 +22,6 @@ export async function popoverLocationHandler({ state }) {
                 accuracy: PARAMETERS.GEOLOCATION_DEFAULT_ACCURACY
             };
         }
-        console.log(response);
     });
     return popover.present();
 }

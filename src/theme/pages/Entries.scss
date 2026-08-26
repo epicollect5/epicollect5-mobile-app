@@ -1,0 +1,26 @@
+@use '@/theme/mixins' as *;
+
+.filter-by-title {
+    @include filter-by-title-base;
+}
+
+.spinner-filter {
+    @include spinner-filter-base;
+}
+
+.spinner-fetch-projects {
+    @include spinner-fetch-projects-base;
+}
+
+.filter-by-date-to,
+.filter-by-date-from {
+    @include filter-by-date-base;
+}
+
+.line-divider {
+    @include line-divider-base;
+}
+
+.beta-toolbar {
+    @include beta-toolbar-base;
+}

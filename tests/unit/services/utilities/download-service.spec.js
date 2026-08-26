@@ -301,6 +301,48 @@ describe('downloadService.downloadFormEntries', () => {
         expect(webService.downloadEntries).toHaveBeenCalledTimes(1);
     });
 
+    it('aborts before the next request when the version check fails mid-download', async () => {
+        let versionChanged = false;
+        const abortReason = { versionChanged: true };
+
+        webService.downloadEntries
+            .mockResolvedValueOnce(makeResponse('page-1', [{ uuid: 'entry-1' }], 'page-2', 2));
+
+        const downloadPromise = downloadService.downloadFormEntries('form-ref', {
+            delayMs: 2000,
+            shouldAbort: async () => (versionChanged ? abortReason : null)
+        });
+
+        await flushPromises();
+        expect(webService.downloadEntries).toHaveBeenCalledTimes(1);
+        expect(databaseInsertService.insertEntries).toHaveBeenCalledTimes(1);
+
+        const abortExpectation = expect(downloadPromise).rejects.toBe(abortReason);
+        versionChanged = true;
+        await vi.advanceTimersByTimeAsync(2000);
+
+        await abortExpectation;
+        expect(webService.downloadEntries).toHaveBeenCalledTimes(1);
+    });
+
+    it('continues downloading while the version check keeps passing', async () => {
+        webService.downloadEntries
+            .mockResolvedValueOnce(makeResponse('page-1', [{ uuid: 'entry-1' }], 'page-2', 2))
+            .mockResolvedValueOnce(makeResponse('page-2', [{ uuid: 'entry-2' }], null, 2));
+
+        const downloadPromise = downloadService.downloadFormEntries('form-ref', {
+            delayMs: 2000,
+            shouldAbort: async () => null
+        });
+
+        await flushPromises();
+        await vi.advanceTimersByTimeAsync(2000);
+        await downloadPromise;
+
+        expect(webService.downloadEntries).toHaveBeenCalledTimes(2);
+        expect(databaseInsertService.insertEntries).toHaveBeenCalledTimes(2);
+    });
+
     it('records the page checkpoint before honoring cancellation after a committed insert', async () => {
         let cancelled = false;
         const onPageDownloaded = vi.fn();

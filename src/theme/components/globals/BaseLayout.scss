@@ -1,0 +1,14 @@
+@use '@/theme/mixins' as *;
+
+.project-header {
+    @include project-header-base;
+}
+
+.button-quit,
+.button-close {
+    @include button-quit-close-base;
+}
+
+.button-open {
+    @include button-open-base;
+}

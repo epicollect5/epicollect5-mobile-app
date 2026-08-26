@@ -294,4 +294,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style src="@/theme/components/modals/ModalEntriesBranchFilter.scss" lang="scss"></style>

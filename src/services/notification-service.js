@@ -7,6 +7,7 @@ import {Toast} from '@capacitor/toast';
 import {Capacitor} from '@capacitor/core';
 import {useToast} from '@/use/toast';
 import {modalController} from '@ionic/vue';
+import {ForegroundService, Importance} from '@capawesome-team/capacitor-android-foreground-service';
 import ModalProgressExport from '@/components/modals/ModalProgressExport.vue';
 
 export const notificationService = {
@@ -55,34 +56,84 @@ export const notificationService = {
             });
         await alert.present();
     },
-    async confirmSingle(message, title) {
+    async confirmSingle(message, title, learnMoreUrl = null) {
         const rootStore = useRootStore();
         const language = rootStore.language;
+        const platform = (rootStore.device.platform).toLowerCase();
         return new Promise((resolve) => {
             (async () => {
-                const alert = await alertController
-                    .create({
-                        header: title,
-                        message,
-                        buttons: [
-                            {
-                                text: STRINGS[language].labels.cancel,
-                                role: 'cancel',
-                                handler: () => {
-                                    resolve(false);
-                                }
-                            },
-                            {
-                                text: STRINGS[language].labels.ok,
-                                handler: () => {
-                                    resolve(true);
-                                }
-                            }
-                        ]
+                const buttons = [];
+
+                if (learnMoreUrl) {
+                    buttons.push({
+                        text: STRINGS[language].labels.learn_more,
+                        handler: () => {
+                            window.open(learnMoreUrl, '_system', 'location=yes');
+                            return false;
+                        }
                     });
+                }
+
+                buttons.push(
+                    {
+                        text: STRINGS[language].labels.cancel,
+                        role: 'cancel',
+                        handler: () => {
+                            resolve(false);
+                        }
+                    },
+                    {
+                        text: STRINGS[language].labels.ok,
+                        handler: () => {
+                            resolve(true);
+                        }
+                    }
+                );
+
+                const alertOptions = {
+                    header: title,
+                    message,
+                    buttons
+                };
+
+                if (learnMoreUrl) {
+                    alertOptions.cssClass = 'alert-confirm-multiple-' + platform;
+                }
+
+                const alert = await alertController
+                    .create(alertOptions);
                 return alert.present();
             })();
         });
+    },
+    //Informational alert that can only be dismissed, with an optional learn more link
+    async showDismissAlert(message, title, learnMoreUrl = null) {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const buttons = [];
+
+        if (learnMoreUrl) {
+            buttons.push({
+                text: STRINGS[language].labels.learn_more,
+                handler: () => {
+                    window.open(learnMoreUrl, '_system', 'location=yes');
+                    return false;
+                }
+            });
+        }
+
+        buttons.push({
+            text: STRINGS[language].labels.dismiss,
+            role: 'cancel'
+        });
+
+        const alert = await alertController
+            .create({
+                header: title,
+                message,
+                buttons
+            });
+        return alert.present();
     },
     //multiple options modal
     async confirmMultiple(message, title, yesButton, noButton, yesAction, noAction) {
@@ -132,6 +183,45 @@ export const notificationService = {
 buttons
                     });
                 return alert.present();
+            })();
+        });
+    },
+    //generic confirm alert with a dismiss button plus custom action buttons
+    async confirmChoice(message, title, buttons = []) {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+
+        return new Promise((resolve) => {
+            (async () => {
+                const confirmButtons = [
+                    {
+                        text: STRINGS[language].labels.dismiss,
+                        role: 'cancel',
+                        handler: () => {
+                            resolve(false);
+                        }
+                    }
+                ];
+
+                buttons.forEach((button) => {
+                    confirmButtons.push({
+                        text: button.text,
+                        handler: () => {
+                            if (button.handler) {
+                                button.handler();
+                            }
+                            resolve(true);
+                        }
+                    });
+                });
+
+                const alert = await alertController
+                    .create({
+                        header: title,
+                        message,
+                        buttons: confirmButtons
+                    });
+                await alert.present();
             })();
         });
     },
@@ -185,17 +275,29 @@ buttons
         const rootStore = useRootStore();
         rootStore.progressExport = progress;
     },
-    //Hide the progress dialog (global object)
+    /**
+     * Hide the progress dialog (global object).
+     * Optionally awaitable; fire-and-forget by design, await only when sequencing matters
+     * (e.g. checkProjectVersion clears cache after dismiss).
+     * @param {number} [delay] - ms before dismiss, defaults to PARAMETERS.DELAY_MEDIUM (500)
+     * @returns {Promise<void>} resolves after dismiss (or immediately if no dialog)
+     */
     hideProgressDialog(delay) {
         const rootStore = useRootStore();
-        const set_delay = delay || PARAMETERS.DELAY_MEDIUM;
+        const set_delay = delay ?? PARAMETERS.DELAY_MEDIUM;
 
-        setTimeout(async function () {
-            if (rootStore.ec5LoadingDialog !== null) {
-                console.log('dismiss dialog called');
-                await rootStore.ec5LoadingDialog.dismiss();
-            }
-        }, set_delay);
+        return new Promise((resolve) => {
+            setTimeout(async function () {
+                try {
+                    if (rootStore.ec5LoadingDialog !== null) {
+                        console.log('dismiss dialog called');
+                        await rootStore.ec5LoadingDialog.dismiss();
+                    }
+                } finally {
+                    resolve();
+                }
+            }, set_delay);
+        });
     },
     //start a foreground service (with notification)
     //to avoid Android killing the app
@@ -209,7 +311,7 @@ buttons
             return;
         }
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             (async function () {
                 let status = await PushNotifications.checkPermissions();
                 switch (status.receive) {
@@ -230,18 +332,24 @@ buttons
                 status = await PushNotifications.checkPermissions();
 
                 if (status.receive === 'granted') {
-                    cordova.plugins.foregroundService.start(
-                        PARAMETERS.APP_NAME,
-                        labels.loading,
-                        'ec5_notification',
-                        1,
-                        10
-                    );
+                    await ForegroundService.createNotificationChannel({
+                        id: 'ec5_notification',
+                        name: PARAMETERS.APP_NAME,
+                        description: labels.running,
+                        importance: Importance.Low
+                    });
+                    await ForegroundService.startForegroundService({
+                        id: 10,
+                        title: PARAMETERS.APP_NAME,
+                        body: labels.running,
+                        smallIcon: 'ec5_notification',
+                        notificationChannelId: 'ec5_notification'
+                    });
                     resolve();
                 } else {
                     resolve();
                 }
-            })();
+            })().catch(reject);
         });
     },
     async stopForegroundService() {
@@ -251,13 +359,7 @@ buttons
         if (rootStore.device.platform !== PARAMETERS.ANDROID) {
             return;
         }
-        if (rootStore.device.platform === PARAMETERS.ANDROID) {
-            //only for api >= 28 (Android 9)
-            //app might crash on Android 8
-            if (parseInt(rootStore.device.osVersion) >= 9) {
-                cordova.plugins.foregroundService.stop();
-            }
-        }
+        await ForegroundService.stopForegroundService();
     },
 
     /**

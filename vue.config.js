@@ -7,6 +7,15 @@ module.exports = {
 
     filenameHashing: false, //to avoid app.####.js
     productionSourceMap: true,
+    css: {
+        loaderOptions: {
+            sass: {
+                sassOptions: {
+                    silenceDeprecations: ['legacy-js-api']
+                }
+            }
+        }
+    },
 
     //this is to avoid compiling a lot of builds when debugging
     configureWebpack: (config) => {

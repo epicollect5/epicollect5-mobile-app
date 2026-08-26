@@ -1,5 +1,8 @@
 
 import { useDBStore } from '@/stores/db-store';
+import { PARAMETERS } from '@/config';
+import { deleteFileService } from '@/services/filesystem/delete-file-service';
+import { databaseSelectService } from '@/services/database/database-select-service';
 
 export const databaseDeleteService = {
 
@@ -15,7 +18,7 @@ export const databaseDeleteService = {
 
             dbStore.db.transaction(function (tx) {
 
-                tables.forEach((table) => {
+                const statementPromises = tables.map((table) => {
 
                     const params = [];
                     let query = 'DELETE FROM ' + table;
@@ -41,13 +44,21 @@ export const databaseDeleteService = {
                         }
                     }
 
-                    tx.executeSql(query, params, (tx, res) => {
-                        console.log(res);
-                        console.log('*** deleted ---------------***');
-                        // continue
-                        resolve(res);
-                    }, _onError);
+                    return new Promise((resolveStatement, rejectStatement) => {
+                        tx.executeSql(query, params, (tx, res) => {
+                            console.log(res);
+                            console.log('*** deleted ---------------***');
+                            // continue
+                            resolveStatement(res);
+                        }, (tx, error) => {
+                            console.log('*** ' + query + '--------------------***');
+                            console.log(error);
+                            rejectStatement(error);
+                        });
+                    });
                 });
+
+                Promise.all(statementPromises).then(resolve, reject);
             }, _onError);
         });
     },
@@ -96,7 +107,7 @@ export const databaseDeleteService = {
     async deleteEntries(projectRef) {
 
         const query = '';
-        const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'media', 'bookmarks'];
+        const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'temp_unique_answers', 'unique_answers', 'media', 'bookmarks'];
 
         const options = {
             project_ref: projectRef,
@@ -107,11 +118,93 @@ export const databaseDeleteService = {
         return await this.deleteRowsFromMultipleTables(query, options, tables);
     },
 
+    //Remove the data a fresh download will replace, for the given project forms, in a single
+    //transaction: remote entries with their media and unique answers, plus synced branch entries.
+    //Local entries (is_remote=LOCAL) are preserved. Branch entries are never re-downloaded
+    //(read-only references); they are only wiped when synced, since the download guard guarantees
+    //nothing unsynced can reach this point, and the synced filter is a safety net against
+    //deleting branch data that was never uploaded.
+    async deleteEntriesBeforeDownload(projectRef, formRefs) {
+        const dbStore = useDBStore();
+        const statements = [];
+
+        const mediaFiles = await databaseSelectService.selectMediaBeforeDownload(projectRef, formRefs);
+        if (mediaFiles.length > 0) {
+            await deleteFileService.removeFiles(mediaFiles);
+        }
+
+        formRefs.forEach((formRef) => {
+            const remoteEntries = 'SELECT entry_uuid FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?';
+            statements.push({
+                query: 'DELETE FROM media WHERE project_ref=? AND form_ref=? AND entry_uuid IN (' + remoteEntries + ')',
+                params: [projectRef, formRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
+            });
+            statements.push({
+                query: 'DELETE FROM unique_answers WHERE project_ref=? AND entry_uuid IN (' + remoteEntries + ')',
+                params: [projectRef, projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
+            });
+            //Bookmarks are intentionally kept: re-downloaded entries keep the same
+            //UUIDs, so existing bookmarks remain valid
+            statements.push({
+                query: 'DELETE FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?',
+                params: [projectRef, formRef, PARAMETERS.REMOTE_CODES.IS]
+            });
+            statements.push({
+                query: 'DELETE FROM unique_answers WHERE project_ref=? AND form_ref=? AND entry_uuid IN (' +
+                    'SELECT entry_uuid FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?)',
+                params: [
+                    projectRef,
+                    formRef,
+                    projectRef,
+                    formRef,
+                    PARAMETERS.SYNCED_CODES.SYNCED
+                ]
+            });
+            statements.push({
+                query: 'DELETE FROM media WHERE project_ref=? AND form_ref=? AND entry_uuid IN (' +
+                    'SELECT entry_uuid FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?)',
+                params: [
+                    projectRef,
+                    formRef,
+                    projectRef,
+                    formRef,
+                    PARAMETERS.SYNCED_CODES.SYNCED
+                ]
+            });
+            statements.push({
+                query: 'DELETE FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?',
+                params: [projectRef, formRef, PARAMETERS.SYNCED_CODES.SYNCED]
+            });
+            // Clear abandoned in-progress branch edits for these forms. Leaving them
+            // would let moveBranchEntries/moveUniqueAnswers resurrect data on the next
+            // parent save after the committed copies were wiped by the download above,
+            // and let stale temp_unique_answers falsely reject new unique answers.
+            statements.push({
+                query: 'DELETE FROM temp_branch_entries WHERE project_ref=? AND form_ref=?',
+                params: [projectRef, formRef]
+            });
+            statements.push({
+                query: 'DELETE FROM temp_unique_answers WHERE project_ref=? AND form_ref=?',
+                params: [projectRef, formRef]
+            });
+        });
+
+        return new Promise((resolve, reject) => {
+            dbStore.db.transaction((tx) => {
+                statements.forEach((statement) => {
+                    tx.executeSql(statement.query, statement.params, () => {}, (transaction, error) => {
+                        reject(error);
+                    });
+                });
+            }, reject, resolve);
+        });
+    },
+
     //Function to remove all entries for the given array of forms
     async deleteFormEntries(projectRef, formRefs) {
 
         const query = '';
-        const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'media', 'bookmarks'];
+        const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'temp_unique_answers', 'media', 'bookmarks'];
 
         const options = {
             project_ref: projectRef,
@@ -119,40 +212,14 @@ export const databaseDeleteService = {
             form_ref: null
         };
 
-        return new Promise(function (resolve, reject) {
-
-            function _deleteFormEntries(formRef) {
-
-                if (!formRef) {
-                    console.log('no form refs left');
-                    resolve();
-                    return;
-                }
-
-                options.form_ref = formRef;
-
-                this.deleteRowsFromMultipleTables(query, options, tables).then(() => {
-                    console.log('going through _deleteRowsFromMultipleTables with formref: ' + formRef);
-                    // Go to next form
-                    _deleteFormEntries(formRefs.pop());
-                });
-            }
-
-            if (formRefs.length === 0) {
-                console.log('resolving _deleteFormEntries');
-                resolve();
-            } else {
-                // Start with the first form in the formRefs array
-                _deleteFormEntries(formRefs.pop());
-            }
-        });
+        //Delete the entries of each removed form
+        for (const formRef of formRefs) {
+            options.form_ref = formRef;
+            console.log('deleting form entries for form: ' + formRef);
+            await this.deleteRowsFromMultipleTables(query, options, tables);
+        }
     },
-
-    async deleteSyncedEntries(projectRef) {
-        //todo: call deleteEntry recursively
-    },
-
-    //remove a single entry
+//remove a single entry
     async deleteEntry(entryUuid) {
 
         const dbStore = useDBStore();

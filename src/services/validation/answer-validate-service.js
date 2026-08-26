@@ -153,7 +153,7 @@ export const answerValidateService = {
             case PARAMETERS.QUESTION_TYPES.BARCODE:
             case PARAMETERS.QUESTION_TYPES.PHONE:
             case PARAMETERS.QUESTION_TYPES.TEXTAREA:
-                answer = answer.toLowerCase();
+                answer = String(answer).toLowerCase();
                 break;
             case PARAMETERS.QUESTION_TYPES.INTEGER:
             case PARAMETERS.QUESTION_TYPES.DECIMAL:

@@ -26,5 +26,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style src="@/theme/components/ui/GridQuestionWide.scss" lang="scss" scoped></style>

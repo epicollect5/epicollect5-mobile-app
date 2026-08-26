@@ -76,6 +76,10 @@
 		"classpath": "io.capawesome.capacitorjs.plugins.androidedgetoedgesupport.EdgeToEdgePlugin"
 	},
 	{
+		"pkg": "@capawesome-team/capacitor-android-foreground-service",
+		"classpath": "io.capawesome.capacitorjs.plugins.foregroundservice.ForegroundServicePlugin"
+	},
+	{
 		"pkg": "@capgo/capacitor-zip",
 		"classpath": "ee.forgr.plugin.capacitor_zip.CapacitorZipPlugin"
 	},

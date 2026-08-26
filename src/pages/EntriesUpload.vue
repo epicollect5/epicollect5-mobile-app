@@ -113,7 +113,7 @@
 					>
 						<ion-button
 							class="ion-text-nowrap"
-							:disabled="!state.canUploadData"
+							:disabled="!state.canUploadData || state.isUploading"
 							color="secondary"
 							expand="block"
 							@click="uploadData()"
@@ -141,7 +141,7 @@
 					>
 						<ion-button
 							class="ion-text-nowrap"
-							:disabled="state.photos.length === 0"
+							:disabled="state.photos.length === 0 || state.isUploading"
 							color="secondary"
 							expand="block"
 							@click="uploadMedia(PARAMETERS.QUESTION_TYPES.PHOTO)"
@@ -169,7 +169,7 @@
 					>
 						<ion-button
 							class="ion-text-nowrap"
-							:disabled="state.audios.length === 0"
+							:disabled="state.audios.length === 0 || state.isUploading"
 							color="secondary"
 							expand="block"
 							@click="uploadMedia(PARAMETERS.QUESTION_TYPES.AUDIO)"
@@ -197,7 +197,7 @@
 					>
 						<ion-button
 							class="ion-text-nowrap"
-							:disabled="state.videos.length === 0"
+							:disabled="state.videos.length === 0 || state.isUploading"
 							color="secondary"
 							expand="block"
 							@click="uploadMedia(PARAMETERS.QUESTION_TYPES.VIDEO)"
@@ -379,10 +379,10 @@ export default {
 				);
 
 				if (confirmed) {
-					updateProject();
+					await updateProject();
 				} else {
 					//warn user abut project put of date and entries cannot be synced
-					errorsService.handleWebError(error);
+					await errorsService.handleWebError(error);
 				}
 			} else if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
 				// Check if we have an auth error
@@ -399,36 +399,42 @@ export default {
 						showModalLogin();
 					}
 				} else {
-					errorsService.handleWebError(error);
+					await errorsService.handleWebError(error);
 				}
 			} else {
 				// Other error
-				errorsService.handleWebError(error);
+				await errorsService.handleWebError(error);
 			}
 		}
 
 		const methods = {
 			/**
 			 * Upload all entry data
-			 * Start with top level parent forms and their branches
+			 * Start with top level parent forms and their branches,
 			 * Then move on to related children, child branches and repeat
 			 */
 			async uploadData() {
+				//upload already in progress -> bail out
+				if (state.isUploading) {
+					return false;
+				}
+				state.isUploading = true;
 				//no internet connection -> bail out
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
-					notificationService.showAlert(STRINGS[language].labels.connect_to_internet_to_upload);
+					state.isUploading = false;
+					await notificationService.showAlert(STRINGS[language].labels.connect_to_internet_to_upload);
 					return false;
 				}
 				//no entries to upload -> bail out
 				if (state.totalEntriesUnsynced === 0) {
+					state.isUploading = false;
 					notificationService.showToast(STRINGS[language].status_codes.ec5_119);
 					return false;
 				}
 				// If we have entries to upload, upload
 				if (state.totalEntriesUnsynced > 0) {
 					rootStore.attemptedUploadOrErrorFix = true;
-					state.isUploading = true;
 					await _showModalProgressTransfer(labels.uploading_entries, state.totalEntriesUnsynced);
 
 					uploadDataService.execute(state.totalEntriesUnsynced).then(
@@ -443,11 +449,11 @@ export default {
 
 							// If we have any errors
 							if (state.hasErrors || state.totalEntriesWithErrors > 0) {
-								//some entries has errors (uniqueness, required, etc)
-								notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
+								//some entries have errors (uniqueness, required, etc.)
+								await notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
 							} else if (state.totalEntriesIncomplete > 0) {
 								//Some entries are incomplete
-								notificationService.showAlert(STRINGS[language].status_codes.ec5_139);
+								await notificationService.showAlert(STRINGS[language].status_codes.ec5_139);
 							} else {
 								//All entries were successfully uploaded
 								notificationService.showToast(STRINGS[language].status_codes.ec5_120);
@@ -455,22 +461,29 @@ export default {
 						},
 						async function (error) {
 							console.log('Show stopping error hit');
-							_handleGeneralError(error);
+							await _handleGeneralError(error);
 						}
 					);
 				}
 			},
 			async uploadMedia(type) {
+				//upload already in progress -> bail out
+				if (state.isUploading) {
+					return false;
+				}
+				state.isUploading = true;
 				const mediaCount = state[type + 's'].length;
 				let header = labels.uploading_entries;
 				//no internet connection -> bail out
 				const hasInternetConnection = await utilsService.hasInternetConnection();
 				if (!hasInternetConnection) {
-					notificationService.showAlert(STRINGS[language].labels.connect_to_internet_to_upload);
+					state.isUploading = false;
+					await notificationService.showAlert(STRINGS[language].labels.connect_to_internet_to_upload);
 					return false;
 				}
 				//no media files to upload -> bail out
 				if (mediaCount === 0) {
+					state.isUploading = false;
 					notificationService.showToast(STRINGS[language].status_codes.ec5_119);
 					return false;
 				}
@@ -488,7 +501,6 @@ export default {
 						header = labels.uploading_photos;
 				}
 				await _showModalProgressTransfer(header, mediaCount);
-				state.isUploading = true;
 
 				uploadMediaService.execute(state[type + 's'], mediaCount, 0).then(
 					async function (errors) {
@@ -503,7 +515,7 @@ export default {
 
 						if (state.hasErrors) {
 							//some errors occurred
-							notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
+							await notificationService.showAlert(STRINGS[language].status_codes.ec5_125);
 						} else {
 							// If all media files were successfully uploaded
 							notificationService.showToast(STRINGS[language].status_codes.ec5_120);
@@ -515,7 +527,7 @@ export default {
 				);
 			},
 			goBack() {
-				//refresh entries page only when an upload was attempted
+				//refresh Entries page only when an upload was attempted
 				if (rootStore.attemptedUploadOrErrorFix) {
 					rootStore.attemptedUploadOrErrorFix = false;
 					rootStore.routeParams = rootStore.routeParamsEntries;
@@ -598,7 +610,4 @@ export default {
 };
 </script>
 
-<style
-	lang="scss"
-	scoped
-></style>
+<style src="@/theme/pages/EntriesUpload.scss" lang="scss"></style>

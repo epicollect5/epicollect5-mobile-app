@@ -1,0 +1,33 @@
+@use '@/theme/mixins' as *;
+
+.question-card {
+    @include question-card-base;
+}
+
+.question-label {
+    @include question-label-base;
+}
+
+.md .question-dropdown-action-sheet {
+    @include question-dropdown-action-sheet-base;
+}
+
+.possible-answers-list,
+.saved-answers-list {
+    .possible-answer-item,
+    .saved-answer-item {
+        @include possible-answers-item-base;
+    }
+    .question-dropdown-item {
+        @include possible-answers-dropdown-item-base;
+    }
+}
+
+.possible-answers-list {
+    @include possible-answers-list-base;
+}
+
+ion-item-divider.possible-answers-serchbar-wrapper,
+ion-item-divider.saved-answers-serchbar-wrapper {
+    @include possible-answers-searchbar-wrapper-base;
+}

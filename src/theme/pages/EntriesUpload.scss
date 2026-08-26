@@ -1,0 +1,9 @@
+@use '@/theme/mixins' as *;
+
+.subheader-error {
+    @include subheader-error-base;
+}
+
+.entries-upload-errors {
+    @include entries-upload-errors-base;
+}

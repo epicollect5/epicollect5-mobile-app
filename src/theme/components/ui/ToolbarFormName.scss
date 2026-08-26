@@ -1,0 +1,9 @@
+@use '@/theme/mixins' as *;
+
+ion-toolbar.form-name {
+    @include form-name-toolbar-base;
+}
+
+ion-item-divider.form-name {
+    @include form-name-divider-base;
+}

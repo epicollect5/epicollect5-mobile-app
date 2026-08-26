@@ -284,3 +284,5 @@ export default {
 	}
 };
 </script>
+
+<style src="@/theme/components/lists/ListEntries.scss" lang="scss"></style>

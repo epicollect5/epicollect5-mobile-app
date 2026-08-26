@@ -517,7 +517,7 @@ export default {
 					case PARAMETERS.ACTIONS.ENTRY_SAVE:
 						// SAVE AND QUIT
 
-						// If we're on the last page, just save the entry, no further validation needed
+						// If we're on the last page, just save the entry. No further validation needed
 						if (state.questionParams.currentInputRef === null) {
 							// Save entry
 							await methods.saveEntry(syncType);
@@ -811,7 +811,4 @@ export default {
 };
 </script>
 
-<style
-	lang="scss"
-	scoped
-></style>
+<style src="@/theme/pages/EntriesAdd.scss" lang="scss"></style>

@@ -7,6 +7,9 @@ import {notificationService} from '@/services/notification-service';
 import {errorsService} from '@/services/errors-service';
 import {downloadService} from '@/services/utilities/download-service';
 import {entriesDownloadProgressService} from '@/services/utilities/entries-download-progress-service';
+import {databaseDeleteService} from '@/services/database/database-delete-service';
+import {databaseSelectService} from '@/services/database/database-select-service';
+import {versioningService} from '@/services/utilities/versioning-service';
 import {logout} from '@/use/auth/logout';
 
 function initDownloader({state, rootStore, labels, language, projectModel}) {
@@ -100,12 +103,65 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     state.downloadCache = {};
   }
 
+  function clearProjectDownloadCache() {
+    clearDownloadCache();
+    entriesDownloadProgressService.clearProject(projectModel.getProjectRef());
+    state.forms.forEach((form) => {
+      state.resumeAvailable[form.formRef] = false;
+    });
+  }
+
   async function clearDownloadProgress(formRef) {
     const confirmed = await notificationService.confirmSingle(labels.are_you_sure, labels.clear_download_progress);
 
     if (confirmed) {
       clearFormDownloadCache(formRef);
     }
+  }
+
+  async function checkProjectVersion() {
+    let isUpToDate;
+    try {
+      isUpToDate = await versioningService.checkProjectVersion();
+    } catch (error) {
+      if (error?.data?.errors?.[0]?.code === 'ec5_11') {
+        //Project has been trashed/deleted on the server: stop the download,
+        //the remote entries are gone.
+        await notificationService.showAlert(STRINGS[language].status_codes.ec5_11);
+        return {shouldProceed: false, projectTrashed: true, projectUpdated: false};
+      }
+
+      throw error;
+    }
+
+    if (!isUpToDate) {
+      const confirmed = await notificationService.confirmSingle(
+        STRINGS[language].labels.update_project,
+        STRINGS[language].labels.project_outdated
+      );
+
+      if (confirmed) {
+        try {
+          await notificationService.showProgressDialog(
+            STRINGS[language].labels.wait,
+            STRINGS[language].labels.updating_project
+          );
+          await versioningService.updateProject();
+          await notificationService.hideProgressDialog(0);
+          // Project changes invalidate cached page URLs and entry counts.
+          clearProjectDownloadCache();
+          return {shouldProceed: true, projectUpdated: true};
+        } catch (error) {
+          await notificationService.hideProgressDialog(0);
+          await errorsService.handleWebError(error);
+          return {shouldProceed: false, projectUpdated: false};
+        }
+      } else {
+        return {shouldProceed: false, projectUpdated: false};
+      }
+    }
+
+    return {shouldProceed: true, projectUpdated: false};
   }
 
   async function downloadEntries(formRef, shouldResume = false) {
@@ -130,20 +186,90 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
       return modal.present();
     }
 
-    const beginDownload = (resumeDownload = false) => {
+    const handleProjectUpdated = async (message) => {
+      state.forms = projectModel.getFormsInOrder();
+      resetDownloadButtonState();
+      await notificationService.showAlert(message, STRINGS[language].labels.project_outdated);
+    };
+
+    const beginDownload = async (resumeDownload = false) => {
       if (state.isFetching) {
         return;
       }
 
-      state.wasAttemptedDownload = true;
-      startDownload(resumeDownload);
+      state.isFetching = true;
+
+      try {
+        const versionCheck = await checkProjectVersion();
+        if (versionCheck.projectTrashed) {
+          //Alert already shown: the project was trashed on the server, do not
+          //offer the download warning nor wipe any local entries.
+          state.isFetching = false;
+          return;
+        }
+
+        if (!versionCheck.shouldProceed) {
+          state.showWarning = true;
+          state.isFetching = false;
+          return;
+        }
+
+        if (versionCheck.projectUpdated) {
+          //Project structure changed: refresh the form buttons and clear all
+          //download progress. Do not start a download automatically, the user
+          //must start again from the first form button.
+          await handleProjectUpdated(STRINGS[language].status_codes.ec5_137);
+          state.isFetching = false;
+          return;
+        }
+
+        state.wasAttemptedDownload = true;
+        // A resumed download is only safe when the project structure did not change.
+        await startDownload(resumeDownload);
+      } catch (error) {
+        state.isFetching = false;
+        await errorsService.handleWebError(error);
+      }
     };
 
     const startDownload = async (resumeDownload = false) => {
       const formCache = getFormDownloadCache(formRef);
-      state.isFetching = true;
-
       try {
+        if (!resumeDownload) {
+          const unsyncedCount = await databaseSelectService.countUnsyncedEntries(projectModel.getProjectRef());
+          const unsyncedMediaCount = await databaseSelectService.countMediaUnsynced(projectModel.getProjectRef());
+          const totalUnsynced = unsyncedCount.rows.item(0).total_number_of_entries_with_errors
+              + unsyncedCount.rows.item(0).total_number_of_entries_unsynced
+              + unsyncedCount.rows.item(0).total_number_of_incomplete_entries
+              + unsyncedMediaCount.rows.item(0).total;
+          if (totalUnsynced > 0) {
+            await notificationService.showDismissAlert(
+                labels.remote_entries_out_of_sync,
+                labels.unsynced_entries,
+                PARAMETERS.DOWNLOAD_ENTRIES_DOCS_URL
+            );
+            state.resumeAvailable[formRef] = false;
+            return;
+          }
+          //A fresh download removes the remote entries of the selected form and of
+          //every form that follows it in the project. Only the selected form is
+          //re-downloaded now; the following forms are downloaded in turn, one at a
+          //time, so an interrupted download can never leave orphaned children.
+          //The download caches of the following forms are cleared as well: their rows
+          //are gone, so any stale resume state would skip pages whose rows no longer
+          //exist.
+          const formsInOrder = projectModel.getFormsInOrder();
+          const currentFormIndex = formsInOrder.findIndex((form) => form.formRef === formRef);
+          const formRefs = formsInOrder.slice(currentFormIndex).map((form) => form.formRef);
+          formRefs.slice(1).forEach((formRefToClear) => clearFormDownloadCache(formRefToClear));
+          await databaseDeleteService.deleteEntriesBeforeDownload(projectModel.getProjectRef(), formRefs);
+          state.completed = false;
+          formRefs.forEach((formRefToReset, formIndex) => {
+            state.enabledButtons[formRefToReset] = formIndex === 0;
+            state.entriesDownloaded[formRefToReset] = false;
+          });
+        }
+
         await showModalUploadProgress({
           total: resumeDownload ? formCache.totalEntries : 0,
           done: resumeDownload ? formCache.processedEntries : 0
@@ -156,6 +282,20 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           initialEntryNumber: resumeDownload ? formCache.processedEntries : 0,
           isCancelled() {
             return downloadCancelled;
+          },
+          //The project version is checked before each page download: if it changed
+          //on the server mid-download, rows already inserted may not match the new
+          //structure, so the download is aborted and the user is asked to restart.
+          shouldAbort: async () => {
+            const versionCheck = await checkProjectVersion();
+            if (!versionCheck.shouldProceed || versionCheck.projectUpdated) {
+              return {
+                versionChanged: true,
+                projectUpdated: versionCheck.projectUpdated,
+                projectTrashed: versionCheck.projectTrashed
+              };
+            }
+            return null;
           },
           shouldSkipUrl(url) {
             return Object.prototype.hasOwnProperty.call(formCache.urls, url);
@@ -204,6 +344,24 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           return;
         }
 
+        if (error?.projectTrashed) {
+          //The project was trashed on the server mid-download: clear all
+          //progress and stop. The alert was already shown by the version check.
+          clearProjectDownloadCache();
+          resetDownloadButtonState();
+          return;
+        }
+
+        if (error?.versionChanged) {
+          /*
+           * False positive (review): mid-download abort intentionally keeps rows — by design. See docs/known-review-false-positives.md
+           * (`src/services/entries-download-service.js`, error?.versionChanged branch).
+           */
+          clearProjectDownloadCache();
+          await handleProjectUpdated(labels.download_interrupted_restart);
+          return;
+        }
+
         if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
           if (error.data.errors[0].code !== 'ec5_78') {
             const confirmed = await notificationService.confirmSingle(
@@ -224,7 +382,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     };
 
     const confirmDownloadWarning = async () => {
-      const confirmed = await notificationService.confirmSingle(labels.download_warning, labels.download_remote_entries);
+      const confirmed = await notificationService.confirmSingle(labels.download_warning, labels.download_remote_entries, PARAMETERS.DOWNLOAD_ENTRIES_DOCS_URL);
 
       if (confirmed) {
         state.showWarning = false;
@@ -247,7 +405,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
         );
 
         if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESUME) {
-          beginDownload(true);
+          await beginDownload(true);
         }
 
         if (action === PARAMETERS.ACTIONS.DOWNLOAD_RESTART) {
@@ -260,7 +418,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           }
 
           clearFormDownloadCache(formRef);
-          beginDownload(false);
+          await beginDownload(false);
         }
       } finally {
         state.promptOpen = false;
@@ -281,13 +439,13 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
 
       try {
         if (await confirmDownloadWarning()) {
-          beginDownload(false);
+          await beginDownload(false);
         }
       } finally {
         state.promptOpen = false;
       }
     } else {
-      beginDownload(shouldResume);
+      await beginDownload(shouldResume);
     }
   }
 
@@ -297,7 +455,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     hasDownloadProgress,
     getDownloadProgressLabel,
     clearDownloadProgress,
-    clearDownloadCache,
+    clearProjectDownloadCache,
     downloadEntries
   };
 }

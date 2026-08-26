@@ -1,0 +1,24 @@
+@use '@/theme/mixins' as *;
+
+.icon-entry {
+    &.entry-synced {
+        @include entry-synced-base;
+    }
+    &.entry-sync-error {
+        @include entry-sync-error-base;
+    }
+    &.entry-incomplete {
+        @include entry-incomplete-base;
+    }
+}
+
+.entry-synced,
+.entry-not-synced,
+.entry-sync-error,
+.entry-incomplete {
+    @include entry-status-margins-base;
+}
+
+.icon-error-entries {
+    @include icon-error-entries-base;
+}

@@ -1,0 +1,20 @@
+@use '@/theme/mixins' as *;
+
+.download-progress-grid {
+    padding: 0;
+    width: 100%;
+}
+
+.download-progress-value {
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+    color: var(--ion-color-medium);
+    font-size: 0.875rem;
+}
+
+.download-progress-action {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0;
+}

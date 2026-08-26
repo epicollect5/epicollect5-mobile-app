@@ -1,0 +1,34 @@
+@use '@/theme/mixins' as *;
+
+.question-popover-button {
+    position: relative;
+}
+
+.answer-card {
+    @include answer-card-base;
+}
+
+.answer-label {
+    @include answer-label-base;
+}
+
+.answer-button-edit {
+    @include answer-button-edit-base;
+}
+
+.answer-item-text {
+    @include answer-item-text-base;
+}
+
+.answer-card-group {
+    padding: 0 !important;
+}
+
+.answer-list {
+    padding-top: 0 !important;
+}
+
+@media screen and (max-width: 400px) {
+    .answer-button-edit {
+    }
+}

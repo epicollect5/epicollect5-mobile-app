@@ -1,0 +1,13 @@
+@use '@/theme/mixins' as *;
+
+.possible-answers-list {
+    @include possible-answers-list-base;
+
+    .possible-answer-item {
+        @include possible-answers-item-base;
+    }
+}
+
+ion-item-divider.possible-answers-serchbar-wrapper {
+    @include possible-answers-searchbar-wrapper-base;
+}

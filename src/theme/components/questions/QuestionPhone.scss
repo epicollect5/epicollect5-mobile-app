@@ -1,0 +1,22 @@
+@use '@/theme/mixins' as *;
+
+.question-card {
+    @include question-card-base;
+}
+
+.question-label {
+    @include question-label-base;
+}
+
+.question-input {
+    @include question-input-base;
+}
+
+.plt-ios {
+    .ios-fix-border {
+        border: 1px solid var(--ion-color-medium);
+        &.has-error {
+            border: 2px solid var(--ion-color-danger);
+        }
+    }
+}

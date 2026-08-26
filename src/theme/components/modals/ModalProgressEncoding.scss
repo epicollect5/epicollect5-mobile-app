@@ -1,0 +1,14 @@
+@use '@/theme/mixins' as *;
+
+.modal-progress-encoding {
+    @include modal-transparent-header-base;
+    @include modal-progress-base;
+
+    .spinner-encoding {
+        @include modal-progress-spinner-base;
+    }
+
+    .progress-encoding {
+        @include modal-progress-bar-base;
+    }
+}

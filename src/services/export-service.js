@@ -13,6 +13,7 @@ import {CapacitorZip} from '@capgo/capacitor-zip';
 import {Directory, Filesystem} from '@capacitor/filesystem';
 import {Share} from '@capacitor/share';
 import {notificationService} from '@/services/notification-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 import {deleteFileService} from '@/services/filesystem/delete-file-service';
 
 export const exportService = {
@@ -156,14 +157,21 @@ export const exportService = {
                 try {
                     const result = await databaseSelectService.selectDistinctBranchRefs(projectRef);
 
+                    const projectExtra = projectModel.getProjectExtra();
                     if (result.rows.length > 0) {
                         for (let i = 0; i < result.rows.length; i++) {
                             const currentBranch = result.rows.item(i);
-                            branches.push({
-                                branchRef: currentBranch.owner_input_ref,
-                                formRef: currentBranch.form_ref
-                            });
+                            const formRef = currentBranch.form_ref;
+                            const branchRef = currentBranch.owner_input_ref;
+                            if (Object.keys(projectModel.getExtraForm(formRef)).length > 0 && projectExtra.inputs?.[branchRef]) {
+                                branches.push({
+                                    branchRef,
+                                    formRef
+                                });
+                            }
                         }
+                    }
+                    if (branches.length > 0) {
                         try {
                             await processBranch(branches.shift());
                         } catch (error) {
@@ -288,6 +296,7 @@ export const exportService = {
     },
     async exportEntriesZipArchive(projectRef, projectSlug) {
         const rootStore = useRootStore();
+        const language = rootStore.language;
         const projectName = projectModel.getProjectName();
         const archiveDirectory = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
         const archivePath = utilsService.getExportPath(projectSlug, archiveDirectory); // ← not hardcoded
@@ -373,6 +382,8 @@ export const exportService = {
 
         } catch (error) {
             console.error('Archive failed:', error);
+            rollbarService.critical(error);
+            await notificationService.showAlert(STRINGS[language].labels.unknown_error);
             return false;
         } finally {
             // Always cleanup
@@ -390,6 +401,8 @@ export const exportService = {
     },
 
     async sendToDevice(projectRef, projectSlug) {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
         const documentsDirectory = Directory.Documents;
         const deviceExportPath = utilsService.getExportPath(projectSlug, documentsDirectory);
         let success = true; // Assume success unless an error occurs
@@ -416,7 +429,6 @@ export const exportService = {
             //Export media last as it can be the most time-consuming, and we want the progress bar to reflect that
             await exportService.exportMedia(projectRef, projectSlug, documentsDirectory);
             // Update progress for media files
-            const rootStore = useRootStore();
             const progress = rootStore.progressExport;
             notificationService.setProgressExport({
                 total: progress.total,
@@ -436,8 +448,9 @@ export const exportService = {
             return deviceExportPath; // Return the path to the exported files
         } catch (error) {
             console.error('Send to device failed:', error);
+            rollbarService.critical(error);
             success = false;
-            throw error;
+            throw new Error(STRINGS[language].labels.unknown_error);
         } finally {
             // Dismiss the modal
             await notificationService.hideProgressExportModal();

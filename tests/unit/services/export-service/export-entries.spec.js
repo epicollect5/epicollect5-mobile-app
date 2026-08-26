@@ -22,6 +22,7 @@ vi.mock('@/services/database/database-select-service', () => ({
     }
 }));
 vi.mock('@/services/notification-service');
+vi.mock('@/services/utilities/rollbar-service');
 vi.mock('@/services/filesystem/media-dirs-service');
 vi.mock('@/services/filesystem/export-media-service');
 vi.mock('@/services/filesystem/write-file-service');

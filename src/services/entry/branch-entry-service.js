@@ -8,6 +8,7 @@ import {databaseInsertService} from '../database/database-insert-service';
 import {entryCommonService} from '@/services/entry/entry-common-service';
 import {databaseSelectService} from '../database/database-select-service';
 import {databaseDeleteService} from '../database/database-delete-service';
+import {entriesDownloadProgressService} from '@/services/utilities/entries-download-progress-service';
 import {branchEntryModel} from '@/models/branch-entry-model.js';
 import {Capacitor} from '@capacitor/core';
 import {JSONTransformerService} from '@/services/utilities/json-transformer-service';
@@ -121,6 +122,14 @@ export const branchEntryService = {
 
             // Save the branch entry in the temp table
             databaseInsertService.insertTempBranchEntry(self.entry, syncType).then(function (res) {
+
+                // A local branch puts the project out of sync with any partial
+                // download: invalidate the download progress cache
+                try {
+                    entriesDownloadProgressService.clearProject(projectModel.getProjectRef());
+                } catch (error) {
+                    console.warn('Failed to clear entries download progress:', error);
+                }
 
                 // Insert any unique answers for this branch entry
                 databaseInsertService.insertUniqueAnswers(self.entry, true).then(function () {
@@ -293,8 +302,13 @@ export const branchEntryService = {
                             databaseDeleteService.removeUniqueAnswers(res).then(function () {
                                 // Then delete all temp branch entries
                                 databaseDeleteService.deleteTempBranchEntries().then(function () {
-                                    // Finished, resolve
-                                    resolve();
+                                    // Also clear temp unique answers so they don't leak
+                                    databaseDeleteService.deleteTempUniqueAnswers().then(function () {
+                                        // Finished, resolve
+                                        resolve();
+                                    }, function (error) {
+                                        reject(error);
+                                    });
                                 }, function (error) {
                                     reject(error);
                                 });

@@ -1,0 +1,15 @@
+@use '@/theme/mixins' as *;
+
+ion-item-divider.entry-error,
+ion-item-divider.entry-incomplete {
+    @include form-name-entry-error-base;
+}
+
+ion-item-divider.entry-error-global {
+    @include form-name-entry-error-global-base;
+}
+
+.item-divider-label-centered {
+    width: 100%;
+    text-align: center;
+}

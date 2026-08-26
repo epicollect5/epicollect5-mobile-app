@@ -7,6 +7,7 @@ import { notificationService } from '@/services/notification-service';
 import { entryCommonService } from '@/services/entry/entry-common-service';
 import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
+import { utilsService } from '@/services/utilities/utils-service';
 
 export async function addFakeEntries (params) {
     return new Promise((resolve, reject) => {
@@ -19,6 +20,7 @@ export async function addFakeEntries (params) {
 
             // Show loader
             await notificationService.showProgressDialog(labels.wait);
+            console.log('Fake entries run started - heap: ' + utilsService.getHeapMemoryUsage());
 
             //todo add a popup to ask how many so we do not recompile ;)
             const howManyEntries = PARAMETERS.HOW_MANY_ENTRIES;
@@ -109,12 +111,14 @@ export async function addFakeEntries (params) {
                                 entryService
                                     .saveEntry(PARAMETERS.SYNCED_CODES.UNSYNCED)
                                     .then(function () {
+                                        console.log(i + '. - fake entry saved - heap: ' + utilsService.getHeapMemoryUsage());
                                         if (i < howManyEntries) {
                                             i++;
                                             _addFakeHierarchyEntry(i);
                                         } else {
                                             // hide loader
                                             notificationService.hideProgressDialog();
+                                            console.log('Fake entries run completed - heap: ' + utilsService.getHeapMemoryUsage());
                                             resolve();
                                         }
                                     });

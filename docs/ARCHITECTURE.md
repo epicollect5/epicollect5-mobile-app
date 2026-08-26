@@ -51,6 +51,13 @@ Key behavior:
 - `rootStore.isPWA` is derived from `device.platform === PARAMETERS.PWA`.
 - The boot path diverges immediately after platform detection.
 
+**Server URL resolution** (`src/main.js`, `src/services/init-service.js`, `src/pages/Settings.vue`):
+
+- When `PARAMETERS.DEBUG` is falsy (production builds), `DEFAULT_SERVER_URL` is forced to `PRODUCTION_SERVER_URL` at boot
+- The server URL input in Settings is only visible when `PARAMETERS.DEBUG` is truthy or the Easter Egg project is active
+- Each project stores its own server URL when downloaded; uploads always go to the originating server via `projectModel.getServerUrl()`
+- Resolution priority: project's stored URL → `rootStore.serverUrl` (from DB or default)
+
 ### 2. Router Layer
 
 Primary file:
@@ -108,7 +115,7 @@ The service layer is organized by concern, mostly as exported object literals.
 
 Major groups:
 
-- `src/services/database/`: SQLite create/select/insert/update/delete/migrate
+- `src/services/database/`: SQLite create/select/insert/update/delete/migrate, including `deleteRemoteEntries()` for cleaning up remote entries before re-download
 - `src/services/entry/`: entry editing, answer handling, jumps, media handling, save behavior
 - `src/services/filesystem/`: media directories, temp/persistent storage, file writes/moves/deletes
 - `src/services/auth/`: login providers and auth workflows
@@ -472,14 +479,20 @@ Native sync is a staged process:
 
 This ordering is important because branch and child rows depend on parent UUID relationships.
 
+**Remote entries (`is_remote=1`) are skipped during upload** because they are inserted with `can_edit=0`. However, adding a child entry or branch to a remote entry marks it unsynced. The remote parent remains skipped during upload, but its locally-created children and branches are uploaded. The parent's `synced` status is updated once all its children are uploaded.
+
 ### Native Download
 
-`downloadService.downloadFormEntries(formRef)`:
+`entriesDownloadService` orchestrates the download flow:
 
-- fetches paginated entry data from the server
-- flattens JSON entries into local DB row shape
-- inserts them as synced remote entries
-- updates progress through `notificationService`
+1. **Version check**: before downloading, the service compares local `projectModel` version with the remote `structure_last_updated`. If out of date, the user is prompted to update the project first. This prevents downloaded entries from being rendered against a stale project model (which caused group questions added after entry collection to be skipped silently).
+2. **Cache clearing**: after a project update, the download cache (page URLs, progress, resume state) is cleared so stale data is not reused.
+3. **Duplicate prevention**: existing remote entries for the target form are deleted via `databaseDeleteService.deleteRemoteEntries()` before downloading, avoiding duplicate rows.
+4. `downloadService.downloadFormEntries(formRef)` fetches paginated entry data from the server, flattens JSON entries into local DB row shape, inserts them as synced remote entries, and updates progress through `notificationService`.
+
+This version-check-then-download pattern is the key safeguard against stale project models in the native download flow.
+
+**Mid-download version change**: the version check runs again before each page fetch; if it fails mid-download, the download is aborted and the user is asked to update the project and restart. The partially downloaded rows are intentionally left in place — they match the still-old local structure until `updateProject()` runs, so nothing is corrupt. On restart, the form buttons reset to the first form only, and `deleteEntriesBeforeDownload()` wipes all remote entries (with media and unique answers) for every form before re-downloading, so no old-structure rows survive an update plus restart. Offline or transient version-check failures cannot corrupt data either: downloads and uploads fail on their own network calls and are surfaced by `errorsService`, and uploads are additionally rejected server-side when the project is out of date.
 
 ## Versioning and Project Updates
 

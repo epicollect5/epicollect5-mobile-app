@@ -94,6 +94,13 @@ export const downloadService = {
         while (shouldContinue) {
             _throwIfCancelled();
 
+            if (options.shouldAbort) {
+                const abortReason = await options.shouldAbort();
+                if (abortReason) {
+                    throw abortReason;
+                }
+            }
+
             if (options.shouldSkipUrl && url && options.shouldSkipUrl(url)) {
                 const cachedNextUrl = options.getCachedNextUrl?.(url);
 

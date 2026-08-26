@@ -87,7 +87,4 @@ export default {
 };
 </script>
 
-<style
-	lang="scss"
-	scoped
-></style>
+<style src="@/theme/components/auth/CardLoginLdap.scss" lang="scss"></style>

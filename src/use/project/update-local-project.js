@@ -6,6 +6,7 @@ import {STRINGS} from '@/config/strings';
 import {errorsService} from '@/services/errors-service';
 import {showModalLogin} from '@/use/auth/show-modal-login';
 import {logout} from '@/use/auth/logout';
+import {projectModel} from '@/models/project-model';
 
 export async function updateLocalProject() {
     const rootStore = useRootStore();
@@ -17,6 +18,13 @@ export async function updateLocalProject() {
          * Handles errors from updating the project, like setting a login callback
          */
         const authErrors = PARAMETERS.AUTH_ERROR_CODES;
+
+        //no active project loaded: a deferred retry after login can fire on a page with no project,
+        //so skip silently instead of crashing on an empty project model
+        if (!projectModel.hasInitialised()) {
+            console.warn('updateProject skipped: no active project');
+            return false;
+        }
 
         await notificationService.showProgressDialog(
             STRINGS[language].labels.wait,
@@ -47,8 +55,16 @@ export async function updateLocalProject() {
             notificationService.hideProgressDialog();
             // Web error
             if (authErrors.indexOf(error?.data?.errors?.[0]?.code) < 0) {
-                // Other error
-                await errorsService.handleWebError(error);
+                // Failed to remove the entries of forms/branches removed from the project
+                if (error?.isStaleCleanupError) {
+                    await notificationService.showAlert(
+                        STRINGS[language].labels.stale_cleanup_failed,
+                        STRINGS[language].labels.error
+                    );
+                } else {
+                    // Other error
+                    await errorsService.handleWebError(error);
+                }
                 return false;
             }
 
@@ -90,7 +106,8 @@ export async function updateLocalProject() {
         // Ask user if they want to upgrade the project
         const confirmed = await notificationService.confirmSingle(
             STRINGS[language].labels.update_project,
-            STRINGS[language].labels.project_outdated
+            STRINGS[language].labels.project_outdated,
+            PARAMETERS.UPDATE_PROJECT_DOCS_URL
         );
 
         if (confirmed) {

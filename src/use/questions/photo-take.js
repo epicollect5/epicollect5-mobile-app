@@ -29,7 +29,11 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
 
     async function openCamera() {
 
-        await notificationService.startForegroundService();
+        try {
+            await notificationService.startForegroundService();
+        } catch (error) {
+            console.log('Failed to start foreground service: ' + error);
+        }
 
         try {
             const imageURI = await Camera.getPhoto(cameraOptions);

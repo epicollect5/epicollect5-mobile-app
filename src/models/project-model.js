@@ -39,6 +39,10 @@ export const projectModel = {
     loadExtraStructure(projectExtra) {
         this.project_extra = projectExtra;
     },
+    //Load in the project mapping only
+    loadMappings(mapping) {
+        this.mapping = mapping;
+    },
     hasInitialised() {
         return (this.project_extra.project ? true : false);
     },
@@ -84,7 +88,7 @@ export const projectModel = {
         }));
     },
     getExtraForm(formRef) {
-        return (this.project_extra.forms[formRef]) ? this.project_extra.forms[formRef] : {};
+        return this.project_extra.forms?.[formRef] ? this.project_extra.forms[formRef] : {};
     },
     getFirstFormRef() {
         return (this.project_extra.project.forms[0]) ? this.project_extra.project.forms[0] : '';

@@ -1,0 +1,18 @@
+@use '@/theme/mixins' as *;
+
+.question-card {
+    @include question-card-base;
+}
+
+.question-label {
+    @include question-label-base;
+}
+
+.question-branch {
+    @include question-branch-base;
+}
+
+.question-group,
+.question-branch {
+    @include question-group-branch-base;
+}

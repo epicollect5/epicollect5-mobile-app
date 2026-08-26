@@ -7,6 +7,7 @@ import { utilsService } from '@/services/utilities/utils-service';
 import { notificationService } from '@/services/notification-service';
 import { logout } from '@/use/auth/logout';
 import LeftDrawer from '@/components/globals/LeftDrawer.vue';
+import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { mount, shallowMount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
@@ -416,6 +417,7 @@ describe('LeftDrawer component', () => {
         await flushPromises();
         //test it is showing in the dom
         expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(true);
+        bookmarksService.bookmarkHierarchyExists = vi.fn().mockResolvedValue(true);
         expect(wrapper.find('[data-translate="no_bookmarks_found"]').exists()).toBe(false);
         let items = wrapper.findAll('[data-test="bookmarks"]');
         expect(items).toHaveLength(1);
@@ -431,7 +433,7 @@ describe('LeftDrawer component', () => {
         const elements = wrapper.findAll('[data-test="bookmarks"]');
 
         // Loop through the elements and perform assertions
-        elements.forEach((element, index) => {
+        for (const [index, element] of elements.entries()) {
             // Assert the presence of ion-icon component
             const iconComponent = element.find('ion-icon');
             expect(iconComponent.exists()).toBe(true);
@@ -441,7 +443,8 @@ describe('LeftDrawer component', () => {
             expect(labelComponent.exists()).toBe(true);
             expect(labelComponent.text()).toBe(bookmarkStore.bookmarks[index].title);
 
-            element.trigger('click');
+            await element.trigger('click');
+            await flushPromises();
 
             expect(rootStore.routeParams.projectRef).toBe(bookmarkStore.bookmarks[index].projectRef);
             expect(rootStore.routeParams.formRef).toBe(bookmarkStore.bookmarks[index].formRef);
@@ -454,7 +457,67 @@ describe('LeftDrawer component', () => {
                 }
             });
             expect(menuController.close).toHaveBeenCalled(elements.length);
+        }
+    });
+
+    it('should show alert and NOT navigate when a bookmark hierarchy entry no longer exists', async () => {
+
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const labels = STRINGS[language].labels;
+        const bookmarkStore = useBookmarkStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+        const fakeBookmark = {
+            hierarchyNavigation: [{parentEntryUuid: 'deleted-parent-entry-uuid'}],
+            formRef: '507372e7cdd546baa5df0b182cad4ebc_64d3954955dc1',
+            id: 1,
+            projectRef: '507372e7cdd546baa5df0b182cad4ebc',
+            title: 'Test bookmark'
+        };
+
+        wrapper = mount(LeftDrawer, {
+            attachTo: document.body
         });
+
+        STRINGS[language].status_codes = {
+            ec5_239: 'ec5_239'
+        };
+        bookmarksService.bookmarkHierarchyExists = vi.fn().mockResolvedValue(false);
+        bookmarksService.deleteBookmark = vi.fn().mockImplementation((id) => {
+            bookmarkStore.deleteBookmark(id);
+            return Promise.resolve();
+        });
+        notificationService.confirmChoice = vi.fn().mockResolvedValue(true);
+        menuController.close = vi.fn().mockReturnValue(true);
+
+        bookmarkStore.addBookmark(fakeBookmark);
+        await wrapper.vm.$nextTick();
+        await flushPromises();
+
+        const elements = wrapper.findAll('[data-test="bookmarks"]');
+        expect(elements).toHaveLength(1);
+
+        await elements[0].trigger('click');
+        await flushPromises();
+
+        expect(bookmarksService.bookmarkHierarchyExists).toHaveBeenCalledWith(fakeBookmark);
+        expect(notificationService.confirmChoice).toHaveBeenCalledWith(
+            'ec5_239',
+            labels.my_bookmarks,
+            [{text: labels.remove_bookmark, handler: expect.any(Function)}]
+        );
+        expect(rootStore.routeParams.projectRef).toBeUndefined();
+        expect(routerReplaceMock).not.toHaveBeenCalled();
+        expect(menuController.close).not.toHaveBeenCalled();
+
+        //tapping Remove Bookmark deletes the bookmark
+        const removeButton = notificationService.confirmChoice.mock.calls[0][2][0];
+        removeButton.handler();
+        await flushPromises();
+        expect(bookmarksService.deleteBookmark).toHaveBeenCalledWith(fakeBookmark.id);
+        expect(bookmarkStore.bookmarks.length).toBe(0);
     });
 
     it('should bookmarks list be updated when adding or removing bookmarks', async () => {
@@ -519,13 +582,14 @@ describe('LeftDrawer component', () => {
         //test it is showing in the dom
         expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(true);
         expect(wrapper.find('[data-translate="no_bookmarks_found"]').exists()).toBe(false);
+        bookmarksService.bookmarkHierarchyExists = vi.fn().mockResolvedValue(true);
         let items = wrapper.findAll('[data-test="bookmarks"]');
         expect(items).toHaveLength(3);
 
         const elements = wrapper.findAll('[data-test="bookmarks"]');
 
         // Loop through the elements and perform assertions
-        elements.forEach((element, index) => {
+        for (const [index, element] of elements.entries()) {
             // Assert the presence of ion-icon component
             const iconComponent = element.find('ion-icon');
             expect(iconComponent.exists()).toBe(true);
@@ -535,7 +599,8 @@ describe('LeftDrawer component', () => {
             expect(labelComponent.exists()).toBe(true);
             expect(labelComponent.text()).toBe(bookmarkStore.bookmarks[index].title);
 
-            element.trigger('click');
+            await element.trigger('click');
+            await flushPromises();
 
             expect(rootStore.routeParams.projectRef).toBe(bookmarkStore.bookmarks[index].projectRef);
             expect(rootStore.routeParams.formRef).toBe(bookmarkStore.bookmarks[index].formRef);
@@ -548,7 +613,7 @@ describe('LeftDrawer component', () => {
                 }
             });
             expect(menuController.close).toHaveBeenCalled(elements.length);
-        });
+        }
 
         //delete one by one and test list
         bookmarkStore.deleteBookmark(11);
@@ -656,5 +721,43 @@ describe('LeftDrawer component', () => {
         expect(notificationService.showAlert).toHaveBeenCalledWith(STRINGS[language].status_codes.ec5_135 + '!', labels.error);
         await flushPromises();
         expect(window.open).not.toHaveBeenCalled();
+    });
+
+    it('should show bookmarks added to the store after mount (array replacement)', async () => {
+
+        const rootStore = useRootStore();
+        const bookmarkStore = useBookmarkStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+        const fakeBookmark = {
+            hierarchyNavigation: [],
+            formRef: '507372e7cdd546baa5df0b182cad4ebc_64d3954955dc1',
+            id: 1,
+            projectRef: '507372e7cdd546baa5df0b182cad4ebc',
+            title: 'Test bookmark'
+        };
+
+        wrapper = mount(LeftDrawer, {
+            attachTo: document.body
+        });
+        await flushPromises();
+
+        //no bookmarks yet
+        expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(false);
+
+        //store replaces the whole array (same as setBookmarks at app startup or after deletes)
+        bookmarkStore.setBookmarks([fakeBookmark]);
+        await wrapper.vm.$nextTick();
+        await flushPromises();
+
+        expect(wrapper.findAll('[data-test="bookmarks"]')).toHaveLength(1);
+        expect(wrapper.get('[data-test="bookmarks"]').text()).toContain('Test bookmark');
+
+        //and adding a bookmark in place still updates the list
+        bookmarkStore.addBookmark({...fakeBookmark, id: 2, title: 'Another Test bookmark'});
+        await wrapper.vm.$nextTick();
+        await flushPromises();
+        expect(wrapper.findAll('[data-test="bookmarks"]')).toHaveLength(2);
     });
 });

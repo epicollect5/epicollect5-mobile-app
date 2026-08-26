@@ -1,0 +1,9 @@
+@use '@/theme/mixins' as *;
+
+.modal-search {
+    @include modal-search-base;
+}
+
+.modal-entries-branch-filter {
+    @include modal-transparent-header-base;
+}

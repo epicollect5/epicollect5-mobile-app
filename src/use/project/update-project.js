@@ -11,6 +11,13 @@ import { entriesDownloadProgressService } from '@/services/utilities/entries-dow
 
 
 export async function updateProject () {
+    //no active project loaded: a deferred retry after login can fire on a page with no project,
+    //so skip silently instead of crashing on an empty project model
+    if (!projectModel.hasInitialised()) {
+        console.warn('updateProject skipped: no active project');
+        return;
+    }
+
     const rootStore = useRootStore();
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
@@ -42,8 +49,8 @@ export async function updateProject () {
             // Web error
             console.log('fail');
             // Check if we have an auth error
-            if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
-                notificationService.showAlert(
+            if (authErrors.indexOf(error?.data?.errors?.[0]?.code) >= 0) {
+                await notificationService.showAlert(
                     STRINGS[language].status_codes[error.data.errors[0].code]
                 );
                 //1 - set a callback to add the project after logging in
@@ -54,9 +61,15 @@ export async function updateProject () {
                 //2- Clear any token and ask user to login again
                 await logout();
                 showModalLogin();
+            } else if (error?.isStaleCleanupError) {
+                // Failed to remove the entries of forms/branches removed from the project
+                await notificationService.showAlert(
+                    labels.stale_cleanup_failed,
+                    labels.error
+                );
             } else {
                 // Other error
-                errorsService.handleWebError(error);
+                await errorsService.handleWebError(error);
             }
         }
     );

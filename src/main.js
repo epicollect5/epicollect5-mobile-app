@@ -37,9 +37,6 @@ import '@ionic/vue/css/display.css';
 import '@/theme/variables.css';
 import '@/theme/animate.min.css';
 import '@/theme/core.scss';
-import '@/theme/question.scss';
-import '@/theme/modal.scss';
-import '@/theme/popover.scss';
 import '@/theme/zoom.scss';
 
 import BaseLayout from '@/components/globals/BaseLayout.vue';

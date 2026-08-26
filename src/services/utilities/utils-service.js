@@ -423,33 +423,25 @@ export const utilsService = {
      *
      * @param b64Data {String} Pure base64 string without contentType
      * @param contentType {String} the content type of the file i.e (image/jpeg - image/png - text/plain)
-     * @param sliceSize {int} SliceSize to process the byteCharacters
-     * @see http://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript
+     * @param sliceSize {int} Deprecated, kept for callers compatibility
      * @return Blob
      */
     b64toBlob(b64Data, contentType, sliceSize) {
         contentType = contentType || '';
-        sliceSize = sliceSize || 512;
 
         // Strip the prefix if present
         const base64 = String(b64Data).includes(',') ? b64Data.split(',')[1] : b64Data;
 
+        // Decode in a single pass to avoid allocating
+        // hundreds of transient arrays and strings
         const byteCharacters = atob(base64);
-        const byteArrays = [];
+        const byteArray = new Uint8Array(byteCharacters.length);
 
-        for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-            const slice = byteCharacters.slice(offset, offset + sliceSize);
-
-            const byteNumbers = new Array(slice.length);
-            for (let i = 0; i < slice.length; i++) {
-                byteNumbers[i] = slice.charCodeAt(i);
-            }
-
-            const byteArray = new Uint8Array(byteNumbers);
-            byteArrays.push(byteArray);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteArray[i] = byteCharacters.charCodeAt(i);
         }
 
-        return new Blob(byteArrays, {type: contentType});
+        return new Blob([byteArray], {type: contentType});
     },
     async hasInternetConnection() {
         return new Promise((resolve) => {
@@ -587,6 +579,15 @@ export const utilsService = {
         }
 
         return randomString;
+    },
+    //Dev only: current JS heap usage in MB (Chromium WebViews only)
+    getHeapMemoryUsage() {
+        if (typeof performance !== 'undefined' && performance.memory) {
+            const used = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
+            const total = (performance.memory.totalJSHeapSize / 1048576).toFixed(1);
+            return used + 'MB / ' + total + 'MB (used/total)';
+        }
+        return 'n/a';
     },
     hasQuestionError(state) {
         if (Object.keys(state.error.errors).length > 0) {

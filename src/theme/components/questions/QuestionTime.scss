@@ -1,0 +1,35 @@
+@use '@/theme/mixins' as *;
+
+.question-card {
+    @include question-card-base;
+}
+
+.question-label {
+    @include question-label-base;
+}
+
+.question-input {
+    @include question-input-base;
+}
+
+.question-datetimepicker {
+    @include question-datetimepicker-base;
+}
+
+.question-datetimepicker-native,
+.question-datetimepicker-html {
+    @include question-datetimepicker-align-base;
+}
+
+.chip-datetimepicker {
+    @include chip-datetimepicker-base;
+}
+
+.plt-ios {
+    .question-datetimepicker {
+        text-align: center !important;
+    }
+    .datetime-value input[type="time"] {
+        padding-left: 10px !important;
+    }
+}

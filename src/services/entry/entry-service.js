@@ -9,6 +9,8 @@ import { databaseSelectService } from '@/services/database/database-select-servi
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
 import { databaseUpdateService } from '@/services/database/database-update-service';
+import { entriesDownloadProgressService } from '@/services/utilities/entries-download-progress-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { locationService } from '@/services/utilities/location-cordova-service';
 import { entryCommonService } from '@/services/entry/entry-common-service';
@@ -150,6 +152,12 @@ export const entryService = {
 
             function _onError (error) {
                 console.log(error);
+                //File errors (eg. code 5) are plain objects without a message or stack,
+                //wrap them so Rollbar gets a usable report
+                const reportableError = error instanceof Error
+                    ? error
+                    : new Error('saveEntry: ' + JSON.stringify(error));
+                rollbarService.critical(reportableError);
                 reject(error);
             }
 
@@ -167,6 +175,16 @@ export const entryService = {
 
                 // Save the entry in the database
                 databaseInsertService.insertEntry(self.entry, syncType).then(function (res) {
+
+                    // Adding a child entry to a remote parent puts the project out of
+                    // sync with any partial download: invalidate the download progress cache
+                    if (self.entry.parentEntryUuid) {
+                        try {
+                            entriesDownloadProgressService.clearProject(projectModel.getProjectRef());
+                        } catch (error) {
+                            console.warn('Failed to clear entries download progress:', error);
+                        }
+                    }
 
                     // Insert any unique answers for this entry
                     databaseInsertService.insertUniqueAnswers(self.entry, false).then(function () {
@@ -438,8 +456,11 @@ export const entryService = {
                         databaseDeleteService.removeUniqueAnswers(res).then(function () {
                             // Then delete all temp branch entries
                             databaseDeleteService.deleteTempBranchEntries().then(function () {
-                                // Finished, resolve
-                                resolve();
+                                // Also clear temp unique answers so they don't leak
+                                databaseDeleteService.deleteTempUniqueAnswers().then(function () {
+                                    // Finished, resolve
+                                    resolve();
+                                });
                             });
                         });
                     } else {

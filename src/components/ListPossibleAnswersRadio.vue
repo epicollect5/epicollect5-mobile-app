@@ -203,4 +203,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style src="@/theme/components/lists/ListPossibleAnswersRadio.scss" lang="scss" scoped></style>

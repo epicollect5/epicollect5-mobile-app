@@ -1,0 +1,14 @@
+@use '@/theme/mixins' as *;
+
+.projects-list {
+    @include projects-list-base;
+}
+
+.spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px;
+    height: 18px;
+}

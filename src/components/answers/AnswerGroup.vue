@@ -46,5 +46,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style src="@/theme/components/answers/AnswerGroup.scss" lang="scss" scoped></style>

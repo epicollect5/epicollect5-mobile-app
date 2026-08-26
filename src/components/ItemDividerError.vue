@@ -26,7 +26,4 @@ export default {
 };
 </script>
 
-<style
-	lang="scss"
-	scoped
-></style>
+<style src="@/theme/components/ui/ItemDividerError.scss" lang="scss"></style>

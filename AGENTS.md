@@ -49,9 +49,22 @@ If none, justify why for each point.
 
 Assume this runs at scale and causes inconsistencies after months in production.
 
+## Git
+
+Commit messages follow Conventional Commits:
+
+- Format: `<type>: <description>`
+- Allowed types: feat, fix, refactor, perf, docs, test, build, ci, chore, style, revert
+- Use imperative mood (e.g. "add", "fix", "remove")
+- Do not capitalize the first word of the description
+- Do not end the description with a period
+- Maximum 75 characters total, including type and scope
+- If the change includes both a fix and a feature, prefer the type that best reflects the primary purpose
+
 ## Source of Truth
 
 - Architecture → docs/ARCHITECTURE.md
 - Code style → docs/CODE-STYLE.md
 - Database → docs/DATABASE-SCHEMA.md
 - JSON schemas → src/schemas/*
+- Custom agent commands → .agents/skills/*/SKILL.md (canonical; wrappers in .opencode/commands/)

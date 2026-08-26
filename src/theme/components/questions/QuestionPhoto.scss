@@ -1,0 +1,13 @@
+@use '@/theme/mixins' as *;
+
+.question-card {
+    @include question-card-base;
+}
+
+.question-label {
+    @include question-label-base;
+}
+
+.question-photo-thumbnail {
+    @include question-photo-thumbnail-base;
+}

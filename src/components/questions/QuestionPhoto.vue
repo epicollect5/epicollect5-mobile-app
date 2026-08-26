@@ -348,7 +348,4 @@ export default {
 };
 </script>
 
-<style
-    lang="scss"
-    scoped
-></style>
+<style src="@/theme/components/questions/QuestionPhoto.scss" lang="scss" scoped></style>

@@ -33,7 +33,7 @@
 			</div>
 			<textarea
 				rows="5"
-				class="question-input"
+				class="question-input ios-fix-border"
 				:class="{'has-error' : hasError}"
 				:placeholder="labels.type_answer_here"
 				:value="state.answer.answer"
@@ -49,7 +49,7 @@
 				<hr />
 				<textarea
 					rows="5"
-					class="question-input"
+					class="question-input ios-fix-border"
 					:class="{'has-error' : hasError}"
 					:placeholder="labels.confirm_answer_here"
 					:value="state.confirmAnswer.answer"
@@ -201,5 +201,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style src="@/theme/components/questions/QuestionTextarea.scss" lang="scss"></style>

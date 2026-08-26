@@ -6,6 +6,7 @@ import { databaseDeleteService } from '@/services/database/database-delete-servi
 import { downloadFileService } from '@/services/download-file-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { webService } from '@/services/web-service';
+import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
@@ -39,142 +40,300 @@ export const versioningService = {
 
         } catch (error) {
             console.error('Error checking project version:', error);
-            // On error, we resolve true to prevent blocking the user
+            // Project has been trashed/deleted on the server: surface the error
+            // so uploads/downloads can be stopped instead of failing silently
+            if (error?.data?.errors?.[0]?.code === 'ec5_11') {
+                throw error;
+            }
+            // On any other error, we resolve true to prevent blocking the user
             return true;
         }
     },
 
     //Update the project and all entries
-    updateProject () {
-
-        let projectExtra = '';
-        let projectMapping = '';
-        let lastUpdated;
-        const self = this;
-        let previousFormRef;
-        const formsToBeRemoved = [];
+    async updateProject () {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
 
-        return new Promise((resolve, reject) => {
+        //no active project loaded: nothing to update, reject cleanly
+        //instead of crashing on an empty project model (getSlug() would throw)
+        if (!projectModel.hasInitialised()) {
+            throw {
+                data: {
+                    errors: [{
+                        code: 'ec5_116',
+                        source: '',
+                        title: STRINGS[language].status_codes.ec5_116
+                    }]
+                }
+            };
+        }
 
-            // Fetch the updated project
-            webService.getProject(projectModel.getSlug()).then(
-                function (response) {
+        // Fetch the updated project
+        const response = await webService.getProject(projectModel.getSlug());
 
-                    // Check if we don't have project
-                    if (!response.data) {
-                        // Error
-                        reject({
-                            data: {
-                                errors: [{
-                                    code: 'ec5_116',
-                                    source: '',
-                                    title: STRINGS[language].status_codes.ec5_116
-                                }]
-                            }
-                        });
-                        return;
-                    }
+        // Check if we don't have project
+        if (!response.data) {
+            throw {
+                data: {
+                    errors: [{
+                        code: 'ec5_116',
+                        source: '',
+                        title: STRINGS[language].status_codes.ec5_116
+                    }]
+                }
+            };
+        }
 
-                    try {
-                        console.log(response.data.meta.project_extra);
-                        projectExtra = JSON.stringify(response.data.meta.project_extra);
-                        projectMapping = JSON.stringify(response.data.meta.project_mapping);
-                        lastUpdated = response.data.meta.project_stats.structure_last_updated;
-                    } catch (e) {
-                        console.log(e);
-                        reject();
-                        return;
-                    }
+        let projectExtra;
+        let projectMapping;
+        let lastUpdated;
 
-                    // Store the previous project structure for later comparison
-                    self.previousProjectStructure = projectModel.getProjectExtra();
-                    // Load updated project extra structure into project model
-                    projectModel.loadExtraStructure(response.data.meta.project_extra);
-                    projectModel.setLastUpdated(lastUpdated);
+        try {
+            console.log(response.data.meta.project_extra);
+            projectExtra = JSON.stringify(response.data.meta.project_extra);
+            projectMapping = JSON.stringify(response.data.meta.project_mapping);
+            lastUpdated = response.data.meta.project_stats.structure_last_updated;
+        } catch (e) {
+            console.log(e);
+            throw e;
+        }
 
-                    console.log('updating project');
-                    // Update the project
-                    databaseUpdateService.updateProject(
-                        projectModel.getProjectRef(),
-                        projectExtra,
-                        projectMapping,
-                        lastUpdated
-                    ).then(function () {
-                        // Now update entries
-                        console.log('updated project');
+        // Store the previous project structure for later comparison
+        this.previousProjectStructure = projectModel.getProjectExtra();
+        const previousMapping = projectModel.getProjectMappings();
+        const previousLastUpdated = projectModel.getLastUpdated();
+        console.log('updating project');
+        console.log('updated project');
 
-                        console.log('updating entries');
+        // Load updated project extra structure into project model.
+        // The database row is persisted only after stale-entry cleanup
+        // succeeds (see below): this keeps model and database consistent
+        // on failure and avoids a second DB write whose own failure could
+        // leave the retry signal (old last_updated) lost after a restart.
+        projectModel.loadExtraStructure(response.data.meta.project_extra);
+        // Keep the in-memory mapping in sync with the updated structure,
+        // otherwise exports use a stale mapping and crash on new inputs
+        projectModel.loadMappings(response.data.meta.project_mapping);
+        projectModel.setLastUpdated(lastUpdated);
 
-                        // Get the entries for a given form ref
-                        function _getFormEntries (formRef) {
+        console.log('updating entries');
 
-                            // If empty form ref, finished looping forms
-                            if (formRef === '') {
+        // Update entries for each form
+        const forms = projectModel.getFormsInOrder();
+        for (const form of forms) {
+            try {
+                await this.selectAndUpdateEntries(form.formRef);
+                console.log('successfully updated entries for form: ' + form.formRef);
+            } catch (_) {
+                console.log('failed updated entries for form: ' + form.formRef);
+            }
+        }
 
-                                // Lastly, check if any forms have been removed and delete those entries
-                                for (previousFormRef in self.previousProjectStructure.forms) {
-                                    if (Object.prototype.hasOwnProperty.call(self.previousProjectStructure.forms, previousFormRef)) {
-                                        // Form doesn't exist in new structure, but did in previous structure
-                                        if (!projectModel.getExtraForm(previousFormRef)) {
-                                            console.log('form ' + previousFormRef + ' to be removed');
-                                            // Add this previous form ref into formsToBeRemoved array
-                                            formsToBeRemoved.push(previousFormRef);
-                                        }
-                                    }
-                                }
+        // Remove the entries (and their media) of any forms or
+        // branches that have been removed from the project structure,
+        // comparing the stored entries against the current structure.
+        // A failure here must block the update: the stale entries would
+        // otherwise tamper with syncing, so the user is informed and
+        // can retry (or export and delete the entries) and the cleanup
+        // is retried on the next update or "unsync all entries"
+        try {
+            await this.removeStaleEntries();
+        } catch (error) {
+            // Database was never updated, so only the in-memory model
+            // needs to be restored. This cannot fail and keeps model and
+            // database consistent (both on the old version), so the next
+            // checkProjectVersion() detects a mismatch and retries cleanup.
+            projectModel.loadExtraStructure(this.previousProjectStructure);
+            projectModel.loadMappings(previousMapping);
+            projectModel.setLastUpdated(previousLastUpdated);
+            throw error;
+        }
 
-                                // Remove the form entries that are now redundant
-                                databaseDeleteService.deleteFormEntries(projectModel.getProjectRef(), formsToBeRemoved).then(
-                                    function () {
-                                        // Then resolve
-                                        // Attempt to update the project logo
-                                        downloadFileService.downloadProjectLogo(projectModel.getSlug(), projectModel.getProjectRef()).then(
-                                            function () {
-                                                console.log('downloaded logo');
-                                                resolve(self.changeMade);
-                                                // Reset changeMade back to false
-                                                self.changeMade = false;
-                                            },
-                                            function () {
-                                                console.log('didnt download logo');
-                                                resolve(self.changeMade);
-                                                // Reset changeMade back to false
-                                                self.changeMade = false;
-                                            }
-                                        );
-                                    }
-                                );
-                                return;
-                            }
+        // Persist the new project row only after cleanup has succeeded.
+        // If this write fails, restore the in-memory model so model and
+        // database stay consistent and the update can be retried.
+        try {
+            await databaseUpdateService.updateProject(
+                projectModel.getProjectRef(),
+                projectExtra,
+                projectMapping,
+                lastUpdated
+            );
+        } catch (error) {
+            projectModel.loadExtraStructure(this.previousProjectStructure);
+            projectModel.loadMappings(previousMapping);
+            projectModel.setLastUpdated(previousLastUpdated);
+            throw error;
+        }
 
-                            // Otherwise still forms to loop
-                            self.selectAndUpdateEntries(formRef).then(
-                                // Move on to the next form's entries
-                                function () {
-                                    console.log('successfully updated entries for form: ' + formRef);
-                                    _getFormEntries(projectModel.getNextFormRef(formRef));
-                                },
-                                function () {
-                                    console.log('failed updated entries for form: ' + formRef);
-                                    _getFormEntries(projectModel.getNextFormRef(formRef));
-                                });
-                        }
+        // Attempt to update the project logo (non-fatal)
+        try {
+            await downloadFileService.downloadProjectLogo(projectModel.getSlug(), projectModel.getProjectRef());
+            console.log('downloaded logo');
+        } catch (_) {
+            console.log('didnt download logo');
+        }
 
-                        // Start process of updating, via entries for first form
-                        _getFormEntries(projectModel.getFirstFormRef());
+        const result = this.changeMade;
+        // Reset changeMade back to false
+        this.changeMade = false;
+        return result;
+    },
 
-                    }, function (error) {
-                        // Error
-                        reject(error);
-                    });
-                }, function (error) {
-                    // Error
-                    reject(error);
+    /**
+     * Remove the entries (and their media) of any forms that have been removed from
+     * the project structure, as they can never be uploaded or edited again.
+     * Rejects on the first failure, so callers can block the operation and let the
+     * user retry, instead of silently keeping stale entries that tamper with syncing.
+     */
+    async _removeStaleFormsEntries (projectRef, formRefs) {
+
+        for (const formRef of formRefs) {
+            const [entriesResult, branchEntriesResult] = await Promise.all([
+                databaseSelectService.selectEntries(projectRef, formRef),
+                databaseSelectService.selectBranchEntries(projectRef, formRef)
+            ]);
+
+            // Collect all the entry uuids (entries and branch entries) for this form
+            const entryUuids = [];
+            for (let i = 0; i < entriesResult.rows.length; i++) {
+                entryUuids.push(entriesResult.rows.item(i).entry_uuid);
+            }
+            for (let i = 0; i < branchEntriesResult.rows.length; i++) {
+                entryUuids.push(branchEntriesResult.rows.item(i).entry_uuid);
+            }
+
+            // Delete all the media related to these entries
+            // (media rows must be fetched before deleting the entries)
+            // Note: selectProjectMedia only works with a single entry_uuid
+            // (multiple uuids get joined into one IN clause value)
+            for (const entryUuid of entryUuids) {
+                const mediaFiles = await databaseSelectService.selectProjectMedia({
+                    project_ref: projectRef,
+                    synced: null,
+                    entry_uuid: [entryUuid]
                 });
-        });
+
+                const allMediaFiles = mediaFiles.photos
+                    .concat(mediaFiles.audios)
+                    .concat(mediaFiles.videos);
+
+                if (allMediaFiles.length > 0) {
+                    await deleteFileService.removeFiles(allMediaFiles);
+                }
+            }
+
+            // Now delete all the rows related to this form
+            await databaseDeleteService.deleteFormEntries(projectRef, [formRef]);
+        }
+    },
+
+    /**
+     * Find the form refs that are stored locally but no longer exist in the
+     * current project structure, as they can never be uploaded or edited again.
+     */
+    async _getStaleFormRefs (projectRef) {
+
+        const staleFormRefs = [];
+        const storedFormRefs = await databaseSelectService.selectDistinctFormRefs(projectRef);
+        const currentForms = projectModel.getProjectExtra().forms;
+
+        for (const formRef of storedFormRefs) {
+            const currentForm = currentForms[formRef];
+            // Form doesn't exist in the current structure anymore
+            if (!currentForm || Object.keys(currentForm).length === 0) {
+                console.log('form ' + formRef + ' to be removed');
+                staleFormRefs.push(formRef);
+            }
+        }
+
+        return staleFormRefs;
+    },
+
+    /**
+     * Find the branches that are stored locally but no longer exist in the
+     * current project structure, as they can never be uploaded or edited again.
+     */
+    async _getStaleBranchRefs (projectRef) {
+
+        const staleBranchRefs = [];
+        const storedBranchRefs = await databaseSelectService.selectDistinctBranchRefsIncludingTemp(projectRef);
+        const currentForms = projectModel.getProjectExtra().forms;
+
+        for (const storedBranch of storedBranchRefs) {
+            const currentForm = currentForms[storedBranch.formRef];
+            // Skip forms that have been removed entirely (handled by deleteFormEntries)
+            if (!currentForm || Object.keys(currentForm).length === 0) {
+                continue;
+            }
+            const currentBranches = currentForm.branch || {};
+            // Branch doesn't exist in the current structure anymore
+            if (!currentBranches[storedBranch.branchRef]) {
+                console.log('branch ' + storedBranch.branchRef + ' to be removed');
+                staleBranchRefs.push(storedBranch);
+            }
+        }
+
+        return staleBranchRefs;
+    },
+
+    /**
+     * Remove the entries (and their media) of any forms or branches that have been
+     * removed from the project structure, by comparing the locally stored entries
+     * against the current project structure.
+     * Rejects on the first failure: callers must block the operation (e.g. the
+     * project update or "unsync all entries") so the user is informed that stale
+     * entries are still on the device, and the cleanup can be retried.
+     */
+    async removeStaleEntries () {
+
+        try {
+            const projectRef = projectModel.getProjectRef();
+
+            // Remove the entries (and their media) of the removed forms
+            const staleFormRefs = await this._getStaleFormRefs(projectRef);
+            await this._removeStaleFormsEntries(projectRef, staleFormRefs);
+
+            // Remove the entries of any branches that have been removed from the project
+            const staleBranchRefs = await this._getStaleBranchRefs(projectRef);
+            for (const staleBranch of staleBranchRefs) {
+                await this._removeRemovedBranchEntries(projectRef, staleBranch.formRef, staleBranch.branchRef);
+            }
+        } catch (error) {
+            console.error('Failed to remove entries of forms/branches removed from the project', error);
+            error.isStaleCleanupError = true;
+            throw error;
+        }
+    },
+
+    async _removeRemovedBranchEntries (projectRef, formRef, branchRef) {
+
+        const response = await databaseSelectService.selectBranchEntries(projectRef, formRef, branchRef);
+
+        for (let i = 0; i < response.rows.length; i++) {
+            const entryUuid = response.rows.item(i).entry_uuid;
+
+            // Delete all the media related to this branch entry
+            // (media rows must be fetched before deleting the branch entry)
+            const mediaFiles = await databaseSelectService.selectProjectMedia({
+                project_ref: projectRef,
+                synced: null,
+                entry_uuid: [entryUuid]
+            });
+
+            const allMediaFiles = mediaFiles.photos
+                .concat(mediaFiles.audios)
+                .concat(mediaFiles.videos);
+
+            if (allMediaFiles.length > 0) {
+                await deleteFileService.removeFiles(allMediaFiles);
+            }
+
+            await databaseDeleteService.deleteEntryMedia(entryUuid);
+            await databaseDeleteService.deleteBranchEntry(entryUuid);
+        }
     },
 
     selectAndUpdateEntries (formRef) {
@@ -404,7 +563,7 @@ export const versioningService = {
     },
 
     /**
-     * Organise the branch inputs into flat array
+     * Organise the branch inputs into a flat array
      */
     getBranchInputs (form) {
 

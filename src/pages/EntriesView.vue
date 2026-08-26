@@ -195,18 +195,34 @@ export default {
     state.parentEntryUuid = routeParams.parentEntryUuid;
     state.formRef = routeParams.formRef;
 
+    // The form may no longer exist in the project definition (e.g. removed on the
+    // server): bail out to the entries errors page instead of crashing on a missing form
+    const formExists = Object.keys(projectModel.getExtraForm(state.formRef)).length > 0;
+
     // Retrieve all form inputs
-    state.inputs = projectModel.getFormInputs(state.formRef);
+    state.inputs = formExists ? projectModel.getFormInputs(state.formRef) : {};
 
     // Retrieve the inputs extra details
     state.inputsExtra = projectModel.getExtraInputs();
     state.synced = state.entry.synced;
 
-    // Retrieve the answers
-    fetchAnswers(state, language, labels).catch((error) => {
-      console.error('Failed to fetch answers:', error);
-       state.isFetching = false;
-    });
+    if (formExists) {
+      // Retrieve the answers
+      fetchAnswers(state, language, labels).catch((error) => {
+        console.error('Failed to fetch answers:', error);
+        state.isFetching = false;
+      });
+    } else {
+      state.isFetching = false;
+      rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES_ERRORS;
+      router.replace({
+        name: PARAMETERS.ROUTES.ENTRIES_ERRORS,
+        query: {
+          refreshEntriesErrors: true,
+          timestamp: Date.now()
+        }
+      });
+    }
 
     const methods = {
       goBack() {
@@ -230,7 +246,8 @@ export default {
           router.replace({
             name: PARAMETERS.ROUTES.ENTRIES,
             query: {
-              refreshEntries: true
+              refreshEntries: true,
+              timestamp: Date.now()
             }
           });
         }
@@ -309,7 +326,4 @@ export default {
 };
 </script>
 
-<style
-    lang="scss"
-    scoped
-></style>
+<style src="@/theme/pages/EntriesView.scss" lang="scss"></style>

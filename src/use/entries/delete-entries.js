@@ -5,14 +5,13 @@ import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { menuController } from '@ionic/vue';
-import { databaseSelectService } from '@/services/database/database-select-service';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
 import { notificationService } from '@/services/notification-service';
 import { bookmarksService } from '@/services/utilities/bookmarks-service';
 import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import { entriesDownloadProgressService } from '@/services/utilities/entries-download-progress-service';
 /**
- * Delete all entries and redirect to entries page
+ * Delete all entries and redirect to Entries page
  */
 export async function deleteEntries (router) {
 
@@ -32,39 +31,15 @@ export async function deleteEntries (router) {
 
     await notificationService.showProgressDialog(labels.deleting_entries);
 
-    //get project media files
-    const projectMedia = await databaseSelectService.selectProjectMedia({
-        project_ref: projectModel.getProjectRef(),
-        synced: null,
-        entry_uuid: null
-    });
-
-    //if any media files
-    const files = projectMedia.audios.concat(projectMedia.videos).concat(projectMedia.photos);
-    console.log(files);
-
-    if (files.length > 0) {
-        try {
-            await deleteFileService.removeFiles(files);
-            await databaseDeleteService.deleteEntries(projectModel.getProjectRef());
-            _onDeleteSuccess();
-
-        } catch (error) {
-            console.log(error);
-            notificationService.hideProgressDialog();
-            notificationService.showAlert(labels.unknown_error, labels.error);
-        }
-    }
-    else {
-        try {
-            await databaseDeleteService.deleteEntries(projectModel.getProjectRef());
-            _onDeleteSuccess();
-        }
-        catch (error) {
-            console.log(error);
-            notificationService.hideProgressDialog();
-            notificationService.showAlert(labels.unknown_error, labels.error);
-        }
+    try {
+        //clear the media folders for this project regardless of the media table
+        await deleteFileService.removeProjectMediaDirectories(projectModel.getProjectRef(), false);
+        await databaseDeleteService.deleteEntries(projectModel.getProjectRef());
+        await _onDeleteSuccess();
+    } catch (error) {
+        console.log(error);
+        notificationService.hideProgressDialog();
+        await notificationService.showAlert(labels.unknown_error, labels.error);
     }
 
     async function _onDeleteSuccess () {
@@ -84,7 +59,7 @@ export async function deleteEntries (router) {
             bookmarkStore.setBookmarks(bookmarks);
         }
         catch (error) {
-            notificationService.showAlert(labels.bookmarks_loading_error);
+            await notificationService.showAlert(labels.bookmarks_loading_error);
             bookmarkStore.setBookmarks([]);
         }
         //show feedback to users
@@ -92,11 +67,14 @@ export async function deleteEntries (router) {
         notificationService.showToast(STRINGS[language].status_codes.ec5_122);
         //reset navigation
         rootStore.hierarchyNavigation = [];
-        // Go back to entries page
+        // Go back to Entries page
         menuController.close();
         router.replace({
             name: PARAMETERS.ROUTES.ENTRIES,
-            query: { refreshEntries: true }
+            query: {
+                refreshEntries: true,
+                timestamp: Date.now()
+            }
         });
     }
 }

@@ -1,0 +1,21 @@
+@use '@/theme/mixins' as *;
+
+.question-card {
+    @include question-card-base;
+}
+
+.question-label {
+    @include question-label-base;
+}
+
+.question-input {
+    @include question-input-base;
+}
+
+textarea.has-error,
+ion-list.has-error,
+input.has-error,
+ion-item.has-error,
+ion-chip.has-error {
+    @include question-has-error-border-base;
+}

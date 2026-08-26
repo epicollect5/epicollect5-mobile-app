@@ -1,0 +1,1040 @@
+// ==================== QUESTION STYLES ====================
+// Used by: 20+ question components, 3 auth components, 1 modal
+
+@mixin question-card-base {
+    margin-top: 16px;
+    ion-card-content {
+        padding: 16px;
+        &.question-checkbox-card-content {
+            padding: 0 !important;
+        }
+    }
+}
+
+@mixin question-progress-bar-base {
+    border: solid 2px white;
+    border-radius: 6px;
+    padding: 6px;
+    width: 80%;
+    margin: 0 auto;
+    height: 80%;
+
+    > div {
+        display: block;
+        height: 1em;
+        border-radius: 3px;
+        background-color: white;
+        position: relative;
+        overflow: hidden;
+    }
+}
+
+@mixin question-label-base {
+    background-color: var(--ion-color-primary-tint);
+    ion-card-title {
+        font-size: 18px;
+        color: #fff;
+    }
+    ion-card-subtitle {
+        font-size: 14px;
+        color: #fff;
+    }
+    .has-popover {
+        span {
+            width: 80%;
+        }
+        .question-popover-button {
+            vertical-align: middle;
+        }
+    }
+    .question-label-button {
+        font-size: 20px;
+        overflow: hidden;
+        .question-label-button-ripple {
+            height: 36px !important;
+        }
+    }
+    .question-label-grid {
+        padding: 16px 8px 16px 13px;
+    }
+}
+
+@mixin question-required-base {
+    font-style: italic;
+    text-align: left;
+}
+
+@mixin question-input-base {
+    padding: 10px;
+    width: 100%;
+    color: #333;
+    outline-color: var(--ion-color-primary) !important;
+    &:focus {
+        outline-color: var(--ion-color-primary) !important;
+    }
+    &:focus-visible {
+        outline-color: var(--ion-color-primary) !important;
+    }
+    &.has-error {
+        &:focus {
+            outline-color: var(--ion-color-danger) !important;
+        }
+        &:focus-visible {
+            outline-color: var(--ion-color-danger) !important;
+        }
+    }
+}
+
+@mixin question-error-base {
+    color: var(--ion-color-danger);
+    margin-top: 10px;
+    text-align: center;
+}
+
+@mixin question-has-error-border-base {
+    border: 2px solid var(--ion-color-danger);
+}
+
+@mixin question-photo-thumbnail-base {
+    img {
+        width: 200px;
+        height: 200px;
+        padding: 10px;
+        border: 1px solid var(--ion-color-light-shade);
+        background-color: #ffffff;
+        object-fit: cover;
+    }
+}
+
+@mixin question-datetimepicker-base {
+    background: none;
+    outline: none;
+    border: none;
+    pointer-events: auto;
+}
+
+@mixin question-datetimepicker-align-base {
+    text-align: center !important;
+}
+
+@mixin question-numeric-base {
+    ion-card-content {
+        padding: 8px;
+    }
+    .chip-numeric {
+        padding: 0 16px;
+        .chip-numeric--icon-left {
+            margin-right: 16px;
+        }
+        .chip-numeric--icon-right {
+            margin-left: 16px;
+        }
+        input {
+            padding: 12px;
+            border-top: none;
+            border-bottom: none;
+            border-width: 1px;
+            border-left: 1px solid;
+            border-color: var(--ion-color-medium-tint);
+            &.has-error {
+                border: 1px solid var(--ion-color-danger) !important;
+                padding: 10px !important;
+            }
+        }
+    }
+}
+
+@mixin question-branch-base {
+    .list-entries-branch-pwa {
+        margin-bottom: 16px;
+    }
+    .chip-branch {
+        width: 100%;
+        .chip-branch--icon-left {
+            margin-right: 16px;
+        }
+        .chip-branch--icon-right {
+            margin-left: 16px;
+        }
+    }
+}
+
+@mixin question-action-button-base {
+    font-size: 16px;
+}
+
+@mixin question-popover-button-base {
+    font-size: 24px;
+}
+
+@mixin question-video-player-base {
+    width: 100%;
+    margin: 16px 0;
+    max-height: 200px;
+}
+
+@mixin question-group-base {
+    .chip-datetimepicker {
+        .datetime-value {
+            width: 170px;
+            input[type="date"],
+            input[type="time"] {
+                font-size: 14px;
+            }
+        }
+    }
+}
+
+@mixin question-group-branch-base {
+    padding: 0 !important;
+    ion-card-content {
+        padding: 0 !important;
+    }
+}
+
+@mixin question-dropdown-action-sheet-base {
+    .action-sheet-wrapper {
+        height: 90%;
+        width: 90%;
+        top: 0;
+        border-radius: 5px;
+    }
+    .action-sheet-selected {
+        background-color: var(--ion-color-secondary-tint);
+    }
+    .action-sheet-button {
+        border-bottom: 1px solid var(--ion-color-medium-tint);
+    }
+    .action-sheet-cancel {
+        color: var(--ion-color-primary);
+        font-weight: 700;
+        border-top: 1px solid var(--ion-color-medium-tint);
+        .action-sheet-button-inner.sc-ion-action-sheet-md {
+            justify-content: right;
+        }
+    }
+}
+
+@mixin question-readme-content-base {
+    .readme-padding {
+        padding: 16px !important;
+    }
+    p {
+        color: #333;
+        font-size: 16px;
+    }
+}
+
+@mixin question-location-grid-base {
+    font-size: 18px;
+    ion-row.border-bottom {
+        border-bottom: 1px solid var(--ion-color-light-shade);
+    }
+}
+
+@mixin question-search-remove-pick-base {
+    font-size: 24px;
+    margin-top: 5px;
+}
+
+// ==================== CHIP DATETIMEPICKER STYLES ====================
+
+@mixin chip-datetimepicker-base {
+    padding: 0 16px 0 0;
+    &.entries-filters {
+        padding-right: 0px !important;
+        .datetime-value {
+            background-color: #ffffff !important;
+            input[type="date"],
+            input[type="time"] {
+                padding: 6px 6px 6px 40px;
+            }
+        }
+    }
+    &.device-picker {
+        input[type="time"] {
+            padding-left: 80px !important;
+        }
+    }
+
+    .datetime-value {
+        position: relative;
+        width: 200px;
+        background-color: var(--ion-color-secondary);
+        ion-datetime {
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.2;
+        }
+        input[type="date"],
+        input[type="time"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            font-size: 14px;
+            font-weight: 400;
+            z-index: 1;
+            &::-webkit-inner-spin-button,
+            &::-webkit-calendar-picker-indicator {
+                opacity: 0;
+            }
+        }
+        input[type="time"] {
+            padding: 10px 10px 10px 60px;
+            font-size: 16px !important;
+        }
+        input[type="date"] {
+            padding: 10px 10px 10px 40px;
+        }
+
+        .time-icon,
+        .date-icon-left {
+            position: absolute;
+            left: 16px;
+            z-index: 0;
+            pointer-events: none;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .date-icon-right {
+            position: absolute;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 16px;
+            z-index: 0;
+            pointer-events: none;
+        }
+    }
+    &.web-picker {
+        .datetime-value {
+            input[type="date"],
+            input[type="time"] {
+                padding: 10px 10px 10px 20px;
+                &::-webkit-inner-spin-button,
+                &::-webkit-calendar-picker-indicator {
+                    opacity: 1;
+                }
+            }
+        }
+    }
+}
+
+// ==================== POSSIBLE ANSWERS STYLES ====================
+
+@mixin possible-answers-list-base {
+    border-top: 1px solid var(--ion-color-light-shade);
+}
+
+@mixin possible-answers-item-base {
+    user-select: none;
+    position: relative;
+    display: block;
+    border-bottom: 1px solid var(--ion-color-light-shade);
+    &.checkbox-checked {
+        background-color: #eee;
+    }
+    &.radio-checked {
+        background-color: #eee;
+    }
+    .possible-answer-label,
+    .saved-answer-label {
+        white-space: normal;
+        font-size: 16px;
+        color: #222;
+    }
+
+    .possible-answer-radio,
+    .saved-answer-checkbox {
+        width: 1em;
+        height: 1em;
+        background-color: white;
+        border-radius: 50%;
+        vertical-align: middle;
+        border: 1px solid #ddd;
+        appearance: none;
+        -webkit-appearance: none;
+        outline: none;
+        cursor: pointer;
+        &:checked {
+            background-color: var(--ion-color-secondary);
+            border: 1px solid #333;
+        }
+        margin-top: 0 !important;
+        padding: 5px;
+    }
+    .possible-answer-checkbox,
+    .possible-answer-radio,
+    .saved-answer-checkbox {
+        margin-top: 6px;
+        accent-color: var(--ion-color-secondary) !important;
+        transform: scale(1.6);
+    }
+}
+
+@mixin possible-answers-dropdown-item-base {
+    --min-height: 36px;
+    --border-radius: 5px;
+    --inner-padding-top: 0;
+    --inner-padding-bottom: 0;
+    ion-icon,
+    ion-label {
+        padding: 0;
+        margin: 0;
+        font-weight: 500;
+    }
+}
+
+@mixin possible-answers-searchbar-wrapper-base {
+    --inner-padding-start: 0;
+    --inner-padding-end: 0;
+    --padding-start: 0;
+    --padding-end: 0;
+}
+
+// ==================== LIST STYLES ====================
+// Used by: ListEntries, QuestionBranch, ToolbarEntriesFilters, EntriesErrors, Entries
+
+@mixin list-entries-base {
+    margin-bottom: 24px;
+}
+
+@mixin list-entries-item-base {
+    --padding-end: 4px !important;
+    --padding-start: 4px !important;
+    --inner-padding-end: 0px !important;
+    --inner-padding-start: 0px !important;
+    ion-grid {
+        overflow: hidden;
+    }
+    ion-icon {
+        font-size: 24px;
+        vertical-align: sub;
+    }
+}
+
+@mixin list-entries-branch-base {
+    border-top: 1px solid var(--ion-color-light-shade);
+    ion-list {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    ion-grid {
+        padding: 6px 12px;
+    }
+    ion-icon {
+        vertical-align: top;
+    }
+}
+
+@mixin list-entries-item-row-base {
+    border-bottom: 1px solid var(--ion-color-light-shade);
+}
+
+@mixin list-entries-item-title-base {
+    padding: 8px 0;
+}
+
+@mixin child-entries-item-button-base {
+    margin: 4px 0;
+    --border-radius: 4px;
+    font-weight: 700;
+    --detail-icon-color: #333 !important;
+    --min-height: 36px !important;
+    ion-label {
+        margin: 8px 0;
+    }
+    ion-icon {
+        margin: 6px 0 !important;
+    }
+}
+
+@mixin list-entries-item-child-base {
+    min-height: 36px;
+}
+
+@mixin child-entries-button-base {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: var(--ion-color-secondary);
+    text-transform: uppercase;
+    font-weight: 700;
+    span {
+        width: 80%;
+        float: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 2;
+        text-align: right;
+    }
+    ion-icon {
+        float: right;
+    }
+    @media only screen and (max-width: 576px) {
+        span {
+            width: 65%;
+        }
+    }
+}
+
+// ==================== ANSWER STYLES ====================
+// Used by: ListAnswers, ListSavedAnswers, ListItemAnswer
+
+@mixin answer-card-base {
+    margin-top: 16px;
+    ion-card-content {
+        padding: 16px;
+        min-height: 50px;
+        color: #333;
+    }
+    .answer-error {
+        color: var(--ion-color-danger);
+    }
+}
+
+@mixin answer-label-base {
+    background-color: var(--ion-color-primary-tint);
+    ion-card-title,
+    ion-title,
+    ion-card-subtitle {
+        font-size: 16px;
+        color: #fff;
+    }
+    .has-popover {
+        span {
+            width: 80%;
+        }
+        .question-popover-button {
+            vertical-align: middle;
+        }
+    }
+    .answer-label-question {
+        white-space: normal;
+        padding: 4px;
+    }
+    &.has-error {
+        background-color: var(--ion-color-danger) !important;
+    }
+    .answer-label-button-ripple {
+        height: 48px !important;
+    }
+}
+
+@mixin answer-button-edit-base {
+    font-size: 24px;
+    margin-top: 2px;
+}
+
+@mixin answer-item-text-base {
+    padding-right: 8px;
+}
+
+// ==================== ENTRY STATUS STYLES ====================
+// Used by: IconEntry, ModalEntriesFilter, ModalEntriesBranchFilter, EntriesErrors
+
+@mixin entry-synced-base {
+    color: var(--ion-color-success);
+}
+
+@mixin entry-sync-error-base {
+    color: var(--ion-color-danger);
+}
+
+@mixin entry-incomplete-base {
+    color: var(--ion-color-warning);
+}
+
+@mixin entry-status-margins-base {
+    margin-right: 8px;
+}
+
+@mixin icon-error-entries-base {
+    vertical-align: sub;
+    font-size: 24px;
+}
+
+// ==================== PROJECT HEADER STYLES ====================
+// Used by: BaseLayout, ModalProjectInfo
+
+@mixin project-header-base {
+    &.pwa {
+        padding-left: 10px !important;
+    }
+    .project-logo {
+        display: inline-block;
+        vertical-align: middle;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        box-shadow: inset 0 0 0 1px #fff;
+        padding: 1px;
+        object-fit: contain;
+        margin-right: 8px;
+        background-color: transparent;
+        &:hover {
+            cursor: pointer;
+        }
+    }
+    span {
+        vertical-align: middle;
+        font-size: 14px;
+    }
+}
+
+// ==================== FORM NAME STYLES ====================
+// Used by: ToolbarFormName, EntriesErrors, Entries
+
+@mixin form-name-toolbar-base {
+    ion-title.form-name-label,
+    ion-title.form-name-label-errors {
+        text-transform: uppercase;
+        padding: 10px 10px 10px 13px;
+        font-weight: 700;
+    }
+    ion-title.form-name-label {
+        font-size: 14px;
+    }
+    ion-title.form-name-label-errors {
+        font-size: 12px;
+    }
+    --background: none;
+    --padding-bottom: 0;
+    --padding-top: 0;
+    --min-height: 40px;
+    border-bottom: 1px solid var(--ion-color-light-shade);
+}
+
+@mixin form-name-divider-base {
+    background-color: #fff !important;
+    padding: 0 !important;
+    ion-label.form-name-label {
+        width: 100%;
+        text-transform: uppercase;
+        padding: 16px;
+    }
+    background: none;
+    font-weight: 700;
+    color: var(--ion-color-dark);
+    ion-toolbar {
+        --background: none;
+        --padding-bottom: 0;
+        --padding-top: 0;
+        --min-height: 40px;
+    }
+}
+
+@mixin form-name-entry-error-base {
+    ion-label {
+        width: 100%;
+    }
+}
+
+@mixin form-name-entry-error-global-base {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    ion-label {
+        margin: 16px auto;
+    }
+}
+
+// ==================== SETTINGS STYLES ====================
+// Used by: Profile, Settings, ModalProjectInfo, ModalBookmarkAdd
+
+@mixin settings-label-base {
+    padding: 8px;
+    background-color: var(--ion-color-primary-tint);
+    ion-card-title {
+        font-size: 14px;
+    }
+    ion-card-title,
+    ion-card-subtitle {
+        color: #fff;
+    }
+}
+
+@mixin danger-label-base {
+    padding: 8px;
+    background-color: var(--ion-color-danger);
+    ion-card-title {
+        font-size: 14px;
+    }
+    ion-card-title,
+    ion-card-subtitle {
+        color: #fff;
+    }
+}
+
+@mixin settings-input-label-base {
+    font-size: 16px;
+}
+
+// ==================== BUTTON STYLES ====================
+// Used by: BaseLayout, LeftDrawer, RightDrawer
+
+@mixin button-quit-close-base {
+    color: var(--ion-color-tertiary-tint) !important;
+    font-weight: 700 !important;
+    ion-icon {
+        color: var(--ion-color-tertiary-tint) !important;
+        font-weight: 700 !important;
+    }
+}
+
+@mixin button-open-base {
+    color: #fff !important;
+    font-weight: 700 !important;
+    ion-icon {
+        color: #fff !important;
+        font-weight: 700 !important;
+    }
+}
+
+// ==================== MODAL STYLES ====================
+// Used by: Multiple modals (applied via cssClass)
+
+@mixin modal-transparent-header-base {
+    ion-content {
+        --background: transparent;
+    }
+    ion-header {
+        ion-toolbar {
+            --background: transparent;
+            ion-button,
+            ion-icon {
+                color: #333;
+            }
+        }
+    }
+}
+
+@mixin modal-audio-record-base {
+    &::part(content) {
+        width: 75%;
+        height: 52%;
+        position: fixed;
+        transform: translate(-50%, -50%);
+        margin: auto !important;
+        border-radius: 10px !important;
+    }
+    .audio-mic,
+    .audio-note {
+        font-size: 64px !important;
+    }
+}
+
+@mixin modal-search-base {
+    .spinner-search-possible-answers,
+    .spinner-search-saved-answers {
+        left: 50%;
+        position: fixed;
+        transform: translate(-50%, -50%);
+        margin-top: 50px;
+    }
+
+    &::part(content) {
+        .item-radio-checked,
+        .item-checkbox-checked {
+            --background: var(--ion-color-secondary-tint);
+        }
+    }
+}
+
+@mixin modal-progress-base {
+    --border-radius: 5px;
+    --max-height: 200px;
+    @media only screen and (max-width: 480px) {
+        --max-width: 75%;
+    }
+    @media only screen and (min-width: 481px) and (max-width: 576px) {
+        --max-width: 60%;
+    }
+    @media only screen and (min-width: 577px) and (max-width: 768px) {
+        --max-width: 50%;
+    }
+    @media only screen and (min-width: 769px) {
+        --max-width: 33%;
+    }
+}
+
+@mixin modal-progress-spinner-base {
+    left: 50%;
+    top: 50%;
+    position: fixed;
+    transform: translate(-50%, -50%);
+    margin-top: -16px;
+}
+
+@mixin modal-progress-bar-base {
+    bottom: 0;
+    position: absolute;
+    width: 100%;
+    ion-progress-bar {
+        height: 10px;
+    }
+}
+
+@mixin modal-login-base {
+    .email-login-btn {
+        --padding-top: 8px;
+        --padding-bottom: 8px;
+        height: 50px;
+        --border-radius: 0;
+    }
+}
+
+@mixin modal-passwordless-send-base {
+    ion-item.passwordless-send-item {
+        --inner-padding-end: 0;
+        --padding-end: 0;
+    }
+}
+
+@mixin modal-confirm-password-base {
+    .center-item-content-wrapper {
+        ion-label {
+            font-size: 16px;
+        }
+    }
+}
+
+@mixin modal-location-help-base {
+    &::part(content) {
+        border-radius: 10px !important;
+        @media only screen and (min-width: 768px) and (min-height: 600px) {
+            width: 75%;
+            height: 80%;
+        }
+    }
+}
+
+@mixin modal-photo-base {
+    .swiper {
+        .swiper-slide {
+            width: 100% !important;
+            height: 100% !important;
+            .swiper-zoom-container {
+                width: 100% !important;
+                height: 100% !important;
+                margin-top: -8px !important;
+            }
+        }
+        width: 100% !important;
+        height: 100% !important;
+    }
+    img {
+        width: 100%;
+    }
+}
+
+// ==================== SUBHEADER STYLES ====================
+// Used by: EntriesUpload, EntriesErrors
+
+@mixin subheader-error-base {
+    padding: 0 8px;
+    color: #fff;
+    background-color: var(--ion-color-danger);
+    ion-icon {
+        vertical-align: middle;
+        margin-top: -4px;
+    }
+}
+
+@mixin subheader-success-base {
+    padding: 0 8px;
+    color: #fff;
+    background-color: var(--ion-color-success-tint);
+    ion-icon {
+        vertical-align: middle;
+        margin-top: -4px;
+    }
+}
+
+@mixin subheader-default-base {
+    padding: 0 8px;
+    border-bottom: 1px solid var(--ion-color-light-shade);
+    ion-icon {
+        vertical-align: middle;
+        margin-top: -4px;
+    }
+}
+
+// ==================== ENTRIES UPLOAD ERRORS STYLES ====================
+
+@mixin entries-upload-errors-base {
+    ion-chip {
+        height: auto;
+        font-size: 16px;
+    }
+}
+
+// ==================== DROPZONE STYLES ====================
+// Used by: Dropzone
+
+@mixin dropzone-base {
+    padding: 16px;
+    border: 2px dashed var(--ion-color-medium);
+    border-radius: 5px;
+    font-size: 16px;
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+@mixin dropzone-active-base {
+    border: 2px solid var(--ion-color-primary);
+    background-color: #eee;
+}
+
+@mixin dropzone-preview-base {
+    min-height: 200px;
+    ion-avatar {
+        --border-radius: 0;
+    }
+    .pwa-video {
+        max-height: 150px;
+    }
+}
+
+// ==================== LEAFLET MAP STYLES ====================
+// Used by: QuestionLocationPwa, PopoverQuestionLocation
+
+@mixin leaflet-map-base {
+    height: 200px;
+    outline: none;
+    &::focus {
+        outline: none;
+    }
+}
+
+@mixin lat-long-controls-base {
+    --padding-start: 0;
+    --inner-padding-start: 0;
+    --inner-padding-end: 0;
+}
+
+@mixin leaflet-control-locate-me-base {
+    width: 34px;
+    height: 34px;
+    background: #ffffff url(@/leaflet/images/locate-me@2x.png) no-repeat center;
+    &:hover {
+        cursor: pointer;
+        background-color: #eeeeee;
+    }
+}
+
+@mixin item-question-location-edit-base {
+    border: 1px solid var(--ion-color-medium);
+    border-radius: 4px;
+}
+
+@mixin popover-question-location-base {
+    --width: auto;
+}
+
+// ==================== PROJECTS LIST STYLES ====================
+
+@mixin projects-list-base {
+    padding-top: 0;
+    ion-avatar img,
+    ion-avatar ion-img {
+        border: 1px solid var(--ion-color-primary);
+    }
+    ion-item {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--ion-color-light-shade);
+    }
+}
+
+// ==================== BETA TOOLBAR STYLES ====================
+
+@mixin beta-toolbar-base {
+    --ion-padding-top: 8px;
+    --ion-padding-bottom: 8px;
+    height: 36px;
+    --min-height: 36px;
+    ion-title,
+    div {
+        text-transform: uppercase;
+        font-size: 13px;
+    }
+}
+
+// ==================== FILTER STYLES ====================
+
+@mixin filter-by-title-base {
+    height: 60px;
+}
+
+@mixin spinner-filter-base {
+    margin-top: 8px;
+}
+
+@mixin spinner-fetch-projects-base {
+    left: 50%;
+    position: fixed;
+    transform: translate(-50%, -50%);
+    margin-top: 50px;
+}
+
+@mixin filter-by-date-base {
+    --background: #fff;
+    --color: #333;
+    ion-title {
+        font-size: 18px;
+        margin-right: 5px;
+    }
+    ion-label {
+        margin-right: 5px;
+    }
+    input[type="date"] {
+        min-width: 170px;
+    }
+}
+
+// ==================== LINE DIVIDER STYLES ====================
+
+@mixin line-divider-base {
+    width: 100%;
+    height: 1px;
+    background-color: var(--ion-color-light-shade);
+    margin: 5px 0;
+}
+
+// ==================== ENTRIES ERRORS STYLES ====================
+
+@mixin entries-errors-item-base {
+    --padding-start: 0 !important;
+    --padding-end: 0 !important;
+    --inner-padding-end: 0 !important;
+    ion-label {
+        width: 90%;
+    }
+    div.branch-entries-errors-item {
+        width: 100%;
+        ion-label {
+            width: 90%;
+        }
+    }
+}
+
+// ==================== PROFILE STYLES ====================
+
+@mixin profile-base {
+    border-bottom: 1px solid var(--ion-color-light-shade);
+    .profile__label {
+        padding: 0 0 0 10px;
+    }
+    .profile__icon {
+        color: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.54);
+    }
+}
+
+// ==================== PWA MARGIN FIX STYLES ====================
+
+@mixin pwa-margin-fix-base {
+    margin-top: -15px !important;
+}

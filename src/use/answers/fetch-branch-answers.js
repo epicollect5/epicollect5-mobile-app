@@ -53,8 +53,10 @@ export async function fetchBranchAnswers (state, language, labels) {
                         }
                     }
 
-                    //filter out README type when the entry is remote as we do not have a remote answer for it
+                    // Skip questions without an answer (e.g. added to the form after this entry was collected),
+                    // and filter out README type when the entry is remote as we do not have a remote answer for it
                     if (
+                        typeof state.entry.answers[groupInputDetails.ref] !== 'undefined' &&
                         !(
                             groupInputDetails.type === PARAMETERS.QUESTION_TYPES.README &&
                             state.entry.isRemote === 1

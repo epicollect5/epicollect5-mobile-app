@@ -51,7 +51,7 @@ export const authLoginService = {
     async onAuthSuccess(response, language, rootStore) {
         try {
             await authLoginService.loginUser(response);
-            modalsHandlerService.dismissAll();
+            await modalsHandlerService.dismissAll();
             notificationService.showToast(STRINGS[language].status_codes.ec5_115);
 
             //any extra action to perform? (like addProject()...)

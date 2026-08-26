@@ -1,0 +1,28 @@
+@use '@/theme/mixins' as *;
+
+.subheader-success {
+    @include subheader-success-base;
+}
+
+.subheader-default {
+    @include subheader-default-base;
+}
+
+ion-item.entries-errors-item {
+    @include entries-errors-item-base;
+}
+
+.entry-synced,
+.entry-not-synced,
+.entry-sync-error,
+.entry-incomplete {
+    @include entry-status-margins-base;
+}
+
+.entry-sync-error {
+    @include entry-sync-error-base;
+}
+
+.entry-incomplete {
+    @include entry-incomplete-base;
+}
