@@ -2,11 +2,17 @@
 
 # 88.9.9 - build 8899
 
- - Project search now reads the project logo as a base64 data URI embedded in the search response payload (`logo_base64`), avoiding one HTTP request per hit.
- - When the server-side feature flag is off and the payload omits the `logo_base64` key, the app falls back to constructing the logo URL client-side, preserving the previous behavior.
- - Private projects still show the locked placeholder (server returns `logo_base64: null`).
- - Defensive fallback to a local placeholder for public projects with an explicitly null or empty `logo_base64`.
- - The post-add download flow (logo fetched on selection) is unchanged.
+ - Block back-nav and abort mid-download when project changes; 
+ - Block downloads while entries unsynced/errored; 
+ - Stop downloads for trashed projects; 
+ - Docs link in confirmation dialogs.
+ - Refactored multiple modal dismissal to avoid race condition errors. 
+ - Switched to Capawesome foreground-service plugin; 
+ - Delete entries/media of server-deleted forms; remove orphaned branch entries and related media.
+ - Guard navigation against deleted parents with confirmation dialog;
+ - Filter stale forms in branch export;
+ - iOS datetime styles, location-title size, input borders;
+ - Project search as a base64 data URI embedded in the search response (`logo_base64`); falls back to the client-side logo URL when the feature flag is off; 
 
 # 88.9.8 - build 8898
 
