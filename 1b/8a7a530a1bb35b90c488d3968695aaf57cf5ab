@@ -1,0 +1,533 @@
+package.json
+  h_2231ff2aa93473 37-38
+  h_2231ff2aa93473 63,72
+.agents/README.md
+  h_2231ff2aa93473 1-28
+.agents/skills/commit/SKILL.md
+  h_2231ff2aa93473 1-24
+.agents/skills/false-positive/SKILL.md
+  h_2231ff2aa93473 1-12
+.agents/skills/issue/SKILL.md
+  h_2231ff2aa93473 1-15
+.agents/skills/publish-issue/SKILL.md
+  h_2231ff2aa93473 1-35
+.agents/skills/qa/SKILL.md
+  h_2231ff2aa93473 1-10
+.agents/skills/review/SKILL.md
+  h_2231ff2aa93473 1-10
+.commandcode/settings.json
+  h_2231ff2aa93473 1-17
+.opencode/commands/commit.md
+  h_2231ff2aa93473 1-10
+.opencode/commands/false-positive.md
+  h_2231ff2aa93473 1-9
+.opencode/commands/issue.md
+  h_2231ff2aa93473 1-9
+.opencode/commands/publish-issue.md
+  h_2231ff2aa93473 1-9
+.opencode/commands/qa.md
+  h_2231ff2aa93473 1-9
+.opencode/commands/review.md
+  h_2231ff2aa93473 1-9
+AGENTS.md
+  h_2231ff2aa93473 52-63,70
+CHANGELOG.md
+  h_2231ff2aa93473 3-10
+android/app/capacitor.build.gradle
+  h_2231ff2aa93473 31
+android/app/src/main/AndroidManifest.xml
+  h_2231ff2aa93473 56,58-60
+android/app/src/main/assets/capacitor.plugins.json
+  h_2231ff2aa93473 78-81
+android/capacitor.settings.gradle
+  h_2231ff2aa93473 62-64
+docs/ARCHITECTURE.md
+  h_2231ff2aa93473 54-60,118,482-483,486-493,495
+docs/known-review-false-positives.md
+  h_2231ff2aa93473 1-9
+docs/workflows/false-positive.md
+  h_2231ff2aa93473 1-121
+docs/workflows/issue.md
+  h_2231ff2aa93473 1-148
+docs/workflows/publish-issue.md
+  h_2231ff2aa93473 1-168
+docs/workflows/qa.md
+  h_2231ff2aa93473 1-84
+docs/workflows/review.md
+  h_2231ff2aa93473 1-81
+package-lock.json
+  h_2231ff2aa93473 3,9,34,43,2395-2413,7887-7889,7892,7894-7904,8263-8265,8269-8272,8858-8860,13971-13973,23587
+src/components/CardLoginDefault.vue
+  h_2231ff2aa93473 181
+src/components/CardLoginLdap.vue
+  h_2231ff2aa93473 90
+src/components/CardLoginLocal.vue
+  h_2231ff2aa93473 127
+src/components/Dropzone.vue
+  h_2231ff2aa93473 310
+src/components/GridQuestionNarrow.vue
+  h_2231ff2aa93473 29
+src/components/GridQuestionWide.vue
+  h_2231ff2aa93473 29
+src/components/HeaderModal.vue
+  h_2231ff2aa93473 44
+src/components/IconEntry.vue
+  h_2231ff2aa93473 70
+src/components/ItemDividerError.vue
+  h_2231ff2aa93473 29
+src/components/ListAnswers.vue
+  h_2231ff2aa93473 247
+src/components/ListEntries.vue
+  h_2231ff2aa93473 287-288
+src/components/ListItemAnswer.vue
+  h_2231ff2aa93473 81
+src/components/ListItemProjects.vue
+  h_2231ff2aa93473 44,65-69,97
+src/components/ListPossibleAnswersCheckbox.vue
+  h_2231ff2aa93473 209
+src/components/ListPossibleAnswersRadio.vue
+  h_2231ff2aa93473 206
+src/components/ListSavedAnswers.vue
+  h_2231ff2aa93473 147
+src/components/LocationPwa.vue
+  h_2231ff2aa93473 453
+src/components/QuestionLabelAction.vue
+  h_2231ff2aa93473 107-108
+src/components/QuestionLabelPossibleAnswers.vue
+  h_2231ff2aa93473 116
+src/components/ToolbarEntriesAddNavigation.vue
+  h_2231ff2aa93473 91
+src/components/ToolbarEntriesFilters.vue
+  h_2231ff2aa93473 70
+src/components/ToolbarFormName.vue
+  h_2231ff2aa93473 127
+src/components/answers/AnswerGroup.vue
+  h_2231ff2aa93473 49
+src/components/answers/AnswerLocation.vue
+  h_2231ff2aa93473 80
+src/components/globals/BaseLayout.vue
+  h_2231ff2aa93473 21,79-81,93
+src/components/globals/LeftDrawer.vue
+  h_2231ff2aa93473 185,197-198,257-270,363
+src/components/globals/RightDrawer.vue
+  h_2231ff2aa93473 330,378-379,384-385,390,406,425-428,437-438,445-452,612
+src/components/modals/ModalAccountDeletion.vue
+  h_2231ff2aa93473 178
+src/components/modals/ModalAudioPlay.vue
+  h_2231ff2aa93473 154
+src/components/modals/ModalAudioRecord.vue
+  h_2231ff2aa93473 177
+src/components/modals/ModalBookmarkAdd.vue
+  h_2231ff2aa93473 164
+src/components/modals/ModalConfirmEmail.vue
+  h_2231ff2aa93473 120,157
+src/components/modals/ModalConfirmPassword.vue
+  h_2231ff2aa93473 134
+src/components/modals/ModalEntriesBranchFilter.vue
+  h_2231ff2aa93473 297
+src/components/modals/ModalEntriesFilter.vue
+  h_2231ff2aa93473 339
+src/components/modals/ModalLocationEdit.vue
+  h_2231ff2aa93473 143-144
+src/components/modals/ModalLocationHelp.vue
+  h_2231ff2aa93473 115
+src/components/modals/ModalLogin.vue
+  h_2231ff2aa93473 76
+src/components/modals/ModalPasswordlessLogin.vue
+  h_2231ff2aa93473 104,141
+src/components/modals/ModalPasswordlessSend.vue
+  h_2231ff2aa93473 140
+src/components/modals/ModalPhoto.vue
+  h_2231ff2aa93473 121
+src/components/modals/ModalPossibleAnswers.vue
+  h_2231ff2aa93473 182
+src/components/modals/ModalProgressEncoding.vue
+  h_2231ff2aa93473 66
+src/components/modals/ModalProgressExport.vue
+  h_2231ff2aa93473 68
+src/components/modals/ModalProgressTransfer.vue
+  h_2231ff2aa93473 101
+src/components/modals/ModalProjectInfo.vue
+  h_2231ff2aa93473 144
+src/components/modals/ModalSavedAnswers.vue
+  h_2231ff2aa93473 249
+src/components/popovers/PopoverQuestionLocation.vue
+  h_2231ff2aa93473 97-109,116-117,123-133,208
+src/components/popovers/PopoverQuestionMedia.vue
+  h_2231ff2aa93473 210-212,269
+src/components/questions/QuestionAudio.vue
+  h_2231ff2aa93473 362
+src/components/questions/QuestionBarcode.vue
+  h_2231ff2aa93473 204-208,325
+src/components/questions/QuestionBranch.vue
+  h_2231ff2aa93473 735
+src/components/questions/QuestionCheckbox.vue
+  h_2231ff2aa93473 145
+src/components/questions/QuestionDate.vue
+  h_2231ff2aa93473 262
+src/components/questions/QuestionDecimal.vue
+  h_2231ff2aa93473 316
+src/components/questions/QuestionDropdown.vue
+  h_2231ff2aa93473 202
+src/components/questions/QuestionGroup.vue
+  h_2231ff2aa93473 307
+src/components/questions/QuestionInteger.vue
+  h_2231ff2aa93473 238
+src/components/questions/QuestionLocation.vue
+  h_2231ff2aa93473 435
+src/components/questions/QuestionLocationCapacitor.vue
+  h_2231ff2aa93473 348
+src/components/questions/QuestionPhone.vue
+  h_2231ff2aa93473 30,47,154
+src/components/questions/QuestionPhoto.vue
+  h_2231ff2aa93473 351
+src/components/questions/QuestionRadio.vue
+  h_2231ff2aa93473 159
+src/components/questions/QuestionReadme.vue
+  h_2231ff2aa93473 92
+src/components/questions/QuestionSave.vue
+  h_2231ff2aa93473 122
+src/components/questions/QuestionSaved.vue
+  h_2231ff2aa93473 135
+src/components/questions/QuestionSearch.vue
+  h_2231ff2aa93473 254
+src/components/questions/QuestionText.vue
+  h_2231ff2aa93473 37,53,203
+src/components/questions/QuestionTextarea.vue
+  h_2231ff2aa93473 36,52,204
+src/components/questions/QuestionTime.vue
+  h_2231ff2aa93473 422
+src/components/questions/QuestionVideo.vue
+  h_2231ff2aa93473 275
+src/config/index.js
+  h_2231ff2aa93473 9-10,17,57
+src/config/strings.js
+  h_2231ff2aa93473 86-90,124,179,198,232-233,352-356,390,445,464,498-499,618-622,656,711,730,764-765,884-888,922,977,996,1030-1031,1150-1154,1188,1243,1262,1296-1297,1416-1420,1454,1509,1528,1562-1563,1682-1686,1720,1775,1794,1828-1829,1948-1952,1986,2041,2060,2094-2095,2214-2218,2252,2307,2326,2360-2361
+src/models/project-model.js
+  h_2231ff2aa93473 42-45,91
+src/pages/Entries.vue
+  h_2231ff2aa93473 365,607
+src/pages/EntriesAdd.vue
+  h_2231ff2aa93473 520,814
+src/pages/EntriesDownload.vue
+  h_2231ff2aa93473 89-105,110,121,177,182-199,229-231,238-242,248,266-267,273
+src/pages/EntriesErrors.vue
+  h_2231ff2aa93473 56,112,162-164,172,208-221,379-421,459
+src/pages/EntriesUpload.vue
+  h_2231ff2aa93473 116,144,172,200,382,385,402,406,413,417-421,425-426,431,452-453,456,464,470-474,480-481,486,518,530,613
+src/pages/EntriesView.vue
+  h_2231ff2aa93473 198-201,203,209-225,249-250,329
+src/pages/EntriesViewBranch.vue
+  h_2231ff2aa93473 253
+src/pages/NotFound.vue
+  h_2231ff2aa93473 57
+src/pages/Profile.vue
+  h_2231ff2aa93473 186
+src/pages/Projects.vue
+  h_2231ff2aa93473 226
+src/pages/ProjectsAdd.vue
+  h_2231ff2aa93473 173
+src/pages/Settings.vue
+  h_2231ff2aa93473 311
+src/services/auth/auth-apple-service.js
+  h_2231ff2aa93473 50,79,82,110
+src/services/auth/auth-google-service.js
+  h_2231ff2aa93473 104,107,135
+src/services/auth/auth-login-service.js
+  h_2231ff2aa93473 54
+src/services/database/database-delete-service.js
+  h_2231ff2aa93473 3-5,21,47-58,60-61,110,121-202,207,215-220,222,385
+src/services/database/database-select-service.js
+  h_2231ff2aa93473 1018,1134-1217
+src/services/entries-download-service.js
+  h_2231ff2aa93473 10-12,106-113,122-166,189-195,200-232,238-272,286-299,347-364,385,408,421,442,448,458
+src/services/entry/answer-service.js
+  h_2231ff2aa93473 11,129-131
+src/services/entry/branch-entry-service.js
+  h_2231ff2aa93473 11,126-133,305-311
+src/services/entry/entry-service.js
+  h_2231ff2aa93473 12-13,155-160,179-188,459-463
+src/services/export-service.js
+  h_2231ff2aa93473 16,160,164-171,173-174,299,385-386,404-405,451,453
+src/services/filesystem/delete-file-service.js
+  h_2231ff2aa93473 4-5,45,72-114
+src/services/filesystem/fake-file-photo-service.js
+  h_2231ff2aa93473 15-16,18-19,21-27,30-32
+src/services/modals/modals-handler-service.js
+  h_2231ff2aa93473 10-17,19,25,31,37,43,49-56,58-65,67
+src/services/notification-service.js
+  h_2231ff2aa93473 10,59,62,65-73,75-104,109-137,189-227,278-284,287,289-300,314,335-347,352,362
+src/services/upload-media-service.js
+  h_2231ff2aa93473 170-175,227-232
+src/services/utilities/bookmarks-service.js
+  h_2231ff2aa93473 143-159
+src/services/utilities/download-service.js
+  h_2231ff2aa93473 97-103
+src/services/utilities/utils-service.js
+  h_2231ff2aa93473 426,435-436,438,440-441,444,583-591
+src/services/utilities/versioning-service.js
+  h_2231ff2aa93473 9,43-48,54,59-71,73-87,89-91,93-101,103-132,134-152,154-169,171-216,218-336,566
+src/services/validation/answer-validate-service.js
+  h_2231ff2aa93473 156
+src/theme/components/answers/AnswerGroup.scss
+  h_2231ff2aa93473 1
+src/theme/components/answers/AnswerLocation.scss
+  h_2231ff2aa93473 1
+src/theme/components/answers/ListAnswers.scss
+  h_2231ff2aa93473 1-34
+src/theme/components/answers/ListItemAnswer.scss
+  h_2231ff2aa93473 1
+src/theme/components/answers/ListSavedAnswers.scss
+  h_2231ff2aa93473 1
+src/theme/components/answers/QuestionLabelPossibleAnswers.scss
+  h_2231ff2aa93473 1-4
+src/theme/components/auth/CardLoginDefault.scss
+  h_2231ff2aa93473 1-23
+src/theme/components/auth/CardLoginLdap.scss
+  h_2231ff2aa93473 1
+src/theme/components/auth/CardLoginLocal.scss
+  h_2231ff2aa93473 1
+src/theme/components/entries/IconEntry.scss
+  h_2231ff2aa93473 1-24
+src/theme/components/entries/ToolbarEntriesAddNavigation.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/globals/BaseLayout.scss
+  h_2231ff2aa93473 1-14
+src/theme/components/globals/LeftDrawer.scss
+  h_2231ff2aa93473 1
+src/theme/components/globals/RightDrawer.scss
+  h_2231ff2aa93473 1
+src/theme/components/lists/ListEntries.scss
+  h_2231ff2aa93473 1-33
+src/theme/components/lists/ListItemProjects.scss
+  h_2231ff2aa93473 1-14
+src/theme/components/lists/ListPossibleAnswersCheckbox.scss
+  h_2231ff2aa93473 1-13
+src/theme/components/lists/ListPossibleAnswersRadio.scss
+  h_2231ff2aa93473 1-13
+src/theme/components/modals/ModalAccountDeletion.scss
+  h_2231ff2aa93473 1
+src/theme/components/modals/ModalAudioPlay.scss
+  h_2231ff2aa93473 1-6
+src/theme/components/modals/ModalAudioRecord.scss
+  h_2231ff2aa93473 1-6
+src/theme/components/modals/ModalBookmarkAdd.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/modals/ModalConfirmEmail.scss
+  h_2231ff2aa93473 1
+src/theme/components/modals/ModalConfirmPassword.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/modals/ModalEntriesBranchFilter.scss
+  h_2231ff2aa93473 1-9
+src/theme/components/modals/ModalEntriesFilter.scss
+  h_2231ff2aa93473 1-9
+src/theme/components/modals/ModalLocationEdit.scss
+  h_2231ff2aa93473 1-15
+src/theme/components/modals/ModalLocationHelp.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/modals/ModalLogin.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/modals/ModalPasswordlessLogin.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/modals/ModalPasswordlessSend.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/modals/ModalPhoto.scss
+  h_2231ff2aa93473 1-6
+src/theme/components/modals/ModalPossibleAnswers.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/modals/ModalProgressEncoding.scss
+  h_2231ff2aa93473 1-14
+src/theme/components/modals/ModalProgressExport.scss
+  h_2231ff2aa93473 1-14
+src/theme/components/modals/ModalProgressTransfer.scss
+  h_2231ff2aa93473 1-14
+src/theme/components/modals/ModalProjectInfo.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/modals/ModalSavedAnswers.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/popovers/PopoverQuestionLocation.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/popovers/PopoverQuestionMedia.scss
+  h_2231ff2aa93473 1
+src/theme/components/pwa/Dropzone.scss
+  h_2231ff2aa93473 1-13
+src/theme/components/pwa/LocationPwa.scss
+  h_2231ff2aa93473 1,3-4,7-9,12-13,15-17,19-22,24-29,31-34,38-40
+src/theme/components/questions/QuestionAudio.scss
+  h_2231ff2aa93473 1-9
+src/theme/components/questions/QuestionBarcode.scss
+  h_2231ff2aa93473 1-17
+src/theme/components/questions/QuestionBranch.scss
+  h_2231ff2aa93473 1-18
+src/theme/components/questions/QuestionCheckbox.scss
+  h_2231ff2aa93473 1-21
+src/theme/components/questions/QuestionDate.scss
+  h_2231ff2aa93473 1-26
+src/theme/components/questions/QuestionDecimal.scss
+  h_2231ff2aa93473 1-17
+src/theme/components/questions/QuestionDropdown.scss
+  h_2231ff2aa93473 1-33
+src/theme/components/questions/QuestionGroup.scss
+  h_2231ff2aa93473 1-18
+src/theme/components/questions/QuestionInteger.scss
+  h_2231ff2aa93473 1-17
+src/theme/components/questions/QuestionLabelAction.scss
+  h_2231ff2aa93473 1-17
+src/theme/components/questions/QuestionLocation.scss
+  h_2231ff2aa93473 1-13
+src/theme/components/questions/QuestionLocationCapacitor.scss
+  h_2231ff2aa93473 1-13
+src/theme/components/questions/QuestionPhone.scss
+  h_2231ff2aa93473 1-22
+src/theme/components/questions/QuestionPhoto.scss
+  h_2231ff2aa93473 1-13
+src/theme/components/questions/QuestionRadio.scss
+  h_2231ff2aa93473 1-21
+src/theme/components/questions/QuestionReadme.scss
+  h_2231ff2aa93473 1-13
+src/theme/components/questions/QuestionSave.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/questions/QuestionSaved.scss
+  h_2231ff2aa93473 1-5
+src/theme/components/questions/QuestionSearch.scss
+  h_2231ff2aa93473 1-15
+src/theme/components/questions/QuestionText.scss
+  h_2231ff2aa93473 1-30
+src/theme/components/questions/QuestionTextarea.scss
+  h_2231ff2aa93473 1-30
+src/theme/components/questions/QuestionTime.scss
+  h_2231ff2aa93473 1-35
+src/theme/components/questions/QuestionVideo.scss
+  h_2231ff2aa93473 1-13
+src/theme/components/ui/GridQuestionNarrow.scss
+  h_2231ff2aa93473 1
+src/theme/components/ui/GridQuestionWide.scss
+  h_2231ff2aa93473 1
+src/theme/components/ui/ItemDividerError.scss
+  h_2231ff2aa93473 1-15
+src/theme/components/ui/ToolbarFormName.scss
+  h_2231ff2aa93473 1-9
+src/theme/core.scss
+  h_2231ff2aa93473 83-91,226-233
+src/theme/mixins.scss
+  h_2231ff2aa93473 1-2,4,13-32,61-62,66-67,87-88,93-94,97-98,108-109,115-116,119-120,146-147,161-162,165-166,169-170,176,188-242,323-336,338-339,341-345,347-362,364-372,376-385,388-478,480-508,510-511,513-524,526-578,580-708,710-797,799,803-811,813-830,833-843,845-852,854-861,864-870,873-877,886-887,892-893,901-905,912-913,918-919,923-926,928-931,933-969,971-973,975-980,982-994,997-1004,1006-1021,1023-1039
+src/theme/pages/Entries.scss
+  h_2231ff2aa93473 1-26
+src/theme/pages/EntriesAdd.scss
+  h_2231ff2aa93473 1-5
+src/theme/pages/EntriesDownload.scss
+  h_2231ff2aa93473 1-20
+src/theme/pages/EntriesErrors.scss
+  h_2231ff2aa93473 1-28
+src/theme/pages/EntriesUpload.scss
+  h_2231ff2aa93473 1-9
+src/theme/pages/EntriesView.scss
+  h_2231ff2aa93473 1
+src/theme/pages/EntriesViewBranch.scss
+  h_2231ff2aa93473 1
+src/theme/pages/NotFound.scss
+  h_2231ff2aa93473 1
+src/theme/pages/Profile.scss
+  h_2231ff2aa93473 1-13
+src/theme/pages/ProjectsAdd.scss
+  h_2231ff2aa93473 1
+src/theme/pages/Settings.scss
+  h_2231ff2aa93473 1-9
+src/use/answers/fetch-answers.js
+  h_2231ff2aa93473 145-146,148
+src/use/answers/fetch-branch-answers.js
+  h_2231ff2aa93473 56-57,59
+src/use/auth/login-local.js
+  h_2231ff2aa93473 21
+src/use/entries/add-fake-entries.js
+  h_2231ff2aa93473 10,23,114,121
+src/use/entries/delete-entries.js
+  h_2231ff2aa93473 14,34-42,62,70,74-77
+src/use/project/add-project.js
+  h_2231ff2aa93473 24,42,45,103,112,118-123,154
+src/use/project/delete-project.js
+  h_2231ff2aa93473 16,40-48,56,75,85
+src/use/project/fetch-server-projects.js
+  h_2231ff2aa93473 24-49
+src/use/project/update-local-project.js
+  h_2231ff2aa93473 9,22-28,58-67,109-110
+src/use/project/update-project.js
+  h_2231ff2aa93473 14-20,52-53,64-69,72
+src/use/questions/photo-take.js
+  h_2231ff2aa93473 32-36
+src/use/questions/popover-location-handler.js
+  h_2231ff2aa93473 27
+src/use/questions/video-shoot.js
+  h_2231ff2aa93473 144-148
+tests/unit/components/ListItemProjects.spec.js
+  h_2231ff2aa93473 1-115
+tests/unit/components/globals/LeftDrawer.spec.js
+  h_2231ff2aa93473 10,420,436,446-447,460-490,492-520,585,592,602-603,616,725-762
+tests/unit/components/globals/RightDrawer.spec.js
+  h_2231ff2aa93473 21,100-104,255,271-272,286-289,294-329,509,512,524,569,584,629,632,644,690,708,751,769,812,829,897,909,926-929,960,972,989-992,1021,1035,1052-1055,1088,1100,1121-1124,1153,1169,1187-1190
+tests/unit/entry/answer-service/fake-answer-service.spec.js
+  h_2231ff2aa93473 30-31
+tests/unit/notification-service.spec.js
+  h_2231ff2aa93473 14-19,23-38,121-252
+tests/unit/pages/EntriesUpload.spec.js
+  h_2231ff2aa93473 1-154
+tests/unit/services/database/database-delete-service.spec.js
+  h_2231ff2aa93473 1-359
+tests/unit/services/entries-download-service.abort.spec.js
+  h_2231ff2aa93473 1-309
+tests/unit/services/entries-download-service.spec.js
+  h_2231ff2aa93473 1-546
+tests/unit/services/entry/branch-entry-service.spec.js
+  h_2231ff2aa93473 1-54
+tests/unit/services/entry/entry-service.spec.js
+  h_2231ff2aa93473 1-90
+tests/unit/services/export-service/export-branch-entries.spec.js
+  h_2231ff2aa93473 1-207
+tests/unit/services/export-service/export-entries.spec.js
+  h_2231ff2aa93473 25
+tests/unit/services/export-service/send-to-device.spec.js
+  h_2231ff2aa93473 23,161,165,176
+tests/unit/services/filesystem/delete-file-service.spec.js
+  h_2231ff2aa93473 1-214
+tests/unit/services/modals/modals-handler-service.spec.js
+  h_2231ff2aa93473 1-138
+tests/unit/services/utilities/download-service.spec.js
+  h_2231ff2aa93473 304-345
+tests/unit/services/utilities/versioning-service.spec.js
+  h_2231ff2aa93473 1-919
+tests/unit/upload-media-service.spec.js
+  h_2231ff2aa93473 1-131
+tests/unit/use/add-project.spec.js
+  h_2231ff2aa93473 1-215
+tests/unit/use/fetch-answers.spec.js
+  h_2231ff2aa93473 1-360
+tests/unit/use/fetch-server-projects.spec.js
+  h_2231ff2aa93473 1-273
+tests/unit/use/update-local-project.spec.js
+  h_2231ff2aa93473 11,39-40,47,71-74,119-123,218-267
+tests/unit/utilities/bookmarks-service.spec.js
+  h_2231ff2aa93473 893-963
+tests/unit/validation/answer-validate-service/barcode.spec.js
+  h_2231ff2aa93473 163-216
+tests/unit/validation/answer-validate-service/phone.spec.js
+  h_2231ff2aa93473 178-218
+tests/unit/validation/answer-validate-service/text.spec.js
+  h_2231ff2aa93473 175-215
+tests/unit/validation/answer-validate-service/textarea.spec.js
+  h_2231ff2aa93473 175-215
+vitest.config.js
+  h_2231ff2aa93473 29-31
+vue.config.js
+  h_2231ff2aa93473 10-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "1b8a7a530a1bb35b90c488d3968695aaf57cf5ab",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
