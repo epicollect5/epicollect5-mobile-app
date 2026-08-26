@@ -1,0 +1,19 @@
+src/theme/components/modals/ModalLocationEdit.scss
+  s_83ae9af343f3d2::t_d2809e5f437b73 5-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "0e03c9179d0f4fcd168788f80ec62e98b5f9f322",
+  "prompts": {},
+  "sessions": {
+    "s_83ae9af343f3d2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc17f5395ffeVjI2DVezvASZAG",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
