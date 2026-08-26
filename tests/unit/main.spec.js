@@ -158,8 +158,8 @@ describe('Main.js Architecture', () => {
         document.body.innerHTML = '<div id="app"></div>';
 
         // 2. Fix: Ensure ENV variables are set BEFORE import
-        vi.stubEnv('NODE_ENV', 'development');
-        vi.stubEnv('VUE_APP_PWA_DEVELOPMENT_SERVER', 'https://dev.server.com/');
+        vi.stubEnv('PROD', false);
+        vi.stubEnv('VITE_PWA_DEVELOPMENT_SERVER', 'https://dev.server.com/');
 
         delete window.location;
         window.location = {

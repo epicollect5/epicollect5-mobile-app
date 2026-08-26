@@ -226,7 +226,10 @@ describe('LeftDrawer component', () => {
         rootStore.user.action = labels.login;
         expect(rootStore.user.action).toBe(labels.login);
         await wrapper.vm.$nextTick();
-        await wrapper.find('[data-test="performAuthAction"]').trigger('click');
+        // do not await the click: the login flow calls logout() asynchronously
+        // (inside openModalLogin). Awaiting trigger() flushes that microtask
+        // chain before the synchronous assertion below, causing a false failure.
+        wrapper.find('[data-test="performAuthAction"]').trigger('click');
         expect(logout).not.toHaveBeenCalled();
         expect(utilsService.hasInternetConnection).toHaveBeenCalledOnce();
         await flushPromises();
