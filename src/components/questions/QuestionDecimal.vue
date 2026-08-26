@@ -236,14 +236,12 @@ export default {
 				if (state.answer.answer.includes('.')) {
 					fixedDigits = state.answer.answer.split('.')[1].length;
 				}
-				state.inputStep = utilsService.getStepPrecision(fixedDigits);
+			state.inputStep = utilsService.getStepPrecision(fixedDigits);
 
-				/* eslint-disable no-mixed-spaces-and-tabs */
-				state.answer.answer =
-					state.answer.answer === ''
-						? 0.1
-						: (parseFloat(state.answer.answer, 10) + state.inputStep).toFixed(fixedDigits);
-				/* eslint-enable no-mixed-spaces-and-tabs */
+			state.answer.answer =
+				state.answer.answer === ''
+					? 0.1
+					: (parseFloat(state.answer.answer, 10) - state.inputStep).toFixed(fixedDigits);
 			},
 			minusDotOne() {
 				let fixedDigits = 1;
@@ -253,14 +251,12 @@ export default {
 					fixedDigits = state.answer.answer.split('.')[1].length;
 				}
 
-				state.inputStep = utilsService.getStepPrecision(fixedDigits);
+			state.inputStep = utilsService.getStepPrecision(fixedDigits);
 
-				/* eslint-disable no-mixed-spaces-and-tabs */
-				state.answer.answer =
-					state.answer.answer === ''
+			state.answer.answer =
+				state.answer.answer === ''
 						? -0.1
-						: (parseFloat(state.answer.answer, 10) - state.inputStep).toFixed(fixedDigits);
-				/* eslint-enable no-mixed-spaces-and-tabs */
+					: (parseFloat(state.answer.answer, 10) - state.inputStep).toFixed(fixedDigits);
 			},
 			plusDotOneVerify() {
 				let fixedDigits = 1;

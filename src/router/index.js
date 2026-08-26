@@ -16,7 +16,7 @@ import {utilsService} from '@/services/utilities/utils-service';
 
 let routes = [];
 //routes for PWA
-if (process.env.VUE_APP_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
+if (import.meta.env.VITE_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
     const basePath = utilsService.getBasepath();
     routes = [
         {
@@ -117,7 +117,7 @@ if (process.env.VUE_APP_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
 }
 
 //console.log(routes);
-console.log({base_url: process.env.BASE_URL});
+console.log({base_url: import.meta.env.BASE_URL});
 
 const router = createRouter({
     /** imp: across the app we always use router.replace()
@@ -130,15 +130,15 @@ const router = createRouter({
 
     //https://router.vuejs.org/api/index.html#createwebhashhistory
     //imp: passing a base url into createWebHistory() breaks the PWA
-    //history: createWebHistory(process.env.BASE_URL),
+    //history: createWebHistory(import.meta.env.BASE_URL),
     history: createWebHistory(),
     scrollBehavior() {
         return {x: 0, y: 0};
     },
     routes
 });
-//if (process.env.NODE_ENV !== 'production') {
-if (process.env.VUE_APP_MODE.toLowerCase() !== PARAMETERS.PWA.toLowerCase()) {
+//if (!import.meta.env.PROD) {
+if (import.meta.env.VITE_MODE.toLowerCase() !== PARAMETERS.PWA.toLowerCase()) {
     router.beforeEach((to, from, next) => {
         console.log('Router called with -> ');
         console.log('from.name -> ', from.name);

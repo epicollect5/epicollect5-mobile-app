@@ -19,7 +19,7 @@ export const initService = {
 
         //switch to PWA mode based on environment
         if (deviceInfo.platform === PARAMETERS.WEB) {
-            if (process.env.VUE_APP_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
+            if (import.meta.env.VITE_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
                 deviceInfo.platform = PARAMETERS.PWA;
             }
         }
@@ -353,7 +353,7 @@ export const initService = {
         let url = '/';
 
         return new Promise((resolve, reject) => {
-            if (process.env.NODE_ENV === 'production') {
+            if (import.meta.env.PROD) {
                 //get the language files from data-editor folder in laravel
                 const endpoint = PARAMETERS.PWA_LANGUAGE_FILES_ENDPOINT;
                 url = serverUrl + endpoint + language + '.json';

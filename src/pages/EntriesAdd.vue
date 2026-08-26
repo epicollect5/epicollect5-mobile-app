@@ -644,7 +644,7 @@ export default {
 				//let's check if we are quitting from the PWA
 				if (rootStore.isPWA) {
 					if (response.routeName === PARAMETERS.ROUTES.PWA_QUIT) {
-						if (process.env.NODE_ENV === 'production') {
+						if (import.meta.env.PROD) {
 							//redirect to dataviewer URL ()
 							console.log(utilsService.getDataViewerURL(projectSlug));
 							window.location.href = utilsService.getDataViewerURL(projectSlug);

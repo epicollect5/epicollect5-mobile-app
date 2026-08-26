@@ -8,9 +8,9 @@ export const PARAMETERS = {
     UPLOAD_MEDIA_DOCS_URL: 'https://docs.epicollect.net/mobile-application/upload-entries#uploading-media-files',
     DOWNLOAD_ENTRIES_DOCS_URL: 'https://docs.epicollect.net/mobile-application/download-entries',
     UPDATE_PROJECT_DOCS_URL: 'https://docs.epicollect.net/mobile-application/updating-a-project-mobile',
-    DEBUG: process.env.VUE_APP_DEBUG,
-    IS_LOCALHOST: process.env.NODE_ENV === 'production' ? 0 : 1, //for debugging outside of Laravel(production), it is set to 1
-    BYPASS_UNIQUENESS: process.env.VUE_APP_BYPASS_UNIQUENESS,
+    DEBUG: import.meta.env.VITE_DEBUG,
+    IS_LOCALHOST: import.meta.env.PROD ? 0 : 1, //for debugging outside of Laravel(production), it is set to 1
+    BYPASS_UNIQUENESS: import.meta.env.VITE_BYPASS_UNIQUENESS,
     // url production
     DEFAULT_SERVER_URL: 'https://five.epicollect.net',
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',
@@ -381,12 +381,12 @@ export const PARAMETERS = {
     PWA_LANGUAGE_FILES_ENDPOINT: '/pwa/assets/ec5-status-codes/',
 
     //ESRI satellite -> https://wiki.openstreetmap.org/wiki/Esri#Legal_permissions
-    ESRI_TILES_PROVIDER_SATELLITE: 'https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=' + process.env.VUE_APP_ESRI_API_TOKEN,
+    ESRI_TILES_PROVIDER_SATELLITE: 'https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=' + import.meta.env.VITE_ESRI_API_TOKEN,
     //https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9
     ESRI_TILES_PROVIDER_ATTRIBUTION: 'Powered by Esri | Esri, Maxar, Earthstar Geographics, and the GIS User Community',
 
     //Mapbox  imagery https://docs.mapbox.com/api/maps/styles/
-    MAPBOX_TILES_PROVIDER_OUTDOOR: 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/{z}/{x}/{y}?access_token=' + process.env.VUE_APP_MAPBOX_API_TOKEN,
+    MAPBOX_TILES_PROVIDER_OUTDOOR: 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/{z}/{x}/{y}?access_token=' + import.meta.env.VITE_MAPBOX_API_TOKEN,
     //https://docs.mapbox.com/help/getting-started/attribution/
     MAPBOX_TILES_ATTRIBUTION: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
 

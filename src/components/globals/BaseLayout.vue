@@ -55,7 +55,7 @@ export default {
 					PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
 				];
 				console.log('should exit app...');
-				if (rootStore.isPWA && process.env.NODE_ENV === 'production') {
+				if (rootStore.isPWA && import.meta.env.PROD) {
 					//only the project logo is clickable
 					if (e.target.className === 'project-logo' && e.target.localName === 'img') {
 						//emit only on PWA routes

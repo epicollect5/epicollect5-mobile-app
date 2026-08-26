@@ -63,7 +63,7 @@
         <img
             class="locate-me-icon"
             alt="marker"
-            src="@/leaflet/images/locate-me@2x.png"
+            :src="locateMeIcon"
         />
 
       </ion-card-content>
@@ -75,7 +75,7 @@
             width="25"
             class="marker-icon"
             alt="target"
-            src="@/leaflet/images/marker-icon@2x.png"
+            :src="markerIconImg"
         />
       </ion-card-content>
     </ion-card>
@@ -87,6 +87,8 @@ import {closeOutline, locate, search} from 'ionicons/icons';
 import {STRINGS} from '@/config/strings';
 import {useRootStore} from '@/stores/root-store';
 import {modalController} from '@ionic/vue';
+import locateMeIcon from '@/leaflet/images/locate-me@2x.png';
+import markerIconImg from '@/leaflet/images/marker-icon@2x.png';
 
 export default {
   setup() {
@@ -106,7 +108,10 @@ export default {
       //icons
       closeOutline,
       locate,
-      search
+      search,
+      //images (imported so Vite resolves the '@' alias — static template src is not rewritten)
+      locateMeIcon,
+      markerIconImg
     };
   }
 };

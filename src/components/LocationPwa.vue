@@ -106,6 +106,7 @@ import {useRootStore} from '@/stores/root-store';
 import {search, locate} from 'ionicons/icons';
 import markerIcon from '@/leaflet/images/marker-icon@2x.png';
 import markerShadow from '@/leaflet/images/marker-shadow.png';
+import markerIcon1x from 'leaflet/dist/images/marker-icon.png';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {webService} from '@/services/web-service';
@@ -341,9 +342,9 @@ export default {
       // Fix for default marker icons (IMPORTANT)
       delete L.Icon.Default.prototype._getIconUrl;
       L.Icon.Default.mergeOptions({
-        iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-        iconUrl: require('leaflet/dist/images/marker-icon.png'),
-        shadowUrl: require('leaflet/dist/images/marker-shadow.png')
+        iconRetinaUrl: markerIcon,
+        iconUrl: markerIcon1x,
+        shadowUrl: markerShadow
       });
 
       map = L.map(props.inputRef).setView([0, 0], zoom);

@@ -5,7 +5,7 @@ import { useRootStore } from '@/stores/root-store';
 //https://docs.rollbar.com/docs/rollbarjs-configuration-reference
 const rollbar = new Rollbar({
     enabled: true,
-    accessToken: process.env.VUE_APP_ROLLBAR_ACCESS_TOKEN,
+    accessToken: import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN,
     captureUncaught: true,
     captureUnhandledRejections: true,
     reportLevel: 'error',

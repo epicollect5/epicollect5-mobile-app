@@ -102,7 +102,7 @@ export default {
 			currentSelectedAnswers: selectedAnswers.value,
 			possibleAnswersChunk: []
 		});
-		const publicPath = process.env.BASE_URL;
+		const publicPath = import.meta.env.BASE_URL;
 
 		//do not use lazy loading for checkboxes within a GROUP
 		//imp: ONLY when NOT loading list in a modal (SEARCH or filtering)

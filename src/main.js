@@ -66,7 +66,7 @@ console.info = function (...args) {
 const pinia = createPinia();
 pinia.use(PiniaLogger({
     expanded: true,
-    disabled: process.env.NODE_ENV === 'production'
+    disabled: import.meta.env.PROD
 }));
 
 
@@ -124,11 +124,11 @@ export const app = createApp(App)
         }
 
         //start PWA by getting the server URL for vue router and internal API requests
-        if (process.env.NODE_ENV === 'production') {
+        if (import.meta.env.PROD) {
             const url = new URL(window.location.href);
             rootStore.serverUrl = url.origin + utilsService.getBasepath();
         } else {
-            rootStore.serverUrl = utilsService.stripTrailingSlash(process.env.VUE_APP_PWA_DEVELOPMENT_SERVER);
+            rootStore.serverUrl = utilsService.stripTrailingSlash(import.meta.env.VITE_PWA_DEVELOPMENT_SERVER);
         }
         console.log('Server URL -> ', rootStore.serverUrl);
 

@@ -24,8 +24,8 @@ export function showModalLogin() {
             const authMethods = response.data.data.login.methods;
             const authIds = {
                 google: {
-                    CLIENT_ID: process.env.VUE_APP_GOOGLE_CLIENT_ID_WEB,
-                    SCOPE: process.env.VUE_APP_GOOGLE_SIGNIN_SCOPE
+                    CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID_WEB,
+                    SCOPE: import.meta.env.VITE_GOOGLE_SIGNIN_SCOPE
                 }
             };
 

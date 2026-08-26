@@ -123,7 +123,7 @@ export default {
 
     onMounted(async () => {
       console.log('App mounted');
-      if (rootStore.isPWA && process.env.NODE_ENV === 'production') {
+      if (rootStore.isPWA && import.meta.env.PROD) {
         //remove loader div (laravel servers only)
         document.querySelector('#loader.loader-placeholder').remove();
       }
