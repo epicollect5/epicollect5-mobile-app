@@ -1,0 +1,23 @@
+README.md
+  s_a5bdbe8055ca8d::t_3c1e2977e380d8 37-40,44,51,56,58,62,74,78,83,102,107
+  s_a5bdbe8055ca8d::t_8ea444df56b7a4 131,141
+docs/ARCHITECTURE.md
+  s_a5bdbe8055ca8d::t_566094aa6866c6 10-23
+  s_a5bdbe8055ca8d::t_a9ba9aadb4ab41 83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "6cedf5eebcfdc6f4d75004d93b88232b2fd0a8ee",
+  "prompts": {},
+  "sessions": {
+    "s_a5bdbe8055ca8d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc09428aaffeTWlJe1C7994pu0",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
