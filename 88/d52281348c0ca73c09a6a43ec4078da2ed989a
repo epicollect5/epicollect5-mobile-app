@@ -1,0 +1,16 @@
+android/app/src/main/res/xml/config.xml
+  h_2231ff2aa93473 54-58,74-78
+ios/App/App/config.xml
+  h_2231ff2aa93473 58-62,83-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "88d52281348c0ca73c09a6a43ec4078da2ed989a",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
