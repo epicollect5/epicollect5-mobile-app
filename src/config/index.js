@@ -39,6 +39,9 @@ export const PARAMETERS = {
     IOS: 'ios',
     PWA: 'pwa',
 
+    //build mode (VITE_MODE env), uppercase to match scripts/.env
+    WEBVIEW: 'WEBVIEW',
+
     //legacy platforms
     LEGACY_ANDROID: 'Android',
     LEGACY_IOS: 'iOS',
