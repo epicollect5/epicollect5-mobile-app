@@ -1,0 +1,25 @@
+tests/unit/use/questions/photo-take.spec.js
+  s_3ed33374a1e6a1::t_043fcc365dd339 1-67
+tests/unit/notification-service.spec.js
+  s_3ed33374a1e6a1::t_38393c27dc12fb 297-302
+tests/unit/use/questions/video-shoot.spec.js
+  s_3ed33374a1e6a1::t_e2cc6045c97f4a 53
+  s_3ed33374a1e6a1::t_7b6107779e5894 79,82,86-88,97-98,100-101
+  s_3ed33374a1e6a1::t_65ee99831de2ef 1-52,54-78,80-81,83-85,89-96,99,102-103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "060a5c1e25dc9a57486432da36baeb96ad8cd3da",
+  "prompts": {},
+  "sessions": {
+    "s_3ed33374a1e6a1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbc5c91ecffeLmZLUvzJ9JE0WU",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
