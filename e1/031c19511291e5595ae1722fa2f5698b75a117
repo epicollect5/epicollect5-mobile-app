@@ -1,0 +1,28 @@
+tests/unit/components/questions/Dropzone.spec.js
+  s_3ed33374a1e6a1::t_acc5dcfd7de87b 86,100
+  s_3ed33374a1e6a1::t_5106a732154679 32
+  s_3ed33374a1e6a1::t_5a275b90f7c1c7 28-31
+  s_3ed33374a1e6a1::t_b9825507f4422d 83-85
+  s_3ed33374a1e6a1::t_653e5a2d1a7403 99
+tests/unit/components/modals/ModalAccountDeletion.spec.js
+  s_3ed33374a1e6a1::t_f27ae564aad665 132
+  s_3ed33374a1e6a1::t_8a375198c70900 129-131
+tests/unit/components/globals/LeftDrawer.spec.js
+  s_3ed33374a1e6a1::t_2e900c261e644f 453-457,583-585,615-619
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e1031c19511291e5595ae1722fa2f5698b75a117",
+  "prompts": {},
+  "sessions": {
+    "s_3ed33374a1e6a1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbc5c91ecffeLmZLUvzJ9JE0WU",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
