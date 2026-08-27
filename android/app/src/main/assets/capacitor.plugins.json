@@ -72,12 +72,12 @@
 		"classpath": "com.capacitorjs.plugins.toast.ToastPlugin"
 	},
 	{
-		"pkg": "@capawesome/capacitor-android-edge-to-edge-support",
-		"classpath": "io.capawesome.capacitorjs.plugins.androidedgetoedgesupport.EdgeToEdgePlugin"
-	},
-	{
 		"pkg": "@capawesome-team/capacitor-android-foreground-service",
 		"classpath": "io.capawesome.capacitorjs.plugins.foregroundservice.ForegroundServicePlugin"
+	},
+	{
+		"pkg": "@capawesome/capacitor-android-edge-to-edge-support",
+		"classpath": "io.capawesome.capacitorjs.plugins.androidedgetoedgesupport.EdgeToEdgePlugin"
 	},
 	{
 		"pkg": "@capgo/capacitor-zip",
@@ -86,5 +86,9 @@
 	{
 		"pkg": "@whiteguru/capacitor-plugin-video-editor",
 		"classpath": "com.whiteguru.capacitor.plugin.videoeditor.VideoEditorPlugin"
+	},
+	{
+		"pkg": "capacitor-native-settings",
+		"classpath": "nl.raphael.settings.NativeSettingsPlugin"
 	}
 ]

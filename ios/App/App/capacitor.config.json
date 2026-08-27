@@ -58,6 +58,7 @@
 		"ToastPlugin",
 		"CapacitorZipPlugin",
 		"VideoEditorPlugin",
+		"NativeSettingsPlugin",
 		"CDVPlugin"
 	]
 }
