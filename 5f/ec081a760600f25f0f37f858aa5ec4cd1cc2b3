@@ -1,0 +1,26 @@
+tests/unit/components/questions/QuestionDecimal.spec.js
+  s_a8b57ca614c254::t_f21238472b4769 1-93
+tests/unit/components/questions/QuestionInteger.spec.js
+  s_a8b57ca614c254::t_19302c7f5162b1 1-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "5fec081a760600f25f0f37f858aa5ec4cd1cc2b3",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_a8b57ca614c254": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbd5f0072ffeKTwLcP786RbEEE",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
