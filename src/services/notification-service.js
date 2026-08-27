@@ -352,7 +352,7 @@ buttons
                 //risk of being killed by Android while the camera/video/scanner is open.
                 //Warn the user once (persisted in settings) and let them decide.
                 //Dismiss the waiting spinner first so the user is never stuck behind it.
-                notificationService.hideProgressDialog(0);
+                await notificationService.hideProgressDialog(0);
                 const res = await databaseSelectService.selectSetting(PARAMETERS.NOTIFICATIONS_PERMISSIONS_DENIED_WARNING_SHOWN);
                 const alreadyShown = res.rows.length > 0 && res.rows.item(0).value === '1';
                 if (!alreadyShown) {
