@@ -294,12 +294,14 @@ describe('notificationService tests', () => {
         const hideProgressDialogSpy = vi.spyOn(notificationService, 'hideProgressDialog');
 
         const promise = notificationService.startForegroundService();
-        //let the microtask queue flush so the alert is created
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        //wait until the denied flow has dismissed the spinner and created the alert
+        //(hideProgressDialog(0) resolves on a macrotask, so poll instead of a single tick)
+        await vi.waitFor(() => {
+            expect(hideProgressDialogSpy).toHaveBeenCalledWith(0);
+            expect(alertController.create).toHaveBeenCalled();
+        });
 
         expect(mocks.requestPermissionsMock).toHaveBeenCalledTimes(1);
-        expect(hideProgressDialogSpy).toHaveBeenCalledWith(0);
-        expect(alertController.create).toHaveBeenCalled();
 
         //tap the Dismiss button to resolve the alert
         const buttons = alertController.create.mock.calls[0][0].buttons;
