@@ -1,0 +1,53 @@
+src/config/index.js
+  s_3ed33374a1e6a1::t_11a9fba9200c29 11
+  s_3ed33374a1e6a1::t_dd92086a5cb395 12
+src/config/strings.js
+  s_3ed33374a1e6a1::t_5fadf080764834 1069-1070
+  s_3ed33374a1e6a1::t_6159adf206c74b 1337-1338
+  s_3ed33374a1e6a1::t_8c909fed5de70c 2141-2142
+  s_3ed33374a1e6a1::t_de10a43a2640fd 2409-2410
+  s_3ed33374a1e6a1::t_4f32ce55a63e1d 1605-1606
+  s_3ed33374a1e6a1::t_a1095e50ededd6 1873-1874
+  s_3ed33374a1e6a1::t_d52b6d0d26336b 801-802
+  s_3ed33374a1e6a1::t_d005ec0d26d9ae 533-534
+  s_3ed33374a1e6a1::t_e0a364e478a17d 265-266
+src/use/questions/video-shoot.js
+  s_3ed33374a1e6a1::t_904e35083a94b9 144,146,151-154
+  s_3ed33374a1e6a1::t_ff02eb42b88f81 155-156
+src/use/questions/photo-take.js
+  s_3ed33374a1e6a1::t_c5c391263b147c 32,34,39-46
+  s_3ed33374a1e6a1::t_8f842ba11b2efa 47
+tests/unit/notification-service.spec.js
+  s_3ed33374a1e6a1::t_10be60d61254b6 250
+  s_3ed33374a1e6a1::t_e23972338c3691 300
+  s_3ed33374a1e6a1::t_c5ffdf858de4a3 280-281,283,289,292,294,301,307,309,318,321
+  s_3ed33374a1e6a1::t_35789d1ee27d6a 276-279,282,284-288,290-291,293,295,299,302,311-317,319-320,322-326
+  s_3ed33374a1e6a1::t_a1958996027f01 19-22,33-52
+  s_3ed33374a1e6a1::t_9b3e587450d4a1 296-298,303-306,308,310
+  s_3ed33374a1e6a1::t_46fd3d28af34c1 53
+src/components/questions/QuestionBarcode.vue
+  s_3ed33374a1e6a1::t_7bd5c62700237e 204,206,211-213
+  s_3ed33374a1e6a1::t_2a13e5be6cecb6 214-215
+src/services/notification-service.js
+  s_3ed33374a1e6a1::t_159722fb481980 369-409
+  s_3ed33374a1e6a1::t_af1ab79ae73879 323-326
+  s_3ed33374a1e6a1::t_965c267f9e4ce1 6-8
+  s_3ed33374a1e6a1::t_ea977c947b6218 319-321,327,347-362,364-365
+  s_3ed33374a1e6a1::t_509f920b5c430e 410-411
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "5f509407de5df86f7c61bcd0658c0f222a487304",
+  "prompts": {},
+  "sessions": {
+    "s_3ed33374a1e6a1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbc5c91ecffeLmZLUvzJ9JE0WU",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
