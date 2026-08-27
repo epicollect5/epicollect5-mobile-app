@@ -1,0 +1,24 @@
+src/App.vue
+  s_4d801d4dcbe535::t_7c0e2f17e6c346 128-131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "bda32e3473aa02fb142327a1964094cd5497e7f5",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_4d801d4dcbe535": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbd604c30ffehaOx3pS4ajOtXF",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
