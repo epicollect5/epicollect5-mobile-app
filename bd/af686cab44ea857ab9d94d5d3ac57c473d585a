@@ -1,0 +1,22 @@
+tests/unit/services/download-file-service.spec.js
+  s_a5bdbe8055ca8d::t_79610f78a51d38 1-72
+tests/unit/services/filesystem/media-dirs-service.spec.js
+  s_a5bdbe8055ca8d::t_930382cc5a531e 36,42-43
+  s_a5bdbe8055ca8d::t_09ac85febab82d 162-219
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "bdaf686cab44ea857ab9d94d5d3ac57c473d585a",
+  "prompts": {},
+  "sessions": {
+    "s_a5bdbe8055ca8d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fc09428aaffeTWlJe1C7994pu0",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
