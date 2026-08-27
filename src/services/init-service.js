@@ -19,7 +19,7 @@ export const initService = {
 
         //switch to PWA mode based on environment
         if (deviceInfo.platform === PARAMETERS.WEB) {
-            if (import.meta.env.VITE_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
+            if ((import.meta.env.VITE_MODE || PARAMETERS.WEBVIEW).toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
                 deviceInfo.platform = PARAMETERS.PWA;
             }
         }
