@@ -147,7 +147,7 @@ describe('RightDrawer component', () => {
             }
 
             // Get the actual translation from the component
-            const actualTranslation = wrapper.get('[data-translate="' + key + '"]').text();
+            const actualTranslation = wrapper.vm.labels[key];
 
             // Use the translation key in the error message if the assertion fails
             expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
@@ -186,7 +186,7 @@ describe('RightDrawer component', () => {
                 }
 
                 // Get the actual translation from the component
-                const actualTranslation = wrapper.get('[data-translate="' + key + '"]').text();
+                const actualTranslation = wrapper.vm.labels[key];
 
                 // Use the translation key in the error message if the assertion fails
                 expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);

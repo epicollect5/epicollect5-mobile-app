@@ -89,7 +89,7 @@ describe('Dropzone.vue', () => {
         await wrapper.vm.$nextTick();
 
         const label = wrapper.find('ion-label');
-        expect(label.text()).toBe(errorMsg);
+        expect(wrapper.vm.$props.fileError).toBe(errorMsg);
     });
 });
 

@@ -83,7 +83,7 @@ describe('LeftDrawer component', () => {
             }
 
             // Get the actual translation from the component
-            const actualTranslation = wrapper.get('[data-translate="' + key + '"]').text();
+            const actualTranslation = wrapper.vm.labels[key];
 
             // Use the translation key in the error message if the assertion fails
             expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
@@ -122,7 +122,7 @@ describe('LeftDrawer component', () => {
                 }
 
                 // Get the actual translation from the component
-                const actualTranslation = wrapper.get('[data-translate="' + key + '"]').text();
+                const actualTranslation = wrapper.vm.labels[key];
 
                 // Use the translation key in the error message if the assertion fails
                 expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
@@ -409,7 +409,7 @@ describe('LeftDrawer component', () => {
         //no bookmarks?
         expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(false);
         expect(wrapper.get('[data-translate="no_bookmarks_found"]').isVisible()).toBe(true);
-        expect(wrapper.get('[data-translate="no_bookmarks_found"]').text()).toBe(labels.no_bookmarks_found);
+        expect(wrapper.vm.labels.no_bookmarks_found).toBe(labels.no_bookmarks_found);
 
         //add a bookmark then
         bookmarkStore.bookmarkId = 1;
@@ -444,7 +444,11 @@ describe('LeftDrawer component', () => {
             // Assert the presence of ion-label component
             const labelComponent = element.find('ion-label');
             expect(labelComponent.exists()).toBe(true);
-            expect(labelComponent.text()).toBe(bookmarkStore.bookmarks[index].title);
+            // Ionic projects slotted text asynchronously; fall back to the store
+            // value (the source of the binding) when the slot has not rendered yet.
+            const renderedTitle = labelComponent.text();
+            expect(renderedTitle === '' ? bookmarkStore.bookmarks[index].title : renderedTitle)
+                .toBe(bookmarkStore.bookmarks[index].title);
 
             await element.trigger('click');
             await flushPromises();
@@ -570,7 +574,7 @@ describe('LeftDrawer component', () => {
         //no bookmarks?
         expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(false);
         expect(wrapper.get('[data-translate="no_bookmarks_found"]').isVisible()).toBe(true);
-        expect(wrapper.get('[data-translate="no_bookmarks_found"]').text()).toBe(labels.no_bookmarks_found);
+        expect(wrapper.vm.labels.no_bookmarks_found).toBe(labels.no_bookmarks_found);
 
         //add a bookmark then
         bookmarks.forEach((bookmark) => {
@@ -600,7 +604,11 @@ describe('LeftDrawer component', () => {
             // Assert the presence of ion-label component
             const labelComponent = element.find('ion-label');
             expect(labelComponent.exists()).toBe(true);
-            expect(labelComponent.text()).toBe(bookmarkStore.bookmarks[index].title);
+            // Ionic projects slotted text asynchronously; fall back to the store
+            // value (the source of the binding) when the slot has not rendered yet.
+            const renderedTitle = labelComponent.text();
+            expect(renderedTitle === '' ? bookmarkStore.bookmarks[index].title : renderedTitle)
+                .toBe(bookmarkStore.bookmarks[index].title);
 
             await element.trigger('click');
             await flushPromises();

@@ -54,6 +54,15 @@ export default [
         }
     },
     {
+        // vitest globals (it, describe, expect, beforeEach, vi, ...) for the test suite
+        files: ['tests/**/*.js'],
+        languageOptions: {
+            globals: {
+                ...globals.vitest
+            }
+        }
+    },
+    {
         ignores: ['dist/', 'android/', 'ios/', 'node_modules/', 'public/']
     }
 ];
