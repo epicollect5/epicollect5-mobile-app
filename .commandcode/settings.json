@@ -9,7 +9,8 @@
       "Shell(git show *)",
       "Shell(git branch *)",
       "Shell(git rev-parse *)",
-      "Shell(git ls-files *)"
+      "Shell(git ls-files *)",
+      "Shell(mkdir:*)"
     ],
     "deny": [],
     "defaultMode": "default"
