@@ -1,0 +1,29 @@
+src/services/entry/jumps-service.js
+  s_fbcd3dcdad6659::t_0f3ce16c422d12 93-100,105-109
+  s_fbcd3dcdad6659::t_eeb428d478ef96 110-111
+tests/unit/entry/jumps-service/processJumpsPrevious.spec.js
+  s_fbcd3dcdad6659::t_885a3ed025d0d7 1
+  s_fbcd3dcdad6659::t_589f4447e6b206 42,44,47-48,53,56-57,60,76-78,80,88-90,98
+  s_fbcd3dcdad6659::t_604be6ae46ddb5 2-41,43,45-46,49-52,54-55,58-59,61-75,79,81-87,91-97,99-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "645fb3424795af0332a9d59ad0ae26fe45631661",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_fbcd3dcdad6659": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbd8a4235ffe4HJAHSesBP369v",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
