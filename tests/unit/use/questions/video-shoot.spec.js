@@ -51,7 +51,37 @@ describe('videoShoot tests', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         delete global.cordova;
+        delete global.window;
     });
+
+    //drive the granted + capture path and hand back the captureVideo error callback
+    function grantAndCapture() {
+        const GRANTED = 'GRANTED';
+        let captureErr;
+        global.cordova = {
+            plugins: {
+                diagnostic: {
+                    requestRuntimePermission: vi.fn((success) => {
+                        success(GRANTED);
+                    }),
+                    permissionStatus: { GRANTED },
+                    permission: { CAMERA: 'camera' }
+                }
+            }
+        };
+        global.window = {
+            navigator: {
+                device: {
+                    capture: {
+                        captureVideo: vi.fn((success, error) => {
+                            captureErr = error;
+                        })
+                    }
+                }
+            }
+        };
+        return () => captureErr;
+    }
 
     it('does not persist a phantom video filename when the user opens settings', async () => {
         setupRootStore();
@@ -76,28 +106,33 @@ describe('videoShoot tests', () => {
         expect(media[entryUuid]['q1'].cached).toBe('');
     });
 
-    it('does not persist a phantom filename when the user cancels the capture', async () => {
+    it('clears media when the user cancels a fresh video capture', async () => {
         setupRootStore();
         nMock.startForegroundService.mockResolvedValue('granted');
-        let errorCb;
-        global.cordova = {
-            plugins: {
-                diagnostic: {
-                    requestRuntimePermission: vi.fn((success, error) => {
-                        errorCb = error;
-                    }),
-                    permissionStatus: {},
-                    permission: {}
-                }
-            }
-        };
+        const getCaptureErr = grantAndCapture();
         const { media, entryUuid, state, filename } = makeArgs();
 
         await videoShoot({ media, entryUuid, state, filename });
-        //simulate the user cancelling the native video capture (Camera plugin code 3)
-        errorCb({ code: 3 });
+        //user cancels inside the native video capture UI (Camera plugin code 3)
+        getCaptureErr()({ code: 3 });
 
         expect(media[entryUuid]['q1'].cached).toBe('');
         expect(state.answer.answer).toBe('');
+    });
+
+    it('preserves an existing video when the user cancels the capture', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        const getCaptureErr = grantAndCapture();
+        const { media, entryUuid, state, filename } = makeArgs();
+        media[entryUuid]['q1'].cached = 'existing.mp4';
+        media[entryUuid]['q1'].stored = 'existing.mp4';
+        state.answer.answer = 'existing.mp4';
+
+        await videoShoot({ media, entryUuid, state, filename });
+        getCaptureErr()({ code: 3 });
+
+        expect(media[entryUuid]['q1'].cached).toBe('existing.mp4');
+        expect(state.answer.answer).toBe('existing.mp4');
     });
 });

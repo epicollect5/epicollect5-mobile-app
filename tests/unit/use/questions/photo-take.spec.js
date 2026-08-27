@@ -64,4 +64,32 @@ describe('photoTake tests', () => {
         expect(nMock.startForegroundService).toHaveBeenCalled();
         expect(Camera.getPhoto).not.toHaveBeenCalled();
     });
+
+    it('leaves media empty when the user cancels a fresh photo capture', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockRejectedValue(new Error('User cancelled photos app'));
+        const { media, entryUuid, state, filename, action } = makeArgs();
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(Camera.getPhoto).toHaveBeenCalled();
+        expect(media[entryUuid]['q1'].cached).toBe('');
+        expect(state.answer.answer).toBe('');
+    });
+
+    it('preserves an existing photo when the user cancels the capture', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockRejectedValue(new Error('User cancelled photos app'));
+        const { media, entryUuid, state, filename, action } = makeArgs();
+        media[entryUuid]['q1'].cached = 'existing.jpg';
+        media[entryUuid]['q1'].stored = 'existing.jpg';
+        state.answer.answer = 'existing.jpg';
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+        expect(state.answer.answer).toBe('existing.jpg');
+    });
 });
