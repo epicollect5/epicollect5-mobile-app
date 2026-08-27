@@ -1,0 +1,16 @@
+index.html
+  h_2231ff2aa93473 35
+public/index.html
+  h_2231ff2aa93473 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "4d1b81bde2eaa02caddf502e61737b176caa73a9",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
