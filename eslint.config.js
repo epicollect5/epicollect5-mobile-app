@@ -54,15 +54,6 @@ export default [
         }
     },
     {
-        files: ['**/__tests__/**', '**/tests/unit/**/*.spec.*'],
-        languageOptions: {
-            globals: {
-                ...globals.jest,
-                ...globals.vitest
-            }
-        }
-    },
-    {
         ignores: ['dist/', 'android/', 'ios/', 'node_modules/', 'public/']
     }
 ];
