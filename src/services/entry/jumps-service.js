@@ -90,9 +90,23 @@ export const jumpsService = {
         // While each previous answer was jumped,
         // decrement the index and try again with the associated input ref
         // until we find an input that wasn't jumped
-        while (entry.answers[prevInputRef].was_jumped === true) {
+        // imp: an answer may be missing (eg an entry edited after a failed
+        // upload) or the index may go below 0, so guard both before reading
+        // was_jumped to avoid a crash
+        while (
+            typeof prevInputRef !== 'undefined' &&
+            typeof entry.answers[prevInputRef] !== 'undefined' &&
+            entry.answers[prevInputRef].was_jumped === true
+        ) {
             prevInputIndex = prevInputIndex - 1;
             prevInputRef = inputs[prevInputIndex];
+        }
+
+        // If we ran past the start of the form (every previous question was
+        // jumped or an answer was missing), fall back to the first input
+        if (typeof prevInputRef === 'undefined') {
+            prevInputIndex = 0;
+            prevInputRef = inputs[0];
         }
 
         return {
