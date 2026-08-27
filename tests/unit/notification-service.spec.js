@@ -16,7 +16,10 @@ const mocks = vi.hoisted(() => {
         requestPermissionsMock: vi.fn(),
         createNotificationChannelMock: vi.fn().mockResolvedValue(),
         startForegroundServiceMock: vi.fn().mockResolvedValue(),
-        stopForegroundServiceMock: vi.fn().mockResolvedValue()
+        stopForegroundServiceMock: vi.fn().mockResolvedValue(),
+        nativeSettingsOpenMock: vi.fn(),
+        selectSettingMock: vi.fn().mockResolvedValue({rows: {length: 0, item: () => ({})}}),
+        insertSettingMock: vi.fn().mockResolvedValue()
     };
 });
 
@@ -24,6 +27,27 @@ vi.mock('@capacitor/push-notifications', () => ({
     PushNotifications: {
         checkPermissions: mocks.checkPermissionsMock,
         requestPermissions: mocks.requestPermissionsMock
+    }
+}));
+
+vi.mock('capacitor-native-settings', () => ({
+    NativeSettings: {
+        openAndroid: mocks.nativeSettingsOpenMock
+    },
+    AndroidSettings: {
+        AppNotification: 'app_notification'
+    }
+}));
+
+vi.mock('@/services/database/database-select-service', () => ({
+    databaseSelectService: {
+        selectSetting: mocks.selectSettingMock
+    }
+}));
+
+vi.mock('@/services/database/database-insert-service', () => ({
+    databaseInsertService: {
+        insertSetting: mocks.insertSettingMock
     }
 }));
 
@@ -223,7 +247,7 @@ describe('notificationService tests', () => {
         const rootStore = useRootStore();
         rootStore.device.platform = PARAMETERS.ANDROID;
 
-        await expect(notificationService.startForegroundService()).resolves.toBeUndefined();
+        await expect(notificationService.startForegroundService()).resolves.toBe('granted');
     });
 
     it('should skip foreground service startup on non-Android platforms', async () => {
@@ -248,5 +272,56 @@ describe('notificationService tests', () => {
 
         await expect(notificationService.stopForegroundService()).resolves.toBeUndefined();
         expect(mocks.stopForegroundServiceMock).not.toHaveBeenCalled();
+    });
+
+    it('should request permissions when prompt and start the foreground service when granted', async () => {
+        const rootStore = useRootStore();
+        rootStore.device.platform = PARAMETERS.ANDROID;
+        mocks.checkPermissionsMock.mockResolvedValueOnce({receive: 'prompt'});
+        mocks.checkPermissionsMock.mockResolvedValueOnce({receive: 'granted'});
+
+        await expect(notificationService.startForegroundService()).resolves.toBe('granted');
+
+        expect(mocks.requestPermissionsMock).toHaveBeenCalledTimes(1);
+        expect(mocks.startForegroundServiceMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should show the denied warning once and dismiss the spinner when denied', async () => {
+        const rootStore = useRootStore();
+        rootStore.device.platform = PARAMETERS.ANDROID;
+        mocks.checkPermissionsMock.mockResolvedValue({receive: 'denied'});
+        mocks.selectSettingMock.mockResolvedValue({rows: {length: 0, item: () => ({})}});
+        const hideProgressDialogSpy = vi.spyOn(notificationService, 'hideProgressDialog');
+
+        const promise = notificationService.startForegroundService();
+        //let the microtask queue flush so the alert is created
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(mocks.requestPermissionsMock).toHaveBeenCalledTimes(1);
+        expect(hideProgressDialogSpy).toHaveBeenCalledWith(0);
+        expect(alertController.create).toHaveBeenCalled();
+
+        //tap the Dismiss button to resolve the alert
+        const buttons = alertController.create.mock.calls[0][0].buttons;
+        buttons[0].handler();
+        const choice = await promise;
+
+        expect(choice).toBe('dismiss');
+        expect(mocks.startForegroundServiceMock).not.toHaveBeenCalled();
+        expect(mocks.presentMock).toHaveBeenCalled();
+        expect(mocks.insertSettingMock).toHaveBeenCalledWith('notifications_permissions_denied_warning_shown', '1');
+    });
+
+    it('should not show the denied warning again once it has already been shown', async () => {
+        const rootStore = useRootStore();
+        rootStore.device.platform = PARAMETERS.ANDROID;
+        mocks.checkPermissionsMock.mockResolvedValue({receive: 'denied'});
+        mocks.selectSettingMock.mockResolvedValue({rows: {length: 1, item: () => ({value: '1'})}});
+
+        await expect(notificationService.startForegroundService()).resolves.toBe('dismiss');
+
+        expect(mocks.startForegroundServiceMock).not.toHaveBeenCalled();
+        expect(alertController.create).not.toHaveBeenCalled();
+        expect(mocks.insertSettingMock).not.toHaveBeenCalled();
     });
 });

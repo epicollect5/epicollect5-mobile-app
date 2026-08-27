@@ -262,6 +262,8 @@ export const STRINGS = {
             pick: 'Pick',
             collected_on: 'Collected on ',
             dismiss: 'Dismiss',
+            notifications_permissions_denied_message: 'Epicollect5 needs a notification to stay active while taking photos, videos or scanning barcodes. Without it, the app may be closed by Android.',
+            open_settings: 'Open Settings',
             exporting_entries: 'Exporting Entries'
         }
     },
@@ -528,6 +530,8 @@ export const STRINGS = {
             pick: 'Galleria',
             collected_on: 'Aggiunta il ',
             dismiss: 'Chiudi',
+            notifications_permissions_denied_message: 'Epicollect5 ha bisogno di una notifica per rimanere attiva durante lo scatto di foto, video o la scansione di codici a barre. Senza di essa, l\'app potrebbe essere chiusa da Android.',
+            open_settings: 'Apri impostazioni',
             exporting_entries: 'Esportando voci'
         }
     },
@@ -794,6 +798,8 @@ export const STRINGS = {
             pick: 'Galería',
             collected_on: 'Recogida en ',
             dismiss: 'Cerrar',
+            notifications_permissions_denied_message: 'Epicollect5 necesita una notificación para seguir activa mientras se hacen fotos, vídeos o se escanean códigos de barras. Sin ella, Android podría cerrar la aplicación.',
+            open_settings: 'Abrir configuración',
             exporting_entries: 'Exportando entradas'
         }
     },
@@ -1060,6 +1066,8 @@ export const STRINGS = {
             pick: 'Choisir',
             collected_on: 'Collectée le ',
             dismiss: 'Annuler',
+            notifications_permissions_denied_message: 'Epicollect5 a besoin d\'une notification pour rester active lors de la prise de photos, de vidéos ou de l\'analyse de codes-barres. Sans elle, l\'application peut être fermée par Android.',
+            open_settings: 'Ouvrir les réglages',
             exporting_entries: 'Exportation des entrées'
         }
     },
@@ -1326,6 +1334,8 @@ export const STRINGS = {
             pick: 'Pobierz',
             collected_on: 'Zebrane na/w ',
             dismiss: 'Anuluj',
+            notifications_permissions_denied_message: 'Epicollect5 potrzebuje powiadomienia, aby pozostać aktywnym podczas robienia zdjęć, nagrywania filmów lub skanowania kodów kreskowych. Bez niego aplikacja może zostać zamknięta przez Androida.',
+            open_settings: 'Otwórz ustawienia',
             exporting_entries: 'Eksportowanie wpisów'
         }
     },
@@ -1592,6 +1602,8 @@ export const STRINGS = {
             pick: 'Escolher',
             collected_on: 'Coletado em ',
             dismiss: 'Fechar',
+            notifications_permissions_denied_message: 'O Epicollect5 precisa de uma notificação para se manter ativo enquanto tira fotos, grava vídeos ou lê códigos de barras. Sem ela, a aplicação pode ser fechada pelo Android.',
+            open_settings: 'Abrir configurações',
             exporting_entries: 'Exportando entradas'
         }
     },
@@ -1858,6 +1870,8 @@ export const STRINGS = {
             pick: 'Selecciona',
             collected_on: 'Recull el ',
             dismiss: 'Descarta',
+            notifications_permissions_denied_message: 'L\'Epicollect5 necessita una notificació per romandre activa mentre es fan fotos, vídeos o es llegeixen codis de barres. Sense ella, l\'aplicació pot ser tancada per Android.',
+            open_settings: 'Obrir la configuració',
             exporting_entries: 'Exportant entrades'
         }
     },
@@ -2124,6 +2138,8 @@ export const STRINGS = {
             pick: 'Galerija',
             collected_on: 'Zbrano dne ',
             dismiss: 'Zavrni',
+            notifications_permissions_denied_message: 'Epicollect5 potrebuje obvestilo, da ostane aktiven med fotografiranjem, snemanjem videoposnetkov ali branjem črtnih kod. Brez njega lahko Android aplikacijo zapre.',
+            open_settings: 'Odpri nastavitve',
             exporting_entries: 'Izvažanje vnosov'
         }
     },
@@ -2390,6 +2406,8 @@ export const STRINGS = {
             pick: 'Auswählen',
             collected_on: 'Erfasst am ',
             dismiss: 'Schließen',
+            notifications_permissions_denied_message: 'Epicollect5 benötigt eine Benachrichtigung, um beim Aufnehmen von Fotos, Videos oder Scannen von Barcodes aktiv zu bleiben. Ohne sie kann die App von Android geschlossen werden.',
+            open_settings: 'Einstellungen öffnen',
             exporting_entries: 'Einträge exportieren'
         }
     }

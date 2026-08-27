@@ -201,10 +201,16 @@ export default {
         notificationService.hideProgressDialog();
 
         //foreground service helps the app to not be killed
+        let fsChoice = 'dismiss';
         try {
-          await notificationService.startForegroundService();
+          fsChoice = await notificationService.startForegroundService();
         } catch (error) {
           console.log('Failed to start foreground service: ' + error);
+        }
+
+        //if the user left to system settings or docs, do not launch the scanner
+        if (fsChoice === 'open_settings' || fsChoice === 'learn_more') {
+          return;
         }
 
         //request camera permission

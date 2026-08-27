@@ -3,6 +3,9 @@ import {STRINGS} from '@/config/strings';
 import {useRootStore} from '@/stores/root-store';
 import {loadingController, alertController} from '@ionic/vue';
 import {PushNotifications} from '@capacitor/push-notifications';
+import {NativeSettings, AndroidSettings} from 'capacitor-native-settings';
+import {databaseSelectService} from '@/services/database/database-select-service';
+import {databaseInsertService} from '@/services/database/database-insert-service';
 import {Toast} from '@capacitor/toast';
 import {Capacitor} from '@capacitor/core';
 import {useToast} from '@/use/toast';
@@ -313,19 +316,15 @@ buttons
 
         return new Promise((resolve, reject) => {
             (async function () {
+                //PushNotifications reflects the real OS POST_NOTIFICATIONS state:
+                //'prompt' on a fresh API 33+ device (so we can request the native dialog),
+                //'granted' once allowed, 'denied' if the user refused.
                 let status = await PushNotifications.checkPermissions();
-                switch (status.receive) {
-                    case 'granted':
-                        //do nothing
-                        break;
-                    case 'prompt':
-                        await PushNotifications.requestPermissions();
-                        break;
-                    case 'prompt-with-rationale':
-                        await PushNotifications.requestPermissions();
-                        break;
-                    default:
-                    //dp nothing
+                //always attempt to request when not already granted: on a fresh API 33+
+                //device this shows the native POST_NOTIFICATIONS prompt, and even when the
+                //OS currently reports 'denied' it may still re-prompt (unless permanently denied)
+                if (status.receive !== 'granted') {
+                    await PushNotifications.requestPermissions();
                 }
 
                 //recheck after user interaction
@@ -345,11 +344,69 @@ buttons
                         smallIcon: 'ec5_notification',
                         notificationChannelId: 'ec5_notification'
                     });
-                    resolve();
-                } else {
-                    resolve();
+                    resolve('granted');
+                    return;
                 }
+
+                //permission denied: the foreground service cannot run, so the app is at
+                //risk of being killed by Android while the camera/video/scanner is open.
+                //Warn the user once (persisted in settings) and let them decide.
+                //Dismiss the waiting spinner first so the user is never stuck behind it.
+                notificationService.hideProgressDialog(0);
+                const res = await databaseSelectService.selectSetting(PARAMETERS.NOTIFICATIONS_PERMISSIONS_DENIED_WARNING_SHOWN);
+                const alreadyShown = res.rows.length > 0 && res.rows.item(0).value === '1';
+                if (!alreadyShown) {
+                    const choice = await notificationService.showNotificationPermissionAlert(PARAMETERS.NOTIFICATIONS_PERMISSIONS_DOCS_URL);
+                    await databaseInsertService.insertSetting(PARAMETERS.NOTIFICATIONS_PERMISSIONS_DENIED_WARNING_SHOWN, '1');
+                    resolve(choice);
+                    return;
+                }
+                //already warned before: proceed (warn but allow) without blocking
+                resolve('dismiss');
             })().catch(reject);
+        });
+    },
+    //Inform the user that, without the notification permission, the foreground
+    //service cannot keep the app alive while the camera, video or barcode scanner is open.
+    //Buttons (left to right): Dismiss | Learn More | Open Settings
+    async showNotificationPermissionAlert(docsUrl) {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const labels = STRINGS[language].labels;
+
+        return new Promise((resolve) => {
+            (async () => {
+                const alert = await alertController.create({
+                    header: labels.warning,
+                    message: labels.notifications_permissions_denied_message,
+                    buttons: [
+                        {
+                            text: labels.dismiss,
+                            role: 'cancel',
+                            handler: () => {
+                                resolve('dismiss');
+                            }
+                        },
+                        {
+                            text: labels.learn_more,
+                            handler: () => {
+                                if (docsUrl) {
+                                    window.open(docsUrl, '_system', 'location=yes');
+                                }
+                                resolve('learn_more');
+                            }
+                        },
+                        {
+                            text: labels.open_settings,
+                            handler: () => {
+                                NativeSettings.openAndroid({option: AndroidSettings.AppNotification});
+                                resolve('open_settings');
+                            }
+                        }
+                    ]
+                });
+                await alert.present();
+            })();
         });
     },
     async stopForegroundService() {

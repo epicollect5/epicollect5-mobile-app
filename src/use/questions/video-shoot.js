@@ -141,10 +141,17 @@ export async function videoShoot({media, entryUuid, state, filename}) {
     //request camera permission (Android)
     if (rootStore.device.platform === PARAMETERS.ANDROID) {
 
+        let fsChoice = 'dismiss';
         try {
-            await notificationService.startForegroundService();
+            fsChoice = await notificationService.startForegroundService();
         } catch (error) {
             console.log('Failed to start foreground service: ' + error);
+        }
+
+        //if the user left to system settings or docs, do not launch the camera
+        if (fsChoice === 'open_settings' || fsChoice === 'learn_more') {
+            notificationService.hideProgressDialog();
+            return;
         }
 
         cordova.plugins.diagnostic.requestRuntimePermission(
