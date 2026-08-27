@@ -1,0 +1,24 @@
+src/config/index.js
+  s_4e6a05464dbfb1::t_22bcfe0ab07fde 42-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "f62a91a516496eaec2dcb7b295262b86d6277cdb",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_4e6a05464dbfb1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbd5b9feaffeAKFQS9v2jszE5E",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
