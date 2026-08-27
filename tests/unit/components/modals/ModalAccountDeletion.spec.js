@@ -58,9 +58,12 @@ describe('ModalAccountDeletion component', () => {
             }
         });
 
+        //Ionic projects slotted text asynchronously; wait for it before asserting
+        await flushPromises();
+        await new Promise((resolve) => setTimeout(resolve, 30));
+
         wrapper.findAll('[data-translate]').forEach((el) => {
             const key = el.attributes('data-translate');
-            // console.log(`Testing translation for key: ${key}`);
 
             // Check if the key exists in the STRINGS object
             const expectedTranslation = STRINGS[PARAMETERS.DEFAULT_LANGUAGE]?.labels;
@@ -70,11 +73,8 @@ describe('ModalAccountDeletion component', () => {
                 throw new Error(`'${PARAMETERS.DEFAULT_LANGUAGE}' Translation key '${key}' is missing.`);
             }
 
-            // Get the actual translation from the component
-            const actualTranslation = wrapper.vm.labels[key];
-
-            // Use the translation key in the error message if the assertion fails
-            expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
+            // Assert the rendered HTML contains the expected translation
+            expect(el.html()).toContain(expectedTranslation[key]);
         });
     });
 
@@ -83,7 +83,7 @@ describe('ModalAccountDeletion component', () => {
         const rootStore = useRootStore();
         const email = 'joe@gmail.com';
 
-        PARAMETERS.SUPPORTED_LANGUAGES.forEach((language) => {
+        for (const language of PARAMETERS.SUPPORTED_LANGUAGES) {
             rootStore.language = language;
 
             const wrapper = mount(ModalAccountDeletion, {
@@ -92,9 +92,12 @@ describe('ModalAccountDeletion component', () => {
                 }
             });
 
+            //Ionic projects slotted text asynchronously; wait for it before asserting
+            await flushPromises();
+            await new Promise((resolve) => setTimeout(resolve, 30));
+
             wrapper.findAll('[data-translate]').forEach((el) => {
                 const key = el.attributes('data-translate');
-                // console.log(`Testing translation for key: ${key}`);
 
                 // Check if the key exists in the STRINGS object
                 const expectedTranslation = STRINGS[rootStore.language]?.labels;
@@ -104,13 +107,10 @@ describe('ModalAccountDeletion component', () => {
                     throw new Error(`'${language}' Translation key '${key}' is missing.`);
                 }
 
-                // Get the actual translation from the component
-                const actualTranslation = wrapper.vm.labels[key];
-
-                // Use the translation key in the error message if the assertion fails
-                expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
+                // Assert the rendered HTML contains the expected translation
+                expect(el.html()).toContain(expectedTranslation[key]);
             });
-        });
+        }
     });
 
     it('should show user email', async () => {
@@ -125,7 +125,11 @@ describe('ModalAccountDeletion component', () => {
             }
         });
 
-        expect(wrapper.vm.$props.email).toBe(email);
+        //Ionic projects slotted text asynchronously; wait for it before asserting
+        await flushPromises();
+        await new Promise((resolve) => setTimeout(resolve, 30));
+
+        expect(wrapper.text()).toContain(email);
     });
 
     it('should request deletion onConfirm()', async () => {

@@ -58,7 +58,7 @@ afterEach(() => {
 describe('LeftDrawer component', () => {
 
     it('should be in default language', async () => {
-         wrapper = shallowMount(LeftDrawer, {
+         wrapper = mount(LeftDrawer, {
             global: {
                 plugins: [createTestingPinia({
                     RootStore: {
@@ -70,9 +70,13 @@ describe('LeftDrawer component', () => {
             }
         });
 
+        //Ionic projects slotted text asynchronously via requestAnimationFrame,
+        //which is faked; advance timers so the slot renders before we read it.
+        vi.advanceTimersByTime(16);
+        await flushPromises();
+
         wrapper.findAll('[data-translate]').forEach((el) => {
             const key = el.attributes('data-translate');
-            // console.log(`Testing translation for key: ${key}`);
 
             // Check if the key exists in the STRINGS object
             const expectedTranslation = STRINGS[PARAMETERS.DEFAULT_LANGUAGE]?.labels;
@@ -82,18 +86,17 @@ describe('LeftDrawer component', () => {
                 throw new Error(`'${PARAMETERS.DEFAULT_LANGUAGE}' Translation key '${key}' is missing.`);
             }
 
-            // Get the actual translation from the component
-            const actualTranslation = wrapper.vm.labels[key];
-
-            // Use the translation key in the error message if the assertion fails
-            expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
+            // Assert the rendered HTML contains the expected translation
+            // (Ionic web components move slot content to shadow DOM, so textContent is empty;
+            //  we check the serialized HTML which preserves the original slot content)
+            expect(el.html()).toContain(expectedTranslation[key]);
         });
     });
 
     it('should be translated', async () => {
 
         PARAMETERS.SUPPORTED_LANGUAGES.forEach((language) => {
-             wrapper = shallowMount(LeftDrawer, {
+             wrapper = mount(LeftDrawer, {
                 global: {
                     plugins: [createTestingPinia({
                         fakeApp: true,
@@ -109,9 +112,13 @@ describe('LeftDrawer component', () => {
             const rootStore = useRootStore();
             expect(rootStore.language).toBe(language);
 
+            //Ionic projects slotted text asynchronously via requestAnimationFrame,
+            //which is faked; advance timers so the slot renders before we read it.
+            vi.advanceTimersByTime(16);
+            flushPromises();
+
             wrapper.findAll('[data-translate]').forEach((el) => {
                 const key = el.attributes('data-translate');
-                //  console.log(`Testing translation for key: ${key}`);
 
                 // Check if the key exists in the STRINGS object
                 const expectedTranslation = STRINGS[rootStore.language]?.labels;
@@ -121,11 +128,8 @@ describe('LeftDrawer component', () => {
                     throw new Error(`'${language}' Translation key '${key}' is missing.`);
                 }
 
-                // Get the actual translation from the component
-                const actualTranslation = wrapper.vm.labels[key];
-
-                // Use the translation key in the error message if the assertion fails
-                expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
+                // Assert the rendered HTML contains the expected translation
+                expect(el.html()).toContain(expectedTranslation[key]);
             });
         });
     });
@@ -409,7 +413,9 @@ describe('LeftDrawer component', () => {
         //no bookmarks?
         expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(false);
         expect(wrapper.get('[data-translate="no_bookmarks_found"]').isVisible()).toBe(true);
-        expect(wrapper.vm.labels.no_bookmarks_found).toBe(labels.no_bookmarks_found);
+        vi.advanceTimersByTime(16);
+        await flushPromises();
+        expect(wrapper.find('[data-translate="no_bookmarks_found"]').text()).toBe(labels.no_bookmarks_found);
 
         //add a bookmark then
         bookmarkStore.bookmarkId = 1;
@@ -444,11 +450,11 @@ describe('LeftDrawer component', () => {
             // Assert the presence of ion-label component
             const labelComponent = element.find('ion-label');
             expect(labelComponent.exists()).toBe(true);
-            // Ionic projects slotted text asynchronously; fall back to the store
-            // value (the source of the binding) when the slot has not rendered yet.
-            const renderedTitle = labelComponent.text();
-            expect(renderedTitle === '' ? bookmarkStore.bookmarks[index].title : renderedTitle)
-                .toBe(bookmarkStore.bookmarks[index].title);
+            // Ionic projects slotted text asynchronously via requestAnimationFrame,
+            // which is faked; advance timers so the slot renders before we read it.
+            vi.advanceTimersByTime(16);
+            await flushPromises();
+            expect(labelComponent.text()).toBe(bookmarkStore.bookmarks[index].title);
 
             await element.trigger('click');
             await flushPromises();
@@ -574,7 +580,9 @@ describe('LeftDrawer component', () => {
         //no bookmarks?
         expect(wrapper.find('[data-test="bookmarks"]').exists()).toBe(false);
         expect(wrapper.get('[data-translate="no_bookmarks_found"]').isVisible()).toBe(true);
-        expect(wrapper.vm.labels.no_bookmarks_found).toBe(labels.no_bookmarks_found);
+        vi.advanceTimersByTime(16);
+        await flushPromises();
+        expect(wrapper.find('[data-translate="no_bookmarks_found"]').text()).toBe(labels.no_bookmarks_found);
 
         //add a bookmark then
         bookmarks.forEach((bookmark) => {
@@ -604,11 +612,11 @@ describe('LeftDrawer component', () => {
             // Assert the presence of ion-label component
             const labelComponent = element.find('ion-label');
             expect(labelComponent.exists()).toBe(true);
-            // Ionic projects slotted text asynchronously; fall back to the store
-            // value (the source of the binding) when the slot has not rendered yet.
-            const renderedTitle = labelComponent.text();
-            expect(renderedTitle === '' ? bookmarkStore.bookmarks[index].title : renderedTitle)
-                .toBe(bookmarkStore.bookmarks[index].title);
+            // Ionic projects slotted text asynchronously via requestAnimationFrame,
+            // which is faked; advance timers so the slot renders before we read it.
+            vi.advanceTimersByTime(16);
+            await flushPromises();
+            expect(labelComponent.text()).toBe(bookmarkStore.bookmarks[index].title);
 
             await element.trigger('click');
             await flushPromises();
