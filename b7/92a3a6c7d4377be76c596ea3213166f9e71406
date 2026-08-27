@@ -1,0 +1,41 @@
+android/app/capacitor.build.gradle
+  s_3ed33374a1e6a1::t_3578bf3e6a83a1 31,34
+vite.config.js
+  s_3ed33374a1e6a1::t_e0f430f9777282 35-38
+ios/App/App.xcodeproj/project.pbxproj
+  s_5157b77a6f782e::t_92d9ab5ad299f8 390,420
+  s_5157b77a6f782e::t_052c681c98c4b9 315,370
+android/app/src/main/assets/capacitor.plugins.json
+  s_3ed33374a1e6a1::t_3578bf3e6a83a1 78-81,89-92
+ios/App/Podfile
+  s_5157b77a6f782e::t_47927cee7b29ef 3
+  s_3ed33374a1e6a1::t_73af69723b94b4 34
+android/capacitor.settings.gradle
+  s_3ed33374a1e6a1::t_3578bf3e6a83a1 62-64,70-72
+ios/App/Podfile.lock
+  s_3ed33374a1e6a1::t_91887de756e722 8,10,12,14,17,19-20,22-23,25,27,29-30,32-33,35,37,39,41,43,45,47,49,51-53,56,59,104-106,128,148,184-185,211-233,235,240-242,248
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "b792a3a6c7d4377be76c596ea3213166f9e71406",
+  "prompts": {},
+  "sessions": {
+    "s_3ed33374a1e6a1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbc5c91ecffeLmZLUvzJ9JE0WU",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_5157b77a6f782e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbcc03439ffeqDih2SLFL8XytX",
+        "model": "hy3-free"
+      },
+      "human_author": null
+    }
+  }
+}
