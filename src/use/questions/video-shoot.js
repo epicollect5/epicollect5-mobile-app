@@ -69,6 +69,12 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             // 4. Move Encoded file (Using await instead of .then for clarity)
             await moveFileService.moveToAppTemporaryDir(result.file.path, filename);
 
+            //persist the captured filename only after the file has actually been moved,
+            //so a cancelled or aborted capture never leaves a phantom filename that
+            //fails to move on save (FileError 1)
+            media[entryUuid][state.inputDetails.ref].cached = filename;
+            state.answer.answer = filename;
+
             // 5. Success UI Update
             const timestamp = utilsService.generateTimestamp();
             state.fileSource = Capacitor.convertFileSrc(tempDir + filename) + '?t=' + timestamp;
@@ -130,8 +136,6 @@ export async function videoShoot({media, entryUuid, state, filename}) {
                 //use stored filename
                 filename = media[entryUuid][state.inputDetails.ref].stored;
             }
-            media[entryUuid][state.inputDetails.ref].cached = filename;
-            state.answer.answer = filename;
         } else {
         //use the cached path not to fill the cache with a new file all the time
         filename = media[entryUuid][state.inputDetails.ref].cached;
@@ -150,7 +154,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
 
         //if the user left to system settings or docs, do not launch the camera
         if (fsChoice === 'open_settings' || fsChoice === 'learn_more') {
-            notificationService.hideProgressDialog();
+            await notificationService.hideProgressDialog(0);
             return;
         }
 

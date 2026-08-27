@@ -38,12 +38,12 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
 
         //if the user left to system settings or docs, do not launch the camera
         if (fsChoice === 'open_settings' || fsChoice === 'learn_more') {
-            notificationService.hideProgressDialog();
+            await notificationService.hideProgressDialog(0);
             return;
         }
 
         //dismiss the waiting spinner before opening the native camera
-        notificationService.hideProgressDialog();
+        await notificationService.hideProgressDialog(0);
 
         try {
             const imageURI = await Camera.getPhoto(cameraOptions);
