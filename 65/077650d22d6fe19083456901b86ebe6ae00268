@@ -1,0 +1,16 @@
+src/services/notification-service.js
+  h_2231ff2aa93473 360-364,381-397,399,401-412
+tests/unit/notification-service.spec.js
+  h_2231ff2aa93473 329-443
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "65077650d22d6fe19083456901b86ebe6ae00268",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
