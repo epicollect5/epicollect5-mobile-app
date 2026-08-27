@@ -1,0 +1,31 @@
+tests/unit/components/globals/RightDrawer.spec.js
+  s_3ed33374a1e6a1::t_15348519b5a666 150,189
+tests/unit/components/questions/Dropzone.spec.js
+  s_3ed33374a1e6a1::t_503c7c866980f5 92
+eslint.config.js
+  s_3ed33374a1e6a1::t_d3c029b32502f3 57-64
+  s_3ed33374a1e6a1::t_47cfb1d5f6b3df 56
+tests/unit/components/modals/ModalAccountDeletion.spec.js
+  s_3ed33374a1e6a1::t_4cd592873887a3 128
+  s_3ed33374a1e6a1::t_6af8e0285523ff 74,108
+tests/unit/components/globals/LeftDrawer.spec.js
+  s_3ed33374a1e6a1::t_476c54a2c469a8 447-451,607-611
+  s_3ed33374a1e6a1::t_31f779e10aa5b8 412,577
+  s_3ed33374a1e6a1::t_877c3a025f81d0 86,125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "316037ef9d654a09bc7ffb2c61f76d475fa7f0db",
+  "prompts": {},
+  "sessions": {
+    "s_3ed33374a1e6a1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbc5c91ecffeLmZLUvzJ9JE0WU",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
