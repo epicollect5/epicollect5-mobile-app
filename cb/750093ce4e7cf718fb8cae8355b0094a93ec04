@@ -1,0 +1,24 @@
+src/components/questions/QuestionDecimal.vue
+  s_a8b57ca614c254::t_95dd7473fb6985 244-245
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "cb750093ce4e7cf718fb8cae8355b0094a93ec04",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_a8b57ca614c254": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbd5f0072ffeKTwLcP786RbEEE",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
