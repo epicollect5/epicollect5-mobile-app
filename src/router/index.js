@@ -15,8 +15,12 @@ import EntriesDownload from '@/pages/EntriesDownload.vue';
 import {utilsService} from '@/services/utilities/utils-service';
 
 let routes = [];
+
+//safe default: VITE_MODE may be unset (generic serve/build, CI, tests)
+const VITE_MODE = (import.meta.env.VITE_MODE || PARAMETERS.WEBVIEW).toLowerCase();
+
 //routes for PWA
-if (import.meta.env.VITE_MODE.toLowerCase() === PARAMETERS.PWA.toLowerCase()) {
+if (VITE_MODE === PARAMETERS.PWA.toLowerCase()) {
     const basePath = utilsService.getBasepath();
     routes = [
         {
@@ -138,7 +142,7 @@ const router = createRouter({
     routes
 });
 //if (!import.meta.env.PROD) {
-if (import.meta.env.VITE_MODE.toLowerCase() !== PARAMETERS.PWA.toLowerCase()) {
+if (VITE_MODE !== PARAMETERS.PWA.toLowerCase()) {
     router.beforeEach((to, from, next) => {
         console.log('Router called with -> ');
         console.log('from.name -> ', from.name);
