@@ -357,7 +357,11 @@ buttons
                 const alreadyShown = res.rows.length > 0 && res.rows.item(0).value === '1';
                 if (!alreadyShown) {
                     const choice = await notificationService.showNotificationPermissionAlert(PARAMETERS.NOTIFICATIONS_PERMISSIONS_DOCS_URL);
-                    await databaseInsertService.insertSetting(PARAMETERS.NOTIFICATIONS_PERMISSIONS_DENIED_WARNING_SHOWN, '1');
+                    try {
+                        await databaseInsertService.insertSetting(PARAMETERS.NOTIFICATIONS_PERMISSIONS_DENIED_WARNING_SHOWN, '1');
+                    } catch (error) {
+                        console.log('Failed to persist notifications permissions warning: ' + error);
+                    }
                     resolve(choice);
                     return;
                 }
@@ -374,39 +378,38 @@ buttons
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
 
-        return new Promise((resolve) => {
-            (async () => {
-                const alert = await alertController.create({
-                    header: labels.warning,
-                    message: labels.notifications_permissions_denied_message,
-                    buttons: [
-                        {
-                            text: labels.dismiss,
-                            role: 'cancel',
-                            handler: () => {
-                                resolve('dismiss');
-                            }
-                        },
-                        {
-                            text: labels.learn_more,
-                            handler: () => {
-                                if (docsUrl) {
-                                    window.open(docsUrl, '_system', 'location=yes');
-                                }
-                                resolve('learn_more');
-                            }
-                        },
-                        {
-                            text: labels.open_settings,
-                            handler: () => {
-                                NativeSettings.openAndroid({option: AndroidSettings.AppNotification});
-                                resolve('open_settings');
-                            }
+        return new Promise((resolve, reject) => {
+            alertController.create({
+                header: labels.warning,
+                message: labels.notifications_permissions_denied_message,
+                buttons: [
+                    {
+                        text: labels.dismiss,
+                        role: 'cancel',
+                        handler: () => {
+                            resolve('dismiss');
                         }
-                    ]
-                });
-                await alert.present();
-            })();
+                    },
+                    {
+                        text: labels.learn_more,
+                        handler: () => {
+                            if (docsUrl) {
+                                window.open(docsUrl, '_system', 'location=yes');
+                            }
+                            resolve('learn_more');
+                        }
+                    },
+                    {
+                        text: labels.open_settings,
+                        handler: () => {
+                            NativeSettings.openAndroid({option: AndroidSettings.AppNotification});
+                            resolve('open_settings');
+                        }
+                    }
+                ]
+            })
+                .then((alert) => alert.present())
+                .catch(reject);
         });
     },
     async stopForegroundService() {
