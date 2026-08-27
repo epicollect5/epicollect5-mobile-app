@@ -157,7 +157,7 @@ describe('RightDrawer component', () => {
 
     it('should be translated', async () => {
 
-        PARAMETERS.SUPPORTED_LANGUAGES.forEach((language) => {
+        for (const language of PARAMETERS.SUPPORTED_LANGUAGES) {
             const wrapper = mount(RightDrawer, {
                 global: {
                     plugins: [createTestingPinia({
@@ -177,7 +177,7 @@ describe('RightDrawer component', () => {
             //Ionic projects slotted text asynchronously via requestAnimationFrame,
             //which is faked; advance timers so the slot renders before we read it.
             vi.advanceTimersByTime(16);
-            flushPromises();
+            await flushPromises();
 
             wrapper.findAll('[data-translate]').forEach((el) => {
                 const key = el.attributes('data-translate');
@@ -193,7 +193,7 @@ describe('RightDrawer component', () => {
                 // Assert the rendered HTML contains the expected translation
                 expect(el.html()).toContain(expectedTranslation[key]);
             });
-        });
+        }
     });
 
     it('should go to Upload page', async () => {

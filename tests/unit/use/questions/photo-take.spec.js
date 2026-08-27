@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { photoTake } from '@/use/questions/photo-take';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';

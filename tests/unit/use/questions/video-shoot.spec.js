@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { videoShoot } from '@/use/questions/video-shoot';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
