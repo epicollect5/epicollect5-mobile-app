@@ -1,0 +1,22 @@
+src/use/questions/video-shoot.js
+  s_3ed33374a1e6a1::t_b53b051cec09f1 157
+  s_3ed33374a1e6a1::t_e8246a65e70953 72-77
+src/use/questions/photo-take.js
+  s_3ed33374a1e6a1::t_62cc867b65be1e 41,46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "52b46f13b037f70ea75dc5ba45b2477f097bcdb3",
+  "prompts": {},
+  "sessions": {
+    "s_3ed33374a1e6a1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbc5c91ecffeLmZLUvzJ9JE0WU",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
