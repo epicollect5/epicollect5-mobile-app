@@ -125,7 +125,10 @@ export default {
       console.log('App mounted');
       if (rootStore.isPWA && import.meta.env.PROD) {
         //remove loader div (laravel servers only)
-        document.querySelector('#loader.loader-placeholder').remove();
+        const loader = document.querySelector('#loader.loader-placeholder');
+        if (loader) {
+          loader.remove();
+        }
       }
     });
 
