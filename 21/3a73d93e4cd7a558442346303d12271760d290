@@ -1,0 +1,24 @@
+src/services/init-service.js
+  s_4e6a05464dbfb1::t_94aaa777070ad8 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "213a73d93e4cd7a558442346303d12271760d290",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_4e6a05464dbfb1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbd5b9feaffeAKFQS9v2jszE5E",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
