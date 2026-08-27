@@ -241,8 +241,8 @@ export default {
 			state.answer.answer =
 				state.answer.answer === ''
 					? 0.1
-					: (parseFloat(state.answer.answer, 10) - state.inputStep).toFixed(fixedDigits);
-			},
+					: (parseFloat(state.answer.answer, 10) + state.inputStep).toFixed(fixedDigits);
+		},
 			minusDotOne() {
 				let fixedDigits = 1;
 				state.answer.answer = state.answer.answer.toString();
