@@ -1,0 +1,25 @@
+src/router/index.js
+  s_4e6a05464dbfb1::t_3fabfbf68604a1 18-21,23
+  s_4e6a05464dbfb1::t_6733c728516bb4 145
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "4c90812ba46b5e8198b492b442a5e2bcb8428533",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_4e6a05464dbfb1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbd5b9feaffeAKFQS9v2jszE5E",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
