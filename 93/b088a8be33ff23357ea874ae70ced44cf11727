@@ -1,0 +1,19 @@
+src/services/notification-service.js
+  s_3ed33374a1e6a1::t_c6c22636ee2f6a 355
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "93b088a8be33ff23357ea874ae70ced44cf11727",
+  "prompts": {},
+  "sessions": {
+    "s_3ed33374a1e6a1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fbc5c91ecffeLmZLUvzJ9JE0WU",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
