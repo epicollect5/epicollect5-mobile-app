@@ -33,12 +33,14 @@ vi.mock('@/services/utilities/utils-service', () => ({
 
 vi.mock('@/config', () => ({
     PARAMETERS: {
+        WEB: 'web',
         ANDROID: 'android',
         IOS: 'ios',
         APP_NAME: 'Epicollect5',
         PHOTO_DIR: 'photos',
         AUDIO_DIR: 'audio',
-        VIDEO_DIR: 'video'
+        VIDEO_DIR: 'video',
+        LOGOS_DIR: 'logos/'
     }
 }));
 
@@ -155,6 +157,64 @@ describe('mediaDirsService', () => {
                 directory: 'DOCUMENTS'
             }));
             expect(utilsService.getPlatformDocumentsFolder).toHaveBeenCalled();
+        });
+    });
+
+    describe('ensureProjectLogoDir()', () => {
+        const projectRef = 'abc123';
+
+        beforeEach(() => {
+            const rootStore = useRootStore();
+            rootStore.device = { platform: 'android' };
+            window.resolveLocalFileSystemURL = vi.fn();
+            global.cordova = { file: { dataDirectory: 'file:///data/user/0/uk.ac.imperial.epicollect.five/files/' } };
+        });
+
+        it('creates the logos/<projectRef> directory when it is missing', async () => {
+            let logosDir;
+            const fileSystem = {
+                getDirectory: vi.fn((name, opts, success) => {
+                    logosDir = { name, getDirectory: vi.fn((n2, o2, s2) => s2({ name: n2 })) };
+                    success(logosDir);
+                })
+            };
+            window.resolveLocalFileSystemURL = vi.fn((path, success) => success(fileSystem));
+
+            const result = await mediaDirsService.ensureProjectLogoDir(projectRef);
+
+            expect(result).toBe(true);
+            expect(window.resolveLocalFileSystemURL).toHaveBeenCalledWith(
+                'file:///data/user/0/uk.ac.imperial.epicollect.five/files/',
+                expect.any(Function),
+                expect.any(Function)
+            );
+            expect(fileSystem.getDirectory).toHaveBeenCalledWith(
+                'logos',
+                { create: true, exclusive: false },
+                expect.any(Function),
+                expect.any(Function)
+            );
+            expect(logosDir.getDirectory).toHaveBeenCalledWith(
+                projectRef,
+                { create: true, exclusive: false },
+                expect.any(Function),
+                expect.any(Function)
+            );
+        });
+
+        it('resolves immediately on web without touching the filesystem', async () => {
+            useRootStore().device = { platform: 'web' };
+
+            const result = await mediaDirsService.ensureProjectLogoDir(projectRef);
+
+            expect(result).toBe(true);
+            expect(window.resolveLocalFileSystemURL).not.toHaveBeenCalled();
+        });
+
+        it('rejects when the filesystem cannot be resolved', async () => {
+            window.resolveLocalFileSystemURL = vi.fn((path, success, error) => error(new Error('resolve failed')));
+
+            await expect(mediaDirsService.ensureProjectLogoDir(projectRef)).rejects.toThrow('resolve failed');
         });
     });
 });
