@@ -1,0 +1,21 @@
+.agents/skills/release/SKILL.md
+  s_fb384bb09b84c9::t_9aa800e759de7e 1-85
+.opencode/commands/release.md
+  s_fb384bb09b84c9::t_458d8d6f0d02bf 1-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "bcfe7b7e1d433526612728b93723763b912d032d",
+  "prompts": {},
+  "sessions": {
+    "s_fb384bb09b84c9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fb81eba7affeUncm2J5AiTnafT",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
