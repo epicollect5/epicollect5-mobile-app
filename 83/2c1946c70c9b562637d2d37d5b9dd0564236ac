@@ -1,0 +1,41 @@
+ios/App/App.xcodeproj/project.pbxproj
+  s_fb384bb09b84c9::t_953877858ba5a8 387,417
+  h_2231ff2aa93473 395,425
+package.json
+  s_d087ba4a03d7ec::t_b703ad6ee7e128 13-14,16-22,24-27,33-35
+  h_2231ff2aa93473 3
+CHANGELOG.md
+  s_fb384bb09b84c9::t_731cb3cafc714e 3-8,10-16
+  h_2231ff2aa93473 9
+android/app/build.gradle
+  h_2231ff2aa93473 16-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "832c1946c70c9b562637d2d37d5b9dd0564236ac",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_d087ba4a03d7ec": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fb80a22d2ffe3LekCAx5EiBLH7",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_fb384bb09b84c9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fb81eba7affeUncm2J5AiTnafT",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
