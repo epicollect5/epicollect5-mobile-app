@@ -1,5 +1,19 @@
 ## Release Notes
 
+# 98.0.0 - build 9800
+
+ - Migrated the build toolchain from Vue CLI to Vite (VITE_ environment variables and a WEBVIEW build mode).
+ - Upgraded to Ionic 9 and bumped peer dependencies.
+ - Added the capacitor-native-settings plugin and diagnostic plugin features to the native config.
+ - Handle notification permission denied for the Android foreground download service.
+ - Stopped phantom photo & video media being saved when a capture is cancelled.
+ - Fixed decimal and integer question inputs decrementing instead of incrementing on step.
+ - Prevented crashes on missing or invalid answers.
+ - Guarded loader removal against a missing element.
+ - Updated the web app title to Epicollect5.
+ - Create the project logo directory before download to avoid failures.
+ - Migrated unit tests to Vitest (e2e tests removed).
+
 # 88.9.9 - build 8899
 
  - Block back-nav and abort mid-download when project changes; 
