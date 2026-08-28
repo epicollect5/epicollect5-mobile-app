@@ -1,0 +1,19 @@
+docs/ARCHITECTURE.md
+  s_9709751b68eef1::t_53d2f210541717 559-570
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e40d56f653ac8d4f8030e9c2f12dbdf1f04ba115",
+  "prompts": {},
+  "sessions": {
+    "s_9709751b68eef1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fb8405857ffeZrvGmLR7ZbZ3n1",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
