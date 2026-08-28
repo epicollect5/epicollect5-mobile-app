@@ -143,7 +143,7 @@ const router = createRouter({
 });
 //if (!import.meta.env.PROD) {
 if (VITE_MODE !== PARAMETERS.PWA.toLowerCase()) {
-    router.beforeEach((to, from, next) => {
+    router.beforeEach((to, from) => {
         console.log('Router called with -> ');
         console.log('from.name -> ', from.name);
         console.log('to.name -> ', to.name);
@@ -153,13 +153,12 @@ if (VITE_MODE !== PARAMETERS.PWA.toLowerCase()) {
         // hack: is NOT / or /projects, it needs redirecting
         // hack: this is helpful when debugging in the browser and using hot reload
         if (!from.name && to.name !== PARAMETERS.ROUTES.PROJECTS) {
-            next({
-                path: PARAMETERS.ROUTES.PROJECTS,
+            return {
+                name: PARAMETERS.ROUTES.PROJECTS,
                 replace: true
-            });
-        } else {
-            next();
+            };
         }
+        return true;
     });
 //  }
 }
