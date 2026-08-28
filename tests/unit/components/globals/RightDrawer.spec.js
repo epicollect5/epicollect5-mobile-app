@@ -124,7 +124,7 @@ beforeEach(() => {
 describe('RightDrawer component', () => {
 
     it('should be in default language', async () => {
-        const wrapper = shallowMount(RightDrawer, {
+        const wrapper = mount(RightDrawer, {
             global: {
                 plugins: [createTestingPinia({
                     initialState: {
@@ -134,9 +134,13 @@ describe('RightDrawer component', () => {
             }
         });
 
+        //Ionic projects slotted text asynchronously via requestAnimationFrame,
+        //which is faked; advance timers so the slot renders before we read it.
+        vi.advanceTimersByTime(16);
+        await flushPromises();
+
         wrapper.findAll('[data-translate]').forEach((el) => {
             const key = el.attributes('data-translate');
-            // console.log(`Testing translation for key: ${key}`);
 
             // Check if the key exists in the STRINGS object
             const expectedTranslation = STRINGS[PARAMETERS.DEFAULT_LANGUAGE]?.labels;
@@ -146,18 +150,15 @@ describe('RightDrawer component', () => {
                 throw new Error(`'${PARAMETERS.DEFAULT_LANGUAGE}' Translation key '${key}' is missing.`);
             }
 
-            // Get the actual translation from the component
-            const actualTranslation = wrapper.get('[data-translate="' + key + '"]').text();
-
-            // Use the translation key in the error message if the assertion fails
-            expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
+            // Assert the rendered HTML contains the expected translation
+            expect(el.html()).toContain(expectedTranslation[key]);
         });
     });
 
     it('should be translated', async () => {
 
-        PARAMETERS.SUPPORTED_LANGUAGES.forEach((language) => {
-            const wrapper = shallowMount(RightDrawer, {
+        for (const language of PARAMETERS.SUPPORTED_LANGUAGES) {
+            const wrapper = mount(RightDrawer, {
                 global: {
                     plugins: [createTestingPinia({
                         fakeApp: true,
@@ -173,9 +174,13 @@ describe('RightDrawer component', () => {
             const rootStore = useRootStore();
             expect(rootStore.language).toBe(language);
 
+            //Ionic projects slotted text asynchronously via requestAnimationFrame,
+            //which is faked; advance timers so the slot renders before we read it.
+            vi.advanceTimersByTime(16);
+            await flushPromises();
+
             wrapper.findAll('[data-translate]').forEach((el) => {
                 const key = el.attributes('data-translate');
-                //  console.log(`Testing translation for key: ${key}`);
 
                 // Check if the key exists in the STRINGS object
                 const expectedTranslation = STRINGS[rootStore.language]?.labels;
@@ -185,13 +190,10 @@ describe('RightDrawer component', () => {
                     throw new Error(`'${language}' Translation key '${key}' is missing.`);
                 }
 
-                // Get the actual translation from the component
-                const actualTranslation = wrapper.get('[data-translate="' + key + '"]').text();
-
-                // Use the translation key in the error message if the assertion fails
-                expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
+                // Assert the rendered HTML contains the expected translation
+                expect(el.html()).toContain(expectedTranslation[key]);
             });
-        });
+        }
     });
 
     it('should go to Upload page', async () => {

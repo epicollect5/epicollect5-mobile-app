@@ -29,11 +29,21 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
 
     async function openCamera() {
 
+        let fsChoice = 'dismiss';
         try {
-            await notificationService.startForegroundService();
+            fsChoice = await notificationService.startForegroundService();
         } catch (error) {
             console.log('Failed to start foreground service: ' + error);
         }
+
+        //if the user left to system settings or docs, do not launch the camera
+        if (fsChoice === 'open_settings' || fsChoice === 'learn_more') {
+            await notificationService.hideProgressDialog(0);
+            return;
+        }
+
+        //dismiss the waiting spinner before opening the native camera
+        await notificationService.hideProgressDialog(0);
 
         try {
             const imageURI = await Camera.getPhoto(cameraOptions);

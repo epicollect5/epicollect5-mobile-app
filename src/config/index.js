@@ -8,6 +8,8 @@ export const PARAMETERS = {
     UPLOAD_MEDIA_DOCS_URL: 'https://docs.epicollect.net/mobile-application/upload-entries#uploading-media-files',
     DOWNLOAD_ENTRIES_DOCS_URL: 'https://docs.epicollect.net/mobile-application/download-entries',
     UPDATE_PROJECT_DOCS_URL: 'https://docs.epicollect.net/mobile-application/updating-a-project-mobile',
+    NOTIFICATIONS_PERMISSIONS_DOCS_URL: 'https://docs.epicollect.net/mobile-application/mobile-app-permissions#notification-permission',
+    NOTIFICATIONS_PERMISSIONS_DENIED_WARNING_SHOWN: 'notifications_permissions_denied_warning_shown',
     DEBUG: import.meta.env.VITE_DEBUG,
     IS_LOCALHOST: import.meta.env.PROD ? 0 : 1, //for debugging outside of Laravel(production), it is set to 1
     BYPASS_UNIQUENESS: import.meta.env.VITE_BYPASS_UNIQUENESS,

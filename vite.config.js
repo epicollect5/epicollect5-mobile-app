@@ -32,7 +32,10 @@ export default defineConfig(({ mode, command }) => {
                     assetFileNames: 'assets/[name][extname]',
                     manualChunks(id) {
                         if (id.includes('node_modules')) {
-                            if (id.includes('@capacitor') || id.includes('@capawesome') || id.includes('@capgo') || id.includes('@whiteguru')) return 'vendor-capacitor';
+                            //group every Capacitor-family package (scoped @capacitor/* and
+                            //unscoped capacitor-* plugins such as capacitor-native-settings)
+                            //into vendor-capacitor to avoid cross-chunk cycles with vendor-common
+                            if (id.includes('capacitor')) return 'vendor-capacitor';
                             if (id.includes('@vue')) return 'vendor-vue';
                             if (id.includes('@ionic')) return 'vendor-ionic';
                             return 'vendor-common';

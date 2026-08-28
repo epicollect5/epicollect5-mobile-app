@@ -70,6 +70,37 @@ export const mediaDirsService = {
         });
     },
 
+    ensureProjectLogoDir (projectRef) {
+        const rootStore = useRootStore();
+
+        if (rootStore.device.platform === PARAMETERS.WEB) {
+            return Promise.resolve(true);
+        }
+
+        return new Promise((resolve, reject) => {
+            function _onError(error) {
+                console.log(error);
+                reject(error);
+            }
+
+            window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (fileSystem) {
+                fileSystem.getDirectory(
+                    PARAMETERS.LOGOS_DIR.replace(/\/$/, ''),
+                    { create: true, exclusive: false },
+                    function (logosDir) {
+                        logosDir.getDirectory(
+                            projectRef,
+                            { create: true, exclusive: false },
+                            function () { resolve(true); },
+                            _onError
+                        );
+                    },
+                    _onError
+                );
+            }, _onError);
+        });
+    },
+
     async removeExternalMediaDirs(projectSlug, destination = Directory.Documents) {
         // For archive/zip exports, we write to app-private storage the use the Share plugin to share from there.
         // Android → Directory.Data, iOS → Directory.LibraryNoCloud
