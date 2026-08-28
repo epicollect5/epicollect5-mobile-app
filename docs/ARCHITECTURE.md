@@ -556,6 +556,18 @@ Important compatibility detail:
 
 - The native app intentionally preserves legacy directory behavior to avoid breaking upgrades from older storage layouts.
 
+### Media Upload & File Transfer
+
+Media (photo/audio/video) upload and logo download use the **`cordova-plugin-file-transfer`** plugin via its maintained fork `sitewaerts/cordova-plugin-file-transfer` (pinned to a commit in `package.json`). The fork is owned and pinned deliberately: it is the only option that sends the server's required `data` JSON metadata as a **multipart form field** alongside the `name` file field, and returns the HTTP response body inline so auth errors (`ec5_77`) can be parsed.
+
+**Why not the Capacitor-native alternatives:**
+- `@capacitor/file-transfer` — its `params` are not multipart form fields on iOS (the `data` field cannot be sent); rejected.
+- `@capgo/capacitor-uploader` — native multipart works, but it is event-driven (`startUpload` returns only an upload `id`; the result arrives via `addListener('events')` with `statusCode` but no inline body). Adopting it would require rearchitecting the sequential upload loop into id-correlated promise wrappers and switching `ec5_77` detection to `statusCode === 401`. Deferred; it is the designated fallback only if the fork ever breaks on a future platform.
+
+**Long-run stance:** keep the fork and fix it in-house if a future iOS/Android SDK breaks it (consistent with how other Cordova plugins in this repo are forked and owned). Revisit `capacitor-uploader` only as a last resort.
+
+**Key files:** `src/services/upload-media-service.js`, `src/services/download-file-service.js`. Uploads are sequential with a `2 * DELAY_LONG` gap, per-file DB sync (`updateFileEntrySynced`), connectivity checks, and progress updates; both services no-op on web.
+
 ## Authentication Model
 
 The app supports two auth styles depending on execution mode:
