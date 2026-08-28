@@ -1,0 +1,19 @@
+src/router/index.js
+  s_77363380e4f46a::t_5f5bb17d5c79c6 146,156-157,159,161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "b90af5798726a23b3563e8727bb12725d855b13c",
+  "prompts": {},
+  "sessions": {
+    "s_77363380e4f46a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fb8971e5dffeA4mk77cRq8MOFo",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
