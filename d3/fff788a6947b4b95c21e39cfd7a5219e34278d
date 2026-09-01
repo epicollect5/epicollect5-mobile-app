@@ -1,0 +1,14 @@
+tests/unit/components/modals/ModalDraw.spec.js
+  h_2231ff2aa93473 1-212
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "d3fff788a6947b4b95c21e39cfd7a5219e34278d",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
