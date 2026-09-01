@@ -1,0 +1,21 @@
+package.json
+  s_f0614f68f2cb62::t_862d4f7fd3630d 100
+package-lock.json
+  s_f0614f68f2cb62::t_54d5871421c60b 3,9,71,10406-10411
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "386ab8259b7a82c0139fa47aae62c756bb781145",
+  "prompts": {},
+  "sessions": {
+    "s_f0614f68f2cb62": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fa1ed8a06ffecmh8kjqJ5ZxC1w",
+        "model": "minimax/minimax-m3:free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
