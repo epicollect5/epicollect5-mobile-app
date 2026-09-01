@@ -1,0 +1,27 @@
+src/config/strings.js
+  s_f0614f68f2cb62::t_4373cbc35a74f5 1899-1903
+  s_f0614f68f2cb62::t_f4b3389c455f04 2171-2175
+  s_f0614f68f2cb62::t_837b6e2281d655 811-815
+  s_f0614f68f2cb62::t_81ca22848805ef 1083-1087
+  s_f0614f68f2cb62::t_7acc63b03b1ed4 267-271
+  s_f0614f68f2cb62::t_c7003cd3429647 2443-2447
+  s_f0614f68f2cb62::t_46639a7d0d9037 539-543
+  s_f0614f68f2cb62::t_6e9de60fe7bf9a 1627-1631
+  s_f0614f68f2cb62::t_1f4162e4278755 1355-1359
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "2e7cb9a38888d925d02d2adb088ab685ccae99be",
+  "prompts": {},
+  "sessions": {
+    "s_f0614f68f2cb62": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fa1ed8a06ffecmh8kjqJ5ZxC1w",
+        "model": "minimax/minimax-m3:free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
