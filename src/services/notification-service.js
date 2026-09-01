@@ -65,6 +65,9 @@ export const notificationService = {
         const platform = (rootStore.device.platform).toLowerCase();
         return new Promise((resolve) => {
             (async () => {
+                //Buttons are pushed in render order (left to right, top to bottom).
+                //With the matching cssClass grid, Learn More spans the top row
+                //and Cancel sits to the left of Ok on the bottom row.
                 const buttons = [];
 
                 if (learnMoreUrl) {
@@ -96,12 +99,9 @@ export const notificationService = {
                 const alertOptions = {
                     header: title,
                     message,
-                    buttons
+                    buttons,
+                    cssClass: 'alert-confirm-single-vertical-' + platform
                 };
-
-                if (learnMoreUrl) {
-                    alertOptions.cssClass = 'alert-confirm-multiple-' + platform;
-                }
 
                 const alert = await alertController
                     .create(alertOptions);

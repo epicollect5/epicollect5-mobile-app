@@ -133,9 +133,8 @@
             padding: 12px;
             border-top: none;
             border-bottom: none;
-            border-width: 1px;
-            border-left: 1px solid;
-            border-color: var(--ion-color-medium-tint);
+            border-left: 1px solid var(--ion-color-medium-tint);
+            border-right: 1px solid var(--ion-color-medium-tint);
             &.has-error {
                 border: 1px solid var(--ion-color-danger) !important;
                 padding: 10px !important;

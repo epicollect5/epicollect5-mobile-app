@@ -199,6 +199,27 @@ ion-chip {
         flex-direction: row !important;
     }
 }
+.alert-confirm-single-vertical-android,
+.alert-confirm-single-vertical-web,
+.alert-confirm-single-vertical-ios {
+    .alert-button-group {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+    }
+    //3 buttons: Learn More spans the top row, Cancel/Ok share the bottom row
+    .alert-button-group > button:nth-child(1):nth-last-child(3) {
+        grid-column: 1 / -1 !important;
+    }
+    //Cancel sits on the left of its cell; Ok sits on the right (primary action).
+    //Works for both 2-button and 3-button layouts since Cancel is always
+    //second-to-last and Ok is always last in the buttons array.
+    .alert-button-group > button:nth-last-child(2) .alert-button-inner {
+        justify-content: flex-start !important;
+    }
+    .alert-button-group > button:last-child .alert-button-inner {
+        justify-content: flex-end !important;
+    }
+}
 .entry-synced {
     color: var(--ion-color-success);
 }
