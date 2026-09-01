@@ -1,0 +1,50 @@
+src/theme/mixins.scss
+  s_ebfc23a02c76e8::t_2595ccf638513d 136
+  s_ebfc23a02c76e8::t_b56e0e3cb6c970 137
+src/theme/core.scss
+  s_3baef22610e457::t_6d8bb48ce92a01 213-215
+  s_3baef22610e457::t_4f5845fda1da10 216,218-220
+  s_3baef22610e457::t_cc5ca98ebb718a 217,221
+  s_3baef22610e457::t_7afbdb181fd907 206-211
+  s_3baef22610e457::t_7e34dd89c9e1f9 202-205,212,222
+.gitignore
+  h_2231ff2aa93473 20
+index.html
+  s_ebfc23a02c76e8::t_89cce465bd3d65 8
+  s_ebfc23a02c76e8::t_ab98b2497590a9 9
+public/index.html
+  s_ebfc23a02c76e8::t_bb1da8935faa56 8
+  s_ebfc23a02c76e8::t_f6a5311ec86a12 9
+src/services/notification-service.js
+  s_3baef22610e457::t_eb4b97dce9b717 102-103
+  s_3baef22610e457::t_dca0652a7b0c0a 68-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "f9162dcc8ff74cd9d12710cbbeda69a1bc44cf24",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3baef22610e457": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fa377afa9ffe9f0D5d2ulo4Tds",
+        "model": "minimax/minimax-m3:free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_ebfc23a02c76e8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fb7a71bfeffetjXh1NNVep9UK9",
+        "model": "hy3-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
