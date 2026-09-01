@@ -1,0 +1,14 @@
+src/pages/EntriesAdd.vue
+  h_2231ff2aa93473 792-796
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "f9e504f80e206f1513fba4b7bef98c889b28d650",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
