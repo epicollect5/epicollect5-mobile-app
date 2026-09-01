@@ -1,0 +1,21 @@
+src/components/questions/QuestionBarcode.vue
+  s_dcae40925f824c::t_67f1eb080c0653 84
+src/theme/components/questions/QuestionBarcode.scss
+  s_dcae40925f824c::t_8b80d3ceb8a767 15-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "3b85cfc5ffd1ebecfe290468352cdd9282d79508",
+  "prompts": {},
+  "sessions": {
+    "s_dcae40925f824c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fa2c8f2b7ffeAK6hBfiMiQp7Zj",
+        "model": "minimax/minimax-m3:free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
