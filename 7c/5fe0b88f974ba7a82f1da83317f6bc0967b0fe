@@ -1,0 +1,26 @@
+src/components/questions/QuestionPhoto.vue
+  s_f0614f68f2cb62::t_c644df7b12a1b4 442-443
+  s_f0614f68f2cb62::t_b2628e8385d2c4 120,124,131
+  s_f0614f68f2cb62::t_c6d7d8739d6c5c 39-43,45-79,81-96
+  s_f0614f68f2cb62::t_5081f0cedc4a2e 324-394
+  s_f0614f68f2cb62::t_b4727d2e7fb742 395
+src/theme/components/questions/QuestionPhoto.scss
+  s_f0614f68f2cb62::t_da01028b1d675f 27-28,32,34-35,42
+  s_f0614f68f2cb62::t_296a7c9402a375 14-26,29-31,33,36-41,43-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "7c5fe0b88f974ba7a82f1da83317f6bc0967b0fe",
+  "prompts": {},
+  "sessions": {
+    "s_f0614f68f2cb62": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fa1ed8a06ffecmh8kjqJ5ZxC1w",
+        "model": "minimax/minimax-m3:free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
