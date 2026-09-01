@@ -1,0 +1,19 @@
+src/services/filesystem/save-blob-to-temp-service.js
+  s_f0614f68f2cb62::t_aa03deee266071 1-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "0334ea538056aba5f7ad4c42e1a759a6e9e978fa",
+  "prompts": {},
+  "sessions": {
+    "s_f0614f68f2cb62": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fa1ed8a06ffecmh8kjqJ5ZxC1w",
+        "model": "minimax/minimax-m3:free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
