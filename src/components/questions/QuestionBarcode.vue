@@ -81,7 +81,7 @@
             <div class="ion-margin-top">
               <input
                 type="text"
-                class="question-input"
+                class="question-input ios-fix-border"
                 :class="{ 'has-error': hasError }"
                 :value="state.answer.answer"
                 @input="onInputValueChange($event)"
