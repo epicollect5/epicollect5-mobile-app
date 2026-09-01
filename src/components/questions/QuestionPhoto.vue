@@ -36,39 +36,64 @@
           @photo-clicked="openViewerPWA"
       ></dropzone>
 
-      <grid-question-narrow v-if="!isPWA">
-        <template #content>
-          <ion-button
-              class="question-action-button ion-text-nowrap"
-              color="secondary"
-              expand="block"
-              @click="takePicture('camera')"
+      <ion-grid v-if="!isPWA" class="ion-no-padding question-action-row">
+        <ion-row>
+          <ion-col
+              size="4"
+              class="ion-align-self-center"
           >
-            <ion-icon
-                slot="start"
-                :icon="camera"
-            ></ion-icon>
-            {{ labels.take }}
-          </ion-button>
-        </template>
-      </grid-question-narrow>
-
-      <grid-question-narrow v-if="!isPWA">
-        <template #content>
-          <ion-button
-              class="question-action-button ion-margin-top ion-text-nowrap"
-              color="secondary"
-              expand="block"
-              @click="takePicture('gallery')"
+            <div class="question-action-tile">
+              <ion-button
+                  class="question-action-tile__button"
+                  color="secondary"
+                  :aria-label="labels.take"
+                  @click="takePicture('camera')"
+              >
+                <ion-icon
+                    :icon="camera"
+                ></ion-icon>
+              </ion-button>
+              <div class="question-action-tile__label">{{ labels.take }}</div>
+            </div>
+          </ion-col>
+          <ion-col
+              size="4"
+              class="ion-align-self-center"
           >
-            <ion-icon
-                slot="start"
-                :icon="images"
-            ></ion-icon>
-            {{ labels.pick }}
-          </ion-button>
-        </template>
-      </grid-question-narrow>
+            <div class="question-action-tile">
+              <ion-button
+                  class="question-action-tile__button"
+                  color="secondary"
+                  :aria-label="labels.pick"
+                  @click="takePicture('gallery')"
+              >
+                <ion-icon
+                    :icon="images"
+                ></ion-icon>
+              </ion-button>
+              <div class="question-action-tile__label">{{ labels.pick }}</div>
+            </div>
+          </ion-col>
+          <ion-col
+              size="4"
+              class="ion-align-self-center"
+          >
+            <div class="question-action-tile">
+              <ion-button
+                  class="question-action-tile__button"
+                  color="secondary"
+                  :aria-label="labels.draw"
+                  @click="openDrawPad()"
+              >
+                <ion-icon
+                    :icon="brush"
+                ></ion-icon>
+              </ion-button>
+              <div class="question-action-tile__label">{{ labels.draw }}</div>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
 
       <!-- Photo thumbnail -->
       <div
@@ -92,21 +117,21 @@ import {modalController} from '@ionic/vue';
 import {STRINGS} from '@/config/strings.js';
 import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
-import {camera, images} from 'ionicons/icons';
+import {camera, images, brush} from 'ionicons/icons';
 import {inject, reactive, computed, onMounted} from 'vue';
 import {Capacitor} from '@capacitor/core';
 import ModalPhoto from '@/components/modals/ModalPhoto.vue';
+import ModalDraw from '@/components/modals/ModalDraw.vue';
 import {photoTake} from '@/use/questions/photo-take';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
 import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
 import Dropzone from '@/components/Dropzone.vue';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {questionCommonService} from '@/services/entry/question-common-service';
+import {saveBlobToTempDir} from '@/services/filesystem/save-blob-to-temp-service';
 
 export default {
   components: {
-    GridQuestionNarrow,
     QuestionLabelAction,
     Dropzone
   },
@@ -296,6 +321,78 @@ export default {
           console.error('openViewerPWA failed', error);
         }
       },
+      async openDrawPad() {
+        if (rootStore.device.platform === PARAMETERS.WEB) {
+          return;
+        }
+
+        let existingDataURL = '';
+        const mediaFile = media[entryUuid][state.inputDetails.ref];
+        if (mediaFile.cached !== '') {
+          try {
+            const source = Capacitor.convertFileSrc(tempDir + mediaFile.cached);
+            const response = await fetch(source);
+            const blob = await response.blob();
+            existingDataURL = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = () => reject(reader.error);
+              reader.readAsDataURL(blob);
+            });
+          } catch (error) {
+            console.warn('Failed to load existing drawing for editing', error);
+            existingDataURL = '';
+          }
+        }
+
+        const drawModal = await modalController.create({
+          component: ModalDraw,
+          cssClass: 'modal-draw',
+          showBackdrop: true,
+          backdropDismiss: false,
+          componentProps: {existingDataURL}
+        });
+
+        drawModal.onDidDismiss().then(async (response) => {
+          rootStore.isDrawModalActive = false;
+          if (!response || !response.data || !response.data.dataURL) {
+            return;
+          }
+          const dataURL = response.data.dataURL;
+
+          //mirror photo-take.js:53-71 to pick the right filename
+          let newFilename = '';
+          if (mediaFile.cached !== '') {
+            newFilename = mediaFile.cached;
+          } else if (mediaFile.stored !== '') {
+            newFilename = mediaFile.stored;
+          } else {
+            newFilename = utilsService.generateMediaFilename(
+                entryUuid,
+                PARAMETERS.QUESTION_TYPES.PHOTO
+            );
+          }
+          mediaFile.cached = newFilename;
+          state.answer.answer = newFilename;
+
+          try {
+            const blob = utilsService.b64toBlob(dataURL, 'image/jpeg');
+            await saveBlobToTempDir({blob, filename: newFilename});
+            _loadImageOnView(tempDir + newFilename);
+          } catch (error) {
+            console.error('Failed to save drawing to temp dir', error);
+            mediaFile.cached = '';
+            state.answer.answer = '';
+            notificationService.showAlert(
+                labels.unknown_error,
+                labels.error
+            );
+          }
+        });
+
+        rootStore.isDrawModalActive = true;
+        return drawModal.present();
+      },
       onImageLoad() {
         notificationService.hideProgressDialog();
       },
@@ -342,7 +439,8 @@ export default {
       ...computedScope,
       //icons
       camera,
-      images
+      images,
+      brush
     };
   }
 };
