@@ -112,9 +112,9 @@ export default {
     });
     let signaturePad = null;
     let existingImage = null;
-    //the pre-existing drawing is shown until the user clears it; once
-    //cleared it must not re-appear on later layout changes (rotation)
-    let showExistingImage = true;
+    //the pre-existing photo stays as the canvas background: Clear erases
+    //only the drawn strokes (bulk undo), never the photo itself
+    const showExistingImage = true;
     let resizeObserver = null;
     //debounced canvas sizing state
     let applyTimer = null;
@@ -127,14 +127,49 @@ export default {
     let pendingPenWidth = null;
 
     function _pushHistory() {
-      //deep-copy the stroke data: toData() returns signature_pad's live
-      //array, which later strokes mutate
+      //deep-copy the stroke data into normalized coordinates (0..1 relative
+      //to the canvas grid at stroke time). signature_pad stores absolute
+      //pixel offsets, which would land at stale positions once the grid is
+      //resized (e.g. rotation): replaying normalized points against the
+      //current grid scales every stroke proportionally instead. Stroke
+      //widths normalize too (relative to the grid width), so they scale
+      //with the grid as well
+      const canvasEl = canvas.value;
       state.history.push(
-          signaturePad.toData().map((group) => ({
-            ...group,
-            points: group.points.map((point) => ({...point}))
-          }))
+          signaturePad.toData().map((group) => {
+            const points = group.points.map((point) => ({
+              ...point,
+              x: point.x / canvasEl.width,
+              y: point.y / canvasEl.height
+            }));
+            return {
+              ...group,
+              minWidth: group.minWidth !== undefined ? group.minWidth / canvasEl.width : group.minWidth,
+              maxWidth: group.maxWidth !== undefined ? group.maxWidth / canvasEl.width : group.maxWidth,
+              dotSize: group.dotSize !== undefined ? group.dotSize / canvasEl.width : group.dotSize,
+              points
+            };
+          })
       );
+    }
+
+    //Map stored normalized points (and widths) back to a grid; defaults to
+    //the visible canvas, or any other size (e.g. the export canvas)
+    function _denormalizeData(groups, gridWidth, gridHeight) {
+      const canvasEl = canvas.value;
+      const width = gridWidth || canvasEl.width;
+      const height = gridHeight || canvasEl.height;
+      return groups.map((group) => ({
+        ...group,
+        minWidth: group.minWidth !== undefined ? group.minWidth * width : group.minWidth,
+        maxWidth: group.maxWidth !== undefined ? group.maxWidth * width : group.maxWidth,
+        dotSize: group.dotSize !== undefined ? group.dotSize * width : group.dotSize,
+        points: group.points.map((point) => ({
+          ...point,
+          x: point.x * width,
+          y: point.y * height
+        }))
+      }));
     }
 
     function _loadImage(src) {
@@ -146,29 +181,63 @@ export default {
       });
     }
 
-    //Redraw the existing image (if any) plus the recorded strokes on top of
-    //a freshly cleared canvas. The grid has just been resized, which wiped
-    //the canvas, so this restores whatever the user had drawn.
+    //Where the background photo sits on the pad grid: contain-fit, centered
+    //(a portrait photo on a 4:3 canvas leaves white bars left and right).
+    //Both the pad paint and the export re-frame strokes against this rect
+    function _backgroundRect() {
+      const canvasEl = canvas.value;
+      if (!canvasEl || !existingImage) {
+        return null;
+      }
+      const image = existingImage;
+      const scale = Math.min(
+          canvasEl.width / image.width,
+          canvasEl.height / image.height
+      );
+      const w = image.width * scale;
+      const h = image.height * scale;
+      return {
+        x0: (canvasEl.width - w) / 2,
+        y0: (canvasEl.height - h) / 2,
+        w,
+        h
+      };
+    }
+
+    //Draw the background photo fitted inside the canvas (contain)
+    function _drawBackground() {
+      if (!existingImage || !showExistingImage) {
+        return;
+      }
+      const rect = _backgroundRect();
+      if (!rect) {
+        return;
+      }
+      canvas.value.getContext('2d').drawImage(
+          existingImage,
+          rect.x0,
+          rect.y0,
+          rect.w,
+          rect.h
+      );
+    }
+
+    //Redraw the background (if any) plus the recorded strokes on top of a
+    //freshly cleared canvas. Used after a resize (the grid change wiped the
+    //canvas) and after undo/clear. Strokes replay from the normalized
+    //history so they scale with the current grid.
     //Never run mid-stroke: signature_pad's clear() leaves _drawingStroke
     //true, which permanently blocks any further stroke on the pad.
     function _redrawContent() {
       if (!signaturePad || isDrawing) {
         return;
       }
-      const data = signaturePad.toData();
       const canvasEl = canvas.value;
       signaturePad.clear();
-      if (existingImage && showExistingImage) {
-        canvasEl.getContext('2d').drawImage(
-            existingImage,
-            0,
-            0,
-            canvasEl.width,
-            canvasEl.height
-        );
-      }
-      if (data.length > 0) {
-        signaturePad.fromData(data, {clear: false});
+      _drawBackground();
+      const last = state.history[state.history.length - 1];
+      if (last && last.length > 0) {
+        signaturePad.fromData(_denormalizeData(last), {clear: false});
       }
     }
 
@@ -308,41 +377,24 @@ export default {
       signaturePad.maxWidth = width;
     }
 
-    function _redrawFromHistory() {
-      const canvasEl = canvas.value;
-      signaturePad.clear();
-      if (existingImage && showExistingImage) {
-        canvasEl.getContext('2d').drawImage(
-            existingImage,
-            0,
-            0,
-            canvasEl.width,
-            canvasEl.height
-        );
-      }
-      const last = state.history[state.history.length - 1];
-      if (last && last.length > 0) {
-        signaturePad.fromData(last, {clear: false});
-      }
-    }
-
     function undo() {
       if (!signaturePad || isDrawing || state.history.length === 0) {
         return;
       }
       state.history.pop();
-      _redrawFromHistory();
+      _redrawContent();
     }
 
+    //"Clear" performs a bulk undo: it erases every drawn stroke at once but
+    //keeps the background photo, so the original picture stays under the
+    //(now stroke-free) canvas; the strokes are gone for good, and the photo
+    //keeps re-drawing on later layout changes (rotation)
     function clearAll() {
       if (!signaturePad || isDrawing) {
         return;
       }
-      signaturePad.clear();
       state.history = [];
-      //a cleared drawing is gone for good: it must not come back on the
-      //next layout change (e.g. rotation)
-      showExistingImage = false;
+      _redrawContent();
     }
 
     function _hasContent() {
@@ -368,19 +420,82 @@ export default {
       modalController.dismiss();
     }
 
-    //Rasterize the current canvas content onto a fresh 1024x768 canvas.
-    //The drawing canvas is sized to the viewport; this gives a fixed output size.
+    //Rasterize the drawing onto a fresh canvas. With a background photo the
+    //output keeps the photo's own aspect ratio (max side 1024) and the photo
+    //is drawn from the original source - no letterbox bars, no upscaling of
+    //the pad's low-res copy. The strokes replay from the normalized history
+    //(points and widths) at the output scale, using each stroke's own color.
+    //Without a photo the output stays a flat 1024x768 white canvas.
     function _exportDataURL() {
+      const hasPhoto = !!(existingImage && showExistingImage);
+      let outW = OUTPUT_WIDTH;
+      let outH = OUTPUT_HEIGHT;
+      if (hasPhoto) {
+        const ratio = existingImage.width / existingImage.height;
+        if (ratio >= 1) {
+          outH = Math.round(OUTPUT_WIDTH / ratio);
+        } else {
+          outW = Math.round(OUTPUT_WIDTH * ratio);
+          outH = OUTPUT_WIDTH;
+        }
+      }
+
       const out = document.createElement('canvas');
-      out.width = OUTPUT_WIDTH;
-      out.height = OUTPUT_HEIGHT;
+      out.width = outW;
+      out.height = outH;
       const ctx = out.getContext('2d');
       ctx.fillStyle = 'rgb(255,255,255)';
-      ctx.fillRect(0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
+      ctx.fillRect(0, 0, outW, outH);
 
-      const visible = canvas.value;
-      if (visible) {
-        ctx.drawImage(visible, 0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
+      const last = state.history[state.history.length - 1];
+      let pad = null;
+      if (last && last.length > 0) {
+        //each stored group carries its own color and (normalized) widths, so
+        //a plain pad replays the strokes faithfully on the export canvas.
+        //imp: the pad must exist BEFORE the photo is painted underneath its
+        //strokes: its constructor clears the canvas (fills it white), which
+        //would wipe the photo
+        pad = new SignaturePad(out, {
+          backgroundColor: 'rgb(255,255,255)',
+          velocityFilterWeight: 0,
+          minDistance: 1
+        });
+      }
+
+      if (hasPhoto) {
+        ctx.drawImage(existingImage, 0, 0, outW, outH);
+      }
+
+      if (pad) {
+        let data;
+        //Without a photo the strokes replay on the same 4:3 shape they were
+        //drawn on (existing behavior). With a photo the output canvas IS the
+        //photo (full-bleed, photo aspect), while the strokes were drawn on
+        //the 4:3 pad with the photo contain-fitted and letterboxed: re-frame
+        //them from the pad grid onto the photo's rect (also scaled by the
+        //output/photo ratio). Stroke portions that ended on the white bars
+        //fall outside the output canvas and clip away - so a line drawn
+        //across the whole pad (bars included) comes out running edge to edge
+        //on the photo, matching what the user sees on the image itself
+        if (hasPhoto) {
+          const rect = _backgroundRect();
+          const canvasEl = canvas.value;
+          const k = outW / rect.w;
+          data = last.map((group) => ({
+            ...group,
+            minWidth: group.minWidth !== undefined ? group.minWidth * canvasEl.width * k : group.minWidth,
+            maxWidth: group.maxWidth !== undefined ? group.maxWidth * canvasEl.width * k : group.maxWidth,
+            dotSize: group.dotSize !== undefined ? group.dotSize * canvasEl.width * k : group.dotSize,
+            points: group.points.map((point) => ({
+              ...point,
+              x: (point.x * canvasEl.width - rect.x0) * k,
+              y: (point.y * canvasEl.height - rect.y0) * k
+            }))
+          }));
+        } else {
+          data = _denormalizeData(last, outW, outH);
+        }
+        pad.fromData(data, {clear: false});
       }
       return out.toDataURL('image/jpeg', 0.5);
     }
@@ -446,13 +561,7 @@ export default {
       if (props.existingDataURL && props.existingDataURL !== '') {
         try {
           existingImage = await _loadImage(props.existingDataURL);
-          canvasEl.getContext('2d').drawImage(
-              existingImage,
-              0,
-              0,
-              canvasEl.width,
-              canvasEl.height
-          );
+          _drawBackground();
           _pushHistory();
         } catch (error) {
           console.warn('Failed to load existing drawing for editing', error);
