@@ -40,6 +40,8 @@
         <ion-row>
           <ion-col
               size="4"
+              size-md="2"
+              offset-md="3"
               class="ion-align-self-center"
           >
             <div class="question-action-tile">
@@ -58,6 +60,7 @@
           </ion-col>
           <ion-col
               size="4"
+              size-md="2"
               class="ion-align-self-center"
           >
             <div class="question-action-tile">
@@ -76,6 +79,7 @@
           </ion-col>
           <ion-col
               size="4"
+              size-md="2"
               class="ion-align-self-center"
           >
             <div class="question-action-tile">

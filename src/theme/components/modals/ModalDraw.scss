@@ -36,27 +36,33 @@
         touch-action: none;
     }
 
-    .modal-draw__color-picker {
-        width: 36px;
-        height: 36px;
-        padding: 0;
-        margin-left: 8px;
-        border: 2px solid #fff;
-        border-radius: 50%;
-        background: transparent;
-        cursor: pointer;
-        overflow: hidden;
+    //the button exists only to wrap the color input for toolbar spacing: a
+    //ripple/pressed highlight on every tap would be pure noise, so disable it
+    .modal-draw__color-button {
+        --ripple-color: transparent;
+        --background-activated: transparent;
+        --background-activated-opacity: 0;
+    }
 
-        &::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
-        &::-webkit-color-swatch {
-            border: none;
-            border-radius: 50%;
-        }
-        &::-moz-color-swatch {
-            border: none;
-            border-radius: 50%;
-        }
+    //shows the selected pen thickness (e.g. "3x") and toggles the slider;
+    //no text label: the value itself is the label
+    .modal-draw__thickness-button {
+        min-width: 52px;
+        font-weight: 600;
+        //consistent with the color button wrapper: no tap feedback
+        --ripple-color: transparent;
+        --background-activated: transparent;
+        --background-activated-opacity: 0;
+    }
+
+    //the color dot opens the picker modal; it shows the current pen color.
+    //32px fill + 2px border = the 36px border-box of the native input it
+    //replaced (verified on device)
+    .modal-draw__color-dot {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid #fff;
     }
 }

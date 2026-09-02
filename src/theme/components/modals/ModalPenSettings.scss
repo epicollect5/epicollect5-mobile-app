@@ -1,0 +1,126 @@
+.modal-pen-settings {
+    ion-content {
+        --background: #f5f5f5;
+    }
+
+    //ion-padding / ion-margin-bottom utilities supply the 16px spacing
+    .modal-pen-settings__preview {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 10px 16px;
+    }
+
+    .modal-pen-settings__preview-swatch {
+        display: inline-block;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+    }
+
+    .modal-pen-settings__preview-value {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    //the selected thickness, live-updating with the range below; right-
+    //aligned (pencil + readout) against the color preview on the left
+    .modal-pen-settings__preview-thickness {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    //checkerboard of colors (Google Docs style, 10 per row on phones)
+    .modal-pen-settings__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
+        gap: 4px;
+    }
+
+    .modal-pen-settings__swatch {
+        aspect-ratio: 1;
+        padding: 0;
+        border: 0;
+        border-radius: 4px;
+        cursor: pointer;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+
+        //the selected color gets a ring that stays visible on light fills
+        &--selected {
+            box-shadow:
+                inset 0 0 0 2px #fff,
+                inset 0 0 0 4px var(--ion-color-primary),
+                0 0 0 2px rgba(0, 0, 0, 0.15);
+        }
+    }
+
+    //pen thickness: the range owns a white card below the swatches; the
+    //geometry keeps the sizes that were tuned for the old popover
+    //(1.25x Ionic defaults on phones, 2x from md up)
+    .modal-pen-settings__thickness {
+        background: #fff;
+        border-radius: 12px;
+        padding: 4px 16px 0;
+        margin-top: 16px;
+    }
+
+    .modal-pen-settings__range.md {
+        --height: 52.5px;
+        --knob-size: 22.5px;
+        --bar-height: 2.5px;
+    }
+
+    .modal-pen-settings__range.ios {
+        --height: 52.5px;
+        --knob-size: 32.5px;
+        --bar-height: 5px;
+    }
+
+    //1.25x the default pin text size (the pin carries the "Nx" readout)
+    .modal-pen-settings__range::part(pin) {
+        font-size: 0.8rem;
+    }
+
+    .modal-pen-settings__scale-label {
+        color: var(--ion-color-medium);
+        //stable width so the bar does not shift as the label wraps
+        min-width: 30px;
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    @media (min-width: 768px) {
+        //tablets: double the default geometry of whichever platform mode is
+        //active so it is easy to grab; ticks size from --bar-height
+        .modal-pen-settings__range.md {
+            --height: 84px;
+            --knob-size: 36px;
+            --bar-height: 4px;
+        }
+
+        .modal-pen-settings__range.ios {
+            --height: 84px;
+            --knob-size: 52px;
+            --bar-height: 8px;
+        }
+
+        //2x the default pin text size
+        .modal-pen-settings__range::part(pin) {
+            font-size: 1.5rem;
+        }
+
+        .modal-pen-settings__scale-label {
+            font-size: 1.8rem;
+            min-width: 44px;
+        }
+    }
+}
