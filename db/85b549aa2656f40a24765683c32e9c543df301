@@ -1,0 +1,18 @@
+tests/unit/components/modals/ModalDraw.spec.js
+  h_2231ff2aa93473 66-67,69-72,185-187,192-195,198-199,203,209-215,219,221-263,266-272,274-276,278-279,282,284-289,386,391-393,399-403,429-430,432-490,495-541
+tests/unit/components/popovers/PopoverQuestionMedia.spec.js
+  h_2231ff2aa93473 1-77
+tests/unit/components/questions/QuestionPhoto.spec.js
+  h_2231ff2aa93473 13-14,53-56,173-205
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "db85b549aa2656f40a24765683c32e9c543df301",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
