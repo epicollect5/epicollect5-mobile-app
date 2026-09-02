@@ -1,0 +1,14 @@
+src/components/modals/ModalDraw.vue
+  h_2231ff2aa93473 115-117,130-137,139-152,156-174,184-228,237-240,385,388-391,397,423-428,430-442,444-445,448-467,469-498,564
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "688e1972d129dc2984f81ce7ff5443742d20b240",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
