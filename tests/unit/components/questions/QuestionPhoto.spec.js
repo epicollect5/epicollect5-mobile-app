@@ -10,6 +10,8 @@ import {Capacitor} from '@capacitor/core';
 import {utilsService} from '@/services/utilities/utils-service';
 import {notificationService} from '@/services/notification-service';
 import {saveBlobToTempDir} from '@/services/filesystem/save-blob-to-temp-service';
+import {popoverMediaHandler} from '@/use/questions/popover-media-handler';
+import {PARAMETERS} from '@/config';
 
 //instances created by modalController.create, so tests can resolve the
 //draw modal's dismissal like the real controller does
@@ -46,6 +48,10 @@ vi.mock('@/services/filesystem/save-blob-to-temp-service', () => ({
 
 vi.mock('@/use/questions/photo-take', () => ({
     photoTake: vi.fn()
+}));
+
+vi.mock('@/use/questions/popover-media-handler', () => ({
+    popoverMediaHandler: vi.fn(async () => {})
 }));
 
 vi.mock('@capacitor/core', () => ({
@@ -163,6 +169,39 @@ function mediaFile() {
 }
 
 describe('QuestionPhoto component', () => {
+
+    it('opens the draw pad from the media popover Draw action', async () => {
+        const wrapper = await factory();
+        //the popover only opens when a file is present; Draw rides on it
+        mediaFile().cached = 'photo.jpg';
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+            blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
+        })));
+
+        await wrapper.vm.openPopover({});
+        await flushPromises();
+
+        //the popover handler gets the photo type and the action callback
+        expect(popoverMediaHandler).toHaveBeenCalledWith(expect.objectContaining({
+            mediaType: PARAMETERS.QUESTION_TYPES.PHOTO,
+            onAction: expect.any(Function)
+        }));
+        const onAction = popoverMediaHandler.mock.calls[0][0].onAction;
+        expect(modalController.create).not.toHaveBeenCalled();
+
+        //its Draw entry dismisses with the DRAW action -> the pad opens;
+        //the call chain includes an event-driven FileReader, so wait for it
+        onAction(PARAMETERS.ACTIONS.DRAW);
+        await vi.waitFor(() => {
+            expect(modalController.create).toHaveBeenCalled();
+        });
+        expect(modalController.create).toHaveBeenCalledWith(expect.objectContaining({
+            component: ModalDraw,
+            componentProps: {existingDataURL: expect.stringContaining('data:image/jpeg;base64')}
+        }));
+        expect(useRootStore().isDrawModalActive).toBe(true);
+        vi.unstubAllGlobals();
+    });
 
     it('does not open the draw pad on the web platform', async () => {
         useRootStore().device.platform = 'web';

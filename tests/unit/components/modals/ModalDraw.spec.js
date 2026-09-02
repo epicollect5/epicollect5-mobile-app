@@ -63,8 +63,13 @@ vi.mock('@ionic/vue', () => ({
 }));
 
 //fire onload synchronously, as a data-URL image already in memory would;
-//sources containing 'FAIL' fire onerror instead (load-failure tests)
+//sources containing 'FAIL' fire onerror instead (load-failure tests).
+//the natural size is 640x480 (4:3) unless a test overrides it
 class FakeImage {
+    constructor() {
+        this.width = 640;
+        this.height = 480;
+    }
     set src(value) {
         this._src = value;
         if (value.includes('FAIL')) {
@@ -177,15 +182,80 @@ describe('ModalDraw component', () => {
         expect(canvasEl.width).toBe(400);
 
         //the deferred layout apply happens once the stroke ends, restoring
-        //the strokes recorded so far
+        //the strokes recorded so far, scaled to the new grid: the stroke
+        //point (1,1) on the old 400x300 grid replays at (0.75, 0.75) on the
+        //300x225 grid (proportional, not a stale absolute offset)
         pad.listeners.endStroke();
         expect(canvasEl.width).toBe(300);
         expect(canvasEl.height).toBe(225);
         expect(pad.clear).toHaveBeenCalled();
-        expect(pad.fromData).toHaveBeenCalledWith(pad._data, {clear: false});
+        expect(pad.fromData).toHaveBeenCalledWith(
+            [{color: '#000000', points: [{x: 0.75, y: 0.75}]}],
+            {clear: false}
+        );
     });
 
-    it('does not bring the cleared background photo back on a later layout change', async () => {
+    it('replays strokes proportionally after a rotation instead of at stale offsets', async () => {
+        const wrapper = await mountDraw();
+        const pad = padInstances[0];
+        const canvasEl = wrapper.find('canvas').element;
+
+        //landscape grid
+        const rectSpy = vi.spyOn(canvasEl, 'getBoundingClientRect').mockReturnValue(RECT(400, 300));
+        window.dispatchEvent(new Event('resize'));
+        await waitLayout();
+        expect(canvasEl.width).toBe(400);
+
+        //a stroke through the center of the landscape canvas
+        pad._data = [{color: '#000000', points: [{x: 200, y: 150}]}];
+        pad.listeners.beginStroke();
+        pad.listeners.endStroke();
+
+        //rotate to portrait: the replay scales with the grid (300x225)
+        ctx2d.drawImage.mockClear();
+        rectSpy.mockReturnValue(RECT(300, 225));
+        window.dispatchEvent(new Event('resize'));
+        await waitLayout();
+
+        expect(canvasEl.width).toBe(300);
+        expect(pad.fromData).toHaveBeenCalledWith(
+            [{color: '#000000', points: [{x: 150, y: 112.5}]}],
+            {clear: false}
+        );
+    });
+
+    it('fits a portrait background photo inside the canvas keeping its aspect ratio', async () => {
+        //portrait 480x640 photo on a 400x300 (4:3) canvas: it must be drawn
+        //centered and scaled to fit (225x300 with bars left/right), not
+        //stretched to fill 400x300
+        class PortraitImage extends FakeImage {
+            constructor() {
+                super();
+                this.width = 480;
+                this.height = 640;
+            }
+        }
+        vi.stubGlobal('Image', PortraitImage);
+        const wrapper = await mountDraw({existingDataURL: 'data:image/png;base64,AAAA'});
+        const canvasEl = wrapper.find('canvas').element;
+
+        const rectSpy = vi.spyOn(canvasEl, 'getBoundingClientRect').mockReturnValue(RECT(400, 300));
+        window.dispatchEvent(new Event('resize'));
+        await waitLayout();
+        expect(canvasEl.width).toBe(400);
+        expect(canvasEl.height).toBe(300);
+
+        ctx2d.drawImage.mockClear();
+        //rotate: it is re-drawn fitted on the canvas, not stretched
+        rectSpy.mockReturnValue(RECT(300, 225));
+        window.dispatchEvent(new Event('resize'));
+        await waitLayout();
+
+        const call = ctx2d.drawImage.mock.calls[0];
+        expect(call.slice(1)).toEqual([65.625, 0, 168.75, 225]);
+    });
+
+    it('clear performs a bulk undo and keeps the background photo', async () => {
         const wrapper = await mountDraw({existingDataURL: 'data:image/png;base64,AAAA'});
         const pad = padInstances[0];
         const canvasEl = wrapper.find('canvas').element;
@@ -193,31 +263,30 @@ describe('ModalDraw component', () => {
         //the existing photo was loaded and drawn on mount
         expect(ctx2d.drawImage).toHaveBeenCalled();
 
-        //initial layout
+        //a stroke on top of the photo (history: photo base + stroke)
+        pad._data = [{color: '#000000', points: [{x: 1, y: 1}]}];
+        pad.listeners.beginStroke();
+        pad.listeners.endStroke();
+        expect(wrapper.vm.state.history).toHaveLength(2);
+
+        //Clear erases every stroke at once but redraws the photo immediately
+        ctx2d.drawImage.mockClear();
+        wrapper.vm.clearAll();
+        expect(wrapper.vm.state.history).toHaveLength(0);
+        expect(ctx2d.drawImage).toHaveBeenCalled();
+
+        //the photo is not gone: a later layout change re-draws it
         const rectSpy = vi.spyOn(canvasEl, 'getBoundingClientRect').mockReturnValue(RECT(400, 300));
         window.dispatchEvent(new Event('resize'));
         await waitLayout();
         expect(canvasEl.width).toBe(400);
 
-        //rotation while the photo is still shown re-draws it on the canvas
+        ctx2d.drawImage.mockClear();
         rectSpy.mockReturnValue(RECT(300, 225));
         window.dispatchEvent(new Event('resize'));
         await waitLayout();
         expect(canvasEl.width).toBe(300);
-        expect(canvasEl.height).toBe(225);
         expect(ctx2d.drawImage).toHaveBeenCalled();
-
-        //user clears the drawing; a rotation must NOT bring the photo back
-        wrapper.vm.clearAll();
-        ctx2d.drawImage.mockClear();
-
-        rectSpy.mockReturnValue(RECT(760, 360));
-        window.dispatchEvent(new Event('resize'));
-        await waitLayout();
-
-        expect(canvasEl.width).toBe(760);
-        expect(canvasEl.height).toBe(360);
-        expect(ctx2d.drawImage).not.toHaveBeenCalled();
     });
 
     it('keeps a 4:3 canvas in landscape via a container-query capped width', async () => {
@@ -314,17 +383,24 @@ describe('ModalDraw component', () => {
         expect(pad.maxWidth).toBe(15);
     });
 
-    it('pushes a deep copy of each finished stroke into the history', async () => {
+    it('pushes a deep copy of each finished stroke into the history, normalized', async () => {
         const wrapper = await mountDraw();
         const pad = padInstances[0];
         const stroke = [{color: '#000000', points: [{x: 1, y: 1}]}];
         pad._data = stroke;
+        const canvasEl = wrapper.find('canvas').element;
+        //no layout change was forced: jsdom's default grid is 300x150
+        const grid = {width: canvasEl.width, height: canvasEl.height};
 
         pad.listeners.beginStroke();
         pad.listeners.endStroke();
 
         expect(wrapper.vm.state.history).toHaveLength(1);
-        expect(wrapper.vm.state.history[0]).toEqual(stroke);
+        //points are stored relative to the grid (0..1), deep-copied
+        expect(wrapper.vm.state.history[0]).toEqual([{
+            color: '#000000',
+            points: [{x: 1 / grid.width, y: 1 / grid.height}]
+        }]);
         //toData() returns the pad's live array; the recorded stroke must be a
         //deep copy so later strokes cannot rewrite history
         expect(wrapper.vm.state.history[0][0].points[0]).not.toBe(stroke[0].points[0]);
@@ -350,13 +426,117 @@ describe('ModalDraw component', () => {
         wrapper.vm.save();
         await flushPromises();
 
-        //the export canvas is white-filled 1024x768 and the visible drawing
-        //is stretched over it, then rasterized as a 50% JPEG
+        //no photo: a flat white 1024x768 canvas, strokes replayed only (no
+        //rasterized copy of the low-res visible canvas)
         expect(ctx2d.fillRect).toHaveBeenCalledWith(0, 0, 1024, 768);
-        const canvasEl = wrapper.find('canvas').element;
-        expect(ctx2d.drawImage).toHaveBeenCalledWith(canvasEl, 0, 0, 1024, 768);
+        expect(ctx2d.drawImage).not.toHaveBeenCalled();
+        //the stroke (1,1) on jsdom's 300x150 grid replays at output scale
+        const exportPad = padInstances[1];
+        expect(exportPad.fromData).toHaveBeenCalledWith(
+            [{color: '#000000', points: [{x: (1 / 300) * 1024, y: (1 / 150) * 768}]}],
+            {clear: false}
+        );
         expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.5);
         expect(modalController.dismiss).toHaveBeenCalledWith({dataURL: 'data:image/jpeg;base64,EXPORTED'});
+    });
+
+    it('save() keeps a portrait photo at its own aspect ratio without bars', async () => {
+        class PortraitImage extends FakeImage {
+            constructor() {
+                super();
+                this.width = 480;
+                this.height = 640;
+            }
+        }
+        vi.stubGlobal('Image', PortraitImage);
+        const wrapper = await mountDraw({existingDataURL: 'data:image/png;base64,AAAA'});
+        const pad = padInstances[0];
+        //stroke from the photo's left edge (93.75, 150) down to its right
+        //edge (206.25, 75): on the 300x150 grid the 480x640 photo is
+        //contain-fitted to 112.5x150 centered (x0 = 93.75)
+        pad._data = [{
+            color: '#000000',
+            points: [{x: 93.75, y: 150}, {x: 206.25, y: 75}]
+        }];
+        pad.listeners.beginStroke();
+        pad.listeners.endStroke();
+        const toDataURLSpy = vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL')
+            .mockReturnValue('data:image/jpeg;base64,EXPORTED');
+
+        wrapper.vm.save();
+        await flushPromises();
+
+        //the output is the photo's own aspect (768x1024), not the pad's 4:3
+        expect(ctx2d.fillRect).toHaveBeenCalledWith(0, 0, 768, 1024);
+        //the photo is drawn full-bleed from the original source: no bars
+        expect(ctx2d.drawImage).toHaveBeenCalledWith(
+            expect.objectContaining({width: 480, height: 640}),
+            0,
+            0,
+            768,
+            1024
+        );
+        //strokes are re-framed onto the photo's rect: the photo's left edge
+        //replays at output x = 0 and its right edge at x = 768 - full-bleed,
+        //so a line across the image comes out covering the whole image
+        const exportPad = padInstances[1];
+        expect(exportPad.fromData).toHaveBeenCalledWith(
+            [{color: '#000000', points: [{x: 0, y: 1024}, {x: 768, y: 512}]}],
+            {clear: false}
+        );
+        //regression: the photo must be painted BEFORE the stroke replay - the
+        //export pad's constructor clears the canvas and would wipe it
+        expect(ctx2d.drawImage.mock.invocationCallOrder.at(-1))
+            .toBeLessThan(exportPad.fromData.mock.invocationCallOrder[0]);
+        expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.5);
+        expect(modalController.dismiss).toHaveBeenCalledWith({dataURL: 'data:image/jpeg;base64,EXPORTED'});
+    });
+
+    it('save() crops stroke portions that ended on the letterbox bars at the photo edges', async () => {
+        class PortraitImage extends FakeImage {
+            constructor() {
+                super();
+                this.width = 480;
+                this.height = 640;
+            }
+        }
+        vi.stubGlobal('Image', PortraitImage);
+        const wrapper = await mountDraw({existingDataURL: 'data:image/png;base64,AAAA'});
+        const pad = padInstances[0];
+        //a stroke running across the FULL 300px-wide pad: it starts and ends
+        //inside the white letterbox bars (photo spans 93.75..206.25)
+        pad._data = [{
+            color: '#000000',
+            points: [{x: 10, y: 75}, {x: 290, y: 75}]
+        }];
+        pad.listeners.beginStroke();
+        pad.listeners.endStroke();
+        const toDataURLSpy = vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL')
+            .mockReturnValue('data:image/jpeg;base64,EXPORTED');
+
+        wrapper.vm.save();
+        await flushPromises();
+
+        //the bar portions re-frame OUTSIDE the 768-wide output canvas (x < 0
+        //and x > 768) and clip away; the remaining line runs edge to edge
+        //over the photo
+        const exportPad = padInstances[1];
+        const expectedK = 768 / 112.5;
+        expect(exportPad.fromData).toHaveBeenCalledWith(
+            [{
+                color: '#000000',
+                points: [
+                    {x: (10 - 93.75) * expectedK, y: 75 * expectedK},
+                    {x: (290 - 93.75) * expectedK, y: 75 * expectedK}
+                ]
+            }],
+            {clear: false}
+        );
+        const points = exportPad.fromData.mock.calls[0][0][0].points;
+        expect(points[0].x).toBeLessThan(0);
+        expect(points[1].x).toBeGreaterThan(768);
+        expect(points[0].y).toBeCloseTo(512);
+        expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.5);
     });
 
     it('cancel() dismisses at once when there is nothing to discard', async () => {
