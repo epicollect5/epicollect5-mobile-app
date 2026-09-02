@@ -1,0 +1,14 @@
+vite.config.js
+  h_2231ff2aa93473 68-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "8a03ff4d454dcd006cc6afdadcd268ca0c37563f",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
