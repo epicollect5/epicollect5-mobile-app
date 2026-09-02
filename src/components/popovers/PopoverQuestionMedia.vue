@@ -2,6 +2,17 @@
 	<ion-content>
 		<ion-list class="ion-no-padding ion-no-margin">
 			<ion-item
+				v-if="mediaType === PARAMETERS.QUESTION_TYPES.PHOTO"
+				lines="full"
+				@click="draw()"
+			>
+				<ion-icon
+					slot="start"
+					:icon="brush"
+				></ion-icon>
+				<ion-label>{{ labels.draw }}<small><sup>BETA</sup></small></ion-label>
+			</ion-item>
+			<ion-item
 				v-if="!isPWA"
 				lines="full"
 				@click="share()"
@@ -29,7 +40,7 @@
 
 <script>
 import { popoverController } from '@ionic/vue';
-import { trash, shareSocial } from 'ionicons/icons';
+import { trash, shareSocial, brush } from 'ionicons/icons';
 import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import { useRootStore } from '@/stores/root-store';
@@ -116,6 +127,11 @@ export default {
 		}
 
 		const methods = {
+			//photos only: opens the draw pad (ModalDraw) from the popover; the
+			//caller reacts to the DRAW action
+			draw() {
+				popoverController.dismiss(PARAMETERS.ACTIONS.DRAW);
+			},
 			async share() {
 				try {
 					await Share.share({
@@ -256,11 +272,13 @@ export default {
 
 		return {
 			labels,
+			PARAMETERS,
 			...methods,
 			...computedScope,
 			//icons
 			trash,
-			shareSocial
+			shareSocial,
+			brush
 		};
 	}
 };

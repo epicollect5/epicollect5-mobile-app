@@ -36,68 +36,39 @@
           @photo-clicked="openViewerPWA"
       ></dropzone>
 
-      <ion-grid v-if="!isPWA" class="ion-no-padding question-action-row">
-        <ion-row>
-          <ion-col
-              size="4"
-              size-md="2"
-              offset-md="3"
-              class="ion-align-self-center"
+      <grid-question-narrow v-if="!isPWA">
+        <template #content>
+          <ion-button
+              class="question-action-button ion-text-nowrap"
+              color="secondary"
+              expand="block"
+              @click="takePicture('camera')"
           >
-            <div class="question-action-tile">
-              <ion-button
-                  class="question-action-tile__button"
-                  color="secondary"
-                  :aria-label="labels.take"
-                  @click="takePicture('camera')"
-              >
-                <ion-icon
-                    :icon="camera"
-                ></ion-icon>
-              </ion-button>
-              <div class="question-action-tile__label">{{ labels.take }}</div>
-            </div>
-          </ion-col>
-          <ion-col
-              size="4"
-              size-md="2"
-              class="ion-align-self-center"
+            <ion-icon
+                slot="start"
+                :icon="camera"
+            ></ion-icon>
+            {{ labels.take }}
+          </ion-button>
+        </template>
+      </grid-question-narrow>
+
+      <grid-question-narrow v-if="!isPWA">
+        <template #content>
+          <ion-button
+              class="question-action-button ion-margin-top ion-text-nowrap"
+              color="secondary"
+              expand="block"
+              @click="takePicture('gallery')"
           >
-            <div class="question-action-tile">
-              <ion-button
-                  class="question-action-tile__button"
-                  color="secondary"
-                  :aria-label="labels.pick"
-                  @click="takePicture('gallery')"
-              >
-                <ion-icon
-                    :icon="images"
-                ></ion-icon>
-              </ion-button>
-              <div class="question-action-tile__label">{{ labels.pick }}</div>
-            </div>
-          </ion-col>
-          <ion-col
-              size="4"
-              size-md="2"
-              class="ion-align-self-center"
-          >
-            <div class="question-action-tile">
-              <ion-button
-                  class="question-action-tile__button"
-                  color="secondary"
-                  :aria-label="labels.draw"
-                  @click="openDrawPad()"
-              >
-                <ion-icon
-                    :icon="brush"
-                ></ion-icon>
-              </ion-button>
-              <div class="question-action-tile__label">{{ labels.draw }}</div>
-            </div>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+            <ion-icon
+                slot="start"
+                :icon="images"
+            ></ion-icon>
+            {{ labels.pick }}
+          </ion-button>
+        </template>
+      </grid-question-narrow>
 
       <!-- Photo thumbnail -->
       <div
@@ -121,21 +92,23 @@ import {modalController} from '@ionic/vue';
 import {STRINGS} from '@/config/strings.js';
 import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
-import {camera, images, brush} from 'ionicons/icons';
+import {camera, images} from 'ionicons/icons';
 import {inject, reactive, computed, onMounted} from 'vue';
 import {Capacitor} from '@capacitor/core';
 import ModalPhoto from '@/components/modals/ModalPhoto.vue';
 import ModalDraw from '@/components/modals/ModalDraw.vue';
 import {photoTake} from '@/use/questions/photo-take';
+import {saveBlobToTempDir} from '@/services/filesystem/save-blob-to-temp-service';
+import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
 import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
 import Dropzone from '@/components/Dropzone.vue';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {questionCommonService} from '@/services/entry/question-common-service';
-import {saveBlobToTempDir} from '@/services/filesystem/save-blob-to-temp-service';
 
 export default {
   components: {
+    GridQuestionNarrow,
     QuestionLabelAction,
     Dropzone
   },
@@ -275,54 +248,17 @@ export default {
             media,
             entryUuid,
             state, e,
-            mediaType: PARAMETERS.QUESTION_TYPES.PHOTO
+            mediaType: PARAMETERS.QUESTION_TYPES.PHOTO,
+            //the media popover gains a Draw entry on top of share/delete;
+            //it dismisses with the DRAW action and the pad opens from here
+            onAction: (action) => {
+              if (action === PARAMETERS.ACTIONS.DRAW) {
+                methods.openDrawPad();
+              }
+            }
           });
         } catch (error) {
           console.error('popoverMediaHandler failed', error);
-        }
-      },
-      takePicture(action) {
-        if (rootStore.device.platform !== PARAMETERS.WEB) {
-          photoTake({media, entryUuid, state, filename, action});
-        }
-      },
-      //open viewer to see image with zoom capabilities
-      async openViewer() {
-
-        try {
-          const componentProps = {
-            imageSource: state.imageSource,
-            fileSource: state.fileSource,
-            isPWA: false
-          };
-
-          const modal = await modalController.create({
-            component: ModalPhoto,
-            cssClass: 'modal-photo',
-            componentProps
-          });
-          return await modal.present();
-        }
-        catch (error) {
-          console.error('openViewer failed', error);
-        }
-      },
-      async openViewerPWA(fileURL) {
-        try {
-          const componentProps = {
-            imageSource: fileURL,
-            fileSource: fileURL,
-            isPWA: true
-          };
-          const modal = await modalController.create({
-            component: ModalPhoto,
-            cssClass: 'modal-photo',
-            componentProps
-          });
-          return await modal.present();
-        }
-        catch (error) {
-          console.error('openViewerPWA failed', error);
         }
       },
       async openDrawPad() {
@@ -397,6 +333,50 @@ export default {
         rootStore.isDrawModalActive = true;
         return drawModal.present();
       },
+      takePicture(action) {
+        if (rootStore.device.platform !== PARAMETERS.WEB) {
+          photoTake({media, entryUuid, state, filename, action});
+        }
+      },
+      //open viewer to see image with zoom capabilities
+      async openViewer() {
+
+        try {
+          const componentProps = {
+            imageSource: state.imageSource,
+            fileSource: state.fileSource,
+            isPWA: false
+          };
+
+          const modal = await modalController.create({
+            component: ModalPhoto,
+            cssClass: 'modal-photo',
+            componentProps
+          });
+          return await modal.present();
+        }
+        catch (error) {
+          console.error('openViewer failed', error);
+        }
+      },
+      async openViewerPWA(fileURL) {
+        try {
+          const componentProps = {
+            imageSource: fileURL,
+            fileSource: fileURL,
+            isPWA: true
+          };
+          const modal = await modalController.create({
+            component: ModalPhoto,
+            cssClass: 'modal-photo',
+            componentProps
+          });
+          return await modal.present();
+        }
+        catch (error) {
+          console.error('openViewerPWA failed', error);
+        }
+      },
       onImageLoad() {
         notificationService.hideProgressDialog();
       },
@@ -443,8 +423,7 @@ export default {
       ...computedScope,
       //icons
       camera,
-      images,
-      brush
+      images
     };
   }
 };
