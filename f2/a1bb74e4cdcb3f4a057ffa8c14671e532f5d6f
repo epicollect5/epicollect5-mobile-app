@@ -1,0 +1,18 @@
+tests/unit/components/modals/ModalDraw.spec.js
+  h_2231ff2aa93473 8-10,14-16,24-25,50-61,65-66,70-75,103,136-140,235,240-246,248-415
+tests/unit/components/modals/ModalPenSettings.spec.js
+  h_2231ff2aa93473 1-112
+tests/unit/components/questions/QuestionPhoto.spec.js
+  h_2231ff2aa93473 1-284
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "f2a1bb74e4cdcb3f4a057ffa8c14671e532f5d6f",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
