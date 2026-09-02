@@ -10,7 +10,8 @@
 					slot="start"
 					:icon="brush"
 				></ion-icon>
-				<ion-label>{{ labels.draw }}<small><sup>BETA</sup></small></ion-label>
+				<ion-label>{{ labels.draw }}</ion-label>
+        <sup>&nbsp;Beta</sup>
 			</ion-item>
 			<ion-item
 				v-if="!isPWA"
