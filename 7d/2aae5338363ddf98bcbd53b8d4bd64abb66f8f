@@ -1,0 +1,14 @@
+src/config/index.js
+  h_2231ff2aa93473 351
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "7d2aae5338363ddf98bcbd53b8d4bd64abb66f8f",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
