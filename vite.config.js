@@ -65,8 +65,12 @@ export default defineConfig(({ mode, command }) => {
                     compilerOptions: {
                         // tests render ion-* and other hyphenated tags as
                         // plain custom elements (no IonicVue context needed),
-                        // matching the previous vitest.config behaviour
-                        isCustomElement: (tag) => tag.includes('-') && tag !== 'base-layout'
+                        // matching the previous vitest.config behaviour.
+                        // real components stay real: a hyphenated custom
+                        // element with <template #content> slots would break
+                        // the SFC compiler ("Codegen node is missing")
+                        isCustomElement: (tag) => tag.includes('-') &&
+                            !['base-layout', 'grid-question-narrow'].includes(tag)
                     }
                 }
             } : {}),
