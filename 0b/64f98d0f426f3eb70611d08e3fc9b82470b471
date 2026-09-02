@@ -1,0 +1,19 @@
+src/components/popovers/PopoverQuestionMedia.vue
+  h_2231ff2aa93473 5-14,43,130-134,275,280-281
+  h_2231ff2aa93473 4,287
+src/components/questions/QuestionPhoto.vue
+  h_2231ff2aa93473 39-45,47-62,64-71,95,101-102,111,251-258,336-379,426
+src/use/questions/popover-media-handler.js
+  h_2231ff2aa93473 7,45-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "0b64f98d0f426f3eb70611d08e3fc9b82470b471",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
