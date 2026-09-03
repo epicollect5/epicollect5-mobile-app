@@ -38,6 +38,21 @@ const rollbar = new Rollbar({
 }
 );
 
+//JSON.stringify throws on circular values, BigInt, or throwing toJSON: fall
+//back so reporting itself never throws and hides the original failure
+function _safeStringify(value) {
+    try {
+        const result = JSON.stringify(value);
+        return typeof result === 'string' ? result : String(value);
+    } catch (error) {
+        try {
+            return String(value);
+        } catch (ignored) {
+            return '[unserializable]';
+        }
+    }
+}
+
 export const rollbarService = {
     //imp: edited to avoid memory leaks
     //imp: see https://github.com/rollbar/rollbar.js/issues/1126
@@ -68,7 +83,7 @@ export const rollbarService = {
             reportableError = new Error(context + ': ' + error.message);
             reportableError.stack = error.stack;
         } else {
-            reportableError = new Error(context + ': ' + JSON.stringify(error));
+            reportableError = new Error(context + ': ' + _safeStringify(error));
         }
         rollbar.critical(reportableError);
     },
