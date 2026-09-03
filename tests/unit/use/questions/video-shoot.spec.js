@@ -31,6 +31,8 @@ const cameraPreviewMock = vi.hoisted(() => ({
     deleteFile: vi.fn().mockResolvedValue({ success: true })
 }));
 
+const rollbarMock = vi.hoisted(() => ({ critical: vi.fn(), criticalWithContext: vi.fn() }));
+
 //the in-app camera branch needs to control what the modal hands back on dismiss
 const modalMock = vi.hoisted(() => {
     const modal = {
@@ -52,6 +54,7 @@ vi.mock('@/services/notification-service', () => ({ notificationService: nMock }
 vi.mock('@/services/utilities/utils-service', () => ({ utilsService: utilsMock }));
 vi.mock('@/services/filesystem/move-file-service', () => ({ moveFileService: moveFileServiceMock }));
 vi.mock('@capgo/camera-preview', () => ({ CameraPreview: cameraPreviewMock }));
+vi.mock('@/services/utilities/rollbar-service', () => ({ rollbarService: rollbarMock }));
 vi.mock('@whiteguru/capacitor-plugin-video-editor', () => ({ VideoEditor: videoEditorMock }));
 vi.mock('@/components/modals/ModalProgressEncoding', () => ({ default: {} }));
 vi.mock('@/components/modals/ModalCameraPreview', () => ({ default: {} }));
@@ -267,5 +270,23 @@ describe('videoShoot tests', () => {
         expect(videoEditorMock.edit).not.toHaveBeenCalled();
         expect(media[entryUuid]['q1'].cached).toBe('existing.mp4');
         expect(state.answer.answer).toBe('existing.mp4');
+    });
+
+    it('tracks a transcode failure as critical without persisting a phantom filename', async () => {
+        setupRootStore(PARAMETERS.ANDROID, { inAppCameraVideo: true });
+        modalMock.modal.onDidDismiss.mockResolvedValue({ data: { videoFilePath: '/rec.mp4' } });
+        videoEditorMock.edit.mockRejectedValueOnce(new Error('transcode boom'));
+        global.window = { setTimeout: vi.fn() };
+        const { media, entryUuid, state, filename } = makeArgs();
+
+        await videoShoot({ media, entryUuid, state, filename });
+
+        expect(nMock.showAlert).toHaveBeenCalled();
+        expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('videoShoot processing failed', expect.any(Error));
+        //the failed capture never reaches the media object
+        expect(media[entryUuid]['q1'].cached).toBe('');
+        expect(state.answer.answer).toBe('');
+        //the raw plugin recording is still discarded
+        expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/rec.mp4' });
     });
 });

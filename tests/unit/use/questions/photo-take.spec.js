@@ -31,6 +31,8 @@ const utilsMock = vi.hoisted(() => ({
     generateTimestamp: vi.fn().mockReturnValue('123')
 }));
 
+const rollbarMock = vi.hoisted(() => ({ critical: vi.fn(), criticalWithContext: vi.fn() }));
+
 vi.mock('@/stores/root-store', () => ({ useRootStore: vi.fn() }));
 vi.mock('@/config', () => ({
     PARAMETERS: {
@@ -50,6 +52,7 @@ vi.mock('@/services/notification-service', () => ({ notificationService: nMock }
 vi.mock('@/services/utilities/utils-service', () => ({ utilsService: utilsMock }));
 vi.mock('@/services/filesystem/move-file-service', () => ({ moveFileService: { moveToAppTemporaryDir: vi.fn().mockResolvedValue() } }));
 vi.mock('@/services/filesystem/resize-photo-service', () => ({ resizePhotoService: resizeMock }));
+vi.mock('@/services/utilities/rollbar-service', () => ({ rollbarService: rollbarMock }));
 vi.mock('@/components/modals/ModalCameraPreview.vue', () => ({ default: { name: 'ModalCameraPreview' } }));
 
 function setupRootStore({ platform = PARAMETERS.ANDROID, inAppCamera = false } = {}) {
@@ -170,7 +173,46 @@ describe('photoTake tests', () => {
 		expect(media[entryUuid]['q1'].cached).toBe('');
 		expect(state.answer.answer).toBe('');
 		expect(nMock.showAlert).toHaveBeenCalledWith('resize boom');
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('photoTake resize failed', expect.any(Error));
 		expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/capture.jpg' });
+	});
+
+	it('restores the existing photo when the in-app resize fails on a retake', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: '/capture.jpg' });
+		resizeMock.resizeToTempDir.mockRejectedValueOnce(new Error('resize boom'));
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+		media[entryUuid]['q1'].cached = 'existing.jpg';
+		media[entryUuid]['q1'].stored = 'existing.jpg';
+		state.answer.answer = 'existing.jpg';
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		expect(nMock.showAlert).toHaveBeenCalledWith('resize boom');
+		//the failed replacement keeps the previous references, not ''
+		expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+		expect(state.answer.answer).toBe('existing.jpg');
+		//the lost replacement capture is tracked as critical
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('photoTake resize failed', expect.any(Error));
+		//the unconsumed capture is still discarded from the plugin cache
+		expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/capture.jpg' });
+	});
+
+	it('restores the existing photo when the native capture errors on a retake', async () => {
+		setupRootStore();
+		nMock.startForegroundService.mockResolvedValue('granted');
+		Camera.getPhoto.mockRejectedValue(new Error('camera busy'));
+		const { media, entryUuid, state, filename, action } = makeArgs();
+		media[entryUuid]['q1'].cached = 'existing.jpg';
+		media[entryUuid]['q1'].stored = 'existing.jpg';
+		state.answer.answer = 'existing.jpg';
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		expect(Camera.getPhoto).toHaveBeenCalled();
+		expect(nMock.showAlert).toHaveBeenCalledWith('camera busy');
+		expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+		expect(state.answer.answer).toBe('existing.jpg');
 	});
 
     it('does not open the in-app modal on iOS even when inAppCamera flag is on', async () => {

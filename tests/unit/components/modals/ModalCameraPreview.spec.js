@@ -51,6 +51,12 @@ vi.mock('@ionic/vue', () => ({
 	modalController: mocks.modalController
 }));
 
+const rollbarMock = vi.hoisted(() => ({ critical: vi.fn(), criticalWithContext: vi.fn() }));
+
+vi.mock('@/services/utilities/rollbar-service', () => ({
+	rollbarService: rollbarMock
+}));
+
 vi.mock('@/stores/root-store', () => ({
 	useRootStore: () => ({ device: { platform: platformMock.platform } })
 }));
@@ -165,6 +171,8 @@ describe('ModalCameraPreview component', () => {
 		//dismissal is requested; the underlying app UI stays hidden until the modal
 		//content is actually unmounted (mock dismiss does not unmount, so do it manually)
 		expect(mocks.modalController.dismiss).toHaveBeenCalled();
+		//a dead-on-arrival camera session is tracked as critical
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('CameraPreview.start failed', expect.any(Error));
 		wrapper.unmount();
 		expect(document.body.classList.contains('camera-preview-open')).toBe(false);
 	});
@@ -409,6 +417,8 @@ describe('ModalCameraPreview component', () => {
 
 		expect(mocks.modalController.dismiss).toHaveBeenCalled();
 		expect(wrapper.vm.state.started).toBe(false);
+		//losing the session on restart is tracked as critical
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('CameraPreview restart failed', expect.any(Error));
 	});
 
 	it('video mode requests the microphone and starts with the audio track enabled', async () => {
@@ -617,6 +627,8 @@ describe('ModalCameraPreview component', () => {
 
 		expect(mocks.cameraPreview.stopRecordVideo).toHaveBeenCalled();
 		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ videoFilePath: '/bg.mp4' });
+		//a clean hand-off is not an error: nothing is reported
+		expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
 	});
 
 	it('video mode recovers when the native session already stopped the recording before backgrounding', async () => {
@@ -639,6 +651,8 @@ describe('ModalCameraPreview component', () => {
 		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
 		expect(mocks.cameraPreview.stop).toHaveBeenCalledWith({ force: true });
 		expect(wrapper.vm.state.started).toBe(false);
+		//the lost recording is tracked as critical
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('CameraPreview background recording lost', expect.any(Error));
 
 		await listener({ isActive: true });
 		await flushPromises();
@@ -703,5 +717,38 @@ describe('ModalCameraPreview component', () => {
 
 		expect(recordingRemove).toHaveBeenCalled();
 		expect(appStateRemove).toHaveBeenCalled();
+	});
+
+	it('recovers when the app backgrounds while the initial startup is still pending', async () => {
+		grantPermissions();
+		//hold the initial startup open so the backgrounding lands mid-startup
+		let resolveStart = null;
+		mocks.cameraPreview.start.mockReturnValue(new Promise((resolve) => {
+			resolveStart = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		expect(wrapper.vm.state.started).toBe(false);
+
+		//screen off before startup completes: still counts as backgrounded
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+		await listener({ isActive: false });
+		await flushPromises();
+
+		//startup completes while paused: the session is stale, not live
+		resolveStart();
+		await flushPromises();
+		expect(wrapper.vm.state.started).toBe(true);
+
+		//foregrounding releases the stale session and restarts the feed
+		await listener({ isActive: true });
+		await flushPromises();
+
+		expect(mocks.cameraPreview.stop).toHaveBeenCalledWith({ force: true });
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(2);
+		expect(wrapper.vm.state.started).toBe(true);
+
+		wrapper.unmount();
+		await flushPromises();
 	});
 });
