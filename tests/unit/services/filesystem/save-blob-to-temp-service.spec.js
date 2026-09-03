@@ -18,7 +18,7 @@ describe('saveBlobToTempDir', () => {
         delete global.window.resolveLocalFileSystemURL;
     });
 
-    function _setUpFs(mockDir, failOnGetFile = false, failOnWriter = false) {
+    function _setUpFs({failOnGetFile = false, failOnWriter = false, failOnRemove = false} = {}) {
         const mockFileWriter = {
             onwriteend: null,
             onerror: null,
@@ -45,22 +45,47 @@ describe('saveBlobToTempDir', () => {
             }
         };
 
-        const mockDirEntry = {
-            getFile(_filename, _options, success, error) {
-                if (failOnGetFile) {
-                    error(new Error('getFile failed'));
+        const mockExistingFile = {
+            remove: vi.fn(function(success, error) {
+                if (failOnRemove) {
+                    error(new Error('remove failed'));
                 } else {
-                    success(mockFile);
+                    success();
+                }
+            })
+        };
+
+        //virtual filesystem: tracks which filenames exist
+        const virtualFs = new Set();
+
+        const mockDirEntry = {
+            getFile(filename, options, success, error) {
+                if (options && options.create === false) {
+                    //check existence
+                    if (virtualFs.has(filename)) {
+                        success(mockExistingFile);
+                    } else {
+                        error(new Error('NOT_FOUND'));
+                    }
+                } else {
+                    //create: true — register in virtual FS
+                    virtualFs.add(filename);
+                    if (failOnGetFile) {
+                        error(new Error('getFile failed'));
+                    } else {
+                        success(mockFile);
+                    }
                 }
             }
         };
 
+        const mockDir = {lastUrl: ''};
         global.window.resolveLocalFileSystemURL = vi.fn((url, success) => {
             mockDir.lastUrl = url;
             success(mockDirEntry);
         });
 
-        return { mockDir, mockFile, mockFileWriter };
+        return {mockDir, mockFile, mockFileWriter, mockExistingFile, virtualFs};
     }
 
     it('rejects on web platform', async () => {
@@ -140,7 +165,7 @@ describe('saveBlobToTempDir', () => {
         rootStore.device = { platform: 'android' };
         rootStore.tempDir = '/tmp/';
 
-        _setUpFs({}, true);
+        _setUpFs({failOnGetFile: true});
 
         await expect(saveBlobToTempDir({blob: {}, filename: 'x.jpg'}))
             .rejects.toThrow('getFile failed');
@@ -151,7 +176,7 @@ describe('saveBlobToTempDir', () => {
         rootStore.device = { platform: 'android' };
         rootStore.tempDir = '/tmp/';
 
-        _setUpFs({}, false, true);
+        _setUpFs({failOnWriter: true});
 
         await expect(saveBlobToTempDir({blob: {}, filename: 'x.jpg'}))
             .rejects.toThrow('createWriter failed');
@@ -168,5 +193,82 @@ describe('saveBlobToTempDir', () => {
         mockFileWriter._triggerError(new Error('write failed'));
 
         await expect(promise).rejects.toThrow('write failed');
+    });
+
+    it('removes existing file before recreating when filename already exists', async () => {
+        const rootStore = useRootStore();
+        rootStore.device = { platform: 'android' };
+        rootStore.tempDir = '/tmp/';
+
+        const { mockFileWriter, mockExistingFile, virtualFs } = _setUpFs({});
+        const newBlob = {fake: 'new-blob'};
+
+        //simulate file already existing in temp dir
+        virtualFs.add('existing.jpg');
+
+        const promise = saveBlobToTempDir({blob: newBlob, filename: 'existing.jpg'});
+        mockFileWriter._triggerWriteEnd();
+        await promise;
+
+        //remove was called on the existing entry before create: true
+        expect(mockExistingFile.remove).toHaveBeenCalled();
+        //the new blob was written, not the old one
+        expect(mockFileWriter.write).toHaveBeenCalledWith(newBlob);
+        expect(mockFileWriter.write).toHaveBeenCalledTimes(1);
+    });
+
+    it('creates new file when filename does not exist (no remove called)', async () => {
+        const rootStore = useRootStore();
+        rootStore.device = { platform: 'android' };
+        rootStore.tempDir = '/tmp/';
+
+        const { mockFileWriter, mockExistingFile } = _setUpFs({});
+
+        const promise = saveBlobToTempDir({blob: {}, filename: 'fresh.jpg'});
+        mockFileWriter._triggerWriteEnd();
+        await promise;
+
+        //remove was never called because getFile({create:false}) returned NOT_FOUND
+        expect(mockExistingFile.remove).not.toHaveBeenCalled();
+        expect(mockFileWriter.write).toHaveBeenCalled();
+    });
+
+    it('writes a shorter replacement blob without trailing bytes', async () => {
+        const rootStore = useRootStore();
+        rootStore.device = { platform: 'android' };
+        rootStore.tempDir = '/tmp/';
+
+        const { mockFileWriter } = _setUpFs({});
+        //first write: long blob
+        const longBlob = {fake: 'long'};
+        let promise = saveBlobToTempDir({blob: longBlob, filename: 'resize.jpg'});
+        mockFileWriter._triggerWriteEnd();
+        await promise;
+
+        expect(mockFileWriter.write).toHaveBeenCalledWith(longBlob);
+
+        //second write: shorter blob triggers remove-then-create
+        mockFileWriter.write.mockClear();
+        const shortBlob = {fake: 'short'};
+        promise = saveBlobToTempDir({blob: shortBlob, filename: 'resize.jpg'});
+        mockFileWriter._triggerWriteEnd();
+        await promise;
+
+        expect(mockFileWriter.write).toHaveBeenCalledWith(shortBlob);
+        expect(mockFileWriter.write).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects when remove of existing file fails', async () => {
+        const rootStore = useRootStore();
+        rootStore.device = { platform: 'android' };
+        rootStore.tempDir = '/tmp/';
+
+        const { virtualFs } = _setUpFs({failOnRemove: true});
+
+        //simulate file already existing in temp dir
+        virtualFs.add('locked.jpg');
+
+        await expect(saveBlobToTempDir({blob: {}, filename: 'locked.jpg'}))
+            .rejects.toThrow('remove failed');
     });
 });

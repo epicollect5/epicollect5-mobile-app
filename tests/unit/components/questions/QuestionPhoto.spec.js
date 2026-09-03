@@ -11,6 +11,7 @@ import {utilsService} from '@/services/utilities/utils-service';
 import {notificationService} from '@/services/notification-service';
 import {saveBlobToTempDir} from '@/services/filesystem/save-blob-to-temp-service';
 import {popoverMediaHandler} from '@/use/questions/popover-media-handler';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 import {PARAMETERS} from '@/config';
 
 //instances created by modalController.create, so tests can resolve the
@@ -39,6 +40,12 @@ vi.mock('@/services/notification-service', () => ({
     notificationService: {
         confirmSingle: vi.fn(() => Promise.resolve(true)),
         showAlert: vi.fn()
+    }
+}));
+
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        critical: vi.fn()
     }
 }));
 
@@ -285,8 +292,14 @@ describe('QuestionPhoto component', () => {
     });
 
     it('resets the question when saving the drawing fails', async () => {
+        //set the cached file BEFORE mounting so the component's setup reads it
+        const rootStore = useRootStore();
+        const media = rootStore.entriesAddScope.entryService.entry.media;
+        media['entry-uuid-1'] = media['entry-uuid-1'] || {};
+        media['entry-uuid-1']['test_ref'] = {cached: 'drawing.jpg', stored: '', type: 'photo'};
+
         const wrapper = await factory();
-        mediaFile().cached = 'drawing.jpg';
+        expect(wrapper.vm.state.answer.answer).toBe('drawing.jpg');
         vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
             blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
         })));
@@ -297,13 +310,95 @@ describe('QuestionPhoto component', () => {
         modalDismissResolvers[0]({data: {dataURL: 'data:image/jpeg;base64,AAAA'}});
         await flushPromises();
 
-        //nothing sticks: the question reports no drawing and warns the user
-        expect(mediaFile().cached).toBe('');
-        expect(wrapper.vm.state.answer.answer).toBe('');
+        //previous attachment is preserved (not cleared)
+        expect(mediaFile().cached).toBe('drawing.jpg');
+        expect(wrapper.vm.state.answer.answer).toBe('drawing.jpg');
         expect(notificationService.showAlert).toHaveBeenCalledWith(
             'Unknown error',
             'Error'
         );
+        //error was reported to Rollbar
+        expect(rollbarService.critical).toHaveBeenCalledWith(expect.any(Error));
+        vi.unstubAllGlobals();
+    });
+
+    it('preserves previous attachment when save fails with a pre-existing stored file', async () => {
+        //set the stored file BEFORE mounting so the component's setup reads it
+        const rootStore = useRootStore();
+        const media = rootStore.entriesAddScope.entryService.entry.media;
+        media['entry-uuid-1'] = media['entry-uuid-1'] || {};
+        media['entry-uuid-1']['test_ref'] = {cached: '', stored: 'old-photo.jpg', type: 'photo'};
+
+        const wrapper = await factory();
+        //state.answer.answer was initialized from the stored filename
+        expect(wrapper.vm.state.answer.answer).toBe('old-photo.jpg');
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+            blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
+        })));
+        await wrapper.vm.openDrawPad();
+        await flushPromises();
+
+        saveBlobToTempDir.mockRejectedValueOnce(new Error('disk full'));
+        modalDismissResolvers[0]({data: {dataURL: 'data:image/jpeg;base64,AAAA'}});
+        await flushPromises();
+
+        //the stored reference is untouched; nothing was promoted to cached
+        expect(mediaFile().cached).toBe('');
+        expect(mediaFile().stored).toBe('old-photo.jpg');
+        expect(wrapper.vm.state.answer.answer).toBe('old-photo.jpg');
+        expect(rollbarService.critical).toHaveBeenCalled();
+        vi.unstubAllGlobals();
+    });
+
+    it('loads a stored photo into the draw modal when cached is empty', async () => {
+        const wrapper = await factory();
+        mediaFile().stored = 'stored-photo.jpg';
+        mediaFile().cached = '';
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+            blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
+        })));
+
+        await wrapper.vm.openDrawPad();
+        await flushPromises();
+
+        //the stored path is resolved via persistentDir
+        expect(Capacitor.convertFileSrc).toHaveBeenCalledWith(
+            'persistent/photos/proj-ref/stored-photo.jpg'
+        );
+        expect(modalController.create).toHaveBeenCalledWith(expect.objectContaining({
+            component: ModalDraw,
+            componentProps: {
+                existingDataURL: expect.stringContaining('data:image/jpeg;base64')
+            }
+        }));
+        expect(useRootStore().isDrawModalActive).toBe(true);
+        vi.unstubAllGlobals();
+    });
+
+    it('reports modal.present() failure to Rollbar and resets flag', async () => {
+        const wrapper = await factory();
+        mediaFile().cached = 'photo.jpg';
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+            blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
+        })));
+
+        //intercept the present() call on the next modal to be created
+        const origCreate = modalController.create;
+        try {
+            modalController.create = vi.fn(async (...args) => {
+                const modal = await origCreate(...args);
+                modal.present = vi.fn(() => Promise.reject(new Error('present failed')));
+                return modal;
+            });
+
+            await expect(wrapper.vm.openDrawPad()).rejects.toThrow('present failed');
+            await flushPromises();
+
+            expect(useRootStore().isDrawModalActive).toBe(false);
+            expect(rollbarService.critical).toHaveBeenCalledWith(expect.any(Error));
+        } finally {
+            modalController.create = origCreate;
+        }
         vi.unstubAllGlobals();
     });
 
