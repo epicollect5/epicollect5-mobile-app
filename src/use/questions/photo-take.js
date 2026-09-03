@@ -2,10 +2,14 @@ import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
 import {STRINGS} from '@/config/strings.js';
 import {Camera, CameraResultType, CameraSource} from '@capacitor/camera';
+import {CameraPreview} from '@capgo/camera-preview';
 import {Capacitor} from '@capacitor/core';
+import {modalController} from '@ionic/vue';
 import {notificationService} from '@/services/notification-service';
+import ModalCameraPreview from '@/components/modals/ModalCameraPreview.vue';
 import {utilsService} from '@/services/utilities/utils-service';
 import {moveFileService} from '@/services/filesystem/move-file-service';
+import {resizePhotoService} from '@/services/filesystem/resize-photo-service';
 
 export async function photoTake({media, entryUuid, state, filename, action}) {
 
@@ -96,19 +100,78 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
     }
 
     if (rootStore.device.platform !== PARAMETERS.WEB) {
-        sourceType = action === 'gallery' ? CameraSource.Photos : CameraSource.Camera;
 
-        cameraOptions = {
-            quality: 50,
-            source: sourceType,
-            resultType: CameraResultType.Uri,
-            width: 1024,
-            height: 1024,
-            format: 'jpeg',
-            correctOrientation: true
-        };
+        const useInAppCamera = rootStore.inAppCamera
+            && rootStore.device.platform === PARAMETERS.ANDROID
+            && action === 'camera';
 
-        await openCamera();
+        if (useInAppCamera) {
+            await notificationService.hideProgressDialog(0);
+            const modal = await modalController.create({
+                component: ModalCameraPreview,
+                cssClass: 'modal-camera-preview',
+                //no backdrop is shown (showBackdrop: false), but backdropDismiss must be
+                //true for Ionic to register the overlay on the Android back button
+                //handler, otherwise back does not close the camera
+                showBackdrop: false,
+                canDismiss: true,
+                backdropDismiss: true
+            });
+            //guard the EntriesAdd back handler while the camera is open (same pattern
+            //as isAudioModalActive/isLocationModalActive), so back never navigates the
+            //question page while the camera modal is presented
+            rootStore.isCameraPreviewModalActive = true;
+            await modal.present();
+            const { data } = await modal.onDidDismiss().finally(() => {
+                //modal is gone (dismissed by ✕ or back button): unguard the EntriesAdd back handler
+                rootStore.isCameraPreviewModalActive = false;
+            });
+
+            if (data && data.sourcePath) {
+                filename = utilsService.generateMediaFilename(
+                    entryUuid,
+                    PARAMETERS.QUESTION_TYPES.PHOTO				);
+                try {
+                    await resizePhotoService.resizeToTempDir(data.sourcePath, filename);
+                    media[entryUuid][state.inputDetails.ref].cached = filename;
+                    state.answer.answer = filename;
+                    //show the captured photo on the question view
+                    _loadImageOnView(tempDir + filename);
+                } catch (error) {
+                    console.log(error);
+                    //reset the media object so the entry save does not try to save a missing file
+                    media[entryUuid][state.inputDetails.ref].cached = '';
+                    state.answer.answer = '';
+                    await notificationService.showAlert(error.message || labels.unknown_error);
+                } finally {
+                    //the modal hands the capture over without deleting it (the resize read
+                    //above races an unmount-time deletion), so delete the temp capture now
+                    //that it has been consumed (or failed), keeping the app cache clean
+                    try {
+                        await CameraPreview.deleteFile({path: data.sourcePath});
+                    } catch (deleteError) {
+                        console.log('Failed to delete captured photo: ' + deleteError);
+                    }
+                }
+            } else {
+                media[entryUuid][state.inputDetails.ref].cached = '';
+                state.answer.answer = '';
+            }
+        } else {
+            sourceType = action === 'gallery' ? CameraSource.Photos : CameraSource.Camera;
+
+            cameraOptions = {
+                quality: 50,
+                source: sourceType,
+                resultType: CameraResultType.Uri,
+                width: 1024,
+                height: 1024,
+                format: 'jpeg',
+                correctOrientation: true
+            };
+
+            await openCamera();
+        }
     } else {
         notificationService.hideProgressDialog();
     }

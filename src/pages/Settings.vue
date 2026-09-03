@@ -138,6 +138,52 @@
 				</ion-card-content>
 			</ion-card>
 
+			<ion-card v-if="isAndroid">
+				<ion-card-header class="settings-label">
+					<ion-card-title
+						data-translate="photo_card_title"
+						class="ion-text-center ion-text-uppercase"
+					>
+						{{ labels.photo_card_title }}
+					</ion-card-title>
+				</ion-card-header>
+				<ion-card-content class="ion-text-left ion-no-padding">
+					<ion-item
+						lines="none"
+						class="ion-text-left"
+					>
+						<ion-toggle
+							data-translate="use_in_app_camera"
+							@ionChange="updateInAppCamera($event)"
+							color="secondary"
+							:checked="state.inAppCamera"
+						>
+							<ion-label class="ion-text-wrap">{{ labels.use_in_app_camera }}</ion-label>
+						</ion-toggle>
+					</ion-item>
+					<ion-item
+						lines="none"
+						class="ion-text-left"
+					>
+						<p class="ion-padding-start ion-text-wrap">
+							<strong>{{ labels.in_app_camera_helper }}</strong>
+						</p>
+					</ion-item>
+					<ion-card-content class="ion-text-center">
+						<ion-button
+							color="warning"
+							@click="openInAppCameraDocs()"
+						>
+							<ion-icon
+								slot="start"
+								:icon="openOutline"
+							></ion-icon>
+							{{ labels.learn_more }}
+						</ion-button>
+					</ion-card-content>
+				</ion-card-content>
+			</ion-card>
+
 			<ion-card v-if="isDebug || hasEasterEggProject">
 				<ion-card-header class="settings-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
@@ -164,7 +210,7 @@
 </template>
 
 <script>
-import { chevronBackOutline, add, remove, checkmark } from 'ionicons/icons';
+import { chevronBackOutline, add, remove, checkmark, openOutline } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
@@ -187,6 +233,7 @@ export default {
 			serverUrl: rootStore.serverUrl,
 			selectedTextSize: rootStore.selectedTextSize,
 			collectErrors: rootStore.collectErrors,
+			inAppCamera: rootStore.inAppCamera,
 			isSaving: false
 		});
 		const zoomLevels = PARAMETERS.ZOOM_LEVELS;
@@ -197,6 +244,9 @@ export default {
 			}),
 			isDebug: computed(() => {
 				return PARAMETERS.DEBUG;
+			}),
+			isAndroid: computed(() => {
+				return rootStore.device.platform === PARAMETERS.ANDROID;
 			}),
 			hasEasterEggProject: computed(() => {
 				return rootStore.easterEgg;
@@ -250,8 +300,18 @@ export default {
 						case PARAMETERS.SETTINGS_KEYS.COLLECT_ERRORS:
 
 							try {
-								await databaseInsertService.insertSetting(key, state.collectErrors);
+								await databaseInsertService.insertSetting(key, state.collectErrors ? 'true' : 'false');
 								rootStore.collectErrors = state.collectErrors;
+							} catch (error) {
+								console.log(error);
+								failed = true;
+							}
+							break;
+						case PARAMETERS.SETTINGS_KEYS.IN_APP_CAMERA:
+
+							try {
+								await databaseInsertService.insertSetting(key, state.inAppCamera ? 'true' : 'false');
+								rootStore.inAppCamera = state.inAppCamera;
 							} catch (error) {
 								console.log(error);
 								failed = true;
@@ -277,6 +337,13 @@ export default {
 				rootStore.collectErrors = state.collectErrors;
 				console.log('Rollbar reporting ->', rootStore.collectErrors);
 				rollbarService.configure({ enabled: Boolean(rootStore.collectErrors) });
+			},
+			updateInAppCamera(e) {
+				state.inAppCamera = e.detail.checked;
+				rootStore.inAppCamera = state.inAppCamera;
+			},
+			openInAppCameraDocs() {
+				window.open(PARAMETERS.IN_APP_CAMERA_DOCS_URL, '_system', 'location=yes');
 			}
 		};
 
@@ -302,7 +369,8 @@ export default {
 			chevronBackOutline,
 			add,
 			remove,
-			checkmark
+			checkmark,
+			openOutline
 		};
 	}
 };

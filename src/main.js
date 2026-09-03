@@ -325,6 +325,9 @@ export const app = createApp(App)
         //collect errors preferences
         rootStore.collectErrors = await initService.getCollectErrorsPreference();
 
+        //in-app camera preferences
+        rootStore.inAppCamera = await initService.getInAppCameraPreference();
+
         // Attempt to retrieve the jwt token
         rootStore.user = await initService.retrieveJwtToken();
     }
