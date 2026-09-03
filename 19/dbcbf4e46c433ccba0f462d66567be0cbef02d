@@ -1,0 +1,27 @@
+src/use/questions/video-shoot.js
+  s_09f5efda71ffae::t_47127ced8bcfcf 192-193
+src/use/questions/photo-take.js
+  s_09f5efda71ffae::t_4cd9ea489d2b74 168-169
+  s_09f5efda71ffae::t_34dd253a85d48a 131-144
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "19dbcbf4e46c433ccba0f462d66567be0cbef02d",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_09f5efda71ffae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f983cb7dbffeZHyP3mGpvhpvYA",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
