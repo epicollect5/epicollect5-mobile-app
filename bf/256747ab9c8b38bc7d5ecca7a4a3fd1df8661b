@@ -1,0 +1,18 @@
+src/components/modals/ModalCameraPreview.vue
+  h_2231ff2aa93473 15-21,27-31,33-39,42,44,47,68,72,76-83,85,89,103,112-117,130-131,133,136,141-170,173-175,181-185,311-388,403-407,419-427,457-471,484-488,491-494,501-502,516
+src/theme/components/modals/ModalCameraPreview.scss
+  h_2231ff2aa93473 68-77
+src/theme/mixins.scss
+  h_2231ff2aa93473 874-880,890-895,908-919
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "bf256747ab9c8b38bc7d5ecca7a4a3fd1df8661b",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
