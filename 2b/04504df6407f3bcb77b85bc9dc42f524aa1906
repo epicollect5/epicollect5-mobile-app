@@ -1,0 +1,16 @@
+src/use/questions/popover-media-handler.js
+  h_2231ff2aa93473 43,79-80
+tests/unit/use/questions/popover-media-handler.spec.js
+  h_2231ff2aa93473 1-140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "2b04504df6407f3bcb77b85bc9dc42f524aa1906",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
