@@ -16,6 +16,7 @@ export const useRootStore = defineStore('RootStore', {
             //by default, we collect WebView errors in production
             collectErrors: true,
             inAppCamera: false,
+            inAppCameraVideo: false,
             continueProjectVersionUpdate: false,
             user: {
                 jwt: null,
