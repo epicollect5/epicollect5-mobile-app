@@ -1,0 +1,33 @@
+src/components/modals/ModalCameraPreview.vue
+  s_6989f7569db7d6::t_9c7a38127b6263 1-63,65-287
+  s_6989f7569db7d6::t_5e0bb82ff41218 64
+  s_6989f7569db7d6::t_38dc7965aaa881 288-290
+src/theme/components/modals/ModalCameraPreview.scss
+  s_6989f7569db7d6::t_240f8d3ded8e81 1-19,29,37,49,58,67
+  s_6989f7569db7d6::t_9e4983c7dac774 20-22,26-28
+  s_6989f7569db7d6::t_c6933a350ba45f 30-32,34-36
+  s_6989f7569db7d6::t_3322bd4c58da5f 38-40,46-48
+  s_6989f7569db7d6::t_b738c95922da6e 50-52,55-57
+  s_6989f7569db7d6::t_2cf5f44f917add 59-61,64-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "6aa7d98b04614d26c905c3a4690c4fb7c127ac2d",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_6989f7569db7d6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f9c027b09ffeGa5Lfo210D8ZO5",
+        "model": "minimax/minimax-m3:free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
