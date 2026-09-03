@@ -237,8 +237,7 @@ describe('photoTake tests', () => {
         expect(nMock.startForegroundService).toHaveBeenCalled();
     });
 
-    it('resets media when the in-app modal is cancelled', async () => {
-        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+    it('resets media when the in-app modal is cancelled', async () => {        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
         setupModalPresent({ sourcePath: '' });
         const { media, entryUuid, state, filename, action } = makeArgs('camera');
 
@@ -308,5 +307,18 @@ describe('photoTake tests', () => {
 
         expect(rootStore.isCameraPreviewModalActive).toBe(false);
         expect(media[entryUuid]['q1'].cached).toBe('');
+    });
+
+    it('unguards the back handler when modal presentation fails', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '/capture.jpg' });
+        modalMock.present.mockRejectedValueOnce(new Error('present boom'));
+        const rootStore = useRootStore();
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        await expect(photoTake({ media, entryUuid, state, filename, action })).rejects.toThrow('present boom');
+
+        expect(rootStore.isCameraPreviewModalActive).toBe(false);
+        expect(resizeMock.resizeToTempDir).not.toHaveBeenCalled();
     });
 });

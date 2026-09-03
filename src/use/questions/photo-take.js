@@ -93,7 +93,7 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
         } catch (error) {
             console.log(error);
             await notificationService.stopForegroundService();
-            notificationService.hideProgressDialog();
+            await notificationService.hideProgressDialog();
             if (!(typeof error.message === 'string' && error.message.toLowerCase().includes('user cancelled photos app'))) {
                 //restore the previous references so a failed retake does not drop
                 //the existing photo (fresh captures restore '' as before, so the
@@ -128,13 +128,11 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
             //as isAudioModalActive/isLocationModalActive), so back never navigates the
             //question page while the camera modal is presented
             rootStore.isCameraPreviewModalActive = true;
-            await modal.present();
-            const { data } = await modal.onDidDismiss().finally(() => {
-                //modal is gone (dismissed by ✕ or back button): unguard the EntriesAdd back handler
-                rootStore.isCameraPreviewModalActive = false;
-            });
+            try {
+                await modal.present();
+                const { data } = await modal.onDidDismiss();
 
-            if (data && data.sourcePath) {
+                if (data && data.sourcePath) {
                 //reuse the existing filename when replacing/retaking (same rules as
                 //the native openCamera branch above), so repeated captures do not
                 //orphan a temp file per attempt
@@ -182,7 +180,12 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                 }
             } else {
                 //dismissed without capturing (back button): preserve any existing
-                //photo so saving the entry does not drop the original attachment
+                //photo, so saving the entry does not drop the original attachment
+            }
+            } finally {
+                //modal is gone (dismissed by ✕ or back button), or presentation
+                //failed: always unguard the EntriesAdd back handler
+                rootStore.isCameraPreviewModalActive = false;
             }
         } else {
             sourceType = action === 'gallery' ? CameraSource.Photos : CameraSource.Camera;
@@ -200,6 +203,6 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
             await openCamera();
         }
     } else {
-        notificationService.hideProgressDialog();
+        await notificationService.hideProgressDialog();
     }
 }

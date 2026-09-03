@@ -62,7 +62,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             });
 
             // 2. Prepare UI
-            notificationService.hideProgressDialog();
+            await notificationService.hideProgressDialog();
             await _showModalProgressEncoding(labels.encoding_video);
 
             // 3. Perform Transcoding
@@ -98,7 +98,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             await notificationService.showAlert(STRINGS[language].labels.cannot_save_file);
         } finally {
             // 6. Cleanup - This runs on both Success AND Error
-            notificationService.hideProgressDialog();
+            await notificationService.hideProgressDialog();
             if (stopService) {
                 await notificationService.stopForegroundService();
             }
@@ -162,7 +162,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
     //use the embedded camera preview for video recording (Android only, opt-in):
     //no foreground service is needed because the app never leaves the foreground
     //(unlike the system camera app), and the captured file goes through the same
-    //transcode + move pipeline as the native flow
+    //transcoding + move pipeline as the native flow
     const useInAppCamera = rootStore.inAppCameraVideo
         && rootStore.device.platform === PARAMETERS.ANDROID;
 
@@ -184,17 +184,20 @@ export async function videoShoot({media, entryUuid, state, filename}) {
         //guard the EntriesAdd back handler while the camera is open (same pattern
         //as photo-take), so back never navigates the question page while recording
         rootStore.isCameraPreviewModalActive = true;
-        await modal.present();
-        const { data } = await modal.onDidDismiss().finally(() => {
-            //modal is gone (dismissed by ✕ or back button): unguard the EntriesAdd back handler
-            rootStore.isCameraPreviewModalActive = false;
-        });
+        try {
+            await modal.present();
+            const { data } = await modal.onDidDismiss();
 
-        if (data && data.videoFilePath) {
-            await _processCapturedVideo(data.videoFilePath, false, true);
-        } else {
-            //dismissed without recording: preserve any existing video so saving
-            //the entry does not drop the original attachment
+            if (data && data.videoFilePath) {
+                await _processCapturedVideo(data.videoFilePath, false, true);
+            } else {
+                //dismissed without recording: preserve any existing video so saving
+                //the entry does not drop the original attachment
+            }
+        } finally {
+            //modal is gone (dismissed by ✕ or back button), or presentation
+            //failed: always unguard the EntriesAdd back handler
+            rootStore.isCameraPreviewModalActive = false;
         }
         return;
     }

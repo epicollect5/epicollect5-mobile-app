@@ -289,4 +289,16 @@ describe('videoShoot tests', () => {
         //the raw plugin recording is still discarded
         expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/rec.mp4' });
     });
+
+    it('unguards the back handler when modal presentation fails', async () => {
+        setupRootStore(PARAMETERS.ANDROID, { inAppCameraVideo: true });
+        modalMock.modal.present.mockRejectedValueOnce(new Error('present boom'));
+        const rootStore = useRootStore();
+        const { media, entryUuid, state, filename } = makeArgs();
+
+        await expect(videoShoot({ media, entryUuid, state, filename })).rejects.toThrow('present boom');
+
+        expect(rootStore.isCameraPreviewModalActive).toBe(false);
+        expect(videoEditorMock.edit).not.toHaveBeenCalled();
+    });
 });
