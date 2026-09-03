@@ -1,0 +1,41 @@
+src/use/questions/photo-take.js
+  s_6989f7569db7d6::t_0395fd3d6b3ce6 12
+  s_6989f7569db7d6::t_5a656c3406455c 103-174
+  s_6989f7569db7d6::t_f547a412d4a5a3 7
+  s_6989f7569db7d6::t_68b9cdeeaf7d8d 9
+src/pages/Settings.vue
+  s_6989f7569db7d6::t_7bd4374282b50a 340-346
+  s_6989f7569db7d6::t_82661138e6e84c 141-160,162-186
+  s_6989f7569db7d6::t_6682dd7ec2b6ac 161
+  s_6989f7569db7d6::t_cd069e045f3574 372-373
+  s_6989f7569db7d6::t_00ac1d73dc8a7f 310-312,314-319
+  s_6989f7569db7d6::t_6fe1cba0d60530 236
+  s_6989f7569db7d6::t_8b7c360c67e8f1 213
+  s_6989f7569db7d6::t_153ddf2a7f0308 303
+  s_6989f7569db7d6::t_ab02c26c3c1c19 313
+  s_6989f7569db7d6::t_b2060508d12512 248-249
+  s_6989f7569db7d6::t_7592c16e1b260b 250
+src/main.js
+  s_6989f7569db7d6::t_956760e6f6c8f7 328-330
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "1354e8bd53f48e5c52ebb458751e2c0479e53233",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_6989f7569db7d6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f9c027b09ffeGa5Lfo210D8ZO5",
+        "model": "minimax/minimax-m3:free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
