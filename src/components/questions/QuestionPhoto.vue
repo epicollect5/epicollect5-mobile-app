@@ -268,6 +268,7 @@ export default {
         }
 
         let existingDataURL = '';
+        let imageLoadFailed = false;
         const mediaFile = media[entryUuid][state.inputDetails.ref];
         if (mediaFile.cached !== '') {
           try {
@@ -283,7 +284,7 @@ export default {
           } catch (error) {
             console.warn('Failed to load existing drawing for editing', error);
             rollbarService.critical(error);
-            existingDataURL = '';
+            imageLoadFailed = true;
           }
         } else if (mediaFile.stored !== '') {
           try {
@@ -301,8 +302,14 @@ export default {
           } catch (error) {
             console.warn('Failed to load stored photo for drawing', error);
             rollbarService.critical(error);
-            existingDataURL = '';
+            imageLoadFailed = true;
           }
+        }
+
+        //do not open a blank canvas: the user would unknowingly replace the
+        //original photo with a drawing on white when saving
+        if (imageLoadFailed) {
+          return;
         }
 
         const drawModal = await modalController.create({

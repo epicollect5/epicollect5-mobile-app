@@ -19,19 +19,29 @@ export const saveBlobToTempDir = ({blob, filename}) => {
         const protocol = rootStore.device.platform === PARAMETERS.IOS ? 'file://' : '';
         const tempDir = rootStore.tempDir;
 
-        //imp: when the same filename already exists we remove and recreate
-        //the file before writing. Cordova's FileWriter.write writes at the
-        //current offset (truncated to 0 by the spec on open, but trailing
-        //bytes have been observed to persist on a shorter replacement).
-        //Replacing the entry guarantees the on-disk length matches the
-        //new blob with no leftover tail.
+        //imp: write to a temp file first, then atomically move it into place.
+        //This avoids two failure modes of remove-then-create:
+        //  1. the original is deleted before the replacement is written, so a
+        //     write failure leaves no file to roll back to
+        //  2. Cordova's FileWriter has been observed to leave trailing bytes
+        //     on a shorter replacement when the file is reused in place
+        //moveTo overwrites the target atomically when it already exists, so
+        //the original stays on disk until the replacement is confirmed.
+        const tmpFilename = filename + '.tmp';
+
         const writeBlob = function (file) {
             file.createWriter(function (fileWriter) {
                 fileWriter.onwriteend = function () {
-                    resolve(filename);
+                    //write succeeded: move the temp file into place
+                    moveTemp();
                 };
                 fileWriter.onerror = function (error) {
-                    reject(error);
+                    //write failed: clean up the temp file, original is untouched
+                    file.remove(function () {
+                        reject(error);
+                    }, function () {
+                        reject(error);
+                    });
                 };
                 fileWriter.write(blob);
             }, function (error) {
@@ -39,9 +49,32 @@ export const saveBlobToTempDir = ({blob, filename}) => {
             });
         };
 
-        const createNew = function () {
-            dir.getFile(filename, {create: true}, function (file) {
-                writeBlob(file);
+        const moveTemp = function () {
+            dir.getFile(tmpFilename, {create: false}, function (tmpEntry) {
+                dir.getFile(filename, {create: false}, function (existingEntry) {
+                    //target exists: move overwrites it atomically
+                    tmpEntry.moveTo(dir, filename, function () {
+                        resolve(filename);
+                    }, function (error) {
+                        //move failed: clean up temp, original is untouched
+                        tmpEntry.remove(function () {
+                            reject(error);
+                        }, function () {
+                            reject(error);
+                        });
+                    });
+                }, function () {
+                    //target does not exist yet: move creates it
+                    tmpEntry.moveTo(dir, filename, function () {
+                        resolve(filename);
+                    }, function (error) {
+                        tmpEntry.remove(function () {
+                            reject(error);
+                        }, function () {
+                            reject(error);
+                        });
+                    });
+                });
             }, function (error) {
                 reject(error);
             });
@@ -52,15 +85,12 @@ export const saveBlobToTempDir = ({blob, filename}) => {
             protocol + tempDir,
             function (resolvedDir) {
                 Object.assign(dir, resolvedDir);
-                resolvedDir.getFile(filename, {create: false}, function (existing) {
-                    existing.remove(function () {
-                        createNew();
-                    }, function (error) {
-                        reject(error);
-                    });
-                }, function () {
-                    //NOT_FOUND (or anything else): nothing to remove
-                    createNew();
+                //write to the temp filename; the original is untouched until
+                //moveTemp atomically replaces it
+                dir.getFile(tmpFilename, {create: true}, function (file) {
+                    writeBlob(file);
+                }, function (error) {
+                    reject(error);
                 });
             },
             function (error) {
