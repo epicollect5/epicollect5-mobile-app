@@ -1,0 +1,27 @@
+src/pages/Settings.vue
+  s_09f5efda71ffae::t_5a46158d97630b 291-292
+  s_09f5efda71ffae::t_b19213fa5e9dae 378-390
+  s_09f5efda71ffae::t_46b11f6ec02f8e 345-347,349
+  s_09f5efda71ffae::t_5d19e30c32fa69 391-392
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "1d0051faefe7811156a813388be67a540e005622",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_09f5efda71ffae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f983cb7dbffeZHyP3mGpvhpvYA",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
