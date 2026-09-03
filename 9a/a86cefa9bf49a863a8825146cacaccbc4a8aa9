@@ -1,0 +1,14 @@
+src/stores/root-store.js
+  h_2231ff2aa93473 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "9aa86cefa9bf49a863a8825146cacaccbc4a8aa9",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
