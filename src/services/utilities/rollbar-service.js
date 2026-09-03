@@ -58,6 +58,20 @@ export const rollbarService = {
     critical(error) {
         rollbar.critical(error);
     },
+    //Shared reporter for caught errors: keeps the existing console.log at the
+    //call site, prefixes the operation context for Rollbar grouping, preserves
+    //the original stack, and wraps plain error objects (eg. File error code 5)
+    //so Rollbar gets a usable report
+    criticalWithContext(context, error) {
+        let reportableError;
+        if (error instanceof Error) {
+            reportableError = new Error(context + ': ' + error.message);
+            reportableError.stack = error.stack;
+        } else {
+            reportableError = new Error(context + ': ' + JSON.stringify(error));
+        }
+        rollbar.critical(reportableError);
+    },
     configure(params) {
         rollbar.configure(params);
     },
