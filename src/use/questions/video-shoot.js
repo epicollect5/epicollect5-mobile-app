@@ -10,6 +10,7 @@ import { CameraPreview } from '@capgo/camera-preview';
 import ModalProgressEncoding from '@/components/modals/ModalProgressEncoding';
 import ModalCameraPreview from '@/components/modals/ModalCameraPreview.vue';
 import { modalController } from '@ionic/vue';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 export async function videoShoot({media, entryUuid, state, filename}) {
 
@@ -91,6 +92,9 @@ export async function videoShoot({media, entryUuid, state, filename}) {
 
         } catch (error) {
             console.error('Video processing failed:', error);
+            //the capture could not be transcoded or moved: track it, the new
+            //recording is lost even though any previous references survive
+            rollbarService.criticalWithContext('videoShoot processing failed', error);
             await notificationService.showAlert(STRINGS[language].labels.cannot_save_file);
         } finally {
             // 6. Cleanup - This runs on both Success AND Error
