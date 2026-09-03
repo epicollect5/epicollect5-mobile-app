@@ -1,0 +1,29 @@
+src/use/questions/photo-take.js
+  s_09f5efda71ffae::t_90ba058c4adc21 164-165
+  s_09f5efda71ffae::t_159dccfa060382 166
+  s_09f5efda71ffae::t_a7a392ff1553a8 152-155,167-171
+  s_09f5efda71ffae::t_5de7249ed8d110 53-57
+  s_09f5efda71ffae::t_57a5bb0c913a4d 13
+  s_09f5efda71ffae::t_ffbb2a8741f11b 98-101,103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "8cc561eb26ca2b1ce544d74574a4e5345d8b3061",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_09f5efda71ffae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f983cb7dbffeZHyP3mGpvhpvYA",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
