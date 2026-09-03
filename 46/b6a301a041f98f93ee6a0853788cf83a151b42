@@ -1,0 +1,26 @@
+src/use/questions/video-shoot.js
+  s_09f5efda71ffae::t_10c2f94bd2cf36 97
+  s_09f5efda71ffae::t_926cb83467be9b 95-96
+  s_09f5efda71ffae::t_10f93776ecb239 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "46b6a301a041f98f93ee6a0853788cf83a151b42",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_09f5efda71ffae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f983cb7dbffeZHyP3mGpvhpvYA",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
