@@ -1,0 +1,16 @@
+src/config/index.js
+  h_2231ff2aa93473 361-362
+src/config/strings.js
+  h_2231ff2aa93473 22-24,294-296,566-568,838-840,1110-1112,1382-1384,1654-1656,1926-1928,2198-2200
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e0be1bfc02feb85fe1fc700506eee15ad8803e02",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
