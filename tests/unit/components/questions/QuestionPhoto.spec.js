@@ -220,6 +220,61 @@ describe('QuestionPhoto component', () => {
         expect(useRootStore().isDrawModalActive).toBe(false);
     });
 
+    it('does not open the draw pad when the cached photo fails to load', async () => {
+        const wrapper = await factory();
+        mediaFile().cached = 'corrupt.jpg';
+        //fetch succeeds but the blob read fails
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+            blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
+        })));
+        vi.stubGlobal('FileReader', class {
+            constructor() {}
+            readAsDataURL() {
+                if (this.onerror) {
+                    this.onerror(new Error('read failed'));
+                }
+            }
+        });
+
+        await wrapper.vm.openDrawPad();
+        await flushPromises();
+
+        //the modal was not created: user cannot accidentally replace the photo
+        expect(modalController.create).not.toHaveBeenCalled();
+        expect(useRootStore().isDrawModalActive).toBe(false);
+        expect(rollbarService.critical).toHaveBeenCalled();
+        vi.unstubAllGlobals();
+    });
+
+    it('does not open the draw pad when the stored photo fails to load', async () => {
+        const rootStore = useRootStore();
+        const media = rootStore.entriesAddScope.entryService.entry.media;
+        media['entry-uuid-1'] = media['entry-uuid-1'] || {};
+        media['entry-uuid-1']['test_ref'] = {cached: '', stored: 'missing.jpg', type: 'photo'};
+
+        const wrapper = await factory();
+        //fetch returns a valid response but FileReader fails
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+            blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
+        })));
+        vi.stubGlobal('FileReader', class {
+            constructor() {}
+            readAsDataURL() {
+                if (this.onerror) {
+                    this.onerror(new Error('read failed'));
+                }
+            }
+        });
+
+        await wrapper.vm.openDrawPad();
+        await flushPromises();
+
+        expect(modalController.create).not.toHaveBeenCalled();
+        expect(useRootStore().isDrawModalActive).toBe(false);
+        expect(rollbarService.critical).toHaveBeenCalled();
+        vi.unstubAllGlobals();
+    });
+
     it('loads a cached drawing into the draw modal', async () => {
         const wrapper = await factory();
         mediaFile().cached = 'drawing.jpg';
