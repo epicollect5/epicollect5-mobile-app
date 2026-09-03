@@ -48,13 +48,13 @@
 				<ion-button
 					v-if="state.flashSupported"
 					class="flash-button"
-					:class="{ 'active': state.flashMode !== 'off' }"
+					:class="{ 'active': isFlashActive }"
 					:disabled="!state.started"
 					@click="toggleFlash()"
 				>
 					<ion-icon
 						slot="icon-only"
-						:icon="state.flashMode !== 'off' ? flash : flashOutline"
+						:icon="flashIcon"
 					>
 					</ion-icon>
 				</ion-button>
@@ -71,6 +71,8 @@ import { closeOutline, cameraReverseOutline, flash, flashOutline } from 'ionicon
 import { App as CapacitorApp } from '@capacitor/app';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { CameraPreview } from '@capgo/camera-preview';
+import { useRootStore } from '@/stores/root-store';
+import { PARAMETERS } from '@/config';
 
 export default {
 	props: {
@@ -83,6 +85,7 @@ export default {
 	},
 	emits: ['on-dismiss'],
 	setup(props, context) {
+		const rootStore = useRootStore();
 		const state = reactive({
 			capturing: false,
 			started: false,
@@ -101,6 +104,8 @@ export default {
 		let sourceHandedOff = false;
 		let appStateListener = null;
 		let recordingListener = null;
+		let appStateListenerPromise = null;
+		let recordingListenerPromise = null;
 		let flashTimer = null;
 		//true while the app is in the background (screen off, app switcher, incoming
 		//call): the camera is stopped to release it, and restarted on return so the
@@ -112,7 +117,9 @@ export default {
 		const computedScope = {
 			//video mode hides the flip/flash controls (recording keeps the shutter as
 			//the only control) and turns the shutter into a record/stop toggle
-			isVideoMode: computed(() => props.mode === 'video')
+			isVideoMode: computed(() => props.mode === 'video'),
+			isFlashActive: computed(() => state.flashMode !== 'off'),
+			flashIcon: computed(() => state.flashMode !== 'off' ? flash : flashOutline)
 		};
 
 		//The native camera preview runs behind the WebView (toBack), so while the modal
@@ -144,6 +151,10 @@ export default {
 		//plugin's recording directory before each video session so the cache cannot
 		//accumulate recordings over time.
 		async function _clearStaleRecordings() {
+			//the embedded camera is Android-only: skip the sweep elsewhere
+			if (rootStore.device.platform !== PARAMETERS.ANDROID) {
+				return;
+			}
 			try {
 				const { files } = await Filesystem.readdir({
 					path: 'Movies/CameraPreview',
@@ -460,18 +471,20 @@ export default {
 			//the recording ourselves the event fires too, but the recording flag was
 			//already reset by _finalizeRecording, so it is skipped.
 			if (computedScope.isVideoMode.value) {
-				CameraPreview.addListener('recordingFinished', (data) => {
+				recordingListenerPromise = CameraPreview.addListener('recordingFinished', (data) => {
 					if (state.recording) {
 						state.recording = false;
 						_handOffRecording(data && data.videoFilePath);
 					}
-				}).then((handle) => {
+				});
+				recordingListenerPromise.then((handle) => {
 					recordingListener = handle;
 				});
 			}
 		});
 
-		CapacitorApp.addListener('appStateChange', _onAppStateChange).then((handle) => {
+		appStateListenerPromise = CapacitorApp.addListener('appStateChange', _onAppStateChange);
+		appStateListenerPromise.then((handle) => {
 			appStateListener = handle;
 		});
 
@@ -488,6 +501,24 @@ export default {
 			}
 			await _stop();
 			await _cleanupSource();
+			//unmount may race listener registration: await the pending promises so
+			//callbacks never stay registered on the destroyed modal
+			if (recordingListenerPromise) {
+				try {
+					const handle = await recordingListenerPromise;
+					recordingListener = recordingListener || handle;
+				} catch (error) {
+					console.log('CameraPreview recording listener registration failed: ' + error);
+				}
+			}
+			if (appStateListenerPromise) {
+				try {
+					const handle = await appStateListenerPromise;
+					appStateListener = appStateListener || handle;
+				} catch (error) {
+					console.log('CameraPreview app state listener registration failed: ' + error);
+				}
+			}
 			if (recordingListener) {
 				recordingListener.remove();
 				recordingListener = null;
