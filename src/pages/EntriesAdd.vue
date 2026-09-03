@@ -789,6 +789,11 @@ export default {
         return false;
       }
 
+      //ignore back button while the in-app camera preview is open
+      if (rootStore.isCameraPreviewModalActive) {
+        return false;
+      }
+
 			methods.prev();
 		});
 

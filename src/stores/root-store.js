@@ -15,6 +15,8 @@ export const useRootStore = defineStore('RootStore', {
             selectedTextSize: PARAMETERS.DEFAULT_TEXT_SIZE,
             //by default, we collect WebView errors in production
             collectErrors: true,
+            inAppCamera: false,
+            inAppCameraVideo: false,
             continueProjectVersionUpdate: false,
             user: {
                 jwt: null,
@@ -53,6 +55,7 @@ export const useRootStore = defineStore('RootStore', {
             isAudioModalActive: false,
             isLocationModalActive: false,
             isVideoEncodingModalActive: false,
+            isCameraPreviewModalActive: false,
             isExportModalActive: false,
             ec5LoadingDialog: null,
             hasGoogleServices: true,

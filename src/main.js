@@ -325,6 +325,21 @@ export const app = createApp(App)
         //collect errors preferences
         rootStore.collectErrors = await initService.getCollectErrorsPreference();
 
+        //in-app camera preferences (opt-in, default false): a rejected read must
+        //not block boot, jwt retrieval, or app mount
+        try {
+            rootStore.inAppCamera = await initService.getInAppCameraPreference();
+        } catch (error) {
+            console.log('Failed to load in-app camera preference: ' + error);
+            rootStore.inAppCamera = false;
+        }
+        try {
+            rootStore.inAppCameraVideo = await initService.getInAppCameraVideoPreference();
+        } catch (error) {
+            console.log('Failed to load in-app camera video preference: ' + error);
+            rootStore.inAppCameraVideo = false;
+        }
+
         // Attempt to retrieve the jwt token
         rootStore.user = await initService.retrieveJwtToken();
     }

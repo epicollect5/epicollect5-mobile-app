@@ -1,10 +1,8 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { downloadFileService } from '@/services/download-file-service';
-import { useRootStore } from '@/stores/root-store';
-import { webService } from '@/services/web-service';
 import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
 
-let device = { platform: 'android' };
+const device = { platform: 'android' };
 
 vi.mock('@/config', () => ({
     PARAMETERS: {
