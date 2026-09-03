@@ -1,0 +1,18 @@
+src/main.js
+  h_2231ff2aa93473 330
+src/pages/Settings.vue
+  h_2231ff2aa93473 164-188,193-201,213-215,267,351-360,386-389
+src/use/questions/video-shoot.js
+  h_2231ff2aa93473 9,11,41-50,69,98-109,158-206,228,258,273
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "d3885e5d047e8d76663403681906c913a1b0a77f",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
