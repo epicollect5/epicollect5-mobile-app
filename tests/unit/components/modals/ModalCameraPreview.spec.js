@@ -751,4 +751,26 @@ describe('ModalCameraPreview component', () => {
 		wrapper.unmount();
 		await flushPromises();
 	});
+
+	it('releases the native session when unmounted while startup is still pending', async () => {
+		grantPermissions();
+		//hold the initial startup open so the back button lands mid-startup
+		let resolveStart = null;
+		mocks.cameraPreview.start.mockReturnValue(new Promise((resolve) => {
+			resolveStart = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		expect(wrapper.vm.state.started).toBe(false);
+
+		//back button during startup: teardown wins the race
+		wrapper.unmount();
+		await flushPromises();
+		resolveStart();
+		await flushPromises();
+
+		//the late startup releases the session instead of marking state
+		expect(mocks.cameraPreview.stop).toHaveBeenCalledWith({ force: true });
+		expect(wrapper.vm.state.started).toBe(false);
+	});
 });

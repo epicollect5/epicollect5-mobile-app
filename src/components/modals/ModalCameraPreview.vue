@@ -118,6 +118,10 @@ export default {
 		//appStateChange arriving in this window must still record appInactive,
 		//otherwise startup completes while paused and foregrounding skips recovery
 		let startInProgress = false;
+		//set synchronously when teardown begins (dismiss or unmount): _start()
+		//checks it after every awaited step and releases the native session
+		//instead of marking state on the destroyed modal
+		let tornDown = false;
 
 		const computedScope = {
 			//video mode hides the flip/flash controls (recording keeps the shutter as
@@ -152,7 +156,7 @@ export default {
 
 		//Screen-off mid-recording can orphan a finalized file in the plugin's cache:
 		//the native session dies before stopRecordVideo can return its path (and the
-		//finalize may even be reported as failed while the file exists). Sweep the
+		//finalizing may even be reported as failed while the file exists). Sweep the
 		//plugin's recording directory before each video session so the cache cannot
 		//accumulate recordings over time.
 		async function _clearStaleRecordings() {
@@ -184,12 +188,31 @@ export default {
 			}
 		}
 
+		//best-effort release of a native session that may exist even though state
+		//was never marked started (teardown raced startup): never throws, never
+		//touches component state
+		async function _forceStopPlugin() {
+			try {
+				await CameraPreview.stop({ force: true });
+			} catch (error) {
+				console.log('CameraPreview.stop failed: ' + error);
+			}
+		}
+
 		async function _start() {
 			startInProgress = true;
 			try {
 			await _ensurePermission();
+			if (tornDown) {
+				await _forceStopPlugin();
+				return;
+			}
 			if (computedScope.isVideoMode.value) {
 				await _clearStaleRecordings();
+			}
+			if (tornDown) {
+				await _forceStopPlugin();
+				return;
 			}
 			if (!startOptions) {
 				startOptions = {
@@ -216,10 +239,14 @@ export default {
 				};
 			}
 			await CameraPreview.start(startOptions);
+			if (tornDown) {
+				await _forceStopPlugin();
+				return;
+			}
 			//On edge-to-edge Android the plugin offsets the native layer by the WebView's
 			//screen-top inset (it computes y=0 + inset) WITHOUT shrinking the height, so the
-			//layer hangs one inset below the WebView and the live feed leaks through the
-			//system-nav area (below the modal's opaque footer). Repositioning with
+			//layer hangs one inset below the WebView, and the live feed leaks through the
+			//system-nav area (below the modal's opaque footer).Repositioning with
 			//x=0/y=0 takes the plugin's full-screen code path, which applies no inset,
 			//and aligns the native layer's bottom with the WebView's bottom.
 			try {
@@ -231,6 +258,10 @@ export default {
 				});
 			} catch (error) {
 				console.log('CameraPreview.setPreviewSize failed: ' + error);
+			}
+			if (tornDown) {
+				await _forceStopPlugin();
+				return;
 			}
 			state.started = true;
 			await _syncFlashMode();
@@ -421,6 +452,9 @@ export default {
 		}
 
 		async function dismiss() {
+			//teardown starts here, synchronously: a pending _start() must release
+			//the native session instead of marking state on the closing modal
+			tornDown = true;
 			//a recording in progress must be stopped and its partial file discarded
 			//before the camera is released, otherwise the file stays in the plugin cache
 			if (computedScope.isVideoMode.value) {
@@ -459,7 +493,7 @@ export default {
 				}
 				return;
 			}
-			//back in the foreground with the modal still open: bring the feed back to
+			//back in the foreground with the modal still open: bring the camera feed back to
 			//life. Native resumes do not restart the session because _stop() (force)
 			//clears the plugin's saved config, so restart explicitly.
 			if (isActive && appInactive) {
@@ -481,7 +515,7 @@ export default {
 					console.log('CameraPreview restart failed: ' + error);
 					//the modal cannot recover: the user loses the camera session
 					rollbarService.criticalWithContext('CameraPreview restart failed', error);
-					dismiss();
+					await dismiss();
 				} finally {
 					restartInProgress = false;
 				}
@@ -499,7 +533,7 @@ export default {
 			//the native session may stop a recording on its own (max duration/file size,
 			//or a screen-off teardown that finalizes the file before our stopRecordVideo
 			//runs): use the event's path to complete the capture hand-off. When we stop
-			//the recording ourselves the event fires too, but the recording flag was
+			//the recording ourselves, the event fires too, but the recording flag was
 			//already reset by _finalizeRecording, so it is skipped.
 			if (computedScope.isVideoMode.value) {
 				recordingListenerPromise = CameraPreview.addListener('recordingFinished', (data) => {
@@ -520,6 +554,10 @@ export default {
 		});
 
 		onBeforeUnmount(async () => {
+			//teardown starts here, synchronously (back button path skips the dismiss action):
+			//a pending _start() must release the native session instead of
+			//marking state on the destroyed modal
+			tornDown = true;
 			_setCameraLayerVisible(false);
 			if (flashTimer) {
 				clearTimeout(flashTimer);
