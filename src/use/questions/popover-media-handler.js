@@ -40,11 +40,16 @@ export async function popoverMediaHandler ({ media, entryUuid, state, e, mediaTy
         reference: 'trigger',
         side: 'left'
     });
-    popover.onDidDismiss().then((response) => {
+    popover.onDidDismiss().then(async (response) => {
 
-        //let the caller react to actions it owns (e.g. DRAW opens the pad)
+        //let the caller react to actions it owns (e.g. DRAW opens the pad);
+        //await the result so the caller can catch modalController/create or
+        //drawModal.present() failures raised inside the action handler
         if (typeof onAction === 'function') {
-            onAction(response.data);
+            const result = onAction(response.data);
+            if (result && typeof result.then === 'function') {
+                await result;
+            }
         }
 
         //update UI only when file gets deleted or queued

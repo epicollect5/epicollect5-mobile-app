@@ -105,6 +105,7 @@ import Dropzone from '@/components/Dropzone.vue';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {questionCommonService} from '@/services/entry/question-common-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 export default {
   components: {
@@ -253,7 +254,7 @@ export default {
             //it dismisses with the DRAW action and the pad opens from here
             onAction: (action) => {
               if (action === PARAMETERS.ACTIONS.DRAW) {
-                methods.openDrawPad();
+                return methods.openDrawPad();
               }
             }
           });
@@ -281,6 +282,25 @@ export default {
             });
           } catch (error) {
             console.warn('Failed to load existing drawing for editing', error);
+            rollbarService.critical(error);
+            existingDataURL = '';
+          }
+        } else if (mediaFile.stored !== '') {
+          try {
+            const source = Capacitor.convertFileSrc(
+                persistentDir + PARAMETERS.PHOTO_DIR + project_ref + '/' + mediaFile.stored
+            );
+            const response = await fetch(source);
+            const blob = await response.blob();
+            existingDataURL = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = () => reject(reader.error);
+              reader.readAsDataURL(blob);
+            });
+          } catch (error) {
+            console.warn('Failed to load stored photo for drawing', error);
+            rollbarService.critical(error);
             existingDataURL = '';
           }
         }
@@ -312,17 +332,21 @@ export default {
                 PARAMETERS.QUESTION_TYPES.PHOTO
             );
           }
-          mediaFile.cached = newFilename;
-          state.answer.answer = newFilename;
+
+          const prevCached = mediaFile.cached;
+          const prevAnswer = state.answer.answer;
 
           try {
             const blob = utilsService.b64toBlob(dataURL, 'image/jpeg');
             await saveBlobToTempDir({blob, filename: newFilename});
+            mediaFile.cached = newFilename;
+            state.answer.answer = newFilename;
             _loadImageOnView(tempDir + newFilename);
           } catch (error) {
             console.error('Failed to save drawing to temp dir', error);
-            mediaFile.cached = '';
-            state.answer.answer = '';
+            rollbarService.critical(error);
+            mediaFile.cached = prevCached;
+            state.answer.answer = prevAnswer;
             notificationService.showAlert(
                 labels.unknown_error,
                 labels.error
@@ -331,7 +355,13 @@ export default {
         });
 
         rootStore.isDrawModalActive = true;
-        return drawModal.present();
+        try {
+          return await drawModal.present();
+        } catch (error) {
+          rootStore.isDrawModalActive = false;
+          rollbarService.critical(error);
+          throw error;
+        }
       },
       takePicture(action) {
         if (rootStore.device.platform !== PARAMETERS.WEB) {
