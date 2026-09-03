@@ -327,6 +327,7 @@ export const app = createApp(App)
 
         //in-app camera preferences
         rootStore.inAppCamera = await initService.getInAppCameraPreference();
+        rootStore.inAppCameraVideo = await initService.getInAppCameraVideoPreference();
 
         // Attempt to retrieve the jwt token
         rootStore.user = await initService.retrieveJwtToken();

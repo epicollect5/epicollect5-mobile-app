@@ -6,7 +6,9 @@ import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {moveFileService} from '@/services/filesystem/move-file-service';
 import { VideoEditor } from '@whiteguru/capacitor-plugin-video-editor';
+import { CameraPreview } from '@capgo/camera-preview';
 import ModalProgressEncoding from '@/components/modals/ModalProgressEncoding';
+import ModalCameraPreview from '@/components/modals/ModalCameraPreview.vue';
 import { modalController } from '@ionic/vue';
 
 export async function videoShoot({media, entryUuid, state, filename}) {
@@ -36,9 +38,16 @@ export async function videoShoot({media, entryUuid, state, filename}) {
         return modal.present();
     }
 
-    async function _onCaptureVideoSuccess(media_object) {
-        const video_URI = media_object[0].fullPath;
-        console.log('SOURCE VIDEO INFO:', media_object[0]);
+    //Transcode the captured video, move it to the app temp dir and persist the
+    //filename. Shared by the native system camera and the in-app camera flows.
+    //stopService releases the foreground service when the native flow started it
+    //(the in-app flow never starts one: the app stays in the foreground the whole
+    //time, which is the point of the embedded camera).
+    //deleteCapture removes the raw capture file after transcoding: only the in-app
+    //flow sets it, because only the embedded camera records into the plugin's own
+    //cache (Movies/CameraPreview), which must not accumulate after each recording.
+    async function _processCapturedVideo(videoPath, stopService, deleteCapture) {
+        console.log('SOURCE VIDEO INFO:', videoPath);
         let progressListener = null;
 
         try {
@@ -57,7 +66,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
 
             // 3. Perform Transcoding
             const result = await VideoEditor.edit({
-                path: video_URI,
+                path: videoPath,
                 transcode: {
                     width: 1280,
                     height: 720,
@@ -86,7 +95,18 @@ export async function videoShoot({media, entryUuid, state, filename}) {
         } finally {
             // 6. Cleanup - This runs on both Success AND Error
             notificationService.hideProgressDialog();
-            await notificationService.stopForegroundService();
+            if (stopService) {
+                await notificationService.stopForegroundService();
+            }
+            if (deleteCapture) {
+                //discard the raw plugin recording (transcoded copy is already in temp);
+                //best-effort: the file may be outside the sandbox on other flows
+                try {
+                    await CameraPreview.deleteFile({path: videoPath});
+                } catch (error) {
+                    console.log('Failed to delete raw video capture: ' + error);
+                }
+            }
             await modalController.dismiss();
 
             if (progressListener) {
@@ -117,12 +137,6 @@ export async function videoShoot({media, entryUuid, state, filename}) {
         notificationService.hideProgressDialog();
     }
 
-    await notificationService.showProgressDialog(labels.wait);
-
-    const options = {
-        limit: 1 //record 1 video at a time
-    };
-
     //if we do not have done any recording yet, generate a new file name
     if (media[entryUuid][state.inputDetails.ref].cached === '') {
             //check if we have a stored filename, i.e. user is replacing the photo for the entry
@@ -140,6 +154,55 @@ export async function videoShoot({media, entryUuid, state, filename}) {
         //use the cached path not to fill the cache with a new file all the time
         filename = media[entryUuid][state.inputDetails.ref].cached;
     }
+
+    //use the embedded camera preview for video recording (Android only, opt-in):
+    //no foreground service is needed because the app never leaves the foreground
+    //(unlike the system camera app), and the captured file goes through the same
+    //transcode + move pipeline as the native flow
+    const useInAppCamera = rootStore.inAppCameraVideo
+        && rootStore.device.platform === PARAMETERS.ANDROID;
+
+    if (useInAppCamera) {
+        await notificationService.hideProgressDialog(0);
+        const modal = await modalController.create({
+            component: ModalCameraPreview,
+            cssClass: 'modal-camera-preview',
+            //no backdrop is shown (showBackdrop: false), but backdropDismiss must be
+            //true for Ionic to register the overlay on the Android back button
+            //handler, otherwise back does not close the camera
+            showBackdrop: false,
+            canDismiss: true,
+            backdropDismiss: true,
+            componentProps: {
+                mode: 'video'
+            }
+        });
+        //guard the EntriesAdd back handler while the camera is open (same pattern
+        //as photo-take), so back never navigates the question page while recording
+        rootStore.isCameraPreviewModalActive = true;
+        await modal.present();
+        const { data } = await modal.onDidDismiss().finally(() => {
+            //modal is gone (dismissed by ✕ or back button): unguard the EntriesAdd back handler
+            rootStore.isCameraPreviewModalActive = false;
+        });
+
+        if (data && data.videoFilePath) {
+            await _processCapturedVideo(data.videoFilePath, false, true);
+        } else {
+            //cancelled: reset the media object so the entry save does not reference a missing file
+            media[entryUuid][state.inputDetails.ref].cached = '';
+            state.answer.answer = '';
+        }
+        return;
+    }
+
+    //=== native system camera flow ===
+
+    await notificationService.showProgressDialog(labels.wait);
+
+    const options = {
+        limit: 1 //record 1 video at a time
+    };
 
     // start video capture
     //request camera permission (Android)
@@ -162,7 +225,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             function (status) {
                 if (status === cordova.plugins.diagnostic.permissionStatus.GRANTED) {
                     window.navigator.device.capture.captureVideo(
-                        _onCaptureVideoSuccess,
+                        (media_object) => _processCapturedVideo(media_object[0].fullPath, true, false),
                         _onCaptureVideoError,
                         options
                     );
@@ -192,7 +255,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             window.cordova.plugins.diagnostic.isCameraAuthorized(
                 function () {
                     window.navigator.device.capture.captureVideo(
-                        _onCaptureVideoSuccess,
+                        (media_object) => _processCapturedVideo(media_object[0].fullPath, true, false),
                         _onCaptureVideoError,
                         options
                     );
