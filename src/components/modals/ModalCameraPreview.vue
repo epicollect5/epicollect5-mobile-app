@@ -73,6 +73,7 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { CameraPreview } from '@capgo/camera-preview';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 export default {
 	props: {
@@ -113,6 +114,10 @@ export default {
 		let appInactive = false;
 		let startOptions = null;
 		let restartInProgress = false;
+		//true while _start() is pending (initial mount or foreground restart): an
+		//appStateChange arriving in this window must still record appInactive,
+		//otherwise startup completes while paused and foregrounding skips recovery
+		let startInProgress = false;
 
 		const computedScope = {
 			//video mode hides the flip/flash controls (recording keeps the shutter as
@@ -180,6 +185,8 @@ export default {
 		}
 
 		async function _start() {
+			startInProgress = true;
+			try {
 			await _ensurePermission();
 			if (computedScope.isVideoMode.value) {
 				await _clearStaleRecordings();
@@ -227,6 +234,9 @@ export default {
 			}
 			state.started = true;
 			await _syncFlashMode();
+			} finally {
+				startInProgress = false;
+			}
 		}
 
 		async function _syncFlashMode() {
@@ -424,8 +434,10 @@ export default {
 
 		async function _onAppStateChange({ isActive }) {
 			//screen off / app backgrounded: release the camera (the plugin cannot hold
-			//it while paused), but keep the modal up so the user returns to it
-			if (!isActive && state.started) {
+			//it while paused), but keep the modal up so the user returns to it.
+			//A backgrounding that lands while _start() is still pending counts too:
+			//otherwise startup completes while paused and foregrounding skips recovery.
+			if (!isActive && (state.started || startInProgress)) {
 				appInactive = true;
 				//screen off mid-recording: finalize the file if the native side still
 				//can (the plugin pauses the session, which may already have stopped the
@@ -435,8 +447,16 @@ export default {
 					if (sourceHandedOff) {
 						return;
 					}
+					//the in-progress recording could not be finalized while
+					//backgrounding: the capture is lost but the modal stays up
+					rollbarService.criticalWithContext(
+						'CameraPreview background recording lost',
+						new Error('stopRecordVideo failed while backgrounded')
+					);
 				}
-				await _stop();
+				if (state.started) {
+					await _stop();
+				}
 				return;
 			}
 			//back in the foreground with the modal still open: bring the feed back to
@@ -444,14 +464,23 @@ export default {
 			//clears the plugin's saved config, so restart explicitly.
 			if (isActive && appInactive) {
 				appInactive = false;
-				if (restartInProgress) {
+				//a startup already pending will complete on its own; starting again
+				//would run two sessions against the same plugin
+				if (restartInProgress || startInProgress) {
 					return;
+				}
+				//startup may have completed while paused, leaving a stale session
+				//behind: release it before restarting so the feed is live, not frozen
+				if (state.started) {
+					await _stop();
 				}
 				restartInProgress = true;
 				try {
 					await _start();
 				} catch (error) {
 					console.log('CameraPreview restart failed: ' + error);
+					//the modal cannot recover: the user loses the camera session
+					rollbarService.criticalWithContext('CameraPreview restart failed', error);
 					dismiss();
 				} finally {
 					restartInProgress = false;
@@ -463,6 +492,8 @@ export default {
 			_setCameraLayerVisible(true);
 			_start().catch((error) => {
 				console.log('CameraPreview.start failed: ' + error);
+				//the modal cannot open: the user loses the camera session
+				rollbarService.criticalWithContext('CameraPreview.start failed', error);
 				dismiss();
 			});
 			//the native session may stop a recording on its own (max duration/file size,
