@@ -189,9 +189,8 @@ export async function videoShoot({media, entryUuid, state, filename}) {
         if (data && data.videoFilePath) {
             await _processCapturedVideo(data.videoFilePath, false, true);
         } else {
-            //cancelled: reset the media object so the entry save does not reference a missing file
-            media[entryUuid][state.inputDetails.ref].cached = '';
-            state.answer.answer = '';
+            //dismissed without recording: preserve any existing video so saving
+            //the entry does not drop the original attachment
         }
         return;
     }

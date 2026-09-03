@@ -128,9 +128,20 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
             });
 
             if (data && data.sourcePath) {
-                filename = utilsService.generateMediaFilename(
-                    entryUuid,
-                    PARAMETERS.QUESTION_TYPES.PHOTO				);
+                //reuse the existing filename when replacing/retaking (same rules as
+                //the native openCamera branch above), so repeated captures do not
+                //orphan a temp file per attempt
+                if (media[entryUuid][state.inputDetails.ref].cached === '') {
+                    if (media[entryUuid][state.inputDetails.ref].stored === '') {
+                        filename = utilsService.generateMediaFilename(
+                            entryUuid,
+                            PARAMETERS.QUESTION_TYPES.PHOTO);
+                    } else {
+                        filename = media[entryUuid][state.inputDetails.ref].stored;
+                    }
+                } else {
+                    filename = media[entryUuid][state.inputDetails.ref].cached;
+                }
                 try {
                     await resizePhotoService.resizeToTempDir(data.sourcePath, filename);
                     media[entryUuid][state.inputDetails.ref].cached = filename;
@@ -154,8 +165,8 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                     }
                 }
             } else {
-                media[entryUuid][state.inputDetails.ref].cached = '';
-                state.answer.answer = '';
+                //dismissed without capturing (back button): preserve any existing
+                //photo so saving the entry does not drop the original attachment
             }
         } else {
             sourceType = action === 'gallery' ? CameraSource.Photos : CameraSource.Camera;
