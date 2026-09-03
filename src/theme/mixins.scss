@@ -241,7 +241,7 @@
 @mixin chip-datetimepicker-base {
     padding: 0 16px 0 0;
     &.entries-filters {
-        padding-right: 0px !important;
+        padding-right: 0 !important;
         .datetime-value {
             background-color: #ffffff !important;
             input[type="date"],
@@ -292,12 +292,10 @@
             left: 16px;
             z-index: 0;
             pointer-events: none;
-            position: absolute;
             top: 50%;
             transform: translateY(-50%);
         }
         .date-icon-right {
-            position: absolute;
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
@@ -826,6 +824,73 @@
     }
     img {
         width: 100%;
+    }
+}
+
+@mixin modal-camera-preview-base {
+    --background: transparent;
+    &::part(backdrop) {
+        --backdrop-opacity: 0;
+    }
+    &::part(content) {
+        --background: transparent;
+        background: transparent !important;
+    }
+    ion-header {
+        //top bar: app purple so the white close icon is visible and the strip
+        //visually continues the native status bar painted by the camera plugin
+        ion-toolbar {
+            --background: var(--ion-color-primary);
+            --color: #fff;
+            ion-button {
+                //dark translucent fill keeps the close icon visible on the purple
+                --background: rgba(0, 0, 0, 0.4);
+                --color: #fff;
+                ion-icon {
+                    color: #fff;
+                }
+            }
+        }
+    }
+    .camera-viewport {
+        //transparent spacer between the bars: the native feed shows through here
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+    .camera-footer {
+        //bottom bar: app purple, covers the bottom of the feed and the nav-button
+        //area (safe-area padding) so the strip looks intentional
+        background: var(--ion-color-primary);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    .camera-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 48px;
+        //extra bottom padding so the shutter breathes above the safe-area inset
+        padding: 20px 0 24px;
+    }
+    .shutter-button {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: #fff;
+        border: 4px solid #fff;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+    }
+    .shutter-button:disabled {
+        opacity: 0.5;
+    }
+    .flip-button,
+    .flash-button {
+        --background: rgba(0, 0, 0, 0.4);
+        --color: #fff;
+    }
+    .flash-button.active {
+        --background: rgba(255, 165, 0, 0.75);
+        --color: #fff;
     }
 }
 
