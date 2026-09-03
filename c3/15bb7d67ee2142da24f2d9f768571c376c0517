@@ -1,0 +1,20 @@
+tests/unit/components/modals/ModalCameraPreview.spec.js
+  h_2231ff2aa93473 17-24,32,43-47,67-68,78-80,82-83,402-636
+tests/unit/main.spec.js
+  h_2231ff2aa93473 121
+tests/unit/services/init-service.spec.js
+  h_2231ff2aa93473 29,222-252
+tests/unit/use/questions/video-shoot.spec.js
+  h_2231ff2aa93473 21-46,48,53-55,57-58,60,65,67,84-86,170-256
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "c315bb7d67ee2142da24f2d9f768571c376c0517",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
