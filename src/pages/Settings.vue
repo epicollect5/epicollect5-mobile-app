@@ -269,21 +269,6 @@ export default {
 		});
 		const zoomLevels = PARAMETERS.ZOOM_LEVELS;
 
-		const computedScope = {
-			appVersion: computed(() => {
-				return rootStore.app.name + ' v ' + rootStore.app.version;
-			}),
-			isDebug: computed(() => {
-				return PARAMETERS.DEBUG;
-			}),
-			isAndroid: computed(() => {
-				return rootStore.device.platform === PARAMETERS.ANDROID;
-			}),
-			hasEasterEggProject: computed(() => {
-				return rootStore.easterEgg;
-			})
-		};
-
 		const methods = {
 			goBack() {
 				router.replace({
@@ -303,8 +288,8 @@ export default {
 				//add selected zoom level class
 				document.body.classList.add('zoom-' + state.selectedTextSize);
 
-				//update db
-				Object.values(PARAMETERS.SETTINGS_KEYS).forEach(async (key) => {
+			//update db (sequential: each write must settle before reporting success)
+			for (const key of Object.values(PARAMETERS.SETTINGS_KEYS)) {
 					console.log(key);
 
 					switch (key) {
@@ -357,11 +342,11 @@ export default {
 								console.log(error);
 								failed = true;
 							}
-							break;
-					}
-				});
+						break;
+				}
+			}
 
-				notificationService.hideProgressDialog();
+			notificationService.hideProgressDialog();
 				state.isSaving = false;
 				if (failed) {
 					notificationService.showAlert(labels.unknown_error, labels.error);
@@ -381,15 +366,28 @@ export default {
 			},
 			updateInAppCamera(e) {
 				state.inAppCamera = e.detail.checked;
-				rootStore.inAppCamera = state.inAppCamera;
 			},
 			updateInAppCameraVideo(e) {
 				state.inAppCameraVideo = e.detail.checked;
-				rootStore.inAppCameraVideo = state.inAppCameraVideo;
 			},
 			openInAppCameraDocs() {
 				window.open(PARAMETERS.IN_APP_CAMERA_DOCS_URL, '_system', 'location=yes');
 			}
+		};
+
+		const computedScope = {
+			appVersion: computed(() => {
+				return rootStore.app.name + ' v ' + rootStore.app.version;
+			}),
+			isDebug: computed(() => {
+				return PARAMETERS.DEBUG;
+			}),
+			isAndroid: computed(() => {
+				return rootStore.device.platform === PARAMETERS.ANDROID;
+			}),
+			hasEasterEggProject: computed(() => {
+				return rootStore.easterEgg;
+			})
 		};
 
 		onMounted(() => {
