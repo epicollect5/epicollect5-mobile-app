@@ -1,0 +1,24 @@
+vite.config.js
+  s_6989f7569db7d6::t_182aa4ee4dabd4 35-39,45-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "018a16ba64f33d323da8b23f84d8f5cea8dbecf5",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_6989f7569db7d6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f9c027b09ffeGa5Lfo210D8ZO5",
+        "model": "minimax/minimax-m3:free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
