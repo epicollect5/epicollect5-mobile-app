@@ -19,20 +19,24 @@ export const saveBlobToTempDir = ({blob, filename}) => {
         const protocol = rootStore.device.platform === PARAMETERS.IOS ? 'file://' : '';
         const tempDir = rootStore.tempDir;
 
-        //imp: write to a temp file first, then atomically move it into place.
-        //This avoids two failure modes of remove-then-create:
-        //  1. the original is deleted before the replacement is written, so a
-        //     write failure leaves no file to roll back to
-        //  2. Cordova's FileWriter has been observed to leave trailing bytes
-        //     on a shorter replacement when the file is reused in place
-        //moveTo overwrites the target atomically when it already exists, so
-        //the original stays on disk until the replacement is confirmed.
+        //imp: write to a temp file, back up the original, then move the temp
+        //into place. Cordova File 6.0.2's iOS moveTo removes the destination
+        //before calling moveItemAtPath; if that system call fails, both the
+        //original and the temp are gone. The .bak copy lets us restore the
+        //original when the move fails, so the answer never points at a
+        //missing file.
         const tmpFilename = filename + '.tmp';
+        const bakFilename = filename + '.bak';
+
+        const cleanupBak = function (cb) {
+            dir.getFile(bakFilename, {create: false}, function (bakEntry) {
+                bakEntry.remove(cb, cb);
+            }, cb);
+        };
 
         const writeBlob = function (file) {
             file.createWriter(function (fileWriter) {
                 fileWriter.onwriteend = function () {
-                    //write succeeded: move the temp file into place
                     moveTemp();
                 };
                 fileWriter.onerror = function (error) {
@@ -52,19 +56,47 @@ export const saveBlobToTempDir = ({blob, filename}) => {
         const moveTemp = function () {
             dir.getFile(tmpFilename, {create: false}, function (tmpEntry) {
                 dir.getFile(filename, {create: false}, function (existingEntry) {
-                    //target exists: move overwrites it atomically
-                    tmpEntry.moveTo(dir, filename, function () {
-                        resolve(filename);
-                    }, function (error) {
-                        //move failed: clean up temp, original is untouched
-                        tmpEntry.remove(function () {
-                            reject(error);
-                        }, function () {
-                            reject(error);
+                    //target exists: back it up before the move, so we can
+                    //restore it if iOS's moveTo deletes the destination and
+                    //then fails
+                    dir.getFile(bakFilename, {create: true}, function (bakEntry) {
+                        existingEntry.copyTo(dir, bakFilename, function () {
+                            //backup created: attempt the move
+                            tmpEntry.moveTo(dir, filename, function () {
+                                //move succeeded: remove the backup
+                                cleanupBak(function () {
+                                    resolve(filename);
+                                });
+                            }, function (error) {
+                                //move failed: restore original from backup
+                                bakEntry.moveTo(dir, filename, function () {
+                                    cleanupBak(function () {
+                                        reject(error);
+                                    });
+                                }, function () {
+                                    //restore also failed: clean up and reject
+                                    cleanupBak(function () {
+                                        reject(error);
+                                    });
+                                });
+                            });
+                        }, function (error) {
+                            //copyTo failed: attempt move without backup
+                            tmpEntry.moveTo(dir, filename, function () {
+                                resolve(filename);
+                            }, function (moveError) {
+                                tmpEntry.remove(function () {
+                                    reject(moveError);
+                                }, function () {
+                                    reject(moveError);
+                                });
+                            });
                         });
+                    }, function (error) {
+                        reject(error);
                     });
                 }, function () {
-                    //target does not exist yet: move creates it
+                    //target does not exist yet: move creates it (no backup needed)
                     tmpEntry.moveTo(dir, filename, function () {
                         resolve(filename);
                     }, function (error) {
@@ -85,8 +117,6 @@ export const saveBlobToTempDir = ({blob, filename}) => {
             protocol + tempDir,
             function (resolvedDir) {
                 Object.assign(dir, resolvedDir);
-                //write to the temp filename; the original is untouched until
-                //moveTemp atomically replaces it
                 dir.getFile(tmpFilename, {create: true}, function (file) {
                     writeBlob(file);
                 }, function (error) {
