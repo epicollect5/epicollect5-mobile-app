@@ -1,0 +1,32 @@
+tests/unit/pages/Settings.spec.js
+  s_09f5efda71ffae::t_3ad717681bb4b4 1-51,64-162
+  s_09f5efda71ffae::t_2585e2c844e320 52-63
+tests/unit/components/modals/ModalCameraPreview.spec.js
+  s_09f5efda71ffae::t_712bf14a00fd62 55
+  s_09f5efda71ffae::t_4276eda8cdea5c 6-7
+  s_09f5efda71ffae::t_bc8c99849ca959 648-706
+  s_09f5efda71ffae::t_4c695fef97356e 100
+tests/unit/main.spec.js
+  s_09f5efda71ffae::t_40bdaafb9274a1 297-322
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "02295522a04f31818f88e73debfda90cec02a0a2",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_09f5efda71ffae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f983cb7dbffeZHyP3mGpvhpvYA",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
