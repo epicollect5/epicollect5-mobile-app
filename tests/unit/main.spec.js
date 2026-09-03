@@ -117,6 +117,7 @@ vi.mock('@/services/init-service', () => ({
         insertDemoProject: vi.fn(),
         getSelectedTextSize: vi.fn(() => Promise.resolve('medium')),
         getCollectErrorsPreference: vi.fn(() => Promise.resolve(true)),
+        getInAppCameraPreference: vi.fn(() => Promise.resolve(false)),
         retrieveJwtToken: vi.fn(() => Promise.resolve({name: 'Test User'}))
     }
 }));

@@ -23,7 +23,19 @@ vi.mock('@/config', () => ({
         ANDROID: 'android',
         IOS: 'ios',
         WEB: 'web',
-        DELAY_LONG: 10
+        DELAY_LONG: 10,
+        SETTINGS_KEYS: {
+            IN_APP_CAMERA: 'in_app_camera',
+            COLLECT_ERRORS: 'collect_errors'
+        }
+    }
+}));
+
+const selectSettingMock = vi.hoisted(() => vi.fn());
+
+vi.mock('@/services/database/database-select-service', () => ({
+    databaseSelectService: {
+        selectSetting: selectSettingMock
     }
 }));
 
@@ -105,8 +117,7 @@ describe('Init Service', () => {
         });
     });
 
-    describe('verifyDatabaseIntegrity()', () => {
-        it('resolves true when PRAGMA returns ok', async () => {
+    describe('verifyDatabaseIntegrity()', () => {        it('resolves true when PRAGMA returns ok', async () => {
             const mockTx = {
                 executeSql: vi.fn((query, params, success) => {
                     success(mockTx, {
@@ -172,6 +183,37 @@ describe('Init Service', () => {
             window.sqlitePlugin.openDatabase.mockReturnValue(mockDb);
 
             const result = await initService.verifyDatabaseIntegrity('test.db');
+
+            expect(result).toBe(false);
+        });
+    });
+
+    describe('getInAppCameraPreference()', () => {
+        it('resolves false when the settings row is absent', async () => {
+            selectSettingMock.mockResolvedValue({ rows: { length: 0 } });
+
+            const result = await initService.getInAppCameraPreference();
+
+            expect(result).toBe(false);
+            expect(selectSettingMock).toHaveBeenCalledWith('in_app_camera');
+        });
+
+        it('resolves true when the stored value is "true"', async () => {
+            selectSettingMock.mockResolvedValue({
+                rows: { length: 1, item: () => ({ value: 'true' }) }
+            });
+
+            const result = await initService.getInAppCameraPreference();
+
+            expect(result).toBe(true);
+        });
+
+        it('resolves false when the stored value is "false"', async () => {
+            selectSettingMock.mockResolvedValue({
+                rows: { length: 1, item: () => ({ value: 'false' }) }
+            });
+
+            const result = await initService.getInAppCameraPreference();
 
             expect(result).toBe(false);
         });
