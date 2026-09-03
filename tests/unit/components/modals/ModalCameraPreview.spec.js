@@ -14,7 +14,14 @@ const mocks = vi.hoisted(() => {
 		getSupportedFlashModes: vi.fn(),
 		getFlashMode: vi.fn(),
 		setFlashMode: vi.fn(),
-		setPreviewSize: vi.fn()
+		setPreviewSize: vi.fn(),
+		startRecordVideo: vi.fn(),
+		stopRecordVideo: vi.fn(),
+		addListener: vi.fn()
+	};
+	const filesystem = {
+		readdir: vi.fn(),
+		deleteFile: vi.fn()
 	};
 	const capacitorApp = {
 		addListener: vi.fn()
@@ -22,7 +29,7 @@ const mocks = vi.hoisted(() => {
 	const modalController = {
 		dismiss: vi.fn()
 	};
-	return { cameraPreview, capacitorApp, modalController };
+	return { cameraPreview, filesystem, capacitorApp, modalController };
 });
 
 vi.mock('@capgo/camera-preview', () => ({
@@ -31,6 +38,11 @@ vi.mock('@capgo/camera-preview', () => ({
 
 vi.mock('@capacitor/app', () => ({
 	App: mocks.capacitorApp
+}));
+
+vi.mock('@capacitor/filesystem', () => ({
+	Filesystem: mocks.filesystem,
+	Directory: { External: 'EXTERNAL' }
 }));
 
 vi.mock('@ionic/vue', () => ({
@@ -52,8 +64,8 @@ const expectStartOptions = () =>
 		lockAndroidOrientation: true
 	});
 
-function grantPermissions({ camera = 'granted', flashModes = ['off', 'on', 'auto', 'torch'] } = {}) {
-	mocks.cameraPreview.requestPermissions.mockResolvedValue({ camera });
+function grantPermissions({ camera = 'granted', microphone = 'granted', flashModes = ['off', 'on', 'auto', 'torch'] } = {}) {
+	mocks.cameraPreview.requestPermissions.mockResolvedValue({ camera, microphone });
 	mocks.cameraPreview.start.mockResolvedValue();
 	mocks.cameraPreview.stop.mockResolvedValue();
 	mocks.cameraPreview.capture.mockRejectedValue(new Error('not capturing in this test'));
@@ -63,7 +75,12 @@ function grantPermissions({ camera = 'granted', flashModes = ['off', 'on', 'auto
 	mocks.cameraPreview.getFlashMode.mockResolvedValue({ flashMode: 'off' });
 	mocks.cameraPreview.setFlashMode.mockResolvedValue();
 	mocks.cameraPreview.setPreviewSize.mockResolvedValue();
+	mocks.cameraPreview.startRecordVideo.mockResolvedValue();
+	mocks.cameraPreview.stopRecordVideo.mockResolvedValue({ videoFilePath: '/rec.mp4' });
+	mocks.cameraPreview.addListener.mockResolvedValue({ remove: vi.fn() });
 	mocks.capacitorApp.addListener.mockResolvedValue({ remove: vi.fn() });
+	mocks.filesystem.readdir.mockResolvedValue({ files: [] });
+	mocks.filesystem.deleteFile.mockResolvedValue();
 }
 
 describe('ModalCameraPreview component', () => {
@@ -381,5 +398,240 @@ describe('ModalCameraPreview component', () => {
 
 		expect(mocks.modalController.dismiss).toHaveBeenCalled();
 		expect(wrapper.vm.state.started).toBe(false);
+	});
+
+	it('video mode requests the microphone and starts with the audio track enabled', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		expect(mocks.cameraPreview.requestPermissions).toHaveBeenCalledWith({
+			disableAudio: false,
+			showSettingsAlert: true
+		});
+		expect(mocks.cameraPreview.start).toHaveBeenCalledWith(expect.objectContaining({
+			disableAudio: false,
+			//Android binds the VideoCapture use case only when this is set
+			enableVideoMode: true
+		}));
+		expect(mocks.cameraPreview.addListener).toHaveBeenCalledWith('recordingFinished', expect.any(Function));
+		expect(wrapper.vm.state.started).toBe(true);
+	});
+
+	it('video mode keeps the flash toggle so the torch can light the recording', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		//the flash button is rendered in video mode (torch light while recording);
+		//the flip button stays hidden
+		expect(wrapper.findAll('.flash-button').length).toBe(1);
+		expect(wrapper.findAll('.flip-button').length).toBe(0);
+
+		await wrapper.vm.toggleFlash();
+		expect(mocks.cameraPreview.setFlashMode).toHaveBeenCalledWith({ flashMode: 'torch' });
+		expect(wrapper.vm.state.flashMode).toBe('torch');
+	});
+
+	it('photo mode never touches the video recording API', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		expect(mocks.cameraPreview.startRecordVideo).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.stopRecordVideo).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.addListener).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.requestPermissions).toHaveBeenCalledWith({
+			disableAudio: true,
+			showSettingsAlert: true
+		});
+		expect(mocks.cameraPreview.start).toHaveBeenCalledWith(expect.objectContaining({
+			disableAudio: true,
+			enableVideoMode: false
+		}));
+	});
+
+	it('video mode dismisses the modal when the microphone permission is denied', async () => {
+		grantPermissions({ camera: 'granted', microphone: 'denied' });
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		expect(mocks.cameraPreview.start).not.toHaveBeenCalled();
+		expect(mocks.modalController.dismiss).toHaveBeenCalled();
+		wrapper.unmount();
+		expect(document.body.classList.contains('camera-preview-open')).toBe(false);
+	});
+
+	it('video mode records on the first shutter press and hands the file off on the second', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalledWith({});
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+
+		expect(mocks.cameraPreview.stopRecordVideo).toHaveBeenCalled();
+		expect(mocks.cameraPreview.stop).toHaveBeenCalledWith({ force: true });
+		expect(wrapper.vm.state.recording).toBe(false);
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ videoFilePath: '/rec.mp4' });
+
+		//the handed-off file must survive unmount: video-shoot owns it now
+		wrapper.unmount();
+		await flushPromises();
+		expect(mocks.cameraPreview.deleteFile).not.toHaveBeenCalled();
+	});
+
+	it('video mode completes the hand-off when the native session stops the recording itself', async () => {
+		grantPermissions();
+		mocks.cameraPreview.stopRecordVideo.mockResolvedValue({ videoFilePath: '/auto.mp4' });
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		//native auto-stop (e.g. max duration/file size): the event carries the finished
+		//file path and completes the capture without calling stopRecordVideo again
+		const finishedListener = mocks.cameraPreview.addListener.mock.calls.find((call) => call[0] === 'recordingFinished')[1];
+		finishedListener({ videoFilePath: '/auto.mp4' });
+		await flushPromises();
+
+		expect(mocks.cameraPreview.stopRecordVideo).not.toHaveBeenCalled();
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ videoFilePath: '/auto.mp4' });
+		expect(wrapper.vm.state.recording).toBe(false);
+	});
+
+	it('video mode recovers when the recording cannot be started', async () => {
+		grantPermissions();
+		mocks.cameraPreview.startRecordVideo.mockRejectedValue(new Error('recording busy'));
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+
+		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalled();
+		expect(wrapper.vm.state.recording).toBe(false);
+		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+	});
+
+	it('video mode discards the partial file when dismissed while recording', async () => {
+		grantPermissions();
+		mocks.cameraPreview.stopRecordVideo.mockResolvedValue({ videoFilePath: '/partial.mp4' });
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		//✕ while recording: stop the recording, delete its partial file, close with no data
+		await wrapper.vm.dismiss();
+		await flushPromises();
+
+		expect(mocks.cameraPreview.stopRecordVideo).toHaveBeenCalled();
+		expect(mocks.cameraPreview.deleteFile).toHaveBeenCalledWith({ path: '/partial.mp4' });
+		expect(wrapper.vm.state.recording).toBe(false);
+		expect(mocks.modalController.dismiss).toHaveBeenCalled();
+	});
+
+	it('video mode stops and discards the recording when unmounted by the back button', async () => {
+		grantPermissions();
+		mocks.cameraPreview.stopRecordVideo.mockResolvedValue({ videoFilePath: '/partial.mp4' });
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		//the Android back button unmounts the modal without calling dismiss()
+		wrapper.unmount();
+		await flushPromises();
+
+		expect(mocks.cameraPreview.stopRecordVideo).toHaveBeenCalled();
+		expect(mocks.cameraPreview.deleteFile).toHaveBeenCalledWith({ path: '/partial.mp4' });
+		expect(mocks.cameraPreview.stop).toHaveBeenCalled();
+	});
+
+	it('video mode sweeps stale plugin recordings before starting a session', async () => {
+		grantPermissions();
+		mocks.filesystem.readdir.mockResolvedValue({
+			files: [{ name: 'video_1.mp4' }, { name: 'not-a-recording.jpg' }]
+		});
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		expect(mocks.filesystem.readdir).toHaveBeenCalledWith({
+			path: 'Movies/CameraPreview',
+			directory: 'EXTERNAL'
+		});
+		expect(mocks.filesystem.deleteFile).toHaveBeenCalledWith({
+			path: 'Movies/CameraPreview/video_1.mp4',
+			directory: 'EXTERNAL'
+		});
+		//only mp4 recordings are swept, never other files in the directory
+		expect(mocks.filesystem.deleteFile).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.start).toHaveBeenCalled();
+	});
+
+	it('photo mode never sweeps the plugin recording cache', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		expect(mocks.filesystem.readdir).not.toHaveBeenCalled();
+		expect(mocks.filesystem.deleteFile).not.toHaveBeenCalled();
+	});
+
+	it('video mode finalizes and hands off the recording when backgrounded mid-recording', async () => {
+		grantPermissions();
+		mocks.cameraPreview.stopRecordVideo.mockResolvedValue({ videoFilePath: '/bg.mp4' });
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+
+		//screen off: the recording is finalized and handed to video-shoot
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+		await listener({ isActive: false });
+		await flushPromises();
+
+		expect(mocks.cameraPreview.stopRecordVideo).toHaveBeenCalled();
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ videoFilePath: '/bg.mp4' });
+	});
+
+	it('video mode recovers when the native session already stopped the recording before backgrounding', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		//screen off while the native side already paused/stopped the session
+		mocks.cameraPreview.stopRecordVideo.mockRejectedValue(new Error('Camera is not running'));
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+		await listener({ isActive: false });
+		await flushPromises();
+
+		//no file to hand off: the camera is released, the modal stays up, and the
+		//feed restarts on return (the recording is lost, the modal is not stuck)
+		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.stop).toHaveBeenCalledWith({ force: true });
+		expect(wrapper.vm.state.started).toBe(false);
+
+		await listener({ isActive: true });
+		await flushPromises();
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(2);
+		expect(wrapper.vm.state.started).toBe(true);
 	});
 });
