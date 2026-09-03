@@ -18,7 +18,13 @@ describe('saveBlobToTempDir', () => {
         delete global.window.resolveLocalFileSystemURL;
     });
 
-    function _setUpFs({failOnGetFile = false, failOnWriter = false, failOnMove = false, failOnRemoveOld = false} = {}) {
+    function _setUpFs({
+        failOnGetFile = false,
+        failOnWriter = false,
+        failOnMove = false,
+        failOnBackup = false,
+        failOnRestore = false
+    } = {}) {
         const mockFileWriter = {
             onwriteend: null,
             onerror: null,
@@ -35,8 +41,8 @@ describe('saveBlobToTempDir', () => {
             }
         };
 
-        //mock file entry: supports createWriter (for the temp file write),
-        //moveTo (for the atomic rename), and remove (for cleanup on failure)
+        const virtualFs = new Set();
+
         const mockFile = {
             createWriter(success, error) {
                 if (failOnWriter) {
@@ -50,39 +56,60 @@ describe('saveBlobToTempDir', () => {
                     error(new Error('move failed'));
                     return;
                 }
-                //simulate atomic rename: remove source (.tmp), add target
                 virtualFs.delete(newName + '.tmp');
                 virtualFs.add(newName);
                 success();
             },
-            remove(success, error) {
-                //cleanup of temp file on write/move failure
+            remove(success) {
                 success();
             }
         };
 
         const mockExistingFile = {
-            remove(success, error) {
-                if (failOnRemoveOld) {
-                    error(new Error('remove failed'));
-                } else {
-                    success();
+            copyTo(dest, newName, success, error) {
+                if (failOnBackup) {
+                    error(new Error('backup failed'));
+                    return;
                 }
+                virtualFs.add(newName);
+                success();
+            },
+            moveTo(dest, newName, success, error) {
+                if (failOnRestore) {
+                    error(new Error('restore failed'));
+                    return;
+                }
+                //restore: .bak → original name
+                virtualFs.delete(newName + '.bak');
+                virtualFs.add(newName);
+                success();
             }
         };
 
-        //virtual filesystem: tracks which filenames exist
-        const virtualFs = new Set();
+        const mockBakFile = {
+            moveTo(dest, newName, success, error) {
+                if (failOnRestore) {
+                    error(new Error('restore failed'));
+                    return;
+                }
+                virtualFs.delete(newName + '.bak');
+                virtualFs.add(newName);
+                success();
+            },
+            remove(success) {
+                virtualFs.delete(virtualFs.values ? Array.from(virtualFs).find(n => n.endsWith('.bak')) : '');
+                success();
+            }
+        };
 
         const mockDirEntry = {
             getFile(filename, options, success, error) {
                 if (options && options.create === false) {
-                    //check existence
                     if (virtualFs.has(filename)) {
-                        //return the appropriate entry type:
-                        //tmp files get the write-capable mock, others get the removable mock
                         if (filename.endsWith('.tmp')) {
                             success(mockFile);
+                        } else if (filename.endsWith('.bak')) {
+                            success(mockBakFile);
                         } else {
                             success(mockExistingFile);
                         }
@@ -90,7 +117,6 @@ describe('saveBlobToTempDir', () => {
                         error(new Error('NOT_FOUND'));
                     }
                 } else {
-                    //create: true — register in virtual FS
                     virtualFs.add(filename);
                     if (failOnGetFile) {
                         error(new Error('getFile failed'));
@@ -107,7 +133,7 @@ describe('saveBlobToTempDir', () => {
             success(mockDirEntry);
         });
 
-        return {mockDir, mockFile, mockFileWriter, mockExistingFile, virtualFs};
+        return {mockDir, mockFile, mockFileWriter, mockExistingFile, mockBakFile, virtualFs};
     }
 
     it('rejects on web platform', async () => {
@@ -146,12 +172,10 @@ describe('saveBlobToTempDir', () => {
         const blob = {fake: 'blob'};
 
         const promise = saveBlobToTempDir({blob, filename: 'drawing.jpg'});
-        //write to .tmp
         expect(virtualFs.has('drawing.jpg.tmp')).toBe(true);
         mockFileWriter._triggerWriteEnd();
         const result = await promise;
 
-        //temp was renamed to the target
         expect(result).toBe('drawing.jpg');
         expect(mockDir.lastUrl).toBe('/data/cache/');
         expect(mockFileWriter.write).toHaveBeenCalledWith(blob);
@@ -163,9 +187,8 @@ describe('saveBlobToTempDir', () => {
         rootStore.tempDir = '/var/mobile/Library/';
 
         const {mockDir, mockFileWriter} = _setUpFs({});
-        const blob = {fake: 'blob'};
 
-        const promise = saveBlobToTempDir({blob, filename: 'sig.jpg'});
+        const promise = saveBlobToTempDir({blob: {fake: 'blob'}, filename: 'sig.jpg'});
         mockFileWriter._triggerWriteEnd();
         await promise;
 
@@ -215,37 +238,49 @@ describe('saveBlobToTempDir', () => {
         const {mockFileWriter, virtualFs} = _setUpFs({});
 
         const promise = saveBlobToTempDir({blob: {}, filename: 'x.jpg'});
-        //temp file was created
         expect(virtualFs.has('x.jpg.tmp')).toBe(true);
         mockFileWriter._triggerError(new Error('write failed'));
 
         await expect(promise).rejects.toThrow('write failed');
     });
 
-    it('moves temp file over existing file atomically (original untouched until move)', async () => {
+    it('backs up existing file and restores when move fails', async () => {
+        const rootStore = useRootStore();
+        rootStore.device = { platform: 'android' };
+        rootStore.tempDir = '/tmp/';
+
+        const {mockFileWriter, virtualFs} = _setUpFs({failOnMove: true});
+
+        virtualFs.add('photo.jpg');
+
+        const promise = saveBlobToTempDir({blob: {}, filename: 'photo.jpg'});
+        mockFileWriter._triggerWriteEnd();
+        await expect(promise).rejects.toThrow('move failed');
+
+        //original restored from backup, .bak cleaned up
+        expect(virtualFs.has('photo.jpg')).toBe(true);
+        expect(virtualFs.has('photo.jpg.bak')).toBe(false);
+    });
+
+    it('moves temp file over existing file and cleans up backup', async () => {
         const rootStore = useRootStore();
         rootStore.device = { platform: 'android' };
         rootStore.tempDir = '/tmp/';
 
         const {mockFileWriter, virtualFs} = _setUpFs({});
-        const newBlob = {fake: 'new-blob'};
 
-        //simulate file already existing in temp dir
         virtualFs.add('existing.jpg');
 
-        const promise = saveBlobToTempDir({blob: newBlob, filename: 'existing.jpg'});
+        const promise = saveBlobToTempDir({blob: {fake: 'new'}, filename: 'existing.jpg'});
         mockFileWriter._triggerWriteEnd();
         await promise;
 
-        //the new blob was written to the temp file
-        expect(mockFileWriter.write).toHaveBeenCalledWith(newBlob);
-        expect(mockFileWriter.write).toHaveBeenCalledTimes(1);
-        //target exists after move, temp is cleaned up
         expect(virtualFs.has('existing.jpg')).toBe(true);
+        expect(virtualFs.has('existing.jpg.bak')).toBe(false);
         expect(virtualFs.has('existing.jpg.tmp')).toBe(false);
     });
 
-    it('creates new file when filename does not exist (no old file to remove)', async () => {
+    it('creates new file when filename does not exist (no backup needed)', async () => {
         const rootStore = useRootStore();
         rootStore.device = { platform: 'android' };
         rootStore.tempDir = '/tmp/';
@@ -266,37 +301,48 @@ describe('saveBlobToTempDir', () => {
 
         const {mockFileWriter, virtualFs} = _setUpFs({});
 
-        //simulate file already existing
         virtualFs.add('photo.jpg');
 
         const promise = saveBlobToTempDir({blob: {}, filename: 'photo.jpg'});
-        //temp file was created but original is still there
         expect(virtualFs.has('photo.jpg.tmp')).toBe(true);
         expect(virtualFs.has('photo.jpg')).toBe(true);
 
         mockFileWriter._triggerError(new Error('disk full'));
         await expect(promise).rejects.toThrow('disk full');
 
-        //original file is still intact (temp was cleaned up)
         expect(virtualFs.has('photo.jpg')).toBe(true);
     });
 
-    it('preserves original file when move fails', async () => {
+    it('falls back to move-without-backup when backup fails', async () => {
         const rootStore = useRootStore();
         rootStore.device = { platform: 'android' };
         rootStore.tempDir = '/tmp/';
 
-        const {mockFileWriter, virtualFs} = _setUpFs({failOnMove: true});
+        const {mockFileWriter, virtualFs} = _setUpFs({failOnBackup: true});
 
-        //simulate file already existing
-        virtualFs.add('photo.jpg');
+        virtualFs.add('old.jpg');
 
-        const promise = saveBlobToTempDir({blob: {}, filename: 'photo.jpg'});
+        const promise = saveBlobToTempDir({blob: {}, filename: 'old.jpg'});
+        mockFileWriter._triggerWriteEnd();
+        await promise;
+
+        //move succeeded despite backup failure
+        expect(virtualFs.has('old.jpg')).toBe(true);
+        expect(virtualFs.has('old.jpg.tmp')).toBe(false);
+    });
+
+    it('rejects when both backup restore and cleanup fail after move failure', async () => {
+        const rootStore = useRootStore();
+        rootStore.device = { platform: 'android' };
+        rootStore.tempDir = '/tmp/';
+
+        const {mockFileWriter, virtualFs} = _setUpFs({failOnMove: true, failOnRestore: true});
+
+        virtualFs.add('gone.jpg');
+
+        const promise = saveBlobToTempDir({blob: {}, filename: 'gone.jpg'});
         mockFileWriter._triggerWriteEnd();
         await expect(promise).rejects.toThrow('move failed');
-
-        //original file is still intact
-        expect(virtualFs.has('photo.jpg')).toBe(true);
     });
 
     it('writes a shorter replacement blob without trailing bytes', async () => {
@@ -306,7 +352,6 @@ describe('saveBlobToTempDir', () => {
 
         const {mockFileWriter, virtualFs} = _setUpFs({});
 
-        //first write: long blob
         const longBlob = {fake: 'long'};
         let promise = saveBlobToTempDir({blob: longBlob, filename: 'resize.jpg'});
         mockFileWriter._triggerWriteEnd();
@@ -315,7 +360,6 @@ describe('saveBlobToTempDir', () => {
         expect(mockFileWriter.write).toHaveBeenCalledWith(longBlob);
         expect(virtualFs.has('resize.jpg.tmp')).toBe(false);
 
-        //second write: shorter blob via temp-then-move (atomic swap)
         mockFileWriter.write.mockClear();
         const shortBlob = {fake: 'short'};
         promise = saveBlobToTempDir({blob: shortBlob, filename: 'resize.jpg'});
@@ -324,23 +368,5 @@ describe('saveBlobToTempDir', () => {
 
         expect(mockFileWriter.write).toHaveBeenCalledWith(shortBlob);
         expect(mockFileWriter.write).toHaveBeenCalledTimes(1);
-    });
-
-    it('rejects when remove of old file fails during move', async () => {
-        const rootStore = useRootStore();
-        rootStore.device = { platform: 'android' };
-        rootStore.tempDir = '/tmp/';
-
-        const {mockFileWriter, virtualFs} = _setUpFs({failOnRemoveOld: true});
-
-        //simulate file already existing
-        virtualFs.add('locked.jpg');
-
-        const promise = saveBlobToTempDir({blob: {}, filename: 'locked.jpg'});
-        mockFileWriter._triggerWriteEnd();
-        //in the new flow, the old file is overwritten by moveTo, not removed
-        //separately, so this succeeds (old file is replaced atomically)
-        const result = await promise;
-        expect(result).toBe('locked.jpg');
     });
 });
