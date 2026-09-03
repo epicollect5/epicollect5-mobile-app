@@ -40,7 +40,7 @@ export async function popoverMediaHandler ({ media, entryUuid, state, e, mediaTy
         reference: 'trigger',
         side: 'left'
     });
-    popover.onDidDismiss().then(async (response) => {
+    const dismissPromise = popover.onDidDismiss().then(async (response) => {
 
         //let the caller react to actions it owns (e.g. DRAW opens the pad);
         //await the result so the caller can catch modalController/create or
@@ -76,5 +76,6 @@ export async function popoverMediaHandler ({ media, entryUuid, state, e, mediaTy
             state.answer.answer = '';
         }
     });
-    return popover.present();
+    await popover.present();
+    return dismissPromise;
 }
