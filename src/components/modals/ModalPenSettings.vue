@@ -28,9 +28,9 @@
       <div class="modal-pen-settings__preview ion-margin-bottom">
         <span
             class="modal-pen-settings__preview-swatch"
-            :style="{backgroundColor: state.pickedColor}"
+            :style="previewSwatchStyle"
         ></span>
-        <span class="modal-pen-settings__preview-value">{{ state.pickedColor.toUpperCase() }}</span>
+        <span class="modal-pen-settings__preview-value">{{ previewHexUpper }}</span>
         <span class="modal-pen-settings__preview-thickness">
           <ion-icon :icon="pencil"></ion-icon>
           {{ state.thickness }}x
@@ -45,7 +45,7 @@
             :class="{'modal-pen-settings__swatch--selected': color === state.pickedColor}"
             :style="{backgroundColor: color}"
             :aria-label="color"
-            @click="state.pickedColor = color"
+            @click="selectColor(color)"
         ></button>
       </div>
       <div class="modal-pen-settings__thickness">
@@ -78,7 +78,7 @@
 </template>
 
 <script>
-import {reactive} from 'vue';
+import {reactive, computed} from 'vue';
 import {modalController} from '@ionic/vue';
 import {closeOutline, checkmarkOutline, pencil} from 'ionicons/icons';
 import {useRootStore} from '@/stores/root-store';
@@ -134,6 +134,10 @@ export default {
       state.thickness = value;
     }
 
+    function selectColor(color) {
+      state.pickedColor = color;
+    }
+
     function cancel() {
       modalController.dismiss();
     }
@@ -146,18 +150,25 @@ export default {
       });
     }
 
+    const computedScope = {
+      previewSwatchStyle: computed(() => ({backgroundColor: state.pickedColor})),
+      previewHexUpper: computed(() => state.pickedColor.toUpperCase())
+    };
+
     return {
       labels,
       state,
       palette: PALETTE,
       _pinFormatter,
       setThickness,
+      selectColor,
       cancel,
       save,
       //icons
       closeOutline,
       checkmarkOutline,
-      pencil
+      pencil,
+      ...computedScope
     };
   }
 };

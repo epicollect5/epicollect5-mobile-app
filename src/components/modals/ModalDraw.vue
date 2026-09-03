@@ -61,7 +61,7 @@
             @click="openPenSettings()"
         >
         <ion-button class="modal-draw__thickness-button">
-          {{ _thicknessLabel() }}
+          {{ thicknessLabel }}
         </ion-button>
         <ion-button
             class="modal-draw__color-button"
@@ -69,7 +69,7 @@
         >
           <span
               class="modal-draw__color-dot"
-              :style="{backgroundColor: state.currentColor}"
+              :style="colorDotStyle"
           ></span>
         </ion-button>
       </ion-buttons>
@@ -78,7 +78,7 @@
 </template>
 
 <script>
-import {onMounted, onBeforeUnmount, ref, reactive, nextTick} from 'vue';
+import {onMounted, onBeforeUnmount, ref, reactive, nextTick, computed} from 'vue';
 import {modalController} from '@ionic/vue';
 import {closeOutline, checkmarkOutline, arrowUndoOutline, trashOutline} from 'ionicons/icons';
 import SignaturePad from 'signature_pad';
@@ -323,11 +323,6 @@ export default {
       if (signaturePad) {
         signaturePad.penColor = color;
       }
-    }
-
-    //no text label: the thickness button itself shows the selected value
-    function _thicknessLabel() {
-      return state.thickness + 'x';
     }
 
     //The two footer buttons (thickness readout and color dot) both open the
@@ -593,6 +588,12 @@ export default {
       }
     });
 
+    const computedScope = {
+      //no text label: the thickness button itself shows the selected value
+      thicknessLabel: computed(() => state.thickness + 'x'),
+      colorDotStyle: computed(() => ({backgroundColor: state.currentColor}))
+    };
+
     return {
       labels,
       state,
@@ -600,7 +601,6 @@ export default {
       setColor,
       setThickness,
       openPenSettings,
-      _thicknessLabel,
       undo,
       clearAll,
       cancel,
@@ -609,7 +609,8 @@ export default {
       closeOutline,
       checkmarkOutline,
       arrowUndoOutline,
-      trashOutline
+      trashOutline,
+      ...computedScope
     };
   }
 };
