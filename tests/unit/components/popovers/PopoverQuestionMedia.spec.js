@@ -50,7 +50,7 @@ describe('PopoverQuestionMedia component', () => {
         const items = wrapper.findAll('ion-item');
         expect(items).toHaveLength(3);
         //Draw is the first row, above share and delete
-        expect(items[0].text().trim()).toBe('Draw');
+        expect(items[0].text().trim()).toBe('Draw Beta');
         expect(items[1].text().trim()).toBe('Share');
         expect(items[2].text().trim()).toBe('Delete');
     });
