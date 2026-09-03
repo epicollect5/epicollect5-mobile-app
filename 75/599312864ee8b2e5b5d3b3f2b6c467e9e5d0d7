@@ -1,0 +1,31 @@
+src/theme/mixins.scss
+  s_6989f7569db7d6::t_526cabdc28390d 837
+  h_2231ff2aa93473 838-839,842,845,847-848,852-853,886-887,889-892
+  s_6989f7569db7d6::t_ced1752e810467 835-836,849-850,854
+  s_6989f7569db7d6::t_195bdcc22f7c31 830-834,859,865-885,888,893-894
+  s_6989f7569db7d6::t_114ef199735057 855-858
+  s_6989f7569db7d6::t_db0683f976e2ab 860-864
+  s_6989f7569db7d6::t_2de16f8da0d250 895-896
+  h_2231ff2aa93473 244,840-841,843-844,846,851
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "75599312864ee8b2e5b5d3b3f2b6c467e9e5d0d7",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_6989f7569db7d6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f9c027b09ffeGa5Lfo210D8ZO5",
+        "model": "minimax/minimax-m3:free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
