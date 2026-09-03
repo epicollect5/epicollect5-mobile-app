@@ -1,0 +1,42 @@
+tests/unit/main.spec.js
+  s_6989f7569db7d6::t_130b6a139c912e 120
+tests/unit/services/init-service.spec.js
+  s_6989f7569db7d6::t_fd2c3c97813e40 26-38
+  s_6989f7569db7d6::t_023eb3898cd07c 120
+  s_6989f7569db7d6::t_7ed853ddccfb50 190-216,218-219
+  s_6989f7569db7d6::t_b66a48418b4acc 217,220
+tests/unit/services/filesystem/resize-photo-service.spec.js
+  s_6989f7569db7d6::t_93a469edc591f7 107
+  s_6989f7569db7d6::t_629e2bbcaaa85a 1-106,108-198
+tests/unit/services/download-file-service.spec.js
+  h_2231ff2aa93473 5
+tests/unit/use/questions/photo-take.spec.js
+  s_6989f7569db7d6::t_4d494024955997 15-28,35-44,47-48,52-62,73-80,94,107,137-209,212-213,220,236-237
+  s_6989f7569db7d6::t_1049624d8d4b9d 210-211
+  s_6989f7569db7d6::t_33ad19c3d840aa 214-219
+  s_6989f7569db7d6::t_c0037696bb4caf 221-223,233-235
+  h_2231ff2aa93473 224-232
+tests/unit/components/modals/ModalCameraPreview.spec.js
+  h_2231ff2aa93473 1-385
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "580dd1e847bced6b4617bc600c708da684eb3d66",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_6989f7569db7d6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f9c027b09ffeGa5Lfo210D8ZO5",
+        "model": "minimax/minimax-m3:free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
