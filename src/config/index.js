@@ -358,7 +358,8 @@ export const PARAMETERS = {
         SERVER_URL: 'server_url',
         SELECTED_TEXT_SIZE: 'selected_text_size',
         COLLECT_ERRORS: 'collect_errors',
-        IN_APP_CAMERA: 'in_app_camera'
+        IN_APP_CAMERA: 'in_app_camera',
+        IN_APP_CAMERA_VIDEO: 'in_app_camera_video'
     },
     PWA_MIMETYPES: {
         PHOTO: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'],
