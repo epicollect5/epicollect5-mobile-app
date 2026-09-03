@@ -871,6 +871,13 @@
         //extra bottom padding so the shutter breathes above the safe-area inset
         padding: 20px 0 24px;
     }
+    .camera-controls-side {
+        //fixed width so the shutter stays centered even when one side (flip/flash,
+        //hidden in video mode) has no button
+        width: 48px;
+        display: flex;
+        justify-content: center;
+    }
     .shutter-button {
         width: 72px;
         height: 72px;
@@ -879,6 +886,12 @@
         border: 4px solid #fff;
         box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
         cursor: pointer;
+    }
+    .shutter-button.recording {
+        //red stop-square while a video is recording
+        background: #ff3b30;
+        border-color: #ff3b30;
+        border-radius: 12px;
     }
     .shutter-button:disabled {
         opacity: 0.5;
@@ -891,6 +904,18 @@
     .flash-button.active {
         --background: rgba(255, 165, 0, 0.75);
         --color: #fff;
+    }
+    .recording-indicator {
+        display: flex;
+        align-items: center;
+        margin-right: 16px;
+    }
+    .recording-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #ff3b30;
+        animation: camera-preview-recording-pulse 1s ease-in-out infinite;
     }
 }
 
