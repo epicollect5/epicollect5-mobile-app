@@ -269,6 +269,31 @@ describe('Main.js Architecture', () => {
         expect(initService.insertDemoProject).toHaveBeenCalled();
     });
 
+    it('Native: enables both in-app camera flags when preferences resolve true', async () => {
+        const {initService} = await import('@/services/init-service');
+        const {bookmarksService} = await import('@/services/utilities/bookmarks-service');
+
+        initService.getDeviceInfo.mockResolvedValue({platform: 'android'});
+        initService.openDB.mockResolvedValue({executeSql: vi.fn()});
+        initService.getAppInfo.mockResolvedValue({});
+        initService.getLanguage.mockResolvedValue('en');
+        initService.getDBVersion.mockResolvedValue(1);
+        bookmarksService.getBookmarks.mockResolvedValue([]);
+        initService.getInAppCameraPreference.mockResolvedValue(true);
+        initService.getInAppCameraVideoPreference.mockResolvedValue(true);
+
+        await import('@/main');
+        await flushPromises();
+
+        const {useRootStore} = await import('@/stores/root-store');
+        const rootStore = useRootStore();
+
+        expect(initService.getInAppCameraPreference).toHaveBeenCalled();
+        expect(initService.getInAppCameraVideoPreference).toHaveBeenCalled();
+        expect(rootStore.inAppCamera).toBe(true);
+        expect(rootStore.inAppCameraVideo).toBe(true);
+    });
+
     it('handles Branch ADD entry logic when branch params are present', async () => {
         const {initService} = await import('@/services/init-service');
         const {webService} = await import('@/services/web-service');

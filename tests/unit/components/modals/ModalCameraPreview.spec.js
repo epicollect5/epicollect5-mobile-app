@@ -49,6 +49,14 @@ vi.mock('@ionic/vue', () => ({
 	modalController: mocks.modalController
 }));
 
+vi.mock('@/stores/root-store', () => ({
+	useRootStore: () => ({ device: { platform: 'android' } })
+}));
+
+vi.mock('@/config', () => ({
+	PARAMETERS: { ANDROID: 'android' }
+}));
+
 const expectStartOptions = () =>
 	expect.objectContaining({
 		toBack: true,

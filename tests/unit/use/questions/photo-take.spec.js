@@ -208,6 +208,38 @@ describe('photoTake tests', () => {
         expect(state.answer.answer).toBe('');
     });
 
+    it('preserves the existing photo when the in-app modal is dismissed without a capture', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '' });
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+        media[entryUuid]['q1'].cached = 'existing.jpg';
+        media[entryUuid]['q1'].stored = 'existing.jpg';
+        state.answer.answer = 'existing.jpg';
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(modalMock.create).toHaveBeenCalled();
+        expect(resizeMock.resizeToTempDir).not.toHaveBeenCalled();
+        expect(cameraPreviewMock.deleteFile).not.toHaveBeenCalled();
+        expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+        expect(state.answer.answer).toBe('existing.jpg');
+    });
+
+    it('reuses the cached filename on an in-app retake instead of generating a new file', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '/capture2.jpg' });
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+        media[entryUuid]['q1'].cached = 'cached1.jpg';
+        media[entryUuid]['q1'].stored = '';
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(utilsMock.generateMediaFilename).not.toHaveBeenCalled();
+        expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture2.jpg', 'cached1.jpg');
+        expect(media[entryUuid]['q1'].cached).toBe('cached1.jpg');
+        expect(state.answer.answer).toBe('cached1.jpg');
+    });
+
     it('guards the EntriesAdd back handler while the camera modal is open', async () => {
         setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
         setupModalPresent({ sourcePath: '' });

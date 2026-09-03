@@ -253,4 +253,19 @@ describe('videoShoot tests', () => {
         expect(media[entryUuid]['q1'].cached).toBe('');
         expect(state.answer.answer).toBe('');
     });
+
+    it('preserves the existing video when the in-app camera is dismissed without recording', async () => {
+        setupRootStore(PARAMETERS.ANDROID, { inAppCameraVideo: true });
+        modalMock.modal.onDidDismiss.mockResolvedValue({ data: null });
+        const { media, entryUuid, state, filename } = makeArgs();
+        media[entryUuid]['q1'].cached = 'existing.mp4';
+        media[entryUuid]['q1'].stored = 'existing.mp4';
+        state.answer.answer = 'existing.mp4';
+
+        await videoShoot({ media, entryUuid, state, filename });
+
+        expect(videoEditorMock.edit).not.toHaveBeenCalled();
+        expect(media[entryUuid]['q1'].cached).toBe('existing.mp4');
+        expect(state.answer.answer).toBe('existing.mp4');
+    });
 });
