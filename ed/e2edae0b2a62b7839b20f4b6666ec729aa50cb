@@ -1,0 +1,36 @@
+src/components/modals/ModalCameraPreview.vue
+  s_09f5efda71ffae::t_a2f0f46ddd306b 450-451,453-455
+  s_09f5efda71ffae::t_da3e9333a7f8c1 483
+  s_09f5efda71ffae::t_1fa6b5b09416cc 188-189
+  s_09f5efda71ffae::t_a296b47f4cc80b 76
+  s_09f5efda71ffae::t_306470d3667350 482
+  s_09f5efda71ffae::t_7de9e0dc6d57be 437-440,457-458,467-469,472-475
+  s_09f5efda71ffae::t_eb89f4c2a918c3 452
+  s_09f5efda71ffae::t_7bad8e5d687c3d 496
+  s_09f5efda71ffae::t_1c727faf1abd91 237-239
+  s_09f5efda71ffae::t_a14aa1f4a6e153 117-120
+  s_09f5efda71ffae::t_de0143a1059d23 495
+  s_09f5efda71ffae::t_904e1677acb1f3 456
+  s_09f5efda71ffae::t_a3b7a273e143e4 476
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "ede2edae0b2a62b7839b20f4b6666ec729aa50cb",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_09f5efda71ffae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f983cb7dbffeZHyP3mGpvhpvYA",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
