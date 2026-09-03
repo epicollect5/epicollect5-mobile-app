@@ -3,6 +3,8 @@ import { shallowMount } from '@vue/test-utils';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import flushPromises from 'flush-promises';
 
+const platformMock = vi.hoisted(() => ({ platform: 'android' }));
+
 const mocks = vi.hoisted(() => {
 	const cameraPreview = {
 		requestPermissions: vi.fn(),
@@ -50,7 +52,7 @@ vi.mock('@ionic/vue', () => ({
 }));
 
 vi.mock('@/stores/root-store', () => ({
-	useRootStore: () => ({ device: { platform: 'android' } })
+	useRootStore: () => ({ device: { platform: platformMock.platform } })
 }));
 
 vi.mock('@/config', () => ({
@@ -95,6 +97,7 @@ describe('ModalCameraPreview component', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		platformMock.platform = 'android';
 		document.documentElement.classList.remove('camera-preview-open');
 		document.body.classList.remove('camera-preview-open');
 	});
@@ -641,5 +644,64 @@ describe('ModalCameraPreview component', () => {
 		await flushPromises();
 		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(2);
 		expect(wrapper.vm.state.started).toBe(true);
+	});
+
+	it('exposes the flash state through computedScope instead of inline template logic', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		//off by default: no active class, outline icon
+		expect(wrapper.vm.isFlashActive).toBe(false);
+		expect(wrapper.vm.flashIcon).toBe(wrapper.vm.flashOutline);
+
+		await wrapper.vm.toggleFlash();
+		expect(wrapper.vm.state.flashMode).toBe('torch');
+		expect(wrapper.vm.isFlashActive).toBe(true);
+		expect(wrapper.vm.flashIcon).toBe(wrapper.vm.flash);
+
+		await wrapper.vm.toggleFlash();
+		expect(wrapper.vm.isFlashActive).toBe(false);
+		expect(wrapper.vm.flashIcon).toBe(wrapper.vm.flashOutline);
+	});
+
+	it('skips the stale-recording sweep when the platform is not Android', async () => {
+		platformMock.platform = 'ios';
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		expect(mocks.filesystem.readdir).not.toHaveBeenCalled();
+		expect(mocks.filesystem.deleteFile).not.toHaveBeenCalled();
+		//the camera itself still starts: only the Android-only sweep is skipped
+		expect(mocks.cameraPreview.start).toHaveBeenCalled();
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('removes listeners registered after unmount instead of leaking them', async () => {
+		grantPermissions();
+		//defer both registrations so unmount wins the race
+		let resolveRecording = null;
+		let resolveAppState = null;
+		const recordingRemove = vi.fn();
+		const appStateRemove = vi.fn();
+		mocks.cameraPreview.addListener.mockReturnValue(new Promise((resolve) => {
+			resolveRecording = resolve;
+		}));
+		mocks.capacitorApp.addListener.mockReturnValue(new Promise((resolve) => {
+			resolveAppState = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		//unmount while both addListener promises are still pending
+		wrapper.unmount();
+		resolveRecording({ remove: recordingRemove });
+		resolveAppState({ remove: appStateRemove });
+		await flushPromises();
+
+		expect(recordingRemove).toHaveBeenCalled();
+		expect(appStateRemove).toHaveBeenCalled();
 	});
 });
