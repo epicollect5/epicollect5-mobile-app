@@ -560,7 +560,9 @@ export default {
           _pushHistory();
         } catch (error) {
           console.warn('Failed to load existing drawing for editing', error);
-          existingImage = null;
+          //imp: dismiss to prevent saving a blank canvas over the original photo
+          modalController.dismiss();
+          return;
         }
       }
 
