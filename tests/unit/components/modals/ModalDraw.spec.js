@@ -611,4 +611,52 @@ describe('ModalDraw component', () => {
         expect(canvasEl.height).toBe(150);
         expect(ctx2d.drawImage).not.toHaveBeenCalled();
     });
+
+    it('ignores save() while the background photo is still loading', async () => {
+        //images that only load when the test fires them
+        const pendingLoads = [];
+        class DeferredImage extends FakeImage {
+            set src(value) {
+                this._src = value;
+                pendingLoads.push(() => {
+                    if (this.onload) {
+                        this.onload();
+                    }
+                });
+            }
+            get src() {
+                return this._src;
+            }
+        }
+        vi.stubGlobal('Image', DeferredImage);
+        const wrapper = await mountDraw({existingDataURL: 'data:image/png;base64,AAAA'});
+
+        //photo pending: Save is disabled and a tap cannot smuggle out a
+        //blank canvas over the original photo
+        expect(wrapper.vm.state.isLoading).toBe(true);
+        wrapper.vm.save();
+        await flushPromises();
+        expect(modalController.dismiss).not.toHaveBeenCalled();
+
+        //photo arrives: the pad unlocks and Save exports the photo, not white
+        pendingLoads.forEach((fire) => fire());
+        await flushPromises();
+        expect(wrapper.vm.state.isLoading).toBe(false);
+        expect(ctx2d.drawImage).toHaveBeenCalled();
+
+        const toDataURLSpy = vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL')
+            .mockReturnValue('data:image/jpeg;base64,EXPORTED');
+        wrapper.vm.save();
+        await flushPromises();
+        //640x480 photo: full-bleed 1024x768 output from the source image
+        expect(ctx2d.drawImage).toHaveBeenCalledWith(
+            expect.objectContaining({width: 640, height: 480}),
+            0,
+            0,
+            1024,
+            768
+        );
+        expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.5);
+        expect(modalController.dismiss).toHaveBeenCalledWith({dataURL: 'data:image/jpeg;base64,EXPORTED'});
+    });
 });
