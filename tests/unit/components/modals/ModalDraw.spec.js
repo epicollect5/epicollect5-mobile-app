@@ -572,24 +572,43 @@ describe('ModalDraw component', () => {
         expect(modalController.dismiss).toHaveBeenCalled();
     });
 
-    it('keeps the pad usable when the background photo fails to load', async () => {
-        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-        const wrapper = await mountDraw({existingDataURL: 'data:image/png;base64,FAIL'});
-        const pad = padInstances[0];
+    it('does not dismiss on mount when the background photo loads', async () => {
+        const wrapper = await mountDraw({existingDataURL: 'data:image/png;base64,AAAA'});
 
-        //the failure is reported but does not kill the pad
+        //success path unchanged: background painted, base history pushed,
+        //modal stays open for editing
+        expect(ctx2d.drawImage).toHaveBeenCalled();
+        expect(wrapper.vm.state.history).toHaveLength(1);
+        expect(modalController.dismiss).not.toHaveBeenCalled();
+    });
+
+    it('dismisses without a payload when the background photo fails to load', async () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const addSpy = vi.spyOn(window, 'addEventListener');
+        const wrapper = await mountDraw({existingDataURL: 'data:image/png;base64,FAIL'});
+
+        //the failure is reported...
         expect(warnSpy).toHaveBeenCalledWith(
             'Failed to load existing drawing for editing',
             expect.any(Error)
         );
-        pad._data = [{color: '#000000', points: [{x: 1, y: 1}]}];
-        pad.listeners.beginStroke();
-        pad.listeners.endStroke();
-        expect(wrapper.vm.state.history).toHaveLength(1);
+        //...and the modal closes with no dataURL, so the caller cannot save
+        //a blank canvas over the original photo
+        expect(modalController.dismiss).toHaveBeenCalledTimes(1);
+        expect(modalController.dismiss).toHaveBeenCalledWith();
 
-        //the missing image must not be drawn on later layout changes
-        ctx2d.drawImage.mockClear();
-        wrapper.vm.clearAll();
+        //no background was painted and no base history was pushed
+        expect(ctx2d.drawImage).not.toHaveBeenCalled();
         expect(wrapper.vm.state.history).toHaveLength(0);
+
+        //the early return skipped the post-load wiring: layout changes are
+        //ignored (no resize listener registered)
+        expect(addSpy).not.toHaveBeenCalledWith('resize', expect.any(Function));
+        const canvasEl = wrapper.find('canvas').element;
+        window.dispatchEvent(new Event('resize'));
+        await waitLayout();
+        expect(canvasEl.width).toBe(300);
+        expect(canvasEl.height).toBe(150);
+        expect(ctx2d.drawImage).not.toHaveBeenCalled();
     });
 });
