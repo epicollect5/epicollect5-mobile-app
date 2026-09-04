@@ -96,13 +96,16 @@ import {camera, images} from 'ionicons/icons';
 import {inject, reactive, computed, onMounted} from 'vue';
 import {Capacitor} from '@capacitor/core';
 import ModalPhoto from '@/components/modals/ModalPhoto.vue';
+import ModalDraw from '@/components/modals/ModalDraw.vue';
 import {photoTake} from '@/use/questions/photo-take';
+import {saveBlobToTempDir} from '@/services/filesystem/save-blob-to-temp-service';
 import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
 import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
 import Dropzone from '@/components/Dropzone.vue';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {questionCommonService} from '@/services/entry/question-common-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 export default {
   components: {
@@ -171,7 +174,7 @@ export default {
     const project_ref = entriesAddScope.entryService.entry.projectRef;
     const media = entriesAddScope.entryService.entry.media;
 
-    // Check whether we want to index the media object using the main entry uuid, or branch entry uuid
+    // Check whether we want to index the media object using the main entry uuid or branch entry uuid
     const entryUuid = !entriesAddState.questionParams.isBranch
         ? entriesAddScope.entryService.entry.entryUuid //use entry_uuid
         : entriesAddScope.branchEntryService.entry.entryUuid;//use branch entry_uuid
@@ -246,10 +249,156 @@ export default {
             media,
             entryUuid,
             state, e,
-            mediaType: PARAMETERS.QUESTION_TYPES.PHOTO
+            mediaType: PARAMETERS.QUESTION_TYPES.PHOTO,
+            //the media popover gains a Draw entry on top of share/delete;
+            //it dismisses with the DRAW action and the pad opens from here
+            onAction: (action) => {
+              if (action === PARAMETERS.ACTIONS.DRAW) {
+                return methods.openDrawPad();
+              }
+            }
           });
         } catch (error) {
           console.error('popoverMediaHandler failed', error);
+        }
+      },
+      async openDrawPad() {
+        if (rootStore.device.platform === PARAMETERS.WEB) {
+          return;
+        }
+
+        //imp: claim the workflow lock before the first await: two overlapping
+        //opens would otherwise both pass the guard while the first image
+        //fetch is pending, opening two pads that save over the same file.
+        //Released on every failure path below and after the save settles
+        //(see onDidDismiss finally); a second open sharing the .tmp/.bak
+        //staging files with an in-flight save would lose a drawing or break
+        //the iOS restore
+        if (rootStore.isDrawModalActive) {
+          return;
+        }
+        rootStore.isDrawModalActive = true;
+
+        let existingDataURL = '';
+        let imageLoadFailed = false;
+        const mediaFile = media[entryUuid][state.inputDetails.ref];
+        if (mediaFile.cached !== '') {
+          try {
+            const source = Capacitor.convertFileSrc(tempDir + mediaFile.cached);
+            const response = await fetch(source);
+            const blob = await response.blob();
+            existingDataURL = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = () => reject(reader.error);
+              reader.readAsDataURL(blob);
+            });
+          } catch (error) {
+            console.warn('Failed to load existing drawing for editing', error);
+            rollbarService.critical(error);
+            imageLoadFailed = true;
+          }
+        } else if (mediaFile.stored !== '') {
+          try {
+            const source = Capacitor.convertFileSrc(
+                persistentDir + PARAMETERS.PHOTO_DIR + project_ref + '/' + mediaFile.stored
+            );
+            const response = await fetch(source);
+            const blob = await response.blob();
+            existingDataURL = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = () => reject(reader.error);
+              reader.readAsDataURL(blob);
+            });
+          } catch (error) {
+            console.warn('Failed to load stored photo for drawing', error);
+            rollbarService.critical(error);
+            imageLoadFailed = true;
+          }
+        }
+
+        //do not open a blank canvas: the user would unknowingly replace the
+        //original photo with a drawing on white when saving
+        if (imageLoadFailed) {
+          rootStore.isDrawModalActive = false;
+          return;
+        }
+
+        let drawModal;
+        try {
+          drawModal = await modalController.create({
+            component: ModalDraw,
+            cssClass: 'modal-draw',
+            showBackdrop: true,
+            backdropDismiss: false,
+            componentProps: {existingDataURL}
+          });
+        } catch (error) {
+          rootStore.isDrawModalActive = false;
+          throw error;
+        }
+
+        drawModal.onDidDismiss().then(async (response) => {
+          if (!response || !response.data || !response.data.dataURL) {
+            rootStore.isDrawModalActive = false;
+            return;
+          }
+          const dataURL = response.data.dataURL;
+
+          //mirror photo-take.js:53-71 to pick the right filename
+          let newFilename = '';
+          if (mediaFile.cached !== '') {
+            newFilename = mediaFile.cached;
+          } else if (mediaFile.stored !== '') {
+            newFilename = mediaFile.stored;
+          } else {
+            newFilename = utilsService.generateMediaFilename(
+                entryUuid,
+                PARAMETERS.QUESTION_TYPES.PHOTO
+            );
+          }
+
+          const prevCached = mediaFile.cached;
+          const prevAnswer = state.answer.answer;
+
+          try {
+            const blob = utilsService.b64toBlob(dataURL, 'image/jpeg');
+            await saveBlobToTempDir({blob, filename: newFilename});
+            mediaFile.cached = newFilename;
+            state.answer.answer = newFilename;
+            _loadImageOnView(tempDir + newFilename);
+          } catch (error) {
+            console.error('Failed to save drawing to temp dir', error);
+            rollbarService.critical(error);
+            //imp: the service could not restore the original; its bytes live
+            //at <newFilename>.bak. Point the answer at that copy so the
+            //attachment remains available, and refresh the thumbnail
+            if (error && error.code === 'RECOVERABLE_BACKUP' && error.recoverableFilename) {
+              mediaFile.cached = error.recoverableFilename;
+              state.answer.answer = error.recoverableFilename;
+              _loadImageOnView(tempDir + error.recoverableFilename);
+            } else {
+              mediaFile.cached = prevCached;
+              state.answer.answer = prevAnswer;
+            }
+            await notificationService.showAlert(
+                labels.unknown_error,
+                labels.error
+            );
+          } finally {
+            //imp: release the workflow lock only after the save settles, so
+            //a reopen cannot share the .tmp/.bak files with this save
+            rootStore.isDrawModalActive = false;
+          }
+        });
+
+        try {
+          return await drawModal.present();
+        } catch (error) {
+          rootStore.isDrawModalActive = false;
+          rollbarService.critical(error);
+          throw error;
         }
       },
       takePicture(action) {

@@ -1,0 +1,68 @@
+@use '@/theme/mixins' as *;
+
+.modal-draw {
+    ion-content {
+        --background: #f5f5f5;
+    }
+
+    .modal-draw__canvas-wrap {
+        //query container for the canvas sizing (100cqh = 1% of the wrap height)
+        container-type: size;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 8px;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+    }
+
+    .modal-draw__canvas {
+        background: #fff;
+        border: 1px solid #ccc;
+        //The CSS box is driven by the layout, not by the canvas internal grid:
+        //fill the wrap width at a 4:3 aspect ratio. The min() caps the width so
+        //the height (derived from the aspect ratio) never exceeds the wrap, i.e.
+        //the canvas stays 4:3 in both portrait and landscape instead of being
+        //stretched to fill a wide, short wrap. Browsers without container query
+        //units drop the min() declaration and fall back to width: 100%.
+        width: 100%;
+        width: min(100%, calc(100cqh * 4 / 3));
+        height: auto;
+        max-width: 100%;
+        max-height: 100%;
+        aspect-ratio: 4 / 3;
+        box-sizing: border-box;
+        touch-action: none;
+    }
+
+    //the button exists only to wrap the color input for toolbar spacing: a
+    //ripple/pressed highlight on every tap would be pure noise, so disable it
+    .modal-draw__color-button {
+        --ripple-color: transparent;
+        --background-activated: transparent;
+        --background-activated-opacity: 0;
+    }
+
+    //shows the selected pen thickness (e.g. "3x") and toggles the slider;
+    //no text label: the value itself is the label
+    .modal-draw__thickness-button {
+        min-width: 52px;
+        font-weight: 600;
+        //consistent with the color button wrapper: no tap feedback
+        --ripple-color: transparent;
+        --background-activated: transparent;
+        --background-activated-opacity: 0;
+    }
+
+    //the color dot opens the picker modal; it shows the current pen color.
+    //32px fill + 2px border = the 36px border-box of the native input it
+    //replaced (verified on device)
+    .modal-draw__color-dot {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+    }
+}
