@@ -360,7 +360,7 @@ describe('saveBlobToTempDir', () => {
         expect(virtualFs.has('old.jpg')).toBe(true);
     });
 
-    it('preserves the backup when restore fails after move failure', async () => {
+    it('preserves the backup and reports it as recoverable when restore fails', async () => {
         const rootStore = useRootStore();
         rootStore.device = { platform: 'android' };
         rootStore.tempDir = '/tmp/';
@@ -371,11 +371,45 @@ describe('saveBlobToTempDir', () => {
 
         const promise = saveBlobToTempDir({blob: {}, filename: 'gone.jpg'});
         mockFileWriter._triggerWriteEnd();
-        await expect(promise).rejects.toThrow('move failed');
 
-        //the .bak is the only remaining recoverable copy: it must not be
-        //deleted on the restore-failure path
+        //the .bak is the only remaining recoverable copy: the rejection
+        //carries its name so the caller can promote it instead of leaving
+        //the answer pointing at a missing file
+        await expect(promise).rejects.toMatchObject({
+            code: 'RECOVERABLE_BACKUP',
+            recoverableFilename: 'gone.jpg.bak'
+        });
         expect(virtualFs.has('gone.jpg.bak')).toBe(true);
+    });
+
+    it('retries the restore once before giving up on a transient failure', async () => {
+        const rootStore = useRootStore();
+        rootStore.device = { platform: 'android' };
+        rootStore.tempDir = '/tmp/';
+
+        const {mockFileWriter, mockBakFile, virtualFs} = _setUpFs({failOnMove: true});
+
+        virtualFs.add('photo.jpg');
+
+        //first restore attempt fails, second succeeds
+        const origMoveTo = mockBakFile.moveTo;
+        let calls = 0;
+        mockBakFile.moveTo = vi.fn((dir, newName, success, error) => {
+            calls += 1;
+            if (calls === 1) {
+                error(new Error('transient'));
+            } else {
+                origMoveTo(dir, newName, success, error);
+            }
+        });
+
+        const promise = saveBlobToTempDir({blob: {}, filename: 'photo.jpg'});
+        mockFileWriter._triggerWriteEnd();
+        await expect(promise).rejects.toThrow('move failed');
+        expect(mockBakFile.moveTo).toHaveBeenCalledTimes(2);
+        //original restored on the retry, .bak cleaned up
+        expect(virtualFs.has('photo.jpg')).toBe(true);
+        expect(virtualFs.has('photo.jpg.bak')).toBe(false);
     });
 
     it('clears a stale backup before creating a new one', async () => {
