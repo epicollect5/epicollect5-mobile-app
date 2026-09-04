@@ -267,6 +267,14 @@ export default {
           return;
         }
 
+        //imp: the draw workflow stays locked from present until the save
+        //settles (see onDidDismiss finally below); a second open would reuse
+        //the same filename and share the .tmp/.bak staging files with the
+        //in-flight save, losing a drawing or breaking the iOS restore
+        if (rootStore.isDrawModalActive) {
+          return;
+        }
+
         let existingDataURL = '';
         let imageLoadFailed = false;
         const mediaFile = media[entryUuid][state.inputDetails.ref];
@@ -321,8 +329,8 @@ export default {
         });
 
         drawModal.onDidDismiss().then(async (response) => {
-          rootStore.isDrawModalActive = false;
           if (!response || !response.data || !response.data.dataURL) {
+            rootStore.isDrawModalActive = false;
             return;
           }
           const dataURL = response.data.dataURL;
@@ -358,6 +366,10 @@ export default {
                 labels.unknown_error,
                 labels.error
             );
+          } finally {
+            //imp: release the workflow lock only after the save settles, so
+            //a reopen cannot share the .tmp/.bak files with this save
+            rootStore.isDrawModalActive = false;
           }
         });
 
