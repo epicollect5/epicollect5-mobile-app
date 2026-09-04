@@ -11,7 +11,7 @@
         </ion-button>
       </ion-buttons>
       <ion-buttons slot="end">
-        <ion-button @click="save()">
+        <ion-button @click="save()" :disabled="state.isLoading">
           {{ labels.save }}
           <ion-icon
               slot="end"
@@ -108,7 +108,10 @@ export default {
     const state = reactive({
       currentColor: 'black',
       thickness: 1,
-      history: []
+      history: [],
+      //true while a requested background photo is still loading: saving
+      //then would export a blank canvas over the original photo
+      isLoading: false
     });
     let signaturePad = null;
     let existingImage = null;
@@ -500,6 +503,13 @@ export default {
         modalController.dismiss();
         return;
       }
+      //imp: the pad exists before a requested photo finishes loading;
+      //exporting now would treat the photo as absent and dismiss with a
+      //blank canvas that overwrites the original: ignore the tap, the user
+      //retries once loading settles (the button is disabled meanwhile)
+      if (props.existingDataURL && props.existingDataURL !== '' && !existingImage) {
+        return;
+      }
       const dataURL = _exportDataURL();
       modalController.dismiss({dataURL});
     }
@@ -554,10 +564,12 @@ export default {
       });
 
       if (props.existingDataURL && props.existingDataURL !== '') {
+        state.isLoading = true;
         try {
           existingImage = await _loadImage(props.existingDataURL);
           _drawBackground();
           _pushHistory();
+          state.isLoading = false;
         } catch (error) {
           console.warn('Failed to load existing drawing for editing', error);
           //imp: dismiss to prevent saving a blank canvas over the original photo
