@@ -1,0 +1,16 @@
+src/services/filesystem/save-blob-to-temp-service.js
+  h_2231ff2aa93473 84-90
+tests/unit/services/filesystem/save-blob-to-temp-service.spec.js
+  h_2231ff2aa93473 316,327,329
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "5d70c44e07ac08fbe69a7f0a73e584977979713f",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
