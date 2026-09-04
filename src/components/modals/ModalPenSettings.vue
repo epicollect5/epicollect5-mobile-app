@@ -45,12 +45,14 @@
             :class="{'modal-pen-settings__swatch--selected': color === state.pickedColor}"
             :style="{backgroundColor: color}"
             :aria-label="color"
+            :aria-pressed="color === state.pickedColor ? 'true' : 'false'"
             @click="selectColor(color)"
         ></button>
       </div>
       <div class="modal-pen-settings__thickness">
         <ion-range
             class="modal-pen-settings__range"
+            aria-label="Pen thickness"
             :min="1"
             :max="10"
             :step="1"

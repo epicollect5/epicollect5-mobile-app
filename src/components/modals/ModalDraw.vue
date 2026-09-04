@@ -495,7 +495,7 @@ export default {
         }
         pad.fromData(data, {clear: false});
       }
-      return out.toDataURL('image/jpeg', 0.5);
+      return out.toDataURL('image/jpeg', 0.8);
     }
 
     function save() {

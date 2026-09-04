@@ -263,7 +263,7 @@ export default {
         }
       },
       async openDrawPad() {
-        if (rootStore.device.platform === PARAMETERS.WEB) {
+        if ([PARAMETERS.WEB, PARAMETERS.PWA].includes(rootStore.device.platform) || rootStore.isPWA) {
           return;
         }
 

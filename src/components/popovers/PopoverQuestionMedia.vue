@@ -2,7 +2,7 @@
 	<ion-content>
 		<ion-list class="ion-no-padding ion-no-margin">
 			<ion-item
-				v-if="mediaType === PARAMETERS.QUESTION_TYPES.PHOTO"
+				v-if="isDrawAvailable"
 				lines="full"
 				@click="draw()"
 			>
@@ -268,6 +268,11 @@ export default {
 		const computedScope = {
 			isPWA: computed(() => {
 				return rootStore.isPWA;
+			}),
+			isDrawAvailable: computed(() => {
+				return props.mediaType === PARAMETERS.QUESTION_TYPES.PHOTO
+					&& ![PARAMETERS.WEB, PARAMETERS.PWA].includes(rootStore.device.platform)
+					&& !rootStore.isPWA;
 			})
 		};
 
