@@ -1,4 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import flushPromises from 'flush-promises';
 import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
 import { saveBlobToTempDir } from '@/services/filesystem/save-blob-to-temp-service';
@@ -102,8 +103,10 @@ describe('saveBlobToTempDir', () => {
             }
         };
 
+        const getFileSpy = vi.fn();
         const mockDirEntry = {
             getFile(filename, options, success, error) {
+                getFileSpy(filename, options);
                 if (options && options.create === false) {
                     if (virtualFs.has(filename)) {
                         if (filename.endsWith('.tmp')) {
@@ -136,7 +139,7 @@ describe('saveBlobToTempDir', () => {
             success(mockDirEntry);
         });
 
-        return {mockDir, mockFile, mockFileWriter, mockExistingFile, mockBakFile, virtualFs};
+        return {mockDir, mockFile, mockFileWriter, mockExistingFile, mockBakFile, virtualFs, getFileSpy};
     }
 
     it('rejects on web platform', async () => {
@@ -245,6 +248,30 @@ describe('saveBlobToTempDir', () => {
         mockFileWriter._triggerError(new Error('write failed'));
 
         await expect(promise).rejects.toThrow('write failed');
+    });
+
+    it('does not move the temp file when onerror is followed by onwriteend', async () => {
+        const rootStore = useRootStore();
+        rootStore.device = { platform: 'android' };
+        rootStore.tempDir = '/tmp/';
+
+        const {mockFileWriter, virtualFs, getFileSpy} = _setUpFs({});
+        virtualFs.add('photo.jpg');
+
+        const promise = saveBlobToTempDir({blob: {}, filename: 'photo.jpg'});
+        const assertion = expect(promise).rejects.toThrow('write failed');
+
+        //aborted write: onerror fires, then onwriteend on the abort
+        mockFileWriter._triggerError(new Error('write failed'));
+        mockFileWriter._triggerWriteEnd();
+
+        await assertion;
+        //the move path is gated: no follow-up getFile(photo.jpg.tmp, create:false)
+        //after the error, which is what moveTemp would otherwise issue
+        const tmpCheck = getFileSpy.mock.calls.filter(
+            ([name, opts]) => name === 'photo.jpg.tmp' && opts && opts.create === false
+        );
+        expect(tmpCheck).toHaveLength(0);
     });
 
     it('backs up existing file and restores when move fails', async () => {
