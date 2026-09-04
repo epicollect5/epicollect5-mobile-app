@@ -600,6 +600,9 @@ describe('ModalDraw component', () => {
         //no background was painted and no base history was pushed
         expect(ctx2d.drawImage).not.toHaveBeenCalled();
         expect(wrapper.vm.state.history).toHaveLength(0);
+        //loading settled (failed): the flag is reset even though the modal
+        //is going away, so a stuck dismiss cannot leave Save disabled
+        expect(wrapper.vm.state.isLoading).toBe(false);
 
         //the early return skipped the post-load wiring: layout changes are
         //ignored (no resize listener registered)
