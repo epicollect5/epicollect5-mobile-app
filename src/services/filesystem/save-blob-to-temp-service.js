@@ -81,15 +81,13 @@ export const saveBlobToTempDir = ({blob, filename}) => {
                                 });
                             });
                         }, function (error) {
-                            //copyTo failed: attempt move without backup
-                            tmpEntry.moveTo(dir, filename, function () {
-                                resolve(filename);
-                            }, function (moveError) {
-                                tmpEntry.remove(function () {
-                                    reject(moveError);
-                                }, function () {
-                                    reject(moveError);
-                                });
+                            //copyTo failed: reject to preserve the original;
+                            //attempting moveTo without backup risks losing both
+                            //the original and the temp on iOS
+                            tmpEntry.remove(function () {
+                                reject(error);
+                            }, function () {
+                                reject(error);
                             });
                         });
                     }, function (error) {

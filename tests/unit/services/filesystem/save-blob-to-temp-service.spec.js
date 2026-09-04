@@ -313,7 +313,7 @@ describe('saveBlobToTempDir', () => {
         expect(virtualFs.has('photo.jpg')).toBe(true);
     });
 
-    it('falls back to move-without-backup when backup fails', async () => {
+    it('rejects when backup fails to preserve the original', async () => {
         const rootStore = useRootStore();
         rootStore.device = { platform: 'android' };
         rootStore.tempDir = '/tmp/';
@@ -324,11 +324,10 @@ describe('saveBlobToTempDir', () => {
 
         const promise = saveBlobToTempDir({blob: {}, filename: 'old.jpg'});
         mockFileWriter._triggerWriteEnd();
-        await promise;
+        await expect(promise).rejects.toThrow('backup failed');
 
-        //move succeeded despite backup failure
+        //original preserved
         expect(virtualFs.has('old.jpg')).toBe(true);
-        expect(virtualFs.has('old.jpg.tmp')).toBe(false);
     });
 
     it('rejects when both backup restore and cleanup fail after move failure', async () => {
