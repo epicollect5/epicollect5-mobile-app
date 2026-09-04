@@ -1,0 +1,21 @@
+src/components/questions/QuestionPhoto.vue
+  s_64da11e978eaca::t_30011405f56ee1 333
+  s_64da11e978eaca::t_6ca106811c6e01 369-372
+  s_64da11e978eaca::t_b553c897554adc 270-277
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "9850a4350c4b871ae6561abdfc59d193595eddb2",
+  "prompts": {},
+  "sessions": {
+    "s_64da11e978eaca": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f98977fa1ffeP5gfKKIcu48H0F",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
