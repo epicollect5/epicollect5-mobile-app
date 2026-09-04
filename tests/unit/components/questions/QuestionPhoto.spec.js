@@ -468,6 +468,36 @@ describe('QuestionPhoto component', () => {
         vi.unstubAllGlobals();
     });
 
+    it('points the answer at the .bak copy when the service reports a recoverable backup', async () => {
+        const rootStore = useRootStore();
+        const media = rootStore.entriesAddScope.entryService.entry.media;
+        media['entry-uuid-1'] = media['entry-uuid-1'] || {};
+        media['entry-uuid-1']['test_ref'] = {cached: 'old.jpg', stored: '', type: 'photo'};
+
+        const wrapper = await factory();
+        expect(wrapper.vm.state.answer.answer).toBe('old.jpg');
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+            blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
+        })));
+        await wrapper.vm.openDrawPad();
+        await flushPromises();
+
+        //service signals that the original lives at old.jpg.bak now
+        const wrapped = new Error('restore failed');
+        wrapped.code = 'RECOVERABLE_BACKUP';
+        wrapped.recoverableFilename = 'old.jpg.bak';
+        saveBlobToTempDir.mockRejectedValueOnce(wrapped);
+        modalDismissResolvers[0]({data: {dataURL: 'data:image/jpeg;base64,AAAA'}});
+        await flushPromises();
+
+        //answer and cached point at the .bak copy: attachment stays available
+        expect(mediaFile().cached).toBe('old.jpg.bak');
+        expect(wrapper.vm.state.answer.answer).toBe('old.jpg.bak');
+        expect(wrapper.vm.state.imageSource).toContain('temp/old.jpg.bak');
+        expect(notificationService.showAlert).toHaveBeenCalled();
+        vi.unstubAllGlobals();
+    });
+
     it('loads a stored photo into the draw modal when cached is empty', async () => {
         const wrapper = await factory();
         mediaFile().stored = 'stored-photo.jpg';
