@@ -1,0 +1,19 @@
+tests/unit/components/modals/ModalDraw.spec.js
+  s_64da11e978eaca::t_96a113680cc606 603-605
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "2ba7a1251d1bf4a2785c9249c100320143771f9f",
+  "prompts": {},
+  "sessions": {
+    "s_64da11e978eaca": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f98977fa1ffeP5gfKKIcu48H0F",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
