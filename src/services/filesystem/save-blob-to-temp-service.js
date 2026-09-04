@@ -36,10 +36,20 @@ export const saveBlobToTempDir = ({blob, filename}) => {
 
         const writeBlob = function (file) {
             file.createWriter(function (fileWriter) {
+                //imp: do not move from onwriteend. It also fires after a
+                //failed write, so moveTemp could race the .tmp removal in
+                //onerror and install partial data over the original photo.
+                //Move only after a confirmed-successful write, gated on
+                //the lack of an onerror.
+                let writeFailed = false;
                 fileWriter.onwriteend = function () {
+                    if (writeFailed) {
+                        return;
+                    }
                     moveTemp();
                 };
                 fileWriter.onerror = function (error) {
+                    writeFailed = true;
                     //write failed: clean up the temp file, original is untouched
                     file.remove(function () {
                         reject(error);
