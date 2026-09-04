@@ -1,0 +1,23 @@
+src/services/filesystem/save-blob-to-temp-service.js
+  s_64da11e978eaca::t_594d6b82fa6e5e 61-66
+  s_64da11e978eaca::t_32f898c453d26f 98
+  s_64da11e978eaca::t_46d2fb0c16295c 94
+  s_64da11e978eaca::t_1044b2656b5533 67-69,71,73-83,87-92
+  s_64da11e978eaca::t_da93cf99d529e4 93,95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "43e3d5b25176d858786d53464d0eb6e96ab15543",
+  "prompts": {},
+  "sessions": {
+    "s_64da11e978eaca": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f98977fa1ffeP5gfKKIcu48H0F",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
