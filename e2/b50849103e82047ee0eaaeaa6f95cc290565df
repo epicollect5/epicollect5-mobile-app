@@ -1,0 +1,19 @@
+tests/unit/use/questions/popover-media-handler.spec.js
+  s_97ef5a0d529b1f::t_dd4998c4234394 138,140-141
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e2b50849103e82047ee0eaaeaa6f95cc290565df",
+  "prompts": {},
+  "sessions": {
+    "s_97ef5a0d529b1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f92868c56ffePnaa8P8oKTClU6",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
