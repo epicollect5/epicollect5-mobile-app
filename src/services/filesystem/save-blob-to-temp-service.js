@@ -58,40 +58,45 @@ export const saveBlobToTempDir = ({blob, filename}) => {
                 dir.getFile(filename, {create: false}, function (existingEntry) {
                     //target exists: back it up before the move, so we can
                     //restore it if iOS's moveTo deletes the destination and
-                    //then fails
-                    dir.getFile(bakFilename, {create: true}, function (bakEntry) {
-                        existingEntry.copyTo(dir, bakFilename, function () {
-                            //backup created: attempt the move
-                            tmpEntry.moveTo(dir, filename, function () {
-                                //move succeeded: remove the backup
-                                cleanupBak(function () {
-                                    resolve(filename);
+                    //then fails. Clear any stale backup first (e.g. kept by
+                    //a failed restore below): copyTo cannot overwrite, so a
+                    //leftover would reject every later save for this photo
+                    cleanupBak(function () {
+                        dir.getFile(bakFilename, {create: true}, function (bakEntry) {
+                            existingEntry.copyTo(dir, bakFilename, function () {
+                                //backup created: attempt the move
+                                tmpEntry.moveTo(dir, filename, function () {
+                                    //move succeeded: remove the backup
+                                    cleanupBak(function () {
+                                        resolve(filename);
+                                    });
+                                }, function (error) {
+                                    //move failed: restore original from backup
+                                    bakEntry.moveTo(dir, filename, function () {
+                                        cleanupBak(function () {
+                                            reject(error);
+                                        });
+                                    }, function () {
+                                        //restore also failed: keep the .bak in
+                                        //place (it is the only remaining
+                                        //recoverable copy) and reject; the next
+                                        //save clears the stale backup first
+                                        reject(error);
+                                    });
                                 });
                             }, function (error) {
-                                //move failed: restore original from backup
-                                bakEntry.moveTo(dir, filename, function () {
-                                    cleanupBak(function () {
-                                        reject(error);
-                                    });
+                                //copyTo failed: reject to preserve the original;
+                                //attempting moveTo without backup risks losing both
+                                //the original and the temp on iOS
+                                tmpEntry.remove(function () {
+                                    reject(error);
                                 }, function () {
-                                    //restore also failed: clean up and reject
-                                    cleanupBak(function () {
-                                        reject(error);
-                                    });
+                                    reject(error);
                                 });
                             });
                         }, function (error) {
-                            //copyTo failed: reject to preserve the original;
-                            //attempting moveTo without backup risks losing both
-                            //the original and the temp on iOS
-                            tmpEntry.remove(function () {
-                                reject(error);
-                            }, function () {
-                                reject(error);
-                            });
+                            reject(error);
                         });
-                    }, function (error) {
-                        reject(error);
                     });
                 }, function () {
                     //target does not exist yet: move creates it (no backup needed)
