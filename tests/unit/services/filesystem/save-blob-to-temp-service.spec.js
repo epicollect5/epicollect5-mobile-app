@@ -120,6 +120,9 @@ describe('saveBlobToTempDir', () => {
                     virtualFs.add(filename);
                     if (failOnGetFile) {
                         error(new Error('getFile failed'));
+                    } else if (filename.endsWith('.bak')) {
+                        //backup slot: restore/cleanup obey failOnRestore
+                        success(mockBakFile);
                     } else {
                         success(mockFile);
                     }
@@ -330,7 +333,7 @@ describe('saveBlobToTempDir', () => {
         expect(virtualFs.has('old.jpg')).toBe(true);
     });
 
-    it('rejects when both backup restore and cleanup fail after move failure', async () => {
+    it('preserves the backup when restore fails after move failure', async () => {
         const rootStore = useRootStore();
         rootStore.device = { platform: 'android' };
         rootStore.tempDir = '/tmp/';
@@ -342,6 +345,32 @@ describe('saveBlobToTempDir', () => {
         const promise = saveBlobToTempDir({blob: {}, filename: 'gone.jpg'});
         mockFileWriter._triggerWriteEnd();
         await expect(promise).rejects.toThrow('move failed');
+
+        //the .bak is the only remaining recoverable copy: it must not be
+        //deleted on the restore-failure path
+        expect(virtualFs.has('gone.jpg.bak')).toBe(true);
+    });
+
+    it('clears a stale backup before creating a new one', async () => {
+        const rootStore = useRootStore();
+        rootStore.device = { platform: 'android' };
+        rootStore.tempDir = '/tmp/';
+
+        const {mockFileWriter, virtualFs} = _setUpFs({});
+
+        //leftover .bak from an earlier failed restore
+        virtualFs.add('photo.jpg');
+        virtualFs.add('photo.jpg.bak');
+
+        const promise = saveBlobToTempDir({blob: {fake: 'new'}, filename: 'photo.jpg'});
+        mockFileWriter._triggerWriteEnd();
+        const result = await promise;
+
+        //stale backup did not break copyTo; save completed and cleaned up
+        expect(result).toBe('photo.jpg');
+        expect(virtualFs.has('photo.jpg')).toBe(true);
+        expect(virtualFs.has('photo.jpg.bak')).toBe(false);
+        expect(virtualFs.has('photo.jpg.tmp')).toBe(false);
     });
 
     it('writes a shorter replacement blob without trailing bytes', async () => {
