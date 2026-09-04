@@ -135,6 +135,9 @@ describe('popoverMediaHandler', () => {
 
         expect(args.state.filename).toBe('');
         expect(args.state.fileSource).toBe('');
+        expect(args.state.imageSource).toBe('');
         expect(args.state.answer.answer).toBe('a.jpg');
+        expect(args.media.entry1.q1.cached).toBe('');
+        expect(args.media.entry1.q1.stored).toBe('');
     });
 });
