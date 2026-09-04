@@ -569,13 +569,13 @@ export default {
           existingImage = await _loadImage(props.existingDataURL);
           _drawBackground();
           _pushHistory();
-          state.isLoading = false;
         } catch (error) {
           console.warn('Failed to load existing drawing for editing', error);
-          state.isLoading = false;
           //imp: dismiss to prevent saving a blank canvas over the original photo
           modalController.dismiss();
           return;
+        } finally {
+          state.isLoading = false;
         }
       }
 
