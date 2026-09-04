@@ -436,7 +436,7 @@ describe('ModalDraw component', () => {
             [{color: '#000000', points: [{x: (1 / 300) * 1024, y: (1 / 150) * 768}]}],
             {clear: false}
         );
-        expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.5);
+        expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.8);
         expect(modalController.dismiss).toHaveBeenCalledWith({dataURL: 'data:image/jpeg;base64,EXPORTED'});
     });
 
@@ -488,7 +488,7 @@ describe('ModalDraw component', () => {
         //export pad's constructor clears the canvas and would wipe it
         expect(ctx2d.drawImage.mock.invocationCallOrder.at(-1))
             .toBeLessThan(exportPad.fromData.mock.invocationCallOrder[0]);
-        expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.5);
+        expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.8);
         expect(modalController.dismiss).toHaveBeenCalledWith({dataURL: 'data:image/jpeg;base64,EXPORTED'});
     });
 
@@ -536,7 +536,7 @@ describe('ModalDraw component', () => {
         expect(points[0].x).toBeLessThan(0);
         expect(points[1].x).toBeGreaterThan(768);
         expect(points[0].y).toBeCloseTo(512);
-        expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.5);
+        expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.8);
     });
 
     it('cancel() dismisses at once when there is nothing to discard', async () => {
@@ -659,7 +659,7 @@ describe('ModalDraw component', () => {
             1024,
             768
         );
-        expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.5);
+        expect(toDataURLSpy).toHaveBeenCalledWith('image/jpeg', 0.8);
         expect(modalController.dismiss).toHaveBeenCalledWith({dataURL: 'data:image/jpeg;base64,EXPORTED'});
     });
 });
