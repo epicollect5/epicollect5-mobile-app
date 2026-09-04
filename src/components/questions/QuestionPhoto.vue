@@ -174,7 +174,7 @@ export default {
     const project_ref = entriesAddScope.entryService.entry.projectRef;
     const media = entriesAddScope.entryService.entry.media;
 
-    // Check whether we want to index the media object using the main entry uuid, or branch entry uuid
+    // Check whether we want to index the media object using the main entry uuid or branch entry uuid
     const entryUuid = !entriesAddState.questionParams.isBranch
         ? entriesAddScope.entryService.entry.entryUuid //use entry_uuid
         : entriesAddScope.branchEntryService.entry.entryUuid;//use branch entry_uuid
@@ -371,9 +371,18 @@ export default {
           } catch (error) {
             console.error('Failed to save drawing to temp dir', error);
             rollbarService.critical(error);
-            mediaFile.cached = prevCached;
-            state.answer.answer = prevAnswer;
-            notificationService.showAlert(
+            //imp: the service could not restore the original; its bytes live
+            //at <newFilename>.bak. Point the answer at that copy so the
+            //attachment remains available, and refresh the thumbnail
+            if (error && error.code === 'RECOVERABLE_BACKUP' && error.recoverableFilename) {
+              mediaFile.cached = error.recoverableFilename;
+              state.answer.answer = error.recoverableFilename;
+              _loadImageOnView(tempDir + error.recoverableFilename);
+            } else {
+              mediaFile.cached = prevCached;
+              state.answer.answer = prevAnswer;
+            }
+            await notificationService.showAlert(
                 labels.unknown_error,
                 labels.error
             );
