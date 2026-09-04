@@ -6,7 +6,7 @@
     }
 
     .modal-draw__canvas-wrap {
-        //query container for the canvas sizing (100cqh = 1% of the wrap height)
+        //query container for the canvas sizing (1cqh = 1% of the wrap height, so 100cqh = 100%)
         container-type: size;
         display: flex;
         justify-content: center;
