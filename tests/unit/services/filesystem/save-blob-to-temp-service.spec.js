@@ -8,7 +8,8 @@ vi.mock('@/config', () => ({
     PARAMETERS: {
         ANDROID: 'android',
         IOS: 'ios',
-        WEB: 'web'
+        WEB: 'web',
+        PWA: 'pwa'
     }
 }));
 
@@ -66,27 +67,6 @@ describe('saveBlobToTempDir', () => {
             }
         };
 
-        const mockExistingFile = {
-            copyTo(dest, newName, success, error) {
-                if (failOnBackup) {
-                    error(new Error('backup failed'));
-                    return;
-                }
-                virtualFs.add(newName);
-                success();
-            },
-            moveTo(dest, newName, success, error) {
-                if (failOnRestore) {
-                    error(new Error('restore failed'));
-                    return;
-                }
-                //restore: .bak → original name
-                virtualFs.delete(newName + '.bak');
-                virtualFs.add(newName);
-                success();
-            }
-        };
-
         const mockBakFile = {
             moveTo(dest, newName, success, error) {
                 if (failOnRestore) {
@@ -99,6 +79,28 @@ describe('saveBlobToTempDir', () => {
             },
             remove(success) {
                 virtualFs.delete(virtualFs.values ? Array.from(virtualFs).find(n => n.endsWith('.bak')) : '');
+                success();
+            }
+        };
+
+        const mockExistingFile = {
+            copyTo(dest, newName, success, error) {
+                if (failOnBackup) {
+                    error(new Error('backup failed'));
+                    return;
+                }
+                virtualFs.add(newName);
+                //imp: real copyTo passes the new .bak entry to success
+                success(mockBakFile);
+            },
+            moveTo(dest, newName, success, error) {
+                if (failOnRestore) {
+                    error(new Error('restore failed'));
+                    return;
+                }
+                //restore: .bak → original name
+                virtualFs.delete(newName + '.bak');
+                virtualFs.add(newName);
                 success();
             }
         };
@@ -117,7 +119,9 @@ describe('saveBlobToTempDir', () => {
                             success(mockExistingFile);
                         }
                     } else {
-                        error(new Error('NOT_FOUND'));
+                        const notFound = new Error('NOT_FOUND');
+                        notFound.code = 1;
+                        error(notFound);
                     }
                 } else {
                     virtualFs.add(filename);
