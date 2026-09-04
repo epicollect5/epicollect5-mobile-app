@@ -328,6 +328,35 @@ describe('QuestionPhoto component', () => {
         vi.unstubAllGlobals();
     });
 
+    it('opens only one draw pad when two opens overlap before the first fetch resolves', async () => {
+        const wrapper = await factory();
+        mediaFile().cached = 'drawing.jpg';
+        //hold the first image fetch open
+        let resolveFetch;
+        vi.stubGlobal('fetch', vi.fn(() => new Promise((resolve) => {
+            resolveFetch = resolve;
+        })));
+
+        //first open runs to the pending fetch and claims the lock
+        const first = wrapper.vm.openDrawPad();
+        await flushPromises();
+        expect(useRootStore().isDrawModalActive).toBe(true);
+
+        //second open overlaps the pending fetch: refused, no second modal
+        await wrapper.vm.openDrawPad();
+        await flushPromises();
+        expect(modalController.create).not.toHaveBeenCalled();
+
+        //first fetch resolves: exactly one pad opens
+        resolveFetch({blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))});
+        await first;
+        await vi.waitFor(() => {
+            expect(modalController.create).toHaveBeenCalledTimes(1);
+        });
+        expect(useRootStore().isDrawModalActive).toBe(true);
+        vi.unstubAllGlobals();
+    });
+
     it('does not reopen the draw pad while a save is in flight', async () => {
         const wrapper = await factory();
         mediaFile().cached = 'drawing.jpg';
