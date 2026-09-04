@@ -328,6 +328,40 @@ describe('QuestionPhoto component', () => {
         vi.unstubAllGlobals();
     });
 
+    it('does not reopen the draw pad while a save is in flight', async () => {
+        const wrapper = await factory();
+        mediaFile().cached = 'drawing.jpg';
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+            blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
+        })));
+        await wrapper.vm.openDrawPad();
+        await flushPromises();
+        expect(modalController.create).toHaveBeenCalledTimes(1);
+
+        //dismiss with a drawing but hold the save open
+        let resolveSave;
+        saveBlobToTempDir.mockReturnValueOnce(new Promise((resolve) => {
+            resolveSave = resolve;
+        }));
+        modalDismissResolvers[0]({data: {dataURL: 'data:image/jpeg;base64,AAAA'}});
+        await flushPromises();
+
+        //save pending: workflow still locked, reopen refused (no second
+        //modal, no second save sharing the .tmp/.bak staging files)
+        expect(useRootStore().isDrawModalActive).toBe(true);
+        await wrapper.vm.openDrawPad();
+        await flushPromises();
+        expect(modalController.create).toHaveBeenCalledTimes(1);
+        expect(saveBlobToTempDir).toHaveBeenCalledTimes(1);
+
+        //save settles: lock released with the drawing applied
+        resolveSave('drawing.jpg');
+        await flushPromises();
+        expect(mediaFile().cached).toBe('drawing.jpg');
+        expect(useRootStore().isDrawModalActive).toBe(false);
+        vi.unstubAllGlobals();
+    });
+
     it('generates a fresh filename when the drawing has no cached or stored file', async () => {
         vi.spyOn(utilsService, 'generateMediaFilename').mockReturnValue('new-drawing.jpg');
         const wrapper = await factory();
