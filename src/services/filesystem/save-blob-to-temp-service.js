@@ -82,17 +82,33 @@ export const saveBlobToTempDir = ({blob, filename}) => {
                                     });
                                 }, function (error) {
                                     //move failed: restore original from backup
-                                    bakEntry.moveTo(dir, filename, function () {
-                                        cleanupBak(function () {
-                                            reject(error);
+                                    const attemptRestore = function (retriesLeft) {
+                                        bakEntry.moveTo(dir, filename, function () {
+                                            cleanupBak(function () {
+                                                reject(error);
+                                            });
+                                        }, function () {
+                                            if (retriesLeft > 0) {
+                                                //imp: iOS sometimes locks the
+                                                //destination briefly after a
+                                                //failed move. Retry before
+                                                //stranding the original
+                                                attemptRestore(retriesLeft - 1);
+                                                return;
+                                            }
+                                            //restore permanently failed: the
+                                            //original bytes are at .bak. Reject
+                                            //with a recoverable filename so the
+                                            //caller can promote .bak -> filename
+                                            //instead of leaving the answer
+                                            //pointing at a missing file
+                                            const wrapped = new Error(error.message || 'restore failed');
+                                            wrapped.code = 'RECOVERABLE_BACKUP';
+                                            wrapped.recoverableFilename = bakFilename;
+                                            reject(wrapped);
                                         });
-                                    }, function () {
-                                        //restore also failed: keep the .bak in
-                                        //place (it is the only remaining
-                                        //recoverable copy) and reject; the next
-                                        //save clears the stale backup first
-                                        reject(error);
-                                    });
+                                    };
+                                    attemptRestore(1);
                                 });
                             }, function (error) {
                                 //copyTo failed: reject to preserve the original;
