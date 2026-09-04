@@ -267,13 +267,17 @@ export default {
           return;
         }
 
-        //imp: the draw workflow stays locked from present until the save
-        //settles (see onDidDismiss finally below); a second open would reuse
-        //the same filename and share the .tmp/.bak staging files with the
-        //in-flight save, losing a drawing or breaking the iOS restore
+        //imp: claim the workflow lock before the first await: two overlapping
+        //opens would otherwise both pass the guard while the first image
+        //fetch is pending, opening two pads that save over the same file.
+        //Released on every failure path below and after the save settles
+        //(see onDidDismiss finally); a second open sharing the .tmp/.bak
+        //staging files with an in-flight save would lose a drawing or break
+        //the iOS restore
         if (rootStore.isDrawModalActive) {
           return;
         }
+        rootStore.isDrawModalActive = true;
 
         let existingDataURL = '';
         let imageLoadFailed = false;
@@ -317,16 +321,23 @@ export default {
         //do not open a blank canvas: the user would unknowingly replace the
         //original photo with a drawing on white when saving
         if (imageLoadFailed) {
+          rootStore.isDrawModalActive = false;
           return;
         }
 
-        const drawModal = await modalController.create({
-          component: ModalDraw,
-          cssClass: 'modal-draw',
-          showBackdrop: true,
-          backdropDismiss: false,
-          componentProps: {existingDataURL}
-        });
+        let drawModal;
+        try {
+          drawModal = await modalController.create({
+            component: ModalDraw,
+            cssClass: 'modal-draw',
+            showBackdrop: true,
+            backdropDismiss: false,
+            componentProps: {existingDataURL}
+          });
+        } catch (error) {
+          rootStore.isDrawModalActive = false;
+          throw error;
+        }
 
         drawModal.onDidDismiss().then(async (response) => {
           if (!response || !response.data || !response.data.dataURL) {
@@ -373,7 +384,6 @@ export default {
           }
         });
 
-        rootStore.isDrawModalActive = true;
         try {
           return await drawModal.present();
         } catch (error) {
