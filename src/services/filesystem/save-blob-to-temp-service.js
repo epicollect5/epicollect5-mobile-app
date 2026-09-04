@@ -5,7 +5,7 @@ export const saveBlobToTempDir = ({blob, filename}) => {
     const rootStore = useRootStore();
 
     return new Promise((resolve, reject) => {
-        if (rootStore.device.platform === PARAMETERS.WEB) {
+        if ([PARAMETERS.WEB, PARAMETERS.PWA].includes(rootStore.device.platform) || rootStore.isPWA) {
             reject(new Error('Cannot save blob to temp dir on web'));
             return;
         }
@@ -30,8 +30,22 @@ export const saveBlobToTempDir = ({blob, filename}) => {
 
         const cleanupBak = function (cb) {
             dir.getFile(bakFilename, {create: false}, function (bakEntry) {
-                bakEntry.remove(cb, cb);
-            }, cb);
+                bakEntry.remove(
+                    function () {
+                        cb(null);
+                    },
+                    function (error) {
+                        cb(error);
+                    }
+                );
+            }, function (error) {
+                //file-not-found (code 1) is fine, nothing to clean up
+                if (error && error.code === 1) {
+                    cb(null);
+                } else {
+                    cb(error);
+                }
+            });
         };
 
         const writeBlob = function (file) {
@@ -71,9 +85,18 @@ export const saveBlobToTempDir = ({blob, filename}) => {
                     //then fails. Clear any stale backup first (e.g. kept by
                     //a failed restore below): copyTo cannot overwrite, so a
                     //leftover would reject every later save for this photo
-                    cleanupBak(function () {
-                        dir.getFile(bakFilename, {create: true}, function (bakEntry) {
-                            existingEntry.copyTo(dir, bakFilename, function () {
+                    cleanupBak(function (cleanupError) {
+                        if (cleanupError) {
+                            tmpEntry.remove(function () {
+                                reject(cleanupError);
+                            }, function () {
+                                reject(cleanupError);
+                            });
+                            return;
+                        }
+                        //imp: do not pre-create the .bak with getFile(create:true):
+                        //copyTo fails with PATH_EXISTS_ERR on iOS when dest exists
+                        existingEntry.copyTo(dir, bakFilename, function (bakEntry) {
                                 //backup created: attempt the move
                                 tmpEntry.moveTo(dir, filename, function () {
                                     //move succeeded: remove the backup
@@ -81,11 +104,19 @@ export const saveBlobToTempDir = ({blob, filename}) => {
                                         resolve(filename);
                                     });
                                 }, function (error) {
-                                    //move failed: restore original from backup
+                                    //move failed: restore original from backup,
+                                    //then remove the staging .tmp before rejecting
+                                    const removeTmpThenReject = function (reason) {
+                                        tmpEntry.remove(function () {
+                                            reject(reason);
+                                        }, function () {
+                                            reject(reason);
+                                        });
+                                    };
                                     const attemptRestore = function (retriesLeft) {
                                         bakEntry.moveTo(dir, filename, function () {
                                             cleanupBak(function () {
-                                                reject(error);
+                                                removeTmpThenReject(error);
                                             });
                                         }, function () {
                                             if (retriesLeft > 0) {
@@ -105,7 +136,7 @@ export const saveBlobToTempDir = ({blob, filename}) => {
                                             const wrapped = new Error(error.message || 'restore failed');
                                             wrapped.code = 'RECOVERABLE_BACKUP';
                                             wrapped.recoverableFilename = bakFilename;
-                                            reject(wrapped);
+                                            removeTmpThenReject(wrapped);
                                         });
                                     };
                                     attemptRestore(1);
@@ -120,32 +151,40 @@ export const saveBlobToTempDir = ({blob, filename}) => {
                                     reject(error);
                                 });
                             });
-                        }, function (error) {
-                            reject(error);
-                        });
                     });
-                }, function () {
-                    //target does not exist yet: move creates it (no backup needed)
-                    tmpEntry.moveTo(dir, filename, function () {
-                        resolve(filename);
-                    }, function (error) {
+                }, function (error) {
+                    //only NOT_FOUND_ERR means the target is absent; any other
+                    //getFile failure must reject instead of moving blindly
+                    //without a backup (iOS moveTo deletes dest before moving)
+                    if (error && error.code === 1) {
+                        //target does not exist yet: move creates it (no backup needed)
+                        tmpEntry.moveTo(dir, filename, function () {
+                            resolve(filename);
+                        }, function (moveError) {
+                            tmpEntry.remove(function () {
+                                reject(moveError);
+                            }, function () {
+                                reject(moveError);
+                            });
+                        });
+                    } else {
                         tmpEntry.remove(function () {
                             reject(error);
                         }, function () {
                             reject(error);
                         });
-                    });
+                    }
                 });
             }, function (error) {
                 reject(error);
             });
         };
 
-        const dir = {};
+        let dir = null;
         window.resolveLocalFileSystemURL(
             protocol + tempDir,
             function (resolvedDir) {
-                Object.assign(dir, resolvedDir);
+                dir = resolvedDir;
                 dir.getFile(tmpFilename, {create: true}, function (file) {
                     writeBlob(file);
                 }, function (error) {
