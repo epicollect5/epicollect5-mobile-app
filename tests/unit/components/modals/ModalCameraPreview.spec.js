@@ -250,7 +250,7 @@ describe('ModalCameraPreview component', () => {
 
 		expect(mocks.cameraPreview.capture).toHaveBeenCalledWith({
 			width: 1024,
-			height: 768,
+			height: 1024,
 			quality: 85,
 			format: 'jpeg'
 		});
@@ -771,6 +771,68 @@ describe('ModalCameraPreview component', () => {
 
 		//the late startup releases the session instead of marking state
 		expect(mocks.cameraPreview.stop).toHaveBeenCalledWith({ force: true });
+		expect(wrapper.vm.state.started).toBe(false);
+	});
+
+	it('skips the permission prompt when torn down before startup runs', async () => {
+		grantPermissions();
+		//hold the permission request open so teardown lands before it resolves
+		let resolvePermissions = null;
+		mocks.cameraPreview.requestPermissions.mockReturnValue(new Promise((resolve) => {
+			resolvePermissions = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		expect(mocks.cameraPreview.requestPermissions).toHaveBeenCalledTimes(1);
+
+		//dismiss-while-backgrounded before permissions resolve: dead modal
+		wrapper.unmount();
+		await flushPromises();
+		resolvePermissions({ camera: 'granted', microphone: 'granted' });
+		await flushPromises();
+
+		//no session is started for the dead modal; any native session is released
+		expect(mocks.cameraPreview.start).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.stop).toHaveBeenCalledWith({ force: true });
+	});
+
+	it('does not restart the feed on foreground after teardown began', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(1);
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+
+		//background, then teardown begins before the foreground event
+		await listener({ isActive: false });
+		await flushPromises();
+		wrapper.unmount();
+		await flushPromises();
+		vi.clearAllMocks();
+
+		await listener({ isActive: true });
+		await flushPromises();
+
+		expect(mocks.cameraPreview.requestPermissions).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.start).not.toHaveBeenCalled();
+	});
+
+	it('swallows a rejecting native stop during the startup/teardown race', async () => {
+		grantPermissions();
+		mocks.cameraPreview.stop.mockRejectedValue(new Error('stop boom'));
+		let resolveStart = null;
+		mocks.cameraPreview.start.mockReturnValue(new Promise((resolve) => {
+			resolveStart = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		wrapper.unmount();
+		await flushPromises();
+		resolveStart();
+		await flushPromises();
+
+		//never throws, never marks state on the destroyed modal
 		expect(wrapper.vm.state.started).toBe(false);
 	});
 });
