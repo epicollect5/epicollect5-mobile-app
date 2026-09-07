@@ -556,6 +556,8 @@ Important compatibility detail:
 
 - The native app intentionally preserves legacy directory behavior to avoid breaking upgrades from older storage layouts.
 
+**Server photo size constraint:** the server only accepts photos at exactly 1024x768 (landscape 1024x768, portrait 768x1024). Bigger photos are cropped server-side and smaller photos are stretched, so the client must output exactly those dimensions (`resize-photo-service` targets 1024x768 / 768x1024 based on capture orientation; never square).
+
 ### Media Upload & File Transfer
 
 Media (photo/audio/video) upload and logo download use the **`cordova-plugin-file-transfer`** plugin via its maintained fork `sitewaerts/cordova-plugin-file-transfer` (pinned to a commit in `package.json`). The fork is owned and pinned deliberately: it is the only option that sends the server's required `data` JSON metadata as a **multipart form field** alongside the `name` file field, and returns the HTTP response body inline so auth errors (`ec5_77`) can be parsed.
