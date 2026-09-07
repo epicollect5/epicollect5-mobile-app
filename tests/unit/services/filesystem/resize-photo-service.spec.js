@@ -47,6 +47,20 @@ describe('resizePhotoService', () => {
         rootStore.tempDir = '/tmp/';
     });
 
+    describe('_targetDimensions', () => {
+        it('returns 1024x768 for a landscape source', () => {
+            expect(resizePhotoService._targetDimensions(4032, 3024)).toEqual({ width: 1024, height: 768 });
+        });
+
+        it('returns 768x1024 for a portrait source', () => {
+            expect(resizePhotoService._targetDimensions(3024, 4032)).toEqual({ width: 768, height: 1024 });
+        });
+
+        it('returns 1024x1024 for a square source', () => {
+            expect(resizePhotoService._targetDimensions(1024, 1024)).toEqual({ width: 1024, height: 1024 });
+        });
+    });
+
     describe('_coverCropParams', () => {
         it('centers a 4:3 source into 1024x768', () => {
             const params = resizePhotoService._coverCropParams(4032, 3024, 1024, 768);
@@ -63,6 +77,15 @@ describe('resizePhotoService', () => {
             expect(params.drawHeight).toBeCloseTo(1365.33, 2);
             expect(params.offsetX).toBeCloseTo(0, 5);
             expect(params.offsetY).toBeCloseTo((768 - 1365.33) / 2, 1);
+        });
+
+        it('covers a 16:9 source into 1024x768 without distortion', () => {
+            const params = resizePhotoService._coverCropParams(3840, 2160, 1024, 768);
+            const scale = Math.max(1024 / 3840, 768 / 2160);
+            expect(params.drawWidth).toBeCloseTo(3840 * scale, 5);
+            expect(params.drawHeight).toBeCloseTo(2160 * scale, 5);
+            expect(params.offsetX).toBeCloseTo((1024 - 3840 * scale) / 2, 5);
+            expect(params.offsetY).toBeCloseTo((768 - 2160 * scale) / 2, 5);
         });
     });
 
@@ -111,6 +134,54 @@ describe('resizePhotoService', () => {
                 expect(canvas.height).toBe(768);
                 expect(drawImage).toHaveBeenCalledTimes(1);
                 expect(toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/jpeg', 0.85);
+                expect(Filesystem.writeFile).toHaveBeenCalledWith({
+                    path: '/tmp/photo.jpg',
+                    data: 'READBASE64',
+                    recursive: true
+                });
+            } finally {
+                globalThis.createImageBitmap = originalCreateImageBitmap;
+                globalThis.FileReader = originalFileReader;
+                document.createElement.mockRestore && document.createElement.mockRestore();
+            }
+        });
+
+        it('sizes the canvas to 768x1024 for a portrait source (matching native flow)', async () => {
+            const { canvas, drawImage } = mockCanvas();
+            const originalCreateElement = document.createElement;
+            vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+                if (tag === 'canvas') {
+                    return canvas;
+                }
+                return originalCreateElement.call(document, tag);
+            });
+
+            const originalCreateImageBitmap = globalThis.createImageBitmap;
+            globalThis.createImageBitmap = vi.fn().mockResolvedValue(mockBitmap(3024, 4032));
+            getBase64FromFilePath.mockResolvedValue('BASE64DATA');
+
+            const originalFileReader = globalThis.FileReader;
+            class MockFileReader {
+                constructor() {
+                    this.onloadend = null;
+                    this.onerror = null;
+                }
+                readAsDataURL(_blob) {
+                    this.result = 'data:image/jpeg;base64,READBASE64';
+                    if (this.onloadend) {
+                        this.onloadend();
+                    }
+                }
+            }
+            globalThis.FileReader = MockFileReader;
+
+            try {
+                const result = await resizePhotoService.resizeToTempDir('/source.jpg', 'photo.jpg');
+
+                expect(result).toBe('photo.jpg');
+                expect(canvas.width).toBe(768);
+                expect(canvas.height).toBe(1024);
+                expect(drawImage).toHaveBeenCalledTimes(1);
                 expect(Filesystem.writeFile).toHaveBeenCalledWith({
                     path: '/tmp/photo.jpg',
                     data: 'READBASE64',
