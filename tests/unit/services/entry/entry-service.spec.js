@@ -12,7 +12,24 @@ vi.mock('@/models/project-model.js', () => ({
     projectModel: {
         getProjectRef: vi.fn(() => 'project-ref'),
         getExtraForm: vi.fn(() => ({})),
-        getExtraInputs: vi.fn(() => ({}))
+        getExtraInputs: vi.fn(() => ({})),
+        getFormIndex: vi.fn(() => 0),
+        getFormInputs: vi.fn(() => []),
+        hasLocation: vi.fn(() => false)
+    }
+}));
+
+vi.mock('@/models/form-model.js', () => ({
+    formModel: {
+        initialise: vi.fn(),
+        getName: vi.fn(() => ''),
+        inputs: []
+    }
+}));
+
+vi.mock('@capacitor/core', () => ({
+    Capacitor: {
+        isNativePlatform: vi.fn(() => false)
     }
 }));
 
@@ -86,5 +103,26 @@ describe('entryService.saveEntry', () => {
         await entryService.saveEntry(0);
 
         expect(entriesDownloadProgressService.clearProject).not.toHaveBeenCalled();
+    });
+});
+
+describe('entryService.setUpExisting', () => {
+    it('resets a stale file delete queue from a previous quit-without-save', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        const staleStore = {
+            queueFilesToDelete: [{
+                inputRef: 'q1',
+                filenameStored: 'other-entry-photo.jpg',
+                file_path: '/data/photos/',
+                project_ref: 'project-ref',
+                file_name: 'other-entry-photo.jpg'
+            }],
+            isPWA: false
+        };
+        useRootStore.mockReturnValueOnce(staleStore);
+
+        await entryService.setUpExisting({ entryUuid: 'entry1', formRef: 'form-ref' });
+
+        expect(staleStore.queueFilesToDelete).toEqual([]);
     });
 });
