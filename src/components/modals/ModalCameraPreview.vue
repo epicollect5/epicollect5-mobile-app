@@ -202,6 +202,12 @@ export default {
 		async function _start() {
 			startInProgress = true;
 			try {
+			//teardown may have begun before startup ran (dismiss-while-backgrounded):
+			//skip the permission prompt for a dead modal and release any session
+			if (tornDown) {
+				await _forceStopPlugin();
+				return;
+			}
 			await _ensurePermission();
 			if (tornDown) {
 				await _forceStopPlugin();
@@ -343,9 +349,12 @@ export default {
 				state.flash = false;
 			}, 250);
 			try {
+				//request a 1024 bounding box (same as the native system-camera flow):
+				//the resize step then outputs 1024x768 landscape or 768x1024
+				//portrait based on the decoded bitmap orientation
 				const result = await CameraPreview.capture({
 					width: 1024,
-					height: 768,
+					height: 1024,
 					quality: 85,
 					format: 'jpeg'
 				});
@@ -498,6 +507,11 @@ export default {
 			//clears the plugin's saved config, so restart explicitly.
 			if (isActive && appInactive) {
 				appInactive = false;
+				//teardown began while backgrounded (dismiss before unmount completes):
+				//do not restart the feed or prompt for permissions on a dead modal
+				if (tornDown) {
+					return;
+				}
 				//a startup already pending will complete on its own; starting again
 				//would run two sessions against the same plugin
 				if (restartInProgress || startInProgress) {
@@ -528,7 +542,9 @@ export default {
 				console.log('CameraPreview.start failed: ' + error);
 				//the modal cannot open: the user loses the camera session
 				rollbarService.criticalWithContext('CameraPreview.start failed', error);
-				dismiss();
+				dismiss().catch((dismissError) => {
+					console.log('CameraPreview dismiss failed: ' + dismissError);
+				});
 			});
 			//the native session may stop a recording on its own (max duration/file size,
 			//or a screen-off teardown that finalizes the file before our stopRecordVideo
