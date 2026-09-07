@@ -1,0 +1,19 @@
+tests/unit/services/utilities/rollbar-service.spec.js
+  s_b90543f9745c2a::t_73e4a15d56d342 63-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "b8abdec4a02ed4745bf75005abcb5f482a4910b7",
+  "prompts": {},
+  "sessions": {
+    "s_b90543f9745c2a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f835560ccffeYlR5x9cJEkRDvo",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
