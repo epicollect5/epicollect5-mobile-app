@@ -250,7 +250,7 @@ describe('ModalCameraPreview component', () => {
 
 		expect(mocks.cameraPreview.capture).toHaveBeenCalledWith({
 			width: 1024,
-			height: 1024,
+			height: 768,
 			quality: 85,
 			format: 'jpeg'
 		});
