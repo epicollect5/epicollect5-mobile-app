@@ -16,10 +16,9 @@ function _targetDimensions(sourceWidth, sourceHeight) {
     if (sourceHeight > sourceWidth) {
         return { width: TARGET_SHORT, height: TARGET_LONG };
     }
-    if (sourceWidth > sourceHeight) {
-        return { width: TARGET_LONG, height: TARGET_SHORT };
-    }
-    return { width: TARGET_LONG, height: TARGET_LONG };
+    //landscape and square both map to 1024x768: the server only accepts
+    //1024x768 landscape or 768x1024 portrait, never square
+    return { width: TARGET_LONG, height: TARGET_SHORT };
 }
 
 function _coverCropParams(sourceWidth, sourceHeight, targetWidth, targetHeight) {
