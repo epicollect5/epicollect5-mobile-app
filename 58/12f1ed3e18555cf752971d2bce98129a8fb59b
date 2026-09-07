@@ -1,0 +1,20 @@
+src/components/popovers/PopoverQuestionMedia.vue
+  s_97ef5a0d529b1f::t_56fd15fbd84396 197-204,206-214
+  s_97ef5a0d529b1f::t_70d6220a7806be 205
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "5812f1ed3e18555cf752971d2bce98129a8fb59b",
+  "prompts": {},
+  "sessions": {
+    "s_97ef5a0d529b1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f92868c56ffePnaa8P8oKTClU6",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
