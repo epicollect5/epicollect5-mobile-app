@@ -374,6 +374,13 @@ export default {
             //imp: the service could not restore the original; its bytes live
             //at <newFilename>.bak. Point the answer at that copy so the
             //attachment remains available, and refresh the thumbnail
+            //wontfix: cached/answer keep the .bak staging name while stored
+            //keeps the original, so the answers JSON can name a file that
+            //never lands in persistent storage (insertMedia/upload resolve by
+            //stored/file_name, so bytes and media rows stay correct). A
+            //promotion (.bak->filename in temp) would reconcile the triple but
+            //adds async FS logic to this UI component for a path needing both
+            //an iOS moveTo and a restore failure; deliberately not attempted
             if (error && error.code === 'RECOVERABLE_BACKUP' && error.recoverableFilename) {
               mediaFile.cached = error.recoverableFilename;
               state.answer.answer = error.recoverableFilename;
