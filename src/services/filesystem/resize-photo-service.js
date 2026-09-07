@@ -2,9 +2,25 @@ import { Filesystem } from '@capacitor/filesystem';
 import { getBase64FromFilePath } from '@capgo/camera-preview';
 import { useRootStore } from '@/stores/root-store';
 
-const TARGET_WIDTH = 1024;
-const TARGET_HEIGHT = 768;
+const TARGET_LONG = 1024;
+const TARGET_SHORT = 768;
 const JPEG_QUALITY = 0.85;
+
+//Output matches the native system-camera flow (1024 bounding box preserving
+//aspect ratio): landscape captures become 1024x768, portrait captures become
+//768x1024. Orientation is read from the decoded bitmap dimensions (EXIF baked
+//in via imageOrientation: 'from-image'), not from the viewfinder: the native
+//preview runs with lockAndroidOrientation so the viewfinder never rotates,
+//but the capture file still carries the sensor orientation.
+function _targetDimensions(sourceWidth, sourceHeight) {
+    if (sourceHeight > sourceWidth) {
+        return { width: TARGET_SHORT, height: TARGET_LONG };
+    }
+    if (sourceWidth > sourceHeight) {
+        return { width: TARGET_LONG, height: TARGET_SHORT };
+    }
+    return { width: TARGET_LONG, height: TARGET_LONG };
+}
 
 function _coverCropParams(sourceWidth, sourceHeight, targetWidth, targetHeight) {
     const scale = Math.max(targetWidth / sourceWidth, targetHeight / sourceHeight);
@@ -35,6 +51,7 @@ function _blobToBase64(blob) {
 export const resizePhotoService = {
 
     _coverCropParams,
+    _targetDimensions,
 
     async resizeToTempDir(sourcePath, filename) {
         const rootStore = useRootStore();
@@ -47,16 +64,18 @@ export const resizePhotoService = {
         // which bakes EXIF orientation into the decoded bitmap dimensions.
         const bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' });
 
+        const { width: targetWidth, height: targetHeight } = _targetDimensions(bitmap.width, bitmap.height);
+
         const canvas = document.createElement('canvas');
-        canvas.width = TARGET_WIDTH;
-        canvas.height = TARGET_HEIGHT;
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
         const ctx = canvas.getContext('2d');
 
         const { drawWidth, drawHeight, offsetX, offsetY } = _coverCropParams(
             bitmap.width,
             bitmap.height,
-            TARGET_WIDTH,
-            TARGET_HEIGHT
+            targetWidth,
+            targetHeight
         );
 
         ctx.drawImage(bitmap, offsetX, offsetY, drawWidth, drawHeight);
