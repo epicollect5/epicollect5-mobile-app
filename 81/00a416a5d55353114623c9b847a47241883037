@@ -1,0 +1,19 @@
+src/components/modals/ModalCameraPreview.vue
+  s_b90543f9745c2a::t_139b5b63889c5e 352-354,357
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "8100a416a5d55353114623c9b847a47241883037",
+  "prompts": {},
+  "sessions": {
+    "s_b90543f9745c2a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f835560ccffeYlR5x9cJEkRDvo",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
