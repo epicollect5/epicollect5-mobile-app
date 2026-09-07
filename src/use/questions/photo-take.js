@@ -160,7 +160,11 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                 } catch (error) {
                     console.log(error);
                     //the replacement photo could not be processed: track it, the
-                    //capture is lost even though the previous references survive
+                    //capture is lost even though the previous references survive.
+                    //wontfix: a partially-written tempDir + filename target (if the
+                    //write itself failed mid-way, which is rare) is left orphaned
+                    //here by design — it self-heals via clearTemporaryDir() and a
+                    //best-effort delete would add failure modes to this rollback path
                     rollbarService.criticalWithContext('photoTake resize failed', error);
                     //restore the previous references so a failed retake does not drop
                     //the existing photo (fresh captures restore '' as before, so the

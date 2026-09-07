@@ -128,6 +128,9 @@ export async function videoShoot({media, entryUuid, state, filename}) {
 
     function _onCaptureVideoError(error) {
         console.log(error);
+        //intentionally fire-and-forget: this is a sync legacy Cordova callback
+        //that the plugin does not await, so awaiting here would not sequence
+        //anything — the dialog/alert/service calls still run to completion
         notificationService.stopForegroundService();
         //if not canceled by the user, show alert and reset media object
         if (error.code !== 3) {
@@ -227,6 +230,8 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             return;
         }
 
+        //legacy Cordova callbacks below are sync and never awaited by the plugin:
+        //notification calls inside them are intentionally fire-and-forget
         cordova.plugins.diagnostic.requestRuntimePermission(
             function (status) {
                 if (status === cordova.plugins.diagnostic.permissionStatus.GRANTED) {
