@@ -60,4 +60,21 @@ describe('rollbarService.criticalWithContext', () => {
 
         expect(rollbarInstance.critical).toHaveBeenCalledWith(expect.any(Error));
     });
+
+    it('caps functions to a short tag instead of serializing their source', () => {
+        function namedFn() {}
+
+        expect(() => rollbarService.criticalWithContext('op failed', namedFn)).not.toThrow();
+
+        const reported = rollbarInstance.critical.mock.calls[0][0];
+        expect(reported.message).toBe('op failed: [Function namedFn]');
+    });
+
+    it('never throws on symbols, undefined, or anonymous functions', () => {
+        expect(() => rollbarService.criticalWithContext('op failed', Symbol('s'))).not.toThrow();
+        expect(() => rollbarService.criticalWithContext('op failed', undefined)).not.toThrow();
+        expect(() => rollbarService.criticalWithContext('op failed', () => {})).not.toThrow();
+
+        expect(rollbarInstance.critical).toHaveBeenCalledTimes(3);
+    });
 });
