@@ -264,7 +264,11 @@ export const STRINGS = {
             dismiss: 'Dismiss',
             notifications_permissions_denied_message: 'Epicollect5 needs a notification to stay active while taking photos, videos or scanning barcodes. Without it, the app may be closed by Android.',
             open_settings: 'Open Settings',
-            exporting_entries: 'Exporting Entries'
+            exporting_entries: 'Exporting Entries',
+            draw: 'Draw',
+            undo: 'Undo',
+            clear: 'Clear',
+            discard_drawing: 'Discard drawing?'
         }
     },
     it: {
@@ -532,7 +536,11 @@ export const STRINGS = {
             dismiss: 'Chiudi',
             notifications_permissions_denied_message: 'Epicollect5 ha bisogno di una notifica per rimanere attiva durante lo scatto di foto, video o la scansione di codici a barre. Senza di essa, l\'app potrebbe essere chiusa da Android.',
             open_settings: 'Apri impostazioni',
-            exporting_entries: 'Esportando voci'
+            exporting_entries: 'Esportando voci',
+            draw: 'Disegna',
+            undo: 'Annulla',
+            clear: 'Cancella',
+            discard_drawing: 'Scartare il disegno?'
         }
     },
     es: {
@@ -800,7 +808,11 @@ export const STRINGS = {
             dismiss: 'Cerrar',
             notifications_permissions_denied_message: 'Epicollect5 necesita una notificación para seguir activa mientras se hacen fotos, vídeos o se escanean códigos de barras. Sin ella, Android podría cerrar la aplicación.',
             open_settings: 'Abrir configuración',
-            exporting_entries: 'Exportando entradas'
+            exporting_entries: 'Exportando entradas',
+            draw: 'Dibujar',
+            undo: 'Deshacer',
+            clear: 'Borrar',
+            discard_drawing: '¿Descartar dibujo?'
         }
     },
     fr: {
@@ -1068,7 +1080,11 @@ export const STRINGS = {
             dismiss: 'Annuler',
             notifications_permissions_denied_message: 'Epicollect5 a besoin d\'une notification pour rester active lors de la prise de photos, de vidéos ou de l\'analyse de codes-barres. Sans elle, l\'application peut être fermée par Android.',
             open_settings: 'Ouvrir les réglages',
-            exporting_entries: 'Exportation des entrées'
+            exporting_entries: 'Exportation des entrées',
+            draw: 'Dessiner',
+            undo: 'Annuler',
+            clear: 'Effacer',
+            discard_drawing: 'Annuler le dessin ?'
         }
     },
     pl: {
@@ -1336,7 +1352,11 @@ export const STRINGS = {
             dismiss: 'Anuluj',
             notifications_permissions_denied_message: 'Epicollect5 potrzebuje powiadomienia, aby pozostać aktywnym podczas robienia zdjęć, nagrywania filmów lub skanowania kodów kreskowych. Bez niego aplikacja może zostać zamknięta przez Androida.',
             open_settings: 'Otwórz ustawienia',
-            exporting_entries: 'Eksportowanie wpisów'
+            exporting_entries: 'Eksportowanie wpisów',
+            draw: 'Rysuj',
+            undo: 'Cofnij',
+            clear: 'Wyczyść',
+            discard_drawing: 'Odrzucić rysunek?'
         }
     },
     pt: {
@@ -1604,7 +1624,11 @@ export const STRINGS = {
             dismiss: 'Fechar',
             notifications_permissions_denied_message: 'O Epicollect5 precisa de uma notificação para se manter ativo enquanto tira fotos, grava vídeos ou lê códigos de barras. Sem ela, a aplicação pode ser fechada pelo Android.',
             open_settings: 'Abrir configurações',
-            exporting_entries: 'Exportando entradas'
+            exporting_entries: 'Exportando entradas',
+            draw: 'Desenhar',
+            undo: 'Desfazer',
+            clear: 'Limpar',
+            discard_drawing: 'Descartar desenho?'
         }
     },
     ca: {
@@ -1872,7 +1896,11 @@ export const STRINGS = {
             dismiss: 'Descarta',
             notifications_permissions_denied_message: 'L\'Epicollect5 necessita una notificació per romandre activa mentre es fan fotos, vídeos o es llegeixen codis de barres. Sense ella, l\'aplicació pot ser tancada per Android.',
             open_settings: 'Obrir la configuració',
-            exporting_entries: 'Exportant entrades'
+            exporting_entries: 'Exportant entrades',
+            draw: 'Dibuixa',
+            undo: 'Desfés',
+            clear: 'Esborra',
+            discard_drawing: 'Descartar el dibuix?'
         }
     },
     sl:{
@@ -2140,7 +2168,11 @@ export const STRINGS = {
             dismiss: 'Zavrni',
             notifications_permissions_denied_message: 'Epicollect5 potrebuje obvestilo, da ostane aktiven med fotografiranjem, snemanjem videoposnetkov ali branjem črtnih kod. Brez njega lahko Android aplikacijo zapre.',
             open_settings: 'Odpri nastavitve',
-            exporting_entries: 'Izvažanje vnosov'
+            exporting_entries: 'Izvažanje vnosov',
+            draw: 'Riši',
+            undo: 'Razveljavi',
+            clear: 'Počisti',
+            discard_drawing: 'Zavreči risbo?'
         }
     },
     de: {
@@ -2408,7 +2440,11 @@ export const STRINGS = {
             dismiss: 'Schließen',
             notifications_permissions_denied_message: 'Epicollect5 benötigt eine Benachrichtigung, um beim Aufnehmen von Fotos, Videos oder Scannen von Barcodes aktiv zu bleiben. Ohne sie kann die App von Android geschlossen werden.',
             open_settings: 'Einstellungen öffnen',
-            exporting_entries: 'Einträge exportieren'
+            exporting_entries: 'Einträge exportieren',
+            draw: 'Zeichnen',
+            undo: 'Rückgängig',
+            clear: 'Löschen',
+            discard_drawing: 'Zeichnung verwerfen?'
         }
     }
 };

@@ -4,7 +4,7 @@ import { projectModel } from '@/models/project-model';
 import { useRootStore } from '@/stores/root-store';
 import PopoverQuestionMedia from '@/components/popovers/PopoverQuestionMedia';
 
-export async function popoverMediaHandler ({ media, entryUuid, state, e, mediaType }) {
+export async function popoverMediaHandler ({ media, entryUuid, state, e, mediaType, onAction }) {
 
     const rootStore = useRootStore();
     const projectRef = projectModel.getProjectRef();
@@ -40,7 +40,17 @@ export async function popoverMediaHandler ({ media, entryUuid, state, e, mediaTy
         reference: 'trigger',
         side: 'left'
     });
-    popover.onDidDismiss().then((response) => {
+    const dismissPromise = popover.onDidDismiss().then(async (response) => {
+
+        //let the caller react to actions it owns (e.g. DRAW opens the pad);
+        //await the result so the caller can catch modalController/create or
+        //drawModal.present() failures raised inside the action handler
+        if (typeof onAction === 'function') {
+            const result = onAction(response.data);
+            if (result && typeof result.then === 'function') {
+                await result;
+            }
+        }
 
         //update UI only when file gets deleted or queued
         const actions = [PARAMETERS.ACTIONS.FILE_DELETED, PARAMETERS.ACTIONS.FILE_QUEUED];
@@ -66,5 +76,6 @@ export async function popoverMediaHandler ({ media, entryUuid, state, e, mediaTy
             state.answer.answer = '';
         }
     });
-    return popover.present();
+    await popover.present();
+    return dismissPromise;
 }
