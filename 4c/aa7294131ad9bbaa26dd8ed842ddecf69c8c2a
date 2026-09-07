@@ -1,0 +1,19 @@
+tests/unit/services/filesystem/resize-photo-service.spec.js
+  s_b90543f9745c2a::t_4ac2bfe35e6056 59-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "4caa7294131ad9bbaa26dd8ed842ddecf69c8c2a",
+  "prompts": {},
+  "sessions": {
+    "s_b90543f9745c2a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f835560ccffeYlR5x9cJEkRDvo",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
