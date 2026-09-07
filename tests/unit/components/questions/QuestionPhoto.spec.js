@@ -550,6 +550,28 @@ describe('QuestionPhoto component', () => {
         vi.unstubAllGlobals();
     });
 
+    it('releases the lock when modalController.create fails', async () => {
+        const wrapper = await factory();
+        mediaFile().cached = 'photo.jpg';
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+            blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
+        })));
+
+        //image load succeeds, lock is held, but create() itself rejects
+        const origCreate = modalController.create;
+        try {
+            modalController.create = vi.fn(() => Promise.reject(new Error('create failed')));
+
+            await expect(wrapper.vm.openDrawPad()).rejects.toThrow('create failed');
+            await flushPromises();
+
+            expect(useRootStore().isDrawModalActive).toBe(false);
+        } finally {
+            modalController.create = origCreate;
+        }
+        vi.unstubAllGlobals();
+    });
+
     it('ignores a dismissal without a drawing (cancel)', async () => {
         const wrapper = await factory();
         await wrapper.vm.openDrawPad();
