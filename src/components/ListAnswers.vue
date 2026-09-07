@@ -180,6 +180,12 @@ export default {
 				// Show loader
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
+				//reset the file delete queue (same as entry edit/add paths):
+				//branch setUpExisting also runs mid-session when opening a branch
+				//question, so the reset must live here at the from-list entry
+				//point and not inside the service, or a queued main-entry
+				//deletion would be wiped mid-session
+				rootStore.queueFilesToDelete = [];
 				//init the edit
 				await branchEntryService.setUpExisting(entry);
 				rootStore.routeParams = {
