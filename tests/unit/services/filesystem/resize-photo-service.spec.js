@@ -56,8 +56,8 @@ describe('resizePhotoService', () => {
             expect(resizePhotoService._targetDimensions(3024, 4032)).toEqual({ width: 768, height: 1024 });
         });
 
-        it('returns 1024x1024 for a square source', () => {
-            expect(resizePhotoService._targetDimensions(1024, 1024)).toEqual({ width: 1024, height: 1024 });
+        it('returns 1024x768 for a square source (server rejects square)', () => {
+            expect(resizePhotoService._targetDimensions(1024, 1024)).toEqual({ width: 1024, height: 768 });
         });
     });
 
