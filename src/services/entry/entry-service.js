@@ -80,6 +80,12 @@ export const entryService = {
 
         const self = this;
         const rootStore = useRootStore();
+        //reset the file delete queue: a previous edit session may have queued
+        //stored deletions and quit without saving (the component unmounts but
+        //the pinia store survives); without this the next save would process
+        //stale entries against the wrong entry uuid (file deleted globally,
+        //DB rows deleted scoped to the saving entry)
+        rootStore.queueFilesToDelete = [];
         self.form = formModel;
         self.entry = entryModel;
 
