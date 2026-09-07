@@ -39,8 +39,13 @@ const rollbar = new Rollbar({
 );
 
 //JSON.stringify throws on circular values, BigInt, or throwing toJSON: fall
-//back so reporting itself never throws and hides the original failure
+//back so reporting itself never throws and hides the original failure.
+//Functions are capped to a short tag (their source via String(fn) could bloat
+//payloads past Rollbar limits)
 function _safeStringify(value) {
+    if (typeof value === 'function') {
+        return '[Function ' + (value.name || 'anonymous') + ']';
+    }
     try {
         const result = JSON.stringify(value);
         return typeof result === 'string' ? result : String(value);
