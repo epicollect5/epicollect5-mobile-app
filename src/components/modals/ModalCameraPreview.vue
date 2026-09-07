@@ -349,12 +349,12 @@ export default {
 				state.flash = false;
 			}, 250);
 			try {
-				//request a 1024 bounding box (same as the native system-camera flow):
-				//the resize step then outputs 1024x768 landscape or 768x1024
-				//portrait based on the decoded bitmap orientation
+				//the resize step outputs 1024x768 landscape or 768x1024 portrait
+				//based on the decoded bitmap orientation (server accepts only
+				//those two sizes)
 				const result = await CameraPreview.capture({
 					width: 1024,
-					height: 1024,
+					height: 768,
 					quality: 85,
 					format: 'jpeg'
 				});
