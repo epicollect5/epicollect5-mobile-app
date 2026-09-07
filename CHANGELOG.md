@@ -1,5 +1,15 @@
 ## Release Notes
 
+# 98.1.0 - build 9810
+
+ - Added a draw pad for photo questions, opened from the photo media popover and the photo question.
+ - Unified pen colour and thickness into a single settings modal; added signature_pad dependency.
+ - Hardened the draw/photo save workflow: block saves during background loads, claim a draw lock, keep the original photo on clear, and prevent blank-canvas replacement.
+ - Prevented temp file overwrite on failed moves and backed up the original file before atomic move.
+ - Retry restore and report/recover from a recoverable backup; promote the answer to a `.bak` on recoverable backup.
+ - Fixed drawing workflow, file save, and popover action handling; ignore the back button while the draw modal is open.
+ - Fixed saving media while the background photo loads; reset the loading flag on background load failure.
+
 # 98.0.0 - build 9800
 
  - Migrated the build toolchain from Vue CLI to Vite (VITE_ environment variables and a WEBVIEW build mode).
