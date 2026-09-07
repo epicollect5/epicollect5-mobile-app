@@ -1,0 +1,21 @@
+tests/unit/components/ListAnswers.spec.js
+  s_97ef5a0d529b1f::t_4fa6b194863688 1-79
+tests/unit/components/popovers/PopoverQuestionMedia.spec.js
+  s_97ef5a0d529b1f::t_e05aaa0ea6a184 1-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "7e848c318f4aac4c136de54c7a81b01b7398df43",
+  "prompts": {},
+  "sessions": {
+    "s_97ef5a0d529b1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f92868c56ffePnaa8P8oKTClU6",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
