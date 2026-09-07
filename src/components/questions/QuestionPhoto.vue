@@ -339,65 +339,69 @@ export default {
           throw error;
         }
 
+        //imp: onDidDismiss runs in the background; the single finally below
+        //is the only place that releases the lock, so any throw between the
+        //dataURL check and the save try/catch (e.g. generateMediaFilename) is
+        //covered and reported, and the lock never gets stuck
         drawModal.onDidDismiss().then(async (response) => {
-          if (!response || !response.data || !response.data.dataURL) {
-            rootStore.isDrawModalActive = false;
-            return;
-          }
-          const dataURL = response.data.dataURL;
+            try {
+                if (!response || !response.data || !response.data.dataURL) {
+                    return;
+                }
+                const dataURL = response.data.dataURL;
 
-          //mirror photo-take.js:53-71 to pick the right filename
-          let newFilename = '';
-          if (mediaFile.cached !== '') {
-            newFilename = mediaFile.cached;
-          } else if (mediaFile.stored !== '') {
-            newFilename = mediaFile.stored;
-          } else {
-            newFilename = utilsService.generateMediaFilename(
-                entryUuid,
-                PARAMETERS.QUESTION_TYPES.PHOTO
-            );
-          }
+                //mirror photo-take.js:53-71 to pick the right filename
+                let newFilename = '';
+                if (mediaFile.cached !== '') {
+                    newFilename = mediaFile.cached;
+                } else if (mediaFile.stored !== '') {
+                    newFilename = mediaFile.stored;
+                } else {
+                    newFilename = utilsService.generateMediaFilename(
+                        entryUuid,
+                        PARAMETERS.QUESTION_TYPES.PHOTO
+                    );
+                }
 
-          const prevCached = mediaFile.cached;
-          const prevAnswer = state.answer.answer;
+                const prevCached = mediaFile.cached;
+                const prevAnswer = state.answer.answer;
 
-          try {
-            const blob = utilsService.b64toBlob(dataURL, 'image/jpeg');
-            await saveBlobToTempDir({blob, filename: newFilename});
-            mediaFile.cached = newFilename;
-            state.answer.answer = newFilename;
-            _loadImageOnView(tempDir + newFilename);
-          } catch (error) {
-            console.error('Failed to save drawing to temp dir', error);
-            rollbarService.critical(error);
-            //imp: the service could not restore the original; its bytes live
-            //at <newFilename>.bak. Point the answer at that copy so the
-            //attachment remains available, and refresh the thumbnail
-            //wontfix: cached/answer keep the .bak staging name while stored
-            //keeps the original, so the answers JSON can name a file that
-            //never lands in persistent storage (insertMedia/upload resolve by
-            //stored/file_name, so bytes and media rows stay correct). A
-            //promotion (.bak->filename in temp) would reconcile the triple but
-            //adds async FS logic to this UI component for a path needing both
-            //an iOS moveTo and a restore failure; deliberately not attempted
-            if (error && error.code === 'RECOVERABLE_BACKUP' && error.recoverableFilename) {
-              mediaFile.cached = error.recoverableFilename;
-              state.answer.answer = error.recoverableFilename;
-              _loadImageOnView(tempDir + error.recoverableFilename);
-            } else {
-              mediaFile.cached = prevCached;
-              state.answer.answer = prevAnswer;
+                try {
+                    const blob = utilsService.b64toBlob(dataURL, 'image/jpeg');
+                    await saveBlobToTempDir({blob, filename: newFilename});
+                    mediaFile.cached = newFilename;
+                    state.answer.answer = newFilename;
+                    _loadImageOnView(tempDir + newFilename);
+                } catch (error) {
+                    console.error('Failed to save drawing to temp dir', error);
+                    rollbarService.critical(error);
+                    //imp: the service could not restore the original; its
+                    //bytes live at <newFilename>.bak. Point the answer at
+                    //that copy so the attachment remains available
+                    if (error && error.code === 'RECOVERABLE_BACKUP' && error.recoverableFilename) {
+                        mediaFile.cached = error.recoverableFilename;
+                        state.answer.answer = error.recoverableFilename;
+                        _loadImageOnView(tempDir + error.recoverableFilename);
+                    } else {
+                        mediaFile.cached = prevCached;
+                        state.answer.answer = prevAnswer;
+                    }
+                    await notificationService.showAlert(
+                        labels.unknown_error,
+                        labels.error
+                    );
+                }
+            } catch (error) {
+                //imp: any throw outside the save try/catch (filename
+                //generation, media writes, etc.) is caught here so it never
+                //becomes an unhandled rejection and the lock still releases
+                console.error('onDidDismiss handler failed', error);
+                rollbarService.critical(error);
+            } finally {
+                //imp: release the workflow lock on every dismissal path, so
+                //a reopen cannot share the .tmp/.bak files with this save
+                rootStore.isDrawModalActive = false;
             }
-            await notificationService.showAlert(
-                labels.unknown_error,
-                labels.error
-            );
-          } finally {
-            //imp: release the workflow lock only after the save settles, so
-            //a reopen cannot share the .tmp/.bak files with this save
-            rootStore.isDrawModalActive = false;
-          }
         });
 
         try {
