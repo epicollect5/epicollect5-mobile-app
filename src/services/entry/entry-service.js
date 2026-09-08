@@ -27,6 +27,11 @@ export const entryService = {
     //Initial function to set up the entry
     setUpNew (formRef, parentEntryUuid, parentFormRef) {
         const rootStore = useRootStore();
+        //reset the file delete queue: a previous session may have queued
+        //stored deletions and quit without saving (same as setUpExisting);
+        //without this the next save would process stale entries against the
+        //wrong entry uuid
+        rootStore.queueFilesToDelete = [];
         this.action = PARAMETERS.ENTRY_ADD;
         this.allowSave = true;
         this.form = formModel;
@@ -168,13 +173,25 @@ export const entryService = {
             }
 
             //remove media files answers before saving the entry
-            rootStore.queueFilesToDelete.forEach((file) => {
-                //if we have a cached file, that will replace the one
-                //we are deleting, so skip it
-                if (file.filenameStored === self.entry.answers[file.inputRef].answer) {
-                    self.entry.answers[file.inputRef].answer = '';
-                }
-            });
+            try {
+                rootStore.queueFilesToDelete.forEach((file) => {
+                    //queue items are scoped to their own entry by inputRef:
+                    //silently skip foreign/stale items (e.g. abandoned branch
+                    //edit); only genuine errors are reported below
+                    const answer = self.entry.answers[file.inputRef];
+                    if (!answer) {
+                        return;
+                    }
+                    //if we have a cached file, that will replace the one
+                    //we are deleting, so skip it
+                    if (file.filenameStored === answer.answer) {
+                        answer.answer = '';
+                    }
+                });
+            } catch (error) {
+                _onError(error);
+                return;
+            }
 
             // Unsync all parent entries
             this.unsyncParentEntries(projectModel.getProjectRef(), self.entry.parentEntryUuid).then(function () {

@@ -104,6 +104,50 @@ describe('entryService.saveEntry', () => {
 
         expect(entriesDownloadProgressService.clearProject).not.toHaveBeenCalled();
     });
+
+    it('skips foreign queued deletions instead of crashing the save', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        const staleStore = {
+            queueFilesToDelete: [{
+                inputRef: 'branch-q1',
+                filenameStored: 'branch-photo.jpg',
+                file_path: '/data/photos/',
+                project_ref: 'project-ref',
+                file_name: 'branch-photo.jpg'
+            }]
+        };
+        useRootStore.mockReturnValueOnce(staleStore);
+        //parent entry answers never contain a branch inputRef (refs are
+        //unique project-wide): previously this threw at answers[ref].answer
+        entryService.entry.answers = {};
+
+        await entryService.saveEntry(0);
+
+        expect(entryService.entry.answers).toEqual({});
+        const { rollbarService } = await import('@/services/utilities/rollbar-service');
+        //a skipped foreign item is handled flow, not an error: no report
+        expect(rollbarService.critical).not.toHaveBeenCalled();
+    });
+
+    it('reports genuine queue processing errors instead of failing silently', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        const { rollbarService } = await import('@/services/utilities/rollbar-service');
+        useRootStore.mockReturnValueOnce({
+            queueFilesToDelete: [{
+                inputRef: 'q1',
+                filenameStored: 'photo.jpg',
+                file_path: '/data/photos/',
+                project_ref: 'project-ref',
+                file_name: 'photo.jpg'
+            }]
+        });
+        //corrupt entry shape: answers missing entirely, so even the lookup throws
+        entryService.entry.answers = undefined;
+
+        await expect(entryService.saveEntry(0)).rejects.toThrow();
+
+        expect(rollbarService.critical).toHaveBeenCalledWith(expect.any(Error));
+    });
 });
 
 describe('entryService.setUpExisting', () => {
@@ -122,6 +166,26 @@ describe('entryService.setUpExisting', () => {
         useRootStore.mockReturnValueOnce(staleStore);
 
         await entryService.setUpExisting({ entryUuid: 'entry1', formRef: 'form-ref' });
+
+        expect(staleStore.queueFilesToDelete).toEqual([]);
+    });
+});
+
+describe('entryService.setUpNew', () => {
+    it('resets a stale file delete queue from a previous quit-without-save', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        const staleStore = {
+            queueFilesToDelete: [{
+                inputRef: 'q1',
+                filenameStored: 'other-entry-photo.jpg',
+                file_path: '/data/photos/',
+                project_ref: 'project-ref',
+                file_name: 'other-entry-photo.jpg'
+            }]
+        };
+        useRootStore.mockReturnValueOnce(staleStore);
+
+        entryService.setUpNew('form-ref', '', '');
 
         expect(staleStore.queueFilesToDelete).toEqual([]);
     });
