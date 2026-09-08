@@ -194,6 +194,10 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
         } else {
             sourceType = action === 'gallery' ? CameraSource.Photos : CameraSource.Camera;
 
+            //wontfix: the system path keeps the source aspect via the plugin's 1024
+            //fit-box (e.g. 2448x1167 -> ~1024x488); the server does the final
+            //crop/stretch. Client-side cover-crop would silently discard panorama
+            //edges — see docs/ARCHITECTURE.md "Server photo size constraint".
             cameraOptions = {
                 quality: 50,
                 source: sourceType,

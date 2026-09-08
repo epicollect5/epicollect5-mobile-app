@@ -556,7 +556,7 @@ Important compatibility detail:
 
 - The native app intentionally preserves legacy directory behavior to avoid breaking upgrades from older storage layouts.
 
-**Server photo size constraint:** the server only accepts photos at exactly 1024x768 (landscape 1024x768, portrait 768x1024). Bigger photos are cropped server-side and smaller photos are stretched, so the client must output exactly those dimensions (`resize-photo-service` targets 1024x768 / 768x1024 based on capture orientation; never square).
+**Server photo size constraint:** the server stores photos at exactly 1024x768 (landscape) / 768x1024 (portrait), cropping bigger uploads and stretching smaller ones. Only the in-app camera path guarantees exactly those dimensions client-side (`resize-photo-service` cover-crops by capture orientation, never square). The system camera/gallery path (`Camera.getPhoto()` with a 1024 fit-box, quality 50, then plain move) preserves the source aspect — e.g. a 2448×1167 pano uploads as ~1024×488 — and deliberately defers the final crop/stretch to the server as the best-possible rendering of the source. Accepted drawback: locally exported app files keep device dimensions; users retain their originals.
 
 ### Media Upload & File Transfer
 
