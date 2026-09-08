@@ -1,0 +1,25 @@
+tests/unit/services/entry/entry-service.spec.js
+  s_ca4c29b20ce60d::t_7fe30e6c3d16cc 107-126,150
+  s_ca4c29b20ce60d::t_2640cbca9149d9 127
+  s_ca4c29b20ce60d::t_2932a261da1b86 128-149
+  s_ca4c29b20ce60d::t_1c02f0d72fd158 173-192
+src/services/entry/entry-service.js
+  s_ca4c29b20ce60d::t_b28e4745fab4d9 176-194
+  s_ca4c29b20ce60d::t_ab36c80a3b2390 30-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "c5a86672b53f2e261c74729242280085975319e2",
+  "prompts": {},
+  "sessions": {
+    "s_ca4c29b20ce60d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f830567f9ffecoZrzv8PBickIZ",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
