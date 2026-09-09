@@ -1,0 +1,20 @@
+docs/workflows/qa.md
+  s_ec774ba6c6ec1f::t_c8ba362d89c870 75
+  s_ec774ba6c6ec1f::t_149b7cbc0ae6e3 66-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "0af05c6a4dc0464f46e1abe06da07913f3d15439",
+  "prompts": {},
+  "sessions": {
+    "s_ec774ba6c6ec1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f799b2b09ffeBtwRxOn2WHQS2A",
+        "model": "big-pickle"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
