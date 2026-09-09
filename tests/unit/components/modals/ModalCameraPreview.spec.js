@@ -57,8 +57,14 @@ vi.mock('@/services/utilities/rollbar-service', () => ({
 	rollbarService: rollbarMock
 }));
 
+const notificationMock = vi.hoisted(() => ({ showAlert: vi.fn(async () => {}) }));
+
+vi.mock('@/services/notification-service', () => ({
+	notificationService: notificationMock
+}));
+
 vi.mock('@/stores/root-store', () => ({
-	useRootStore: () => ({ device: { platform: platformMock.platform } })
+	useRootStore: () => ({ device: { platform: platformMock.platform }, language: 'en' })
 }));
 
 vi.mock('@/config', () => ({
@@ -539,6 +545,50 @@ describe('ModalCameraPreview component', () => {
 
 		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalled();
 		expect(wrapper.vm.state.recording).toBe(false);
+		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+	});
+
+	it('video mode alerts and dismisses when finalizing the recording fails in the foreground', async () => {
+		grantPermissions();
+		mocks.cameraPreview.stopRecordVideo.mockRejectedValue(new Error('stop failed'));
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		//second shutter press tries to finalize and fails: no video was captured,
+		//so the user is told and the modal closes (empty dismiss = cancel,
+		//the existing media is kept by the caller)
+		await wrapper.vm.shutter();
+		await flushPromises();
+
+		expect(wrapper.vm.state.recording).toBe(false);
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('CameraPreview finalize recording failed', expect.any(Error));
+		expect(notificationMock.showAlert).toHaveBeenCalled();
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith();
+	});
+
+	it('video mode stays silent when finalizing fails while backgrounded', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		//screen off while recording with a native side that cannot finalize:
+		//tracked, camera released, modal stays up for feed recovery — no alert
+		//over a backgrounded app and no dismiss
+		mocks.cameraPreview.stopRecordVideo.mockRejectedValue(new Error('Camera is not running'));
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+		await listener({ isActive: false });
+		await flushPromises();
+
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('CameraPreview finalize recording failed', expect.any(Error));
+		expect(notificationMock.showAlert).not.toHaveBeenCalled();
 		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
 	});
 
