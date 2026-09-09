@@ -47,7 +47,8 @@ vi.mock('@/services/database/database-update-service', () => ({
 
 vi.mock('@/services/database/database-select-service', () => ({
     databaseSelectService: {
-        selectParentEntry: vi.fn().mockResolvedValue({rows: {length: 0}})
+        selectParentEntry: vi.fn().mockResolvedValue({rows: {length: 0}}),
+        selectTempBranches: vi.fn().mockResolvedValue({rows: {length: 0}})
     }
 }));
 
@@ -63,6 +64,14 @@ vi.mock('@/services/database/database-insert-service', () => ({
 vi.mock('@/services/entry/media-service', () => ({
     mediaService: {
         saveMedia: vi.fn().mockResolvedValue()
+    }
+}));
+
+vi.mock('@/services/database/database-delete-service', () => ({
+    databaseDeleteService: {
+        removeUniqueAnswers: vi.fn().mockResolvedValue(),
+        deleteTempBranchEntries: vi.fn().mockResolvedValue(),
+        deleteTempUniqueAnswers: vi.fn().mockResolvedValue()
     }
 }));
 
@@ -103,6 +112,24 @@ describe('entryService.saveEntry', () => {
         await entryService.saveEntry(0);
 
         expect(entriesDownloadProgressService.clearProject).not.toHaveBeenCalled();
+    });
+
+    it('persists edited answers and promotes temp branches on save', async () => {
+        const { databaseInsertService } = await import('@/services/database/database-insert-service');
+        entryService.entry = {
+            canEdit: 1,
+            answers: { 'q-text': { answer: 'hello' } },
+            parentEntryUuid: '',
+            formRef: 'form-ref'
+        };
+
+        await entryService.saveEntry(0);
+
+        expect(databaseInsertService.insertEntry).toHaveBeenCalledWith(
+            expect.objectContaining({ answers: { 'q-text': { answer: 'hello' } } }),
+            0
+        );
+        expect(databaseInsertService.moveBranchEntries).toHaveBeenCalledTimes(1);
     });
 
     it('skips foreign queued deletions instead of crashing the save', async () => {
@@ -147,6 +174,38 @@ describe('entryService.saveEntry', () => {
         await expect(entryService.saveEntry(0)).rejects.toThrow();
 
         expect(rollbarService.critical).toHaveBeenCalledWith(expect.any(Error));
+    });
+});
+
+describe('entryService.removeTempBranches', () => {
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('deletes temp branches and temp unique answers on quit', async () => {
+        const { databaseSelectService } = await import('@/services/database/database-select-service');
+        const { databaseDeleteService } = await import('@/services/database/database-delete-service');
+        databaseSelectService.selectTempBranches.mockResolvedValueOnce({ rows: { length: 1 } });
+        entryService.entry = { entryUuid: 'entry-1' };
+
+        await entryService.removeTempBranches();
+
+        expect(databaseDeleteService.removeUniqueAnswers).toHaveBeenCalledTimes(1);
+        expect(databaseDeleteService.deleteTempBranchEntries).toHaveBeenCalledTimes(1);
+        expect(databaseDeleteService.deleteTempUniqueAnswers).toHaveBeenCalledTimes(1);
+    });
+
+    it('resolves without deleting when no temp branches exist', async () => {
+        const { databaseSelectService } = await import('@/services/database/database-select-service');
+        const { databaseDeleteService } = await import('@/services/database/database-delete-service');
+        databaseSelectService.selectTempBranches.mockResolvedValueOnce({ rows: { length: 0 } });
+        entryService.entry = { entryUuid: 'entry-1' };
+
+        await entryService.removeTempBranches();
+
+        expect(databaseDeleteService.deleteTempBranchEntries).not.toHaveBeenCalled();
+        expect(databaseDeleteService.deleteTempUniqueAnswers).not.toHaveBeenCalled();
     });
 });
 
