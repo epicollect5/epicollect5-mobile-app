@@ -73,6 +73,8 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { CameraPreview } from '@capgo/camera-preview';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
+import { STRINGS } from '@/config/strings';
+import { notificationService } from '@/services/notification-service';
 import { rollbarService } from '@/services/utilities/rollbar-service';
 
 export default {
@@ -84,9 +86,10 @@ export default {
 			default: 'photo'
 		}
 	},
-	emits: ['on-dismiss'],
-	setup(props, context) {
+	setup(props) {
 		const rootStore = useRootStore();
+		const language = rootStore.language;
+		const labels = STRINGS[language].labels;
 		const state = reactive({
 			capturing: false,
 			started: false,
@@ -410,6 +413,20 @@ export default {
 				await _handOffRecording(videoFilePath);
 			} catch (error) {
 				console.log('CameraPreview.stopRecordVideo failed: ' + error);
+				rollbarService.criticalWithContext('CameraPreview finalize recording failed', error);
+				//no video was captured and the modal would otherwise sit open with
+				//the indicator stopped and no way forward except ✕: tell the user
+				//and dismiss (the caller treats an empty dismiss as cancel and
+				//keeps the existing media). While backgrounded the modal must stay
+				//up for feed recovery, so alert and dismiss in the foreground only
+				if (!appInactive) {
+					try {
+						await notificationService.showAlert(error.message || labels.unknown_error, labels.error);
+					} catch (alertError) {
+						console.log('CameraPreview finalize alert failed: ' + alertError);
+					}
+					modalController.dismiss();
+				}
 			}
 		}
 
@@ -471,7 +488,6 @@ export default {
 			}
 			await _stop();
 			await _cleanupSource();
-			context.emit('on-dismiss');
 			modalController.dismiss();
 		}
 
@@ -570,6 +586,9 @@ export default {
 		});
 
 		onBeforeUnmount(async () => {
+			//Vue does not await this hook: everything below runs fire-and-forget
+			//once the synchronous lines complete, so teardown must be safe
+			//without a waiter (try/catch around each await, no return value).
 			//teardown starts here, synchronously (back button path skips the dismiss action):
 			//a pending _start() must release the native session instead of
 			//marking state on the destroyed modal
