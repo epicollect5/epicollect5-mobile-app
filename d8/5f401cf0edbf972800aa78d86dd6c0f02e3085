@@ -1,0 +1,24 @@
+tests/unit/services/entry/branch-entry-service.spec.js
+  s_97ef5a0d529b1f::t_0acc57a833c19c 212-265
+  s_97ef5a0d529b1f::t_dc05358dde1051 32-33,55-57
+  s_97ef5a0d529b1f::t_d49fd76e44cff0 58-60
+tests/unit/services/filesystem/resize-photo-service.spec.js
+  s_97ef5a0d529b1f::t_d53c56980158d5 133,135-136,183-186
+  s_97ef5a0d529b1f::t_b855be28e4fddf 271-396
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "d85f401cf0edbf972800aa78d86dd6c0f02e3085",
+  "prompts": {},
+  "sessions": {
+    "s_97ef5a0d529b1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f92868c56ffePnaa8P8oKTClU6",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
