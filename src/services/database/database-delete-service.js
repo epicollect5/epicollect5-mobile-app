@@ -375,10 +375,15 @@ export const databaseDeleteService = {
         return await this.deleteRows(query, params);
     },
 
-    async deleteMediaFiles(entryUuid, fileNames) {
+    //Delete queued media rows by project + file names: queued deletions are
+    //executed at hierarchy save for hierarchy and deferred branch items alike,
+    //and generated file names ({entryUuid}_{timestamp}.{ext}) are unique, so
+    //project scoping deletes exactly the queued rows regardless of which entry
+    //saved them. Sole caller: mediaService.saveMedia.
+    async deleteMediaFiles(projectRef, fileNames) {
 
-        const query = 'DELETE FROM media WHERE entry_uuid=? AND file_name IN (' + fileNames.join(',') + ')';
-        const params = [entryUuid];
+        const query = 'DELETE FROM media WHERE project_ref=? AND file_name IN (' + fileNames.join(',') + ')';
+        const params = [projectRef];
 
         return await this.deleteRows(query, params);
     }
