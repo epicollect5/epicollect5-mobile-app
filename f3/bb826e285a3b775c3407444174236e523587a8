@@ -1,0 +1,22 @@
+tests/unit/components/modals/ModalCameraPreview.spec.js
+  s_97ef5a0d529b1f::t_26e747bd5b49ff 551-591,593
+  s_97ef5a0d529b1f::t_c4889258dfeba3 60-65,67
+  s_97ef5a0d529b1f::t_249b1c52cab34b 592
+  s_97ef5a0d529b1f::t_2ff37cd99def6c 594
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "f3bb826e285a3b775c3407444174236e523587a8",
+  "prompts": {},
+  "sessions": {
+    "s_97ef5a0d529b1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f92868c56ffePnaa8P8oKTClU6",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
