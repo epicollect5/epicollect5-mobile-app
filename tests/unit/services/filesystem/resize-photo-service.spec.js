@@ -130,9 +130,10 @@ describe('resizePhotoService', () => {
                     expect.anything(),
                     { imageOrientation: 'from-image' }
                 );
-                expect(canvas.width).toBe(1024);
-                expect(canvas.height).toBe(768);
+                //the canvas is sized for the draw, then released after export
                 expect(drawImage).toHaveBeenCalledTimes(1);
+                expect(canvas.width).toBe(0);
+                expect(canvas.height).toBe(0);
                 expect(toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/jpeg', 0.85);
                 expect(Filesystem.writeFile).toHaveBeenCalledWith({
                     path: '/tmp/photo.jpg',
@@ -179,8 +180,10 @@ describe('resizePhotoService', () => {
                 const result = await resizePhotoService.resizeToTempDir('/source.jpg', 'photo.jpg');
 
                 expect(result).toBe('photo.jpg');
-                expect(canvas.width).toBe(768);
-                expect(canvas.height).toBe(1024);
+                //the canvas is sized for the draw (768x1024 portrait), then
+                //released after export
+                expect(canvas.width).toBe(0);
+                expect(canvas.height).toBe(0);
                 expect(drawImage).toHaveBeenCalledTimes(1);
                 expect(Filesystem.writeFile).toHaveBeenCalledWith({
                     path: '/tmp/photo.jpg',
@@ -264,6 +267,132 @@ describe('resizePhotoService', () => {
             } finally {
                 globalThis.createImageBitmap = originalCreateImageBitmap;
             }
+        });
+
+        it('closes the bitmap and releases the canvas on success', async () => {
+            const bitmap = mockBitmap(4032, 3024);
+            const { canvas, drawImage } = mockCanvas();
+            const originalCreateElement = document.createElement;
+            vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+                if (tag === 'canvas') {
+                    return canvas;
+                }
+                return originalCreateElement.call(document, tag);
+            });
+
+            const originalCreateImageBitmap = globalThis.createImageBitmap;
+            globalThis.createImageBitmap = vi.fn().mockResolvedValue(bitmap);
+            getBase64FromFilePath.mockResolvedValue('BASE64DATA');
+
+            const originalFileReader = globalThis.FileReader;
+            class MockFileReader {
+                constructor() {
+                    this.onloadend = null;
+                    this.onerror = null;
+                }
+                readAsDataURL(_blob) {
+                    this.result = 'data:image/jpeg;base64,READBASE64';
+                    if (this.onloadend) {
+                        this.onloadend();
+                    }
+                }
+            }
+            globalThis.FileReader = MockFileReader;
+
+            try {
+                const result = await resizePhotoService.resizeToTempDir('/source.jpg', 'photo.jpg');
+
+                expect(result).toBe('photo.jpg');
+                expect(bitmap.close).toHaveBeenCalledTimes(1);
+                expect(drawImage).toHaveBeenCalledTimes(1);
+                expect(canvas.width).toBe(0);
+                expect(canvas.height).toBe(0);
+            } finally {
+                globalThis.createImageBitmap = originalCreateImageBitmap;
+                globalThis.FileReader = originalFileReader;
+                document.createElement.mockRestore && document.createElement.mockRestore();
+            }
+        });
+
+        it('attaches failure context without changing the original error', async () => {
+            const { canvas } = mockCanvas();
+            const originalCreateElement = document.createElement;
+            vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+                if (tag === 'canvas') {
+                    return canvas;
+                }
+                return originalCreateElement.call(document, tag);
+            });
+
+            const originalCreateImageBitmap = globalThis.createImageBitmap;
+            globalThis.createImageBitmap = vi.fn().mockRejectedValue(new Error('decode failed'));
+            getBase64FromFilePath.mockResolvedValue('BASE64DATA');
+
+            try {
+                await resizePhotoService.resizeToTempDir('/source.jpg', 'photo.jpg');
+                expect.unreachable();
+            } catch (error) {
+                expect(error).toBeInstanceOf(Error);
+                expect(error.message).toBe('decode failed');
+                expect(error.resizeContext).toMatchObject({
+                    stage: 'decode',
+                    base64Length: 'BASE64DATA'.length,
+                    heap: undefined
+                });
+                expect(error.resizeContext.sourceWidth).toBeUndefined();
+            } finally {
+                globalThis.createImageBitmap = originalCreateImageBitmap;
+                document.createElement.mockRestore && document.createElement.mockRestore();
+            }
+        });
+
+        it('attaches the heap snapshot when performance.memory is available', async () => {
+            const { canvas } = mockCanvas();
+            const originalCreateElement = document.createElement;
+            vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+                if (tag === 'canvas') {
+                    return canvas;
+                }
+                return originalCreateElement.call(document, tag);
+            });
+
+            const originalCreateImageBitmap = globalThis.createImageBitmap;
+            globalThis.createImageBitmap = vi.fn().mockRejectedValue(new Error('decode failed'));
+            getBase64FromFilePath.mockResolvedValue('BASE64DATA');
+
+            const perf = globalThis.performance;
+            const hadMemory = perf && Object.prototype.hasOwnProperty.call(perf, 'memory');
+            const previousMemory = perf ? perf.memory : undefined;
+            if (perf) {
+                Object.defineProperty(perf, 'memory', {
+                    value: { usedJSHeapSize: 123456, jsHeapSizeLimit: 536870912 },
+                    configurable: true
+                });
+            }
+
+            try {
+                await resizePhotoService.resizeToTempDir('/source.jpg', 'photo.jpg');
+                expect.unreachable();
+            } catch (error) {
+                expect(error.resizeContext.heap).toEqual({ used: 123456, limit: 536870912 });
+            } finally {
+                if (perf) {
+                    if (hadMemory) {
+                        Object.defineProperty(perf, 'memory', { value: previousMemory, configurable: true });
+                    } else {
+                        delete perf.memory;
+                    }
+                }
+                globalThis.createImageBitmap = originalCreateImageBitmap;
+                document.createElement.mockRestore && document.createElement.mockRestore();
+            }
+        });
+
+        it('propagates non-object rejections unchanged', async () => {
+            getBase64FromFilePath.mockRejectedValue('plain string failure');
+
+            await expect(resizePhotoService.resizeToTempDir('/source.jpg', 'photo.jpg'))
+                .rejects.toBe('plain string failure');
         });
     });
 });

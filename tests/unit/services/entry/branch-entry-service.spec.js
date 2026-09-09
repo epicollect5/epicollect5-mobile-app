@@ -29,7 +29,8 @@ vi.mock('@/services/database/database-insert-service', () => ({
         insertEntry: vi.fn(),
         insertTempBranchEntry: vi.fn().mockResolvedValue(),
         insertUniqueAnswers: vi.fn().mockResolvedValue(),
-        moveBranchEntries: vi.fn().mockResolvedValue()
+        moveBranchEntries: vi.fn().mockResolvedValue(),
+        insertMedia: vi.fn().mockResolvedValue()
     }
 }));
 
@@ -48,6 +49,12 @@ vi.mock('@/services/entry/media-service', () => ({
 vi.mock('@/services/filesystem/delete-file-service', () => ({
     deleteFileService: {
         removeFiles: vi.fn().mockResolvedValue()
+    }
+}));
+
+vi.mock('@/services/filesystem/move-file-service', () => ({
+    moveFileService: {
+        moveToAppProjectDir: vi.fn().mockResolvedValue()
     }
 }));
 
@@ -201,5 +208,59 @@ describe('branchEntryService.discardBranchDeleteQueue', () => {
 
         expect(projectModel.getBranchMediaQuestions).not.toHaveBeenCalled();
         expect(store.queueFilesToDelete).toEqual([]);
+    });
+
+    it('leaves the queue untouched when the branch has no media questions', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        const { projectModel } = await import('@/models/project-model.js');
+        projectModel.getBranchMediaQuestions.mockReturnValueOnce([]);
+        const queued = { inputRef: 'hierarchy-photo', file_name: 'hierarchy-photo.jpg' };
+        const store = { queueFilesToDelete: [queued] };
+        useRootStore.mockReturnValueOnce(store);
+        branchEntryService.entry = { formRef: 'form-ref', ownerInputRef: 'branch-owner' };
+
+        branchEntryService.discardBranchDeleteQueue();
+
+        expect(store.queueFilesToDelete).toEqual([queued]);
+    });
+
+    it('end-to-end: quitting the branch discards its queue so hierarchy save deletes nothing', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        const actual = await vi.importActual('@/services/entry/media-service');
+        const { deleteFileService } = await import('@/services/filesystem/delete-file-service');
+        const { databaseDeleteService } = await import('@/services/database/database-delete-service');
+        const { databaseInsertService } = await import('@/services/database/database-insert-service');
+        const { moveFileService } = await import('@/services/filesystem/move-file-service');
+        const { projectModel } = await import('@/models/project-model.js');
+        mediaService.saveMedia.mockImplementation((...args) => actual.mediaService.saveMedia(...args));
+        projectModel.getBranchMediaQuestions.mockReturnValueOnce(['b-photo']);
+        const store = {
+            language: 'en',
+            tempDir: '/tmp/',
+            queueFilesToDelete: [
+                { inputRef: 'b-photo', filenameStored: 'b-photo.jpg', file_path: '/p/', project_ref: 'project-ref', file_name: 'b-photo.jpg' }
+            ]
+        };
+        useRootStore.mockReturnValue(store);
+        branchEntryService.entry = { formRef: 'form-ref', ownerInputRef: 'branch-owner' };
+
+        //quit the branch without saving: its queued deletion is discarded
+        branchEntryService.discardBranchDeleteQueue();
+        expect(store.queueFilesToDelete).toEqual([]);
+
+        //hierarchy save deletes nothing queued but still moves its own new file
+        await actual.mediaService.saveMedia({
+            isBranch: false,
+            entryUuid: 'parent-1',
+            projectRef: 'project-ref',
+            media: { 'parent-1': { 'h-photo': { cached: 'h-photo.jpg', stored: '', type: 'photo' } } }
+        }, 1);
+        expect(deleteFileService.removeFiles).not.toHaveBeenCalled();
+        expect(databaseDeleteService.deleteMediaFiles).not.toHaveBeenCalled();
+        expect(moveFileService.moveToAppProjectDir).toHaveBeenCalledWith('/tmp/h-photo.jpg', 'h-photo.jpg', 'photo', 'project-ref');
+        expect(databaseInsertService.insertMedia).toHaveBeenCalled();
+
+        mediaService.saveMedia.mockReset();
+        mediaService.saveMedia.mockResolvedValue();
     });
 });
