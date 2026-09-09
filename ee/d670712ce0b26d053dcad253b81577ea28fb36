@@ -1,0 +1,33 @@
+tests/unit/services/entry/entry-service.spec.js
+  s_ca4c29b20ce60d::t_4b51781c371b86 133,180-209
+  s_ca4c29b20ce60d::t_4e0aa64ea3e04e 50-51,70-74
+  s_ca4c29b20ce60d::t_1a1e6562289669 117-132
+  s_ca4c29b20ce60d::t_dce293e4ce8b01 75-77
+  s_ca4c29b20ce60d::t_270c8caa9b5af5 134
+  s_ca4c29b20ce60d::t_f15c467cb0cf33 210-211
+tests/unit/services/entry/branch-entry-service.spec.js
+  s_ca4c29b20ce60d::t_dabed20f71c476 51,74,79-164,205
+  s_ca4c29b20ce60d::t_2377b8ba52c7d1 7-9,16-17
+  s_ca4c29b20ce60d::t_5fd339694a2f73 73,172-204
+  s_ca4c29b20ce60d::t_75b10f46c12e73 75-78,165
+  s_ca4c29b20ce60d::t_aaf197771455ad 166-171
+  s_ca4c29b20ce60d::t_24f31a785c47bb 29,31-38,48-50
+  s_ca4c29b20ce60d::t_871379855fb338 3
+  s_ca4c29b20ce60d::t_0d541745e49df5 52-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "eed670712ce0b26d053dcad253b81577ea28fb36",
+  "prompts": {},
+  "sessions": {
+    "s_ca4c29b20ce60d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f830567f9ffecoZrzv8PBickIZ",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
