@@ -43,7 +43,7 @@ vi.mock('@/config', () => ({
         IN_APP_CAMERA_DOCS_URL: 'https://docs.example/in-app-camera'
     }
 }));
-vi.mock('@/config/strings', () => ({ STRINGS: { en: { labels: { wait: 'wait' } } } }));
+vi.mock('@/config/strings', () => ({ STRINGS: { en: { labels: { wait: 'wait', saving: 'saving', unknown_error: 'unknown error' } } } }));
 vi.mock('@capacitor/core', () => ({ Capacitor: { convertFileSrc: vi.fn((s) => s) } }));
 vi.mock('@capacitor/camera', () => ({ Camera: { getPhoto: vi.fn() }, CameraResultType: { Uri: 'uri' }, CameraSource: { Photos: 'photos', Camera: 'camera' } }));
 vi.mock('@capgo/camera-preview', () => ({ CameraPreview: cameraPreviewMock }));
@@ -73,8 +73,8 @@ function makeArgs(action = 'camera') {
     return { media, entryUuid, state, filename: '', action };
 }
 
-function setupModalPresent({ sourcePath = '/source.jpg' } = {}) {
-    const dismissPromise = Promise.resolve({ data: sourcePath ? { sourcePath } : undefined });
+function setupModalPresent({ sourcePath = '/source.jpg', gpsFallback = false } = {}) {
+    const dismissPromise = Promise.resolve({ data: sourcePath ? { sourcePath, gpsFallback } : undefined });
     modalMock.create.mockResolvedValue({
         present: modalMock.present.mockResolvedValue(undefined),
         onDidDismiss: modalMock.onDidDismiss.mockReturnValue(dismissPromise)
@@ -153,12 +153,59 @@ describe('photoTake tests', () => {
             })
         );
         expect(Camera.getPhoto).not.toHaveBeenCalled();
-        expect(nMock.startForegroundService).not.toHaveBeenCalled();		expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture.jpg', 'photo_gen.jpg');
+        expect(nMock.startForegroundService).not.toHaveBeenCalled();		expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture.jpg', 'photo_gen.jpg', { stripGps: false });
 		expect(media[entryUuid]['q1'].cached).toBe('photo_gen.jpg');
 		expect(state.answer.answer).toBe('photo_gen.jpg');
 		expect(state.imageSource).toContain('/tmp/photo_gen.jpg');
 		//the modal hands the capture over; photo-take removes it once it has been resized
 		expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/capture.jpg' });
+	});
+
+	it('covers the in-app resize with a dialog and hides it when the thumbnail lands', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: '/capture.jpg' });
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		//resize dialog shown with the existing labels, hiding the slow decode
+		const dialogCall = nMock.showProgressDialog.mock.calls.findIndex((args) => args[0] === 'saving' && args[1] === 'wait');
+		expect(dialogCall).toBeGreaterThanOrEqual(0);
+		//shown before the resize starts, hidden after the thumbnail state is set
+		const dialogOrder = nMock.showProgressDialog.mock.invocationCallOrder[dialogCall];
+		const resizeOrder = resizeMock.resizeToTempDir.mock.invocationCallOrder[0];
+		expect(dialogOrder).toBeLessThan(resizeOrder);
+		const hideOrders = nMock.hideProgressDialog.mock.invocationCallOrder;
+		expect(hideOrders[hideOrders.length - 1]).toBeGreaterThan(resizeOrder);
+		expect(nMock.hideProgressDialog).toHaveBeenLastCalledWith(0);
+		expect(state.imageSource).toContain('/tmp/photo_gen.jpg');
+	});
+
+	it('hides the resize dialog before alerting when the in-app resize fails', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: '/capture.jpg' });
+		resizeMock.resizeToTempDir.mockRejectedValueOnce(new Error('resize boom'));
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		expect(nMock.showAlert).toHaveBeenCalledWith('resize boom');
+		//hide-then-alert ordering, same as the native branch
+		const hideOrders = nMock.hideProgressDialog.mock.invocationCallOrder;
+		const alertOrder = nMock.showAlert.mock.invocationCallOrder[0];
+		expect(hideOrders[hideOrders.length - 1]).toBeLessThan(alertOrder);
+	});
+
+	it('never shows the resize dialog when the in-app modal is dismissed without a capture', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: null });
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		expect(resizeMock.resizeToTempDir).not.toHaveBeenCalled();
+		const dialogCall = nMock.showProgressDialog.mock.calls.findIndex((args) => args[0] === 'saving');
+		expect(dialogCall).toBe(-1);
 	});
 
 	it('resets the answer and cleans up the capture when the in-app resize fails', async () => {
@@ -169,7 +216,7 @@ describe('photoTake tests', () => {
 
 		await photoTake({ media, entryUuid, state, filename, action });
 
-		expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture.jpg', 'photo_gen.jpg');
+		expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture.jpg', 'photo_gen.jpg', { stripGps: false });
 		expect(media[entryUuid]['q1'].cached).toBe('');
 		expect(state.answer.answer).toBe('');
 		expect(nMock.showAlert).toHaveBeenCalledWith('resize boom');
@@ -276,9 +323,22 @@ describe('photoTake tests', () => {
         await photoTake({ media, entryUuid, state, filename, action });
 
         expect(utilsMock.generateMediaFilename).not.toHaveBeenCalled();
-        expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture2.jpg', 'cached1.jpg');
+        expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture2.jpg', 'cached1.jpg', { stripGps: false });
         expect(media[entryUuid]['q1'].cached).toBe('cached1.jpg');
         expect(state.answer.answer).toBe('cached1.jpg');
+    });
+
+    it('strips GPS downstream when the modal hands off a location-denied capture', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '/capture.jpg', gpsFallback: true });
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        //denied location: no GPS in the output, every other tag kept by the service
+        expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture.jpg', 'photo_gen.jpg', { stripGps: true });
+        expect(media[entryUuid]['q1'].cached).toBe('photo_gen.jpg');
+        expect(state.answer.answer).toBe('photo_gen.jpg');
     });
 
     it('guards the EntriesAdd back handler while the camera modal is open', async () => {

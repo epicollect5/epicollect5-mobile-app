@@ -98,7 +98,12 @@ export default {
 			flashMode: 'off',
 			//devices with no flash unit report only 'off', in which case the button is hidden
 			flashSupported: false,
-			torchSupported: false
+			torchSupported: false,
+			//the plugin has no matching position getter: track the requested side
+			//ourselves so the flash toggle and foreground restarts follow the
+			//camera the user actually sees (the native switch may settle after
+			//flip() resolves, so a fresh bridge read can still report the old side)
+			cameraPosition: 'rear'
 		});
 
 		let sourcePath = null;
@@ -125,6 +130,24 @@ export default {
 		//checks it after every awaited step and releases the native session
 		//instead of marking state on the destroyed modal
 		let tornDown = false;
+		//native flash reads are unordered: a slow response from the pre-flip
+		//camera must never overwrite a newer sync. Only the most recently
+		//issued _syncFlashMode for the still-active camera side may write
+		//state; older or side-mismatched reads bail out
+		let flashSyncToken = 0;
+		//rapid taps must not overlap a switch still in flight: a second flip
+		//issued while the first has not settled toggles the tracked side
+		//against unordered native resolutions, leaving the feed and the flash
+		//toggle out of step (rear camera, no flash toggle). The in-flight tap
+		//wins; taps landing mid-flight are dropped, never queued. Same for the
+		//flash toggle: overlapping toggles read the same pre-toggle mode and
+		//both apply it, so a double tap would end where it started
+		let flipInProgress = false;
+		let flashInProgress = false;
+		//the overlay element, captured lazily once the modal is presented: later
+		//canDismiss mutations must land on this modal, never on another overlay
+		//resolved afterwards (e.g. a failure alert shown on top of it)
+		let modalOverlay = null;
 
 		const computedScope = {
 			//video mode hides the flip/flash controls (recording keeps the shutter as
@@ -247,6 +270,9 @@ export default {
 					lockAndroidOrientation: true
 				};
 			}
+			//startOptions is built once but reused on foreground restarts: always
+			//restart the side the user flipped to, not the initial rear default
+			startOptions.position = state.cameraPosition;
 			await CameraPreview.start(startOptions);
 			if (tornDown) {
 				await _forceStopPlugin();
@@ -281,13 +307,29 @@ export default {
 
 		async function _syncFlashMode() {
 			//which modes the active (rear) camera supports: off, on, auto, torch
+			//bridge reads are unordered: a slow response from the pre-flip camera
+			//must never overwrite a newer sync. Only the most recently issued sync
+			//for the currently active side may write state; older or mismatched
+			//reads bail out (a newer flip skips its own sync on the front side)
+			const issued = ++flashSyncToken;
+			const issuedPosition = state.cameraPosition;
+			const isStale = () => tornDown || issued !== flashSyncToken || state.cameraPosition !== issuedPosition;
 			try {
 				const { result } = await CameraPreview.getSupportedFlashModes();
+				//a newer sync (flip/retry/restart) superseded this read, the side
+				//changed meanwhile, or teardown began: never apply a stale
+				//response to the live toggle
+				if (isStale()) {
+					return;
+				}
 				const supported = result || [];
 				state.torchSupported = supported.includes('torch');
 				state.flashSupported = state.torchSupported || supported.includes('on');
 			} catch (error) {
 				console.log('CameraPreview.getSupportedFlashModes failed: ' + error);
+				if (isStale()) {
+					return;
+				}
 				state.torchSupported = false;
 				state.flashSupported = false;
 				return;
@@ -295,6 +337,9 @@ export default {
 			//reflect the actual native state (e.g. after a flip the camera may reset it)
 			try {
 				const { flashMode } = await CameraPreview.getFlashMode();
+				if (isStale()) {
+					return;
+				}
 				state.flashMode = flashMode || 'off';
 			} catch (error) {
 				console.log('CameraPreview.getFlashMode failed: ' + error);
@@ -302,9 +347,10 @@ export default {
 		}
 
 		async function toggleFlash() {
-			if (!state.started || !state.flashSupported) {
+			if (!state.started || !state.flashSupported || flashInProgress) {
 				return;
 			}
+			flashInProgress = true;
 			const target = state.flashMode === 'off'
 				? (state.torchSupported ? 'torch' : 'on')
 				: 'off';
@@ -313,6 +359,8 @@ export default {
 				state.flashMode = target;
 			} catch (error) {
 				console.log('CameraPreview.setFlashMode failed: ' + error);
+			} finally {
+				flashInProgress = false;
 			}
 		}
 
@@ -341,6 +389,16 @@ export default {
 			sourcePath = null;
 		}
 
+		//the plugin rejects the whole capture when location is denied, restricted,
+		//or disabled (e.g. "Location permission denied", "Location services are
+		//disabled"): match those states so capture() can retry GPS-less. A retry
+		//on a non-location failure is harmless (it fails the same way), but the
+		//match keeps the extra bridge call off the genuine camera-error path
+		function _isLocationError(error) {
+			const message = error && typeof error.message === 'string' ? error.message : String(error);
+			return message.toLowerCase().includes('location');
+		}
+
 		async function capture() {
 			if (state.capturing || !state.started) {
 				return;
@@ -352,20 +410,48 @@ export default {
 				state.flash = false;
 			}, 250);
 			try {
-				//the resize step outputs 1024x768 landscape or 768x1024 portrait
-				//based on the decoded bitmap orientation (server accepts only
-				//those two sizes)
-				const result = await CameraPreview.capture({
-					width: 1024,
-					height: 768,
-					quality: 85,
-					format: 'jpeg'
-				});
+				//capture large and downscale once in the resize step (same shape as
+				//the native system-camera flow): the width/height box only bounds
+				//the output, the plugin still captures from the full sensor
+				//pipeline, so the single high-quality downscale to 1024x768
+				//landscape or 768x1024 portrait (server accepts only those two
+				//sizes) works from real detail instead of re-encoding a small file
+				const captureOptions = {
+					width: 2048,
+					height: 1536,
+					quality: 90,
+					format: 'jpeg',
+					//embed GPS in the source EXIF when permitted: the resize step
+					//copies it into the output (native parity; best-effort).
+					//photoQualityPrioritization is iOS-only: the in-app camera is
+					//Android-only, so passing it would be a no-op
+					withExifLocation: true
+				};
+				let result;
+				//tracks whether the capture fell back GPS-less (location denied):
+				//photo-take strips any GPS tags from the output while keeping
+				//every other tag, instead of trusting the denied-state source
+				let gpsFallback = false;
+				try {
+					result = await CameraPreview.capture(captureOptions);
+				} catch (error) {
+					//GPS is best-effort: the plugin rejects the whole capture when
+					//location is denied, restricted, or disabled, so fall back to
+					//a GPS-less capture instead of failing the photo. Exactly one
+					//retry, flag off: a non-location failure rethrows below
+					if (!_isLocationError(error)) {
+						throw error;
+					}
+					console.log('CameraPreview.capture without GPS after location failure: ' + error);
+					const { withExifLocation: _dropped, ...retryOptions } = captureOptions;
+					result = await CameraPreview.capture(retryOptions);
+					gpsFallback = true;
+				}
 				sourcePath = result.value;
 				//hand the file to the caller; photo-take deletes it after resizing
 				sourceHandedOff = true;
 				await _stop();
-				modalController.dismiss({ sourcePath });
+				modalController.dismiss({ sourcePath, gpsFallback });
 			} catch (error) {
 				console.log('CameraPreview.capture failed: ' + error);
 				state.capturing = false;
@@ -373,6 +459,23 @@ export default {
 		}
 
 		//=== video recording ===
+
+		//Ionic consults canDismiss for every dismissal path, hardware back
+		//button included: false keeps the modal (and the recording) alive on
+		//back presses, true restores the normal cancel behaviour. Programmatic
+		//dismiss() is gated too, so every self-dismiss below restores true first
+		async function _setModalDismissable(dismissable) {
+			try {
+				if (!modalOverlay) {
+					modalOverlay = await modalController.getTop();
+				}
+				if (modalOverlay) {
+					modalOverlay.canDismiss = dismissable;
+				}
+			} catch (error) {
+				console.log('CameraPreview canDismiss update failed: ' + error);
+			}
+		}
 
 		async function startRecording() {
 			if (!state.started || state.recording || state.capturing) {
@@ -382,6 +485,8 @@ export default {
 			try {
 				//no artificial duration/size cap: the user decides when to stop
 				await CameraPreview.startRecordVideo({});
+				//from here a back press must be ignored, not tear the capture down
+				await _setModalDismissable(false);
 			} catch (error) {
 				console.log('CameraPreview.startRecordVideo failed: ' + error);
 				state.recording = false;
@@ -397,6 +502,9 @@ export default {
 			sourcePath = videoFilePath;
 			//hand the file to the caller; video-shoot owns it from here on
 			sourceHandedOff = true;
+			//the recording is over: back presses may dismiss again, and the
+			//programmatic dismiss below is gated by canDismiss too
+			await _setModalDismissable(true);
 			await _stop();
 			modalController.dismiss({ videoFilePath });
 		}
@@ -420,6 +528,9 @@ export default {
 				//keeps the existing media). While backgrounded the modal must stay
 				//up for feed recovery, so alert and dismiss in the foreground only
 				if (!appInactive) {
+					//restore dismissal before alerting: the alert is another
+					//overlay, and the empty dismiss below is gated by canDismiss
+					await _setModalDismissable(true);
 					try {
 						await notificationService.showAlert(error.message || labels.unknown_error, labels.error);
 					} catch (alertError) {
@@ -431,12 +542,16 @@ export default {
 		}
 
 		//stop an in-progress recording and discard its partial file (user cancelled
-		//via ✕ or the Android back button), so the plugin cache does not accumulate
+		//via ✕: back presses are blocked while recording), so the plugin cache
+		//does not accumulate
 		async function _abortRecording() {
 			if (!state.recording) {
 				return;
 			}
 			state.recording = false;
+			//the recording is over: back presses may dismiss again, and the
+			//dismiss in dismiss()/unmount is gated by canDismiss too
+			await _setModalDismissable(true);
 			try {
 				const { videoFilePath } = await CameraPreview.stopRecordVideo();
 				if (videoFilePath) {
@@ -465,15 +580,31 @@ export default {
 		}
 
 		async function flip() {
-			if (!state.started) {
+			if (!state.started || flipInProgress) {
 				return;
 			}
+			flipInProgress = true;
 			try {
 				await CameraPreview.flip();
-				//flash availability/mode may differ on the front camera, re-sync the toggle
+				//remember the requested side: the plugin has no matching position
+				//getter and the native switch may settle after this call resolves,
+				//so a bridge read issued now can still report the pre-flip camera
+				state.cameraPosition = state.cameraPosition === 'rear' ? 'front' : 'rear';
+				//the plugin exposes no front flash (devices report only 'off'):
+				//hide the toggle deterministically instead of trusting a
+				//possibly-stale bridge read — no sync call on the front side
+				if (state.cameraPosition === 'front') {
+					state.flashSupported = false;
+					state.torchSupported = false;
+					state.flashMode = 'off';
+					return;
+				}
+				//flash availability/mode may differ on the rear camera, re-sync the toggle
 				await _syncFlashMode();
 			} catch (error) {
 				console.log('CameraPreview.flip failed: ' + error);
+			} finally {
+				flipInProgress = false;
 			}
 		}
 
@@ -598,8 +729,9 @@ export default {
 				clearTimeout(flashTimer);
 				flashTimer = null;
 			}
-			//the Android back button can unmount the modal while a video is recording:
-			//stop the recording and discard the partial file, same as the ✕ path
+			//safety net: a recording still running at unmount (canDismiss blocks
+			//back presses while recording, and ✕ aborts first) is stopped and
+			//its partial file discarded, same as the ✕ path
 			if (computedScope.isVideoMode.value) {
 				await _abortRecording();
 			}

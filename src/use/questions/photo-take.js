@@ -151,12 +151,21 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                 //them instead of dropping the existing photo from the entry
                 const previousCached = media[entryUuid][state.inputDetails.ref].cached;
                 const previousAnswer = state.answer.answer;
+                //cover the resize below: with large captures the decode/downscale
+                //takes a moment, and the modal (with its own feedback) is already
+                //gone. Single owner: shown here, hidden after the thumbnail lands
+                //or before the failure alert, so it can never strand
+                await notificationService.showProgressDialog(labels.saving, labels.wait);
                 try {
-                    await resizePhotoService.resizeToTempDir(data.sourcePath, filename);
+                    //location denied at capture: strip any GPS tags from the output
+                    //while keeping every other tag (granted captures keep lat/long)
+                    await resizePhotoService.resizeToTempDir(data.sourcePath, filename, { stripGps: data.gpsFallback === true });
                     media[entryUuid][state.inputDetails.ref].cached = filename;
                     state.answer.answer = filename;
                     //show the captured photo on the question view
                     _loadImageOnView(tempDir + filename);
+                    //thumbnail state is set synchronously above: dismiss the dialog
+                    await notificationService.hideProgressDialog(0);
                 } catch (error) {
                     console.log(error);
                     //the replacement photo could not be processed: track it, the
@@ -171,6 +180,9 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                     //entry save never points at a missing file)
                     media[entryUuid][state.inputDetails.ref].cached = previousCached;
                     state.answer.answer = previousAnswer;
+                    //dismiss the resize dialog before alerting (same hide-then-alert
+                    //ordering as the native branch)
+                    await notificationService.hideProgressDialog(0);
                     await notificationService.showAlert(error.message || labels.unknown_error);
                 } finally {
                     //the modal hands the capture over without deleting it (the resize read

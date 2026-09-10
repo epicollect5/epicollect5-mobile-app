@@ -29,7 +29,8 @@ const mocks = vi.hoisted(() => {
 		addListener: vi.fn()
 	};
 	const modalController = {
-		dismiss: vi.fn()
+		dismiss: vi.fn(),
+		getTop: vi.fn()
 	};
 	return { cameraPreview, filesystem, capacitorApp, modalController };
 });
@@ -101,6 +102,7 @@ function grantPermissions({ camera = 'granted', microphone = 'granted', flashMod
 	mocks.cameraPreview.stopRecordVideo.mockResolvedValue({ videoFilePath: '/rec.mp4' });
 	mocks.cameraPreview.addListener.mockResolvedValue({ remove: vi.fn() });
 	mocks.capacitorApp.addListener.mockResolvedValue({ remove: vi.fn() });
+	mocks.modalController.getTop.mockResolvedValue(null);
 	mocks.filesystem.readdir.mockResolvedValue({ files: [] });
 	mocks.filesystem.deleteFile.mockResolvedValue();
 }
@@ -230,19 +232,176 @@ describe('ModalCameraPreview component', () => {
 		expect(mocks.cameraPreview.setFlashMode).not.toHaveBeenCalled();
 	});
 
-	it('flips to the front camera and re-syncs flash support for it', async () => {
+	it('flips to the front camera and hides the flash toggle deterministically', async () => {
 		grantPermissions({ flashModes: ['off', 'on', 'auto', 'torch'] });
 		const wrapper = shallowMount(ModalCameraPreview);
 		await flushPromises();
 
-		//the front camera on this device reports no flash support
-		mocks.cameraPreview.getSupportedFlashModes.mockResolvedValue({ result: ['off'] });
+		expect(wrapper.vm.state.cameraPosition).toBe('rear');
+		expect(wrapper.vm.state.flashSupported).toBe(true);
+
+		//the native switch may settle after flip() resolves, so a bridge read
+		//issued now can still report the pre-flip camera: the front side hides
+		//the toggle without asking the bridge
+		mocks.cameraPreview.getSupportedFlashModes.mockClear();
 		await wrapper.vm.flip();
 
 		expect(mocks.cameraPreview.flip).toHaveBeenCalled();
-		//front cameras usually lack a flash unit; the toggle must adapt after the flip
-		expect(mocks.cameraPreview.getSupportedFlashModes).toHaveBeenCalledTimes(2);
+		expect(wrapper.vm.state.cameraPosition).toBe('front');
+		expect(mocks.cameraPreview.getSupportedFlashModes).not.toHaveBeenCalled();
 		expect(wrapper.vm.state.flashSupported).toBe(false);
+		expect(wrapper.vm.state.torchSupported).toBe(false);
+		expect(wrapper.vm.state.flashMode).toBe('off');
+
+		//flipping back to the rear camera re-syncs its flash support from the bridge
+		mocks.cameraPreview.getSupportedFlashModes.mockResolvedValue({ result: ['off', 'on', 'auto', 'torch'] });
+		await wrapper.vm.flip();
+
+		expect(wrapper.vm.state.cameraPosition).toBe('rear');
+		expect(mocks.cameraPreview.getSupportedFlashModes).toHaveBeenCalledTimes(1);
+		expect(wrapper.vm.state.flashSupported).toBe(true);
+	});
+
+	it('ignores a flip tapped while another flip is still in flight', async () => {
+		grantPermissions({ flashModes: ['off', 'on', 'auto', 'torch'] });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		//first flip parked mid-flight on the native bridge
+		let resolveFlip;
+		mocks.cameraPreview.flip.mockReturnValueOnce(
+			new Promise((resolve) => { resolveFlip = resolve; })
+		);
+		const firstFlip = wrapper.vm.flip();
+		await flushPromises();
+		//second tap lands while the first is still switching: dropped, not queued
+		await wrapper.vm.flip();
+		expect(mocks.cameraPreview.flip).toHaveBeenCalledTimes(1);
+
+		resolveFlip();
+		await firstFlip;
+		await flushPromises();
+		expect(wrapper.vm.state.cameraPosition).toBe('front');
+		expect(wrapper.vm.state.flashSupported).toBe(false);
+
+		//the guard resets once settled: the next tap flips back to the rear camera
+		await wrapper.vm.flip();
+		expect(wrapper.vm.state.cameraPosition).toBe('rear');
+		expect(wrapper.vm.state.flashSupported).toBe(true);
+	});
+
+	it('ignores a flash toggle tapped while another toggle is still in flight', async () => {
+		grantPermissions({ flashModes: ['off', 'on', 'auto', 'torch'] });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		//first toggle parked mid-flight on the native bridge
+		let resolveToggle;
+		mocks.cameraPreview.setFlashMode.mockReturnValueOnce(
+			new Promise((resolve) => { resolveToggle = resolve; })
+		);
+		const firstToggle = wrapper.vm.toggleFlash();
+		await flushPromises();
+		//second tap lands while the first is still switching: dropped, not queued
+		await wrapper.vm.toggleFlash();
+		expect(mocks.cameraPreview.setFlashMode).toHaveBeenCalledTimes(1);
+
+		resolveToggle();
+		await firstToggle;
+		await flushPromises();
+		expect(wrapper.vm.state.flashMode).toBe('torch');
+
+		//the guard resets once settled: the next tap switches the flash back off
+		await wrapper.vm.toggleFlash();
+		expect(mocks.cameraPreview.setFlashMode).toHaveBeenCalledTimes(2);
+		expect(mocks.cameraPreview.setFlashMode).toHaveBeenLastCalledWith({ flashMode: 'off' });
+		expect(wrapper.vm.state.flashMode).toBe('off');
+	});
+
+	it('ignores a stale rear-camera flash read that lands after a front flip during restart', async () => {
+		grantPermissions({ flashModes: ['off', 'on', 'auto', 'torch'] });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+		expect(wrapper.vm.state.flashSupported).toBe(true);
+
+		//foreground restart issues a rear-camera sync whose bridge read lands late
+		let resolveStale;
+		mocks.cameraPreview.getSupportedFlashModes.mockReturnValueOnce(
+			new Promise((resolve) => { resolveStale = resolve; })
+		);
+		await listener({ isActive: false });
+		await flushPromises();
+		const foreground = listener({ isActive: true });
+		await flushPromises();
+		//restart parked at the deferred bridge read; the camera is up on the rear side
+		expect(wrapper.vm.state.started).toBe(true);
+
+		//the user flips to the front camera before the rear read lands
+		await wrapper.vm.flip();
+		expect(wrapper.vm.state.cameraPosition).toBe('front');
+		expect(wrapper.vm.state.flashSupported).toBe(false);
+
+		//the stale rear-camera response arrives with flash support...
+		resolveStale({ result: ['off', 'on', 'auto', 'torch'] });
+		await foreground;
+		await flushPromises();
+		//...and must not resurrect the flash toggle on the front camera
+		expect(wrapper.vm.state.flashSupported).toBe(false);
+		expect(wrapper.vm.state.torchSupported).toBe(false);
+	});
+
+	it('ignores an older flash read when a restart sync supersedes it', async () => {
+		grantPermissions({ flashModes: ['off', 'on', 'auto', 'torch'] });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+
+		//flip to the front camera, then back to the rear with a late bridge read
+		await wrapper.vm.flip();
+		let resolveStale;
+		mocks.cameraPreview.getSupportedFlashModes.mockReturnValueOnce(
+			new Promise((resolve) => { resolveStale = resolve; })
+		);
+		const rearFlip = wrapper.vm.flip();
+		await flushPromises();
+		expect(wrapper.vm.state.cameraPosition).toBe('rear');
+
+		//background/foreground runs a newer sync that reports no flash support
+		mocks.cameraPreview.getSupportedFlashModes.mockResolvedValue({ result: ['off'] });
+		await listener({ isActive: false });
+		await flushPromises();
+		await listener({ isActive: true });
+		await flushPromises();
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(2);
+		expect(wrapper.vm.state.flashSupported).toBe(false);
+
+		//the older rear read lands last with flash support and must be ignored
+		resolveStale({ result: ['off', 'on', 'auto', 'torch'] });
+		await rearFlip;
+		await flushPromises();
+		expect(wrapper.vm.state.flashSupported).toBe(false);
+		expect(wrapper.vm.state.torchSupported).toBe(false);
+	});
+
+	it('restarts the flipped side after backgrounding instead of reverting to rear', async () => {
+		grantPermissions({ flashModes: ['off', 'on', 'auto', 'torch'] });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		await wrapper.vm.flip();
+		expect(wrapper.vm.state.cameraPosition).toBe('front');
+
+		mocks.cameraPreview.start.mockClear();
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+		await listener({ isActive: false });
+		await flushPromises();
+		await listener({ isActive: true });
+		await flushPromises();
+
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.start).toHaveBeenCalledWith(expect.objectContaining({ position: 'front' }));
+		expect(wrapper.vm.state.cameraPosition).toBe('front');
 	});
 
 	it('captures a photo, stops the camera and hands the file to the caller', async () => {
@@ -255,20 +414,65 @@ describe('ModalCameraPreview component', () => {
 		await flushPromises();
 
 		expect(mocks.cameraPreview.capture).toHaveBeenCalledWith({
-			width: 1024,
-			height: 768,
-			quality: 85,
-			format: 'jpeg'
+			//capture large and downscale once downstream (native parity): the
+			//box only bounds the output, the sensor pipeline stays full-res
+			width: 2048,
+			height: 1536,
+			quality: 90,
+			format: 'jpeg',
+			//GPS lands in the source EXIF; the resize step copies it over.
+			//photoQualityPrioritization stays out: iOS-only, no-op on Android
+			withExifLocation: true
 		});
 		expect(mocks.cameraPreview.stop).toHaveBeenCalledWith({ force: true });
 		expect(wrapper.vm.state.started).toBe(false);
-		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg' });
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: false });
 
 		//unmounting the modal (which is what happens when photo-take resumes and resizes
 		//the photo) must not delete the handed-off file: photo-take owns it now
 		wrapper.unmount();
 		await flushPromises();
 		expect(mocks.cameraPreview.deleteFile).not.toHaveBeenCalled();
+	});
+
+	it('retries without GPS when location denial rejects the capture', async () => {
+		grantPermissions();
+		//the plugin fails closed on location denial: first attempt rejects
+		mocks.cameraPreview.capture.mockRejectedValueOnce(new Error('Location permission denied'));
+		mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		await wrapper.vm.capture();
+		await flushPromises();
+
+		//exactly one retry, GPS flag off: the photo still captures, only EXIF GPS is skipped
+		expect(mocks.cameraPreview.capture).toHaveBeenCalledTimes(2);
+		expect(mocks.cameraPreview.capture.mock.calls[0][0].withExifLocation).toBe(true);
+		expect(mocks.cameraPreview.capture.mock.calls[1][0].withExifLocation).toBeUndefined();
+		expect(mocks.cameraPreview.capture.mock.calls[1][0]).toEqual(expect.objectContaining({
+			width: 2048,
+			height: 1536,
+			quality: 90,
+			format: 'jpeg'
+		}));
+		//the hand-off flags the GPS fallback so photo-take strips GPS tags downstream
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: true });
+		expect(wrapper.vm.state.started).toBe(false);
+	});
+
+	it('does not retry a non-location capture failure', async () => {
+		grantPermissions();
+		mocks.cameraPreview.capture.mockRejectedValue(new Error('camera busy'));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		await wrapper.vm.capture();
+		await flushPromises();
+
+		expect(mocks.cameraPreview.capture).toHaveBeenCalledTimes(1);
+		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+		expect(wrapper.vm.state.capturing).toBe(false);
 	});
 
 	it('recovers from a failed capture without dismissing the modal', async () => {
@@ -511,6 +715,65 @@ describe('ModalCameraPreview component', () => {
 		wrapper.unmount();
 		await flushPromises();
 		expect(mocks.cameraPreview.deleteFile).not.toHaveBeenCalled();
+	});
+
+	it('blocks dismissal while recording so the back button is ignored, and restores it on stop', async () => {
+		grantPermissions();
+		const overlay = {};
+		mocks.modalController.getTop.mockResolvedValue(overlay);
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+		//Ionic consults canDismiss for hardware-back dismissal too: false keeps
+		//the modal (and the recording) alive on back presses
+		expect(overlay.canDismiss).toBe(false);
+
+		//second shutter press stops the recording and hands the file off
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(false);
+		//restored before the programmatic dismiss below (dismiss is gated too)
+		expect(overlay.canDismiss).toBe(true);
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ videoFilePath: '/rec.mp4' });
+	});
+
+	it('restores dismissal when the modal is closed while recording', async () => {
+		grantPermissions();
+		const overlay = {};
+		mocks.modalController.getTop.mockResolvedValue(overlay);
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(overlay.canDismiss).toBe(false);
+
+		//✕ while recording: the partial file is discarded and dismissal restored
+		await wrapper.vm.dismiss();
+		await flushPromises();
+		expect(overlay.canDismiss).toBe(true);
+		expect(mocks.modalController.dismiss).toHaveBeenCalled();
+		expect(mocks.cameraPreview.deleteFile).toHaveBeenCalled();
+	});
+
+	it('keeps recording when the overlay cannot be resolved', async () => {
+		grantPermissions();
+		mocks.modalController.getTop.mockResolvedValue(null);
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		//no overlay to mutate: the recording still starts, nothing throws
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(false);
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ videoFilePath: '/rec.mp4' });
 	});
 
 	it('video mode completes the hand-off when the native session stops the recording itself', async () => {

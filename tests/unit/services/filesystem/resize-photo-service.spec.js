@@ -197,6 +197,195 @@ describe('resizePhotoService', () => {
             }
         });
 
+        it('downscales with high smoothing quality to keep source detail', async () => {
+            const { canvas, getContext } = mockCanvas();
+            const originalCreateElement = document.createElement;
+            vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+                if (tag === 'canvas') {
+                    return canvas;
+                }
+                return originalCreateElement.call(document, tag);
+            });
+
+            const originalCreateImageBitmap = globalThis.createImageBitmap;
+            globalThis.createImageBitmap = vi.fn().mockResolvedValue(mockBitmap(4032, 3024));
+            getBase64FromFilePath.mockResolvedValue('BASE64DATA');
+
+            const originalFileReader = globalThis.FileReader;
+            class MockFileReader {
+                constructor() {
+                    this.onloadend = null;
+                    this.onerror = null;
+                }
+                readAsDataURL(_blob) {
+                    this.result = 'data:image/jpeg;base64,READBASE64';
+                    if (this.onloadend) {
+                        this.onloadend();
+                    }
+                }
+            }
+            globalThis.FileReader = MockFileReader;
+
+            try {
+                await resizePhotoService.resizeToTempDir('/source.jpg', 'photo.jpg');
+
+                //single high-quality downscale from the large capture (canvas
+                //default smoothing is 'low', which softens detail)
+                const ctx = getContext.mock.results[0].value;
+                expect(ctx.imageSmoothingEnabled).toBe(true);
+                expect(ctx.imageSmoothingQuality).toBe('high');
+            } finally {
+                globalThis.createImageBitmap = originalCreateImageBitmap;
+                globalThis.FileReader = originalFileReader;
+                document.createElement.mockRestore && document.createElement.mockRestore();
+            }
+        });
+
+        it('carries the source EXIF into the written file with orientation normalized', async () => {
+            //minimal source JPEG: APP1 Exif, orientation 6, one GPS entry
+            const tiff = [
+                0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00,
+                0x02, 0x00,
+                0x12, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00,
+                0x25, 0x88, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x26, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00,
+                0x01, 0x00,
+                0x01, 0x00, 0x02, 0x00, 0x02, 0x00, 0x00, 0x00, 0x4e, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00
+            ];
+            const exifHeader = [0x45, 0x78, 0x69, 0x66, 0x00, 0x00];
+            const app1Value = [...exifHeader, ...tiff];
+            const sourceBytes = [0xff, 0xd8, 0xff, 0xe1, (app1Value.length + 2) >> 8, (app1Value.length + 2) & 0xff, ...app1Value, 0xff, 0xd9];
+            const toBase64 = (values) => btoa(values.map((b) => String.fromCharCode(b)).join(''));
+            getBase64FromFilePath.mockResolvedValue(toBase64(sourceBytes));
+
+            //canvas export: minimal EXIF-less JPEG
+            const plainBytes = [0xff, 0xd8, 0xff, 0xd9];
+
+            const { canvas } = mockCanvas();
+            const originalCreateElement = document.createElement;
+            vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+                if (tag === 'canvas') {
+                    return canvas;
+                }
+                return originalCreateElement.call(document, tag);
+            });
+
+            const originalCreateImageBitmap = globalThis.createImageBitmap;
+            globalThis.createImageBitmap = vi.fn().mockResolvedValue(mockBitmap(4032, 3024));
+
+            const originalFileReader = globalThis.FileReader;
+            const plainDataUrl = 'data:image/jpeg;base64,' + toBase64(plainBytes);
+            class MockFileReader {
+                constructor() {
+                    this.onloadend = null;
+                    this.onerror = null;
+                }
+                readAsDataURL(_blob) {
+                    this.result = plainDataUrl;
+                    if (this.onloadend) {
+                        this.onloadend();
+                    }
+                }
+            }
+            globalThis.FileReader = MockFileReader;
+
+            try {
+                await resizePhotoService.resizeToTempDir('/source.jpg', 'photo.jpg');
+
+                const written = Filesystem.writeFile.mock.calls[0][0];
+                expect(written.path).toBe('/tmp/photo.jpg');
+                const writtenBytes = [...atob(written.data)].map((c) => c.charCodeAt(0));
+                //fresh APP1 Exif segment present (not the EXIF-less canvas output)
+                expect(writtenBytes.length).toBeGreaterThan(plainBytes.length);
+                //GPS latitude-ref entry survived verbatim
+                const gpsEntry = [0x01, 0x00, 0x02, 0x00, 0x02, 0x00, 0x00, 0x00, 0x4e];
+                const gpsAt = writtenBytes.findIndex((_, i) => gpsEntry.every((b, j) => writtenBytes[i + j] === b));
+                expect(gpsAt).toBeGreaterThan(-1);
+                //orientation normalized to 1 (pixels already baked upright)
+                const app1At = writtenBytes.findIndex((_, i) => writtenBytes[i] === 0xff && writtenBytes[i + 1] === 0xe1);
+                const tiffStart = app1At + 4 + 6;
+                const orientation = writtenBytes[tiffStart + 18] | (writtenBytes[tiffStart + 19] << 8);
+                expect(orientation).toBe(1);
+            } finally {
+                globalThis.createImageBitmap = originalCreateImageBitmap;
+                globalThis.FileReader = originalFileReader;
+                document.createElement.mockRestore && document.createElement.mockRestore();
+            }
+        });
+
+        it('strips GPS with stripGps while keeping the remaining EXIF', async () => {
+            //same source fixture: APP1 Exif, orientation 6, one GPS entry
+            const tiff = [
+                0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00,
+                0x02, 0x00,
+                0x12, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00,
+                0x25, 0x88, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x26, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00,
+                0x01, 0x00,
+                0x01, 0x00, 0x02, 0x00, 0x02, 0x00, 0x00, 0x00, 0x4e, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00
+            ];
+            const exifHeader = [0x45, 0x78, 0x69, 0x66, 0x00, 0x00];
+            const app1Value = [...exifHeader, ...tiff];
+            const sourceBytes = [0xff, 0xd8, 0xff, 0xe1, (app1Value.length + 2) >> 8, (app1Value.length + 2) & 0xff, ...app1Value, 0xff, 0xd9];
+            const toBase64 = (values) => btoa(values.map((b) => String.fromCharCode(b)).join(''));
+            getBase64FromFilePath.mockResolvedValue(toBase64(sourceBytes));
+
+            const plainBytes = [0xff, 0xd8, 0xff, 0xd9];
+
+            const { canvas } = mockCanvas();
+            const originalCreateElement = document.createElement;
+            vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+                if (tag === 'canvas') {
+                    return canvas;
+                }
+                return originalCreateElement.call(document, tag);
+            });
+
+            const originalCreateImageBitmap = globalThis.createImageBitmap;
+            globalThis.createImageBitmap = vi.fn().mockResolvedValue(mockBitmap(4032, 3024));
+
+            const originalFileReader = globalThis.FileReader;
+            const plainDataUrl = 'data:image/jpeg;base64,' + toBase64(plainBytes);
+            class MockFileReader {
+                constructor() {
+                    this.onloadend = null;
+                    this.onerror = null;
+                }
+                readAsDataURL(_blob) {
+                    this.result = plainDataUrl;
+                    if (this.onloadend) {
+                        this.onloadend();
+                    }
+                }
+            }
+            globalThis.FileReader = MockFileReader;
+
+            try {
+                //location denied at capture: GPS stripped, other tags kept
+                await resizePhotoService.resizeToTempDir('/source.jpg', 'photo.jpg', { stripGps: true });
+
+                const written = Filesystem.writeFile.mock.calls[0][0];
+                const writtenBytes = [...atob(written.data)].map((c) => c.charCodeAt(0));
+                //APP1 still present (remaining tags carried over)
+                const app1At = writtenBytes.findIndex((_, i) => writtenBytes[i] === 0xff && writtenBytes[i + 1] === 0xe1);
+                expect(app1At).toBeGreaterThan(-1);
+                const tiffStart = app1At + 4 + 6;
+                //orientation still normalized
+                const orientation = writtenBytes[tiffStart + 18] | (writtenBytes[tiffStart + 19] << 8);
+                expect(orientation).toBe(1);
+                //GPS latitude-ref entry gone
+                const gpsEntry = [0x01, 0x00, 0x02, 0x00, 0x02, 0x00, 0x00, 0x00, 0x4e];
+                const gpsAt = writtenBytes.findIndex((_, i) => gpsEntry.every((b, j) => writtenBytes[i + j] === b));
+                expect(gpsAt).toBe(-1);
+            } finally {
+                globalThis.createImageBitmap = originalCreateImageBitmap;
+                globalThis.FileReader = originalFileReader;
+                document.createElement.mockRestore && document.createElement.mockRestore();
+            }
+        });
+
         it('writes to the temp dir without a directory scope when tempDir is a file:// URI', async () => {
             const rootStore = useRootStore();
             rootStore.tempDir = 'file:///data/user/0/uk.ac.imperial.epicollect.five/files/temp/';

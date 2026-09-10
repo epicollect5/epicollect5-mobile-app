@@ -1,6 +1,7 @@
 import { Filesystem } from '@capacitor/filesystem';
 import { getBase64FromFilePath } from '@capgo/camera-preview';
 import { useRootStore } from '@/stores/root-store';
+import { exifService } from '@/services/filesystem/exif-service';
 
 const TARGET_LONG = 1024;
 const TARGET_SHORT = 768;
@@ -68,9 +69,12 @@ export const resizePhotoService = {
         }
     },
 
-    async resizeToTempDir(sourcePath, filename) {
+    async resizeToTempDir(sourcePath, filename, options) {
         const rootStore = useRootStore();
         const tempDir = rootStore.tempDir;
+        //location denied at capture: the caller asks to strip GPS tags while
+        //keeping every other tag (granted captures keep lat/long)
+        const stripGps = !!options && options.stripGps === true;
 
         //failure diagnostics only: the stage being attempted, source dimensions
         //(once decoded) and input size, attached to the propagating error so
@@ -81,6 +85,9 @@ export const resizePhotoService = {
         let sourceWidth;
         let sourceHeight;
         let base64Length = 0;
+        //whether the source EXIF (GPS included) survived into the output:
+        //diagnostics only, like the fields above
+        let exifCopied = false;
 
         try {
             let base64 = await getBase64FromFilePath(sourcePath);
@@ -94,9 +101,8 @@ export const resizePhotoService = {
             sourceWidth = bitmap.width;
             sourceHeight = bitmap.height;
 
-            //release the large source-side allocations as soon as the bitmap
-            //is decoded; they are unreferenced from here on
-            base64 = null;
+            //release the source blob once the bitmap is decoded; the base64 is
+            //still needed after the canvas export for the EXIF carry-over below
             blob = null;
 
             const { width: targetWidth, height: targetHeight } = _targetDimensions(bitmap.width, bitmap.height);
@@ -105,6 +111,11 @@ export const resizePhotoService = {
             canvas.width = targetWidth;
             canvas.height = targetHeight;
             const ctx = canvas.getContext('2d');
+            //single high-quality downscale from the large capture: 'high'
+            //smoothing matters now that the source carries real detail
+            //(canvas default is 'low')
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
 
             const { drawWidth, drawHeight, offsetX, offsetY } = _coverCropParams(
                 bitmap.width,
@@ -136,6 +147,17 @@ export const resizePhotoService = {
             stage = 'encode';
             const resizedBase64 = await _blobToBase64(resizedBlob);
 
+            //best-effort EXIF carry-over (GPS/orientation parity with the native
+            //flow): the canvas export above ships EXIF-less, so re-attach the
+            //source segment (orientation normalized, thumbnail dropped). Skipped
+            //silently when the source has no usable EXIF: never throws
+            stage = 'exif';
+            const finalBase64 = exifService.copyExifSegment(base64, resizedBase64, { stripGps });
+            //a successful copy always grows the file (fresh APP1 segment)
+            exifCopied = finalBase64.length > resizedBase64.length;
+            //release the source base64 now that EXIF is carried over (or skipped)
+            base64 = null;
+
             //rootStore.tempDir is an absolute file:// URI (e.g. files/temp/ on Android). Do NOT
             //pass a directory here: the Filesystem plugin would treat the full URI as a path
             //relative to that directory (writing into cache/file%3A/...) instead of the temp dir.
@@ -143,7 +165,7 @@ export const resizePhotoService = {
             stage = 'write';
             await Filesystem.writeFile({
                 path: tempDir + filename,
-                data: resizedBase64,
+                data: finalBase64,
                 recursive: true
             });
 
@@ -157,6 +179,8 @@ export const resizePhotoService = {
                     sourceWidth,
                     sourceHeight,
                     base64Length,
+                    exifCopied,
+                    stripGps,
                     heap: resizePhotoService._heapSnapshot()
                 };
             }
