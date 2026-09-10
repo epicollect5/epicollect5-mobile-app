@@ -1,0 +1,30 @@
+src/services/filesystem/exif-service.js
+  s_ec774ba6c6ec1f::t_1fe5c6521e11ca 1-14,16-80,82-91,96-131,135,172-231,233-238,243-263,268,271-276
+  s_ec774ba6c6ec1f::t_eb2c3b24a90fa3 15,92-95
+  s_ec774ba6c6ec1f::t_41569dc706c828 132-134,136-171
+  s_ec774ba6c6ec1f::t_0236f41cee3e30 232,239,264-267,269-270
+  s_ec774ba6c6ec1f::t_804cae699203b0 81,240-242
+tests/unit/services/filesystem/exif-service.spec.js
+  s_ec774ba6c6ec1f::t_6879026929153e 269-270,272-282,291-317
+  s_ec774ba6c6ec1f::t_205afc81a5b2a0 1-100,111-164,166-179,187-268,318-319
+  s_ec774ba6c6ec1f::t_db2a6634f172e8 271,283-290
+  s_ec774ba6c6ec1f::t_8a2fbd000a85f1 107-109
+  s_ec774ba6c6ec1f::t_1afd1f4916d890 101-106,110,165,182,186
+  s_ec774ba6c6ec1f::t_afeaedfdecb9df 180-181,183-185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "dae417b7fe32a3285304b2367d5cc8b7261645b9",
+  "prompts": {},
+  "sessions": {
+    "s_ec774ba6c6ec1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f799b2b09ffeBtwRxOn2WHQS2A",
+        "model": "big-pickle"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
