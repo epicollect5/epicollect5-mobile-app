@@ -1,0 +1,67 @@
+tests/unit/use/questions/photo-take.spec.js
+  s_ec774ba6c6ec1f::t_7d87c5834a2df2 156,219,326
+  s_ec774ba6c6ec1f::t_74d6a4cdc518d5 331-343
+  s_ec774ba6c6ec1f::t_8db1acf5071b5e 46
+  s_ec774ba6c6ec1f::t_e8aabdc9f5c523 164-210
+  s_ec774ba6c6ec1f::t_89e197d5fde00b 76-77
+tests/unit/components/modals/ModalCameraPreview.spec.js
+  s_ec774ba6c6ec1f::t_8ea8ed000ccc3d 459-460
+  s_ec774ba6c6ec1f::t_7d87c5834a2df2 429
+  s_ec774ba6c6ec1f::t_886e6b0a6693b4 105
+  s_ec774ba6c6ec1f::t_9135c6e50d126e 438-458,461-477
+  s_ec774ba6c6ec1f::t_02b21ee3e94440 265,270-277,279-283,286-296,298-328,333,335-338,340,347
+  s_ec774ba6c6ec1f::t_5cc52781a2860f 423-424
+  s_ec774ba6c6ec1f::t_7d57ad8903223d 720-778
+  s_ec774ba6c6ec1f::t_bdf0ea84a11338 417-422,425
+  s_ec774ba6c6ec1f::t_9a2c1c48d4073b 32-33
+  s_ec774ba6c6ec1f::t_269664b9f4df1a 235,240-246,250-264,266-269,278,284,297,329-332,334,339,341-346,348-404
+src/services/filesystem/resize-photo-service.js
+  s_ec774ba6c6ec1f::t_0e696886e90291 155,183
+  s_ec774ba6c6ec1f::t_e6204ef08d3dff 182
+  s_ec774ba6c6ec1f::t_bb5adf8fcda5a7 72,75-77
+  s_ec774ba6c6ec1f::t_6428750dc7deea 104-105,114-118,150-154,156-160,168
+  s_ec774ba6c6ec1f::t_dd1f6bcfcca465 4,88-90
+src/use/questions/photo-take.js
+  s_ec774ba6c6ec1f::t_ecde03ace68964 154-158,167-168
+  s_ec774ba6c6ec1f::t_b905d5731dcc2b 160-162
+  s_ec774ba6c6ec1f::t_c16dfdda4ff223 183-185
+src/components/modals/ModalCameraPreview.vue
+  s_ec774ba6c6ec1f::t_e6faa03eeb5840 431-434,448,454
+  s_ec774ba6c6ec1f::t_2953d57912d839 583,586,606-607
+  s_ec774ba6c6ec1f::t_dec18c7354995d 589-602
+  s_ec774ba6c6ec1f::t_290c393fc76ae5 732-734
+  s_ec774ba6c6ec1f::t_758aee8dc64b6f 413-418,420-424,428
+  s_ec774ba6c6ec1f::t_b86ddd4041e5b1 419,429-430,435-447,449
+  s_ec774ba6c6ec1f::t_8e952e635b8f00 310-313,315-316,319-322,330,340
+  s_ec774ba6c6ec1f::t_8d64d4094a0aed 135-136
+  s_ec774ba6c6ec1f::t_b4a783346e7b5f 425,427
+  s_ec774ba6c6ec1f::t_38a8b19298ec01 273-275,314,323-324,331-332,341-342
+  s_ec774ba6c6ec1f::t_4c9f34d7e3fd37 552-554
+  s_ec774ba6c6ec1f::t_16143240ff9bbb 505-507
+  s_ec774ba6c6ec1f::t_588e9b4c47895f 545-546
+  s_ec774ba6c6ec1f::t_3b82c046ab6fd6 138-146,350,353,362-363
+  s_ec774ba6c6ec1f::t_c653e7c8c1f0df 426
+  s_ec774ba6c6ec1f::t_43b236170b1ad8 392-401
+  s_ec774ba6c6ec1f::t_08fa13fe23da4f 463-479,488-489
+  s_ec774ba6c6ec1f::t_e2eae7ceb26816 101-106,133-134,137
+  s_ec774ba6c6ec1f::t_120394bf71bac2 147-149
+tests/unit/services/filesystem/resize-photo-service.spec.js
+  s_ec774ba6c6ec1f::t_01d2b5e2af6a31 317-388
+  s_ec774ba6c6ec1f::t_c2ce1012d80255 200-316
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f89c2cfbabc4adb2fb2ab5953c3a6a2a9a065513",
+  "prompts": {},
+  "sessions": {
+    "s_ec774ba6c6ec1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f799b2b09ffeBtwRxOn2WHQS2A",
+        "model": "big-pickle"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
