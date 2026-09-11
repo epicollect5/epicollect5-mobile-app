@@ -73,6 +73,7 @@ export const branchEntryService = {
             if (Capacitor.isNativePlatform()) {
                 mediaService.getEntryStoredMedia(self.entry.entryUuid).then(function (response) {
                     self.entry.media = response;
+                    self._dropMediaWithoutAnswers(self.entry);
                     resolve();
                 }, function (error) {
                     console.log(error);
@@ -83,6 +84,7 @@ export const branchEntryService = {
                     // This is a promise to be resolved BEFORE any directive is called
                     mediaService.getEntryStoredMediaPWA(self.entry).then(function (response) {
                         self.entry.media = response;
+                        self._dropMediaWithoutAnswers(self.entry);
                         resolve();
                     }, function (error) {
                         console.log(error);
@@ -98,10 +100,58 @@ export const branchEntryService = {
         });
     },
 
+    //answers are the source of truth for what the reopened form may show: a
+    //blanked answer means its file was queued for deletion at save (removal
+    //itself is deferred to the hierarchy save), so hide it from entry.media
+    //or questions resurrect the thumbnail (and the answer) from the still
+    //present DB row - and a retake would reuse the doomed filename against
+    //the pending deletion. Nothing persistent is touched here (rows, files and
+    //queue all survive until the hierarchy save); only the in-memory display
+    //object is filtered. Missing answers fail open (media kept)
+    _dropMediaWithoutAnswers(entry) {
+        if (!entry || !entry.answers || !entry.media) {
+            return;
+        }
+        Object.keys(entry.media).forEach((uuid) => {
+            const bucket = entry.media[uuid];
+            if (!bucket || typeof bucket !== 'object') {
+                return;
+            }
+            Object.keys(bucket).forEach((inputRef) => {
+                const answer = entry.answers[inputRef];
+                if (answer && answer.answer === '') {
+                    delete bucket[inputRef];
+                }
+            });
+        });
+    },
+
+    //Drop queued stored-file deletions belonging to this branch edit: quitting
+    //a branch discards its changes, so its queued deletions must not reach
+    //the parent save (the file stays, the branch answer keeps pointing at it).
+    //Hierarchy items are preserved (inputRefs are unique project-wide).
+    discardBranchDeleteQueue() {
+        const rootStore = useRootStore();
+        if (rootStore.queueFilesToDelete.length === 0) {
+            return;
+        }
+        const mediaRefs = projectModel.getBranchMediaQuestions(
+            this.entry.formRef,
+            this.entry.ownerInputRef
+        );
+        if (mediaRefs.length === 0) {
+            return;
+        }
+        rootStore.queueFilesToDelete = rootStore.queueFilesToDelete.filter((file) => {
+            return !mediaRefs.includes(file.inputRef);
+        });
+    },
+
     // Save a branch entry
     saveEntry(syncType) {
 
         const self = this;
+        const rootStore = useRootStore();
         self.form = formModel;
 
         self.entry = branchEntryModel;
@@ -118,6 +168,29 @@ export const branchEntryService = {
             function _onError(error) {
                 console.log(error);
                 reject(error);
+            }
+
+            //remove media files answers before saving the entry (temp): a queued
+            //stored deletion blanks the branch answer now, while the file/row
+            //removal itself is deferred to the hierarchy save
+            try {
+                rootStore.queueFilesToDelete.forEach((file) => {
+                    //queue items are scoped to their own entry by inputRef:
+                    //silently skip foreign items (e.g. hierarchy deletions
+                    //pending in the same session)
+                    const answer = self.entry.answers[file.inputRef];
+                    if (!answer) {
+                        return;
+                    }
+                    //if we have a cached file, that will replace the one
+                    //we are deleting, so skip it
+                    if (file.filenameStored === answer.answer) {
+                        answer.answer = '';
+                    }
+                });
+            } catch (error) {
+                _onError(error);
+                return;
             }
 
             // Save the branch entry in the temp table

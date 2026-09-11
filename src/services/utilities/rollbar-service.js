@@ -38,6 +38,26 @@ const rollbar = new Rollbar({
 }
 );
 
+//JSON.stringify throws on circular values, BigInt, or throwing toJSON: fall
+//back so reporting itself never throws and hides the original failure.
+//Functions are capped to a short tag (their source via String(fn) could bloat
+//payloads past Rollbar limits)
+function _safeStringify(value) {
+    if (typeof value === 'function') {
+        return '[Function ' + (value.name || 'anonymous') + ']';
+    }
+    try {
+        const result = JSON.stringify(value);
+        return typeof result === 'string' ? result : String(value);
+    } catch (error) {
+        try {
+            return String(value);
+        } catch (ignored) {
+            return '[unserializable]';
+        }
+    }
+}
+
 export const rollbarService = {
     //imp: edited to avoid memory leaks
     //imp: see https://github.com/rollbar/rollbar.js/issues/1126
@@ -57,6 +77,20 @@ export const rollbarService = {
     },
     critical(error) {
         rollbar.critical(error);
+    },
+    //Shared reporter for caught errors: keeps the existing console.log at the
+    //call site, prefixes the operation context for Rollbar grouping, preserves
+    //the original stack, and wraps plain error objects (eg. File error code 5)
+    //so Rollbar gets a usable report
+    criticalWithContext(context, error) {
+        let reportableError;
+        if (error instanceof Error) {
+            reportableError = new Error(context + ': ' + error.message);
+            reportableError.stack = error.stack;
+        } else {
+            reportableError = new Error(context + ': ' + _safeStringify(error));
+        }
+        rollbar.critical(reportableError);
     },
     configure(params) {
         rollbar.configure(params);

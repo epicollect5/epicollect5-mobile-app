@@ -12,22 +12,57 @@ const nMock = vi.hoisted(() => ({
     showAlert: vi.fn()
 }));
 
+const modalMock = vi.hoisted(() => ({
+    create: vi.fn(),
+    present: vi.fn(),
+    onDidDismiss: vi.fn()
+}));
+
+const resizeMock = vi.hoisted(() => ({
+    resizeToTempDir: vi.fn().mockResolvedValue('photo_gen.jpg')
+}));
+
+const cameraPreviewMock = vi.hoisted(() => ({
+    deleteFile: vi.fn().mockResolvedValue({ success: true })
+}));
+
 const utilsMock = vi.hoisted(() => ({
     generateMediaFilename: vi.fn().mockReturnValue('photo_gen.jpg'),
     generateTimestamp: vi.fn().mockReturnValue('123')
 }));
 
+const rollbarMock = vi.hoisted(() => ({ critical: vi.fn(), criticalWithContext: vi.fn() }));
+
 vi.mock('@/stores/root-store', () => ({ useRootStore: vi.fn() }));
-vi.mock('@/config', () => ({ PARAMETERS: { ANDROID: 'android', WEB: 'web', QUESTION_TYPES: { PHOTO: 'photo' } } }));
-vi.mock('@/config/strings', () => ({ STRINGS: { en: { labels: {} } } }));
+vi.mock('@/config', () => ({
+    PARAMETERS: {
+        ANDROID: 'android',
+        IOS: 'ios',
+        WEB: 'web',
+        QUESTION_TYPES: { PHOTO: 'photo' },
+        IN_APP_CAMERA_DOCS_URL: 'https://docs.example/in-app-camera'
+    }
+}));
+vi.mock('@/config/strings', () => ({ STRINGS: { en: { labels: { wait: 'wait', saving: 'saving', unknown_error: 'unknown error' } } } }));
 vi.mock('@capacitor/core', () => ({ Capacitor: { convertFileSrc: vi.fn((s) => s) } }));
 vi.mock('@capacitor/camera', () => ({ Camera: { getPhoto: vi.fn() }, CameraResultType: { Uri: 'uri' }, CameraSource: { Photos: 'photos', Camera: 'camera' } }));
+vi.mock('@capgo/camera-preview', () => ({ CameraPreview: cameraPreviewMock }));
+vi.mock('@ionic/vue', () => ({ modalController: modalMock }));
 vi.mock('@/services/notification-service', () => ({ notificationService: nMock }));
 vi.mock('@/services/utilities/utils-service', () => ({ utilsService: utilsMock }));
 vi.mock('@/services/filesystem/move-file-service', () => ({ moveFileService: { moveToAppTemporaryDir: vi.fn().mockResolvedValue() } }));
+vi.mock('@/services/filesystem/resize-photo-service', () => ({ resizePhotoService: resizeMock }));
+vi.mock('@/services/utilities/rollbar-service', () => ({ rollbarService: rollbarMock }));
+vi.mock('@/components/modals/ModalCameraPreview.vue', () => ({ default: { name: 'ModalCameraPreview' } }));
 
-function setupRootStore(platform = PARAMETERS.ANDROID) {
-    useRootStore.mockReturnValue({ device: { platform }, language: 'en', tempDir: '' });
+function setupRootStore({ platform = PARAMETERS.ANDROID, inAppCamera = false } = {}) {
+    useRootStore.mockReturnValue({
+        device: { platform },
+        language: 'en',
+        tempDir: '/tmp/',
+        inAppCamera,
+        isCameraPreviewModalActive: false
+    });
 }
 
 function makeArgs(action = 'camera') {
@@ -36,6 +71,14 @@ function makeArgs(action = 'camera') {
     const media = { [entryUuid]: { [ref]: { cached: '', stored: '' } } };
     const state = { answer: { answer: '' }, inputDetails: { ref }, imageSource: '', fileSource: '' };
     return { media, entryUuid, state, filename: '', action };
+}
+
+function setupModalPresent({ sourcePath = '/source.jpg', gpsFallback = false } = {}) {
+    const dismissPromise = Promise.resolve({ data: sourcePath ? { sourcePath, gpsFallback } : undefined });
+    modalMock.create.mockResolvedValue({
+        present: modalMock.present.mockResolvedValue(undefined),
+        onDidDismiss: modalMock.onDidDismiss.mockReturnValue(dismissPromise)
+    });
 }
 
 describe('photoTake tests', () => {
@@ -51,6 +94,7 @@ describe('photoTake tests', () => {
         await photoTake({ media, entryUuid, state, filename, action });
 
         expect(Camera.getPhoto).not.toHaveBeenCalled();
+        expect(modalMock.create).not.toHaveBeenCalled();
         expect(state.answer.answer).toBe('');
     });
 
@@ -63,6 +107,7 @@ describe('photoTake tests', () => {
 
         expect(nMock.startForegroundService).toHaveBeenCalled();
         expect(Camera.getPhoto).not.toHaveBeenCalled();
+        expect(modalMock.create).not.toHaveBeenCalled();
     });
 
     it('leaves media empty when the user cancels a fresh photo capture', async () => {
@@ -91,5 +136,249 @@ describe('photoTake tests', () => {
 
         expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
         expect(state.answer.answer).toBe('existing.jpg');
+    });
+
+    it('opens the in-app modal on Android when inAppCamera flag is on and action is camera', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '/capture.jpg' });
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(modalMock.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+                cssClass: 'modal-camera-preview',
+                //required so Ionic closes the camera via the Android back button
+                backdropDismiss: true
+            })
+        );
+        expect(Camera.getPhoto).not.toHaveBeenCalled();
+        expect(nMock.startForegroundService).not.toHaveBeenCalled();		expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture.jpg', 'photo_gen.jpg', { stripGps: false });
+		expect(media[entryUuid]['q1'].cached).toBe('photo_gen.jpg');
+		expect(state.answer.answer).toBe('photo_gen.jpg');
+		expect(state.imageSource).toContain('/tmp/photo_gen.jpg');
+		//the modal hands the capture over; photo-take removes it once it has been resized
+		expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/capture.jpg' });
+	});
+
+	it('covers the in-app resize with a dialog and hides it when the thumbnail lands', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: '/capture.jpg' });
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		//resize dialog shown with the existing labels, hiding the slow decode
+		const dialogCall = nMock.showProgressDialog.mock.calls.findIndex((args) => args[0] === 'saving' && args[1] === 'wait');
+		expect(dialogCall).toBeGreaterThanOrEqual(0);
+		//shown before the resize starts, hidden after the thumbnail state is set
+		const dialogOrder = nMock.showProgressDialog.mock.invocationCallOrder[dialogCall];
+		const resizeOrder = resizeMock.resizeToTempDir.mock.invocationCallOrder[0];
+		expect(dialogOrder).toBeLessThan(resizeOrder);
+		const hideOrders = nMock.hideProgressDialog.mock.invocationCallOrder;
+		expect(hideOrders[hideOrders.length - 1]).toBeGreaterThan(resizeOrder);
+		expect(nMock.hideProgressDialog).toHaveBeenLastCalledWith(0);
+		expect(state.imageSource).toContain('/tmp/photo_gen.jpg');
+	});
+
+	it('hides the resize dialog before alerting when the in-app resize fails', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: '/capture.jpg' });
+		resizeMock.resizeToTempDir.mockRejectedValueOnce(new Error('resize boom'));
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		expect(nMock.showAlert).toHaveBeenCalledWith('resize boom');
+		//hide-then-alert ordering, same as the native branch
+		const hideOrders = nMock.hideProgressDialog.mock.invocationCallOrder;
+		const alertOrder = nMock.showAlert.mock.invocationCallOrder[0];
+		expect(hideOrders[hideOrders.length - 1]).toBeLessThan(alertOrder);
+	});
+
+	it('never shows the resize dialog when the in-app modal is dismissed without a capture', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: null });
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		expect(resizeMock.resizeToTempDir).not.toHaveBeenCalled();
+		const dialogCall = nMock.showProgressDialog.mock.calls.findIndex((args) => args[0] === 'saving');
+		expect(dialogCall).toBe(-1);
+	});
+
+	it('resets the answer and cleans up the capture when the in-app resize fails', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: '/capture.jpg' });
+		resizeMock.resizeToTempDir.mockRejectedValueOnce(new Error('resize boom'));
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture.jpg', 'photo_gen.jpg', { stripGps: false });
+		expect(media[entryUuid]['q1'].cached).toBe('');
+		expect(state.answer.answer).toBe('');
+		expect(nMock.showAlert).toHaveBeenCalledWith('resize boom');
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('photoTake resize failed', expect.any(Error));
+		expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/capture.jpg' });
+	});
+
+	it('restores the existing photo when the in-app resize fails on a retake', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: '/capture.jpg' });
+		resizeMock.resizeToTempDir.mockRejectedValueOnce(new Error('resize boom'));
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+		media[entryUuid]['q1'].cached = 'existing.jpg';
+		media[entryUuid]['q1'].stored = 'existing.jpg';
+		state.answer.answer = 'existing.jpg';
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		expect(nMock.showAlert).toHaveBeenCalledWith('resize boom');
+		//the failed replacement keeps the previous references, not ''
+		expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+		expect(state.answer.answer).toBe('existing.jpg');
+		//the lost replacement capture is tracked as critical
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('photoTake resize failed', expect.any(Error));
+		//the unconsumed capture is still discarded from the plugin cache
+		expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/capture.jpg' });
+	});
+
+	it('restores the existing photo when the native capture errors on a retake', async () => {
+		setupRootStore();
+		nMock.startForegroundService.mockResolvedValue('granted');
+		Camera.getPhoto.mockRejectedValue(new Error('camera busy'));
+		const { media, entryUuid, state, filename, action } = makeArgs();
+		media[entryUuid]['q1'].cached = 'existing.jpg';
+		media[entryUuid]['q1'].stored = 'existing.jpg';
+		state.answer.answer = 'existing.jpg';
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		expect(Camera.getPhoto).toHaveBeenCalled();
+		expect(nMock.showAlert).toHaveBeenCalledWith('camera busy');
+		expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+		expect(state.answer.answer).toBe('existing.jpg');
+	});
+
+    it('does not open the in-app modal on iOS even when inAppCamera flag is on', async () => {
+        setupRootStore({ platform: PARAMETERS.IOS, inAppCamera: true });
+        nMock.startForegroundService.mockResolvedValue('open_settings');
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(modalMock.create).not.toHaveBeenCalled();
+        expect(nMock.startForegroundService).toHaveBeenCalled();
+    });
+
+    it('does not open the in-app modal for gallery action even when flag is on', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        nMock.startForegroundService.mockResolvedValue('open_settings');
+        const { media, entryUuid, state, filename } = makeArgs('gallery');
+
+        await photoTake({ media, entryUuid, state, filename, action: 'gallery' });
+
+        expect(modalMock.create).not.toHaveBeenCalled();
+        expect(nMock.startForegroundService).toHaveBeenCalled();
+    });
+
+    it('resets media when the in-app modal is cancelled', async () => {        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '' });
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(modalMock.create).toHaveBeenCalled();
+        expect(resizeMock.resizeToTempDir).not.toHaveBeenCalled();
+        expect(media[entryUuid]['q1'].cached).toBe('');
+        expect(state.answer.answer).toBe('');
+    });
+
+    it('preserves the existing photo when the in-app modal is dismissed without a capture', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '' });
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+        media[entryUuid]['q1'].cached = 'existing.jpg';
+        media[entryUuid]['q1'].stored = 'existing.jpg';
+        state.answer.answer = 'existing.jpg';
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(modalMock.create).toHaveBeenCalled();
+        expect(resizeMock.resizeToTempDir).not.toHaveBeenCalled();
+        expect(cameraPreviewMock.deleteFile).not.toHaveBeenCalled();
+        expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+        expect(state.answer.answer).toBe('existing.jpg');
+    });
+
+    it('reuses the cached filename on an in-app retake instead of generating a new file', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '/capture2.jpg' });
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+        media[entryUuid]['q1'].cached = 'cached1.jpg';
+        media[entryUuid]['q1'].stored = '';
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(utilsMock.generateMediaFilename).not.toHaveBeenCalled();
+        expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture2.jpg', 'cached1.jpg', { stripGps: false });
+        expect(media[entryUuid]['q1'].cached).toBe('cached1.jpg');
+        expect(state.answer.answer).toBe('cached1.jpg');
+    });
+
+    it('strips GPS downstream when the modal hands off a location-denied capture', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '/capture.jpg', gpsFallback: true });
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        //denied location: no GPS in the output, every other tag kept by the service
+        expect(resizeMock.resizeToTempDir).toHaveBeenCalledWith('/capture.jpg', 'photo_gen.jpg', { stripGps: true });
+        expect(media[entryUuid]['q1'].cached).toBe('photo_gen.jpg');
+        expect(state.answer.answer).toBe('photo_gen.jpg');
+    });
+
+    it('guards the EntriesAdd back handler while the camera modal is open', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '' });
+        //keep the modal open until we have checked the guard flag
+        let resolveDismiss = null;
+        modalMock.onDidDismiss.mockReturnValue(new Promise((resolve) => {
+            resolveDismiss = resolve;
+        }));
+        const rootStore = useRootStore();
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        const pendingPhotoTake = photoTake({ media, entryUuid, state, filename, action });
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        //while the modal is presented the flag is set, so EntriesAdd ignores back
+        //(Ionic's overlay handler then dismisses the camera instead of navigating)
+        expect(rootStore.isCameraPreviewModalActive).toBe(true);
+
+        resolveDismiss({ data: undefined });
+        await pendingPhotoTake;
+
+        expect(rootStore.isCameraPreviewModalActive).toBe(false);
+        expect(media[entryUuid]['q1'].cached).toBe('');
+    });
+
+    it('unguards the back handler when modal presentation fails', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '/capture.jpg' });
+        modalMock.present.mockRejectedValueOnce(new Error('present boom'));
+        const rootStore = useRootStore();
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        await expect(photoTake({ media, entryUuid, state, filename, action })).rejects.toThrow('present boom');
+
+        expect(rootStore.isCameraPreviewModalActive).toBe(false);
+        expect(resizeMock.resizeToTempDir).not.toHaveBeenCalled();
     });
 });

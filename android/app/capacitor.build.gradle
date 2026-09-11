@@ -29,6 +29,7 @@ dependencies {
     implementation project(':capacitor-toast')
     implementation project(':capawesome-team-capacitor-android-foreground-service')
     implementation project(':capawesome-capacitor-android-edge-to-edge-support')
+    implementation project(':capgo-camera-preview')
     implementation project(':capgo-capacitor-zip')
     implementation project(':whiteguru-capacitor-plugin-video-editor')
     implementation project(':capacitor-native-settings')

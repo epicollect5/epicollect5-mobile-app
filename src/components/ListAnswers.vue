@@ -180,6 +180,11 @@ export default {
 				// Show loader
 				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
 
+				//do NOT reset the file delete queue here: it belongs to the live
+				//edit session (hierarchy deletions queued before drilling into the
+				//branch, plus this branch's own deferred deletions on re-edit).
+				//Staleness is covered by the session-start resets in entry-service
+				//setUpNew/setUpExisting and by discardBranchDeleteQueue on quit
 				//init the edit
 				await branchEntryService.setUpExisting(entry);
 				rootStore.routeParams = {

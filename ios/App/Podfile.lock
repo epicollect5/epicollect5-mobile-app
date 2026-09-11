@@ -50,6 +50,8 @@ PODS:
     - Capacitor
   - CapacitorToast (8.0.1):
     - Capacitor
+  - CapgoCameraPreview (8.11.2):
+    - Capacitor
   - CapgoCapacitorZip (8.1.17):
     - Capacitor
     - ZIPFoundation (~> 0.9.19)
@@ -132,6 +134,7 @@ DEPENDENCIES:
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapacitorToast (from `../../node_modules/@capacitor/toast`)"
+  - "CapgoCameraPreview (from `../../node_modules/@capgo/camera-preview`)"
   - "CapgoCapacitorZip (from `../../node_modules/@capgo/capacitor-zip`)"
   - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
   - CordovaPluginsResources (from `../capacitor-cordova-ios-plugins`)
@@ -195,6 +198,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/status-bar"
   CapacitorToast:
     :path: "../../node_modules/@capacitor/toast"
+  CapgoCameraPreview:
+    :path: "../../node_modules/@capgo/camera-preview"
   CapgoCapacitorZip:
     :path: "../../node_modules/@capgo/capacitor-zip"
   CordovaPlugins:
@@ -229,6 +234,7 @@ SPEC CHECKSUMS:
   CapacitorSplashScreen: 7bf61c2001557ff9e195e601c6b87344480d3c65
   CapacitorStatusBar: eca7bc2b58d9f886f1ef9edb66e57a9b29c121af
   CapacitorToast: 408036fbd702120d3adde3980b740f3c0fb60c9e
+  CapgoCameraPreview: 70c91cab1c986a0c9b4ae34a7a79ac6738818d48
   CapgoCapacitorZip: 247554f1b4d6d704a2b9acb2548f7f446dfae11d
   CordovaPlugins: 6ea6eb912f2f3c86a44b38eabd3d17d7c524b77f
   CordovaPluginsResources: da93847212bf7b16ba770e4d6c3e7dba820174c7
@@ -245,6 +251,6 @@ SPEC CHECKSUMS:
   WhiteguruCapacitorPluginVideoEditor: 1a56d775023055c927da6fc08161b2b97b14e5b1
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 
-PODFILE CHECKSUM: 5601bb63e44294bc914b08868cc88303555be905
+PODFILE CHECKSUM: c348f77cbf8a0a4e8d12138895f380faf6710c39
 
 COCOAPODS: 1.16.2

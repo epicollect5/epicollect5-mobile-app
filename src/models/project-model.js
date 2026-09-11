@@ -226,5 +226,32 @@ export const projectModel = {
             }
         });
         return mediaQuestions;
+    },
+    getBranchMediaQuestions(formRef, ownerInputRef){
+        //media question refs scoped to a single branch (group-nested included),
+        //e.g. to drop a quitting branch edit's queued stored-file deletions
+        const mediaQuestions = [];
+        const branchInputs = this.getBranches(formRef, ownerInputRef);
+        const branchRefs = Array.isArray(branchInputs) ? branchInputs : Object.values(branchInputs);
+        const walk = (inputRefs) => {
+            inputRefs.forEach((inputRef) => {
+                const input = this.getInput(inputRef);
+                if (!input || !input.type) {
+                    return;
+                }
+                if (['photo', 'audio', 'video'].includes(input.type)) {
+                    if (!mediaQuestions.includes(input.ref)) {
+                        mediaQuestions.push(input.ref);
+                    }
+                } else if (input.type === 'group') {
+                    const members = this.project_extra.forms[formRef]?.group?.[inputRef];
+                    if (Array.isArray(members)) {
+                        walk(members);
+                    }
+                }
+            });
+        };
+        walk(branchRefs);
+        return mediaQuestions;
     }
 };

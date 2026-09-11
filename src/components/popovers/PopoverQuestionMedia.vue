@@ -194,6 +194,24 @@ export default {
 
 					deleteFileService.removeFile(fileURI).then(
 						() => {
+							//a retaken stored file reuses the stored filename for cached,
+							//so both can be set here: queue the persistent file + DB row
+							//for save-time deletion, otherwise a later retake mints a
+							//new filename and orphans them (duplicate files on disk/DB).
+							//queued only after the temp delete succeeded, so a failed
+							//delete keeps the original fully intact
+							if (filenames.filenameStored !== '') {
+								const storedPath = persistentDir + mediaFolder;
+
+								console.log('queue file -> ', filenames.filenameStored);
+								rootStore.queueFilesToDelete.push({
+									inputRef,
+									filenameStored: filenames.filenameStored,
+									file_path: storedPath,
+									project_ref: projectRef,
+									file_name: filenames.filenameStored
+								});
+							}
 							notificationService.hideProgressDialog();
 							popoverController.dismiss(PARAMETERS.ACTIONS.FILE_DELETED);
 						},

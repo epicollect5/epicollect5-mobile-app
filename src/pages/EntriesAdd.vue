@@ -503,6 +503,12 @@ export default {
 						await notificationService.showProgressDialog(labels.wait, labels.quitting);
 						// Remove any temp answers/entries
 						try {
+							//quitting a branch discards its changes: drop its queued
+							//stored-file deletions so the parent save does not delete
+							//files the branch entry still references
+							if (rootStore.entriesAddScope.entryService.entry.isBranch) {
+								rootStore.entriesAddScope.entryService.discardBranchDeleteQueue();
+							}
 							await rootStore.entriesAddScope.entryService.removeTempBranches();
 							// Quit with navigation params
 							quit(
@@ -786,6 +792,11 @@ export default {
       }
       //ignore back button while getting location
       if (rootStore.isLocationModalActive) {
+        return false;
+      }
+
+      //ignore back button while the in-app camera preview is open
+      if (rootStore.isCameraPreviewModalActive) {
         return false;
       }
 

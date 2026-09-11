@@ -252,9 +252,16 @@ export default {
           console.error('popoverMediaHandler failed', error);
         }
       },
-      takePicture(action) {
+      async takePicture(action) {
         if (rootStore.device.platform !== PARAMETERS.WEB) {
-          photoTake({media, entryUuid, state, filename, action});
+          try {
+            await photoTake({media, entryUuid, state, filename, action});
+          } catch (error) {
+            //photoTake rethrows modal presentation failures after unguarding
+            //the back handler: surface them so a failed open is never silent
+            console.log('photoTake failed: ' + error);
+            await notificationService.showAlert(error.message || labels.unknown_error);
+          }
         }
       },
       //open viewer to see image with zoom capabilities

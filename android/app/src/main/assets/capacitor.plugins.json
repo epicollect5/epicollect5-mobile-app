@@ -80,6 +80,10 @@
 		"classpath": "io.capawesome.capacitorjs.plugins.androidedgetoedgesupport.EdgeToEdgePlugin"
 	},
 	{
+		"pkg": "@capgo/camera-preview",
+		"classpath": "app.capgo.capacitor.camera.preview.CameraPreview"
+	},
+	{
 		"pkg": "@capgo/capacitor-zip",
 		"classpath": "ee.forgr.plugin.capacitor_zip.CapacitorZipPlugin"
 	},

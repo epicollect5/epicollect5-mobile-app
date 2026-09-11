@@ -117,6 +117,8 @@ vi.mock('@/services/init-service', () => ({
         insertDemoProject: vi.fn(),
         getSelectedTextSize: vi.fn(() => Promise.resolve('medium')),
         getCollectErrorsPreference: vi.fn(() => Promise.resolve(true)),
+        getInAppCameraPreference: vi.fn(() => Promise.resolve(false)),
+        getInAppCameraVideoPreference: vi.fn(() => Promise.resolve(false)),
         retrieveJwtToken: vi.fn(() => Promise.resolve({name: 'Test User'}))
     }
 }));
@@ -265,6 +267,57 @@ describe('Main.js Architecture', () => {
         expect(rootStore.isPWA).toBe(false);
         expect(initService.openDB).toHaveBeenCalled();
         expect(initService.insertDemoProject).toHaveBeenCalled();
+    });
+
+    it('Native: enables both in-app camera flags when preferences resolve true', async () => {
+        const {initService} = await import('@/services/init-service');
+        const {bookmarksService} = await import('@/services/utilities/bookmarks-service');
+
+        initService.getDeviceInfo.mockResolvedValue({platform: 'android'});
+        initService.openDB.mockResolvedValue({executeSql: vi.fn()});
+        initService.getAppInfo.mockResolvedValue({});
+        initService.getLanguage.mockResolvedValue('en');
+        initService.getDBVersion.mockResolvedValue(1);
+        bookmarksService.getBookmarks.mockResolvedValue([]);
+        initService.getInAppCameraPreference.mockResolvedValue(true);
+        initService.getInAppCameraVideoPreference.mockResolvedValue(true);
+
+        await import('@/main');
+        await flushPromises();
+
+        const {useRootStore} = await import('@/stores/root-store');
+        const rootStore = useRootStore();
+
+        expect(initService.getInAppCameraPreference).toHaveBeenCalled();
+        expect(initService.getInAppCameraVideoPreference).toHaveBeenCalled();
+        expect(rootStore.inAppCamera).toBe(true);
+        expect(rootStore.inAppCameraVideo).toBe(true);
+    });
+
+    it('Native: falls back to disabled cameras and still boots when preference reads reject', async () => {
+        const {initService} = await import('@/services/init-service');
+        const {bookmarksService} = await import('@/services/utilities/bookmarks-service');
+
+        initService.getDeviceInfo.mockResolvedValue({platform: 'android'});
+        initService.openDB.mockResolvedValue({executeSql: vi.fn()});
+        initService.getAppInfo.mockResolvedValue({});
+        initService.getLanguage.mockResolvedValue('en');
+        initService.getDBVersion.mockResolvedValue(1);
+        bookmarksService.getBookmarks.mockResolvedValue([]);
+        initService.getInAppCameraPreference.mockRejectedValue(new Error('db locked'));
+        initService.getInAppCameraVideoPreference.mockRejectedValue(new Error('db locked'));
+
+        await import('@/main');
+        await flushPromises();
+
+        const {useRootStore} = await import('@/stores/root-store');
+        const rootStore = useRootStore();
+
+        //a rejected getter is replaced with false and never blocks the rest of boot
+        expect(rootStore.inAppCamera).toBe(false);
+        expect(rootStore.inAppCameraVideo).toBe(false);
+        expect(initService.retrieveJwtToken).toHaveBeenCalled();
+        expect(rootStore.user).toEqual({name: 'Test User'});
     });
 
     it('handles Branch ADD entry logic when branch params are present', async () => {

@@ -32,14 +32,21 @@ export default defineConfig(({ mode, command }) => {
                     assetFileNames: 'assets/[name][extname]',
                     manualChunks(id) {
                         if (id.includes('node_modules')) {
-                            //group every Capacitor-family package (scoped @capacitor/* and
-                            //unscoped capacitor-* plugins such as capacitor-native-settings)
-                            //into vendor-capacitor to avoid cross-chunk cycles with vendor-common
+                            //group every Capacitor-family package (scoped @capacitor/*,
+                            //@capgo/* such as camera-preview, and unscoped capacitor-* plugins
+                            //such as capacitor-native-settings) into vendor-capacitor to avoid
+                            //cross-chunk cycles with vendor-common
+                            if (id.includes('@capgo')) return 'vendor-capacitor';
                             if (id.includes('capacitor')) return 'vendor-capacitor';
                             if (id.includes('@vue')) return 'vendor-vue';
                             if (id.includes('@ionic')) return 'vendor-ionic';
                             return 'vendor-common';
                         }
+                        //vite's preload helper is a virtual module (\0vite/preload-helper.js)
+                        //imported by any chunk with dynamic imports; Rollup otherwise parks it on
+                        //whichever chunk imports it first, dragging vendor-common and
+                        //vendor-capacitor into a cycle with vendor-ionic
+                        if (id.includes('vite/preload-helper')) return 'vendor-common';
                         if (id.includes('/src/')) return 'app';
                     }
                 }
