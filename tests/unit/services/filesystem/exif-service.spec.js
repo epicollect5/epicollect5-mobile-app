@@ -20,6 +20,13 @@ function decodeBase64(base64) {
     return bytes;
 }
 
+//independent copy for in-test corruption (DataView mutates in place)
+function bytesCopy(bytes) {
+    const copy = new Uint8Array(bytes.length);
+    copy.set(bytes);
+    return copy;
+}
+
 //builds a minimal TIFF with an orientation entry, an optional GPS IFD with
 //two inline entries, and an optional thumbnail IFD. Returns the TIFF bytes
 //plus the offsets the assertions need (relative to the TIFF start)
@@ -69,14 +76,18 @@ function buildTiff({ orientation = 6, orientationType = 3, withGps = true, withT
         pushU32(gpsOffset);
     }
 
-    //IFD0 next-offset: thumbnail directory follows, else zero
+    //IFD0 next-offset: thumbnail directory follows, else zero. With GPS the
+    //value data (lat/long rationals) follows the directory before it
     const nextIfdAt = bytes.length;
-    const thumbnailOffset = withGps ? gpsOffset + 2 + 2 * 12 + 4 : gpsOffset;
+    const gpsDirSize = 2 + 4 * 12 + 4;
+    const gpsValueStart = withGps ? gpsOffset + gpsDirSize : -1;
+    const thumbnailOffset = withGps ? gpsValueStart + 48 : gpsOffset;
     pushU32(withThumbnail ? thumbnailOffset : 0);
 
     if (withGps) {
-        //GPS IFD: version (inline) + latitude ref 'N' (inline), next = 0
-        pushU16(2);
+        //GPS IFD: version + latitude ref inline, lat/long as out-of-line
+        //rationals (the real-world shape whose bytes must not survive a strip)
+        pushU16(4);
         pushU16(0x0000);
         pushU16(1);
         pushU32(4);
@@ -85,7 +96,22 @@ function buildTiff({ orientation = 6, orientationType = 3, withGps = true, withT
         pushU16(2);
         pushU32(2);
         pushBytes([0x4e, 0x00, 0x00, 0x00]);
+        //latitude 51/1, 30/1, 0/1 out-of-line
+        pushU16(0x0002);
+        pushU16(5);
+        pushU32(3);
+        pushU32(gpsValueStart);
+        //longitude 0/1, 7/1, 0/1 out-of-line
+        pushU16(0x0003);
+        pushU16(5);
+        pushU32(3);
+        pushU32(gpsValueStart + 24);
         pushU32(0);
+        //rational value data: (num, den) u32 pairs
+        [[51, 1], [30, 1], [0, 1], [0, 1], [7, 1], [0, 1]].forEach(([num, den]) => {
+            pushU32(num);
+            pushU32(den);
+        });
     }
 
     if (withThumbnail) {
@@ -106,7 +132,9 @@ function buildTiff({ orientation = 6, orientationType = 3, withGps = true, withT
         gpsBlockStart: withGps ? gpsEntryAt - 8 : -1,
         gpsBlockEnd: withGps ? thumbnailOffset : -1,
         //TIFF-relative offset of the GPS IFD itself (for strip assertions)
-        gpsIfdAt: withGps ? gpsOffset : -1
+        gpsIfdAt: withGps ? gpsOffset : -1,
+        //TIFF-relative start of the out-of-line GPS value data
+        gpsValueStart
     };
 }
 
@@ -268,7 +296,9 @@ describe('exifService', () => {
         });
 
         it('zeroes the GPS directory with stripGps while keeping every other tag', () => {
-            const { tiff, orientationValueAt, gpsBlockStart, gpsBlockEnd, gpsIfdAt } = buildTiff({ orientation: 6, withGps: true, withThumbnail: true });
+            const { tiff, orientationValueAt, gpsBlockStart, gpsBlockEnd, gpsIfdAt, gpsValueStart } = buildTiff({ orientation: 6, withGps: true, withThumbnail: true });
+            //sanity: the fixture really carries out-of-line coordinate bytes pre-strip
+            expect(tiff[gpsValueStart]).toBe(51);
             const source = encodeBase64(buildJpeg({ app1Values: [app1Segment(tiff)] }));
             const output = encodeBase64(buildJpeg({}));
 
@@ -310,6 +340,32 @@ describe('exifService', () => {
             //corrupt the GPS pointer offset to run past the segment end
             const view = new DataView(tiff.buffer, tiff.byteOffset, tiff.length);
             view.setUint32(built.gpsBlockStart + 8, 0xffffff, true);
+            const source = encodeBase64(buildJpeg({ app1Values: [app1Segment(tiff)] }));
+            const output = encodeBase64(buildJpeg({}));
+
+            expect(exifService.copyExifSegment(source, output, { stripGps: true })).toBe(output);
+        });
+
+        it('returns the output untouched when a GPS value offset runs past the segment', () => {
+            const built = buildTiff({ orientation: 6, withGps: true });
+            const tiff = bytesCopy(built.tiff);
+            //latitude is the third GPS entry: corrupt its value offset
+            const view = new DataView(tiff.buffer, tiff.byteOffset, tiff.length);
+            const latEntry = built.gpsIfdAt + 2 + 2 * 12;
+            view.setUint32(latEntry + 8, 0xffffff, true);
+            const source = encodeBase64(buildJpeg({ app1Values: [app1Segment(tiff)] }));
+            const output = encodeBase64(buildJpeg({}));
+
+            expect(exifService.copyExifSegment(source, output, { stripGps: true })).toBe(output);
+        });
+
+        it('returns the output untouched for an unknown GPS value type', () => {
+            const built = buildTiff({ orientation: 6, withGps: true });
+            const tiff = bytesCopy(built.tiff);
+            //latitude entry with an unsizable type: bail instead of guessing
+            const view = new DataView(tiff.buffer, tiff.byteOffset, tiff.length);
+            const latEntry = built.gpsIfdAt + 2 + 2 * 12;
+            view.setUint16(latEntry + 2, 13, true);
             const source = encodeBase64(buildJpeg({ app1Values: [app1Segment(tiff)] }));
             const output = encodeBase64(buildJpeg({}));
 
