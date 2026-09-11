@@ -14,6 +14,7 @@ vi.mock('@/models/project-model.js', () => ({
         getProjectRef: vi.fn(() => 'project-ref'),
         getExtraForm: vi.fn(() => ({})),
         getExtraInputs: vi.fn(() => ({})),
+        getBranches: vi.fn(() => []),
         getBranchMediaQuestions: vi.fn(() => [])
     }
 }));
@@ -42,7 +43,9 @@ vi.mock('@/services/database/database-delete-service', () => ({
 
 vi.mock('@/services/entry/media-service', () => ({
     mediaService: {
-        saveMedia: vi.fn().mockResolvedValue()
+        saveMedia: vi.fn().mockResolvedValue(),
+        getEntryStoredMedia: vi.fn().mockResolvedValue({}),
+        getEntryStoredMediaPWA: vi.fn().mockResolvedValue({})
     }
 }));
 
@@ -63,6 +66,10 @@ vi.mock('@/services/utilities/entries-download-progress-service', () => ({
         clearProject: vi.fn()
     }
 }));
+
+const capacitorMock = vi.hoisted(() => ({ isNativePlatform: vi.fn(() => true) }));
+
+vi.mock('@capacitor/core', () => ({ Capacitor: capacitorMock }));
 
 describe('branchEntryService.saveEntry', () => {
 
@@ -135,6 +142,30 @@ describe('branchEntryService.saveEntry persistence scope', () => {
         await branchEntryService.saveEntry(0);
 
         expect(branchEntryModel.answers['b-photo'].answer).toBe('');
+    });
+
+    it('leaves already-blanked answers and the queue alone on a re-save (typo fix)', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        const { databaseInsertService } = await import('@/services/database/database-insert-service');
+        const { mediaService } = await import('@/services/entry/media-service');
+        const queued = [
+            { inputRef: 'b-photo', filenameStored: 'b-photo.jpg', file_path: '/p/', project_ref: 'project-ref', file_name: 'b-photo.jpg' },
+            { inputRef: 'b-video', filenameStored: 'b-video.mp4', file_path: '/p/', project_ref: 'project-ref', file_name: 'b-video.mp4' }
+        ];
+        const store = { queueFilesToDelete: [...queued] };
+        useRootStore.mockReturnValue(store);
+        //re-edit after a save: the staged answers already reflect the deletions
+        const branchEntryModel = await initBranchEntry({ 'b-photo': { answer: '' }, 'b-video': { answer: '' } });
+
+        await branchEntryService.saveEntry(0);
+
+        //blanking is a no-op (stored filename no longer matches), the temp entry
+        //re-stages, and both deletions stay queued for the hierarchy save
+        expect(branchEntryModel.answers['b-photo'].answer).toBe('');
+        expect(branchEntryModel.answers['b-video'].answer).toBe('');
+        expect(store.queueFilesToDelete).toEqual(queued);
+        expect(databaseInsertService.insertTempBranchEntry).toHaveBeenCalled();
+        expect(mediaService.saveMedia).toHaveBeenCalled();
     });
 
     it('end-to-end: branch save defers deletion, hierarchy save executes it', async () => {
@@ -262,5 +293,113 @@ describe('branchEntryService.discardBranchDeleteQueue', () => {
 
         mediaService.saveMedia.mockReset();
         mediaService.saveMedia.mockResolvedValue();
+    });
+});
+
+describe('branchEntryService.setUpExisting media agreement', () => {
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        capacitorMock.isNativePlatform.mockReturnValue(true);
+    });
+
+    function branchEntry(answers) {
+        return {
+            entryUuid: 'branch-1',
+            ownerEntryUuid: 'parent-1',
+            ownerInputRef: 'branch-owner',
+            formRef: 'form-1',
+            isBranch: true,
+            answers
+        };
+    }
+
+    async function mockBranchInputs() {
+        const { projectModel } = await import('@/models/project-model.js');
+        projectModel.getBranches.mockReturnValue([]);
+        projectModel.getExtraInputs.mockReturnValue({ 'branch-owner': { data: {} } });
+    }
+
+    it('hides stored files whose answer was blanked (deletion deferred to hierarchy save)', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        useRootStore.mockReturnValue({ isPWA: false });
+        await mockBranchInputs();
+        mediaService.getEntryStoredMedia.mockResolvedValue({
+            'branch-1': {
+                'b-photo': { cached: '', stored: 'gone.jpg', type: 'photo' },
+                'b-video': { cached: '', stored: 'kept.mp4', type: 'video' }
+            }
+        });
+
+        await branchEntryService.setUpExisting(branchEntry({
+            'b-photo': { answer: '' },
+            'b-video': { answer: 'kept.mp4' }
+        }));
+
+        //blanked answer: no file to show, retakes mint a fresh name instead of
+        //reusing the doomed one; live answer keeps its stored file for reuse
+        expect(branchEntryService.entry.media['branch-1']['b-photo']).toBeUndefined();
+        expect(branchEntryService.entry.media['branch-1']['b-video']).toEqual({
+            cached: '',
+            stored: 'kept.mp4',
+            type: 'video'
+        });
+    });
+
+    it('leaves media untouched when no answer is blanked', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        useRootStore.mockReturnValue({ isPWA: false });
+        await mockBranchInputs();
+        const stored = {
+            'branch-1': {
+                'b-photo': { cached: '', stored: 'live.jpg', type: 'photo' }
+            }
+        };
+        mediaService.getEntryStoredMedia.mockResolvedValue(stored);
+
+        await branchEntryService.setUpExisting(branchEntry({ 'b-photo': { answer: 'live.jpg' } }));
+
+        expect(branchEntryService.entry.media).toEqual(stored);
+    });
+
+    it('fails open (media kept) when answers are missing', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        useRootStore.mockReturnValue({ isPWA: false });
+        await mockBranchInputs();
+        const stored = {
+            'branch-1': {
+                'b-photo': { cached: '', stored: 'live.jpg', type: 'photo' }
+            }
+        };
+        mediaService.getEntryStoredMedia.mockResolvedValue(stored);
+
+        await branchEntryService.setUpExisting(branchEntry());
+
+        expect(branchEntryService.entry.media).toEqual(stored);
+    });
+
+    it('hides blanked answers from PWA stored media too', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        useRootStore.mockReturnValue({ isPWA: true });
+        capacitorMock.isNativePlatform.mockReturnValue(false);
+        await mockBranchInputs();
+        mediaService.getEntryStoredMediaPWA.mockResolvedValue({
+            'branch-1': {
+                'b-photo': { filenamePWA: { cached: '', stored: 'gone.jpg' } }
+            }
+        });
+
+        await branchEntryService.setUpExisting(branchEntry({ 'b-photo': { answer: '' } }));
+
+        expect(branchEntryService.entry.media['branch-1']['b-photo']).toBeUndefined();
+    });
+
+    it('rejects when the stored media cannot be loaded', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        useRootStore.mockReturnValue({ isPWA: false });
+        await mockBranchInputs();
+        mediaService.getEntryStoredMedia.mockRejectedValue(new Error('db gone'));
+
+        await expect(branchEntryService.setUpExisting(branchEntry({}))).rejects.toThrow('db gone');
     });
 });

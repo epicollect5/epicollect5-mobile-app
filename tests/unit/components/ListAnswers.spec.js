@@ -61,14 +61,37 @@ describe('ListAnswers edit paths', () => {
         useRootStore().language = 'en';
     });
 
-    it('resets a stale file delete queue when opening a branch entry for edit', async () => {
-        useRootStore().queueFilesToDelete = [{
-            inputRef: 'q1',
-            filenameStored: 'other-entry-photo.jpg',
-            file_path: '/data/photos/',
-            project_ref: 'proj1',
-            file_name: 'other-entry-photo.jpg'
-        }];
+    it('preserves the live file delete queue when opening a branch entry for edit', async () => {
+        //hierarchy deletions queued mid-session (drill-down) plus this branch's
+        //own deferred deletions (re-edit): the queue belongs to the live edit
+        //session and must survive the branch open
+        const queued = [
+            {
+                inputRef: 'hq1',
+                filenameStored: 'hierarchy-photo.jpg',
+                file_path: '/data/photos/',
+                project_ref: 'proj1',
+                file_name: 'hierarchy-photo.jpg'
+            },
+            {
+                inputRef: 'bq1',
+                filenameStored: 'branch-photo.jpg',
+                file_path: '/data/photos/',
+                project_ref: 'proj1',
+                file_name: 'branch-photo.jpg'
+            }
+        ];
+        useRootStore().queueFilesToDelete = [...queued];
+        const wrapper = factory();
+
+        await wrapper.vm.editAnswerBranch('ref1', 0);
+
+        expect(branchEntryService.setUpExisting).toHaveBeenCalled();
+        expect(useRootStore().queueFilesToDelete).toEqual(queued);
+    });
+
+    it('leaves an empty file delete queue alone when opening a branch entry for edit', async () => {
+        useRootStore().queueFilesToDelete = [];
         const wrapper = factory();
 
         await wrapper.vm.editAnswerBranch('ref1', 0);
