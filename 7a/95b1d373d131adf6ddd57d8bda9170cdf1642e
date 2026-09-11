@@ -1,0 +1,31 @@
+tests/unit/components/ListAnswers.spec.js
+  s_ec774ba6c6ec1f::t_9b6aaa6147007c 64-94
+tests/unit/services/entry/media-service.spec.js
+  s_ec774ba6c6ec1f::t_a7f97a41a1559c 20-22,44-46
+  s_ec774ba6c6ec1f::t_8ac78bdf0dd146 141-231
+  s_ec774ba6c6ec1f::t_40f3922211c2ff 232
+tests/unit/services/entry/branch-entry-service.spec.js
+  s_ec774ba6c6ec1f::t_2635c93766c971 46-48
+  s_ec774ba6c6ec1f::t_430431953de953 147-168
+  s_ec774ba6c6ec1f::t_4bcc1c6f61c7e5 169,298-404
+  s_ec774ba6c6ec1f::t_d805f473a0b09e 17
+  s_ec774ba6c6ec1f::t_6142299239b744 70-73
+  s_ec774ba6c6ec1f::t_ceb6e083cf0e4d 170
+  s_ec774ba6c6ec1f::t_7f4b3f3f2fd1a9 405
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7a95b1d373d131adf6ddd57d8bda9170cdf1642e",
+  "prompts": {},
+  "sessions": {
+    "s_ec774ba6c6ec1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f799b2b09ffeBtwRxOn2WHQS2A",
+        "model": "big-pickle"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
