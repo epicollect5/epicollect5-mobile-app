@@ -1,0 +1,23 @@
+tests/unit/services/filesystem/exif-service.spec.js
+  s_ec774ba6c6ec1f::t_88a5f8aba56e5e 79-80,82-84,88-90,99-108,110-114,135-137
+  s_ec774ba6c6ec1f::t_346ded2687f816 23-29
+  s_ec774ba6c6ec1f::t_a0a3ab48a351ac 348-370,372-373
+  s_ec774ba6c6ec1f::t_0497943e96ac42 299-301
+  s_ec774ba6c6ec1f::t_2b181496c9f218 371
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c64dc65f7a442083e3e006103509597230728b7b",
+  "prompts": {},
+  "sessions": {
+    "s_ec774ba6c6ec1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f799b2b09ffeBtwRxOn2WHQS2A",
+        "model": "big-pickle"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
