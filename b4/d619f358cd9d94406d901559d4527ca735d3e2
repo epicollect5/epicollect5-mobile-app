@@ -1,0 +1,19 @@
+src/components/ListAnswers.vue
+  s_ec774ba6c6ec1f::t_cec6c73bcdc90d 183-187
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b4d619f358cd9d94406d901559d4527ca735d3e2",
+  "prompts": {},
+  "sessions": {
+    "s_ec774ba6c6ec1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f799b2b09ffeBtwRxOn2WHQS2A",
+        "model": "big-pickle"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
