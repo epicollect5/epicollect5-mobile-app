@@ -135,9 +135,58 @@ function _normalizedExifCopy(bytes, segment, stripGps) {
     return copy;
 }
 
-//zero the GPS directory in place (count + entries): parsers see an empty GPS
-//IFD while every other tag and offset stays valid. Orphaned rational bytes
-//become unreferenced dead weight. Returns false when the pointer is malformed
+//byte size of one TIFF value of the given type; 0 for unknown types
+function _tiffTypeSize(type) {
+    switch (type) {
+        case 1: //BYTE
+        case 2: //ASCII
+        case 6: //SBYTE
+        case 7: //UNDEFINED
+            return 1;
+        case 3: //SHORT
+        case 8: //SSHORT
+            return 2;
+        case 4: //LONG
+        case 9: //SLONG
+        case 11: //FLOAT
+            return 4;
+        case 5: //RATIONAL
+        case 10: //SRATIONAL
+        case 12: //DOUBLE
+            return 8;
+        default:
+            return 0;
+    }
+}
+
+//zero the out-of-line value data of one GPS entry, if any. Values of 4 bytes
+//or less live inline in the entry itself (covered by the directory wipe).
+//Offsets are relative to the TIFF start (6 bytes into the copy). Returns
+//false when the entry or its target range is malformed
+function _zeroGpsValueData(view, copy, entry, littleEndian) {
+    const type = view.getUint16(entry + 2, littleEndian);
+    const tagCount = view.getUint32(entry + 4, littleEndian);
+    const unitSize = _tiffTypeSize(type);
+    //unknown types cannot be sized: bail instead of guessing
+    if (unitSize === 0 || tagCount === 0) {
+        return false;
+    }
+    const byteSize = unitSize * tagCount;
+    if (byteSize <= 4) {
+        return true;
+    }
+    const valueOffset = 6 + view.getUint32(entry + 8, littleEndian);
+    //must lie inside the segment without touching the TIFF header itself
+    if (valueOffset < 6 || valueOffset + byteSize > copy.length) {
+        return false;
+    }
+    copy.fill(0, valueOffset, valueOffset + byteSize);
+    return true;
+}
+//zero the GPS directory in place so parsers see an empty GPS IFD, plus any
+//out-of-line value data (rationals, timestamps) that would otherwise survive
+//as recoverable bytes. Every other tag and offset stays valid. Returns false
+//when the pointer is malformed
 function _stripGpsDirectory(view, copy, ifd0, count, littleEndian) {
     const ifdEnd = ifd0 + 2 + count * 12 + 4;
     for (let i = 0; i < count; i++) {
@@ -163,6 +212,13 @@ function _stripGpsDirectory(view, copy, ifd0, count, littleEndian) {
         const gpsEnd = gpsIfd + 2 + gpsCount * 12 + 4;
         if (gpsEnd > copy.length) {
             return false;
+        }
+        //walk the entries first: their value offsets are still intact, and the
+        //pointed-to bytes must die with the directory (read-then-wipe order)
+        for (let j = 0; j < gpsCount; j++) {
+            if (!_zeroGpsValueData(view, copy, gpsIfd + 2 + j * 12, littleEndian)) {
+                return false;
+            }
         }
         copy.fill(0, gpsIfd, gpsEnd);
         return true;
