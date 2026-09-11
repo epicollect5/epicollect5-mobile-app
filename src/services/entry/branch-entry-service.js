@@ -73,6 +73,7 @@ export const branchEntryService = {
             if (Capacitor.isNativePlatform()) {
                 mediaService.getEntryStoredMedia(self.entry.entryUuid).then(function (response) {
                     self.entry.media = response;
+                    self._dropMediaWithoutAnswers(self.entry);
                     resolve();
                 }, function (error) {
                     console.log(error);
@@ -83,6 +84,7 @@ export const branchEntryService = {
                     // This is a promise to be resolved BEFORE any directive is called
                     mediaService.getEntryStoredMediaPWA(self.entry).then(function (response) {
                         self.entry.media = response;
+                        self._dropMediaWithoutAnswers(self.entry);
                         resolve();
                     }, function (error) {
                         console.log(error);
@@ -95,6 +97,32 @@ export const branchEntryService = {
                 }
 
             }
+        });
+    },
+
+    //answers are the source of truth for what the reopened form may show: a
+    //blanked answer means its file was queued for deletion at save (removal
+    //itself is deferred to the hierarchy save), so hide it from entry.media
+    //or questions resurrect the thumbnail (and the answer) from the still
+    //present DB row - and a retake would reuse the doomed filename against
+    //the pending deletion. Nothing persistent is touched here (rows, files and
+    //queue all survive until the hierarchy save); only the in-memory display
+    //object is filtered. Missing answers fail open (media kept)
+    _dropMediaWithoutAnswers(entry) {
+        if (!entry || !entry.answers || !entry.media) {
+            return;
+        }
+        Object.keys(entry.media).forEach((uuid) => {
+            const bucket = entry.media[uuid];
+            if (!bucket || typeof bucket !== 'object') {
+                return;
+            }
+            Object.keys(bucket).forEach((inputRef) => {
+                const answer = entry.answers[inputRef];
+                if (answer && answer.answer === '') {
+                    delete bucket[inputRef];
+                }
+            });
         });
     },
 
