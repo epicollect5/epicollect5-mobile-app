@@ -1,0 +1,20 @@
+src/services/entry/branch-entry-service.js
+  s_ec774ba6c6ec1f::t_d3722f185242af 76,87,103-125
+  s_ec774ba6c6ec1f::t_f6c4d63d2266a7 126-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f3754a40f5edaaec18e49c0d12050d591f56ee29",
+  "prompts": {},
+  "sessions": {
+    "s_ec774ba6c6ec1f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f799b2b09ffeBtwRxOn2WHQS2A",
+        "model": "big-pickle"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
