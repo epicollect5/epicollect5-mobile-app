@@ -1,0 +1,23 @@
+src/components/popovers/PopoverQuestionMedia.vue
+  s_5bd4b644d7d9d5::t_5c1fd0e2313380 236
+  s_5bd4b644d7d9d5::t_b4c0686d99868b 182
+  s_5bd4b644d7d9d5::t_9b686a43c62478 209
+src/services/entry/branch-entry-service.js
+  s_5bd4b644d7d9d5::t_e6e26054dc6fd5 132-134,140-141,145-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "709bf55b8d1b0e981a68a7b3a040db509b80bf66",
+  "prompts": {},
+  "sessions": {
+    "s_5bd4b644d7d9d5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6ea78201ffei47DA78L7zqNoS",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
