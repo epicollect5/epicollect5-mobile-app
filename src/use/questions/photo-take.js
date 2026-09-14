@@ -60,7 +60,7 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
 
             await notificationService.stopForegroundService();
 
-            //if we do not have taken any photo yet, generate a new file name
+            //resolve the target filename without touching the references yet
             if (media[entryUuid][state.inputDetails.ref].cached === '') {
                 //check if we have a stored filename, i.e. user is replacing the photo for the entry
                 if (media[entryUuid][state.inputDetails.ref].stored === '') {
@@ -73,28 +73,29 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                     //use stored filename
                     filename = media[entryUuid][state.inputDetails.ref].stored;
                 }
-
-                media[entryUuid][state.inputDetails.ref].cached = filename;
             } else {
                 //use the cached path not to fill the cache with a new file all the time
                 filename = media[entryUuid][state.inputDetails.ref].cached;
             }
 
-            state.answer.answer = filename;
             console.log('Photo URI (original filename): ' + imageURI.path);
             console.log('Filename to be copied to: ' + filename);
 
-            //Rename photo file by moving it
-            moveFileService
-                .moveToAppTemporaryDir(imageURI.path, filename)
-                .then(function () {
-                    _loadImageOnView(tempDir + filename);
-                });
+            //move first, then persist the references: a rejected move must never leave the
+            //answer/cached filename pointing at a file that does not exist (same ordering
+            //guarantee as video-shoot; prevents FileError 1 on save). Awaiting also routes
+            //a move failure into the rollback below
+            await moveFileService.moveToAppTemporaryDir(imageURI.path, filename);
+
+            media[entryUuid][state.inputDetails.ref].cached = filename;
+            state.answer.answer = filename;
+            _loadImageOnView(tempDir + filename);
         } catch (error) {
             console.log(error);
             await notificationService.stopForegroundService();
             await notificationService.hideProgressDialog();
             if (!(typeof error.message === 'string' && error.message.toLowerCase().includes('user cancelled photos app'))) {
+                rollbarService.criticalWithContext('photoTake capture failed', error);
                 //restore the previous references so a failed retake does not drop
                 //the existing photo (fresh captures restore '' as before, so the
                 //entry save never points at a missing file)
