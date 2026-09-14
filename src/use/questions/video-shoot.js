@@ -191,7 +191,11 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             await modal.present();
             const { data } = await modal.onDidDismiss();
 
-            if (data && data.videoFilePath) {
+            if (data && data.startError) {
+                //the embedded camera could not start: tell the user instead of
+                //closing as if they cancelled (back-button dismiss has no data)
+                await notificationService.showAlert(data.startError, labels.error);
+            } else if (data && data.videoFilePath) {
                 await _processCapturedVideo(data.videoFilePath, false, true);
             } else {
                 //dismissed without recording: preserve any existing video so saving

@@ -132,10 +132,19 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                 await modal.present();
                 const { data } = await modal.onDidDismiss();
 
-                if (data && data.sourcePath) {
+                if (data && data.startError) {
+                    //the embedded camera could not start (permission denied,
+                    //camera unavailable): tell the user instead of closing as
+                    //if they cancelled. A back-button cancel dismisses without
+                    //data and stays silent
+                    await notificationService.showAlert(data.startError, labels.error);
+                } else if (data && data.sourcePath) {
                 //reuse the existing filename when replacing/retaking (same rules as
-                //the native openCamera branch above), so repeated captures do not
-                //orphan a temp file per attempt
+                //the native openCamera branch above): on edit the retake keeps the
+                //stored name so the answer, the media row and the file on disk stay
+                //in agreement (save maps cached->stored, insertMedia keys on the
+                //stored name). Repeated captures therefore do not orphan a temp
+                //file per attempt
                 if (media[entryUuid][state.inputDetails.ref].cached === '') {
                     if (media[entryUuid][state.inputDetails.ref].stored === '') {
                         filename = utilsService.generateMediaFilename(
@@ -151,6 +160,22 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                 //them instead of dropping the existing photo from the entry
                 const previousCached = media[entryUuid][state.inputDetails.ref].cached;
                 const previousAnswer = state.answer.answer;
+                //Filesystem.writeFile truncates the target in place, so a retake
+                //writes onto the very file the rollback restores: back up the
+                //previous bytes first (a resized temp photo, ~100-300KB) so a
+                //mid-write failure can be undone below. Fresh captures have no
+                //previous file and skip the backup
+                const isRetake = previousCached === filename && previousCached !== '';
+                let previousData = null;
+                if (isRetake) {
+                    try {
+                        const { Filesystem } = await import('@capacitor/filesystem');
+                        const read = await Filesystem.readFile({ path: tempDir + filename });
+                        previousData = read && read.data ? read.data : null;
+                    } catch (backupError) {
+                        console.log('Failed to back up previous temp photo: ' + backupError);
+                    }
+                }
                 //cover the resize below: with large captures the decode/downscale
                 //takes a moment, and the modal (with its own feedback) is already
                 //gone. Single owner: shown here, hidden after the thumbnail lands
@@ -170,10 +195,22 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                     console.log(error);
                     //the replacement photo could not be processed: track it, the
                     //capture is lost even though the previous references survive.
-                    //wontfix: a partially-written tempDir + filename target (if the
-                    //write itself failed mid-way, which is rare) is left orphaned
-                    //here by design — it self-heals via clearTemporaryDir() and a
-                    //best-effort delete would add failure modes to this rollback path
+                    //a failed write may have truncated the retake target in place:
+                    //restore the backed-up bytes so the previous photo is intact,
+                    //not just referenced (best-effort; a double fault leaves a
+                    //partial file that self-heals via clearTemporaryDir())
+                    if (previousData !== null) {
+                        try {
+                            const { Filesystem } = await import('@capacitor/filesystem');
+                            await Filesystem.writeFile({
+                                path: tempDir + filename,
+                                data: previousData,
+                                recursive: true
+                            });
+                        } catch (restoreError) {
+                            console.log('Failed to restore previous temp photo: ' + restoreError);
+                        }
+                    }
                     rollbarService.criticalWithContext('photoTake resize failed', error);
                     //restore the previous references so a failed retake does not drop
                     //the existing photo (fresh captures restore '' as before, so the
