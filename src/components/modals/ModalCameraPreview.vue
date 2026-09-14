@@ -148,6 +148,14 @@ export default {
 		//canDismiss mutations must land on this modal, never on another overlay
 		//resolved afterwards (e.g. a failure alert shown on top of it)
 		let modalOverlay = null;
+		//true once a native session may exist, even if state.started was never set
+		//(start() rejecting after the plugin created the session)
+		let sessionMaybeActive = false;
+		//serializes startRecordVideo() with shutter/teardown: a second shutter
+		//press while starting is dropped, finalize/abort wait (bounded) for the
+		//pending start instead of racing it on the native bridge
+		let recordingStartInProgress = false;
+		let recordingStartPromise = null;
 
 		const computedScope = {
 			//video mode hides the flip/flash controls (recording keeps the shutter as
@@ -223,6 +231,7 @@ export default {
 			} catch (error) {
 				console.log('CameraPreview.stop failed: ' + error);
 			}
+			sessionMaybeActive = false;
 		}
 
 		async function _start() {
@@ -273,6 +282,7 @@ export default {
 			//startOptions is built once but reused on foreground restarts: always
 			//restart the side the user flipped to, not the initial rear default
 			startOptions.position = state.cameraPosition;
+			sessionMaybeActive = true;
 			await CameraPreview.start(startOptions);
 			if (tornDown) {
 				await _forceStopPlugin();
@@ -365,15 +375,18 @@ export default {
 		}
 
 		async function _stop() {
-			if (!state.started) {
+			if (!state.started && !sessionMaybeActive) {
 				return;
 			}
 			try {
 				await CameraPreview.stop({ force: true });
+				state.started = false;
+				sessionMaybeActive = false;
 			} catch (error) {
+				//the native camera may still be running: keep the flags so the
+				//next teardown retries instead of leaking the session
 				console.log('CameraPreview.stop failed: ' + error);
 			}
-			state.started = false;
 		}
 
 		async function _cleanupSource() {
@@ -387,6 +400,25 @@ export default {
 				console.log('CameraPreview.deleteFile failed: ' + error);
 			}
 			sourcePath = null;
+		}
+
+		//bounded wait for a pending startRecordVideo(): finalize/abort must not
+		//race the start on the native bridge, but a hung native start must not
+		//wedge dismiss() either — on timeout fall through to the existing
+		//force-stop path
+		async function _awaitRecordingStart() {
+			const pending = recordingStartPromise;
+			if (!pending) {
+				return;
+			}
+			try {
+				await Promise.race([
+					pending,
+					new Promise((resolve) => setTimeout(resolve, 2000))
+				]);
+			} catch (error) {
+				console.log('CameraPreview recording start wait failed: ' + error);
+			}
 		}
 
 		//the plugin rejects the whole capture when location is denied, restricted,
@@ -448,6 +480,17 @@ export default {
 					gpsFallback = true;
 				}
 				sourcePath = result.value;
+				if (tornDown) {
+					//the modal was dismissed while the capture was in flight: the
+					//caller is gone, so nobody owns the file — delete it instead
+					//of leaking it in the plugin cache (sourceHandedOff stays false)
+					try {
+						await CameraPreview.deleteFile({ path: result.value });
+					} catch (error) {
+						console.log('CameraPreview captured file cleanup failed: ' + error);
+					}
+					return;
+				}
 				//hand the file to the caller; photo-take deletes it after resizing
 				sourceHandedOff = true;
 				await _stop();
@@ -478,18 +521,25 @@ export default {
 		}
 
 		async function startRecording() {
-			if (!state.started || state.recording || state.capturing) {
+			if (!state.started || state.recording || state.capturing || recordingStartInProgress || tornDown) {
 				return;
 			}
+			recordingStartInProgress = true;
 			state.recording = true;
+			//block back-press teardown before the native start lands, so dismiss
+			//cannot tear the modal down mid-start
+			await _setModalDismissable(false);
+			recordingStartPromise = CameraPreview.startRecordVideo({});
 			try {
 				//no artificial duration/size cap: the user decides when to stop
-				await CameraPreview.startRecordVideo({});
-				//from here a back press must be ignored, not tear the capture down
-				await _setModalDismissable(false);
+				await recordingStartPromise;
 			} catch (error) {
 				console.log('CameraPreview.startRecordVideo failed: ' + error);
 				state.recording = false;
+				await _setModalDismissable(true);
+			} finally {
+				recordingStartInProgress = false;
+				recordingStartPromise = null;
 			}
 		}
 
@@ -497,6 +547,14 @@ export default {
 		async function _handOffRecording(videoFilePath) {
 			if (!videoFilePath) {
 				console.log('CameraPreview returned no video file path');
+				return;
+			}
+			if (tornDown) {
+				try {
+					await CameraPreview.deleteFile({ path: videoFilePath });
+				} catch (error) {
+					console.log('CameraPreview recorded file cleanup failed: ' + error);
+				}
 				return;
 			}
 			sourcePath = videoFilePath;
@@ -511,6 +569,7 @@ export default {
 
 		//stop the recording and hand the finished file to the caller (video-shoot)
 		async function _finalizeRecording() {
+			await _awaitRecordingStart();
 			if (!state.recording) {
 				return;
 			}
@@ -545,6 +604,7 @@ export default {
 		//via ✕: back presses are blocked while recording), so the plugin cache
 		//does not accumulate
 		async function _abortRecording() {
+			await _awaitRecordingStart();
 			if (!state.recording) {
 				return;
 			}
@@ -569,6 +629,10 @@ export default {
 		//the shutter: captures a photo, or toggles the video recording
 		async function shutter() {
 			if (computedScope.isVideoMode.value) {
+				//in-flight startRecordVideo wins; mid-start taps are dropped, never queued
+				if (recordingStartInProgress) {
+					return;
+				}
 				if (state.recording) {
 					await _finalizeRecording();
 				} else {
@@ -608,7 +672,7 @@ export default {
 			}
 		}
 
-		async function dismiss() {
+		async function dismiss(payload) {
 			//teardown starts here, synchronously: a pending _start() must release
 			//the native session instead of marking state on the closing modal
 			tornDown = true;
@@ -618,8 +682,14 @@ export default {
 				await _abortRecording();
 			}
 			await _stop();
+			//safety net for a partial session _stop() never tracked (rejected
+			//start) or could not release (rejected stop): idempotent, never throws
+			await _forceStopPlugin();
 			await _cleanupSource();
-			modalController.dismiss();
+			//restore dismissal for the programmatic close below (recording paths
+			//set canDismiss=false while capturing)
+			await _setModalDismissable(true);
+			modalController.dismiss(payload);
 		}
 
 		async function _onAppStateChange({ isActive }) {
@@ -674,9 +744,10 @@ export default {
 					await _start();
 				} catch (error) {
 					console.log('CameraPreview restart failed: ' + error);
-					//the modal cannot recover: the user loses the camera session
+					//the modal cannot recover: tell the caller instead of closing
+					//silently as a back-button cancel
 					rollbarService.criticalWithContext('CameraPreview restart failed', error);
-					await dismiss();
+					await dismiss({ startError: (error && error.message) || labels.unknown_error });
 				} finally {
 					restartInProgress = false;
 				}
@@ -687,9 +758,10 @@ export default {
 			_setCameraLayerVisible(true);
 			_start().catch((error) => {
 				console.log('CameraPreview.start failed: ' + error);
-				//the modal cannot open: the user loses the camera session
+				//the modal cannot open: report and tell the caller (permission
+				//denied, camera unavailable) instead of a silent cancel
 				rollbarService.criticalWithContext('CameraPreview.start failed', error);
-				dismiss().catch((dismissError) => {
+				dismiss({ startError: (error && error.message) || labels.unknown_error }).catch((dismissError) => {
 					console.log('CameraPreview dismiss failed: ' + dismissError);
 				});
 			});
@@ -736,6 +808,7 @@ export default {
 				await _abortRecording();
 			}
 			await _stop();
+			await _forceStopPlugin();
 			await _cleanupSource();
 			//unmount may race listener registration: await the pending promises so
 			//callbacks never stay registered on the destroyed modal
