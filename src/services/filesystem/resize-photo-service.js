@@ -88,6 +88,11 @@ export const resizePhotoService = {
         //whether the source EXIF (GPS included) survived into the output:
         //diagnostics only, like the fields above
         let exifCopied = false;
+        //whether the decode fell back to a plain createImageBitmap() (WebViews
+        //predating the 'from-image' enum reject the whole call): diagnostics
+        //only, surfaced so a sideways device is visible with evidence
+        let imageOrientationFallback = false;
+        let sourceOrientation = null;
 
         try {
             let base64 = await getBase64FromFilePath(sourcePath);
@@ -97,7 +102,20 @@ export const resizePhotoService = {
 
             // Android 10+ / iOS 16+ both support createImageBitmap + imageOrientation: 'from-image'
             // which bakes EXIF orientation into the decoded bitmap dimensions.
-            const bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' });
+            let bitmap;
+            try {
+                bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' });
+            } catch (orientationError) {
+                //WebViews predating the 'from-image' enum value reject the whole
+                //call; a plain decode is safe here: Chromium's default has always
+                //been the EXIF-applying mode, and the plugin already bakes the
+                //orientation into the pixels (Orientation=1). Hand-rotating would
+                //double-apply it, so only record the fallback for diagnostics
+                console.log('createImageBitmap imageOrientation unsupported, decoding plain: ' + orientationError);
+                imageOrientationFallback = true;
+                sourceOrientation = exifService.readOrientation(base64);
+                bitmap = await createImageBitmap(blob);
+            }
             sourceWidth = bitmap.width;
             sourceHeight = bitmap.height;
 
@@ -181,6 +199,8 @@ export const resizePhotoService = {
                     base64Length,
                     exifCopied,
                     stripGps,
+                    imageOrientationFallback,
+                    sourceOrientation,
                     heap: resizePhotoService._heapSnapshot()
                 };
             }

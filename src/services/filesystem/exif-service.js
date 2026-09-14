@@ -285,8 +285,65 @@ function _stripExifSegments(bytes) {
     return stripped;
 }
 
-function _copyExifSegmentOrThrow(sourceBase64, outputBase64, stripGps) {
-    const sourceBytes = _base64ToBytes(sourceBase64);
+//read the IFD0 orientation tag (0x0112) from a base64 JPEG: returns 1..8,
+//null when absent or malformed. Diagnostics only, never throws — a photo can
+//never fail on orientation inspection
+function _readOrientationOrNull(sourceBase64) {
+    try {
+        const bytes = _base64ToBytes(sourceBase64);
+        const segment = _findExifSegment(bytes);
+        if (!segment) {
+            return null;
+        }
+        const view = new DataView(bytes.buffer, bytes.byteOffset + segment.start, segment.end - segment.start);
+        const tiffStart = 6;
+        if (segment.end - segment.start < 14) {
+            return null;
+        }
+        const byteOrder = view.getUint16(tiffStart, false);
+        const littleEndian = byteOrder === TIFF_LITTLE_ENDIAN;
+        if (byteOrder !== TIFF_LITTLE_ENDIAN && byteOrder !== TIFF_BIG_ENDIAN) {
+            return null;
+        }
+        if (view.getUint16(tiffStart + 2, littleEndian) !== TIFF_MAGIC) {
+            return null;
+        }
+        const ifd0 = tiffStart + view.getUint32(tiffStart + 4, littleEndian);
+        if (ifd0 + 2 > view.byteLength) {
+            return null;
+        }
+        const count = view.getUint16(ifd0, littleEndian);
+        if (ifd0 + 2 + count * 12 + 4 > view.byteLength) {
+            return null;
+        }
+        for (let i = 0; i < count; i++) {
+            const entry = ifd0 + 2 + i * 12;
+            if (view.getUint16(entry, littleEndian) !== TAG_ORIENTATION) {
+                continue;
+            }
+            const type = view.getUint16(entry + 2, littleEndian);
+            const tagCount = view.getUint32(entry + 4, littleEndian);
+            if (tagCount !== 1) {
+                return null;
+            }
+            let value = null;
+            if (type === TYPE_SHORT) {
+                value = view.getUint16(entry + 8, littleEndian);
+            } else if (type === TYPE_LONG) {
+                value = view.getUint32(entry + 8, littleEndian);
+            } else {
+                return null;
+            }
+            return value >= 1 && value <= 8 ? value : null;
+        }
+        return null;
+    } catch (error) {
+        console.log('exif orientation read skipped: ' + error);
+        return null;
+    }
+}
+
+function _copyExifSegmentOrThrow(sourceBase64, outputBase64, stripGps) {    const sourceBytes = _base64ToBytes(sourceBase64);
     const segment = _findExifSegment(sourceBytes);
     //no EXIF to carry (or not a JPEG): keep the output as generated
     if (!segment) {
@@ -316,6 +373,9 @@ function _copyExifSegmentOrThrow(sourceBase64, outputBase64, stripGps) {
 }
 
 export const exifService = {
+    readOrientation(sourceBase64) {
+        return _readOrientationOrNull(sourceBase64);
+    },
     //best-effort by contract: any missing or malformed structure returns the
     //output untouched, never throws, so a photo can never fail on EXIF handling.
     //With stripGps (location denied) the GPS directory is zeroed in place while
