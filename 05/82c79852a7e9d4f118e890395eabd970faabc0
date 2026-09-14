@@ -1,0 +1,33 @@
+src/components/modals/ModalCameraPreview.vue
+  s_5bd4b644d7d9d5::t_9958c33b0aac53 552-559
+  s_5bd4b644d7d9d5::t_0759d8526e7052 572
+  s_5bd4b644d7d9d5::t_9f88b33d1fdfc2 483-493
+  s_5bd4b644d7d9d5::t_de321b2d5e0b26 607
+  s_5bd4b644d7d9d5::t_e38995bb3a27f2 524,527,529-532,535,539-542
+  s_5bd4b644d7d9d5::t_cd66996043247e 761-762,764
+  s_5bd4b644d7d9d5::t_23c009bd4d9c22 285
+  s_5bd4b644d7d9d5::t_1affdd8e04da4e 747-748,750
+  s_5bd4b644d7d9d5::t_a943dfdb8edde2 632-635
+  s_5bd4b644d7d9d5::t_37fa1aefefcc92 234
+  s_5bd4b644d7d9d5::t_8b328566e9bf88 151-158
+  s_5bd4b644d7d9d5::t_c9f4d8e78e8c52 811
+  s_5bd4b644d7d9d5::t_010abbdc15ff73 378,383-384,386-387
+  s_5bd4b644d7d9d5::t_c26dda358efdf2 675,685-687,689-692
+  s_5bd4b644d7d9d5::t_fa03481360dbe8 405-423
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0582c79852a7e9d4f118e890395eabd970faabc0",
+  "prompts": {},
+  "sessions": {
+    "s_5bd4b644d7d9d5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6ea78201ffei47DA78L7zqNoS",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
