@@ -126,6 +126,9 @@ export default {
 		//appStateChange arriving in this window must still record appInactive,
 		//otherwise startup completes while paused and foregrounding skips recovery
 		let startInProgress = false;
+		//true when a background/foreground cycle overlapped a pending _start(): the
+		//start may land with a paused session, so completion must recover the feed
+		let recoverAfterStart = false;
 		//set synchronously when teardown begins (dismiss or unmount): _start()
 		//checks it after every awaited step and releases the native session
 		//instead of marking state on the destroyed modal
@@ -313,6 +316,15 @@ export default {
 			} finally {
 				startInProgress = false;
 			}
+			//the app was foregrounded while this start was pending: if it is still in the
+			//foreground the session may be paused, so recover now. Backgrounded again =>
+			//the foreground path above (state.started is now true) handles it on return
+			if (recoverAfterStart) {
+				recoverAfterStart = false;
+				if (!appInactive) {
+					await _recoverFeed();
+				}
+			}
 		}
 
 		async function _syncFlashMode() {
@@ -386,6 +398,31 @@ export default {
 				//the native camera may still be running: keep the flags so the
 				//next teardown retries instead of leaking the session
 				console.log('CameraPreview.stop failed: ' + error);
+			}
+		}
+
+		//release a possibly-stale session and restart the feed in the foreground. Shared
+		//by the foreground path (session was stopped while backgrounded) and by the
+		//pending-start path (the start resolved after the app came back)
+		async function _recoverFeed() {
+			if (tornDown || restartInProgress || startInProgress) {
+				return;
+			}
+			//startup may have completed while paused, leaving a stale session behind:
+			//release it before restarting so the feed is live, not frozen
+			if (state.started) {
+				await _stop();
+			}
+			restartInProgress = true;
+			try {
+				await _start();
+			} catch (error) {
+				console.log('CameraPreview restart failed: ' + error);
+				//the modal cannot recover: tell the caller instead of closing silently
+				rollbarService.criticalWithContext('CameraPreview restart failed', error);
+				await dismiss({ startError: (error && error.message) || labels.unknown_error });
+			} finally {
+				restartInProgress = false;
 			}
 		}
 
@@ -729,28 +766,17 @@ export default {
 				if (tornDown) {
 					return;
 				}
-				//a startup already pending will complete on its own; starting again
-				//would run two sessions against the same plugin
-				if (restartInProgress || startInProgress) {
+				if (restartInProgress) {
 					return;
 				}
-				//startup may have completed while paused, leaving a stale session
-				//behind: release it before restarting so the feed is live, not frozen
-				if (state.started) {
-					await _stop();
+				//a start still in flight cannot be recovered here (we would run two
+				//sessions): defer the restart until it lands, since it may open a paused
+				//session that a native resume will not wake
+				if (startInProgress) {
+					recoverAfterStart = true;
+					return;
 				}
-				restartInProgress = true;
-				try {
-					await _start();
-				} catch (error) {
-					console.log('CameraPreview restart failed: ' + error);
-					//the modal cannot recover: tell the caller instead of closing
-					//silently as a back-button cancel
-					rollbarService.criticalWithContext('CameraPreview restart failed', error);
-					await dismiss({ startError: (error && error.message) || labels.unknown_error });
-				} finally {
-					restartInProgress = false;
-				}
+				await _recoverFeed();
 			}
 		}
 
