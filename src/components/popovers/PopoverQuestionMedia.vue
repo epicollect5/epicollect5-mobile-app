@@ -179,7 +179,7 @@ export default {
 			},
 			async removeNative() {
 				await notificationService.showProgressDialog(labels.wait);
-				const { inputRef, projectRef, mediaFolder } = readonly(props);
+				const { entryUuid, inputRef, projectRef, mediaFolder } = readonly(props);
 				const filenames = getFilenames();
 				let fileURI = getFileURI();
 
@@ -206,6 +206,7 @@ export default {
 								console.log('queue file -> ', filenames.filenameStored);
 								rootStore.queueFilesToDelete.push({
 									inputRef,
+									entryUuid,
 									filenameStored: filenames.filenameStored,
 									file_path: storedPath,
 									project_ref: projectRef,
@@ -232,6 +233,7 @@ export default {
 						console.log('queue file -> ', filenames.filenameStored);
 						rootStore.queueFilesToDelete.push({
 							inputRef,
+							entryUuid,
 							filenameStored: filenames.filenameStored,
 							file_path: filePath,
 							project_ref: projectRef,

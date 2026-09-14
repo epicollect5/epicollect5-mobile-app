@@ -129,21 +129,23 @@ export const branchEntryService = {
     //Drop queued stored-file deletions belonging to this branch edit: quitting
     //a branch discards its changes, so its queued deletions must not reach
     //the parent save (the file stays, the branch answer keeps pointing at it).
-    //Hierarchy items are preserved (inputRefs are unique project-wide).
+    //Scoped by owning entryUuid (sequential save-A-then-quit-B on the same
+    //branch form shares inputRefs but never entryUuids): items without an
+    //entryUuid (legacy) fail open and are preserved, like foreign hierarchy items.
     discardBranchDeleteQueue() {
         const rootStore = useRootStore();
         if (rootStore.queueFilesToDelete.length === 0) {
             return;
         }
-        const mediaRefs = projectModel.getBranchMediaQuestions(
-            this.entry.formRef,
-            this.entry.ownerInputRef
-        );
-        if (mediaRefs.length === 0) {
+        const ownerUuid = this.entry && this.entry.entryUuid;
+        if (!ownerUuid) {
             return;
         }
         rootStore.queueFilesToDelete = rootStore.queueFilesToDelete.filter((file) => {
-            return !mediaRefs.includes(file.inputRef);
+            if (!file.entryUuid) {
+                return true;
+            }
+            return file.entryUuid !== ownerUuid;
         });
     },
 
