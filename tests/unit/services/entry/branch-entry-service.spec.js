@@ -207,48 +207,45 @@ describe('branchEntryService.discardBranchDeleteQueue', () => {
         vi.clearAllMocks();
     });
 
-    it('removes only the quitting branch media items, preserving hierarchy items', async () => {
+    it('removes only the quitting branch entry items, preserving sibling and hierarchy items', async () => {
         const { useRootStore } = await import('@/stores/root-store');
-        const { projectModel } = await import('@/models/project-model.js');
-        projectModel.getBranchMediaQuestions.mockReturnValueOnce(['branch-photo']);
         const store = {
             queueFilesToDelete: [
-                { inputRef: 'hierarchy-photo', file_name: 'hierarchy-photo.jpg' },
-                { inputRef: 'branch-photo', file_name: 'branch-photo.jpg' }
+                { inputRef: 'branch-photo', entryUuid: 'branch-a', file_name: 'a.jpg' },
+                { inputRef: 'branch-photo', entryUuid: 'branch-b', file_name: 'b.jpg' },
+                { inputRef: 'hierarchy-photo', file_name: 'h.jpg' },
+                { inputRef: 'branch-photo', file_name: 'legacy.jpg' }
             ]
         };
         useRootStore.mockReturnValueOnce(store);
-        branchEntryService.entry = { formRef: 'form-ref', ownerInputRef: 'branch-owner' };
+        branchEntryService.entry = { entryUuid: 'branch-b', formRef: 'form-ref', ownerInputRef: 'branch-owner' };
 
         branchEntryService.discardBranchDeleteQueue();
 
-        expect(projectModel.getBranchMediaQuestions).toHaveBeenCalledWith('form-ref', 'branch-owner');
         expect(store.queueFilesToDelete).toEqual([
-            { inputRef: 'hierarchy-photo', file_name: 'hierarchy-photo.jpg' }
+            { inputRef: 'branch-photo', entryUuid: 'branch-a', file_name: 'a.jpg' },
+            { inputRef: 'hierarchy-photo', file_name: 'h.jpg' },
+            { inputRef: 'branch-photo', file_name: 'legacy.jpg' }
         ]);
     });
 
-    it('leaves an empty queue untouched without querying media refs', async () => {
+    it('leaves an empty queue untouched', async () => {
         const { useRootStore } = await import('@/stores/root-store');
-        const { projectModel } = await import('@/models/project-model.js');
         const store = { queueFilesToDelete: [] };
         useRootStore.mockReturnValueOnce(store);
-        branchEntryService.entry = { formRef: 'form-ref', ownerInputRef: 'branch-owner' };
+        branchEntryService.entry = { entryUuid: 'branch-b', formRef: 'form-ref', ownerInputRef: 'branch-owner' };
 
         branchEntryService.discardBranchDeleteQueue();
 
-        expect(projectModel.getBranchMediaQuestions).not.toHaveBeenCalled();
         expect(store.queueFilesToDelete).toEqual([]);
     });
 
-    it('leaves the queue untouched when the branch has no media questions', async () => {
+    it('leaves the queue untouched when the entry has no uuid', async () => {
         const { useRootStore } = await import('@/stores/root-store');
-        const { projectModel } = await import('@/models/project-model.js');
-        projectModel.getBranchMediaQuestions.mockReturnValueOnce([]);
-        const queued = { inputRef: 'hierarchy-photo', file_name: 'hierarchy-photo.jpg' };
+        const queued = { inputRef: 'branch-photo', entryUuid: 'branch-a', file_name: 'a.jpg' };
         const store = { queueFilesToDelete: [queued] };
         useRootStore.mockReturnValueOnce(store);
-        branchEntryService.entry = { formRef: 'form-ref', ownerInputRef: 'branch-owner' };
+        branchEntryService.entry = {};
 
         branchEntryService.discardBranchDeleteQueue();
 
@@ -264,16 +261,15 @@ describe('branchEntryService.discardBranchDeleteQueue', () => {
         const { moveFileService } = await import('@/services/filesystem/move-file-service');
         const { projectModel } = await import('@/models/project-model.js');
         mediaService.saveMedia.mockImplementation((...args) => actual.mediaService.saveMedia(...args));
-        projectModel.getBranchMediaQuestions.mockReturnValueOnce(['b-photo']);
         const store = {
             language: 'en',
             tempDir: '/tmp/',
             queueFilesToDelete: [
-                { inputRef: 'b-photo', filenameStored: 'b-photo.jpg', file_path: '/p/', project_ref: 'project-ref', file_name: 'b-photo.jpg' }
+                { inputRef: 'b-photo', entryUuid: 'branch-1', filenameStored: 'b-photo.jpg', file_path: '/p/', project_ref: 'project-ref', file_name: 'b-photo.jpg' }
             ]
         };
         useRootStore.mockReturnValue(store);
-        branchEntryService.entry = { formRef: 'form-ref', ownerInputRef: 'branch-owner' };
+        branchEntryService.entry = { entryUuid: 'branch-1', formRef: 'form-ref', ownerInputRef: 'branch-owner' };
 
         //quit the branch without saving: its queued deletion is discarded
         branchEntryService.discardBranchDeleteQueue();

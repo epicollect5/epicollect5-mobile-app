@@ -22,17 +22,21 @@ describe('rollbarService.criticalWithContext', () => {
         rollbarService.criticalWithContext('op failed', error);
 
         const reported = rollbarInstance.critical.mock.calls[0][0];
+        const custom = rollbarInstance.critical.mock.calls[0][1];
         expect(reported).toBeInstanceOf(Error);
         expect(reported.message).toBe('op failed: boom');
         expect(reported.stack).toBe(error.stack);
+        expect(custom).toMatchObject({ context: 'op failed' });
     });
 
     it('wraps plain error objects with the context so Rollbar gets a usable report', () => {
         rollbarService.criticalWithContext('op failed', { code: 5 });
 
         const reported = rollbarInstance.critical.mock.calls[0][0];
+        const custom = rollbarInstance.critical.mock.calls[0][1];
         expect(reported).toBeInstanceOf(Error);
         expect(reported.message).toBe('op failed: {"code":5}');
+        expect(custom).toMatchObject({ context: 'op failed', code: 5 });
     });
 
     it('never throws on circular values, so reporting cannot hide the original failure', () => {
@@ -58,7 +62,7 @@ describe('rollbarService.criticalWithContext', () => {
 
         expect(() => rollbarService.criticalWithContext('op failed', evil)).not.toThrow();
 
-        expect(rollbarInstance.critical).toHaveBeenCalledWith(expect.any(Error));
+        expect(rollbarInstance.critical).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({ context: 'op failed' }));
     });
 
     it('caps functions to a short tag instead of serializing their source', () => {

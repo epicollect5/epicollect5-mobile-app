@@ -103,6 +103,7 @@ describe('PopoverQuestionMedia removeNative', () => {
         //persistent file + DB row queued for save-time deletion
         expect(useRootStore().queueFilesToDelete).toEqual([{
             inputRef: 'q1',
+            entryUuid: 'entry1',
             filenameStored: 'entry1_1000.jpg',
             file_path: '/data/photos/',
             project_ref: 'proj1',
@@ -151,6 +152,7 @@ describe('PopoverQuestionMedia removeNative', () => {
         expect(deleteFileService.removeFile).not.toHaveBeenCalled();
         expect(useRootStore().queueFilesToDelete).toEqual([{
             inputRef: 'q1',
+            entryUuid: 'entry1',
             filenameStored: 'stored.jpg',
             file_path: '/data/photos/',
             project_ref: 'proj1',
