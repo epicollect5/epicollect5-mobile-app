@@ -1065,6 +1065,101 @@ describe('ModalCameraPreview component', () => {
 		await flushPromises();
 	});
 
+	it('defers the feed recovery when the app foregrounds before the pending start resolves', async () => {
+		grantPermissions();
+		//hold the initial startup open so the foreground lands mid-startup
+		let resolveStart = null;
+		mocks.cameraPreview.start.mockReturnValue(new Promise((resolve) => {
+			resolveStart = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+		await listener({ isActive: false });
+		await flushPromises();
+
+		//foreground while the start is still pending: recovery deferred, no second start
+		await listener({ isActive: true });
+		await flushPromises();
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(1);
+
+		//the start resolves with a possibly-paused session: deferred recovery
+		//releases the stale session and restarts the feed
+		resolveStart();
+		await flushPromises();
+
+		expect(mocks.cameraPreview.stop).toHaveBeenCalledWith({ force: true });
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(2);
+		expect(wrapper.vm.state.started).toBe(true);
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('does not recover while backgrounded again before the pending start resolves', async () => {
+		grantPermissions();
+		let resolveStart = null;
+		mocks.cameraPreview.start.mockReturnValue(new Promise((resolve) => {
+			resolveStart = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+		await listener({ isActive: false });
+		await flushPromises();
+		await listener({ isActive: true });
+		await flushPromises();
+		//backgrounded again before the start lands
+		await listener({ isActive: false });
+		await flushPromises();
+
+		resolveStart();
+		await flushPromises();
+
+		//still backgrounded: no restart, the stale session stays until foreground
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.stop).not.toHaveBeenCalled();
+
+		//returning to the foreground releases the stale session and restarts
+		await listener({ isActive: true });
+		await flushPromises();
+
+		expect(mocks.cameraPreview.stop).toHaveBeenCalledWith({ force: true });
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(2);
+		expect(wrapper.vm.state.started).toBe(true);
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('dismisses with a start error when the pending start rejects after a foreground cycle', async () => {
+		grantPermissions();
+		let rejectStart = null;
+		mocks.cameraPreview.start.mockReturnValue(new Promise((resolve, reject) => {
+			rejectStart = reject;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+		await listener({ isActive: false });
+		await flushPromises();
+		await listener({ isActive: true });
+		await flushPromises();
+
+		//the pending start fails: the armed flag must not trigger a recovery,
+		//the mount failure path dismisses with the reason instead
+		rejectStart(new Error('camera gone'));
+		await flushPromises();
+
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith(
+			expect.objectContaining({ startError: 'camera gone' })
+		);
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(1);
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
 	it('releases the native session when unmounted while startup is still pending', async () => {
 		grantPermissions();
 		//hold the initial startup open so the back button lands mid-startup

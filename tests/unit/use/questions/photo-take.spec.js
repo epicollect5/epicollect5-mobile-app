@@ -3,6 +3,7 @@ import { photoTake } from '@/use/questions/photo-take';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { Camera } from '@capacitor/camera';
+import { moveFileService } from '@/services/filesystem/move-file-service';
 
 const nMock = vi.hoisted(() => ({
     showProgressDialog: vi.fn().mockResolvedValue(),
@@ -31,6 +32,10 @@ const utilsMock = vi.hoisted(() => ({
     generateTimestamp: vi.fn().mockReturnValue('123')
 }));
 
+const moveMock = vi.hoisted(() => ({
+    moveToAppTemporaryDir: vi.fn().mockResolvedValue()
+}));
+
 const rollbarMock = vi.hoisted(() => ({ critical: vi.fn(), criticalWithContext: vi.fn() }));
 
 vi.mock('@/stores/root-store', () => ({ useRootStore: vi.fn() }));
@@ -50,7 +55,7 @@ vi.mock('@capgo/camera-preview', () => ({ CameraPreview: cameraPreviewMock }));
 vi.mock('@ionic/vue', () => ({ modalController: modalMock }));
 vi.mock('@/services/notification-service', () => ({ notificationService: nMock }));
 vi.mock('@/services/utilities/utils-service', () => ({ utilsService: utilsMock }));
-vi.mock('@/services/filesystem/move-file-service', () => ({ moveFileService: { moveToAppTemporaryDir: vi.fn().mockResolvedValue() } }));
+vi.mock('@/services/filesystem/move-file-service', () => ({ moveFileService: moveMock }));
 vi.mock('@/services/filesystem/resize-photo-service', () => ({ resizePhotoService: resizeMock }));
 vi.mock('@/services/utilities/rollbar-service', () => ({ rollbarService: rollbarMock }));
 vi.mock('@/components/modals/ModalCameraPreview.vue', () => ({ default: { name: 'ModalCameraPreview' } }));
@@ -245,22 +250,70 @@ describe('photoTake tests', () => {
 		expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/capture.jpg' });
 	});
 
-	it('restores the existing photo when the native capture errors on a retake', async () => {
-		setupRootStore();
-		nMock.startForegroundService.mockResolvedValue('granted');
-		Camera.getPhoto.mockRejectedValue(new Error('camera busy'));
-		const { media, entryUuid, state, filename, action } = makeArgs();
-		media[entryUuid]['q1'].cached = 'existing.jpg';
-		media[entryUuid]['q1'].stored = 'existing.jpg';
-		state.answer.answer = 'existing.jpg';
+    it('restores the existing photo when the native capture errors on a retake', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockRejectedValue(new Error('camera busy'));
+        const { media, entryUuid, state, filename, action } = makeArgs();
+        media[entryUuid]['q1'].cached = 'existing.jpg';
+        media[entryUuid]['q1'].stored = 'existing.jpg';
+        state.answer.answer = 'existing.jpg';
 
-		await photoTake({ media, entryUuid, state, filename, action });
+        await photoTake({ media, entryUuid, state, filename, action });
 
-		expect(Camera.getPhoto).toHaveBeenCalled();
-		expect(nMock.showAlert).toHaveBeenCalledWith('camera busy');
-		expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
-		expect(state.answer.answer).toBe('existing.jpg');
-	});
+        expect(Camera.getPhoto).toHaveBeenCalled();
+        expect(nMock.showAlert).toHaveBeenCalledWith('camera busy');
+        expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+        expect(state.answer.answer).toBe('existing.jpg');
+    });
+
+    it('native capture moves the file before persisting the filename', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockResolvedValueOnce({ path: '/tmp/orig.jpg' });
+        const { media, entryUuid, state, filename, action } = makeArgs();
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(moveFileService.moveToAppTemporaryDir).toHaveBeenCalledWith('/tmp/orig.jpg', 'photo_gen.jpg');
+        expect(media[entryUuid]['q1'].cached).toBe('photo_gen.jpg');
+        expect(state.answer.answer).toBe('photo_gen.jpg');
+        expect(state.imageSource).toContain('/tmp/photo_gen.jpg');
+    });
+
+    it('restores the existing photo when the native move fails on a retake', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockResolvedValueOnce({ path: '/tmp/orig.jpg' });
+        moveFileService.moveToAppTemporaryDir.mockRejectedValueOnce(new Error('move boom'));
+        const { media, entryUuid, state, filename, action } = makeArgs();
+        media[entryUuid]['q1'].cached = 'existing.jpg';
+        media[entryUuid]['q1'].stored = 'existing.jpg';
+        state.answer.answer = 'existing.jpg';
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('photoTake capture failed', expect.any(Error));
+        expect(nMock.showAlert).toHaveBeenCalledWith('move boom');
+        expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+        expect(state.answer.answer).toBe('existing.jpg');
+        expect(state.imageSource).toBe('');
+    });
+
+    it('leaves the entry empty when the native move fails on a fresh capture', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockResolvedValueOnce({ path: '/tmp/orig.jpg' });
+        moveFileService.moveToAppTemporaryDir.mockRejectedValueOnce(new Error('move boom'));
+        const { media, entryUuid, state, filename, action } = makeArgs();
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        //no phantom filename: refs stay empty and the alert is shown
+        expect(media[entryUuid]['q1'].cached).toBe('');
+        expect(state.answer.answer).toBe('');
+        expect(nMock.showAlert).toHaveBeenCalledWith('move boom');
+    });
 
     it('does not open the in-app modal on iOS even when inAppCamera flag is on', async () => {
         setupRootStore({ platform: PARAMETERS.IOS, inAppCamera: true });
