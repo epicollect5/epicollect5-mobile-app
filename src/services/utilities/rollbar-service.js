@@ -44,7 +44,11 @@ const rollbar = new Rollbar({
 //payloads past Rollbar limits)
 function _safeStringify(value) {
     if (typeof value === 'function') {
-        return '[Function ' + (value.name || 'anonymous') + ']';
+        try {
+            return '[Function ' + (value.name || 'anonymous') + ']';
+        } catch (error) {
+            return '[Function]';
+        }
     }
     try {
         const result = JSON.stringify(value);
@@ -78,19 +82,71 @@ export const rollbarService = {
     critical(error) {
         rollbar.critical(error);
     },
-    //Shared reporter for caught errors: keeps the existing console.log at the
-    //call site, prefixes the operation context for Rollbar grouping, preserves
-    //the original stack, and wraps plain error objects (eg. File error code 5)
-    //so Rollbar gets a usable report
+    //Shared reporter for caught errors: fingerprints by operation context for
+    //Rollbar grouping (the default fingerprint is stack frames + class, which
+    //the message prefix alone cannot influence), preserves the original stack,
+    //name and cause chain, and passes through diagnostic fields (code,
+    //resizeContext, ...) via custom so they are not lost in the wrapper
     criticalWithContext(context, error) {
         let reportableError;
+        const custom = { context };
         if (error instanceof Error) {
             reportableError = new Error(context + ': ' + error.message);
             reportableError.stack = error.stack;
+            if (error.name && error.name !== 'Error') {
+                reportableError.name = error.name;
+            }
+            if (error.cause !== undefined) {
+                reportableError.cause = error.cause;
+            }
+            //own enumerable diagnostics ride in custom (never on the wrapper,
+            //where Rollbar would ignore them): each read is guarded so a
+            //throwing getter cannot break reporting
+            try {
+                const keys = Object.keys(error);
+                for (const key of keys) {
+                    if (key === 'message' || key === 'stack' || key === 'cause' || key === 'name') {
+                        continue;
+                    }
+                    try {
+                        custom[key] = error[key];
+                    } catch (ignored) {
+                        custom[key] = _safeStringify(error[key]);
+                    }
+                }
+                if (typeof Object.getOwnPropertySymbols === 'function') {
+                    const symbols = Object.getOwnPropertySymbols(error);
+                    for (const sym of symbols) {
+                        try {
+                            if (Object.prototype.propertyIsEnumerable.call(error, sym)) {
+                                custom[sym.toString()] = error[sym];
+                            }
+                        } catch (ignored) {
+                            continue;
+                        }
+                    }
+                }
+            } catch (ignored) {
+                console.log('rollbar custom fields skipped: ' + ignored);
+            }
+        } else if (error && (typeof error === 'object' || typeof error === 'function')) {
+            reportableError = new Error(context + ': ' + _safeStringify(error));
+            try {
+                const keys = Object.keys(error);
+                for (const key of keys) {
+                    try {
+                        custom[key] = error[key];
+                    } catch (ignored) {
+                        custom[key] = _safeStringify(error[key]);
+                    }
+                }
+            } catch (ignored) {
+                console.log('rollbar custom fields skipped: ' + ignored);
+            }
         } else {
             reportableError = new Error(context + ': ' + _safeStringify(error));
         }
-        rollbar.critical(reportableError);
+        rollbar.critical(reportableError, custom);
     },
     configure(params) {
         rollbar.configure(params);
@@ -102,14 +158,41 @@ export const rollbarService = {
         environment += ' - WebView ' + rootStore.device.webViewVersion;
         console.log('Environment -> ', environment);
 
-        //set rollbar version & environment for payloads
+        //set rollbar version & environment for payloads; fingerprint by
+        //operation context so one noisy operation groups as one item
+        //(documented client-side fingerprint key, takes precedence over the
+        //default frames+class fingerprint; Rollbar hashes strings over 40 chars)
         const transformer = function (payload) {
+            //fold in the constructor's file://app.js filename normalization
+            //(configure() overwrites the constructor transform, so without this
+            //it never runs in production): keep pure and side-effect free so a
+            //throw cannot drop the transform and its fingerprint with it
+            try {
+                if (payload && payload.body && payload.body.trace && payload.body.trace.frames) {
+                    const frames = payload.body.trace.frames;
+                    for (let i = 0; i < frames.length; i++) {
+                        if (frames[i].filename && frames[i].filename.indexOf('app.js') > -1) {
+                            payload.body.trace.frames[i].filename = 'file://app.js';
+                        }
+                    }
+                }
+            } catch (ignored) {
+                console.log('rollbar frame normalization skipped');
+            }
             payload.client = {
                 javascript: {
                     code_version: rootStore.app.version
                 }
             };
             payload.environment = environment;
+            try {
+                const context = payload.custom && payload.custom.context;
+                if (context) {
+                    payload.fingerprint = 'cc:' + context;
+                }
+            } catch (ignored) {
+                console.log('rollbar fingerprint skipped');
+            }
         };
 
         rollbar.configure({ transform: transformer });
