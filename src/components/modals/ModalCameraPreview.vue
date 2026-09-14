@@ -766,6 +766,13 @@ export default {
 				if (tornDown) {
 					return;
 				}
+				//wontfix: a background/foreground cycle landing inside an in-flight restart
+				//can leave a paused session with no deferred recovery (recoverAfterStart only
+				//arms for a pending initial start). Needs machine-gun screen toggles inside a
+				//sub-second window and the only effect is a frozen feed cleared by closing and
+				//reopening the camera — serializing overlapping recoveries is not worth the
+				//complexity. See docs/known-review-false-positives.md
+				//(`src/components/modals/ModalCameraPreview.vue`, restartInProgress branch).
 				if (restartInProgress) {
 					return;
 				}
