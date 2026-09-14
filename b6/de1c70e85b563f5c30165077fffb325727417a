@@ -1,0 +1,24 @@
+src/services/filesystem/exif-service.js
+  s_5bd4b644d7d9d5::t_c5de741062aa35 346
+  s_5bd4b644d7d9d5::t_6e631a20627a54 376-378
+  s_5bd4b644d7d9d5::t_d7fea3add246c7 288-345
+src/services/filesystem/resize-photo-service.js
+  s_5bd4b644d7d9d5::t_f96148fb01bfba 91-95,105-118
+  s_5bd4b644d7d9d5::t_2bcf58ae7f1d17 202-203
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b6de1c70e85b563f5c30165077fffb325727417a",
+  "prompts": {},
+  "sessions": {
+    "s_5bd4b644d7d9d5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6ea78201ffei47DA78L7zqNoS",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
