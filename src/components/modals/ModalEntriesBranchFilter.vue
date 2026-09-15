@@ -218,11 +218,13 @@ export default {
 				const searchTerm = e.target.value;
 
 				state.isFetching = true;
-				// Throttle filter
-				clearTimeout(request_timeout);
-				request_timeout = window.setTimeout(async () => {
+			// Throttle filter
+			clearTimeout(request_timeout);
+			//claim the slot now so in-flight responses landing during the
+			//debounce window are treated as stale
+			const requestId = ++latestCountRequest;
+			request_timeout = window.setTimeout(async () => {
 				state.filters.title = searchTerm;
-				const requestId = ++latestCountRequest;
 				const result = await _getBranchEntriesCount({
 					ownerEntryUuid,
 					ownerInputRef,
@@ -247,8 +249,8 @@ export default {
 				console.log(status);
 				state.isFetching = true;
 			state.filters.status = status;
+			const requestId = ++latestCountRequest;
 			setTimeout(async () => {
-				const requestId = ++latestCountRequest;
 				const result = await _getBranchEntriesCount({
 					ownerEntryUuid,
 					ownerInputRef,
@@ -269,9 +271,12 @@ export default {
 			},
 			resetFilters () {
 				state.isFetching = true;
+			state.searchbarInitialValue = '';
+			//drop any pending title search so it cannot repopulate the fresh filters
+			clearTimeout(request_timeout);
+			const requestId = ++latestCountRequest;
 			state.filters = { ...PARAMETERS.FILTERS_DEFAULT };
 			setTimeout(async () => {
-				const requestId = ++latestCountRequest;
 				const result = await _getBranchEntriesCount({
 					ownerEntryUuid,
 					ownerInputRef,
@@ -295,8 +300,8 @@ export default {
 		filterByDate () {
 			//v-model updates when picking a date in the datepicker
 			state.isFetching = true;
+			const requestId = ++latestCountRequest;
 			setTimeout(async () => {
-				const requestId = ++latestCountRequest;
 				const result = await _getBranchEntriesCount({
 					ownerEntryUuid,
 					ownerInputRef,

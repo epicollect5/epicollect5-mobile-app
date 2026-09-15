@@ -251,12 +251,14 @@ export default {
 			filterByTitle (e) {
 				const searchTerm = e.target.value;
 
-				state.isFetching = true;
-				// Throttle filter
-				clearTimeout(request_timeout);
+			state.isFetching = true;
+			// Throttle filter
+			clearTimeout(request_timeout);
+			//claim the slot now so in-flight responses landing during the
+			//debounce window are treated as stale
+			const requestId = ++latestCountRequest;
 			request_timeout = window.setTimeout(async () => {
 			state.filters.title = searchTerm;
-			const requestId = ++latestCountRequest;
 			const result = await _getEntriesCount({
 				projectRef,
 				formRef,
@@ -282,8 +284,8 @@ export default {
 				console.log(status);
 				state.isFetching = true;
 		state.filters.status = status;
+		const requestId = ++latestCountRequest;
 		setTimeout(async () => {
-			const requestId = ++latestCountRequest;
 			const result = await _getEntriesCount({
 				projectRef,
 				formRef,
@@ -305,12 +307,14 @@ export default {
 			},
 			resetFilters () {
 				//todo: what about min/max?
-				state.isFetching = true;
-				state.searchbarInitialValue = '';
-				(state.filters = { ...PARAMETERS.FILTERS_DEFAULT }),
-					setTimeout(async () => {
-						const requestId = ++latestCountRequest;
-						const result = await _getEntriesCount({
+			state.isFetching = true;
+			state.searchbarInitialValue = '';
+			//drop any pending title search so it cannot repopulate the fresh filters
+			clearTimeout(request_timeout);
+			const requestId = ++latestCountRequest;
+			(state.filters = { ...PARAMETERS.FILTERS_DEFAULT }),
+				setTimeout(async () => {
+					const result = await _getEntriesCount({
 							projectRef,
 							formRef,
 							parentEntryUuid,
@@ -335,8 +339,8 @@ export default {
 		filterByDate () {
 			//v-model updates when picking a date in the datepicker
 			state.isFetching = true;
+			const requestId = ++latestCountRequest;
 			setTimeout(async () => {
-				const requestId = ++latestCountRequest;
 				const result = await _getEntriesCount({
 					projectRef,
 					formRef,
