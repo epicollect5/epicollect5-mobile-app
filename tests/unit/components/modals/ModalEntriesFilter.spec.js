@@ -7,8 +7,6 @@ import { databaseSelectService } from '@/services/database/database-select-servi
 import { rollbarService } from '@/services/utilities/rollbar-service';
 import flushPromises from 'flush-promises';
 
-const DELAY_LONG = PARAMETERS.DELAY_LONG;
-
 function mountFilter() {
     return shallowMount(ModalEntriesFilter, {
         props: {
@@ -36,6 +34,7 @@ function mockCountResult(total) {
 }
 
 beforeEach(() => {
+    vi.useFakeTimers();
     setActivePinia(createPinia());
     vi.resetAllMocks();
     PARAMETERS.DELAY_LONG = 0;
@@ -43,7 +42,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    PARAMETERS.DELAY_LONG = DELAY_LONG;
+    vi.useRealTimers();
 });
 
 describe('ModalEntriesFilter count failure', () => {
@@ -54,8 +53,8 @@ describe('ModalEntriesFilter count failure', () => {
         const previousCount = wrapper.vm.state.count;
 
         await wrapper.vm.filterByTitle({ target: { value: 'd\'cure' } });
+        await vi.advanceTimersByTimeAsync(PARAMETERS.DELAY_LONG);
         await flushPromises();
-        await new Promise((resolve) => setTimeout(resolve, 30));
 
         expect(rollbarService.critical).toHaveBeenCalledOnce();
         expect(wrapper.vm.state.count).toBe(previousCount);
@@ -70,8 +69,8 @@ describe('ModalEntriesFilter count failure', () => {
         const wrapper = mountFilter();
 
         await wrapper.vm.filterByTitle({ target: { value: 'cure' } });
+        await vi.advanceTimersByTimeAsync(PARAMETERS.DELAY_LONG);
         await flushPromises();
-        await new Promise((resolve) => setTimeout(resolve, 30));
 
         expect(rollbarService.critical).not.toHaveBeenCalled();
         expect(wrapper.vm.state.count).toBe(3);
@@ -90,20 +89,18 @@ describe('ModalEntriesFilter count failure', () => {
         const wrapper = mountFilter();
 
         await wrapper.vm.filterByTitle({ target: { value: 'aaa' } });
-        await new Promise((resolve) => setTimeout(resolve, 30));
+        await vi.advanceTimersByTimeAsync(PARAMETERS.DELAY_LONG);
         expect(databaseSelectService.countEntries).toHaveBeenCalledTimes(1);
 
         await wrapper.vm.filterByStatus({ target: { value: PARAMETERS.STATUS.INCOMPLETE } });
-        await new Promise((resolve) => setTimeout(resolve, 30));
+        await vi.advanceTimersByTimeAsync(PARAMETERS.DELAY_LONG);
         expect(databaseSelectService.countEntries).toHaveBeenCalledTimes(2);
 
         //newer request resolves first, then the stale one arrives late
         resolveSecond(mockCountResult(7));
         await flushPromises();
-        await new Promise((resolve) => setTimeout(resolve, 10));
         resolveFirst(mockCountResult(2));
         await flushPromises();
-        await new Promise((resolve) => setTimeout(resolve, 10));
 
         expect(wrapper.vm.state.count).toBe(7);
         expect(wrapper.vm.state.isFetching).toBe(false);
@@ -112,13 +109,14 @@ describe('ModalEntriesFilter count failure', () => {
 
     it('reset during the debounce window drops the pending title search', async () => {
         databaseSelectService.countEntries = vi.fn().mockResolvedValue(mockCountResult(4));
-        PARAMETERS.DELAY_LONG = 20;
+        PARAMETERS.DELAY_LONG = 500;
 
         const wrapper = mountFilter();
 
         await wrapper.vm.filterByTitle({ target: { value: 'd\'cure' } });
         wrapper.vm.resetFilters();
-        await new Promise((resolve) => setTimeout(resolve, 80));
+        await vi.advanceTimersByTimeAsync(500);
+        await flushPromises();
 
         //only the reset query runs, and it must not see the dismissed title
         expect(databaseSelectService.countEntries).toHaveBeenCalledTimes(1);
