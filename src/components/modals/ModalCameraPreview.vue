@@ -4,7 +4,10 @@
 	<ion-header class="ion-no-border">
 		<ion-toolbar>
 			<ion-buttons slot="start">
-				<ion-button @click="dismiss()">
+				<ion-button
+					@click="dismiss()"
+					:disabled="state.handoff"
+				>
 					<ion-icon
 						slot="icon-only"
 						:icon="closeOutline"
@@ -94,6 +97,12 @@ export default {
 			capturing: false,
 			started: false,
 			recording: false,
+			//true while a completed capture is being handed to the caller (native stop
+			//+ payload dismiss): template-bindable so the close button can show the
+			//modal as busy instead of letting a tap race the handoff. Scoped strictly
+			//to the post-handoff tail — an in-flight capture stays cancellable, otherwise
+			//a hung native capture would trap the user in an unclosable modal
+			handoff: false,
 			flash: false,
 			flashMode: 'off',
 			//devices with no flash unit report only 'off', in which case the button is hidden
@@ -159,6 +168,13 @@ export default {
 		//pending start instead of racing it on the native bridge
 		let recordingStartInProgress = false;
 		let recordingStartPromise = null;
+		//the in-flight capture/record handoff (stop + payload dismiss), observable so
+		//teardown can wait for it instead of racing it. A handoff still pending past
+		//HANDOFF_ESCAPE_MS releases the exit again (empty dismiss + possible cache
+		//orphan, i.e. today's behaviour) rather than bricking the modal on a hung stop
+		let handoffPromise = null;
+		let handoffEscapeTimer = null;
+		const HANDOFF_ESCAPE_MS = 3000;
 
 		const computedScope = {
 			//video mode hides the flip/flash controls (recording keeps the shutter as
@@ -528,10 +544,26 @@ export default {
 					}
 					return;
 				}
-				//hand the file to the caller; photo-take deletes it after resizing
-				sourceHandedOff = true;
-				await _stop();
-				modalController.dismiss({ sourcePath, gpsFallback });
+			//hand the file to the caller; photo-take deletes it after resizing.
+			//Claim the dismissal first: from here on teardown waits for (✕/unmount
+			//paths) or yields to (dismiss path) this handoff instead of racing it
+			//with an empty cancel while the native stop settles
+			_claimHandoff();
+			sourceHandedOff = true;
+			handoffPromise = (async () => {
+				try {
+					await _stop();
+					await _setModalDismissable(true);
+					await modalController.dismiss({ sourcePath, gpsFallback });
+				} catch (error) {
+					console.log('CameraPreview handoff dismiss failed: ' + error);
+				}
+			})();
+			try {
+				await handoffPromise;
+			} finally {
+				_clearHandoff();
+			}
 			} catch (error) {
 				console.log('CameraPreview.capture failed: ' + error);
 				state.capturing = false;
@@ -555,6 +587,45 @@ export default {
 			} catch (error) {
 				console.log('CameraPreview canDismiss update failed: ' + error);
 			}
+		}
+
+		//claim the dismissal for an in-flight capture/record handoff: the close button
+		//(bound to state.handoff) and the back button (canDismiss=false) are held until
+		//the payload dismiss lands, so teardown cannot steal the dismissal with an empty
+		//cancel while the native stop settles. The false-hold is fire-and-forget to
+		//shrink the pre-hold gap (the helper catches internally); the true-restore at
+		//the handoff tail is awaited so no yield sits between it and the payload dismiss
+		function _claimHandoff() {
+			state.handoff = true;
+			_setModalDismissable(false);
+			//escape hatch: a hung native stop must never trap the user in an
+			//unclosable modal — past the timeout the exit reopens (empty dismiss +
+			//possible cache orphan, i.e. today's behaviour) and the stall is reported
+			if (handoffEscapeTimer) {
+				clearTimeout(handoffEscapeTimer);
+			}
+			handoffEscapeTimer = setTimeout(() => {
+				handoffEscapeTimer = null;
+				if (!state.handoff) {
+					return;
+				}
+				console.log('CameraPreview handoff stalled past escape timeout');
+				rollbarService.criticalWithContext(
+					'CameraPreview handoff stalled',
+					new Error('handoff exceeded ' + HANDOFF_ESCAPE_MS + 'ms')
+				);
+				state.handoff = false;
+				_setModalDismissable(true);
+			}, HANDOFF_ESCAPE_MS);
+		}
+
+		function _clearHandoff() {
+			if (handoffEscapeTimer) {
+				clearTimeout(handoffEscapeTimer);
+				handoffEscapeTimer = null;
+			}
+			state.handoff = false;
+			handoffPromise = null;
 		}
 
 		async function startRecording() {
@@ -594,14 +665,30 @@ export default {
 				}
 				return;
 			}
-			sourcePath = videoFilePath;
-			//hand the file to the caller; video-shoot owns it from here on
-			sourceHandedOff = true;
-			//the recording is over: back presses may dismiss again, and the
-			//programmatic dismiss below is gated by canDismiss too
-			await _setModalDismissable(true);
-			await _stop();
-			modalController.dismiss({ videoFilePath });
+		sourcePath = videoFilePath;
+		//hand the file to the caller; video-shoot owns it from here on. Claim the
+		//dismissal first: teardown from here on waits for (✕/unmount paths) or yields
+		//to (dismiss path) this handoff instead of racing it with an empty cancel
+		_claimHandoff();
+		sourceHandedOff = true;
+		handoffPromise = (async () => {
+			try {
+				//the recording is over but the file is not delivered yet: keep back-press
+				//dismissal held until the payload dismiss lands (restoring true here instead
+				//of before _stop() closes the teardown window). The restore is awaited with
+				//no yield between it and the payload dismiss, which is gated by canDismiss too
+				await _stop();
+				await _setModalDismissable(true);
+				await modalController.dismiss({ videoFilePath });
+			} catch (error) {
+				console.log('CameraPreview handoff dismiss failed: ' + error);
+			}
+		})();
+		try {
+			await handoffPromise;
+		} finally {
+			_clearHandoff();
+		}
 		}
 
 		//stop the recording and hand the finished file to the caller (video-shoot)
@@ -710,6 +797,14 @@ export default {
 		}
 
 		async function dismiss(payload) {
+			//a capture/record handoff owns the dismissal from its claim until the
+			//payload lands: a cancel racing it (✕ tap beating the disabled render,
+			//back press beating the canDismiss hold) yields here so the caller
+			//receives the file instead of an empty cancel. The handoff's own
+			//payload dismiss bypasses via payload
+			if (state.handoff && !payload) {
+				return;
+			}
 			//teardown starts here, synchronously: a pending _start() must release
 			//the native session instead of marking state on the closing modal
 			tornDown = true;
@@ -834,6 +929,25 @@ export default {
 				clearTimeout(flashTimer);
 				flashTimer = null;
 			}
+			//a handoff still in flight owns the payload dismissal: wait for it
+			//(bounded) so back-press teardown cannot steal it with listener removal
+			//while the native stop settles. Past the timeout the normal body below
+			//runs, matching the escape-hatch fallback in _claimHandoff
+			if (handoffPromise) {
+				try {
+					await Promise.race([
+						handoffPromise,
+						new Promise((resolve) => setTimeout(resolve, 1500))
+					]);
+				} catch (error) {
+					console.log('CameraPreview handoff wait failed: ' + error);
+				}
+			}
+			//disarm the escape hatch: past this point a firing timer would touch
+			//a destroyed modal (stale canDismiss mutation, spurious stall report).
+			//A handoff still pending past the race above keeps running; its tail
+			//re-clears idempotently
+			_clearHandoff();
 			//safety net: a recording still running at unmount (canDismiss blocks
 			//back presses while recording, and ✕ aborts first) is stopped and
 			//its partial file discarded, same as the ✕ path
