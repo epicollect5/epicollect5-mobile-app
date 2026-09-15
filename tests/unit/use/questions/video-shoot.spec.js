@@ -171,6 +171,98 @@ describe('videoShoot tests', () => {
         expect(state.answer.answer).toBe('existing.mp4');
     });
 
+    it('preserves an existing video when a non-cancel capture error hits a retake', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        const getCaptureErr = grantAndCapture();
+        const { media, entryUuid, state, filename } = makeArgs();
+        media[entryUuid]['q1'].cached = 'existing.mp4';
+        media[entryUuid]['q1'].stored = 'existing.mp4';
+        state.answer.answer = 'existing.mp4';
+
+        await videoShoot({ media, entryUuid, state, filename });
+        getCaptureErr()({ code: 1, message: 'capture busy' });
+
+        expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('videoShoot capture failed', expect.anything());
+        expect(nMock.showAlert).toHaveBeenCalled();
+        expect(media[entryUuid]['q1'].cached).toBe('existing.mp4');
+        expect(state.answer.answer).toBe('existing.mp4');
+    });
+
+    it('stays empty when a non-cancel capture error hits a fresh capture', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        const getCaptureErr = grantAndCapture();
+        const { media, entryUuid, state, filename } = makeArgs();
+
+        await videoShoot({ media, entryUuid, state, filename });
+        getCaptureErr()({ code: 1, message: 'capture busy' });
+
+        //fresh captures restore '' as before: no phantom filename, alert shown
+        expect(media[entryUuid]['q1'].cached).toBe('');
+        expect(state.answer.answer).toBe('');
+        expect(nMock.showAlert).toHaveBeenCalled();
+    });
+
+    it('preserves an existing video when camera permission is denied on a retake', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        global.cordova = {
+            plugins: {
+                diagnostic: {
+                    requestRuntimePermission: vi.fn((success) => {
+                        success('DENIED');
+                    }),
+                    permissionStatus: { GRANTED: 'GRANTED' },
+                    permission: { CAMERA: 'camera' }
+                }
+            }
+        };
+        const { media, entryUuid, state, filename } = makeArgs();
+        media[entryUuid]['q1'].cached = 'existing.mp4';
+        media[entryUuid]['q1'].stored = 'existing.mp4';
+        state.answer.answer = 'existing.mp4';
+
+        await videoShoot({ media, entryUuid, state, filename });
+
+        //no capture was attempted: refs untouched, user warned, nothing reported
+        expect(nMock.showAlert).toHaveBeenCalled();
+        expect(media[entryUuid]['q1'].cached).toBe('existing.mp4');
+        expect(state.answer.answer).toBe('existing.mp4');
+        expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
+    });
+
+    it('preserves an existing video when iOS camera authorization fails on a retake', async () => {
+        setupRootStore(PARAMETERS.IOS);
+        global.window = {
+            cordova: {
+                plugins: {
+                    diagnostic: {
+                        isCameraAuthorized: vi.fn((success, error) => error({ message: 'auth failed' }))
+                    }
+                }
+            },
+            navigator: {
+                device: {
+                    capture: {
+                        captureVideo: vi.fn()
+                    }
+                }
+            }
+        };
+        const { media, entryUuid, state, filename } = makeArgs();
+        media[entryUuid]['q1'].cached = 'existing.mp4';
+        media[entryUuid]['q1'].stored = 'existing.mp4';
+        state.answer.answer = 'existing.mp4';
+
+        await videoShoot({ media, entryUuid, state, filename });
+
+        expect(nMock.showAlert).toHaveBeenCalled();
+        expect(media[entryUuid]['q1'].cached).toBe('existing.mp4');
+        expect(state.answer.answer).toBe('existing.mp4');
+        expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
+    });
+
     it('falls back to the system camera when the in-app video flag is off', async () => {
         setupRootStore(PARAMETERS.ANDROID, { inAppCameraVideo: false });
         nMock.startForegroundService.mockResolvedValue('granted');
