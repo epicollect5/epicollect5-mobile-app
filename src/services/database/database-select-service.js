@@ -4,6 +4,11 @@ import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
 import { PARAMETERS } from '@/config';
 
+function _sanitiseLikeParameters(value) {
+    const escaped = String(value).replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+    return '%' + escaped + '%';
+}
+
 export const databaseSelectService = {
 
     async getRows(query, params) {
@@ -304,10 +309,11 @@ export const databaseSelectService = {
             params.push(parentEntryUuid);
         }
 
-        //do not bind filters
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\'';
+                query += ' AND title LIKE ? ESCAPE \'\\\'';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             if (filters.from && filters.to) {
@@ -414,10 +420,11 @@ export const databaseSelectService = {
             params.push(parentEntryUuid);
         }
 
-        //do not bind filters!
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\'';
+                query += ' AND title LIKE ? ESCAPE \'\\\'';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             //filter by dates
@@ -571,10 +578,11 @@ export const databaseSelectService = {
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
 
-        //do not bind filters
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\' ';
+                query += ' AND title LIKE ? ESCAPE \'\\\' ';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             //filter by dates
@@ -614,10 +622,11 @@ export const databaseSelectService = {
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
 
-        //do not bind filters!
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\' ';
+                query += ' AND title LIKE ? ESCAPE \'\\\' ';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             //filter by dates
@@ -676,10 +685,11 @@ export const databaseSelectService = {
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
 
-        //do not bind filters!
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\' ';
+                query += ' AND title LIKE ? ESCAPE \'\\\' ';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             //filter by dates
@@ -719,10 +729,11 @@ export const databaseSelectService = {
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
 
-        //do not bind filters!
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\' ';
+                query += ' AND title LIKE ? ESCAPE \'\\\' ';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             //filter by dates

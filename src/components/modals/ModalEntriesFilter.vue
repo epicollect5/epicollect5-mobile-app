@@ -136,6 +136,7 @@ import {
 } from 'ionicons/icons';
 import { STRINGS } from '@/config/strings';
 import { databaseSelectService } from '@/services/database/database-select-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 import { useRootStore } from '@/stores/root-store';
 import { reactive, computed } from '@vue/reactivity';
 import { modalController } from '@ionic/vue';
@@ -194,7 +195,8 @@ export default {
 					oldest: new Date().toISOString().split('T')[0]
 				};
 
-				(async () => {
+			(async () => {
+				try {
 					const result = await databaseSelectService.countEntries(
 						projectRef,
 						formRef,
@@ -213,8 +215,12 @@ export default {
 							};
 						}
 					}
-					resolve(response);
-				})();
+				} catch (error) {
+					const titleLength = filters && typeof filters.title === 'string' ? filters.title.length : 0;
+					rollbarService.critical(new Error('countEntries failed (formRef=' + formRef + ', status=' + filters.status + ', titleLength=' + titleLength + '): ' + (error && error.message ? error.message : error)));
+				}
+				resolve(response);
+			})();
 			});
 		}
 

@@ -112,6 +112,7 @@ import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import { databaseSelectService } from '@/services/database/database-select-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 export default {
 	props: {
@@ -161,7 +162,8 @@ export default {
 					oldest: new Date().toISOString().split('T')[0]
 				};
 
-				(async () => {
+			(async () => {
+				try {
 					const result = await databaseSelectService.countBranchesForQuestion(
 						ownerEntryUuid,
 						ownerInputRef,
@@ -179,8 +181,12 @@ export default {
 							};
 						}
 					}
-					resolve(response);
-				})();
+				} catch (error) {
+					const titleLength = filters && typeof filters.title === 'string' ? filters.title.length : 0;
+					rollbarService.critical(new Error('countBranchesForQuestion failed (status=' + filters.status + ', titleLength=' + titleLength + '): ' + (error && error.message ? error.message : error)));
+				}
+				resolve(response);
+			})();
 			});
 		}
 
