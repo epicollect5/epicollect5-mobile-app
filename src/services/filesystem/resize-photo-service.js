@@ -143,24 +143,36 @@ export const resizePhotoService = {
             );
 
             stage = 'draw';
-            ctx.drawImage(bitmap, offsetX, offsetY, drawWidth, drawHeight);
-            bitmap.close && bitmap.close();
-
-            stage = 'export';
-            const resizedBlob = await new Promise((resolve, reject) => {
-                canvas.toBlob((b) => {
-                    if (!b) {
-                        reject(new Error('Canvas toBlob returned null'));
-                        return;
+            let resizedBlob;
+            try {
+                ctx.drawImage(bitmap, offsetX, offsetY, drawWidth, drawHeight);
+                stage = 'export';
+                resizedBlob = await new Promise((resolve, reject) => {
+                    canvas.toBlob((b) => {
+                        if (!b) {
+                            reject(new Error('Canvas toBlob returned null'));
+                            return;
+                        }
+                        resolve(b);
+                    }, 'image/jpeg', JPEG_QUALITY);
+                });
+            } finally {
+                //deterministic release even when drawing or blob export fails: the
+                //close itself is guarded so cleanup can never mask the original error
+                if (bitmap) {
+                    try {
+                        bitmap.close && bitmap.close();
+                    } catch (closeError) {
+                        console.log('bitmap close failed: ' + closeError);
                     }
-                    resolve(b);
-                }, 'image/jpeg', JPEG_QUALITY);
-            });
-
-            //the canvas backing store is no longer needed once the output blob
-            //exists: resetting dimensions releases it
-            canvas.width = 0;
-            canvas.height = 0;
+                    bitmap = null;
+                }
+                //the canvas backing store is no longer needed once the output blob
+                //exists (or the export failed and the canvas is discarded anyway):
+                //resetting dimensions releases it
+                canvas.width = 0;
+                canvas.height = 0;
+            }
 
             stage = 'encode';
             const resizedBase64 = await _blobToBase64(resizedBlob);
