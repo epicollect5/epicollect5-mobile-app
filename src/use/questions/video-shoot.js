@@ -19,6 +19,10 @@ export async function videoShoot({media, entryUuid, state, filename}) {
     const labels = STRINGS[language].labels;
     const tempDir = rootStore.tempDir;
     rootStore.isVideoEncodingModalActive = false;
+    //snapshot the previous references: a failed retake must restore them instead
+    //of dropping the existing video from the entry (mirrors photo-take openCamera)
+    const previousCached = media[entryUuid][state.inputDetails.ref].cached;
+    const previousAnswer = state.answer.answer;
 
     if (rootStore.device.platform === PARAMETERS.WEB) {
         return;
@@ -132,13 +136,14 @@ export async function videoShoot({media, entryUuid, state, filename}) {
         //that the plugin does not await, so awaiting here would not sequence
         //anything — the dialog/alert/service calls still run to completion
         notificationService.stopForegroundService();
-        //if not canceled by the user, show alert and reset media object
+        //if not canceled by the user, show alert and restore the previous references:
+        //a failed retake must not drop the existing video (fresh captures restore ''
+        //as before, so the entry save never points at a missing file)
         if (error.code !== 3) {
-            //reset media object to avoid saving a file that does not exist...
-            //imp: if we do not do this and no file exists, error 1 is thrown when saving entry at the end
-            media[entryUuid][state.inputDetails.ref].cached = '';
+            rollbarService.criticalWithContext('videoShoot capture failed', error);
+            media[entryUuid][state.inputDetails.ref].cached = previousCached;
             // Reset answer
-            state.answer.answer = '';
+            state.answer.answer = previousAnswer;
             notificationService.showAlert(error);
         }
         notificationService.hideProgressDialog();
@@ -245,19 +250,18 @@ export async function videoShoot({media, entryUuid, state, filename}) {
                         options
                     );
                 } else {
-                    //warn user camera permission is compulsory
+                    //warn user camera permission is compulsory. No capture was
+                    //attempted, so the references are left untouched: clearing them
+                    //here would drop the existing video on save
                     notificationService.showAlert(labels.missing_permission);
                     notificationService.stopForegroundService();
                     notificationService.hideProgressDialog();
-
-                    //clear video references
-                    state.answer.answer = '';
-                    media[entryUuid][state.inputDetails.ref].cached = '';
                 }
                 },
                 function (error) {
-                    state.answer.answer = '';
-                    media[entryUuid][state.inputDetails.ref].cached = '';
+                    //no capture was attempted: preserve any existing video, but track
+                    //the broken permission request itself
+                    rollbarService.criticalWithContext('videoShoot permission failed', error);
                     console.error('The following error occurred: ' + error);
                     notificationService.showAlert(error);
                     notificationService.stopForegroundService();
@@ -276,8 +280,8 @@ export async function videoShoot({media, entryUuid, state, filename}) {
                     );
                 },
                 function (error) {
-                    state.answer.answer = '';
-                    media[entryUuid][state.inputDetails.ref].cached = '';
+                    //no capture was attempted: preserve any existing video (denying
+                    //permission is expected user behaviour, so nothing is reported)
                     console.log(error);
                     console.error('The following error occurred: ' + error);
                     notificationService.showAlert(error.message);
