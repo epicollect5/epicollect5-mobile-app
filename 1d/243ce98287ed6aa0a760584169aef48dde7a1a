@@ -1,0 +1,18 @@
+src/components/modals/ModalSavedAnswers.vue
+  h_2231ff2aa93473 146,163-172,193,209-218
+src/services/entry/answer-service.js
+  h_2231ff2aa93473 433-465
+tests/unit/components/modals/ModalSavedAnswers.spec.js
+  h_2231ff2aa93473 1-230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1d243ce98287ed6aa0a760584169aef48dde7a1a",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
