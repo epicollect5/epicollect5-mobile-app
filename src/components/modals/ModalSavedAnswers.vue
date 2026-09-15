@@ -143,7 +143,7 @@ export default {
 					function searchNeedle() {
 						offset += PARAMETERS.MAX_SAVED_ANSWERS;
 
-						if (state.hits >= PARAMETERS.MAX_SAVED_ANSWERS) {
+						if (state.hits.length >= PARAMETERS.MAX_SAVED_ANSWERS) {
 							setTimeout(() => {
 								state.isFetching = false;
 							}, PARAMETERS.DELAY_MEDIUM);
@@ -165,10 +165,11 @@ export default {
 										const answer = answers[inputRef];
 
 										//show only matching answers
-										if (answer?.answer?.toLowerCase().includes(state.searchTerm)) {
+										const value = answer?.answer;
+										if (typeof value === 'string' && value.toLowerCase().includes(state.searchTerm)) {
 											//skip duplicates
-											if (!state.hits.includes(answer.answer)) {
-												state.hits.push(answer.answer);
+											if (!state.hits.includes(value)) {
+												state.hits.push(value);
 											}
 										}
 									}
@@ -190,7 +191,7 @@ export default {
 					offset += PARAMETERS.MAX_SAVED_ANSWERS;
 
 					//if we have already MAX_SAVED_ANSWERS, bail out
-					if (state.hits >= PARAMETERS.MAX_SAVED_ANSWERS) {
+					if (state.hits.length >= PARAMETERS.MAX_SAVED_ANSWERS) {
 						setTimeout(() => {
 							state.isFetching = false;
 						}, PARAMETERS.DELAY_MEDIUM);
@@ -211,10 +212,11 @@ export default {
 									const answers = JSON.parse(result.rows.item(i).answers);
 									const answer = answers[inputRef];
 									//if an answer is found, show it
-									if (answer?.answer?.trim() !== '') {
+									const value = answer?.answer;
+									if (typeof value === 'string' && value.trim() !== '') {
 										//skip duplicates
-										if (!state.hits.includes(answer.answer)) {
-											state.hits.push(answer.answer);
+										if (!state.hits.includes(value)) {
+											state.hits.push(value);
 										}
 									}
 								}
