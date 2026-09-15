@@ -380,6 +380,11 @@ export const databaseDeleteService = {
     //and generated file names ({entryUuid}_{timestamp}.{ext}) are unique, so
     //project scoping deletes exactly the queued rows regardless of which entry
     //saved them. Sole caller: mediaService.saveMedia.
+    /*
+     * False positive (review): project-scoped row deletion removes only queued
+     * rows — by design. See docs/known-review-false-positives.md
+     * (`src/services/database/database-delete-service.js`, deleteMediaFiles branch).
+     */
     async deleteMediaFiles(projectRef, fileNames) {
 
         const query = 'DELETE FROM media WHERE project_ref=? AND file_name IN (' + fileNames.join(',') + ')';

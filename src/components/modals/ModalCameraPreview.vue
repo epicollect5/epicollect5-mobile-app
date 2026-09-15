@@ -595,6 +595,11 @@ export default {
 		//cancel while the native stop settles. The false-hold is fire-and-forget to
 		//shrink the pre-hold gap (the helper catches internally); the true-restore at
 		//the handoff tail is awaited so no yield sits between it and the payload dismiss
+		/*
+		 * False positive (review): escape reopens the exit while a handoff is pending
+		 * — accepted tradeoff. See docs/known-review-false-positives.md
+		 * (`src/components/modals/ModalCameraPreview.vue`, _claimHandoff escape branch).
+		 */
 		function _claimHandoff() {
 			state.handoff = true;
 			_setModalDismissable(false);
