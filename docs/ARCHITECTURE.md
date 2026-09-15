@@ -225,6 +225,45 @@ Typical user path:
 
 `rootStore.routeParams` is the key cross-page handoff mechanism.
 
+### Hardware Back Button (Android)
+
+Hardware back is enabled globally via `IonicVue: { hardwareBackButton: true }` (`src/main.js:76`).
+
+All pages use `useBackButton(10, handler)` from `@ionic/vue` at priority `10` and delegate to the same method the toolbar back button calls. `src/router/index.js:127-133` enforces `router.replace()` everywhere (never `push()`) so hardware back mirrors UI back navigation.
+
+Per-page delegation (all at priority `10`, registered at `setup()`):
+
+- `Projects.vue:164` → `confirmSingle()` → `App.exitApp():170` (only exit case)
+- `ProjectsAdd.vue:156` → `goToProjectsList():102`
+- `Entries.vue:581` → `goBack():410` (also guards `isExportModalActive`, see below)
+- `EntriesAdd.vue:769` → `prev():586` → `quitEntry()` / `handlePrev()` with modal guards
+- `EntriesView.vue:305` → `goBack():228`
+- `EntriesViewBranch.vue:231` → `goBack():170`
+- `EntriesUpload.vue:586` → `goBack():529`
+- `EntriesDownload.vue:252` → `goBack():182` (also guards `promptOpen`, see below)
+- `EntriesErrors.vue:437` → `goToUploadPage():201`
+- `Settings.vue:355` → `goBack():257`
+- `Profile.vue:166` → `goBack():138` (unguarded)
+
+**Modal suppression:** `src/pages/EntriesAdd.vue:773-790` suppresses back while a modal owns the UX, mirroring the toolbar guard pattern:
+
+```js
+if (state.isFetching) return false;
+if (rootStore.isAudioModalActive) return false;        // src/stores/root-store.js:54
+if (rootStore.isVideoEncodingModalActive) return false;// src/stores/root-store.js:56
+if (rootStore.isLocationModalActive) return false;     // src/stores/root-store.js:55
+methods.prev();
+```
+
+Add any new modal flag here (e.g. `isCameraPreviewModalActive` when `feature/camera-preview` lands — that modal closes via Ionic overlay `backdropDismiss:true` `src/use/questions/photo-take.js:115` while the page handler is suppressed via the flag).
+
+**Known gaps fixed in this doc baseline:**
+
+- `isExportModalActive` (`src/stores/root-store.js:56` / `src/services/notification-service.js:430`) — progress export modal `backdropDismiss:false`. Guard now in `src/pages/Entries.vue:581` (`if (rootStore.isExportModalActive) return false`) so back does not navigate away with the modal open.
+- `EntriesDownload` `promptOpen` (`src/pages/EntriesDownload.vue:141,185`) — handler now mirrors `goBack()` (`if (state.isFetching || state.promptOpen) return`).
+
+No `App.addListener('backButton')` is used; native back is solely `useBackButton`. All handlers share priority `10`, so registration order determines tie-break — keep guards in sync with their `goBack`/`prev` early returns and prefer `onIonViewWillEnter/Leave` if priority ordering ever matters.
+
 ## PWA Architecture
 
 ### Boot Flow
