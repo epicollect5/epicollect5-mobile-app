@@ -109,4 +109,23 @@ describe('ModalEntriesFilter count failure', () => {
         expect(wrapper.vm.state.isFetching).toBe(false);
         expect(rollbarService.critical).not.toHaveBeenCalled();
     });
+
+    it('reset during the debounce window drops the pending title search', async () => {
+        databaseSelectService.countEntries = vi.fn().mockResolvedValue(mockCountResult(4));
+        PARAMETERS.DELAY_LONG = 20;
+
+        const wrapper = mountFilter();
+
+        await wrapper.vm.filterByTitle({ target: { value: 'd\'cure' } });
+        wrapper.vm.resetFilters();
+        await new Promise((resolve) => setTimeout(resolve, 80));
+
+        //only the reset query runs, and it must not see the dismissed title
+        expect(databaseSelectService.countEntries).toHaveBeenCalledTimes(1);
+        expect(databaseSelectService.countEntries.mock.calls[0][3].title).toBe('');
+        expect(wrapper.vm.state.filters.title).toBe('');
+        expect(wrapper.vm.state.searchbarInitialValue).toBe('');
+        expect(wrapper.vm.state.count).toBe(4);
+        expect(wrapper.vm.state.isFetching).toBe(false);
+    });
 });
