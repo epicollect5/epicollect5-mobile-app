@@ -160,17 +160,16 @@ export default {
 
 									return false;
 								} else {
-									for (let i = 0; i < result.rows.length; i++) {
-										const answers = JSON.parse(result.rows.item(i).answers);
-										const answer = answers[inputRef];
-
-										//show only matching answers
-										const value = answer?.answer;
-										if (typeof value === 'string' && value.toLowerCase().includes(state.searchTerm)) {
-											//skip duplicates
-											if (!state.hits.includes(value)) {
-												state.hits.push(value);
-											}
+									//show only matching answers
+									const values = answerService.extractSavedAnswerValues(result.rows, inputRef, state.searchTerm);
+									for (const value of values) {
+										//stop at MAX_SAVED_ANSWERS (a page can hold more than the remaining capacity)
+										if (state.hits.length >= PARAMETERS.MAX_SAVED_ANSWERS) {
+											break;
+										}
+										//skip duplicates
+										if (!state.hits.includes(value)) {
+											state.hits.push(value);
 										}
 									}
 									searchNeedle();
@@ -207,17 +206,16 @@ export default {
 
 								return false;
 							} else {
-								//loop the result
-								for (let i = 0; i < result.rows.length; i++) {
-									const answers = JSON.parse(result.rows.item(i).answers);
-									const answer = answers[inputRef];
-									//if an answer is found, show it
-									const value = answer?.answer;
-									if (typeof value === 'string' && value.trim() !== '') {
-										//skip duplicates
-										if (!state.hits.includes(value)) {
-											state.hits.push(value);
-										}
+								//if an answer is found, show it
+								const values = answerService.extractSavedAnswerValues(result.rows, inputRef);
+								for (const value of values) {
+									//stop at MAX_SAVED_ANSWERS (a page can hold more than the remaining capacity)
+									if (state.hits.length >= PARAMETERS.MAX_SAVED_ANSWERS) {
+										break;
+									}
+									//skip duplicates
+									if (!state.hits.includes(value)) {
+										state.hits.push(value);
 									}
 								}
 								loadSavedAnswer();

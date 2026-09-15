@@ -5,12 +5,6 @@ import { setActivePinia, createPinia } from 'pinia';
 import { PARAMETERS } from '@/config';
 import { answerService } from '@/services/entry/answer-service';
 
-vi.mock('@/services/entry/answer-service', () => ({
-	answerService: {
-		getSavedAnswers: vi.fn()
-	}
-}));
-
 vi.mock('@ionic/vue', () => ({
 	modalController: {
 		dismiss: vi.fn()
@@ -77,7 +71,7 @@ function mountModal() {
 beforeEach(() => {
 	setActivePinia(createPinia());
 	vi.useFakeTimers();
-	vi.mocked(answerService.getSavedAnswers).mockReset();
+	vi.spyOn(answerService, 'getSavedAnswers').mockReset();
 });
 
 afterEach(() => {
@@ -178,5 +172,59 @@ describe('ModalSavedAnswers saved-answers guards', () => {
 		await flush();
 
 		expect(wrapper.vm.state.hits).toEqual(['Hello World']);
+	});
+
+	it('never exceeds MAX_SAVED_ANSWERS when a page holds more than the remaining capacity', async () => {
+		const firstPage = Array.from({ length: PARAMETERS.MAX_SAVED_ANSWERS - 1 }, (_, index) => ({
+			[INPUT_REF]: { answer: `answer-${index}`, was_jumped: false }
+		}));
+		const secondPage = Array.from({ length: PARAMETERS.MAX_SAVED_ANSWERS }, (_, index) => ({
+			[INPUT_REF]: { answer: `overflow-${index}`, was_jumped: false }
+		}));
+		vi.mocked(answerService.getSavedAnswers)
+			.mockResolvedValueOnce(rowsFixture(firstPage))
+			.mockResolvedValueOnce(rowsFixture(secondPage))
+			.mockResolvedValue(emptyRows());
+
+		const wrapper = mountModal();
+
+		await flush();
+		await flush();
+		await flush();
+		vi.advanceTimersByTime(PARAMETERS.DELAY_MEDIUM + 10);
+		await flush();
+
+		expect(wrapper.vm.state.hits).toHaveLength(PARAMETERS.MAX_SAVED_ANSWERS);
+		//paging stops once capped instead of requesting further pages
+		expect(vi.mocked(answerService.getSavedAnswers)).toHaveBeenCalledTimes(2);
+	});
+
+	it('never exceeds MAX_SAVED_ANSWERS when searching across pages', async () => {
+		vi.mocked(answerService.getSavedAnswers).mockResolvedValue(emptyRows());
+		const wrapper = mountModal();
+		await flush();
+
+		const firstPage = Array.from({ length: PARAMETERS.MAX_SAVED_ANSWERS - 1 }, (_, index) => ({
+			[INPUT_REF]: { answer: `needle-${index}`, was_jumped: false }
+		}));
+		const secondPage = Array.from({ length: PARAMETERS.MAX_SAVED_ANSWERS }, (_, index) => ({
+			[INPUT_REF]: { answer: `needle-overflow-${index}`, was_jumped: false }
+		}));
+		vi.mocked(answerService.getSavedAnswers).mockReset();
+		vi.mocked(answerService.getSavedAnswers)
+			.mockResolvedValueOnce(rowsFixture(firstPage))
+			.mockResolvedValueOnce(rowsFixture(secondPage))
+			.mockResolvedValue(emptyRows());
+
+		wrapper.vm.filterSavedAnswers({ target: { value: 'needle' } });
+		vi.advanceTimersByTime(PARAMETERS.DELAY_LONG + 10);
+		await flush();
+		await flush();
+		await flush();
+		vi.advanceTimersByTime(PARAMETERS.DELAY_MEDIUM + 10);
+		await flush();
+
+		expect(wrapper.vm.state.hits).toHaveLength(PARAMETERS.MAX_SAVED_ANSWERS);
+		expect(vi.mocked(answerService.getSavedAnswers)).toHaveBeenCalledTimes(2);
 	});
 });
