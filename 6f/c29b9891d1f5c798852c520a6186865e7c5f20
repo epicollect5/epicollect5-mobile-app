@@ -1,0 +1,19 @@
+docs/ARCHITECTURE.md
+  s_c0991523c29f80::t_905ae6a16b9cf6 228-266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6fc29b9891d1f5c798852c520a6186865e7c5f20",
+  "prompts": {},
+  "sessions": {
+    "s_c0991523c29f80": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f99cc9d86ffeR8FhltJuDJKykV",
+        "model": "muse-spark-1.2-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
