@@ -503,6 +503,105 @@ describe('resizePhotoService', () => {
             }
         });
 
+        it('closes the bitmap when drawing fails', async () => {
+            const bitmap = mockBitmap(4032, 3024);
+            const { canvas, drawImage } = mockCanvas();
+            drawImage.mockImplementation(() => {
+                throw new Error('draw failed');
+            });
+            const originalCreateElement = document.createElement;
+            vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+                if (tag === 'canvas') {
+                    return canvas;
+                }
+                return originalCreateElement.call(document, tag);
+            });
+
+            const originalCreateImageBitmap = globalThis.createImageBitmap;
+            globalThis.createImageBitmap = vi.fn().mockResolvedValue(bitmap);
+            getBase64FromFilePath.mockResolvedValue('BASE64DATA');
+
+            const originalFileReader = globalThis.FileReader;
+            class MockFileReader {
+                constructor() {
+                    this.onloadend = null;
+                    this.onerror = null;
+                }
+                readAsDataURL(_blob) {
+                    this.result = 'data:image/jpeg;base64,READBASE64';
+                    if (this.onloadend) {
+                        this.onloadend();
+                    }
+                }
+            }
+            globalThis.FileReader = MockFileReader;
+
+            try {
+                await resizePhotoService.resizeToTempDir('/source.jpg', 'photo.jpg');
+                expect.unreachable();
+            } catch (error) {
+                expect(error).toBeInstanceOf(Error);
+                expect(error.message).toBe('draw failed');
+                expect(error.resizeContext).toMatchObject({ stage: 'draw' });
+                //deterministic release even though drawImage threw before the close
+                expect(bitmap.close).toHaveBeenCalledTimes(1);
+                expect(canvas.width).toBe(0);
+                expect(canvas.height).toBe(0);
+            } finally {
+                globalThis.createImageBitmap = originalCreateImageBitmap;
+                globalThis.FileReader = originalFileReader;
+                document.createElement.mockRestore && document.createElement.mockRestore();
+            }
+        });
+
+        it('closes the bitmap and releases the canvas when blob export fails', async () => {
+            const bitmap = mockBitmap(4032, 3024);
+            const { canvas, toBlob } = mockCanvas();
+            toBlob.mockImplementation((cb) => cb(null));
+            const originalCreateElement = document.createElement;
+            vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+                if (tag === 'canvas') {
+                    return canvas;
+                }
+                return originalCreateElement.call(document, tag);
+            });
+
+            const originalCreateImageBitmap = globalThis.createImageBitmap;
+            globalThis.createImageBitmap = vi.fn().mockResolvedValue(bitmap);
+            getBase64FromFilePath.mockResolvedValue('BASE64DATA');
+
+            const originalFileReader = globalThis.FileReader;
+            class MockFileReader {
+                constructor() {
+                    this.onloadend = null;
+                    this.onerror = null;
+                }
+                readAsDataURL(_blob) {
+                    this.result = 'data:image/jpeg;base64,READBASE64';
+                    if (this.onloadend) {
+                        this.onloadend();
+                    }
+                }
+            }
+            globalThis.FileReader = MockFileReader;
+
+            try {
+                await resizePhotoService.resizeToTempDir('/source.jpg', 'photo.jpg');
+                expect.unreachable();
+            } catch (error) {
+                expect(error).toBeInstanceOf(Error);
+                expect(error.message).toBe('Canvas toBlob returned null');
+                expect(error.resizeContext).toMatchObject({ stage: 'export' });
+                expect(bitmap.close).toHaveBeenCalledTimes(1);
+                expect(canvas.width).toBe(0);
+                expect(canvas.height).toBe(0);
+            } finally {
+                globalThis.createImageBitmap = originalCreateImageBitmap;
+                globalThis.FileReader = originalFileReader;
+                document.createElement.mockRestore && document.createElement.mockRestore();
+            }
+        });
+
         it('attaches failure context without changing the original error', async () => {
             const { canvas } = mockCanvas();
             const originalCreateElement = document.createElement;
