@@ -581,6 +581,10 @@ export default {
     useBackButton(10, () => {
       console.log(window.history);
       console.log('useBackButton Entries');
+      // Ignore back while export modal is open (progress export uses isExportModalActive)
+      if (rootStore.isExportModalActive) {
+        return false;
+      }
       // Project update cannot take place if navigating away
       rootStore.continueProjectVersionUpdate = false;
 
