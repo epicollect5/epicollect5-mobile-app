@@ -564,7 +564,7 @@ export const databaseSelectService = {
     async selectBranchesForQuestion(ownerEntryUuid, ownerInputRef, limit, offset, filters, status) {
 
         let query = '';
-        const params = [ownerEntryUuid, ownerInputRef, ownerEntryUuid, ownerInputRef];
+        const params = [];
 
         query += 'SELECT * ';
         query += 'FROM (';
@@ -577,6 +577,7 @@ export const databaseSelectService = {
         query += 'FROM temp_branch_entries ';
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
+        params.push(ownerEntryUuid, ownerInputRef);
 
         //title filter is bound; dates are concatenated
         if (filters) {
@@ -621,6 +622,7 @@ export const databaseSelectService = {
         query += 'FROM branch_entries ';
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
+        params.push(ownerEntryUuid, ownerInputRef);
 
         //title filter is bound; dates are concatenated
         if (filters) {
@@ -644,7 +646,6 @@ export const databaseSelectService = {
                     case PARAMETERS.STATUS.INCOMPLETE:
                         query += ' AND synced=' + PARAMETERS.SYNCED_CODES.INCOMPLETE.toString() + ' ';
                         break;
-
                     case PARAMETERS.STATUS.ERROR:
                         query += ' AND synced=' + PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR.toString() + ' ';
                         break;
@@ -669,7 +670,7 @@ export const databaseSelectService = {
     },
     async countBranchesForQuestion(ownerEntryUuid, ownerInputRef, filters, status) {
 
-        const params = [ownerEntryUuid, ownerInputRef, ownerEntryUuid, ownerInputRef];
+        const params = [];
         let query = '';
         //imp: COUNT(DISTINCT(entry_uuid)) since we can have a temp branch with the
         //imp: same uuid when editing an existing branch
@@ -684,6 +685,7 @@ export const databaseSelectService = {
         query += 'FROM temp_branch_entries ';
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
+        params.push(ownerEntryUuid, ownerInputRef);
 
         //title filter is bound; dates are concatenated
         if (filters) {
@@ -728,6 +730,7 @@ export const databaseSelectService = {
         query += 'FROM branch_entries ';
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
+        params.push(ownerEntryUuid, ownerInputRef);
 
         //title filter is bound; dates are concatenated
         if (filters) {
@@ -751,7 +754,6 @@ export const databaseSelectService = {
                     case PARAMETERS.STATUS.INCOMPLETE:
                         query += ' AND synced=' + PARAMETERS.SYNCED_CODES.INCOMPLETE.toString() + ' ';
                         break;
-
                     case PARAMETERS.STATUS.ERROR:
                         query += ' AND synced=' + PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR.toString() + ' ';
                         break;

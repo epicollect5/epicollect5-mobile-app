@@ -23,6 +23,24 @@ describe('databaseSelectService title filter binding', () => {
         });
     });
 
+    //every ? binds left-to-right: the param at each ordinal position must suit its clause
+    function expectPlaceholdersToMatchParams(query, params) {
+        const placeholderCount = (query.match(/\?/g) || []).length;
+        expect(placeholderCount).toBe(params.length);
+        const segments = query.split('?');
+        segments.slice(0, -1).forEach((segment, paramIndex) => {
+            if (/title LIKE\s*$/.test(segment)) {
+                expect(params[paramIndex]).toMatch(/^%.*%$/);
+            }
+            if (/owner_entry_uuid\s*=\s*$/.test(segment)) {
+                expect(params[paramIndex]).toBe('owner-uuid');
+            }
+            if (/owner_input_ref\s*=\s*$/.test(segment)) {
+                expect(params[paramIndex]).toBe('input-ref');
+            }
+        });
+    }
+
     it('selectEntries binds apostrophe titles instead of interpolating', async () => {
         await databaseSelectService.selectEntries(
             'project-ref',
@@ -175,7 +193,7 @@ describe('databaseSelectService title filter binding', () => {
         expect(captured.query).not.toContain('LIKE');
     });
 
-    it('selectBranchesForQuestion binds both UNION title params in order', async () => {
+    it('selectBranchesForQuestion binds UNION params in placeholder order', async () => {
         await databaseSelectService.selectBranchesForQuestion(
             'owner-uuid',
             'input-ref',
@@ -185,16 +203,31 @@ describe('databaseSelectService title filter binding', () => {
             null
         );
 
-        const likeCount = (captured.query.match(/title LIKE \?/g) || []).length;
-        expect(likeCount).toBe(2);
+        //offset 0 is falsy so OFFSET is omitted; every ? must line up left-to-right
+        expect(captured.params).toEqual([
+            'owner-uuid', 'input-ref', '%O\'Brien%',
+            'owner-uuid', 'input-ref', '%O\'Brien%',
+            25
+        ]);
+        expectPlaceholdersToMatchParams(captured.query, captured.params);
         expect(captured.query).not.toContain('O\'Brien');
-        expect(captured.params.slice(0, 4)).toEqual(['owner-uuid', 'input-ref', 'owner-uuid', 'input-ref']);
-        expect(captured.params[4]).toBe('%O\'Brien%');
-        expect(captured.params[5]).toBe('%O\'Brien%');
-        expect(captured.params[6]).toBe(25);
     });
 
-    it('countBranchesForQuestion binds both UNION title params', async () => {
+    it('selectBranchesForQuestion without title keeps owner params in order', async () => {
+        await databaseSelectService.selectBranchesForQuestion(
+            'owner-uuid',
+            'input-ref',
+            25,
+            10,
+            {},
+            null
+        );
+
+        expect(captured.params).toEqual(['owner-uuid', 'input-ref', 'owner-uuid', 'input-ref', 25, 10]);
+        expectPlaceholdersToMatchParams(captured.query, captured.params);
+    });
+
+    it('countBranchesForQuestion binds UNION params in placeholder order', async () => {
         await databaseSelectService.countBranchesForQuestion(
             'owner-uuid',
             'input-ref',
@@ -202,9 +235,23 @@ describe('databaseSelectService title filter binding', () => {
             null
         );
 
-        const likeCount = (captured.query.match(/title LIKE \?/g) || []).length;
-        expect(likeCount).toBe(2);
+        expect(captured.params).toEqual([
+            'owner-uuid', 'input-ref', '%d\'cure%',
+            'owner-uuid', 'input-ref', '%d\'cure%'
+        ]);
+        expectPlaceholdersToMatchParams(captured.query, captured.params);
         expect(captured.query).not.toContain('d\'cure');
-        expect(captured.params).toContain('%d\'cure%');
+    });
+
+    it('countBranchesForQuestion without title keeps owner params in order', async () => {
+        await databaseSelectService.countBranchesForQuestion(
+            'owner-uuid',
+            'input-ref',
+            {},
+            null
+        );
+
+        expect(captured.params).toEqual(['owner-uuid', 'input-ref', 'owner-uuid', 'input-ref']);
+        expectPlaceholdersToMatchParams(captured.query, captured.params);
     });
 });
