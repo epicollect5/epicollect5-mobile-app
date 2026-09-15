@@ -143,6 +143,7 @@ export default {
 		const labels = STRINGS[language].labels;
 		const { ownerInputRef, ownerEntryUuid } = readonly(props);
 		let request_timeout;
+		let latestCountRequest = 0;
 
 		const state = reactive({
 			isFetching: false,
@@ -221,11 +222,16 @@ export default {
 				clearTimeout(request_timeout);
 				request_timeout = window.setTimeout(async () => {
 				state.filters.title = searchTerm;
+				const requestId = ++latestCountRequest;
 				const result = await _getBranchEntriesCount({
 					ownerEntryUuid,
 					ownerInputRef,
 					filters: state.filters
 				});
+				if (requestId !== latestCountRequest) {
+					//a newer request has since been issued; ignore this stale response
+					return;
+				}
 				if (result) {
 					//re-count entries
 					state.count = result.total;
@@ -242,11 +248,16 @@ export default {
 				state.isFetching = true;
 			state.filters.status = status;
 			setTimeout(async () => {
+				const requestId = ++latestCountRequest;
 				const result = await _getBranchEntriesCount({
 					ownerEntryUuid,
 					ownerInputRef,
 					filters: state.filters
 				});
+				if (requestId !== latestCountRequest) {
+					//a newer request has since been issued; ignore this stale response
+					return;
+				}
 				if (result) {
 					//re-count entries
 					state.count = result.total;
@@ -260,11 +271,16 @@ export default {
 				state.isFetching = true;
 			state.filters = { ...PARAMETERS.FILTERS_DEFAULT };
 			setTimeout(async () => {
+				const requestId = ++latestCountRequest;
 				const result = await _getBranchEntriesCount({
 					ownerEntryUuid,
 					ownerInputRef,
 					filters: state.filters
 				});
+				if (requestId !== latestCountRequest) {
+					//a newer request has since been issued; ignore this stale response
+					return;
+				}
 				if (result) {
 					//re-count entries
 					state.count = result.total;
@@ -280,11 +296,16 @@ export default {
 			//v-model updates when picking a date in the datepicker
 			state.isFetching = true;
 			setTimeout(async () => {
+				const requestId = ++latestCountRequest;
 				const result = await _getBranchEntriesCount({
 					ownerEntryUuid,
 					ownerInputRef,
 					filters: state.filters
 				});
+				if (requestId !== latestCountRequest) {
+					//a newer request has since been issued; ignore this stale response
+					return;
+				}
 				if (result) {
 					//re-count entries
 					state.count = result.total;

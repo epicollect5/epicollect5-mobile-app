@@ -78,4 +78,34 @@ describe('ModalEntriesBranchFilter count failure', () => {
         expect(wrapper.vm.state.filters.newest).toBe('2026-02-01');
         expect(wrapper.vm.state.isFetching).toBe(false);
     });
+
+    it('ignores a stale response when a newer request resolves first', async () => {
+        let resolveFirst;
+        let resolveSecond;
+        databaseSelectService.countBranchesForQuestion = vi.fn()
+            .mockImplementationOnce(() => new Promise((resolve) => { resolveFirst = resolve; }))
+            .mockImplementationOnce(() => new Promise((resolve) => { resolveSecond = resolve; }));
+
+        const wrapper = mountFilter();
+
+        await wrapper.vm.filterByTitle({ target: { value: 'aaa' } });
+        await new Promise((resolve) => setTimeout(resolve, 30));
+        expect(databaseSelectService.countBranchesForQuestion).toHaveBeenCalledTimes(1);
+
+        await wrapper.vm.filterByStatus({ target: { value: PARAMETERS.STATUS.INCOMPLETE } });
+        await new Promise((resolve) => setTimeout(resolve, 30));
+        expect(databaseSelectService.countBranchesForQuestion).toHaveBeenCalledTimes(2);
+
+        //newer request resolves first, then the stale one arrives late
+        resolveSecond(mockCountResult(7));
+        await flushPromises();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        resolveFirst(mockCountResult(2));
+        await flushPromises();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        expect(wrapper.vm.state.count).toBe(7);
+        expect(wrapper.vm.state.isFetching).toBe(false);
+        expect(rollbarService.critical).not.toHaveBeenCalled();
+    });
 });

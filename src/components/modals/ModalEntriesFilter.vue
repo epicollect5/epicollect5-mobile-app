@@ -176,6 +176,7 @@ export default {
 		const labels = STRINGS[language].labels;
 		const { projectRef, formRef, parentEntryUuid } = readonly(props);
 		let request_timeout;
+		let latestCountRequest = 0;
 
 		const state = reactive({
 			isFetching: false,
@@ -253,15 +254,20 @@ export default {
 				state.isFetching = true;
 				// Throttle filter
 				clearTimeout(request_timeout);
-				request_timeout = window.setTimeout(async () => {
-				state.filters.title = searchTerm;
-				const result = await _getEntriesCount({
-					projectRef,
-					formRef,
-					parentEntryUuid,
-					filters: state.filters
-				});
-				if (result) {
+			request_timeout = window.setTimeout(async () => {
+			state.filters.title = searchTerm;
+			const requestId = ++latestCountRequest;
+			const result = await _getEntriesCount({
+				projectRef,
+				formRef,
+				parentEntryUuid,
+				filters: state.filters
+			});
+			if (requestId !== latestCountRequest) {
+				//a newer request has since been issued; ignore this stale response
+				return;
+			}
+			if (result) {
 					//re-count entries
 					state.count = result.total;
 					state.filters.oldest = result.oldest;
@@ -275,15 +281,20 @@ export default {
 				const status = e.target.value;
 				console.log(status);
 				state.isFetching = true;
-			state.filters.status = status;
-			setTimeout(async () => {
-				const result = await _getEntriesCount({
-					projectRef,
-					formRef,
-					parentEntryUuid,
-					filters: state.filters
-				});
-				if (result) {
+		state.filters.status = status;
+		setTimeout(async () => {
+			const requestId = ++latestCountRequest;
+			const result = await _getEntriesCount({
+				projectRef,
+				formRef,
+				parentEntryUuid,
+				filters: state.filters
+			});
+			if (requestId !== latestCountRequest) {
+				//a newer request has since been issued; ignore this stale response
+				return;
+			}
+			if (result) {
 					//re-count entries
 					state.count = result.total;
 					state.filters.oldest = result.oldest;
@@ -298,6 +309,7 @@ export default {
 				state.searchbarInitialValue = '';
 				(state.filters = { ...PARAMETERS.FILTERS_DEFAULT }),
 					setTimeout(async () => {
+						const requestId = ++latestCountRequest;
 						const result = await _getEntriesCount({
 							projectRef,
 							formRef,
@@ -305,6 +317,10 @@ export default {
 					filters: state.filters,
 						status: state.filters.status
 					});
+					if (requestId !== latestCountRequest) {
+						//a newer request has since been issued; ignore this stale response
+						return;
+					}
 					if (result) {
 						//re-count entries
 						state.count = result.total;
@@ -320,12 +336,17 @@ export default {
 			//v-model updates when picking a date in the datepicker
 			state.isFetching = true;
 			setTimeout(async () => {
+				const requestId = ++latestCountRequest;
 				const result = await _getEntriesCount({
 					projectRef,
 					formRef,
 					parentEntryUuid,
 					filters: state.filters
 				});
+				if (requestId !== latestCountRequest) {
+					//a newer request has since been issued; ignore this stale response
+					return;
+				}
 				if (result) {
 					//re-count entries
 					state.count = result.total;
