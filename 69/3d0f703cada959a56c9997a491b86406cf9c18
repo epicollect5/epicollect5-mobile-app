@@ -1,0 +1,24 @@
+src/components/modals/ModalEntriesFilter.vue
+  s_dd08c23bec31ee::t_b413b82796a249 310-317,342
+  s_dd08c23bec31ee::t_5ea9b9cca7a7dd 254-259
+  s_dd08c23bec31ee::t_c6ff58052c62fd 287
+src/components/modals/ModalEntriesBranchFilter.vue
+  s_dd08c23bec31ee::t_40d6b89967b5d0 221-226,252,276-277,303
+  s_dd08c23bec31ee::t_0129b641257b96 274-275
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "693d0f703cada959a56c9997a491b86406cf9c18",
+  "prompts": {},
+  "sessions": {
+    "s_dd08c23bec31ee": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f5a787d7bffeXQiTo8n0xV6Z4y",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": null
+    }
+  }
+}
