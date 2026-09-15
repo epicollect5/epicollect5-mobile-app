@@ -1,0 +1,31 @@
+tests/unit/components/modals/ModalEntriesBranchFilter.spec.js
+  s_dd08c23bec31ee::t_a044931a980d3c 81-110
+src/components/modals/ModalEntriesBranchFilter.vue
+  s_dd08c23bec31ee::t_23694437433f64 146
+  s_dd08c23bec31ee::t_fa1efc4b9ce39b 225,231-234,251,257-260
+  s_dd08c23bec31ee::t_e1950ae913d7fd 274,280-283
+  s_dd08c23bec31ee::t_46366d1ca3a180 299,305-308
+tests/unit/components/modals/ModalEntriesFilter.spec.js
+  s_dd08c23bec31ee::t_ec42040d6105e0 82-111
+src/components/modals/ModalEntriesFilter.vue
+  s_dd08c23bec31ee::t_a2d21a9afa429b 257-270,284-297
+  s_dd08c23bec31ee::t_424799c69dd67d 179
+  s_dd08c23bec31ee::t_30cc610b664211 312,320-323
+  s_dd08c23bec31ee::t_ae0d07a021d4e9 339,346-349
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "926e567e9f6377792de3d579ab262108ba633e43",
+  "prompts": {},
+  "sessions": {
+    "s_dd08c23bec31ee": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f5a787d7bffeXQiTo8n0xV6Z4y",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
