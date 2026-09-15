@@ -181,11 +181,18 @@ export default {
 							};
 						}
 					}
-				} catch (error) {
-					const titleLength = filters && typeof filters.title === 'string' ? filters.title.length : 0;
-					rollbarService.critical(new Error('countBranchesForQuestion failed (status=' + filters.status + ', titleLength=' + titleLength + '): ' + (error && error.message ? error.message : error)));
+			} catch (error) {
+				try {
+					const titleLength = typeof filters?.title === 'string' ? filters.title.length : 0;
+					rollbarService.critical(new Error('countBranchesForQuestion failed (status=' + filters?.status + ', titleLength=' + titleLength + '): ' + (error?.message || error)));
+				} catch (reportError) {
+					console.log(reportError);
 				}
-				resolve(response);
+				//signal failure so callers keep the previous count and date range
+				resolve(null);
+				return;
+			}
+			resolve(response);
 			})();
 			});
 		}
@@ -213,72 +220,80 @@ export default {
 				// Throttle filter
 				clearTimeout(request_timeout);
 				request_timeout = window.setTimeout(async () => {
-					state.filters.title = searchTerm;
-					const result = await _getBranchEntriesCount({
-						ownerEntryUuid,
-						ownerInputRef,
-						filters: state.filters
-					});
+				state.filters.title = searchTerm;
+				const result = await _getBranchEntriesCount({
+					ownerEntryUuid,
+					ownerInputRef,
+					filters: state.filters
+				});
+				if (result) {
 					//re-count entries
 					state.count = result.total;
 					state.filters.oldest = result.oldest;
 					state.filters.newest = result.newest;
+				}
 
-					state.isFetching = false;
+				state.isFetching = false;
 				}, PARAMETERS.DELAY_LONG);
 			},
 			async filterByStatus (e) {
 				const status = e.target.value;
 				console.log(status);
 				state.isFetching = true;
-				state.filters.status = status;
-				setTimeout(async () => {
-					const result = await _getBranchEntriesCount({
-						ownerEntryUuid,
-						ownerInputRef,
-						filters: state.filters
-					});
+			state.filters.status = status;
+			setTimeout(async () => {
+				const result = await _getBranchEntriesCount({
+					ownerEntryUuid,
+					ownerInputRef,
+					filters: state.filters
+				});
+				if (result) {
 					//re-count entries
 					state.count = result.total;
 					state.filters.oldest = result.oldest;
 					state.filters.newest = result.newest;
-					state.isFetching = false;
-				}, PARAMETERS.DELAY_LONG);
+				}
+				state.isFetching = false;
+			}, PARAMETERS.DELAY_LONG);
 			},
 			resetFilters () {
 				state.isFetching = true;
-				state.filters = { ...PARAMETERS.FILTERS_DEFAULT };
-				setTimeout(async () => {
-					const result = await _getBranchEntriesCount({
-						ownerEntryUuid,
-						ownerInputRef,
-						filters: state.filters
-					});
+			state.filters = { ...PARAMETERS.FILTERS_DEFAULT };
+			setTimeout(async () => {
+				const result = await _getBranchEntriesCount({
+					ownerEntryUuid,
+					ownerInputRef,
+					filters: state.filters
+				});
+				if (result) {
 					//re-count entries
 					state.count = result.total;
 					state.filters.oldest = result.oldest;
 					state.filters.newest = result.newest;
 					state.filters.from = result.oldest;
 					state.filters.to = result.newest;
-					state.isFetching = false;
-				}, PARAMETERS.DELAY_LONG);
+				}
+				state.isFetching = false;
+			}, PARAMETERS.DELAY_LONG);
 			},
-			filterByDate () {
-				//v-model updates when picking a date in the datepicker
-				state.isFetching = true;
-				setTimeout(async () => {
-					const result = await _getBranchEntriesCount({
-						ownerEntryUuid,
-						ownerInputRef,
-						filters: state.filters
-					});
+		filterByDate () {
+			//v-model updates when picking a date in the datepicker
+			state.isFetching = true;
+			setTimeout(async () => {
+				const result = await _getBranchEntriesCount({
+					ownerEntryUuid,
+					ownerInputRef,
+					filters: state.filters
+				});
+				if (result) {
 					//re-count entries
 					state.count = result.total;
 					state.filters.oldest = result.oldest;
 					state.filters.newest = result.newest;
-					state.isFetching = false;
-				}, PARAMETERS.DELAY_LONG);
-			}
+				}
+				state.isFetching = false;
+			}, PARAMETERS.DELAY_LONG);
+		}
 		};
 
 		console.log('Current filters --->', state.filters);
