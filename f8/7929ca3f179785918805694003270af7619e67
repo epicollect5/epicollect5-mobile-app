@@ -1,0 +1,24 @@
+src/services/database/database-delete-service.js
+  s_5bd4b644d7d9d5::t_9f91f650146646 383-387
+docs/known-review-false-positives.md
+  s_5bd4b644d7d9d5::t_ba7413c12ae512 21-27
+  s_5bd4b644d7d9d5::t_38444dbe0c5a90 15-20
+src/components/modals/ModalCameraPreview.vue
+  s_5bd4b644d7d9d5::t_48998764e1d58f 598-602
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f87929ca3f179785918805694003270af7619e67",
+  "prompts": {},
+  "sessions": {
+    "s_5bd4b644d7d9d5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6ea78201ffei47DA78L7zqNoS",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
