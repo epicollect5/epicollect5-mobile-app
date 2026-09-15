@@ -526,6 +526,116 @@ describe('ModalCameraPreview component', () => {
 		expect(mocks.cameraPreview.deleteFile).not.toHaveBeenCalled();
 	});
 
+	it('yields dismissal to an in-flight photo handoff instead of racing it', async () => {
+		grantPermissions();
+		mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+		//hold the handoff stop open so the ✕ tap lands mid-handoff
+		let resolveStop = null;
+		mocks.cameraPreview.stop.mockReturnValue(new Promise((resolve) => {
+			resolveStop = resolve;
+		}));
+		const overlay = {};
+		mocks.modalController.getTop.mockResolvedValue(overlay);
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		//capture resolves, handoff claims the dismissal: close held, back held
+		const capturePromise = wrapper.vm.capture();
+		await flushPromises();
+		expect(wrapper.vm.state.handoff).toBe(true);
+		expect(overlay.canDismiss).toBe(false);
+
+		//✕ during handoff: swallowed, no empty dismiss steals the file
+		await wrapper.vm.dismiss();
+		await flushPromises();
+		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+
+		//stop settles: single payload dismiss, exit restored, file kept
+		resolveStop();
+		await capturePromise;
+		await flushPromises();
+		expect(mocks.modalController.dismiss).toHaveBeenCalledTimes(1);
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: false });
+		expect(overlay.canDismiss).toBe(true);
+		expect(wrapper.vm.state.handoff).toBe(false);
+		expect(mocks.cameraPreview.deleteFile).not.toHaveBeenCalled();
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('waits for an in-flight photo handoff on unmount instead of dropping it', async () => {
+		vi.useFakeTimers();
+		try {
+			grantPermissions();
+			mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+			let resolveStop = null;
+			mocks.cameraPreview.stop.mockReturnValue(new Promise((resolve) => {
+				resolveStop = resolve;
+			}));
+			const wrapper = shallowMount(ModalCameraPreview);
+			await flushPromises();
+
+			const capturePromise = wrapper.vm.capture();
+			await flushPromises();
+			expect(wrapper.vm.state.handoff).toBe(true);
+
+			//back button while the handoff stop is parked: unmount waits (frozen
+			//clock, so the 1.5s fallback cannot fire), no empty dismiss
+			wrapper.unmount();
+			await flushPromises();
+			expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+
+			resolveStop();
+			await capturePromise;
+			await flushPromises();
+			expect(mocks.modalController.dismiss).toHaveBeenCalledTimes(1);
+			expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: false });
+			expect(mocks.cameraPreview.deleteFile).not.toHaveBeenCalled();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('reopens the exit when a handoff stalls past the escape timeout', async () => {
+		vi.useFakeTimers();
+		try {
+			grantPermissions();
+			mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+			let resolveStop = null;
+			mocks.cameraPreview.stop.mockReturnValue(new Promise((resolve) => {
+				resolveStop = resolve;
+			}));
+			const wrapper = shallowMount(ModalCameraPreview);
+			await flushPromises();
+
+			const capturePromise = wrapper.vm.capture();
+			await flushPromises();
+			expect(wrapper.vm.state.handoff).toBe(true);
+
+			//stall past the escape hatch: the exit (bound to the same flag the
+			//dismiss guard reads) reopens and the stall is reported
+			await vi.advanceTimersByTimeAsync(3000);
+			expect(wrapper.vm.state.handoff).toBe(false);
+			expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith(
+				'CameraPreview handoff stalled',
+				expect.any(Error)
+			);
+
+			//the handoff itself is unbroken by the escape: resolving the stop
+			//still delivers the payload dismiss exactly once
+			resolveStop();
+			await capturePromise;
+			await flushPromises();
+			expect(mocks.modalController.dismiss).toHaveBeenCalledTimes(1);
+			expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: false });
+			wrapper.unmount();
+			await flushPromises();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
 	it('stops the camera and releases the UI layer when dismissed before capturing', async () => {
 		grantPermissions();
 		const wrapper = shallowMount(ModalCameraPreview);
@@ -757,6 +867,46 @@ describe('ModalCameraPreview component', () => {
 		expect(overlay.canDismiss).toBe(true);
 		expect(mocks.modalController.dismiss).toHaveBeenCalled();
 		expect(mocks.cameraPreview.deleteFile).toHaveBeenCalled();
+	});
+
+	it('holds dismissal through the video handoff and restores it after the stop', async () => {
+		grantPermissions();
+		//hold the handoff stop open so the ✕ tap lands mid-handoff
+		let resolveStop = null;
+		mocks.cameraPreview.stop.mockReturnValue(new Promise((resolve) => {
+			resolveStop = resolve;
+		}));
+		const overlay = {};
+		mocks.modalController.getTop.mockResolvedValue(overlay);
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		//record, then stop: finalize hands off with the stop parked
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+		const stopPress = wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.handoff).toBe(true);
+		//restore moved post-stop: back stays held through the handoff, not just the recording
+		expect(overlay.canDismiss).toBe(false);
+
+		//✕ during handoff: swallowed, no empty dismiss steals the file
+		await wrapper.vm.dismiss();
+		await flushPromises();
+		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+
+		resolveStop();
+		await stopPress;
+		await flushPromises();
+		expect(mocks.modalController.dismiss).toHaveBeenCalledTimes(1);
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ videoFilePath: '/rec.mp4' });
+		expect(overlay.canDismiss).toBe(true);
+		expect(wrapper.vm.state.handoff).toBe(false);
+		expect(mocks.cameraPreview.deleteFile).not.toHaveBeenCalled();
+
+		wrapper.unmount();
+		await flushPromises();
 	});
 
 	it('keeps recording when the overlay cannot be resolved', async () => {
