@@ -1,0 +1,21 @@
+src/pages/Entries.vue
+  s_c0991523c29f80::t_56a060e1c720d1 584-587
+src/pages/EntriesDownload.vue
+  s_c0991523c29f80::t_9ea20dddb0fd60 254-255,257
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5fa90d984d8c5496518fa4ddf5a82eb5ea8f00de",
+  "prompts": {},
+  "sessions": {
+    "s_c0991523c29f80": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f99cc9d86ffeR8FhltJuDJKykV",
+        "model": "muse-spark-1.2-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
