@@ -1,0 +1,25 @@
+tests/unit/components/modals/ModalSavedAnswers.spec.js
+  s_7e00539fdeac04::t_553ed951658659 74
+  s_7e00539fdeac04::t_06f68f68932e68 176-229
+src/components/modals/ModalSavedAnswers.vue
+  s_7e00539fdeac04::t_a39cbe35a7e004 163-172
+  s_7e00539fdeac04::t_3b0f127ff3b5ba 209-218
+src/services/entry/answer-service.js
+  s_7e00539fdeac04::t_5b51e66efd6281 433-465
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a0e7bd0c8424799fab62ffc8619bba447d145739",
+  "prompts": {},
+  "sessions": {
+    "s_7e00539fdeac04": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f5b32d15affeRhgpSwlaVJz8sw",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
