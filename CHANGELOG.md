@@ -1,5 +1,23 @@
 ## Release Notes
 
+# 98.2.1 - build 9821
+
+ - Fixed a crash when opening an entry for editing whose group answers predate the form (missing group child answers are now shown empty instead of crashing).
+ - Fixed back-button navigation in the entry editor being swallowed before reaching the previous question.
+
+# 98.2.0 - build 9820
+
+ - Added an in-app (embedded) camera for photo questions with live preview, flash handling, orientation-aware resize, and 1024x768 captures for server requirements, plus a settings toggle to enable it.
+ - Added video recording mode to the in-app camera preview, wired into bootstrap, settings, and the video flow.
+ - Preserved EXIF data in embedded camera captures, including large captures and JPEG segment copy; strip out-of-line GPS bytes when removing EXIF.
+ - Hardened the camera session lifecycle: serialize teardown and recording, recover the preview when backgrounded mid-startup, surface open/init/finalize failures to the user, and release native sessions and image memory on failure.
+ - Fixed photo replacement and retake flows to preserve existing media on dismiss or failure and keep video refs when a native retake fails.
+ - Hardened branch media and file-delete handling: defer deletions to hierarchy save, scope the delete queue by entry, reset stale queues when opening entries, guard saves against stale queues, hide blanked-answer media on branch reopen, and drop branch deletions on quit.
+ - Fixed saved-answers crashes (missing keys, hits-cap overflow) and capped hits per append; bound title filter params to prevent SQLite errors.
+ - Fixed entries-filter counts going stale during reset and failures, preserving filter state and debouncing updates.
+ - Hardened error reporting with non-serializable-safe context and capped function values, and track failed video captures; guarded the back button during export and download prompts.
+ - Added the @capgo/camera-preview plugin to native platforms and handled its Vite vendor chunking.
+
 # 98.1.0 - build 9810
 
  - Added a draw pad for photo questions, opened from the photo media popover and the photo question.
