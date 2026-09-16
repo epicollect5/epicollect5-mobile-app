@@ -216,6 +216,50 @@ describe('updateLocalProject()', () => {
         expect(showModalLogin).not.toHaveBeenCalled();
     });
 
+    it('locks navigation while the update is in flight and releases it on success', async () => {
+        const rootStore = useRootStore();
+        versioningService.checkProjectVersion.mockResolvedValue(false);
+        notificationService.confirmSingle.mockResolvedValue(true);
+
+        let seenDuringUpdate;
+        versioningService.updateProject.mockImplementation(async () => {
+            seenDuringUpdate = rootStore.isProjectUpdating;
+            return true;
+        });
+
+        const result = await updateLocalProject();
+
+        expect(result).toBe(true);
+        expect(seenDuringUpdate).toBe(true);
+        expect(rootStore.isProjectUpdating).toBe(false);
+    });
+
+    it('releases the navigation lock when the update fails', async () => {
+        const rootStore = useRootStore();
+        versioningService.checkProjectVersion.mockResolvedValue(false);
+        notificationService.confirmSingle.mockResolvedValue(true);
+        versioningService.updateProject.mockRejectedValue({
+            data: { errors: [{ code: 'ec5_999' }] }
+        });
+
+        const result = await updateLocalProject();
+
+        expect(result).toBe(false);
+        expect(rootStore.isProjectUpdating).toBe(false);
+    });
+
+    it('never sets the navigation lock when no update runs', async () => {
+        const rootStore = useRootStore();
+        versioningService.checkProjectVersion.mockResolvedValue(false);
+        notificationService.confirmSingle.mockResolvedValue(false);
+
+        const result = await updateLocalProject();
+
+        expect(result).toBe(false);
+        expect(rootStore.isProjectUpdating).toBe(false);
+        expect(versioningService.updateProject).not.toHaveBeenCalled();
+    });
+
     it('skips the deferred update after login when no project is loaded', async () => {
         const rootStore = useRootStore();
         versioningService.checkProjectVersion.mockResolvedValue(false);

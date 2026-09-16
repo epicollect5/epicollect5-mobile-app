@@ -582,7 +582,9 @@ export default {
       console.log(window.history);
       console.log('useBackButton Entries');
       // Ignore back while export modal is open (progress export uses isExportModalActive)
-      if (rootStore.isExportModalActive) {
+      // or while a project update is in flight (loader blocks taps but not hardware back;
+      // leaving would destroy the model under the pending update continuation)
+      if (rootStore.isExportModalActive || rootStore.isProjectUpdating) {
         return false;
       }
       // Project update cannot take place if navigating away

@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 98.2.2 - build 9822
+
+ - Fixed a crash when pressing the Android hardware back button while a project update is in flight on the entries page (navigation is now locked until the update completes).
+
 # 98.2.1 - build 9821
 
  - Fixed a crash when opening an entry for editing whose group answers predate the form (missing group child answers are now shown empty instead of crashing).

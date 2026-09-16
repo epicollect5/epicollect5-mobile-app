@@ -26,6 +26,11 @@ export async function updateLocalProject() {
             return false;
         }
 
+        //lock navigation (hardware back) while the update is in flight:
+        //the loader overlay blocks taps but useBackButton still fires,
+        //and leaving would destroy the model under the pending continuation
+        rootStore.isProjectUpdating = true;
+
         await notificationService.showProgressDialog(
             STRINGS[language].labels.wait,
             STRINGS[language].labels.updating_project
@@ -85,6 +90,8 @@ export async function updateLocalProject() {
             await logout();
             showModalLogin();
             return false;
+        } finally {
+            rootStore.isProjectUpdating = false;
         }
     }
 
