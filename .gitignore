@@ -46,6 +46,8 @@ ios/App/env.xcconfig
 ios/App/App/env.xcconfig
 ios/App/Epicollect5/env.xcconfig
 .env.local
+.commandcode/settings.local.json
+.commandcode/*.local.json
 .nvmrc
 git-commits.csv
 .vscode

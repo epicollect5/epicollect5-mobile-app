@@ -430,5 +430,38 @@ export const answerService = {
                 });
             }
         });
+    },
+    // Extract valid, deduplicated saved-answer strings from one result page
+    // rows has the { length, item(i) } shape returned by getSavedAnswers
+    // when searchTerm is supplied, only matching answers are returned (case-insensitive)
+    // otherwise blank answers are skipped
+    // entries saved before the question existed (missing inputRef key)
+    // and non-string legacy answers are skipped
+    extractSavedAnswerValues (rows, inputRef, searchTerm) {
+        const values = [];
+        const needle = typeof searchTerm === 'string' && searchTerm !== '' ? searchTerm.toLowerCase() : null;
+
+        for (let i = 0; i < rows.length; i++) {
+            const value = JSON.parse(rows.item(i).answers)?.[inputRef]?.answer;
+
+            if (typeof value !== 'string') {
+                continue;
+            }
+
+            if (needle) {
+                if (!value.toLowerCase().includes(needle)) {
+                    continue;
+                }
+            }
+            else if (value.trim() === '') {
+                continue;
+            }
+
+            if (!values.includes(value)) {
+                values.push(value);
+            }
+        }
+
+        return values;
     }
 };

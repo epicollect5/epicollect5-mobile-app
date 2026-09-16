@@ -143,7 +143,7 @@ export default {
 					function searchNeedle() {
 						offset += PARAMETERS.MAX_SAVED_ANSWERS;
 
-						if (state.hits >= PARAMETERS.MAX_SAVED_ANSWERS) {
+						if (state.hits.length >= PARAMETERS.MAX_SAVED_ANSWERS) {
 							setTimeout(() => {
 								state.isFetching = false;
 							}, PARAMETERS.DELAY_MEDIUM);
@@ -160,16 +160,16 @@ export default {
 
 									return false;
 								} else {
-									for (let i = 0; i < result.rows.length; i++) {
-										const answers = JSON.parse(result.rows.item(i).answers);
-										const answer = answers[inputRef];
-
-										//show only matching answers
-										if (answer?.answer?.toLowerCase().includes(state.searchTerm)) {
-											//skip duplicates
-											if (!state.hits.includes(answer.answer)) {
-												state.hits.push(answer.answer);
-											}
+									//show only matching answers
+									const values = answerService.extractSavedAnswerValues(result.rows, inputRef, state.searchTerm);
+									for (const value of values) {
+										//stop at MAX_SAVED_ANSWERS (a page can hold more than the remaining capacity)
+										if (state.hits.length >= PARAMETERS.MAX_SAVED_ANSWERS) {
+											break;
+										}
+										//skip duplicates
+										if (!state.hits.includes(value)) {
+											state.hits.push(value);
 										}
 									}
 									searchNeedle();
@@ -190,7 +190,7 @@ export default {
 					offset += PARAMETERS.MAX_SAVED_ANSWERS;
 
 					//if we have already MAX_SAVED_ANSWERS, bail out
-					if (state.hits >= PARAMETERS.MAX_SAVED_ANSWERS) {
+					if (state.hits.length >= PARAMETERS.MAX_SAVED_ANSWERS) {
 						setTimeout(() => {
 							state.isFetching = false;
 						}, PARAMETERS.DELAY_MEDIUM);
@@ -206,16 +206,16 @@ export default {
 
 								return false;
 							} else {
-								//loop the result
-								for (let i = 0; i < result.rows.length; i++) {
-									const answers = JSON.parse(result.rows.item(i).answers);
-									const answer = answers[inputRef];
-									//if an answer is found, show it
-									if (answer?.answer?.trim() !== '') {
-										//skip duplicates
-										if (!state.hits.includes(answer.answer)) {
-											state.hits.push(answer.answer);
-										}
+								//if an answer is found, show it
+								const values = answerService.extractSavedAnswerValues(result.rows, inputRef);
+								for (const value of values) {
+									//stop at MAX_SAVED_ANSWERS (a page can hold more than the remaining capacity)
+									if (state.hits.length >= PARAMETERS.MAX_SAVED_ANSWERS) {
+										break;
+									}
+									//skip duplicates
+									if (!state.hits.includes(value)) {
+										state.hits.push(value);
 									}
 								}
 								loadSavedAnswer();

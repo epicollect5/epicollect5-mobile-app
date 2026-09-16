@@ -799,6 +799,12 @@ export default {
       if (rootStore.isCameraPreviewModalActive) {
         return false;
       }
+      //ignore back button while the draw modal is open
+      if (rootStore.isDrawModalActive) {
+        return false;
+      }
+        return false;
+      }
 
 			methods.prev();
 		});

@@ -112,6 +112,7 @@ import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import { databaseSelectService } from '@/services/database/database-select-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 export default {
 	props: {
@@ -142,6 +143,7 @@ export default {
 		const labels = STRINGS[language].labels;
 		const { ownerInputRef, ownerEntryUuid } = readonly(props);
 		let request_timeout;
+		let latestCountRequest = 0;
 
 		const state = reactive({
 			isFetching: false,
@@ -161,7 +163,8 @@ export default {
 					oldest: new Date().toISOString().split('T')[0]
 				};
 
-				(async () => {
+			(async () => {
+				try {
 					const result = await databaseSelectService.countBranchesForQuestion(
 						ownerEntryUuid,
 						ownerInputRef,
@@ -179,8 +182,19 @@ export default {
 							};
 						}
 					}
-					resolve(response);
-				})();
+			} catch (error) {
+				try {
+					const titleLength = typeof filters?.title === 'string' ? filters.title.length : 0;
+					rollbarService.critical(new Error('countBranchesForQuestion failed (status=' + filters?.status + ', titleLength=' + titleLength + '): ' + (error?.message || error)));
+				} catch (reportError) {
+					console.log(reportError);
+				}
+				//signal failure so callers keep the previous count and date range
+				resolve(null);
+				return;
+			}
+			resolve(response);
+			})();
 			});
 		}
 
@@ -204,75 +218,108 @@ export default {
 				const searchTerm = e.target.value;
 
 				state.isFetching = true;
-				// Throttle filter
-				clearTimeout(request_timeout);
-				request_timeout = window.setTimeout(async () => {
-					state.filters.title = searchTerm;
-					const result = await _getBranchEntriesCount({
-						ownerEntryUuid,
-						ownerInputRef,
-						filters: state.filters
-					});
+			// Throttle filter
+			clearTimeout(request_timeout);
+			//claim the slot now so in-flight responses landing during the
+			//debounce window are treated as stale
+			const requestId = ++latestCountRequest;
+			request_timeout = window.setTimeout(async () => {
+				state.filters.title = searchTerm;
+				const result = await _getBranchEntriesCount({
+					ownerEntryUuid,
+					ownerInputRef,
+					filters: state.filters
+				});
+				if (requestId !== latestCountRequest) {
+					//a newer request has since been issued; ignore this stale response
+					return;
+				}
+				if (result) {
 					//re-count entries
 					state.count = result.total;
 					state.filters.oldest = result.oldest;
 					state.filters.newest = result.newest;
+				}
 
-					state.isFetching = false;
+				state.isFetching = false;
 				}, PARAMETERS.DELAY_LONG);
 			},
 			async filterByStatus (e) {
 				const status = e.target.value;
 				console.log(status);
 				state.isFetching = true;
-				state.filters.status = status;
-				setTimeout(async () => {
-					const result = await _getBranchEntriesCount({
-						ownerEntryUuid,
-						ownerInputRef,
-						filters: state.filters
-					});
+			state.filters.status = status;
+			const requestId = ++latestCountRequest;
+			setTimeout(async () => {
+				const result = await _getBranchEntriesCount({
+					ownerEntryUuid,
+					ownerInputRef,
+					filters: state.filters
+				});
+				if (requestId !== latestCountRequest) {
+					//a newer request has since been issued; ignore this stale response
+					return;
+				}
+				if (result) {
 					//re-count entries
 					state.count = result.total;
 					state.filters.oldest = result.oldest;
 					state.filters.newest = result.newest;
-					state.isFetching = false;
-				}, PARAMETERS.DELAY_LONG);
+				}
+				state.isFetching = false;
+			}, PARAMETERS.DELAY_LONG);
 			},
 			resetFilters () {
 				state.isFetching = true;
-				state.filters = { ...PARAMETERS.FILTERS_DEFAULT };
-				setTimeout(async () => {
-					const result = await _getBranchEntriesCount({
-						ownerEntryUuid,
-						ownerInputRef,
-						filters: state.filters
-					});
+			state.searchbarInitialValue = '';
+			//drop any pending title search so it cannot repopulate the fresh filters
+			clearTimeout(request_timeout);
+			const requestId = ++latestCountRequest;
+			state.filters = { ...PARAMETERS.FILTERS_DEFAULT };
+			setTimeout(async () => {
+				const result = await _getBranchEntriesCount({
+					ownerEntryUuid,
+					ownerInputRef,
+					filters: state.filters
+				});
+				if (requestId !== latestCountRequest) {
+					//a newer request has since been issued; ignore this stale response
+					return;
+				}
+				if (result) {
 					//re-count entries
 					state.count = result.total;
 					state.filters.oldest = result.oldest;
 					state.filters.newest = result.newest;
 					state.filters.from = result.oldest;
 					state.filters.to = result.newest;
-					state.isFetching = false;
-				}, PARAMETERS.DELAY_LONG);
+				}
+				state.isFetching = false;
+			}, PARAMETERS.DELAY_LONG);
 			},
-			filterByDate () {
-				//v-model updates when picking a date in the datepicker
-				state.isFetching = true;
-				setTimeout(async () => {
-					const result = await _getBranchEntriesCount({
-						ownerEntryUuid,
-						ownerInputRef,
-						filters: state.filters
-					});
+		filterByDate () {
+			//v-model updates when picking a date in the datepicker
+			state.isFetching = true;
+			const requestId = ++latestCountRequest;
+			setTimeout(async () => {
+				const result = await _getBranchEntriesCount({
+					ownerEntryUuid,
+					ownerInputRef,
+					filters: state.filters
+				});
+				if (requestId !== latestCountRequest) {
+					//a newer request has since been issued; ignore this stale response
+					return;
+				}
+				if (result) {
 					//re-count entries
 					state.count = result.total;
 					state.filters.oldest = result.oldest;
 					state.filters.newest = result.newest;
-					state.isFetching = false;
-				}, PARAMETERS.DELAY_LONG);
-			}
+				}
+				state.isFetching = false;
+			}, PARAMETERS.DELAY_LONG);
+		}
 		};
 
 		console.log('Current filters --->', state.filters);

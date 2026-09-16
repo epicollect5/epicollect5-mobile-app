@@ -4,6 +4,11 @@ import { useRootStore } from '@/stores/root-store';
 import { useDBStore } from '@/stores/db-store';
 import { PARAMETERS } from '@/config';
 
+function _sanitiseLikeParameters(value) {
+    const escaped = String(value).replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+    return '%' + escaped + '%';
+}
+
 export const databaseSelectService = {
 
     async getRows(query, params) {
@@ -304,10 +309,11 @@ export const databaseSelectService = {
             params.push(parentEntryUuid);
         }
 
-        //do not bind filters
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\'';
+                query += ' AND title LIKE ? ESCAPE \'\\\'';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             if (filters.from && filters.to) {
@@ -414,10 +420,11 @@ export const databaseSelectService = {
             params.push(parentEntryUuid);
         }
 
-        //do not bind filters!
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\'';
+                query += ' AND title LIKE ? ESCAPE \'\\\'';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             //filter by dates
@@ -557,7 +564,7 @@ export const databaseSelectService = {
     async selectBranchesForQuestion(ownerEntryUuid, ownerInputRef, limit, offset, filters, status) {
 
         let query = '';
-        const params = [ownerEntryUuid, ownerInputRef, ownerEntryUuid, ownerInputRef];
+        const params = [];
 
         query += 'SELECT * ';
         query += 'FROM (';
@@ -570,11 +577,13 @@ export const databaseSelectService = {
         query += 'FROM temp_branch_entries ';
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
+        params.push(ownerEntryUuid, ownerInputRef);
 
-        //do not bind filters
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\' ';
+                query += ' AND title LIKE ? ESCAPE \'\\\' ';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             //filter by dates
@@ -613,11 +622,13 @@ export const databaseSelectService = {
         query += 'FROM branch_entries ';
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
+        params.push(ownerEntryUuid, ownerInputRef);
 
-        //do not bind filters!
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\' ';
+                query += ' AND title LIKE ? ESCAPE \'\\\' ';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             //filter by dates
@@ -635,7 +646,6 @@ export const databaseSelectService = {
                     case PARAMETERS.STATUS.INCOMPLETE:
                         query += ' AND synced=' + PARAMETERS.SYNCED_CODES.INCOMPLETE.toString() + ' ';
                         break;
-
                     case PARAMETERS.STATUS.ERROR:
                         query += ' AND synced=' + PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR.toString() + ' ';
                         break;
@@ -660,7 +670,7 @@ export const databaseSelectService = {
     },
     async countBranchesForQuestion(ownerEntryUuid, ownerInputRef, filters, status) {
 
-        const params = [ownerEntryUuid, ownerInputRef, ownerEntryUuid, ownerInputRef];
+        const params = [];
         let query = '';
         //imp: COUNT(DISTINCT(entry_uuid)) since we can have a temp branch with the
         //imp: same uuid when editing an existing branch
@@ -675,11 +685,13 @@ export const databaseSelectService = {
         query += 'FROM temp_branch_entries ';
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
+        params.push(ownerEntryUuid, ownerInputRef);
 
-        //do not bind filters!
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\' ';
+                query += ' AND title LIKE ? ESCAPE \'\\\' ';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             //filter by dates
@@ -718,11 +730,13 @@ export const databaseSelectService = {
         query += 'FROM branch_entries ';
         query += 'WHERE owner_entry_uuid = ? ';
         query += 'AND owner_input_ref=? ';
+        params.push(ownerEntryUuid, ownerInputRef);
 
-        //do not bind filters!
+        //title filter is bound; dates are concatenated
         if (filters) {
             if (filters.title) {
-                query += ' AND title LIKE \'%' + filters.title + '%\' ';
+                query += ' AND title LIKE ? ESCAPE \'\\\' ';
+                params.push(_sanitiseLikeParameters(filters.title));
             }
 
             //filter by dates
@@ -740,7 +754,6 @@ export const databaseSelectService = {
                     case PARAMETERS.STATUS.INCOMPLETE:
                         query += ' AND synced=' + PARAMETERS.SYNCED_CODES.INCOMPLETE.toString() + ' ';
                         break;
-
                     case PARAMETERS.STATUS.ERROR:
                         query += ' AND synced=' + PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR.toString() + ' ';
                         break;

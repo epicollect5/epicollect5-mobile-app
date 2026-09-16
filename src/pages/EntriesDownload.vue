@@ -247,9 +247,10 @@ export default {
     //back with back button (Android)
     useBackButton(10, () => {
       console.log(window.history);
-      if (!state.isFetching) {
-        methods.goBack();
+      if (state.isFetching || state.promptOpen) {
+        return false;
       }
+      methods.goBack();
     });
 
     return {

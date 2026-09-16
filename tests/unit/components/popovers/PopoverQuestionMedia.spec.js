@@ -1,13 +1,14 @@
-import { mount } from '@vue/test-utils';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
+import {mount} from '@vue/test-utils';
+import {describe, it, expect, beforeEach, vi} from 'vitest';
+import flushPromises from 'flush-promises';
+import {setActivePinia, createPinia} from 'pinia';
 import PopoverQuestionMedia from '@/components/popovers/PopoverQuestionMedia.vue';
-import { useRootStore } from '@/stores/root-store';
-import { PARAMETERS } from '@/config';
-import { popoverController } from '@ionic/vue';
-import { notificationService } from '@/services/notification-service';
-import { deleteFileService } from '@/services/filesystem/delete-file-service';
-import { projectModel } from '@/models/project-model';
+import {useRootStore} from '@/stores/root-store';
+import {PARAMETERS} from '@/config';
+import {popoverController} from '@ionic/vue';
+import {notificationService} from '@/services/notification-service';
+import {deleteFileService} from '@/services/filesystem/delete-file-service';
+import {projectModel} from '@/models/project-model';
 
 vi.mock('@ionic/vue', () => ({
     popoverController: {
@@ -52,6 +53,14 @@ vi.mock('@capacitor/share', () => ({
     }
 }));
 
+const ION_STUBS = {
+    'ion-content': true,
+    'ion-list': true,
+    'ion-item': true,
+    'ion-icon': true,
+    'ion-label': true
+};
+
 const factory = (media) => {
     return mount(PopoverQuestionMedia, {
         props: {
@@ -63,36 +72,47 @@ const factory = (media) => {
             mediaType: PARAMETERS.QUESTION_TYPES.PHOTO
         },
         global: {
-            stubs: {
-                'ion-content': true,
-                'ion-list': true,
-                'ion-item': true,
-                'ion-icon': true,
-                'ion-label': true
-            }
+            stubs: ION_STUBS
         }
     });
 };
 
-describe('PopoverQuestionMedia removeNative', () => {
-    beforeEach(() => {
-        setActivePinia(createPinia());
-        vi.clearAllMocks();
-
-        const rootStore = useRootStore();
-        rootStore.language = 'en';
-        rootStore.device = { platform: 'android' };
-        rootStore.tempDir = '/tmp/';
-        rootStore.persistentDir = '/data/';
-        rootStore.isPWA = false;
-        rootStore.queueFilesToDelete = [];
-        notificationService.confirmSingle.mockResolvedValue(true);
+function mountPopover(mediaType) {
+    return mount(PopoverQuestionMedia, {
+        props: {
+            entryUuid: 'entry-uuid-1',
+            projectRef: 'proj-ref',
+            inputRef: 'test_ref',
+            media: {'entry-uuid-1': {'test_ref': {cached: 'file.jpg', stored: ''}}},
+            mediaFolder: PARAMETERS.PHOTO_DIR,
+            mediaType
+        },
+        global: {
+            stubs: ION_STUBS
+        }
     });
+}
+
+beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+
+    const rootStore = useRootStore();
+    rootStore.language = 'en';
+    rootStore.device = {platform: 'android'};
+    rootStore.tempDir = '/tmp/';
+    rootStore.persistentDir = '/data/';
+    rootStore.isPWA = false;
+    rootStore.queueFilesToDelete = [];
+    notificationService.confirmSingle.mockResolvedValue(true);
+});
+
+describe('PopoverQuestionMedia removeNative', () => {
 
     it('queues the stored file when deleting a retaken photo (cached + stored set)', async () => {
         deleteFileService.removeFile.mockResolvedValue();
         const wrapper = factory({
-            entry1: { q1: { cached: 'entry1_1000.jpg', stored: 'entry1_1000.jpg', type: 'photo' } }
+            entry1: {q1: {cached: 'entry1_1000.jpg', stored: 'entry1_1000.jpg', type: 'photo'}}
         });
 
         await wrapper.vm.remove();
@@ -115,7 +135,7 @@ describe('PopoverQuestionMedia removeNative', () => {
     it('does not queue anything when only a cached file exists', async () => {
         deleteFileService.removeFile.mockResolvedValue();
         const wrapper = factory({
-            entry1: { q1: { cached: 'fresh.jpg', stored: '', type: 'photo' } }
+            entry1: {q1: {cached: 'fresh.jpg', stored: '', type: 'photo'}}
         });
 
         await wrapper.vm.remove();
@@ -127,9 +147,9 @@ describe('PopoverQuestionMedia removeNative', () => {
     });
 
     it('does not queue the stored file when the temp delete fails', async () => {
-        deleteFileService.removeFile.mockRejectedValue({ code: 5 });
+        deleteFileService.removeFile.mockRejectedValue({code: 5});
         const wrapper = factory({
-            entry1: { q1: { cached: 'entry1_1000.jpg', stored: 'entry1_1000.jpg', type: 'photo' } }
+            entry1: {q1: {cached: 'entry1_1000.jpg', stored: 'entry1_1000.jpg', type: 'photo'}}
         });
 
         await wrapper.vm.remove();
@@ -143,7 +163,7 @@ describe('PopoverQuestionMedia removeNative', () => {
 
     it('keeps the existing stored-only queued path unchanged', async () => {
         const wrapper = factory({
-            entry1: { q1: { cached: '', stored: 'stored.jpg', type: 'photo' } }
+            entry1: {q1: {cached: '', stored: 'stored.jpg', type: 'photo'}}
         });
 
         await wrapper.vm.remove();
@@ -159,5 +179,40 @@ describe('PopoverQuestionMedia removeNative', () => {
             file_name: 'stored.jpg'
         }]);
         expect(popoverController.dismiss).toHaveBeenCalledWith(PARAMETERS.ACTIONS.FILE_QUEUED);
+    });
+});
+
+describe('PopoverQuestionMedia component', () => {
+
+    it('shows the Draw entry on top of share and delete for photos', async () => {
+        const wrapper = mountPopover(PARAMETERS.QUESTION_TYPES.PHOTO);
+        await flushPromises();
+
+        const items = wrapper.findAll('ion-item');
+        expect(items).toHaveLength(3);
+        //Draw is the first row, above share and delete
+        expect(items[0].text().trim()).toBe('Draw Beta');
+        expect(items[1].text().trim()).toBe('Share');
+        expect(items[2].text().trim()).toBe('Delete');
+    });
+
+    it('hides the Draw entry for non-photo media', async () => {
+        const wrapper = mountPopover(PARAMETERS.QUESTION_TYPES.VIDEO);
+        await flushPromises();
+
+        const items = wrapper.findAll('ion-item');
+        expect(items).toHaveLength(2);
+        expect(items.map((item) => item.text().trim())).not.toContain('Draw');
+    });
+
+    it('dismisses with the DRAW action when the Draw entry is tapped', async () => {
+        const wrapper = mountPopover(PARAMETERS.QUESTION_TYPES.PHOTO);
+        await flushPromises();
+
+        wrapper.findAll('ion-item')[0].trigger('click');
+        await flushPromises();
+
+        //the caller (QuestionPhoto) reacts to the DRAW action and opens the pad
+        expect(popoverController.dismiss).toHaveBeenCalledWith(PARAMETERS.ACTIONS.DRAW);
     });
 });
