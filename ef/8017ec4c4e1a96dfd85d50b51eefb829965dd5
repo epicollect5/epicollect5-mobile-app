@@ -1,0 +1,33 @@
+src/use/project/update-local-project.js
+  s_8b8c381353dd83::t_1ddc76925a50c7 29-33,93-94
+src/pages/Entries.vue
+  s_8b8c381353dd83::t_90b0b8e6047a80 585-587
+package.json
+  s_8b8c381353dd83::t_7bc40b7eef2be1 3
+ios/App/App.xcodeproj/project.pbxproj
+  s_8b8c381353dd83::t_96af14edcda5d3 387,395,417,425
+src/stores/root-store.js
+  s_8b8c381353dd83::t_5ed1f1ebf5313c 61
+CHANGELOG.md
+  s_8b8c381353dd83::t_5f5c439600e6cc 3-6
+tests/unit/use/update-local-project.spec.js
+  s_8b8c381353dd83::t_1ee9ecbccbf2d3 219-262
+android/app/build.gradle
+  s_8b8c381353dd83::t_529613d9cc3ae6 16-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ef8017ec4c4e1a96dfd85d50b51eefb829965dd5",
+  "prompts": {},
+  "sessions": {
+    "s_8b8c381353dd83": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f559c2e45ffek1AmnBOWbWly8f",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
