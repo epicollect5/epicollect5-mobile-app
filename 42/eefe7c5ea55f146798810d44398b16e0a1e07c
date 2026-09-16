@@ -1,0 +1,35 @@
+CHANGELOG.md
+  s_bb57f5d3d8c9ae::t_0c2e99acaa165b 8-20
+  s_4fffa0e72001b5::t_436d4e8e248430 3-7
+android/app/build.gradle
+  s_4fffa0e72001b5::t_184673baef2ecb 16-17
+package.json
+  s_4fffa0e72001b5::t_d69b4504d0604f 3
+ios/App/App.xcodeproj/project.pbxproj
+  s_4fffa0e72001b5::t_4822a4888a82db 387,417
+  s_4fffa0e72001b5::t_9a5d4ccdbd1cea 395,425
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "42eefe7c5ea55f146798810d44398b16e0a1e07c",
+  "prompts": {},
+  "sessions": {
+    "s_4fffa0e72001b5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f55f7d31fffeVikCUutxNq8PY2",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    },
+    "s_bb57f5d3d8c9ae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f566df238ffe86AmzExHzalF96",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
