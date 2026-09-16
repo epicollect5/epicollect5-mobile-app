@@ -2,6 +2,7 @@ import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
+import { answerService } from '@/services/entry/answer-service';
 
 // Initial set up for each question
 export async function initialSetup (state, scope) {
@@ -47,8 +48,21 @@ export async function initialSetup (state, scope) {
         // Get the confirmation answers if the question is a GROUP
         if (state.questionParams.type === PARAMETERS.QUESTION_TYPES.GROUP) {
             scope.entryService.form.formStructure.group[state.questionParams.currentInputRef].forEach((groupInputRef) => {
+                const groupInputDetails = state.inputsExtra[groupInputRef]?.data;
+                // Skip refs whose input definition is gone (e.g. deleted question):
+                // an unrenderable question must not crash its siblings
+                if (!groupInputDetails) {
+                    console.warn('initialSetup: skipping group child without input details -> ' + groupInputRef);
+                    return;
+                }
+                // Backfill answers missing from stored entries (e.g. question added
+                // to the group after this entry was collected): show it empty so the
+                // entry can be edited and heals on save, instead of crashing
+                if (typeof state.answers[groupInputRef] === 'undefined') {
+                    state.answers[groupInputRef] = answerService.createDefaultAnswer(groupInputDetails);
+                }
                 state.confirmAnswer[groupInputRef] = {
-                    verify: state.inputsExtra[groupInputRef].data.verify, // bool
+                    verify: groupInputDetails.verify, // bool
                     answer: state.answers[groupInputRef].answer // answer value
                 };
             });
