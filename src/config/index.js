@@ -348,6 +348,7 @@ export const PARAMETERS = {
     ACTIONS: {
         FILE_DELETED: 'file-deleted',
         FILE_QUEUED: 'file-queued',
+        DRAW: 'draw',
         ENTRY_QUIT: 'entry-quit',
         ENTRY_SAVE: 'entry-save',
         DOWNLOAD_RESUME: 'download-resume',

@@ -789,6 +789,11 @@ export default {
         return false;
       }
 
+      //ignore back button while the draw modal is open
+      if (rootStore.isDrawModalActive) {
+        return false;
+      }
+
 			methods.prev();
 		});
 
