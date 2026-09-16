@@ -1,0 +1,28 @@
+tests/unit/use/questions/photo-take.spec.js
+  s_878b65aa66bee5::t_8ae2df9de7a96b 32-44
+src/components/questions/QuestionPhoto.vue
+  s_878b65aa66bee5::t_08a9f86e4801bd 353-355
+tests/unit/utils-service.spec.js
+  s_878b65aa66bee5::t_5b859beb9634c7 720-745
+src/use/questions/photo-take.js
+  s_878b65aa66bee5::t_c8ee0f0d15eb9e 64-69
+  s_878b65aa66bee5::t_fb8ff736f8b7ff 133-134,139-142
+src/services/utilities/utils-service.js
+  s_878b65aa66bee5::t_12f335e46847ab 202-221
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "209b12754971e22ddd7c11895ce552872db46849",
+  "prompts": {},
+  "sessions": {
+    "s_878b65aa66bee5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f568eb804ffeA7S09Vr2C9F0xC",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
