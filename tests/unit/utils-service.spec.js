@@ -717,6 +717,32 @@ describe('trunc', () => {
     });
 });
 
+describe('resolvePhotoFilename', () => {
+    it('reuses the cached filename on retake', () => {
+        const generate = vi.spyOn(utilsService, 'generateMediaFilename');
+        const out = utilsService.resolvePhotoFilename(
+            {cached: 'abc_123.jpg', stored: 'abc_100.jpg'},
+            'abc'
+        );
+        expect(out).toBe('abc_123.jpg');
+        expect(generate).not.toHaveBeenCalled();
+        generate.mockRestore();
+    });
+
+    it('falls back to the stored filename when no cached file exists', () => {
+        const generate = vi.spyOn(utilsService, 'generateMediaFilename');
+        const out = utilsService.resolvePhotoFilename({cached: '', stored: 'abc_100.jpg'}, 'abc');
+        expect(out).toBe('abc_100.jpg');
+        expect(generate).not.toHaveBeenCalled();
+        generate.mockRestore();
+    });
+
+    it('generates a fresh filename for a brand-new photo', () => {
+        const out = utilsService.resolvePhotoFilename({cached: '', stored: ''}, 'abc');
+        expect(out).toMatch(/^abc_\d+\.jpg$/);
+    });
+});
+
 
 
 

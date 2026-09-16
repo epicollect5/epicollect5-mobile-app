@@ -29,7 +29,19 @@ const cameraPreviewMock = vi.hoisted(() => ({
 
 const utilsMock = vi.hoisted(() => ({
     generateMediaFilename: vi.fn().mockReturnValue('photo_gen.jpg'),
-    generateTimestamp: vi.fn().mockReturnValue('123')
+    generateTimestamp: vi.fn().mockReturnValue('123'),
+    //same pick-rules as the real resolvePhotoFilename, delegating generation
+    //to the mocked generateMediaFilename so the assertions on it keep their
+    //meaning (the real helper is covered in utils-service.spec.js)
+    resolvePhotoFilename: vi.fn((mediaFile, entryUuid) => {
+        if (mediaFile.cached !== '') {
+            return mediaFile.cached;
+        }
+        if (mediaFile.stored !== '') {
+            return mediaFile.stored;
+        }
+        return utilsMock.generateMediaFilename(entryUuid, 'photo');
+    })
 }));
 
 const moveMock = vi.hoisted(() => ({

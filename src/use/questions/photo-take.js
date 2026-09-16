@@ -61,22 +61,12 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
             await notificationService.stopForegroundService();
 
             //resolve the target filename without touching the references yet
-            if (media[entryUuid][state.inputDetails.ref].cached === '') {
-                //check if we have a stored filename, i.e. user is replacing the photo for the entry
-                if (media[entryUuid][state.inputDetails.ref].stored === '') {
-                    //generate new file name, this is a brand-new file
-                    filename = utilsService.generateMediaFilename(
-                        entryUuid,
-                        PARAMETERS.QUESTION_TYPES.PHOTO
-                    );
-                } else {
-                    //use stored filename
-                    filename = media[entryUuid][state.inputDetails.ref].stored;
-                }
-            } else {
-                //use the cached path not to fill the cache with a new file all the time
-                filename = media[entryUuid][state.inputDetails.ref].cached;
-            }
+            //(shared pick-rules: reuse cached on retake, stored on edit,
+            //generate only for a brand-new file)
+            filename = utilsService.resolvePhotoFilename(
+                media[entryUuid][state.inputDetails.ref],
+                entryUuid
+            );
 
             console.log('Photo URI (original filename): ' + imageURI.path);
             console.log('Filename to be copied to: ' + filename);
@@ -140,23 +130,16 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                     //data and stays silent
                     await notificationService.showAlert(data.startError, labels.error);
                 } else if (data && data.sourcePath) {
-                //reuse the existing filename when replacing/retaking (same rules as
-                //the native openCamera branch above): on edit the retake keeps the
+                //reuse the existing filename when replacing/retaking (same shared
+                //pick-rules as the native branch above): on edit the retake keeps the
                 //stored name so the answer, the media row and the file on disk stay
                 //in agreement (save maps cached->stored, insertMedia keys on the
                 //stored name). Repeated captures therefore do not orphan a temp
                 //file per attempt
-                if (media[entryUuid][state.inputDetails.ref].cached === '') {
-                    if (media[entryUuid][state.inputDetails.ref].stored === '') {
-                        filename = utilsService.generateMediaFilename(
-                            entryUuid,
-                            PARAMETERS.QUESTION_TYPES.PHOTO);
-                    } else {
-                        filename = media[entryUuid][state.inputDetails.ref].stored;
-                    }
-                } else {
-                    filename = media[entryUuid][state.inputDetails.ref].cached;
-                }
+                filename = utilsService.resolvePhotoFilename(
+                    media[entryUuid][state.inputDetails.ref],
+                    entryUuid
+                );
                 //snapshot the previous references: a failed replacement must restore
                 //them instead of dropping the existing photo from the entry
                 const previousCached = media[entryUuid][state.inputDetails.ref].cached;

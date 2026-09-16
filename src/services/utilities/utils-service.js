@@ -199,6 +199,26 @@ export const utilsService = {
         return uuid + '_' + this.generateTimestamp() + ext;
     },
 
+    /*
+     * Resolve which filename a new or edited photo should use: reuse the
+     * cached file on retake, fall back to the stored file when editing a
+     * saved entry, generate a fresh name only for a brand-new photo.
+     * Single implementation shared by photo-take (native + in-app camera)
+     * and the draw pad so the pick-rules cannot drift between capture paths.
+     */
+    resolvePhotoFilename(mediaFile, entryUuid) {
+        if (mediaFile.cached !== '') {
+            //retake: reuse the cached path, do not fill temp with a file per attempt
+            return mediaFile.cached;
+        }
+        if (mediaFile.stored !== '') {
+            //editing a saved entry: keep answer, media row and file on disk in agreement
+            return mediaFile.stored;
+        }
+        //brand-new file
+        return this.generateMediaFilename(entryUuid, PARAMETERS.QUESTION_TYPES.PHOTO);
+    },
+
     generateTimestamp() {
         return Math.floor(Date.now() / 1000);
     },

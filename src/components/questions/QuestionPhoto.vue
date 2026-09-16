@@ -350,18 +350,9 @@ export default {
                 }
                 const dataURL = response.data.dataURL;
 
-                //mirror photo-take.js:53-71 to pick the right filename
-                let newFilename = '';
-                if (mediaFile.cached !== '') {
-                    newFilename = mediaFile.cached;
-                } else if (mediaFile.stored !== '') {
-                    newFilename = mediaFile.stored;
-                } else {
-                    newFilename = utilsService.generateMediaFilename(
-                        entryUuid,
-                        PARAMETERS.QUESTION_TYPES.PHOTO
-                    );
-                }
+                //shared pick-rules with photo-take: reuse cached on retake,
+                //stored on edit, generate only for a brand-new file
+                const newFilename = utilsService.resolvePhotoFilename(mediaFile, entryUuid);
 
                 const prevCached = mediaFile.cached;
                 const prevAnswer = state.answer.answer;
