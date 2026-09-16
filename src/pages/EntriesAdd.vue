@@ -803,8 +803,6 @@ export default {
       if (rootStore.isDrawModalActive) {
         return false;
       }
-        return false;
-      }
 
 			methods.prev();
 		});
