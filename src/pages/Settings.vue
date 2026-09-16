@@ -138,6 +138,82 @@
 				</ion-card-content>
 			</ion-card>
 
+			<ion-card v-if="isAndroid">
+				<ion-card-header class="settings-label">
+					<ion-card-title
+						data-translate="photo_card_title"
+						class="ion-text-center ion-text-uppercase"
+					>
+						{{ labels.photo_card_title }}
+					</ion-card-title>
+				</ion-card-header>
+				<ion-card-content class="ion-text-left ion-no-padding">
+					<ion-item
+						lines="none"
+						class="ion-text-left"
+					>
+						<ion-toggle
+							data-translate="use_in_app_camera"
+							@ionChange="updateInAppCamera($event)"
+							color="secondary"
+							:checked="state.inAppCamera"
+						>
+							<ion-label class="ion-text-wrap">{{ labels.use_in_app_camera }}</ion-label>
+						</ion-toggle>
+					</ion-item>
+					<ion-card-content class="ion-text-center">
+						<ion-button
+							color="warning"
+							@click="openInAppCameraDocs()"
+						>
+							<ion-icon
+								slot="start"
+								:icon="openOutline"
+							></ion-icon>
+							{{ labels.learn_more }}
+						</ion-button>
+					</ion-card-content>
+				</ion-card-content>
+			</ion-card>
+
+			<ion-card v-if="isAndroid">
+				<ion-card-header class="settings-label">
+					<ion-card-title
+						data-translate="video_card_title"
+						class="ion-text-center ion-text-uppercase"
+					>
+						{{ labels.video_card_title }}
+					</ion-card-title>
+				</ion-card-header>
+				<ion-card-content class="ion-text-left ion-no-padding">
+					<ion-item
+						lines="none"
+						class="ion-text-left"
+					>
+						<ion-toggle
+							data-translate="use_in_app_camera_video"
+							@ionChange="updateInAppCameraVideo($event)"
+							color="secondary"
+							:checked="state.inAppCameraVideo"
+						>
+							<ion-label class="ion-text-wrap">{{ labels.use_in_app_camera_video }}</ion-label>
+						</ion-toggle>
+					</ion-item>					<ion-card-content class="ion-text-center">
+						<ion-button
+							color="warning"
+							@click="openInAppCameraDocs()"
+						>
+							<ion-icon
+								slot="start"
+								:icon="openOutline"
+							></ion-icon>
+							{{ labels.learn_more }}
+						</ion-button>
+					</ion-card-content>
+					</ion-card-content>
+				</ion-card>
+
+
 			<ion-card v-if="isDebug || hasEasterEggProject">
 				<ion-card-header class="settings-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
@@ -164,7 +240,7 @@
 </template>
 
 <script>
-import { chevronBackOutline, add, remove, checkmark } from 'ionicons/icons';
+import { chevronBackOutline, add, remove, checkmark, openOutline } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
@@ -187,21 +263,11 @@ export default {
 			serverUrl: rootStore.serverUrl,
 			selectedTextSize: rootStore.selectedTextSize,
 			collectErrors: rootStore.collectErrors,
+			inAppCamera: rootStore.inAppCamera,
+			inAppCameraVideo: rootStore.inAppCameraVideo,
 			isSaving: false
 		});
 		const zoomLevels = PARAMETERS.ZOOM_LEVELS;
-
-		const computedScope = {
-			appVersion: computed(() => {
-				return rootStore.app.name + ' v ' + rootStore.app.version;
-			}),
-			isDebug: computed(() => {
-				return PARAMETERS.DEBUG;
-			}),
-			hasEasterEggProject: computed(() => {
-				return rootStore.easterEgg;
-			})
-		};
 
 		const methods = {
 			goBack() {
@@ -222,8 +288,8 @@ export default {
 				//add selected zoom level class
 				document.body.classList.add('zoom-' + state.selectedTextSize);
 
-				//update db
-				Object.values(PARAMETERS.SETTINGS_KEYS).forEach(async (key) => {
+			//update db (sequential: each write must settle before reporting success)
+			for (const key of Object.values(PARAMETERS.SETTINGS_KEYS)) {
 					console.log(key);
 
 					switch (key) {
@@ -250,17 +316,37 @@ export default {
 						case PARAMETERS.SETTINGS_KEYS.COLLECT_ERRORS:
 
 							try {
-								await databaseInsertService.insertSetting(key, state.collectErrors);
+								await databaseInsertService.insertSetting(key, state.collectErrors ? 'true' : 'false');
 								rootStore.collectErrors = state.collectErrors;
 							} catch (error) {
 								console.log(error);
 								failed = true;
 							}
 							break;
-					}
-				});
+						case PARAMETERS.SETTINGS_KEYS.IN_APP_CAMERA:
 
-				notificationService.hideProgressDialog();
+							try {
+								await databaseInsertService.insertSetting(key, state.inAppCamera ? 'true' : 'false');
+								rootStore.inAppCamera = state.inAppCamera;
+							} catch (error) {
+								console.log(error);
+								failed = true;
+							}
+							break;
+						case PARAMETERS.SETTINGS_KEYS.IN_APP_CAMERA_VIDEO:
+
+							try {
+								await databaseInsertService.insertSetting(key, state.inAppCameraVideo ? 'true' : 'false');
+								rootStore.inAppCameraVideo = state.inAppCameraVideo;
+							} catch (error) {
+								console.log(error);
+								failed = true;
+							}
+						break;
+				}
+			}
+
+			notificationService.hideProgressDialog();
 				state.isSaving = false;
 				if (failed) {
 					notificationService.showAlert(labels.unknown_error, labels.error);
@@ -277,7 +363,31 @@ export default {
 				rootStore.collectErrors = state.collectErrors;
 				console.log('Rollbar reporting ->', rootStore.collectErrors);
 				rollbarService.configure({ enabled: Boolean(rootStore.collectErrors) });
+			},
+			updateInAppCamera(e) {
+				state.inAppCamera = e.detail.checked;
+			},
+			updateInAppCameraVideo(e) {
+				state.inAppCameraVideo = e.detail.checked;
+			},
+			openInAppCameraDocs() {
+				window.open(PARAMETERS.IN_APP_CAMERA_DOCS_URL, '_system', 'location=yes');
 			}
+		};
+
+		const computedScope = {
+			appVersion: computed(() => {
+				return rootStore.app.name + ' v ' + rootStore.app.version;
+			}),
+			isDebug: computed(() => {
+				return PARAMETERS.DEBUG;
+			}),
+			isAndroid: computed(() => {
+				return rootStore.device.platform === PARAMETERS.ANDROID;
+			}),
+			hasEasterEggProject: computed(() => {
+				return rootStore.easterEgg;
+			})
 		};
 
 		onMounted(() => {
@@ -302,7 +412,8 @@ export default {
 			chevronBackOutline,
 			add,
 			remove,
-			checkmark
+			checkmark,
+			openOutline
 		};
 	}
 };

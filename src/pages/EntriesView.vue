@@ -1,10 +1,6 @@
 <template>
   <base-layout :title="state.projectName">
 
-    <template #actions-start>
-      <ion-menu-button></ion-menu-button>
-    </template>
-
     <template #actions-end>
       <ion-button disabled>
         <ion-icon slot="icon-only">

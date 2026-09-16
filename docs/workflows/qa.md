@@ -63,6 +63,8 @@ Grouped by feature or area.
 
 Columns: `Action Description` | `Expected` | `Android` | `iOS` | `PWA`
 
+> The `|` above is markdown table/list notation for readability only — it is NOT the file separator. The `.csv` file must be a standard comma-separated file (commas delimit columns), so it imports cleanly into Google Sheets.
+
 - One row per QA check.
 - Action must describe a human action in staging.
 - Expected must describe observable result.
@@ -70,7 +72,7 @@ Columns: `Action Description` | `Expected` | `Android` | `iOS` | `PWA`
 - Android and iOS are always targeted. PWA is a smaller subset: rows whose feature is absent on PWA (inferred from the code) are pre-filled `N/A` at generation time; the remaining rows are executed on PWA and their cell is filled during QA.
 - If a check is not applicable on a given platform, record that explicitly (e.g. N/A) instead of leaving it blank.
 - Commas are used only as column separators, never inside cell text.
-- Inside `Action Description` and `Expected`, replace commas with `;` (preferred, since `|` already denotes the column list in this doc) to separate step lists or clauses, so the CSV imports cleanly into Google Sheets.
+- Inside `Action Description` and `Expected`, replace commas with `;` to separate step lists or clauses, so they never collide with the comma column separator and the CSV imports cleanly into Google Sheets (the `|` in this doc's column list above is just markdown notation, not a separator in the file).
 - Cell text must stay comma-free; no quoted/escaped fields are needed.
 
 ## Validation Rules

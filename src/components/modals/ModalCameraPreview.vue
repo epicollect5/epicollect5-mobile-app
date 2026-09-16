@@ -1,0 +1,1008 @@
+<template>
+	<div class="modal-camera-preview-layer">
+	<div v-if="state.flash" class="camera-flash"></div>
+	<ion-header class="ion-no-border">
+		<ion-toolbar>
+			<ion-buttons slot="start">
+				<ion-button
+					@click="dismiss()"
+					:disabled="state.handoff"
+				>
+					<ion-icon
+						slot="icon-only"
+						:icon="closeOutline"
+					>
+					</ion-icon>
+				</ion-button>
+			</ion-buttons>
+			<div
+				v-if="state.recording"
+				slot="end"
+				class="recording-indicator"
+			>
+				<span class="recording-dot"></span>
+			</div>
+		</ion-toolbar>
+	</ion-header>
+	<div class="camera-viewport"></div>
+	<div class="camera-footer">
+		<div class="camera-controls">
+			<div class="camera-controls-side">
+				<ion-button
+					v-if="!isVideoMode"
+					class="flip-button"
+					@click="flip()"
+				>
+					<ion-icon
+						slot="icon-only"
+						:icon="cameraReverseOutline"
+					>
+					</ion-icon>
+				</ion-button>
+			</div>
+			<button
+				class="shutter-button"
+				:class="{ 'recording': state.recording }"
+				:disabled="state.capturing"
+				@click="shutter()"
+			>
+			</button>
+			<div class="camera-controls-side">
+				<ion-button
+					v-if="state.flashSupported"
+					class="flash-button"
+					:class="{ 'active': isFlashActive }"
+					:disabled="!state.started"
+					@click="toggleFlash()"
+				>
+					<ion-icon
+						slot="icon-only"
+						:icon="flashIcon"
+					>
+					</ion-icon>
+				</ion-button>
+			</div>
+		</div>
+	</div>
+	</div>
+</template>
+
+<script>
+import { reactive, computed, onMounted, onBeforeUnmount } from 'vue';
+import { modalController } from '@ionic/vue';
+import { closeOutline, cameraReverseOutline, flash, flashOutline } from 'ionicons/icons';
+import { App as CapacitorApp } from '@capacitor/app';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { CameraPreview } from '@capgo/camera-preview';
+import { useRootStore } from '@/stores/root-store';
+import { PARAMETERS } from '@/config';
+import { STRINGS } from '@/config/strings';
+import { notificationService } from '@/services/notification-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
+
+export default {
+	props: {
+		//'photo' keeps the current behaviour (shutter captures a photo); 'video'
+		//turns the shutter into a record/stop toggle and enables the audio track
+		mode: {
+			type: String,
+			default: 'photo'
+		}
+	},
+	setup(props) {
+		const rootStore = useRootStore();
+		const language = rootStore.language;
+		const labels = STRINGS[language].labels;
+		const state = reactive({
+			capturing: false,
+			started: false,
+			recording: false,
+			//true while a completed capture is being handed to the caller (native stop
+			//+ payload dismiss): template-bindable so the close button can show the
+			//modal as busy instead of letting a tap race the handoff. Scoped strictly
+			//to the post-handoff tail — an in-flight capture stays cancellable, otherwise
+			//a hung native capture would trap the user in an unclosable modal
+			handoff: false,
+			flash: false,
+			flashMode: 'off',
+			//devices with no flash unit report only 'off', in which case the button is hidden
+			flashSupported: false,
+			torchSupported: false,
+			//the plugin has no matching position getter: track the requested side
+			//ourselves so the flash toggle and foreground restarts follow the
+			//camera the user actually sees (the native switch may settle after
+			//flip() resolves, so a fresh bridge read can still report the old side)
+			cameraPosition: 'rear'
+		});
+
+		let sourcePath = null;
+		//true once a captured photo has been handed to the caller (photo-take): the
+		//caller owns and deletes the file after consuming it, so unmount teardown
+		//must NOT delete it (otherwise the resize read races this deletion and 404s)
+		let sourceHandedOff = false;
+		let appStateListener = null;
+		let recordingListener = null;
+		let appStateListenerPromise = null;
+		let recordingListenerPromise = null;
+		let flashTimer = null;
+		//true while the app is in the background (screen off, app switcher, incoming
+		//call): the camera is stopped to release it, and restarted on return so the
+		//feed is live again instead of a frozen/blank viewport
+		let appInactive = false;
+		let startOptions = null;
+		let restartInProgress = false;
+		//true while _start() is pending (initial mount or foreground restart): an
+		//appStateChange arriving in this window must still record appInactive,
+		//otherwise startup completes while paused and foregrounding skips recovery
+		let startInProgress = false;
+		//true when a background/foreground cycle overlapped a pending _start(): the
+		//start may land with a paused session, so completion must recover the feed
+		let recoverAfterStart = false;
+		//set synchronously when teardown begins (dismiss or unmount): _start()
+		//checks it after every awaited step and releases the native session
+		//instead of marking state on the destroyed modal
+		let tornDown = false;
+		//native flash reads are unordered: a slow response from the pre-flip
+		//camera must never overwrite a newer sync. Only the most recently
+		//issued _syncFlashMode for the still-active camera side may write
+		//state; older or side-mismatched reads bail out
+		let flashSyncToken = 0;
+		//rapid taps must not overlap a switch still in flight: a second flip
+		//issued while the first has not settled toggles the tracked side
+		//against unordered native resolutions, leaving the feed and the flash
+		//toggle out of step (rear camera, no flash toggle). The in-flight tap
+		//wins; taps landing mid-flight are dropped, never queued. Same for the
+		//flash toggle: overlapping toggles read the same pre-toggle mode and
+		//both apply it, so a double tap would end where it started
+		let flipInProgress = false;
+		let flashInProgress = false;
+		//the overlay element, captured lazily once the modal is presented: later
+		//canDismiss mutations must land on this modal, never on another overlay
+		//resolved afterwards (e.g. a failure alert shown on top of it)
+		let modalOverlay = null;
+		//true once a native session may exist, even if state.started was never set
+		//(start() rejecting after the plugin created the session)
+		let sessionMaybeActive = false;
+		//serializes startRecordVideo() with shutter/teardown: a second shutter
+		//press while starting is dropped, finalize/abort wait (bounded) for the
+		//pending start instead of racing it on the native bridge
+		let recordingStartInProgress = false;
+		let recordingStartPromise = null;
+		//the in-flight capture/record handoff (stop + payload dismiss), observable so
+		//teardown can wait for it instead of racing it. A handoff still pending past
+		//HANDOFF_ESCAPE_MS releases the exit again (empty dismiss + possible cache
+		//orphan, i.e. today's behaviour) rather than bricking the modal on a hung stop
+		let handoffPromise = null;
+		let handoffEscapeTimer = null;
+		const HANDOFF_ESCAPE_MS = 3000;
+
+		const computedScope = {
+			//video mode hides the flip/flash controls (recording keeps the shutter as
+			//the only control) and turns the shutter into a record/stop toggle
+			isVideoMode: computed(() => props.mode === 'video'),
+			isFlashActive: computed(() => state.flashMode !== 'off'),
+			flashIcon: computed(() => state.flashMode !== 'off' ? flash : flashOutline)
+		};
+
+		//The native camera preview runs behind the WebView (toBack), so while the modal
+		//is open the underlying app UI must not paint over it. Toggle a body/html class
+		//(styled in ModalCameraPreview.scss) that hides the routed page and blanks the
+		//root backgrounds, otherwise the question screen is shown instead of the camera
+		function _setCameraLayerVisible(visible) {
+			const rootElements = [document.documentElement, document.body];
+			rootElements.forEach((element) => {
+				element.classList.toggle('camera-preview-open', visible);
+			});
+		}
+
+		async function _ensurePermission() {
+			//video mode needs the microphone too (recording track); photos only need
+			//the camera, so do not prompt for audio there
+			const result = await CameraPreview.requestPermissions({
+				disableAudio: !computedScope.isVideoMode.value,
+				showSettingsAlert: true
+			});
+			if (result.camera !== 'granted' || (computedScope.isVideoMode.value && result.microphone !== 'granted')) {
+				throw new Error('Camera permission denied');
+			}
+		}
+
+		//Screen-off mid-recording can orphan a finalized file in the plugin's cache:
+		//the native session dies before stopRecordVideo can return its path (and the
+		//finalizing may even be reported as failed while the file exists). Sweep the
+		//plugin's recording directory before each video session so the cache cannot
+		//accumulate recordings over time.
+		async function _clearStaleRecordings() {
+			//the embedded camera is Android-only: skip the sweep elsewhere
+			if (rootStore.device.platform !== PARAMETERS.ANDROID) {
+				return;
+			}
+			try {
+				const { files } = await Filesystem.readdir({
+					path: 'Movies/CameraPreview',
+					directory: Directory.External
+				});
+				for (const file of files) {
+					if (!file.name.toLowerCase().endsWith('.mp4')) {
+						continue;
+					}
+					try {
+						await Filesystem.deleteFile({
+							path: 'Movies/CameraPreview/' + file.name,
+							directory: Directory.External
+						});
+					} catch (error) {
+						console.log('CameraPreview stale recording delete failed: ' + error);
+					}
+				}
+			} catch (error) {
+				//readdir fails when the directory does not exist yet (first run): non-fatal
+				console.log('CameraPreview stale recordings read failed: ' + error);
+			}
+		}
+
+		//best-effort release of a native session that may exist even though state
+		//was never marked started (teardown raced startup): never throws, never
+		//touches component state
+		async function _forceStopPlugin() {
+			try {
+				await CameraPreview.stop({ force: true });
+			} catch (error) {
+				console.log('CameraPreview.stop failed: ' + error);
+			}
+			sessionMaybeActive = false;
+		}
+
+		async function _start() {
+			startInProgress = true;
+			try {
+			//teardown may have begun before startup ran (dismiss-while-backgrounded):
+			//skip the permission prompt for a dead modal and release any session
+			if (tornDown) {
+				await _forceStopPlugin();
+				return;
+			}
+			await _ensurePermission();
+			if (tornDown) {
+				await _forceStopPlugin();
+				return;
+			}
+			if (computedScope.isVideoMode.value) {
+				await _clearStaleRecordings();
+			}
+			if (tornDown) {
+				await _forceStopPlugin();
+				return;
+			}
+			if (!startOptions) {
+				startOptions = {
+					position: 'rear',
+					toBack: true,
+					storeToFile: true,
+					//video mode binds the VideoCapture use case, which Android requires
+					//for startRecordVideo, plus the audio track; photo sessions stay
+					//silent and capture-only
+					enableVideoMode: computedScope.isVideoMode.value,
+					disableAudio: !computedScope.isVideoMode.value,
+					//fill the whole WebView area (between the system bars) so the feed
+					//extends over the white letterbox band at the bottom; cover crops the
+					//stream sides instead of letterboxing (the plugin rejects aspectRatio
+					//combined with explicit width/height, so no aspectRatio here)
+					x: 0,
+					y: 0,
+					width: window.innerWidth,
+					height: window.innerHeight,
+					aspectMode: 'cover',
+					//do not let the device rotate while the camera is open (rotating breaks
+					//the layout); the plugin restores the previous orientation on stop()
+					lockAndroidOrientation: true
+				};
+			}
+			//startOptions is built once but reused on foreground restarts: always
+			//restart the side the user flipped to, not the initial rear default
+			startOptions.position = state.cameraPosition;
+			sessionMaybeActive = true;
+			await CameraPreview.start(startOptions);
+			if (tornDown) {
+				await _forceStopPlugin();
+				return;
+			}
+			//On edge-to-edge Android the plugin offsets the native layer by the WebView's
+			//screen-top inset (it computes y=0 + inset) WITHOUT shrinking the height, so the
+			//layer hangs one inset below the WebView, and the live feed leaks through the
+			//system-nav area (below the modal's opaque footer).Repositioning with
+			//x=0/y=0 takes the plugin's full-screen code path, which applies no inset,
+			//and aligns the native layer's bottom with the WebView's bottom.
+			try {
+				await CameraPreview.setPreviewSize({
+					x: 0,
+					y: 0,
+					width: window.innerWidth,
+					height: window.innerHeight
+				});
+			} catch (error) {
+				console.log('CameraPreview.setPreviewSize failed: ' + error);
+			}
+			if (tornDown) {
+				await _forceStopPlugin();
+				return;
+			}
+			state.started = true;
+			await _syncFlashMode();
+			} finally {
+				startInProgress = false;
+			}
+			//the app was foregrounded while this start was pending: if it is still in the
+			//foreground the session may be paused, so recover now. Backgrounded again =>
+			//the foreground path above (state.started is now true) handles it on return
+			if (recoverAfterStart) {
+				recoverAfterStart = false;
+				if (!appInactive) {
+					await _recoverFeed();
+				}
+			}
+		}
+
+		async function _syncFlashMode() {
+			//which modes the active (rear) camera supports: off, on, auto, torch
+			//bridge reads are unordered: a slow response from the pre-flip camera
+			//must never overwrite a newer sync. Only the most recently issued sync
+			//for the currently active side may write state; older or mismatched
+			//reads bail out (a newer flip skips its own sync on the front side)
+			const issued = ++flashSyncToken;
+			const issuedPosition = state.cameraPosition;
+			const isStale = () => tornDown || issued !== flashSyncToken || state.cameraPosition !== issuedPosition;
+			try {
+				const { result } = await CameraPreview.getSupportedFlashModes();
+				//a newer sync (flip/retry/restart) superseded this read, the side
+				//changed meanwhile, or teardown began: never apply a stale
+				//response to the live toggle
+				if (isStale()) {
+					return;
+				}
+				const supported = result || [];
+				state.torchSupported = supported.includes('torch');
+				state.flashSupported = state.torchSupported || supported.includes('on');
+			} catch (error) {
+				console.log('CameraPreview.getSupportedFlashModes failed: ' + error);
+				if (isStale()) {
+					return;
+				}
+				state.torchSupported = false;
+				state.flashSupported = false;
+				return;
+			}
+			//reflect the actual native state (e.g. after a flip the camera may reset it)
+			try {
+				const { flashMode } = await CameraPreview.getFlashMode();
+				if (isStale()) {
+					return;
+				}
+				state.flashMode = flashMode || 'off';
+			} catch (error) {
+				console.log('CameraPreview.getFlashMode failed: ' + error);
+			}
+		}
+
+		async function toggleFlash() {
+			if (!state.started || !state.flashSupported || flashInProgress) {
+				return;
+			}
+			flashInProgress = true;
+			const target = state.flashMode === 'off'
+				? (state.torchSupported ? 'torch' : 'on')
+				: 'off';
+			try {
+				await CameraPreview.setFlashMode({ flashMode: target });
+				state.flashMode = target;
+			} catch (error) {
+				console.log('CameraPreview.setFlashMode failed: ' + error);
+			} finally {
+				flashInProgress = false;
+			}
+		}
+
+		async function _stop() {
+			if (!state.started && !sessionMaybeActive) {
+				return;
+			}
+			try {
+				await CameraPreview.stop({ force: true });
+				state.started = false;
+				sessionMaybeActive = false;
+			} catch (error) {
+				//the native camera may still be running: keep the flags so the
+				//next teardown retries instead of leaking the session
+				console.log('CameraPreview.stop failed: ' + error);
+			}
+		}
+
+		//release a possibly-stale session and restart the feed in the foreground. Shared
+		//by the foreground path (session was stopped while backgrounded) and by the
+		//pending-start path (the start resolved after the app came back)
+		async function _recoverFeed() {
+			if (tornDown || restartInProgress || startInProgress) {
+				return;
+			}
+			//startup may have completed while paused, leaving a stale session behind:
+			//release it before restarting so the feed is live, not frozen
+			if (state.started) {
+				await _stop();
+			}
+			restartInProgress = true;
+			try {
+				await _start();
+			} catch (error) {
+				console.log('CameraPreview restart failed: ' + error);
+				//the modal cannot recover: tell the caller instead of closing silently
+				rollbarService.criticalWithContext('CameraPreview restart failed', error);
+				await dismiss({ startError: (error && error.message) || labels.unknown_error });
+			} finally {
+				restartInProgress = false;
+			}
+		}
+
+		async function _cleanupSource() {
+			//a handed-off capture must survive until the caller has resized it
+			if (!sourcePath || sourceHandedOff) {
+				return;
+			}
+			try {
+				await CameraPreview.deleteFile({ path: sourcePath });
+			} catch (error) {
+				console.log('CameraPreview.deleteFile failed: ' + error);
+			}
+			sourcePath = null;
+		}
+
+		//bounded wait for a pending startRecordVideo(): finalize/abort must not
+		//race the start on the native bridge, but a hung native start must not
+		//wedge dismiss() either — on timeout fall through to the existing
+		//force-stop path
+		async function _awaitRecordingStart() {
+			const pending = recordingStartPromise;
+			if (!pending) {
+				return;
+			}
+			try {
+				await Promise.race([
+					pending,
+					new Promise((resolve) => setTimeout(resolve, 2000))
+				]);
+			} catch (error) {
+				console.log('CameraPreview recording start wait failed: ' + error);
+			}
+		}
+
+		//the plugin rejects the whole capture when location is denied, restricted,
+		//or disabled (e.g. "Location permission denied", "Location services are
+		//disabled"): match those states so capture() can retry GPS-less. A retry
+		//on a non-location failure is harmless (it fails the same way), but the
+		//match keeps the extra bridge call off the genuine camera-error path
+		function _isLocationError(error) {
+			const message = error && typeof error.message === 'string' ? error.message : String(error);
+			return message.toLowerCase().includes('location');
+		}
+
+		async function capture() {
+			if (state.capturing || !state.started) {
+				return;
+			}
+			state.capturing = true;
+			//brief white flash as capture feedback
+			state.flash = true;
+			flashTimer = setTimeout(() => {
+				state.flash = false;
+			}, 250);
+			try {
+				//capture large and downscale once in the resize step (same shape as
+				//the native system-camera flow): the width/height box only bounds
+				//the output, the plugin still captures from the full sensor
+				//pipeline, so the single high-quality downscale to 1024x768
+				//landscape or 768x1024 portrait (server accepts only those two
+				//sizes) works from real detail instead of re-encoding a small file
+				const captureOptions = {
+					width: 2048,
+					height: 1536,
+					quality: 90,
+					format: 'jpeg',
+					//embed GPS in the source EXIF when permitted: the resize step
+					//copies it into the output (native parity; best-effort).
+					//photoQualityPrioritization is iOS-only: the in-app camera is
+					//Android-only, so passing it would be a no-op
+					withExifLocation: true
+				};
+				let result;
+				//tracks whether the capture fell back GPS-less (location denied):
+				//photo-take strips any GPS tags from the output while keeping
+				//every other tag, instead of trusting the denied-state source
+				let gpsFallback = false;
+				try {
+					result = await CameraPreview.capture(captureOptions);
+				} catch (error) {
+					//GPS is best-effort: the plugin rejects the whole capture when
+					//location is denied, restricted, or disabled, so fall back to
+					//a GPS-less capture instead of failing the photo. Exactly one
+					//retry, flag off: a non-location failure rethrows below
+					if (!_isLocationError(error)) {
+						throw error;
+					}
+					console.log('CameraPreview.capture without GPS after location failure: ' + error);
+					const { withExifLocation: _dropped, ...retryOptions } = captureOptions;
+					result = await CameraPreview.capture(retryOptions);
+					gpsFallback = true;
+				}
+				sourcePath = result.value;
+				if (tornDown) {
+					//the modal was dismissed while the capture was in flight: the
+					//caller is gone, so nobody owns the file — delete it instead
+					//of leaking it in the plugin cache (sourceHandedOff stays false)
+					try {
+						await CameraPreview.deleteFile({ path: result.value });
+					} catch (error) {
+						console.log('CameraPreview captured file cleanup failed: ' + error);
+					}
+					return;
+				}
+			//hand the file to the caller; photo-take deletes it after resizing.
+			//Claim the dismissal first: from here on teardown waits for (✕/unmount
+			//paths) or yields to (dismiss path) this handoff instead of racing it
+			//with an empty cancel while the native stop settles
+			_claimHandoff();
+			sourceHandedOff = true;
+			handoffPromise = (async () => {
+				try {
+					await _stop();
+					await _setModalDismissable(true);
+					await modalController.dismiss({ sourcePath, gpsFallback });
+				} catch (error) {
+					console.log('CameraPreview handoff dismiss failed: ' + error);
+				}
+			})();
+			try {
+				await handoffPromise;
+			} finally {
+				_clearHandoff();
+			}
+			} catch (error) {
+				console.log('CameraPreview.capture failed: ' + error);
+				state.capturing = false;
+			}
+		}
+
+		//=== video recording ===
+
+		//Ionic consults canDismiss for every dismissal path, hardware back
+		//button included: false keeps the modal (and the recording) alive on
+		//back presses, true restores the normal cancel behaviour. Programmatic
+		//dismiss() is gated too, so every self-dismiss below restores true first
+		async function _setModalDismissable(dismissable) {
+			try {
+				if (!modalOverlay) {
+					modalOverlay = await modalController.getTop();
+				}
+				if (modalOverlay) {
+					modalOverlay.canDismiss = dismissable;
+				}
+			} catch (error) {
+				console.log('CameraPreview canDismiss update failed: ' + error);
+			}
+		}
+
+		//claim the dismissal for an in-flight capture/record handoff: the close button
+		//(bound to state.handoff) and the back button (canDismiss=false) are held until
+		//the payload dismiss lands, so teardown cannot steal the dismissal with an empty
+		//cancel while the native stop settles. The false-hold is fire-and-forget to
+		//shrink the pre-hold gap (the helper catches internally); the true-restore at
+		//the handoff tail is awaited so no yield sits between it and the payload dismiss
+		/*
+		 * False positive (review): escape reopens the exit while a handoff is pending
+		 * — accepted tradeoff. See docs/known-review-false-positives.md
+		 * (`src/components/modals/ModalCameraPreview.vue`, _claimHandoff escape branch).
+		 */
+		function _claimHandoff() {
+			state.handoff = true;
+			_setModalDismissable(false);
+			//escape hatch: a hung native stop must never trap the user in an
+			//unclosable modal — past the timeout the exit reopens (empty dismiss +
+			//possible cache orphan, i.e. today's behaviour) and the stall is reported
+			if (handoffEscapeTimer) {
+				clearTimeout(handoffEscapeTimer);
+			}
+			handoffEscapeTimer = setTimeout(() => {
+				handoffEscapeTimer = null;
+				if (!state.handoff) {
+					return;
+				}
+				console.log('CameraPreview handoff stalled past escape timeout');
+				rollbarService.criticalWithContext(
+					'CameraPreview handoff stalled',
+					new Error('handoff exceeded ' + HANDOFF_ESCAPE_MS + 'ms')
+				);
+				state.handoff = false;
+				_setModalDismissable(true);
+			}, HANDOFF_ESCAPE_MS);
+		}
+
+		function _clearHandoff() {
+			if (handoffEscapeTimer) {
+				clearTimeout(handoffEscapeTimer);
+				handoffEscapeTimer = null;
+			}
+			state.handoff = false;
+			handoffPromise = null;
+		}
+
+		async function startRecording() {
+			if (!state.started || state.recording || state.capturing || recordingStartInProgress || tornDown) {
+				return;
+			}
+			recordingStartInProgress = true;
+			state.recording = true;
+			//block back-press teardown before the native start lands, so dismiss
+			//cannot tear the modal down mid-start
+			await _setModalDismissable(false);
+			recordingStartPromise = CameraPreview.startRecordVideo({});
+			try {
+				//no artificial duration/size cap: the user decides when to stop
+				await recordingStartPromise;
+			} catch (error) {
+				console.log('CameraPreview.startRecordVideo failed: ' + error);
+				state.recording = false;
+				await _setModalDismissable(true);
+			} finally {
+				recordingStartInProgress = false;
+				recordingStartPromise = null;
+			}
+		}
+
+		//hand the finished recording to the caller and close the modal
+		async function _handOffRecording(videoFilePath) {
+			if (!videoFilePath) {
+				console.log('CameraPreview returned no video file path');
+				return;
+			}
+			if (tornDown) {
+				try {
+					await CameraPreview.deleteFile({ path: videoFilePath });
+				} catch (error) {
+					console.log('CameraPreview recorded file cleanup failed: ' + error);
+				}
+				return;
+			}
+		sourcePath = videoFilePath;
+		//hand the file to the caller; video-shoot owns it from here on. Claim the
+		//dismissal first: teardown from here on waits for (✕/unmount paths) or yields
+		//to (dismiss path) this handoff instead of racing it with an empty cancel
+		_claimHandoff();
+		sourceHandedOff = true;
+		handoffPromise = (async () => {
+			try {
+				//the recording is over but the file is not delivered yet: keep back-press
+				//dismissal held until the payload dismiss lands (restoring true here instead
+				//of before _stop() closes the teardown window). The restore is awaited with
+				//no yield between it and the payload dismiss, which is gated by canDismiss too
+				await _stop();
+				await _setModalDismissable(true);
+				await modalController.dismiss({ videoFilePath });
+			} catch (error) {
+				console.log('CameraPreview handoff dismiss failed: ' + error);
+			}
+		})();
+		try {
+			await handoffPromise;
+		} finally {
+			_clearHandoff();
+		}
+		}
+
+		//stop the recording and hand the finished file to the caller (video-shoot)
+		async function _finalizeRecording() {
+			await _awaitRecordingStart();
+			if (!state.recording) {
+				return;
+			}
+			//reset first so a racing 'recordingFinished' event cannot re-enter
+			state.recording = false;
+			try {
+				const { videoFilePath } = await CameraPreview.stopRecordVideo();
+				await _handOffRecording(videoFilePath);
+			} catch (error) {
+				console.log('CameraPreview.stopRecordVideo failed: ' + error);
+				rollbarService.criticalWithContext('CameraPreview finalize recording failed', error);
+				//no video was captured and the modal would otherwise sit open with
+				//the indicator stopped and no way forward except ✕: tell the user
+				//and dismiss (the caller treats an empty dismiss as cancel and
+				//keeps the existing media). While backgrounded the modal must stay
+				//up for feed recovery, so alert and dismiss in the foreground only
+				if (!appInactive) {
+					//restore dismissal before alerting: the alert is another
+					//overlay, and the empty dismiss below is gated by canDismiss
+					await _setModalDismissable(true);
+					try {
+						await notificationService.showAlert(error.message || labels.unknown_error, labels.error);
+					} catch (alertError) {
+						console.log('CameraPreview finalize alert failed: ' + alertError);
+					}
+					modalController.dismiss();
+				}
+			}
+		}
+
+		//stop an in-progress recording and discard its partial file (user cancelled
+		//via ✕: back presses are blocked while recording), so the plugin cache
+		//does not accumulate
+		async function _abortRecording() {
+			await _awaitRecordingStart();
+			if (!state.recording) {
+				return;
+			}
+			state.recording = false;
+			//the recording is over: back presses may dismiss again, and the
+			//dismiss in dismiss()/unmount is gated by canDismiss too
+			await _setModalDismissable(true);
+			try {
+				const { videoFilePath } = await CameraPreview.stopRecordVideo();
+				if (videoFilePath) {
+					try {
+						await CameraPreview.deleteFile({ path: videoFilePath });
+					} catch (error) {
+						console.log('CameraPreview.deleteFile failed: ' + error);
+					}
+				}
+			} catch (error) {
+				console.log('CameraPreview.stopRecordVideo failed: ' + error);
+			}
+		}
+
+		//the shutter: captures a photo, or toggles the video recording
+		async function shutter() {
+			if (computedScope.isVideoMode.value) {
+				//in-flight startRecordVideo wins; mid-start taps are dropped, never queued
+				if (recordingStartInProgress) {
+					return;
+				}
+				if (state.recording) {
+					await _finalizeRecording();
+				} else {
+					await startRecording();
+				}
+				return;
+			}
+			await capture();
+		}
+
+		async function flip() {
+			if (!state.started || flipInProgress) {
+				return;
+			}
+			flipInProgress = true;
+			try {
+				await CameraPreview.flip();
+				//remember the requested side: the plugin has no matching position
+				//getter and the native switch may settle after this call resolves,
+				//so a bridge read issued now can still report the pre-flip camera
+				state.cameraPosition = state.cameraPosition === 'rear' ? 'front' : 'rear';
+				//the plugin exposes no front flash (devices report only 'off'):
+				//hide the toggle deterministically instead of trusting a
+				//possibly-stale bridge read — no sync call on the front side
+				if (state.cameraPosition === 'front') {
+					state.flashSupported = false;
+					state.torchSupported = false;
+					state.flashMode = 'off';
+					return;
+				}
+				//flash availability/mode may differ on the rear camera, re-sync the toggle
+				await _syncFlashMode();
+			} catch (error) {
+				console.log('CameraPreview.flip failed: ' + error);
+			} finally {
+				flipInProgress = false;
+			}
+		}
+
+		async function dismiss(payload) {
+			//a capture/record handoff owns the dismissal from its claim until the
+			//payload lands: a cancel racing it (✕ tap beating the disabled render,
+			//back press beating the canDismiss hold) yields here so the caller
+			//receives the file instead of an empty cancel. The handoff's own
+			//payload dismiss bypasses via payload
+			if (state.handoff && !payload) {
+				return;
+			}
+			//teardown starts here, synchronously: a pending _start() must release
+			//the native session instead of marking state on the closing modal
+			tornDown = true;
+			//a recording in progress must be stopped and its partial file discarded
+			//before the camera is released, otherwise the file stays in the plugin cache
+			if (computedScope.isVideoMode.value) {
+				await _abortRecording();
+			}
+			await _stop();
+			//safety net for a partial session _stop() never tracked (rejected
+			//start) or could not release (rejected stop): idempotent, never throws
+			await _forceStopPlugin();
+			await _cleanupSource();
+			//restore dismissal for the programmatic close below (recording paths
+			//set canDismiss=false while capturing)
+			await _setModalDismissable(true);
+			modalController.dismiss(payload);
+		}
+
+		async function _onAppStateChange({ isActive }) {
+			//screen off / app backgrounded: release the camera (the plugin cannot hold
+			//it while paused), but keep the modal up so the user returns to it.
+			//A backgrounding that lands while _start() is still pending counts too:
+			//otherwise startup completes while paused and foregrounding skips recovery.
+			if (!isActive && (state.started || startInProgress)) {
+				appInactive = true;
+				//screen off mid-recording: finalize the file if the native side still
+				//can (the plugin pauses the session, which may already have stopped the
+				//recording); on failure the recording is lost but the modal is not stuck
+				if (computedScope.isVideoMode.value && state.recording) {
+					await _finalizeRecording();
+					if (sourceHandedOff) {
+						return;
+					}
+					//the in-progress recording could not be finalized while
+					//backgrounding: the capture is lost but the modal stays up
+					rollbarService.criticalWithContext(
+						'CameraPreview background recording lost',
+						new Error('stopRecordVideo failed while backgrounded')
+					);
+				}
+				if (state.started) {
+					await _stop();
+				}
+				return;
+			}
+			//back in the foreground with the modal still open: bring the camera feed back to
+			//life. Native resumes do not restart the session because _stop() (force)
+			//clears the plugin's saved config, so restart explicitly.
+			if (isActive && appInactive) {
+				appInactive = false;
+				//teardown began while backgrounded (dismiss before unmount completes):
+				//do not restart the feed or prompt for permissions on a dead modal
+				if (tornDown) {
+					return;
+				}
+				//wontfix: a background/foreground cycle landing inside an in-flight restart
+				//can leave a paused session with no deferred recovery (recoverAfterStart only
+				//arms for a pending initial start). Needs machine-gun screen toggles inside a
+				//sub-second window and the only effect is a frozen feed cleared by closing and
+				//reopening the camera — serializing overlapping recoveries is not worth the
+				//complexity. See docs/known-review-false-positives.md
+				//(`src/components/modals/ModalCameraPreview.vue`, restartInProgress branch).
+				if (restartInProgress) {
+					return;
+				}
+				//a start still in flight cannot be recovered here (we would run two
+				//sessions): defer the restart until it lands, since it may open a paused
+				//session that a native resume will not wake
+				if (startInProgress) {
+					recoverAfterStart = true;
+					return;
+				}
+				await _recoverFeed();
+			}
+		}
+
+		onMounted(() => {
+			_setCameraLayerVisible(true);
+			_start().catch((error) => {
+				console.log('CameraPreview.start failed: ' + error);
+				//the modal cannot open: report and tell the caller (permission
+				//denied, camera unavailable) instead of a silent cancel
+				rollbarService.criticalWithContext('CameraPreview.start failed', error);
+				dismiss({ startError: (error && error.message) || labels.unknown_error }).catch((dismissError) => {
+					console.log('CameraPreview dismiss failed: ' + dismissError);
+				});
+			});
+			//the native session may stop a recording on its own (max duration/file size,
+			//or a screen-off teardown that finalizes the file before our stopRecordVideo
+			//runs): use the event's path to complete the capture hand-off. When we stop
+			//the recording ourselves, the event fires too, but the recording flag was
+			//already reset by _finalizeRecording, so it is skipped.
+			if (computedScope.isVideoMode.value) {
+				recordingListenerPromise = CameraPreview.addListener('recordingFinished', (data) => {
+					if (state.recording) {
+						state.recording = false;
+						_handOffRecording(data && data.videoFilePath);
+					}
+				});
+				recordingListenerPromise.then((handle) => {
+					recordingListener = handle;
+				});
+			}
+		});
+
+		appStateListenerPromise = CapacitorApp.addListener('appStateChange', _onAppStateChange);
+		appStateListenerPromise.then((handle) => {
+			appStateListener = handle;
+		});
+
+		onBeforeUnmount(async () => {
+			//Vue does not await this hook: everything below runs fire-and-forget
+			//once the synchronous lines complete, so teardown must be safe
+			//without a waiter (try/catch around each await, no return value).
+			//teardown starts here, synchronously (back button path skips the dismiss action):
+			//a pending _start() must release the native session instead of
+			//marking state on the destroyed modal
+			tornDown = true;
+			_setCameraLayerVisible(false);
+			if (flashTimer) {
+				clearTimeout(flashTimer);
+				flashTimer = null;
+			}
+			//a handoff still in flight owns the payload dismissal: wait for it
+			//(bounded) so back-press teardown cannot steal it with listener removal
+			//while the native stop settles. Past the timeout the normal body below
+			//runs, matching the escape-hatch fallback in _claimHandoff
+			if (handoffPromise) {
+				try {
+					await Promise.race([
+						handoffPromise,
+						new Promise((resolve) => setTimeout(resolve, 1500))
+					]);
+				} catch (error) {
+					console.log('CameraPreview handoff wait failed: ' + error);
+				}
+			}
+			//disarm the escape hatch: past this point a firing timer would touch
+			//a destroyed modal (stale canDismiss mutation, spurious stall report).
+			//A handoff still pending past the race above keeps running; its tail
+			//re-clears idempotently
+			_clearHandoff();
+			//safety net: a recording still running at unmount (canDismiss blocks
+			//back presses while recording, and ✕ aborts first) is stopped and
+			//its partial file discarded, same as the ✕ path
+			if (computedScope.isVideoMode.value) {
+				await _abortRecording();
+			}
+			await _stop();
+			await _forceStopPlugin();
+			await _cleanupSource();
+			//unmount may race listener registration: await the pending promises so
+			//callbacks never stay registered on the destroyed modal
+			if (recordingListenerPromise) {
+				try {
+					const handle = await recordingListenerPromise;
+					recordingListener = recordingListener || handle;
+				} catch (error) {
+					console.log('CameraPreview recording listener registration failed: ' + error);
+				}
+			}
+			if (appStateListenerPromise) {
+				try {
+					const handle = await appStateListenerPromise;
+					appStateListener = appStateListener || handle;
+				} catch (error) {
+					console.log('CameraPreview app state listener registration failed: ' + error);
+				}
+			}
+			if (recordingListener) {
+				recordingListener.remove();
+				recordingListener = null;
+			}
+			if (appStateListener) {
+				appStateListener.remove();
+				appStateListener = null;
+			}
+		});			return {
+			state,
+			...computedScope,
+			shutter,
+			capture,
+			flip,
+			toggleFlash,
+			dismiss,
+			closeOutline,
+			cameraReverseOutline,
+			flash,
+			flashOutline
+		};
+	}
+};
+</script>
+
+<style src="@/theme/components/modals/ModalCameraPreview.scss" lang="scss"></style>

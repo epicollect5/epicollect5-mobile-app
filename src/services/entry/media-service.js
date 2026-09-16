@@ -9,6 +9,7 @@ import {databaseUpdateService} from '@/services/database/database-update-service
 import {utilsService} from '@/services/utilities/utils-service';
 import {moveFileService} from '@/services/filesystem/move-file-service';
 import {deleteFileService} from '@/services/filesystem/delete-file-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 export const mediaService = {
     saveMedia(entry, syncType) {
@@ -25,12 +26,21 @@ export const mediaService = {
                 const queuedFiles = [...rootStore.queueFilesToDelete];
                 let filename;
 
-                if (rootStore.queueFilesToDelete.length > 0) {
+                //Queued stored-file deletions are executed at hierarchy save only:
+                //a branch save stages its own files and leaves deletions queued
+                //(quitting the branch discards them, saving the hierarchy applies
+                //them), so files are never deleted before the hierarchy entry is
+                //saved. Branch entries carry isBranch=true (hierarchy: false).
+                if (!entry.isBranch && rootStore.queueFilesToDelete.length > 0) {
                     //remove all queued files
                     try {
                         await deleteFileService.removeFiles(queuedFiles);
                     } catch (error) {
                         console.log(error);
+                        rollbarService.criticalWithContext(
+                            'saveMedia: failed to remove queued files',
+                            error instanceof Error ? error : new Error('saveMedia: ' + JSON.stringify(error))
+                        );
                        return reject(error);
                     }
                     try {
@@ -38,11 +48,15 @@ export const mediaService = {
                         const filenamesToDelete = rootStore.queueFilesToDelete.map((file) => {
                             return '"' + file.file_name + '"';
                         });
-                        await databaseDeleteService.deleteMediaFiles(entry.entryUuid, filenamesToDelete);
+                        await databaseDeleteService.deleteMediaFiles(projectModel.getProjectRef(), filenamesToDelete);
                         //reset delete queue
                         rootStore.queueFilesToDelete = [];
                     } catch (error) {
                         console.log(error);
+                        rollbarService.criticalWithContext(
+                            'saveMedia: failed to delete queued media rows',
+                            error instanceof Error ? error : new Error('saveMedia: ' + JSON.stringify(error))
+                        );
                        return reject(error.message || labels.unknown_error);
                     }
                 }

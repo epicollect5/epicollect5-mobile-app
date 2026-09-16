@@ -62,6 +62,9 @@ project(':capawesome-team-capacitor-android-foreground-service').projectDir = ne
 include ':capawesome-capacitor-android-edge-to-edge-support'
 project(':capawesome-capacitor-android-edge-to-edge-support').projectDir = new File('../node_modules/@capawesome/capacitor-android-edge-to-edge-support/android')
 
+include ':capgo-camera-preview'
+project(':capgo-camera-preview').projectDir = new File('../node_modules/@capgo/camera-preview/android')
+
 include ':capgo-capacitor-zip'
 project(':capgo-capacitor-zip').projectDir = new File('../node_modules/@capgo/capacitor-zip/android')
 

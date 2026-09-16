@@ -77,6 +77,7 @@ import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
 import { Capacitor } from '@capacitor/core';
 import { videoShoot } from '@/use/questions/video-shoot';
+import { notificationService } from '@/services/notification-service';
 import { popoverMediaHandler } from '@/use/questions/popover-media-handler';
 import GridQuestionNarrow from '@/components/GridQuestionNarrow';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
@@ -223,9 +224,16 @@ export default {
 					mediaType: PARAMETERS.QUESTION_TYPES.VIDEO
 				});
 			},
-			shoot() {
+			async shoot() {
 				if (rootStore.device.platform !== PARAMETERS.WEB) {
-					videoShoot({ media, entryUuid, state, filename });
+					try {
+						await videoShoot({ media, entryUuid, state, filename });
+					} catch (error) {
+						//videoShoot rethrows modal presentation failures after unguarding
+						//the back handler: surface them so a failed open is never silent
+						console.log('videoShoot failed: ' + error);
+						await notificationService.showAlert(error.message || labels.unknown_error);
+					}
 				}
 			},
 			//file uploaded to server or stored file loaded
