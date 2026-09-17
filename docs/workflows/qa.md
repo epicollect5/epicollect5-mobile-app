@@ -52,6 +52,33 @@ Rules:
 - No unit/integration test instructions.
 - Full coverage of changes required.
 - No duplicates.
+- The Baseline Regression Suite below is always emitted on top of the diff-derived checks; it is exempt from the "No duplicates" rule.
+
+## Baseline Regression Suite (always included)
+
+Every QA report MUST include the checks below, regardless of the diff. They are emitted even when the change does not touch layout, insets, navigation, or question rendering, and they are **not** diff-derived.
+
+Do not deduplicate them against diff-derived checks, and do not drop them when the diff is small or unrelated. They are the standing guard for the shared Android inset configuration (`capacitor.config.json` `SystemBars`/`EdgeToEdge`, `src/components/globals/BaseLayout.vue`, `LeftDrawer.vue`, `RightDrawer.vue`), where a change to one surface silently breaks another.
+
+### B1. Status bar does not overlap or double-pad content
+
+- **Test Description:** Confirm routed page content starts below the status bar, on the oldest and newest supported Android versions.
+- **Expected Result:** The header is fully visible below the status bar, with no content underneath it and no blank strip between the status bar and the header.
+- **Manual Action:** On Android 10 and Android 16 staging devices, open the Projects list, an Entries list, and a routed question page; in each, confirm the header clears the status bar and that no gap appears above it.
+
+### B2. GROUP question keyboard and bottom scroll
+
+- **Test Description:** Confirm the final inputs of a GROUP question remain reachable while the soft keyboard is open.
+- **Expected Result:** With the keyboard open, scrolling to the maximum reveals the final 2-3 GROUP inputs; nothing is trapped behind the keyboard; dismissing it leaves no residual gap.
+- **Manual Action:** On Android 16 staging, open an entry containing a GROUP question with at least 3 inputs; focus the last input; let the keyboard open; scroll to the bottom; confirm every input is reachable; dismiss the keyboard and confirm the layout returns with no gap.
+
+### B3. Drawer content scrolls clear of the navigation bar
+
+- **Test Description:** Confirm both drawers scroll fully and their last item clears the navigation bar.
+- **Expected Result:** The final item in each drawer scrolls fully into view above the navigation bar or gesture indicator; no item stays permanently obscured.
+- **Manual Action:** On Android 10 and Android 16 staging devices, open the left drawer and scroll to its last item; then open the right drawer and scroll to its last item; confirm both are fully visible and tappable above the navigation controls.
+
+B1-B3 are emitted as CSV rows like any other check - apply the comma substitution rule to them too. Android is where the inset failure modes live; run the same steps on iOS as a cross-platform sanity check, since all three surfaces exist there. Mark the cell `N/A` where a surface is absent on PWA.
 
 ## Output Format
 
@@ -82,5 +109,6 @@ Before output, ensure:
 - Full coverage of changes.
 - No duplicates.
 - All steps reproducible in staging.
-- Diff fully mapped to QA checks.
+- Diff fully mapped to QA checks, plus the Baseline Regression Suite.
+- The Baseline Regression Suite is present in both the Markdown report and the CSV.
 - No commas inside CSV cell text; commas only separate columns.
