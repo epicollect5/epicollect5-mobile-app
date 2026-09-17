@@ -264,6 +264,69 @@ Add any new modal flag here (e.g. `isCameraPreviewModalActive` when `feature/cam
 
 No `App.addListener('backButton')` is used; native back is solely `useBackButton`. All handlers share priority `10`, so registration order determines tie-break — keep guards in sync with their `goBack`/`prev` early returns and prefer `onIonViewWillEnter/Leave` if priority ordering ever matters.
 
+## Android Edge-to-Edge
+
+### Plugin Ownership
+
+`@capawesome/capacitor-android-edge-to-edge-support` is the single owner of Android edge-to-edge behavior. It is pinned to **exact 8.0.6** in `package.json` (no caret) and asserted by `tests/unit/edge-to-edge.spec.js`.
+
+### Why 8.0.6 Is Mandatory
+
+Version **8.0.7+** computes this in `EdgeToEdge.applyInsetsInternal`:
+
+```java
+int bottomMargin = keyboardVisible ? 0 : Math.max(imeInsets.bottom, systemBarsInsets.bottom);
+```
+
+The comment above it claims "the system already resizes the window for the keyboard". That held before Android 15; with edge-to-edge enforced the OS keeps the window full-screen and only dispatches the IME inset, so `0` leaves the WebView under the keyboard. 8.0.7 also cut the top margin to `SDK_INT >= 35 ? ... : 0`, pushing the WebView under the status bar on Android < 15. 8.0.8 restored the top margin with runtime detection but never touched the keyboard.
+
+8.0.2-8.0.6 all used an IME-based bottom margin and are safe. 8.0.6 is the newest of those and additionally carries the 8.0.4 external-keyboard fix, which preserves the navigation-bar inset when the visible IME is smaller than the nav bar.
+
+### Upstream Status
+
+[capawesome-team/capacitor-plugins#847](https://github.com/capawesome-team/capacitor-plugins/issues/847) is this exact keyboard bug, filed against 8.0.8 (still `latest`) and **closed as not planned** on 2026-08-08. Do not wait for an upstream fix.
+
+### Why Nobody Else Resizes
+
+`capacitor.config.json` sets `SystemBars.insetsHandling: "disable"`, which the plugin installation guide requires - and which removes every other resize path:
+
+- Capacitor core bails: `@capacitor/android` `SystemBars.java:195-197` returns immediately on `disable`, so it applies no padding and injects no `--safe-area-inset-*`.
+- `@capacitor/keyboard` bails too: `Keyboard.java:151-155` returns early because `isSystemBarsPluginPresent()` is always true in Capacitor 8.
+- The plugin's assumption that something else already resized the window is therefore wrong, and `bottomMargin = 0` is all that remains.
+
+The plugin is single-owner by construction, not by preference: any Capacitor or plugin bump must re-verify keyboard behavior on Android 16.
+
+### Why Not Capacitor Core SystemBars
+
+The Capacitor core `SystemBars: { insetsHandling: "css" }` migration was rejected. On affected Android 10 and older WebViews, CSS receives `0px` for top/bottom insets, so header, drawer, and footer CSS cannot fix native status-bar and navigation-bar underlap.
+
+**That reason is now stale.** Capacitor 8.4.0 extended the injected `safe-area-inset-*` variables to API levels <= 34 ([#8424](https://github.com/ionic-team/capacitor/pull/8424)) and made `insetsHandling: "disable"` actually respected ([#8481](https://github.com/ionic-team/capacitor/pull/8481)). This app runs Capacitor 8.5.0 and `index.html` already sets `viewport-fit=cover`, so the prerequisites for the core path are met.
+
+### Configuration
+
+- `capacitor.config.json`: `SystemBars.insetsHandling` is set to `"disable"` so Capacitor core does not inject CSS insets.
+- `capacitor.config.json`: `EdgeToEdge.backgroundColor` is set to `#5b357f` (app purple) for the status/navigation bar overlays.
+
+### Geometry Dependencies
+
+- `src/components/modals/ModalCameraPreview.vue:310`: repositions the native camera layer using `window.innerWidth`/`window.innerHeight` to align with the WebView's edge-to-edge geometry. Changing the plugin or removing it will break camera-preview alignment.
+
+### Cost of Removing the Plugin
+
+Removing the Capawesome plugin would cause:
+
+- Keyboard regression: fullscreen keyboard buries GROUP inputs.
+- Bottom-anchored UI overlap: footer, toast, and drawer content collide with navigation controls.
+- Status-bar underlap: header and routed content render behind the status bar.
+- Camera-preview geometry rework: `ModalCameraPreview.vue` relies on plugin-controlled native layer positioning.
+
+### Migration Path
+
+Both options are gated on device evidence - see `docs/workflows/qa.md`, Baseline Regression Suite:
+
+- **Core-first (preferred once verified).** Drop the plugin, set `SystemBars.insetsHandling: "css"`, and finish the inset CSS prototyped on `spike/core-insets-from-master` (`d10bd42`, `5da2e26`).
+- **Fork.** Fork the plugin at 8.0.8 and restore the IME bottom margin on top of its runtime top-inset detection. The repo already vendors dependencies through its own org (`github:epicollect5/...` in `package.json`), but a fork defers the coupling rather than removing it.
+
 ## PWA Architecture
 
 ### Boot Flow

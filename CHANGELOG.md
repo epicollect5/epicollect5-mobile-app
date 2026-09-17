@@ -3,6 +3,7 @@
 # 98.2.2 - build 9822
 
  - Fixed a crash when pressing the Android hardware back button while a project update is in flight on the entries page (navigation is now locked until the update completes).
+ - Pinned @capawesome/capacitor-android-edge-to-edge-support to exact 8.0.6 for Android keyboard compatibility; 8.0.7+ buries GROUP inputs (capawesome-team/capacitor-plugins#847).
 
 # 98.2.1 - build 9821
 

@@ -144,6 +144,16 @@ The build process is configured in `vite.config.js` and behaves differently base
 ## Configuration
  - iOS needs a xcconfig file with the REVERSED_CLIENT_ID for Google Sign In.
 
+## Pinned Native Dependencies
+
+### `@capawesome/capacitor-android-edge-to-edge-support` (exact 8.0.6)
+
+This plugin is pinned to **8.0.6** with no caret range, and `tests/unit/edge-to-edge.spec.js` fails if the pin is loosened or the native wiring goes missing. Version **8.0.7+** sets the WebView bottom margin to zero while the fullscreen keyboard is visible, burying the final 2-3 GROUP inputs ([capawesome-team/capacitor-plugins#847](https://github.com/capawesome-team/capacitor-plugins/issues/847)).
+
+The Capacitor core `SystemBars: { insetsHandling: "css" }` path is **not** used because Android 10 and older WebViews can inject zero top/bottom insets, causing status-bar and navigation-bar overlap that frontend CSS cannot repair. Capacitor 8.4.0 addressed that upstream; see `docs/ARCHITECTURE.md` for the migration path.
+
+Do not float this dependency past 8.0.6 without verifying keyboard behavior on Android 10 and the oldest supported WebView. Because the config sets `SystemBars.insetsHandling: "disable"`, neither Capacitor core nor `@capacitor/keyboard` resizes the WebView for the keyboard - this plugin is the only thing that does.
+
 ## PR Reviews
 
 All reviews MUST follow guidelines in `.github/review-guidelines.md`
