@@ -1,0 +1,18 @@
+CHANGELOG.md
+  h_2231ff2aa93473 6
+README.md
+  h_2231ff2aa93473 147-156
+docs/ARCHITECTURE.md
+  h_2231ff2aa93473 267-329
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ad3d193a597485985ad25fad1ba14bffab66e8a3",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
