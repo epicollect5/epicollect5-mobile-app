@@ -14,5 +14,5 @@
 }
 
 .routed-page-footer {
-    padding-bottom: var(--ion-safe-area-bottom, 0px);
+    padding-bottom: var(--safe-area-inset-bottom, var(--ion-safe-area-bottom, 0px));
 }

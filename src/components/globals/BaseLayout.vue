@@ -15,7 +15,7 @@
 			</ion-toolbar>
 			<slot name="subheader"></slot>
 		</ion-header>
-		<ion-content class="routed-page-content">
+		<ion-content class="apply-safe-area-bottom">
 			<slot name="content"></slot>
 		</ion-content>
     <ion-footer

@@ -18,7 +18,7 @@
         </ion-label>
       </ion-toolbar>
     </ion-header>
-    <ion-content ref="drawerContent" class="drawer-content">
+    <ion-content ref="drawerContent" class="apply-safe-area-bottom">
       <ion-list>
         <ion-item
             button

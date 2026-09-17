@@ -14,7 +14,7 @@
 				{{ labels.menu }}
 			</ion-toolbar>
 		</ion-header>
-		<ion-content class="drawer-content">
+		<ion-content class="apply-safe-area-bottom">
 			<ion-list>
 
 				<ion-item-group
