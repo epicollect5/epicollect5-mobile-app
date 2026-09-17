@@ -14,7 +14,7 @@
 				{{ labels.menu }}
 			</ion-toolbar>
 		</ion-header>
-		<ion-content>
+		<ion-content class="drawer-content">
 			<ion-list>
 
 				<ion-item-group

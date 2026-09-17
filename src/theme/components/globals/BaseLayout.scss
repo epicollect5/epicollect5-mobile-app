@@ -12,3 +12,7 @@
 .button-open {
     @include button-open-base;
 }
+
+.routed-page-footer {
+    padding-bottom: var(--ion-safe-area-bottom, 0px);
+}

@@ -59,9 +59,6 @@ project(':capacitor-toast').projectDir = new File('../node_modules/@capacitor/to
 include ':capawesome-team-capacitor-android-foreground-service'
 project(':capawesome-team-capacitor-android-foreground-service').projectDir = new File('../node_modules/@capawesome-team/capacitor-android-foreground-service/android')
 
-include ':capawesome-capacitor-android-edge-to-edge-support'
-project(':capawesome-capacitor-android-edge-to-edge-support').projectDir = new File('../node_modules/@capawesome/capacitor-android-edge-to-edge-support/android')
-
 include ':capgo-capacitor-zip'
 project(':capgo-capacitor-zip').projectDir = new File('../node_modules/@capgo/capacitor-zip/android')
 

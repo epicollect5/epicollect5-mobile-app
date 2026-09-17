@@ -8,11 +8,8 @@
 			"style": "DARK"
 		},
 		"SystemBars": {
-			"insetsHandling": "disable",
+			"insetsHandling": "css",
 			"style": "DARK"
-		},
-		"EdgeToEdge": {
-			"backgroundColor": "#5b357f"
 		},
 		"SplashScreen": {
 			"androidScaleType": "CENTER_CROP",

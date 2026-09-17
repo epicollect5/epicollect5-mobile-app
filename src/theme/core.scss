@@ -691,6 +691,14 @@ textarea {
 .card-content-md{
     padding-top: 16px !important;
 }
+// edge-to-edge bottom inset: core SystemBars (insetsHandling "css") injects
+// --safe-area-inset-bottom on documentElement (nav-bar height, 0 while the
+// keyboard is visible so it never double-counts the IME padding). Apply only
+// to the routed page and drawer content that are owned by this app.
+.routed-page-content,
+.drawer-content {
+    --padding-bottom: var(--safe-area-inset-bottom, 0px);
+}
 .ec5LoadingTitle, .ec5LoadingMessage{
     white-space: pre-line !important;
 }

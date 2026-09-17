@@ -15,10 +15,13 @@
 			</ion-toolbar>
 			<slot name="subheader"></slot>
 		</ion-header>
-		<ion-content>
+		<ion-content class="routed-page-content">
 			<slot name="content"></slot>
 		</ion-content>
-    <ion-footer v-if="isProjectsPage || isEntriesUploadPage || isEntriesDownloadPage">
+    <ion-footer
+        v-if="isProjectsPage || isEntriesUploadPage || isEntriesDownloadPage"
+        class="routed-page-footer"
+    >
       <slot name="footer"></slot>
     </ion-footer>
 	</ion-page>
