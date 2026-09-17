@@ -1,0 +1,15 @@
+CHANGELOG.md
+  h_2231ff2aa93473 6
+  h_2231ff2aa93473 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e59ce2afe08af89d080c26f62a6bd204039cfabd",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
