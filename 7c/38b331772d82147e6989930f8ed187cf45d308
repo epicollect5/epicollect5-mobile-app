@@ -1,0 +1,14 @@
+docs/workflows/qa.md
+  h_2231ff2aa93473 55-81,112-113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7c38b331772d82147e6989930f8ed187cf45d308",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
