@@ -51,6 +51,24 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
 
 3. Compute `buildNumber` = new `versionName` with dots removed.
 
+3a. **Android edge-to-edge gate** (mandatory before proceeding):
+   - Run `npx vitest run tests/unit/edge-to-edge.spec.js`. It asserts the pin is exact
+     (no caret), that `package-lock.json` resolves the same version, that
+     `SystemBars.insetsHandling` is `"disable"`, and that the EdgeToEdge plugin is present
+     in the committed Android wiring. If it fails, **stop** - do not hand-verify.
+   - Install with `npm ci`, never `npm install`, for a release. `npm install` rewrites the
+     pin to a caret (npm's default `save-prefix`), and a lockfile refresh silently resolves
+     8.0.8, which reintroduces the keyboard regression.
+
+3b. **Physical Android QA** (required before release):
+   - Run the **Baseline Regression Suite** in `docs/workflows/qa.md` in full: B1 (status
+     bar), B2 (GROUP question keyboard and bottom scroll), B3 (drawer scroll). Mandatory on
+     every release, not only when the diff touches insets, because these surfaces share one
+     inset configuration.
+   - Add the release-specific checks on top: modal and camera-preview geometry.
+   - iOS: sanity open (no crash).
+   - Record results in `docs/QA-<version>.md`.
+
 4. Apply edits (exact string replacement, preserve indentation)
    - `package.json`: `"version": "<new>"`
    - `android/app/build.gradle`: `versionCode <build>` and `versionName "<new>"`
@@ -71,6 +89,8 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
 6. Validate
    - `npx vitest run tests/unit/changelog.spec.js` (enforces heading format,
      uniqueness, and that the package version has notes).
+   - `npx vitest run tests/unit/edge-to-edge.spec.js` (re-asserts the pin and the native
+     wiring after the version bump has touched `package.json`).
 
 7. Report and confirm follow-up
    - Show version, build, and changed files.
