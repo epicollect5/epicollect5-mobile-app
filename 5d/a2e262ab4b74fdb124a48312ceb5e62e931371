@@ -1,0 +1,27 @@
+src/components/globals/LeftDrawer.vue
+  s_b79b40a0591050::t_9bd0a8a3920a86 17
+src/theme/components/globals/BaseLayout.scss
+  s_b79b40a0591050::t_f2489384368afb 17
+src/components/globals/BaseLayout.vue
+  s_b79b40a0591050::t_9bd0a8a3920a86 18
+src/theme/core.scss
+  s_b79b40a0591050::t_9bd0a8a3920a86 698
+src/components/globals/RightDrawer.vue
+  s_b79b40a0591050::t_9bd0a8a3920a86 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5da2e262ab4b74fdb124a48312ceb5e62e931371",
+  "prompts": {},
+  "sessions": {
+    "s_b79b40a0591050": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0afc0-4bde-7700-8da1-7b5d05b96bf7",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
