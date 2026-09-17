@@ -2,12 +2,12 @@
 
 # 98.2.3 - build 9823
 
- - Fixed the Android software keyboard covering the bottom of the screen on Android 15+; the edge-to-edge plugin is now pinned to exact 8.0.6, because 8.0.7+ collapses the WebView bottom margin while the keyboard is open.
+ - Fixed the Android software keyboard covering the bottom of the screen on Android 15+
+ - The edge-to-edge plugin is now pinned to exact 8.0.6, because 8.0.7+ collapses the WebView bottom margin while the keyboard is open.
 
 # 98.2.2 - build 9822
 
  - Fixed a crash when pressing the Android hardware back button while a project update is in flight on the entries page (navigation is now locked until the update completes).
- - Pinned @capawesome/capacitor-android-edge-to-edge-support to exact 8.0.6 for Android keyboard compatibility; 8.0.7+ buries GROUP inputs (capawesome-team/capacitor-plugins#847).
 
 # 98.2.1 - build 9821
 
