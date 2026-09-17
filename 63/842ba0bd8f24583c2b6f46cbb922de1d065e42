@@ -1,0 +1,14 @@
+tests/unit/edge-to-edge.spec.js
+  h_2231ff2aa93473 1-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "63842ba0bd8f24583c2b6f46cbb922de1d065e42",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
