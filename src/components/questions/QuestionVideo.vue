@@ -39,6 +39,7 @@
 						class="question-action-button"
 						color="secondary"
 						expand="block"
+						:disabled="isVideoCaptureActive"
 						@click="shoot()"
 					>
 						<ion-icon
@@ -263,6 +264,9 @@ export default {
 			}),
 			isPWA: computed(() => {
 				return rootStore.isPWA;
+			}),
+			isVideoCaptureActive: computed(() => {
+				return rootStore.isVideoCaptureActive;
 			})
 		};
 
