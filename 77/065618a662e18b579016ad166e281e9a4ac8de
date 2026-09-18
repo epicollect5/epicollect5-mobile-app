@@ -1,0 +1,19 @@
+src/stores/root-store.js
+  s_4c980496ea4141::t_5c72fd079ab0ad 59-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "77065618a662e18b579016ad166e281e9a4ac8de",
+  "prompts": {},
+  "sessions": {
+    "s_4c980496ea4141": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f4c56ffc4ffemy9BbY0ebUFlfP",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
