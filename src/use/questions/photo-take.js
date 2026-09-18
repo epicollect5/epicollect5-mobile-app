@@ -21,6 +21,15 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
     let cameraOptions = {};
     let sourceType = '';
 
+    //a second tap while a capture is already in flight must be ignored:
+    //two concurrent Camera.getPhoto() calls compete (second fails or both
+    //open) and two ModalCameraPreview presents collide (second present
+    //rejects, leaving an error alert plus a stuck modal)
+    if (rootStore.isPhotoCaptureActive) {
+        return;
+    }
+    rootStore.isPhotoCaptureActive = true;
+    try {
     function _loadImageOnView(source) {
         const timestamp = utilsService.generateTimestamp();
         state.fileSource = source;
@@ -47,8 +56,11 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
             return;
         }
 
-        //dismiss the waiting spinner before opening the native camera
-        await notificationService.hideProgressDialog(0);
+        //bridge the native camera launch gap: intentionally fire-and-forget
+        //(never awaited, so the camera intent fires immediately) dismisses
+        //the spinner ~2s later underneath the camera activity. Awaiting here
+        //would stall the launch itself by the delay
+        notificationService.hideProgressDialog(2000);
 
         //snapshot the previous references: a failed replacement must restore
         //them instead of dropping the existing photo from the entry
@@ -245,5 +257,8 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
         }
     } else {
         await notificationService.hideProgressDialog();
+    }
+    } finally {
+        rootStore.isPhotoCaptureActive = false;
     }
 }

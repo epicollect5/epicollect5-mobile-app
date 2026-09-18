@@ -18,6 +18,14 @@ export async function videoShoot({media, entryUuid, state, filename}) {
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
     const tempDir = rootStore.tempDir;
+    //a second tap while a capture is already in flight must be ignored
+    //(same double-tap race as photo-take: two presents collide and the
+    //second rejects, leaving an error alert plus a stuck modal)
+    if (rootStore.isVideoCaptureActive) {
+        return;
+    }
+    rootStore.isVideoCaptureActive = true;
+    try {
     rootStore.isVideoEncodingModalActive = false;
     //snapshot the previous references: a failed retake must restore them instead
     //of dropping the existing video from the entry (mirrors photo-take openCamera)
@@ -249,6 +257,11 @@ export async function videoShoot({media, entryUuid, state, filename}) {
                         _onCaptureVideoError,
                         options
                     );
+                    //bridge the native camera launch gap: intentionally
+                    //fire-and-forget (never awaited) dismisses the spinner ~2s
+                    //later underneath the camera activity; the capture callbacks
+                    //hide again on return, matching the photo-take native path
+                    notificationService.hideProgressDialog(2000);
                 } else {
                     //warn user camera permission is compulsory. No capture was
                     //attempted, so the references are left untouched: clearing them
@@ -278,6 +291,9 @@ export async function videoShoot({media, entryUuid, state, filename}) {
                         _onCaptureVideoError,
                         options
                     );
+                    //bridge the native camera launch gap: intentionally
+                    //fire-and-forget (same as Android above)
+                    notificationService.hideProgressDialog(2000);
                 },
                 function (error) {
                     //no capture was attempted: preserve any existing video (denying
@@ -289,4 +305,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
                 }
             );
         }
+    } finally {
+        rootStore.isVideoCaptureActive = false;
+    }
 }
