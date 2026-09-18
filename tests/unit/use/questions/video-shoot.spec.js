@@ -393,4 +393,28 @@ describe('videoShoot tests', () => {
         expect(rootStore.isCameraPreviewModalActive).toBe(false);
         expect(videoEditorMock.edit).not.toHaveBeenCalled();
     });
+
+    it('ignores a second tap while a capture is already in flight', async () => {
+        setupRootStore(PARAMETERS.ANDROID, { inAppCameraVideo: true });
+        const rootStore = useRootStore();
+        rootStore.isVideoCaptureActive = true;
+        const { media, entryUuid, state, filename } = makeArgs();
+
+        await videoShoot({ media, entryUuid, state, filename });
+
+        expect(modalMock.create).not.toHaveBeenCalled();
+        expect(videoEditorMock.edit).not.toHaveBeenCalled();
+    });
+
+    it('releases the capture guard after the modal is dismissed without a recording', async () => {
+        setupRootStore(PARAMETERS.ANDROID, { inAppCameraVideo: true });
+        modalMock.modal.onDidDismiss.mockResolvedValue({ data: null });
+        const rootStore = useRootStore();
+        const { media, entryUuid, state, filename } = makeArgs();
+
+        await videoShoot({ media, entryUuid, state, filename });
+
+        expect(rootStore.isVideoCaptureActive).toBe(false);
+        expect(media[entryUuid]['q1'].cached).toBe('');
+    });
 });

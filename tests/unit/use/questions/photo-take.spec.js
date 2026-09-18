@@ -446,4 +446,30 @@ describe('photoTake tests', () => {
         expect(rootStore.isCameraPreviewModalActive).toBe(false);
         expect(resizeMock.resizeToTempDir).not.toHaveBeenCalled();
     });
+
+    it('ignores a second tap while a capture is already in flight', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: false });
+        const rootStore = useRootStore();
+        rootStore.isPhotoCaptureActive = true;
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(Camera.getPhoto).not.toHaveBeenCalled();
+        expect(modalMock.create).not.toHaveBeenCalled();
+    });
+
+    it('releases the capture guard after a successful native capture', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: false });
+        nMock.startForegroundService.mockResolvedValue('dismiss');
+        const { Camera: CameraMock } = await import('@capacitor/camera');
+        CameraMock.getPhoto.mockResolvedValueOnce({ path: '/capture.jpg' });
+        const rootStore = useRootStore();
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(rootStore.isPhotoCaptureActive).toBe(false);
+        expect(media[entryUuid]['q1'].cached).toBe('photo_gen.jpg');
+    });
 });
