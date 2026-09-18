@@ -1,0 +1,24 @@
+src/components/questions/QuestionVideo.vue
+  s_4c980496ea4141::t_01aac0bb4f5d3f 267-269
+  s_4c980496ea4141::t_b2f3aa514c11ec 42
+src/components/questions/QuestionPhoto.vue
+  s_4c980496ea4141::t_0a1f40ab7201a3 493-495
+  s_4c980496ea4141::t_6c88959bfd7cf4 63
+  s_4c980496ea4141::t_b2e83057c80403 45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3c2360f7f45a6077bd5f2d87b907766fdc4ddf0c",
+  "prompts": {},
+  "sessions": {
+    "s_4c980496ea4141": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f4c56ffc4ffemy9BbY0ebUFlfP",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
