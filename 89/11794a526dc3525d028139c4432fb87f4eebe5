@@ -1,0 +1,26 @@
+CHANGELOG.md
+  s_4c980496ea4141::t_3595b22a21abea 3-8
+android/app/build.gradle
+  s_4c980496ea4141::t_c2cadd0c345014 16-17
+ios/App/App.xcodeproj/project.pbxproj
+  s_4c980496ea4141::t_b21ca18cf89839 387,395
+  s_4c980496ea4141::t_7cfb289f04f8f4 417,425
+package.json
+  s_4c980496ea4141::t_00ea48608cf55b 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8911794a526dc3525d028139c4432fb87f4eebe5",
+  "prompts": {},
+  "sessions": {
+    "s_4c980496ea4141": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f4c56ffc4ffemy9BbY0ebUFlfP",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
