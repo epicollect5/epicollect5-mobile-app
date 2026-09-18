@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 98.2.4 - build 9824
+
+ - Fixed double-tap on Take Photo opening the camera twice (an error alert with a stuck modal on the in-app preview); the same guard now covers video recording.
+ - Capture buttons are now disabled while a capture is in flight and re-enabled when back from the camera.
+ - The Please Wait loader now bridges the native camera launch gap instead of dismissing before the camera has opened.
+
 # 98.2.3 - build 9823
 
  - Fixed the Android software keyboard covering the bottom of the screen on Android 15+
