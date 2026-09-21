@@ -1,0 +1,20 @@
+src/services/notification-service.js
+  s_51c3d2b461e4ea::t_e2dab0a48296ee 233
+  s_51c3d2b461e4ea::t_6379186e87d775 274
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "49820bc298b97c1043c9bd804730c420a6188350",
+  "prompts": {},
+  "sessions": {
+    "s_51c3d2b461e4ea": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3ab65c0effeEcyqqwI7inYFQt",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
