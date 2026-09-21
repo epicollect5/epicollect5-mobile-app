@@ -36,7 +36,6 @@ import { computed } from '@vue/reactivity';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
 import { closeOutline } from 'ionicons/icons';
-import { modalController } from '@ionic/vue';
 import { notificationService } from '@/services/notification-service';
 
 export default {
@@ -84,7 +83,7 @@ export default {
 					if (props.onClose) {
 						await props.onClose();
 					}
-					await modalController.dismiss(null, 'cancel');
+					await notificationService.dismissModalSafe(null, 'cancel');
 				}
 			}
 		};

@@ -3,7 +3,6 @@ import { shallowMount } from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import ModalProgressTransfer from '@/components/modals/ModalProgressTransfer.vue';
 import { notificationService } from '@/services/notification-service';
-import { modalController } from '@ionic/vue';
 
 vi.mock('@/stores/root-store', () => ({
     useRootStore: vi.fn(() => ({
@@ -17,13 +16,8 @@ vi.mock('@/stores/root-store', () => ({
 
 vi.mock('@/services/notification-service', () => ({
     notificationService: {
-        confirmSingle: vi.fn(() => Promise.resolve(true))
-    }
-}));
-
-vi.mock('@ionic/vue', () => ({
-    modalController: {
-        dismiss: vi.fn(() => Promise.resolve())
+        confirmSingle: vi.fn(() => Promise.resolve(true)),
+        dismissModalSafe: vi.fn(() => Promise.resolve())
     }
 }));
 
@@ -47,7 +41,7 @@ describe('ModalProgressTransfer', () => {
         const onClose = vi.fn(async () => {
             calls.push('onClose');
         });
-        modalController.dismiss.mockImplementationOnce(() => {
+        notificationService.dismissModalSafe.mockImplementationOnce(() => {
             calls.push('dismiss');
             return Promise.resolve();
         });
@@ -64,8 +58,29 @@ describe('ModalProgressTransfer', () => {
 
         expect(notificationService.confirmSingle).toHaveBeenCalledWith('Are you sure?');
         expect(onClose).toHaveBeenCalled();
-        expect(modalController.dismiss).toHaveBeenCalledWith(null, 'cancel');
+        expect(notificationService.dismissModalSafe).toHaveBeenCalledWith(null, 'cancel');
         expect(calls).toEqual(['onClose', 'dismiss']);
+    });
+
+    it('resolves after a double dismiss (modal already gone)', async () => {
+        //the real dismissModalSafe swallows "overlay does not exist" and
+        //resolves; the mock mirrors that contract for the ✕-then-service
+        //dismiss race on entries-download
+        notificationService.dismissModalSafe.mockResolvedValueOnce();
+        const onClose = vi.fn();
+        const wrapper = shallowMount(ModalProgressTransfer, {
+            props: {
+                header: 'Downloading entries',
+                showCloseButton: true,
+                onClose
+            }
+        });
+
+        await wrapper.vm.closeModal();
+        await flushPromises();
+
+        expect(onClose).toHaveBeenCalled();
+        expect(notificationService.dismissModalSafe).toHaveBeenCalledWith(null, 'cancel');
     });
 
     it('does not call onClose or dismiss when close confirmation is cancelled', async () => {
@@ -84,6 +99,6 @@ describe('ModalProgressTransfer', () => {
 
         expect(notificationService.confirmSingle).toHaveBeenCalledWith('Are you sure?');
         expect(onClose).not.toHaveBeenCalled();
-        expect(modalController.dismiss).not.toHaveBeenCalled();
+        expect(notificationService.dismissModalSafe).not.toHaveBeenCalled();
     });
 });
