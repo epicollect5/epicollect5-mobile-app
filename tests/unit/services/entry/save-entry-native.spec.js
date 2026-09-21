@@ -115,4 +115,22 @@ describe('saveEntryNative single-flight latch', () => {
         expect(state.isSavingEntry).toBe(false);
         expect(quit).not.toHaveBeenCalled();
     });
+
+    it('resets the latch when the progress dialog rejects, save never starts', async () => {
+        notificationService.showProgressDialog.mockRejectedValueOnce(new Error('overlay failed'));
+
+        await saveEntryNative(state, 0, quit);
+
+        expect(saveEntry).not.toHaveBeenCalled();
+        expect(quit).not.toHaveBeenCalled();
+        expect(state.isSavingEntry).toBe(false);
+        expect(notificationService.showAlert).toHaveBeenCalled();
+
+        //retry is possible after the dialog failure
+        await saveEntryNative(state, 0, quit);
+
+        expect(saveEntry).toHaveBeenCalledTimes(1);
+        expect(quit).toHaveBeenCalledTimes(1);
+        expect(state.isSavingEntry).toBe(true);
+    });
 });

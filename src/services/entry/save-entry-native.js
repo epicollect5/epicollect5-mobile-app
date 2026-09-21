@@ -21,9 +21,9 @@ export async function saveEntryNative(state, syncType, quit) {
     }
     state.isSavingEntry = true;
 
-    await notificationService.showProgressDialog(labels.wait, labels.saving);
     // SAVE ENTRY
     try {
+        await notificationService.showProgressDialog(labels.wait, labels.saving);
         await rootStore.entriesAddScope.entryService.saveEntry(syncType);
         // Quit with navigation params
         quit(questionCommonService.getNavigationParams(rootStore.entriesAddScope.entryService));
