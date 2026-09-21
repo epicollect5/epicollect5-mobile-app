@@ -1,0 +1,33 @@
+package.json
+  s_75f037b8476131::t_a5aae0b8ef13ea 3
+android/app/build.gradle
+  s_75f037b8476131::t_622dc498534d4b 16-17
+ios/App/App.xcodeproj/project.pbxproj
+  s_75f037b8476131::t_13522767f2f920 395,425
+  s_75f037b8476131::t_63d86148c964fa 387,417
+CHANGELOG.md
+  s_75f037b8476131::t_96b797225f3496 3-9
+package-lock.json
+  s_75f037b8476131::t_f3e4a0d5bbb022 3,9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "82d2d2874fc6785cb2a5d832e92c1a7385c0f597",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_75f037b8476131": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3aea64a9ffeK6nqwCyw8bNjfe",
+        "model": "big-pickle"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
