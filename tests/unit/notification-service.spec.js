@@ -12,6 +12,7 @@ import { STRINGS } from '@/config/strings';
 const mocks = vi.hoisted(() => {
     return {
         presentMock: vi.fn().mockResolvedValue(true),
+        loadingCreateMock: vi.fn(),
         checkPermissionsMock: vi.fn().mockResolvedValue({receive: 'granted'}),
         requestPermissionsMock: vi.fn(),
         createNotificationChannelMock: vi.fn().mockResolvedValue(),
@@ -65,7 +66,8 @@ vi.mock('@ionic/vue', () => {
     alertController.create = vi.fn().mockResolvedValue({
         present: mocks.presentMock
     });
-    return { alertController };
+    const loadingController = { create: mocks.loadingCreateMock };
+    return { alertController, loadingController };
 });
 
 describe('notificationService tests', () => {
@@ -440,5 +442,63 @@ describe('notificationService tests', () => {
         await expect(promise).resolves.toBe('learn_more');
 
         openSpy.mockRestore();
+    });
+
+    describe('showProgressDialog replacement', () => {
+        function seedOldDialog() {
+            const rootStore = useRootStore();
+            const oldDialog = {
+                present: vi.fn().mockResolvedValue(),
+                dismiss: vi.fn().mockResolvedValue()
+            };
+            rootStore.ec5LoadingDialog = oldDialog;
+            return { rootStore, oldDialog };
+        }
+
+        function mockNewDialog() {
+            const newDialog = {
+                present: vi.fn().mockResolvedValue(),
+                dismiss: vi.fn().mockResolvedValue()
+            };
+            mocks.loadingCreateMock.mockResolvedValue(newDialog);
+            return newDialog;
+        }
+
+        it('presents the new spinner before dismissing the old one', async () => {
+            const { rootStore, oldDialog } = seedOldDialog();
+            const newDialog = mockNewDialog();
+
+            //explicit order markers: pinia stores state as reactive proxies,
+            //so identity (toBe) can never hold for the held dialog object
+            const order = [];
+            newDialog.present.mockImplementation(() => {
+                order.push('present-new');
+            });
+            oldDialog.dismiss.mockImplementation(() => {
+                order.push('dismiss-old');
+            });
+
+            await notificationService.showProgressDialog('wait');
+
+            //overlap, not gap: the replacement is up before the old one goes
+            expect(order).toEqual(['present-new', 'dismiss-old']);
+            expect(rootStore.ec5LoadingDialog).toStrictEqual(newDialog);
+            expect(oldDialog.dismiss).toHaveBeenCalledTimes(1);
+        });
+
+        it('stores a fresh spinner when none exists', async () => {
+            const rootStore = useRootStore();
+            rootStore.ec5LoadingDialog = null;
+            const newDialog = mockNewDialog();
+
+            await notificationService.showProgressDialog('wait');
+
+            expect(rootStore.ec5LoadingDialog).toStrictEqual(newDialog);
+            expect(newDialog.present).toHaveBeenCalled();
+        });
+
+        //no rejection-path test: a failed create/present rejects the inner
+        //async scope while the outer promise never settles (pre-existing
+        //shape), which would hang an await and flag an unhandled rejection
     });
 });
