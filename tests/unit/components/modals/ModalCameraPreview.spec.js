@@ -488,6 +488,9 @@ describe('ModalCameraPreview component', () => {
 		expect(wrapper.vm.state.capturing).toBe(false);
 		expect(wrapper.vm.state.started).toBe(true);
 		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+		//the user is told the capture failed instead of seeing a reset shutter
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('CameraPreview capture failed', expect.any(Error));
+		expect(notificationMock.showAlert).toHaveBeenCalled();
 	});
 
 	it('ignores a shutter press while the camera is not started', async () => {
@@ -959,6 +962,9 @@ describe('ModalCameraPreview component', () => {
 		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalled();
 		expect(wrapper.vm.state.recording).toBe(false);
 		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+		//the user is told the recording failed to start instead of seeing a reset shutter
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('CameraPreview startRecordVideo failed', expect.any(Error));
+		expect(notificationMock.showAlert).toHaveBeenCalled();
 	});
 
 	it('video mode alerts and dismisses when finalizing the recording fails in the foreground', async () => {
