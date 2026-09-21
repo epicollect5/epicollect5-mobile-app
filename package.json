@@ -1,6 +1,6 @@
 {
   "name": "uk.ac.imperial.epicollect.five",
-  "version": "98.2.4",
+  "version": "98.2.5",
   "private": true,
   "type": "module",
   "description": "Free and easy-to-use mobile data-gathering platform",

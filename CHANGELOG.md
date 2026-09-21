@@ -1,5 +1,12 @@
 ## Release Notes
 
+# 98.2.5 - build 9825
+
+ - Fixed duplicate GPS directories appearing in entry media when stripping extra GPS pointers on save.
+ - Capture and record-start failures now show an error alert to the user instead of failing silently.
+ - The Please Wait loader no longer gets stuck if the project update lock fails to display.
+ - The progress dialog now waits for the native hide animation to finish before the entry save completes.
+
 # 98.2.4 - build 9824
 
  - Fixed double-tap on Take Photo opening the camera twice (an error alert with a stuck modal on the in-app preview); the same guard now covers video recording.
