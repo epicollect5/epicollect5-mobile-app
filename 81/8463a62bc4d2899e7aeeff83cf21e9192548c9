@@ -1,0 +1,26 @@
+ios/App/App.xcodeproj/project.pbxproj
+  s_283b9e76bf626e::t_165d85705754e4 387,395
+  s_283b9e76bf626e::t_198d3035cf0a5f 417,425
+CHANGELOG.md
+  s_283b9e76bf626e::t_ad80d1375ffe70 3-7
+package.json
+  s_283b9e76bf626e::t_62686e57e2eda9 3
+android/app/build.gradle
+  s_283b9e76bf626e::t_9e81b4d19194ca 16-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "818463a62bc4d2899e7aeeff83cf21e9192548c9",
+  "prompts": {},
+  "sessions": {
+    "s_283b9e76bf626e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3a77b08affegXbRiRZEBQ1zaS",
+        "model": "big-pickle"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
