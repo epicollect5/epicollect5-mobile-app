@@ -1,0 +1,20 @@
+.agents/skills/release/SKILL.md
+  s_4c980496ea4141::t_1c987306893dd5 75-78
+  s_4c980496ea4141::t_bb4191cdbeb004 31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a582bcbf912c88ced6040b839332c8fca8bb0fb6",
+  "prompts": {},
+  "sessions": {
+    "s_4c980496ea4141": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f4c56ffc4ffemy9BbY0ebUFlfP",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
