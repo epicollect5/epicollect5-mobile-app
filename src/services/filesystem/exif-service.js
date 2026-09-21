@@ -183,10 +183,11 @@ function _zeroGpsValueData(view, copy, entry, littleEndian) {
     copy.fill(0, valueOffset, valueOffset + byteSize);
     return true;
 }
-//zero the GPS directory in place so parsers see an empty GPS IFD, plus any
+//zero every GPS directory in place so parsers see empty GPS IFDs, plus any
 //out-of-line value data (rationals, timestamps) that would otherwise survive
-//as recoverable bytes. Every other tag and offset stays valid. Returns false
-//when the pointer is malformed
+//as recoverable bytes. Every other tag and offset stays valid. Scans the
+//whole IFD0: tags are unique per IFD by spec, but a duplicate GPS pointer
+//must not survive a stripGps copy. Returns false when any pointer is malformed
 function _stripGpsDirectory(view, copy, ifd0, count, littleEndian) {
     const ifdEnd = ifd0 + 2 + count * 12 + 4;
     for (let i = 0; i < count; i++) {
@@ -221,9 +222,10 @@ function _stripGpsDirectory(view, copy, ifd0, count, littleEndian) {
             }
         }
         copy.fill(0, gpsIfd, gpsEnd);
-        return true;
+        //keep scanning: a duplicate GPS pointer later in IFD0 is wiped too,
+        //so no coordinate bytes survive a stripGps copy
     }
-    //no GPS pointer: nothing to strip
+    //no GPS pointer (or all wiped): nothing more to strip
     return true;
 }
 
