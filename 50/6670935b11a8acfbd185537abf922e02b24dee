@@ -1,0 +1,14 @@
+package-lock.json
+  h_2231ff2aa93473 3,9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "506670935b11a8acfbd185537abf922e02b24dee",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
