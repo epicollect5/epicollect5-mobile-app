@@ -9,6 +9,7 @@
 			class="ion-text-nowrap"
 			color="warning"
 			size="default"
+			:disabled="entriesAddState.isSavingEntry"
 			@click="saveBranchEntry()"
 		>
 			<ion-icon
@@ -716,6 +717,7 @@ export default {
 		return {
 			labels,
 			state,
+			entriesAddState,
 			...computedScope,
 			...methods,
 			PARAMETERS,

@@ -19,6 +19,7 @@
 							class="question-action-button ion-text-nowrap"
 							color="secondary"
 							expand="block"
+							:disabled="entriesAddState.isSavingEntry"
 							@click="save()"
 						>
 							<ion-icon
@@ -32,6 +33,7 @@
 							class="question-action-button ion-text-nowrap"
 							color="secondary"
 							expand="block"
+							:disabled="entriesAddState.isSavingEntry"
 							@click="save()"
 						>
 							<ion-icon
