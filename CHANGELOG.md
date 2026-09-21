@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 98.2.6 - build 9826
+
+ - Save buttons are now disabled while an entry is saving, and replayed native save invocations are ignored, so the same entry can no longer be saved twice.
+ - The Please Wait loader now replaces overlapping dialogs without a gap during the entry save.
+
 # 98.2.5 - build 9825
 
  - Fixed duplicate GPS directories appearing in entry media when stripping extra GPS pointers on save.
