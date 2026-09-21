@@ -1,0 +1,39 @@
+src/services/notification-service.js
+  s_30a0c83aa32c9d::t_00247da34c4141 308-312,317-319,321-322,330-346
+  s_30a0c83aa32c9d::t_f6ff415c43b5eb 313-316,320
+  s_30a0c83aa32c9d::t_6b77cd28ce90d2 500
+  s_30a0c83aa32c9d::t_7095909fa3c591 347
+tests/unit/services/entries-download-service.spec.js
+  s_30a0c83aa32c9d::t_89952b7fcf71b1 470-482
+  s_30a0c83aa32c9d::t_bd4fdf03be8595 204
+  s_30a0c83aa32c9d::t_2c919513a9e7c2 100-101
+tests/unit/notification-service.spec.js
+  s_30a0c83aa32c9d::t_1003af0fb4aaff 449-500
+  s_30a0c83aa32c9d::t_8b550580f27189 16
+  s_30a0c83aa32c9d::t_7e649dc567fabc 71-72
+src/services/entries-download-service.js
+  s_30a0c83aa32c9d::t_6d184f6dfe7b8f 316
+  s_30a0c83aa32c9d::t_b04694f597058c 340
+tests/unit/services/entries-download-service.abort.spec.js
+  s_30a0c83aa32c9d::t_8ab156aebf7b5b 280
+  s_30a0c83aa32c9d::t_15874fa3aededd 203
+  s_30a0c83aa32c9d::t_5720d223700a86 69-70
+  s_30a0c83aa32c9d::t_84c0e6294b6079 290-303
+  s_30a0c83aa32c9d::t_b43dc23c5a4163 184
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4eb857db435795294c8604b51fe15a08ded02355",
+  "prompts": {},
+  "sessions": {
+    "s_30a0c83aa32c9d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3a73ab64ffeakZlPcvGJiEZlh",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
