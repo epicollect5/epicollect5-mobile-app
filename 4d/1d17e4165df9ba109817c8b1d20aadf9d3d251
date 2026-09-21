@@ -1,0 +1,26 @@
+tests/unit/services/filesystem/exif-service.spec.js
+  s_4c980496ea4141::t_7dcfea29a72905 31-35
+  s_4c980496ea4141::t_4dd231d7e456d8 135-149
+  s_4c980496ea4141::t_cfc13b8c455fd3 54-55,58-64
+  s_4c980496ea4141::t_f13a087870aad1 365-417
+  s_4c980496ea4141::t_6f72bb75389a9c 172-176
+  s_4c980496ea4141::t_2b43e1b982364a 89-98,102
+  s_4c980496ea4141::t_09a7335968a0ca 150-151
+  s_4c980496ea4141::t_bec0e9981c3d51 418
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4d1d17e4165df9ba109817c8b1d20aadf9d3d251",
+  "prompts": {},
+  "sessions": {
+    "s_4c980496ea4141": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f4c56ffc4ffemy9BbY0ebUFlfP",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
