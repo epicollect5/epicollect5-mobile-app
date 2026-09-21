@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 98.2.7 - build 9827
+
+ - The entry save latch is now scoped per entry and resets when the progress dialog fails, so a rejected or failed save can no longer leave an entry (or the whole form) locked for retry.
+ - Fixed crashes when closing the entries upload and progress-transfer modals as a service dismiss races a user cancel (overlay-does-not-exist is now swallowed).
+
 # 98.2.6 - build 9826
 
  - Save buttons are now disabled while an entry is saving, and replayed native save invocations are ignored, so the same entry can no longer be saved twice.
