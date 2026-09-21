@@ -28,6 +28,7 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
 
 1. Read current state
    - `package.json` -> `version`
+   - `package-lock.json` -> both `"version"` fields (must agree with `package.json`)
    - `android/app/build.gradle` -> `versionCode`, `versionName`
    - `ios/App/App.xcodeproj/project.pbxproj` -> `MARKETING_VERSION` (Debug + Release),
      `CURRENT_PROJECT_VERSION` (Debug + Release)
@@ -71,6 +72,10 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
 
 4. Apply edits (exact string replacement, preserve indentation)
    - `package.json`: `"version": "<new>"`
+   - `package-lock.json`: `"version": "<new>"` in both version fields (root and
+     `packages[""]`). npm does not sync these on a hand-edit of `package.json`,
+     so bump them explicitly — never `npm install` for this (it rewrites pins
+     and may churn unrelated entries; see 3a).
    - `android/app/build.gradle`: `versionCode <build>` and `versionName "<new>"`
    - `ios/App/App.xcodeproj/project.pbxproj`:
        - `MARKETING_VERSION = <new>`  (both Debug and Release)
