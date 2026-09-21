@@ -28,9 +28,11 @@ function bytesCopy(bytes) {
 }
 
 //builds a minimal TIFF with an orientation entry, an optional GPS IFD with
-//two inline entries, and an optional thumbnail IFD. Returns the TIFF bytes
-//plus the offsets the assertions need (relative to the TIFF start)
-function buildTiff({ orientation = 6, orientationType = 3, withGps = true, withThumbnail = false, bigEndian = false } = {}) {
+//two inline entries, and an optional thumbnail IFD. With secondGps a duplicate
+//(spec-invalid) GPS pointer plus a second GPS IFD is appended, so strip tests
+//can prove no coordinate bytes survive. Returns the TIFF bytes plus the
+//offsets the assertions need (relative to the TIFF start)
+function buildTiff({ orientation = 6, orientationType = 3, withGps = true, secondGps = false, withThumbnail = false, bigEndian = false } = {}) {
     const le = !bigEndian;
     const bytes = [];
     const pushU16 = (v) => {
@@ -49,9 +51,17 @@ function buildTiff({ orientation = 6, orientationType = 3, withGps = true, withT
     pushBytes(bigEndian ? [0x4d, 0x4d, 0x00, 0x2a] : [0x49, 0x49, 0x2a, 0x00]);
     pushU32(8);
 
-    const entryCount = withGps ? 2 : 1;
+    const gpsPointers = withGps ? (secondGps ? 2 : 1) : 0;
+    const entryCount = 1 + gpsPointers;
     const ifd0 = 8;
     const gpsOffset = ifd0 + 2 + entryCount * 12 + 4;
+    //first GPS directory: 4 entries; its rational values follow the directory
+    const gpsDirSize = 2 + 4 * 12 + 4;
+    const gpsValueStart = withGps ? gpsOffset + gpsDirSize : -1;
+    //duplicate GPS pointer: second directory with 2 entries, values after it
+    const secondGpsDirSize = 2 + 2 * 12 + 4;
+    const secondGpsOffset = secondGps ? gpsValueStart + 48 : -1;
+    const secondGpsValueStart = secondGps ? secondGpsOffset + secondGpsDirSize : -1;
     pushU16(entryCount);
 
     //orientation entry (value inline)
@@ -76,12 +86,20 @@ function buildTiff({ orientation = 6, orientationType = 3, withGps = true, withT
         pushU32(gpsOffset);
     }
 
+    let secondGpsEntryAt = -1;
+    if (secondGps) {
+        //duplicate GPS pointer entry (offset relative to the TIFF start)
+        secondGpsEntryAt = bytes.length + 8;
+        pushU16(0x8825);
+        pushU16(4);
+        pushU32(1);
+        pushU32(secondGpsOffset);
+    }
+
     //IFD0 next-offset: thumbnail directory follows, else zero. With GPS the
     //value data (lat/long rationals) follows the directory before it
     const nextIfdAt = bytes.length;
-    const gpsDirSize = 2 + 4 * 12 + 4;
-    const gpsValueStart = withGps ? gpsOffset + gpsDirSize : -1;
-    const thumbnailOffset = withGps ? gpsValueStart + 48 : gpsOffset;
+    const thumbnailOffset = secondGps ? secondGpsValueStart + 8 : (withGps ? gpsValueStart + 48 : gpsOffset);
     pushU32(withThumbnail ? thumbnailOffset : 0);
 
     if (withGps) {
@@ -114,6 +132,23 @@ function buildTiff({ orientation = 6, orientationType = 3, withGps = true, withT
         });
     }
 
+    if (secondGps) {
+        //second GPS IFD: version inline, latitude 40/1 as out-of-line
+        //rational (distinct bytes from the first directory's 51/1)
+        pushU16(2);
+        pushU16(0x0000);
+        pushU16(1);
+        pushU32(4);
+        pushBytes([2, 3, 0, 0]);
+        pushU16(0x0002);
+        pushU16(5);
+        pushU32(1);
+        pushU32(secondGpsValueStart);
+        pushU32(0);
+        pushU32(40);
+        pushU32(1);
+    }
+
     if (withThumbnail) {
         //stale thumbnail directory: must be dropped by the copy
         pushU16(1);
@@ -134,7 +169,11 @@ function buildTiff({ orientation = 6, orientationType = 3, withGps = true, withT
         //TIFF-relative offset of the GPS IFD itself (for strip assertions)
         gpsIfdAt: withGps ? gpsOffset : -1,
         //TIFF-relative start of the out-of-line GPS value data
-        gpsValueStart
+        gpsValueStart,
+        //duplicate GPS pointer entry, directory and value data (or -1)
+        secondGpsEntryAt,
+        secondGpsIfdAt: secondGps ? secondGpsOffset : -1,
+        secondGpsValueStart
     };
 }
 
@@ -321,6 +360,60 @@ describe('exifService', () => {
             }
             //no latitude ref survives anywhere in the file
             expect(result.includes(0x4e)).toBe(false);
+        });
+
+        it('zeroes every GPS directory with stripGps when IFD0 carries duplicate pointers', () => {
+            const built = buildTiff({ orientation: 6, withGps: true, secondGps: true });
+            //sanity: distinct coordinate bytes in each directory pre-strip
+            expect(built.tiff[built.gpsValueStart]).toBe(51);
+            expect(built.tiff[built.secondGpsValueStart]).toBe(40);
+            const source = encodeBase64(buildJpeg({ app1Values: [app1Segment(built.tiff)] }));
+            const output = encodeBase64(buildJpeg({}));
+
+            const result = decodeBase64(exifService.copyExifSegment(source, output, { stripGps: true }));
+            const app1 = findApp1(result);
+            expect(app1).not.toBe(null);
+
+            const tiffStart = app1.valueStart + 6;
+            const view = new DataView(result.buffer, result.byteOffset, result.length);
+            //both directories zeroed in place: counts read 0
+            expect(view.getUint16(tiffStart + built.gpsIfdAt, true)).toBe(0);
+            expect(view.getUint16(tiffStart + built.secondGpsIfdAt, true)).toBe(0);
+            //first directory (54 bytes) and its value data (48 bytes) wiped
+            for (let i = built.gpsIfdAt; i < built.gpsIfdAt + 54; i++) {
+                expect(result[tiffStart + i]).toBe(0);
+            }
+            for (let i = built.gpsValueStart; i < built.gpsValueStart + 48; i++) {
+                expect(result[tiffStart + i]).toBe(0);
+            }
+            //second directory (30 bytes) and its value data (8 bytes) wiped
+            for (let i = built.secondGpsIfdAt; i < built.secondGpsIfdAt + 30; i++) {
+                expect(result[tiffStart + i]).toBe(0);
+            }
+            for (let i = built.secondGpsValueStart; i < built.secondGpsValueStart + 8; i++) {
+                expect(result[tiffStart + i]).toBe(0);
+            }
+            //orientation still normalized despite the extra pointer entry
+            expect(view.getUint16(tiffStart + built.orientationValueAt, true)).toBe(1);
+        });
+
+        it('copies both GPS directories verbatim without stripGps', () => {
+            const built = buildTiff({ orientation: 6, withGps: true, secondGps: true });
+            const source = encodeBase64(buildJpeg({ app1Values: [app1Segment(built.tiff)] }));
+            const output = encodeBase64(buildJpeg({}));
+
+            const result = decodeBase64(exifService.copyExifSegment(source, output));
+            const app1 = findApp1(result);
+            expect(app1).not.toBe(null);
+
+            //duplicate pointer is not the caller's problem on the granted path:
+            //both directories and their coordinates survive the copy
+            const tiffStart = app1.valueStart + 6;
+            const view = new DataView(result.buffer, result.byteOffset, result.length);
+            expect(view.getUint16(tiffStart + built.gpsIfdAt, true)).toBe(4);
+            expect(view.getUint16(tiffStart + built.secondGpsIfdAt, true)).toBe(2);
+            expect(result[tiffStart + built.gpsValueStart]).toBe(51);
+            expect(result[tiffStart + built.secondGpsValueStart]).toBe(40);
         });
 
         it('copies normally with stripGps when the source has no GPS pointer', () => {
