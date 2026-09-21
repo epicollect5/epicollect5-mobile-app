@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { saveEntryNative } from '@/services/entry/save-entry-native';
 import { notificationService } from '@/services/notification-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 import { useRootStore } from '@/stores/root-store';
 
 vi.mock('@/stores/root-store', () => ({
@@ -28,6 +29,13 @@ vi.mock('@/services/errors-service', () => ({
     }
 }));
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        critical: vi.fn(),
+        criticalWithContext: vi.fn()
+    }
+}));
+
 vi.mock('@/config/strings', () => ({
     STRINGS: {
         en: {
@@ -44,21 +52,25 @@ describe('saveEntryNative single-flight latch', () => {
 
     const saveEntry = vi.fn();
     const quit = vi.fn();
+    const entryService = {
+        entry: { entryUuid: 'entry-uuid' },
+        saveEntry
+    };
     let state;
 
     beforeEach(() => {
         vi.clearAllMocks();
         saveEntry.mockResolvedValue();
+        entryService.entry.entryUuid = 'entry-uuid';
         state = {
             isSavingEntry: false,
+            savingEntryUuid: '',
             error: { errors: {} }
         };
         useRootStore.mockReturnValue({
             language: 'en',
             entriesAddScope: {
-                entryService: {
-                    saveEntry
-                }
+                entryService
             }
         });
     });
@@ -87,6 +99,21 @@ describe('saveEntryNative single-flight latch', () => {
         expect(saveEntry).toHaveBeenCalledTimes(1);
         expect(quit).toHaveBeenCalledTimes(1);
         expect(state.isSavingEntry).toBe(true);
+        expect(state.savingEntryUuid).toBe('entry-uuid');
+    });
+
+    it('allows saving a different entry after success (reused editor instance)', async () => {
+        await saveEntryNative(state, 0, quit);
+
+        //branch save back to the hierarchy editor reuses the component:
+        //a different entry uuid must stay usable despite the latched flag
+        entryService.entry.entryUuid = 'other-entry-uuid';
+        await saveEntryNative(state, 0, quit);
+
+        expect(saveEntry).toHaveBeenCalledTimes(2);
+        expect(quit).toHaveBeenCalledTimes(2);
+        expect(state.isSavingEntry).toBe(true);
+        expect(state.savingEntryUuid).toBe('other-entry-uuid');
     });
 
     it('resets the latch on failure so a retry is possible', async () => {
@@ -95,6 +122,7 @@ describe('saveEntryNative single-flight latch', () => {
         await saveEntryNative(state, 0, quit);
 
         expect(state.isSavingEntry).toBe(false);
+        expect(state.savingEntryUuid).toBe('');
         expect(quit).not.toHaveBeenCalled();
         expect(notificationService.hideProgressDialog).toHaveBeenCalled();
 
@@ -124,7 +152,10 @@ describe('saveEntryNative single-flight latch', () => {
         expect(saveEntry).not.toHaveBeenCalled();
         expect(quit).not.toHaveBeenCalled();
         expect(state.isSavingEntry).toBe(false);
+        expect(state.savingEntryUuid).toBe('');
         expect(notificationService.showAlert).toHaveBeenCalled();
+        //dialog failures are Rollbar-silent without explicit reporting
+        expect(rollbarService.criticalWithContext).toHaveBeenCalledTimes(1);
 
         //retry is possible after the dialog failure
         await saveEntryNative(state, 0, quit);

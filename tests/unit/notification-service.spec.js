@@ -551,8 +551,15 @@ describe('notificationService tests', () => {
             expect(newDialog.present).toHaveBeenCalled();
         });
 
-        //no rejection-path test: a failed create/present rejects the inner
-        //async scope while the outer promise never settles (pre-existing
-        //shape), which would hang an await and flag an unhandled rejection
+        it('forwards create failures instead of hanging', async () => {
+            const { rootStore, oldDialog } = seedOldDialog();
+            mocks.loadingCreateMock.mockRejectedValueOnce(new Error('overlay failed'));
+
+            await expect(notificationService.showProgressDialog('wait')).rejects.toThrow('overlay failed');
+
+            //failed replacement keeps the old spinner up instead of losing it
+            expect(rootStore.ec5LoadingDialog).toStrictEqual(oldDialog);
+            expect(oldDialog.dismiss).not.toHaveBeenCalled();
+        });
     });
 });
