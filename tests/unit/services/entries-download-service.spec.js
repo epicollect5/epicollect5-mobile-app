@@ -97,7 +97,8 @@ vi.mock('@/services/notification-service', () => ({
         showAlert: vi.fn(),
         showToast: vi.fn(),
         showProgressDialog: vi.fn(),
-        hideProgressDialog: vi.fn()
+        hideProgressDialog: vi.fn(),
+        dismissModalSafe: vi.fn()
     }
 }));
 
@@ -200,6 +201,7 @@ describe('entriesDownloadService project version checks', () => {
             }
         });
         notificationService.showDismissAlert.mockResolvedValue();
+        notificationService.dismissModalSafe.mockResolvedValue();
         modalController.create.mockResolvedValue({present: vi.fn().mockResolvedValue()});
     });
 
@@ -465,7 +467,19 @@ describe('entriesDownloadService project version checks', () => {
         await settleDownload();
 
         expect(errorsService.handleWebError).toHaveBeenCalled();
-        expect(modalController.dismiss).toHaveBeenCalled();
+        expect(notificationService.dismissModalSafe).toHaveBeenCalled();
+        expect(state.isFetching).toBe(false);
+    });
+
+    it('dismisses the progress modal without surfacing a rejection when the download succeeds', async () => {
+        const state = createState();
+        downloadService.downloadFormEntries.mockResolvedValue(true);
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
+        expect(notificationService.dismissModalSafe).toHaveBeenCalled();
         expect(state.isFetching).toBe(false);
     });
 

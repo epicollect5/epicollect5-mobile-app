@@ -66,7 +66,8 @@ vi.mock('@/services/notification-service', () => ({
         showAlert: vi.fn(),
         showToast: vi.fn(),
         showProgressDialog: vi.fn(),
-        hideProgressDialog: vi.fn()
+        hideProgressDialog: vi.fn(),
+        dismissModalSafe: vi.fn()
     }
 }));
 
@@ -180,7 +181,7 @@ describe('entriesDownloadService mid-download project update', () => {
         });
         databaseDeleteService.deleteEntriesBeforeDownload.mockResolvedValue();
         modalController.create.mockResolvedValue({ present: vi.fn() });
-        modalController.dismiss.mockResolvedValue();
+        notificationService.dismissModalSafe.mockResolvedValue();
         projectModel.getFormsInOrder.mockReturnValue([{ formRef: 'form-a' }, { formRef: 'form-b' }]);
         projectModel.getFirstFormRef.mockReturnValue('form-a');
         projectModel.getLastFormRef.mockReturnValue('form-b');
@@ -199,7 +200,7 @@ describe('entriesDownloadService mid-download project update', () => {
         await flushPromises();
 
         expect(downloadService.downloadFormEntries).toHaveBeenCalledTimes(1);
-        expect(modalController.dismiss).toHaveBeenCalled();
+        expect(notificationService.dismissModalSafe).toHaveBeenCalled();
         expect(entriesDownloadProgressService.clearProject).toHaveBeenCalledWith('project-ref');
         expect(state.resumeAvailable['form-a']).toBe(false);
         expect(notificationService.showAlert).toHaveBeenCalledWith(labels.download_interrupted_restart, STRINGS.en.labels.project_outdated);
@@ -276,13 +277,27 @@ describe('entriesDownloadService mid-download project update', () => {
         await flushPromises();
 
         expect(downloadService.downloadFormEntries).toHaveBeenCalledTimes(1);
-        expect(modalController.dismiss).toHaveBeenCalled();
+        expect(notificationService.dismissModalSafe).toHaveBeenCalled();
         expect(entriesDownloadProgressService.clearProject).toHaveBeenCalledWith('project-ref');
         //The trashed alert comes from the version check, not a restart prompt
         expect(notificationService.showAlert).not.toHaveBeenCalledWith(
             labels.download_interrupted_restart,
             STRINGS.en.labels.project_outdated
         );
+        expect(state.isFetching).toBe(false);
+    });
+
+    it('cleans up without surfacing a rejection when the user cancels after dismissing the modal', async () => {
+        //the ✕ path already dismissed the transfer modal; the in-flight
+        //page then throws {cancelled:true} and the catch dismisses again
+        downloadService.downloadFormEntries.mockRejectedValue({ cancelled: true });
+        const state = createState();
+        const downloader = init(state);
+
+        await expect(downloader.downloadEntries('form-a')).resolves.toBeUndefined();
+        await flushPromises();
+
+        expect(notificationService.dismissModalSafe).toHaveBeenCalled();
         expect(state.isFetching).toBe(false);
     });
 

@@ -313,7 +313,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
 
         let code = 'ec5_143';
 
-        modalController.dismiss();
+        await notificationService.dismissModalSafe();
 
         if (!hasEntries) {
           code = 'ec5_144';
@@ -337,7 +337,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
       } catch (error) {
         const authErrors = PARAMETERS.AUTH_ERROR_CODES;
 
-        modalController.dismiss();
+        await notificationService.dismissModalSafe();
         syncResumeAvailability(formRef);
 
         if (error?.cancelled) {

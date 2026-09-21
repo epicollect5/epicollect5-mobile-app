@@ -305,13 +305,45 @@ buttons
                 try {
                     if (rootStore.ec5LoadingDialog !== null) {
                         console.log('dismiss dialog called');
-                        await rootStore.ec5LoadingDialog.dismiss();
+                        try {
+                            await rootStore.ec5LoadingDialog.dismiss();
+                        } catch (error) {
+                            //a stale dialog handle (e.g. replaced by the
+                            //showProgressDialog overlap) dismisses as
+                            //"overlay does not exist": already gone, ignore.
+                            //Any other error is logged: this timer is
+                            //fire-and-forget, rethrowing would only surface
+                            //as an unhandled rejection
+                            const gone = error === 'overlay does not exist'
+                                || error?.message === 'overlay does not exist';
+                            if (!gone) {
+                                console.log('dialog dismiss failed: ' + error);
+                            }
+                        }
                     }
                 } finally {
                     resolve();
                 }
             }, set_delay);
         });
+    },
+    /**
+     * Dismiss the topmost modal, swallowing "overlay does not exist".
+     * A modal dismissed twice (e.g. user-cancel racing the service
+     * dismiss on entries-download) rejects with that string in Ionic:
+     * the overlay is already gone, so there is nothing to do.
+     * Any other dismiss error is rethrown.
+     */
+    async dismissModalSafe(...args) {
+        try {
+            await modalController.dismiss(...args);
+        } catch (error) {
+            const gone = error === 'overlay does not exist'
+                || error?.message === 'overlay does not exist';
+            if (!gone) {
+                throw error;
+            }
+        }
     },
     //start a foreground service (with notification)
     //to avoid Android killing the app
@@ -465,7 +497,7 @@ buttons
         if (!rootStore.isExportModalActive) return;
 
         // 1. Dismiss the UI component
-        await modalController.dismiss();
+        await notificationService.dismissModalSafe();
         rootStore.isExportModalActive = false;
 
         // 2. Reset the progress state immediately so it's ready for next time

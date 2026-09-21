@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => {
     return {
         presentMock: vi.fn().mockResolvedValue(true),
         loadingCreateMock: vi.fn(),
+        modalDismissMock: vi.fn().mockResolvedValue(true),
         checkPermissionsMock: vi.fn().mockResolvedValue({receive: 'granted'}),
         requestPermissionsMock: vi.fn(),
         createNotificationChannelMock: vi.fn().mockResolvedValue(),
@@ -67,7 +68,8 @@ vi.mock('@ionic/vue', () => {
         present: mocks.presentMock
     });
     const loadingController = { create: mocks.loadingCreateMock };
-    return { alertController, loadingController };
+    const modalController = { dismiss: mocks.modalDismissMock };
+    return { alertController, loadingController, modalController };
 });
 
 describe('notificationService tests', () => {
@@ -442,6 +444,58 @@ describe('notificationService tests', () => {
         await expect(promise).resolves.toBe('learn_more');
 
         openSpy.mockRestore();
+    });
+
+    describe('dismissModalSafe', () => {
+        it('dismisses the topmost modal forwarding args', async () => {
+            await notificationService.dismissModalSafe(null, 'cancel');
+
+            expect(mocks.modalDismissMock).toHaveBeenCalledWith(null, 'cancel');
+        });
+
+        it('swallows the overlay-does-not-exist string rejection', async () => {
+            mocks.modalDismissMock.mockRejectedValueOnce('overlay does not exist');
+
+            await expect(notificationService.dismissModalSafe()).resolves.toBeUndefined();
+        });
+
+        it('swallows the overlay-does-not-exist Error rejection', async () => {
+            mocks.modalDismissMock.mockRejectedValueOnce(new Error('overlay does not exist'));
+
+            await expect(notificationService.dismissModalSafe()).resolves.toBeUndefined();
+        });
+
+        it('rethrows any other dismiss error', async () => {
+            const error = new Error('dismiss failed');
+            mocks.modalDismissMock.mockRejectedValueOnce(error);
+
+            await expect(notificationService.dismissModalSafe()).rejects.toBe(error);
+        });
+    });
+
+    describe('hideProgressDialog with a stale dialog handle', () => {
+        it('resolves without rejection when the dialog is already gone', async () => {
+            const rootStore = useRootStore();
+            rootStore.ec5LoadingDialog = {
+                dismiss: vi.fn().mockRejectedValue('overlay does not exist')
+            };
+
+            await expect(notificationService.hideProgressDialog(0)).resolves.toBeUndefined();
+        });
+
+        it('resolves and logs any other dialog dismiss error', async () => {
+            const rootStore = useRootStore();
+            rootStore.ec5LoadingDialog = {
+                dismiss: vi.fn().mockRejectedValue(new Error('dismiss failed'))
+            };
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {
+            });
+
+            await expect(notificationService.hideProgressDialog(0)).resolves.toBeUndefined();
+            expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('dialog dismiss failed'));
+
+            consoleSpy.mockRestore();
+        });
     });
 
     describe('showProgressDialog replacement', () => {
