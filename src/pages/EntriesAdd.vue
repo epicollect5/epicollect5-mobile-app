@@ -392,7 +392,10 @@ export default {
 			action: null, //add or edit
 			entrySavedPWA: false,
 			entryFailedPWA: false,
-			showSaved: false
+			showSaved: false,
+			//single-flight latch for native SAVE: set on first tap,
+			//reset on error only, success stays latched until navigation
+			isSavingEntry: false
 		});
 
 		const lastNavIndex = rootStore.hierarchyNavigation.length - 1;
