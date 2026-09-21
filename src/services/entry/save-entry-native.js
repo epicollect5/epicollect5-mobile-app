@@ -14,6 +14,13 @@ export async function saveEntryNative(state, syncType, quit) {
     // Determine the syncType
     syncType = syncType ?? PARAMETERS.SYNCED_CODES.UNSYNCED;
 
+    //single-flight latch: ignore replays while a save is in flight or
+    //success-pending-navigation (second tap would re-move consumed temp files)
+    if (state.isSavingEntry) {
+        return;
+    }
+    state.isSavingEntry = true;
+
     await notificationService.showProgressDialog(labels.wait, labels.saving);
     // SAVE ENTRY
     try {
@@ -22,6 +29,8 @@ export async function saveEntryNative(state, syncType, quit) {
         quit(questionCommonService.getNavigationParams(rootStore.entriesAddScope.entryService));
     } catch (error) {
         console.log(error);
+        //allow retry after a genuine failure
+        state.isSavingEntry = false;
         // An error occurred
         await notificationService.hideProgressDialog();
         if (error.error && state.error) {
