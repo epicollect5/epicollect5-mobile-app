@@ -230,7 +230,7 @@ buttons
     },
     //todo: test the web approach on slow devices
     async showProgressDialog(message, title) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             (async function () {
                 const rootStore = useRootStore();
                 const language = rootStore.language;
@@ -271,7 +271,7 @@ buttons
                     }
                 }
                 resolve();
-            }());
+            }()).catch(reject);
         });
     },
     //set progress in global state for modalProgressTransfer
