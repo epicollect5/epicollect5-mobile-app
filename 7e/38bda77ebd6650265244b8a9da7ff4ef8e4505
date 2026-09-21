@@ -1,0 +1,14 @@
+src/services/entry/save-entry-native.js
+  h_2231ff2aa93473 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7e38bda77ebd6650265244b8a9da7ff4ef8e4505",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
