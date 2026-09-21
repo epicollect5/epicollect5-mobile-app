@@ -395,7 +395,10 @@ export default {
 			showSaved: false,
 			//single-flight latch for native SAVE: set on first tap,
 			//reset on error only, success stays latched until navigation
-			isSavingEntry: false
+			isSavingEntry: false,
+			//entry the latch was set for: same-component navigation
+			//(e.g. branch save back to the hierarchy editor) must stay usable
+			savingEntryUuid: ''
 		});
 
 		const lastNavIndex = rootStore.hierarchyNavigation.length - 1;
