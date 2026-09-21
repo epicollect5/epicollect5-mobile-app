@@ -1,0 +1,26 @@
+tests/unit/components/modals/ModalProgressTransfer.spec.js
+  s_30a0c83aa32c9d::t_02db9ad3b8461c 65-69,79
+  s_30a0c83aa32c9d::t_ba0732ec673522 19-20
+  s_30a0c83aa32c9d::t_098e8b3153aef7 44
+  s_30a0c83aa32c9d::t_e4c570b698767d 102
+  s_30a0c83aa32c9d::t_b795467926639e 61,70-78,80-83
+  s_30a0c83aa32c9d::t_ffbc09a23dfee0 84-85
+src/components/modals/ModalProgressTransfer.vue
+  s_30a0c83aa32c9d::t_5d89b36f302904 86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "725045f93813b21e1cdb53eec5d5c06ad87608fd",
+  "prompts": {},
+  "sessions": {
+    "s_30a0c83aa32c9d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3a73ab64ffeakZlPcvGJiEZlh",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
