@@ -1,0 +1,26 @@
+tests/unit/notification-service.spec.js
+  s_51c3d2b461e4ea::t_4654beae3185a5 554-563
+tests/unit/services/entry/save-entry-native.spec.js
+  s_51c3d2b461e4ea::t_73b1532a814a27 125
+  s_51c3d2b461e4ea::t_b1d570dfe8332d 155,157-158
+  s_51c3d2b461e4ea::t_ace5139171187f 55-58,64,67,73
+  s_51c3d2b461e4ea::t_1c6f266f92284c 5,32-35
+  s_51c3d2b461e4ea::t_9f0740fb9c6905 102-116
+  s_51c3d2b461e4ea::t_78344c4d59a971 36-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "35079ee686b82b83403dbb4474aa24035fc196dc",
+  "prompts": {},
+  "sessions": {
+    "s_51c3d2b461e4ea": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3ab65c0effeEcyqqwI7inYFQt",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
