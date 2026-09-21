@@ -245,20 +245,31 @@ buttons
                         ec5LoadingDialogMessage = '<strong class="ec5LoadingTitle">' + message + '</strong>';
                     }
                 }
-                //remove any existing instance
-                if (rootStore.ec5LoadingDialog) {
-                    rootStore.ec5LoadingDialog.dismiss();
-                    rootStore.ec5LoadingDialog = null;
-                }
+                //replace any existing instance without a visible gap: the new
+                //spinner presents OVER the old one before the old is dismissed
+                //(dismiss-then-create leaves the outgoing page bare while the
+                //new overlay animates in, e.g. save spinner handing off to the
+                //entries list loader mid-transition). The ref swaps only after
+                //a successful present, so a failed create/present keeps the old
+                //spinner up instead of losing it entirely
+                const previousDialog = rootStore.ec5LoadingDialog;
                 //create a global instance for the dialog
-                rootStore.ec5LoadingDialog = await loadingController
+                const nextDialog = await loadingController
                     .create({
                         cssClass: 'ec5LoadingDialog',
                         message: ec5LoadingDialogMessage,
                         duration: parseInt(Number.POSITIVE_INFINITY)
                     });
 
-                await rootStore.ec5LoadingDialog.present();
+                await nextDialog.present();
+                rootStore.ec5LoadingDialog = nextDialog;
+                if (previousDialog) {
+                    try {
+                        await previousDialog.dismiss();
+                    } catch (error) {
+                        console.log('previous dialog dismiss failed: ' + error);
+                    }
+                }
                 resolve();
             }());
         });
