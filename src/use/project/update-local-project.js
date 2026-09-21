@@ -31,12 +31,12 @@ export async function updateLocalProject() {
         //and leaving would destroy the model under the pending continuation
         rootStore.isProjectUpdating = true;
 
-        await notificationService.showProgressDialog(
-            STRINGS[language].labels.wait,
-            STRINGS[language].labels.updating_project
-        );
-
         try {
+            await notificationService.showProgressDialog(
+                STRINGS[language].labels.wait,
+                STRINGS[language].labels.updating_project
+            );
+
             const changeMade = await versioningService.updateProject();
             let message = STRINGS[language].status_codes.ec5_136;
             // If new questions have been added, notify user
