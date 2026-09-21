@@ -368,7 +368,7 @@ export default {
 			// Check the state of the data/media left to upload
 			await _checkData();
 			//dismiss the upload modal
-			modalController.dismiss();
+			await notificationService.dismissModalSafe();
 			state.isUploading = false;
 
 			// Check if we have a project out of date error
@@ -443,7 +443,7 @@ export default {
 							await _checkData();
 							// Finished!
 							//dismiss the upload modal
-							modalController.dismiss();
+							await notificationService.dismissModalSafe();
 							state.isUploading = false;
 							state.hasErrors = hasEntriesUploadErrors;
 
@@ -509,7 +509,7 @@ export default {
 						await _checkData();
 						// Finished!
 						//dismiss the upload modal
-						modalController.dismiss();
+						await notificationService.dismissModalSafe();
 						state.isUploading = false;
 						state.hasErrors = errors;
 

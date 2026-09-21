@@ -59,7 +59,8 @@ vi.mock('@/services/notification-service', () => ({
         showToast: vi.fn(),
         showProgressDialog: vi.fn(),
         hideProgressDialog: vi.fn(),
-        confirmSingle: vi.fn()
+        confirmSingle: vi.fn(),
+        dismissModalSafe: vi.fn()
     }
 }));
 
