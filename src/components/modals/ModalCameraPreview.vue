@@ -564,10 +564,18 @@ export default {
 			} finally {
 				_clearHandoff();
 			}
-			} catch (error) {
-				console.log('CameraPreview.capture failed: ' + error);
-				state.capturing = false;
+		} catch (error) {
+			console.log('CameraPreview.capture failed: ' + error);
+			rollbarService.criticalWithContext('CameraPreview capture failed', error);
+			state.capturing = false;
+			//the modal stays open for a retry, but the user must be told the
+			//capture failed instead of seeing a silently reset shutter
+			try {
+				await notificationService.showAlert(error.message || labels.unknown_error, labels.error);
+			} catch (alertError) {
+				console.log('CameraPreview capture alert failed: ' + alertError);
 			}
+		}
 		}
 
 		//=== video recording ===
@@ -648,8 +656,16 @@ export default {
 				await recordingStartPromise;
 			} catch (error) {
 				console.log('CameraPreview.startRecordVideo failed: ' + error);
+				rollbarService.criticalWithContext('CameraPreview startRecordVideo failed', error);
 				state.recording = false;
 				await _setModalDismissable(true);
+				//the modal stays open for a retry, but the user must be told
+				//the recording failed to start instead of seeing a reset shutter
+				try {
+					await notificationService.showAlert(error.message || labels.unknown_error, labels.error);
+				} catch (alertError) {
+					console.log('CameraPreview start recording alert failed: ' + alertError);
+				}
 			} finally {
 				recordingStartInProgress = false;
 				recordingStartPromise = null;
