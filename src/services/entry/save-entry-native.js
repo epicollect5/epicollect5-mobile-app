@@ -23,7 +23,7 @@ export async function saveEntryNative(state, syncType, quit) {
     } catch (error) {
         console.log(error);
         // An error occurred
-        notificationService.hideProgressDialog();
+        await notificationService.hideProgressDialog();
         if (error.error && state.error) {
             await errorsService.handleEntryErrors(error.error, state.error, error.inputRefs);
         } else {
