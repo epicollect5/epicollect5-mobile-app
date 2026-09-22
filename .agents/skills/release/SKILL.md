@@ -26,6 +26,12 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
 
 ## Steps
 
+0. **Full test suite gate** (mandatory first, before any state reads or edits):
+   - Run `npx vitest --run --silent`.
+   - If any test fails, **stop immediately** — do not bump versions, edit the
+     changelog, commit, or tag. Report the failing files/tests and warn the user
+     to fix them first; resume the release only once the suite is fully green.
+
 1. Read current state
    - `package.json` -> `version`
    - `package-lock.json` -> both `"version"` fields (must agree with `package.json`)
