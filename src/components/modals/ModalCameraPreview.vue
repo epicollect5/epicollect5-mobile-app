@@ -43,7 +43,7 @@
 			<button
 				class="shutter-button"
 				:class="{ 'recording': state.recording }"
-				:disabled="state.capturing"
+				:disabled="state.capturing || state.transitioning"
 				@click="shutter()"
 			>
 			</button>
@@ -97,6 +97,10 @@ export default {
 			capturing: false,
 			started: false,
 			recording: false,
+			//true while a startRecordVideo/stopRecordVideo transition is in flight:
+			//template-bindable so the shutter shows the modal as busy and a tap
+			//landing mid-transition is dropped instead of racing the native bridge
+			transitioning: false,
 			//true while a completed capture is being handed to the caller (native stop
 			//+ payload dismiss): template-bindable so the close button can show the
 			//modal as busy instead of letting a tap race the handoff. Scoped strictly
@@ -168,6 +172,18 @@ export default {
 		//pending start instead of racing it on the native bridge
 		let recordingStartInProgress = false;
 		let recordingStartPromise = null;
+		//serializes stopRecordVideo() with the shutter: _finalizeRecording() resets
+		//state.recording before the native stop settles, so without this a second
+		//tap landing mid-stop would route to startRecording() while the native
+		//side still holds the recording (mirror-mode failure on Android). The
+		//in-flight stop wins; mid-stop taps are dropped, never queued
+		let recordingStopInProgress = false;
+		//bridge timestamp (ms) of the last confirmed recording start: the native
+		//start resolves before the first key frame exists, so a stop tap landing
+		//too early finalizes with ERROR_NO_VALID_DATA instead of a recording.
+		//Only read while state.recording is true, which always implies a
+		//successful start refreshed it — no reset needed on the stop paths
+		let recordingStartedAt = 0;
 		//the in-flight capture/record handoff (stop + payload dismiss), observable so
 		//teardown can wait for it instead of racing it. A handoff still pending past
 		//HANDOFF_ESCAPE_MS releases the exit again (empty dismiss + possible cache
@@ -175,6 +191,9 @@ export default {
 		let handoffPromise = null;
 		let handoffEscapeTimer = null;
 		const HANDOFF_ESCAPE_MS = 3000;
+		//minimum recording age before a shutter tap may stop it: well above a
+		//double-tap bounce, short enough to never annoy a deliberate stop
+		const MIN_RECORDING_MS = 1000;
 
 		const computedScope = {
 			//video mode hides the flip/flash controls (recording keeps the shutter as
@@ -253,6 +272,29 @@ export default {
 			sessionMaybeActive = false;
 		}
 
+		//The native preview layer sits IN FRONT of the edge-to-edge plugin's
+		//status-bar overlay (app purple), so a full-height layer covers that strip
+		//with the live feed (see-through status bar). Read the strip height in dp;
+		//the start geometry below leaves it to the overlay instead. Android-only:
+		//elsewhere the WebView starts at y=0 and there is no strip to avoid.
+		//Best-effort and teardown-safe: any failure falls back to 0 (today's
+		//behavior), never a hang and never a throw into _start()
+		async function _getTopInsetDp() {
+			if (rootStore.device.platform !== PARAMETERS.ANDROID) {
+				return 0;
+			}
+			try {
+				const insets = await CameraPreview.getSafeAreaInsets();
+				const top = insets && typeof insets.top === 'number' ? insets.top : 0;
+				//round up so dp->px rounding errs toward purple-over-feed, never a
+				//1px feed sliver under the status bar
+				return Math.max(0, Math.ceil(top));
+			} catch (error) {
+				console.log('CameraPreview.getSafeAreaInsets failed: ' + error);
+				return 0;
+			}
+		}
+
 		async function _start() {
 			startInProgress = true;
 			try {
@@ -275,6 +317,18 @@ export default {
 				return;
 			}
 			if (!startOptions) {
+				//leave the status-bar strip to the edge-to-edge overlay (app purple):
+				//the plugin offsets y=0 by the WebView top inset itself (JS coords are
+				//WebView-relative), so shrinking the height by the same inset aligns the
+				//native layer exactly with the WebView: top below the purple strip,
+				//bottom behind the modal's opaque footer (no nav-area leak). Cover crops
+				//the stream sides instead of letterboxing (the plugin rejects aspectRatio
+				//combined with explicit width/height, so no aspectRatio here)
+				const topInsetDp = await _getTopInsetDp();
+				if (tornDown) {
+					await _forceStopPlugin();
+					return;
+				}
 				startOptions = {
 					position: 'rear',
 					toBack: true,
@@ -284,14 +338,10 @@ export default {
 					//silent and capture-only
 					enableVideoMode: computedScope.isVideoMode.value,
 					disableAudio: !computedScope.isVideoMode.value,
-					//fill the whole WebView area (between the system bars) so the feed
-					//extends over the white letterbox band at the bottom; cover crops the
-					//stream sides instead of letterboxing (the plugin rejects aspectRatio
-					//combined with explicit width/height, so no aspectRatio here)
 					x: 0,
 					y: 0,
 					width: window.innerWidth,
-					height: window.innerHeight,
+					height: Math.max(1, window.innerHeight - topInsetDp),
 					aspectMode: 'cover',
 					//do not let the device rotate while the camera is open (rotating breaks
 					//the layout); the plugin restores the previous orientation on stop()
@@ -307,26 +357,10 @@ export default {
 				await _forceStopPlugin();
 				return;
 			}
-			//On edge-to-edge Android the plugin offsets the native layer by the WebView's
-			//screen-top inset (it computes y=0 + inset) WITHOUT shrinking the height, so the
-			//layer hangs one inset below the WebView, and the live feed leaks through the
-			//system-nav area (below the modal's opaque footer).Repositioning with
-			//x=0/y=0 takes the plugin's full-screen code path, which applies no inset,
-			//and aligns the native layer's bottom with the WebView's bottom.
-			try {
-				await CameraPreview.setPreviewSize({
-					x: 0,
-					y: 0,
-					width: window.innerWidth,
-					height: window.innerHeight
-				});
-			} catch (error) {
-				console.log('CameraPreview.setPreviewSize failed: ' + error);
-			}
-			if (tornDown) {
-				await _forceStopPlugin();
-				return;
-			}
+			//no setPreviewSize repositioning: its x=0/y=0 full-screen path applies no
+			//inset and parks the native layer at parent y=0, covering the purple
+			//status-bar overlay with the feed. The start geometry above already
+			//matches the WebView rect, so nothing needs realigning.
 			state.started = true;
 			await _syncFlashMode();
 			} finally {
@@ -642,10 +676,13 @@ export default {
 		}
 
 		async function startRecording() {
-			if (!state.started || state.recording || state.capturing || recordingStartInProgress || tornDown) {
+			//a stop or handoff owns the native session from here on: starting
+			//against it fails on the bridge (mirror mode while recording)
+			if (!state.started || state.recording || state.capturing || recordingStartInProgress || recordingStopInProgress || state.handoff || tornDown) {
 				return;
 			}
 			recordingStartInProgress = true;
+			state.transitioning = true;
 			state.recording = true;
 			//block back-press teardown before the native start lands, so dismiss
 			//cannot tear the modal down mid-start
@@ -654,6 +691,10 @@ export default {
 			try {
 				//no artificial duration/size cap: the user decides when to stop
 				await recordingStartPromise;
+				//native confirmed the start: stop taps are debounced against this,
+				//not against the optimistic flag above (the bridge resolves before
+				//the first key frame exists)
+				recordingStartedAt = Date.now();
 			} catch (error) {
 				console.log('CameraPreview.startRecordVideo failed: ' + error);
 				rollbarService.criticalWithContext('CameraPreview startRecordVideo failed', error);
@@ -669,6 +710,7 @@ export default {
 			} finally {
 				recordingStartInProgress = false;
 				recordingStartPromise = null;
+				state.transitioning = false;
 			}
 		}
 
@@ -714,13 +756,21 @@ export default {
 
 		//stop the recording and hand the finished file to the caller (video-shoot)
 		async function _finalizeRecording() {
-			await _awaitRecordingStart();
-			if (!state.recording) {
+			//the in-flight stop wins: a second shutter tap landing while the
+			//native stop settles is dropped instead of starting a new recording
+			//against the still-active native session (mirror-mode failure)
+			if (recordingStopInProgress) {
 				return;
 			}
-			//reset first so a racing 'recordingFinished' event cannot re-enter
-			state.recording = false;
+			recordingStopInProgress = true;
+			state.transitioning = true;
 			try {
+				await _awaitRecordingStart();
+				if (!state.recording) {
+					return;
+				}
+				//reset first so a racing 'recordingFinished' event cannot re-enter
+				state.recording = false;
 				const { videoFilePath } = await CameraPreview.stopRecordVideo();
 				await _handOffRecording(videoFilePath);
 			} catch (error) {
@@ -742,6 +792,9 @@ export default {
 					}
 					modalController.dismiss();
 				}
+			} finally {
+				recordingStopInProgress = false;
+				state.transitioning = false;
 			}
 		}
 
@@ -749,36 +802,57 @@ export default {
 		//via ✕: back presses are blocked while recording), so the plugin cache
 		//does not accumulate
 		async function _abortRecording() {
-			await _awaitRecordingStart();
-			if (!state.recording) {
+			if (recordingStopInProgress) {
 				return;
 			}
-			state.recording = false;
-			//the recording is over: back presses may dismiss again, and the
-			//dismiss in dismiss()/unmount is gated by canDismiss too
-			await _setModalDismissable(true);
+			recordingStopInProgress = true;
+			state.transitioning = true;
 			try {
-				const { videoFilePath } = await CameraPreview.stopRecordVideo();
-				if (videoFilePath) {
-					try {
-						await CameraPreview.deleteFile({ path: videoFilePath });
-					} catch (error) {
-						console.log('CameraPreview.deleteFile failed: ' + error);
-					}
+				await _awaitRecordingStart();
+				if (!state.recording) {
+					return;
 				}
-			} catch (error) {
-				console.log('CameraPreview.stopRecordVideo failed: ' + error);
+				state.recording = false;
+				//the recording is over: back presses may dismiss again, and the
+				//dismiss in dismiss()/unmount is gated by canDismiss too
+				await _setModalDismissable(true);
+				try {
+					const { videoFilePath } = await CameraPreview.stopRecordVideo();
+					if (videoFilePath) {
+						try {
+							await CameraPreview.deleteFile({ path: videoFilePath });
+						} catch (error) {
+							console.log('CameraPreview.deleteFile failed: ' + error);
+						}
+					}
+				} catch (error) {
+					console.log('CameraPreview.stopRecordVideo failed: ' + error);
+				}
+			} finally {
+				recordingStopInProgress = false;
+				state.transitioning = false;
 			}
 		}
 
 		//the shutter: captures a photo, or toggles the video recording
 		async function shutter() {
 			if (computedScope.isVideoMode.value) {
-				//in-flight startRecordVideo wins; mid-start taps are dropped, never queued
-				if (recordingStartInProgress) {
+				//an in-flight start, stop or handoff wins; mid-transition taps are
+				//dropped, never queued (a tap landing mid-stop would otherwise
+				//start a new recording against the still-active native session)
+				if (recordingStartInProgress || recordingStopInProgress || state.handoff) {
 					return;
 				}
 				if (state.recording) {
+					//a stop tap landing inside the debounce window is the second
+					//half of a double-tap, not a deliberate stop: dropping it keeps
+					//recording instead of failing the native stop with
+					//ERROR_NO_VALID_DATA (no key frame yet) and losing the modal
+					//to the error path. Screen-off finalizes regardless — that path
+					//bypasses the shutter, so this gate is tap-only
+					if (Date.now() - recordingStartedAt < MIN_RECORDING_MS) {
+						return;
+					}
 					await _finalizeRecording();
 				} else {
 					await startRecording();

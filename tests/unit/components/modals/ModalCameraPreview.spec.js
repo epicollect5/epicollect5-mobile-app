@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => {
 		getSupportedFlashModes: vi.fn(),
 		getFlashMode: vi.fn(),
 		setFlashMode: vi.fn(),
-		setPreviewSize: vi.fn(),
+		getSafeAreaInsets: vi.fn(),
 		startRecordVideo: vi.fn(),
 		stopRecordVideo: vi.fn(),
 		addListener: vi.fn()
@@ -72,16 +72,18 @@ vi.mock('@/config', () => ({
 	PARAMETERS: { ANDROID: 'android' }
 }));
 
-const expectStartOptions = () =>
+const expectStartOptions = (height = window.innerHeight) =>
 	expect.objectContaining({
 		toBack: true,
 		storeToFile: true,
-		//the feed fills the whole area between the system bars (cover crops the
-		//stream sides; the plugin rejects aspectRatio with explicit width/height)
+		//the feed fills the WebView rect between the system bars (cover crops the
+		//stream sides; the plugin rejects aspectRatio with explicit width/height).
+		//The height is reduced by the status-bar inset (0 here) so the native layer
+		//leaves that strip to the purple edge-to-edge overlay
 		x: 0,
 		y: 0,
 		width: window.innerWidth,
-		height: window.innerHeight,
+		height,
 		aspectMode: 'cover',
 		//no rotation while the camera is open (plugin restores on stop)
 		lockAndroidOrientation: true
@@ -97,7 +99,7 @@ function grantPermissions({ camera = 'granted', microphone = 'granted', flashMod
 	mocks.cameraPreview.getSupportedFlashModes.mockResolvedValue({ result: flashModes });
 	mocks.cameraPreview.getFlashMode.mockResolvedValue({ flashMode: 'off' });
 	mocks.cameraPreview.setFlashMode.mockResolvedValue();
-	mocks.cameraPreview.setPreviewSize.mockResolvedValue();
+	mocks.cameraPreview.getSafeAreaInsets.mockResolvedValue({ top: 0, orientation: 1 });
 	mocks.cameraPreview.startRecordVideo.mockResolvedValue();
 	mocks.cameraPreview.stopRecordVideo.mockResolvedValue({ videoFilePath: '/rec.mp4' });
 	mocks.cameraPreview.addListener.mockResolvedValue({ remove: vi.fn() });
@@ -109,6 +111,14 @@ function grantPermissions({ camera = 'granted', microphone = 'granted', flashMod
 
 describe('ModalCameraPreview component', () => {
 
+	//the shutter drops stop taps within ~1s of the recording start (double-tap
+	//debounce): tests performing a deliberate stop jump the clock so the tap
+	//lands on an old enough recording. Restored in afterEach
+	let dateNowSpy = null;
+	function ageRecording() {
+		dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 60_000);
+	}
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 		platformMock.platform = 'android';
@@ -119,6 +129,11 @@ describe('ModalCameraPreview component', () => {
 	afterEach(() => {
 		//the capture feedback timer must not leak across tests
 		vi.clearAllTimers();
+		//nor may the aged recording clock
+		if (dateNowSpy) {
+			dateNowSpy.mockRestore();
+			dateNowSpy = null;
+		}
 	});
 
 	it('hides the underlying app UI while mounted so the native camera layer is visible', async () => {
@@ -131,19 +146,114 @@ describe('ModalCameraPreview component', () => {
 		await flushPromises();
 		expect(mocks.cameraPreview.requestPermissions).toHaveBeenCalled();
 		expect(mocks.cameraPreview.start).toHaveBeenCalledWith(expectStartOptions());
-		//on edge-to-edge Android the plugin offsets the native layer by the WebView's
-		//top inset without shrinking it; x=0/y=0 takes the plugin's no-inset full-screen
-		//path and realigns the layer bottom with the WebView bottom (no feed leak)
-		expect(mocks.cameraPreview.setPreviewSize).toHaveBeenCalledWith({
-			x: 0,
-			y: 0,
-			width: window.innerWidth,
-			height: window.innerHeight
-		});
+		//the native layer sits in front of the edge-to-edge status-bar overlay, so
+		//its height leaves that strip out: no fullscreen setPreviewSize afterwards
+		//(its x=0/y=0 path skips the plugin inset and would cover the purple strip
+		//with the feed again)
+		expect(mocks.cameraPreview.getSafeAreaInsets).toHaveBeenCalled();
 
 		wrapper.unmount();
 		expect(document.documentElement.classList.contains('camera-preview-open')).toBe(false);
 		expect(document.body.classList.contains('camera-preview-open')).toBe(false);
+	});
+
+	it('shrinks the native layer by the status-bar inset so the strip stays purple', async () => {
+		grantPermissions();
+		//fractional dp rounds up: rounding must err toward purple-over-feed
+		mocks.cameraPreview.getSafeAreaInsets.mockResolvedValue({ top: 48.4, orientation: 1 });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		expect(mocks.cameraPreview.start).toHaveBeenCalledWith(expectStartOptions(window.innerHeight - 49));
+		expect(wrapper.vm.state.started).toBe(true);
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('falls back to full height when the inset read fails', async () => {
+		grantPermissions();
+		mocks.cameraPreview.getSafeAreaInsets.mockRejectedValue(new Error('no insets'));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		//best-effort: without the inset the feed may cover the status strip on
+		//edge-to-edge devices, but the camera itself must still be usable
+		expect(mocks.cameraPreview.start).toHaveBeenCalledWith(expectStartOptions());
+		expect(wrapper.vm.state.started).toBe(true);
+		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('skips the inset read when the platform is not Android', async () => {
+		platformMock.platform = 'ios';
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		//no status strip to avoid off Android: full-height layer, no bridge read
+		expect(mocks.cameraPreview.getSafeAreaInsets).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.start).toHaveBeenCalledWith(expectStartOptions());
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('ignores a malformed inset payload instead of mis-sizing the layer', async () => {
+		grantPermissions();
+		mocks.cameraPreview.getSafeAreaInsets.mockResolvedValue({ orientation: 1 });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		//non-numeric top is treated as no inset: full-height layer, camera usable
+		expect(mocks.cameraPreview.start).toHaveBeenCalledWith(expectStartOptions());
+		expect(wrapper.vm.state.started).toBe(true);
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('reads the inset once and reuses the geometry on foreground restarts', async () => {
+		grantPermissions();
+		mocks.cameraPreview.getSafeAreaInsets.mockResolvedValue({ top: 48, orientation: 1 });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(1);
+
+		//background/foreground: the restart reuses the built startOptions instead
+		//of re-reading the inset (no resize/reposition mid-session)
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+		await listener({ isActive: false });
+		await flushPromises();
+		await listener({ isActive: true });
+		await flushPromises();
+
+		expect(mocks.cameraPreview.getSafeAreaInsets).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(2);
+		expect(mocks.cameraPreview.start).toHaveBeenLastCalledWith(expectStartOptions(window.innerHeight - 48));
+		expect(wrapper.vm.state.started).toBe(true);
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('releases the session when torn down while the inset read is pending', async () => {
+		grantPermissions();
+		//hold the inset read open so unmount wins the race
+		let resolveInsets = null;
+		mocks.cameraPreview.getSafeAreaInsets.mockReturnValue(new Promise((resolve) => {
+			resolveInsets = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		expect(mocks.cameraPreview.start).not.toHaveBeenCalled();
+
+		//dismiss-while-starting: the pending read must not start a session on the
+		//dead modal once it resolves
+		wrapper.unmount();
+		resolveInsets({ top: 48, orientation: 1 });
+		await flushPromises();
+
+		expect(mocks.cameraPreview.start).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.stop).toHaveBeenCalled();
+		await flushPromises();
 	});
 
 	it('dismisses the modal when the camera permission is denied', async () => {
@@ -155,19 +265,6 @@ describe('ModalCameraPreview component', () => {
 		expect(mocks.modalController.dismiss).toHaveBeenCalled();
 		wrapper.unmount();
 		expect(document.body.classList.contains('camera-preview-open')).toBe(false);
-	});
-
-	it('keeps the camera running when the edge-to-edge repositioning fails', async () => {
-		grantPermissions();
-		mocks.cameraPreview.setPreviewSize.mockRejectedValue(new Error('layout busy'));
-		const wrapper = shallowMount(ModalCameraPreview);
-		await flushPromises();
-
-		//the repositioning is best-effort: without it the feed may leak into the nav
-		//area on edge-to-edge devices, but the camera itself must still be usable
-		expect(mocks.cameraPreview.setPreviewSize).toHaveBeenCalled();
-		expect(wrapper.vm.state.started).toBe(true);
-		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
 	});
 
 	it('dismisses the modal when the camera cannot be started', async () => {
@@ -815,6 +912,8 @@ describe('ModalCameraPreview component', () => {
 		await flushPromises();
 		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalledWith({});
 		expect(wrapper.vm.state.recording).toBe(true);
+		//a deliberate stop lands past the double-tap debounce window
+		ageRecording();
 
 		await wrapper.vm.shutter();
 		await flushPromises();
@@ -840,6 +939,8 @@ describe('ModalCameraPreview component', () => {
 		await wrapper.vm.shutter();
 		await flushPromises();
 		expect(wrapper.vm.state.recording).toBe(true);
+		//a deliberate stop lands past the double-tap debounce window
+		ageRecording();
 		//Ionic consults canDismiss for hardware-back dismissal too: false keeps
 		//the modal (and the recording) alive on back presses
 		expect(overlay.canDismiss).toBe(false);
@@ -888,6 +989,8 @@ describe('ModalCameraPreview component', () => {
 		await wrapper.vm.shutter();
 		await flushPromises();
 		expect(wrapper.vm.state.recording).toBe(true);
+		//a deliberate stop lands past the double-tap debounce window
+		ageRecording();
 		const stopPress = wrapper.vm.shutter();
 		await flushPromises();
 		expect(wrapper.vm.state.handoff).toBe(true);
@@ -922,6 +1025,8 @@ describe('ModalCameraPreview component', () => {
 		await wrapper.vm.shutter();
 		await flushPromises();
 		expect(wrapper.vm.state.recording).toBe(true);
+		//a deliberate stop lands past the double-tap debounce window
+		ageRecording();
 
 		await wrapper.vm.shutter();
 		await flushPromises();
@@ -967,6 +1072,204 @@ describe('ModalCameraPreview component', () => {
 		expect(notificationMock.showAlert).toHaveBeenCalled();
 	});
 
+	it('video mode drops a shutter tap landing while the recording stop is still in flight', async () => {
+		grantPermissions();
+		//park the native stop so the second tap lands mid-stop (the double-tap race)
+		let resolveStop = null;
+		mocks.cameraPreview.stopRecordVideo.mockReturnValue(new Promise((resolve) => {
+			resolveStop = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+		expect(wrapper.vm.state.transitioning).toBe(false);
+		//a deliberate stop lands past the double-tap debounce window
+		ageRecording();
+
+		//first stop press parks on the pending native stop
+		const stopPress = wrapper.vm.shutter();
+		await flushPromises();
+		expect(mocks.cameraPreview.stopRecordVideo).toHaveBeenCalledTimes(1);
+		expect(wrapper.vm.state.transitioning).toBe(true);
+		//the shutter shows the modal as busy while the stop settles
+		await wrapper.vm.$nextTick();
+		expect(wrapper.find('.shutter-button').element.disabled).toBe(true);
+
+		//second tap of the double-tap lands mid-stop: dropped, never a new start
+		//against the still-active native session (mirror-mode failure)
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.stopRecordVideo).toHaveBeenCalledTimes(1);
+
+		resolveStop({ videoFilePath: '/rec.mp4' });
+		await stopPress;
+		await flushPromises();
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ videoFilePath: '/rec.mp4' });
+		expect(wrapper.vm.state.transitioning).toBe(false);
+
+		//the handed-off file must survive unmount: video-shoot owns it now
+		wrapper.unmount();
+		await flushPromises();
+		expect(mocks.cameraPreview.deleteFile).not.toHaveBeenCalled();
+	});
+
+	it('video mode drops a shutter tap landing while the recording start is still in flight', async () => {
+		grantPermissions();
+		//park the native start so the second tap lands mid-start
+		let resolveStart = null;
+		mocks.cameraPreview.startRecordVideo.mockReturnValue(new Promise((resolve) => {
+			resolveStart = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		//first tap parks on the pending native start
+		const startPress = wrapper.vm.shutter();
+		await flushPromises();
+		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalledTimes(1);
+		expect(wrapper.vm.state.transitioning).toBe(true);
+
+		//second tap of the double-tap lands mid-start: dropped, never a second start
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.stopRecordVideo).not.toHaveBeenCalled();
+
+		resolveStart();
+		await startPress;
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+		expect(wrapper.vm.state.transitioning).toBe(false);
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('video mode drops a shutter tap landing during the recording handoff', async () => {
+		grantPermissions();
+		//hold the handoff stop open so the tap lands mid-handoff
+		let resolveStop = null;
+		mocks.cameraPreview.stop.mockReturnValue(new Promise((resolve) => {
+			resolveStop = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		//a deliberate stop lands past the double-tap debounce window
+		ageRecording();
+		const stopPress = wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.handoff).toBe(true);
+
+		//shutter tap during handoff: dropped, never a new recording
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalledTimes(1);
+
+		resolveStop();
+		await stopPress;
+		await flushPromises();
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ videoFilePath: '/rec.mp4' });
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('video mode drops shutter taps stacking on the start-failure alert', async () => {
+		grantPermissions();
+		mocks.cameraPreview.startRecordVideo.mockRejectedValue(new Error('recording busy'));
+		//park the failure alert so extra taps land while it is showing
+		let resolveAlert = null;
+		notificationMock.showAlert.mockReturnValue(new Promise((resolve) => {
+			resolveAlert = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		const firstPress = wrapper.vm.shutter();
+		await flushPromises();
+		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalledTimes(1);
+		expect(notificationMock.showAlert).toHaveBeenCalled();
+
+		//rapid taps while the alert is up: dropped, never stacked starts
+		await wrapper.vm.shutter();
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalledTimes(1);
+
+		resolveAlert();
+		await firstPress;
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(false);
+		expect(wrapper.vm.state.transitioning).toBe(false);
+		expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+		//restore the shared alert mock: later tests need it to resolve
+		notificationMock.showAlert.mockResolvedValue();
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('video mode ignores a stop tap landing before the recording produced data', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+		const startedAt = Date.now();
+
+		//second tap of the double-tap lands before the first key frame exists:
+		//dropped, the recording keeps running instead of failing the native
+		//stop with ERROR_NO_VALID_DATA
+		dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(startedAt + 500);
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(mocks.cameraPreview.stopRecordVideo).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.startRecordVideo).toHaveBeenCalledTimes(1);
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		//a deliberate stop past the window finalizes normally
+		dateNowSpy.mockReturnValue(startedAt + 1500);
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(mocks.cameraPreview.stopRecordVideo).toHaveBeenCalledTimes(1);
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ videoFilePath: '/rec.mp4' });
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('video mode still finalizes immediately when backgrounded inside the debounce window', async () => {
+		grantPermissions();
+		mocks.cameraPreview.stopRecordVideo.mockResolvedValue({ videoFilePath: '/bg.mp4' });
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		//screen off right after the start: the background path bypasses the
+		//shutter debounce and finalizes at once instead of leaking the recording
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+		await listener({ isActive: false });
+		await flushPromises();
+
+		expect(mocks.cameraPreview.stopRecordVideo).toHaveBeenCalledTimes(1);
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ videoFilePath: '/bg.mp4' });
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
 	it('video mode alerts and dismisses when finalizing the recording fails in the foreground', async () => {
 		grantPermissions();
 		mocks.cameraPreview.stopRecordVideo.mockRejectedValue(new Error('stop failed'));
@@ -976,6 +1279,8 @@ describe('ModalCameraPreview component', () => {
 		await wrapper.vm.shutter();
 		await flushPromises();
 		expect(wrapper.vm.state.recording).toBe(true);
+		//a deliberate stop lands past the double-tap debounce window
+		ageRecording();
 
 		//second shutter press tries to finalize and fails: no video was captured,
 		//so the user is told and the modal closes (empty dismiss = cancel,
