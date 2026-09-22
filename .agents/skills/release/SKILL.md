@@ -63,9 +63,6 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
      (no caret), that `package-lock.json` resolves the same version, that
      `SystemBars.insetsHandling` is `"disable"`, and that the EdgeToEdge plugin is present
      in the committed Android wiring. If it fails, **stop** - do not hand-verify.
-   - Install with `npm ci`, never `npm install`, for a release. `npm install` rewrites the
-     pin to a caret (npm's default `save-prefix`), and a lockfile refresh silently resolves
-     8.0.8, which reintroduces the keyboard regression.
 
 3b. **Physical Android QA** (required before release):
    - Run the **Baseline Regression Suite** in `docs/workflows/qa.md` in full: B1 (status
