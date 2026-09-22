@@ -4,6 +4,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import flushPromises from 'flush-promises';
 
 const platformMock = vi.hoisted(() => ({ platform: 'android' }));
+const storeMock = vi.hoisted(() => ({ geolocationPermission: undefined }));
 
 const mocks = vi.hoisted(() => {
 	const cameraPreview = {
@@ -48,6 +49,15 @@ vi.mock('@capacitor/filesystem', () => ({
 	Directory: { External: 'EXTERNAL' }
 }));
 
+const geolocationMock = vi.hoisted(() => ({
+	checkPermissions: vi.fn(),
+	requestPermissions: vi.fn()
+}));
+
+vi.mock('@capacitor/geolocation', () => ({
+	Geolocation: geolocationMock
+}));
+
 vi.mock('@ionic/vue', () => ({
 	modalController: mocks.modalController
 }));
@@ -65,7 +75,7 @@ vi.mock('@/services/notification-service', () => ({
 }));
 
 vi.mock('@/stores/root-store', () => ({
-	useRootStore: () => ({ device: { platform: platformMock.platform }, language: 'en' })
+	useRootStore: () => ({ device: { platform: platformMock.platform }, language: 'en', geolocationPermission: storeMock.geolocationPermission })
 }));
 
 vi.mock('@/config', () => ({
@@ -107,6 +117,10 @@ function grantPermissions({ camera = 'granted', microphone = 'granted', flashMod
 	mocks.modalController.getTop.mockResolvedValue(null);
 	mocks.filesystem.readdir.mockResolvedValue({ files: [] });
 	mocks.filesystem.deleteFile.mockResolvedValue();
+	//default: OS location state unreadable → legacy GPS-first attempt path
+	//(every pre-existing test exercises this; prompt/grant/deny tests override)
+	geolocationMock.checkPermissions.mockRejectedValue(new Error('no bridge'));
+	geolocationMock.requestPermissions.mockResolvedValue({ location: 'denied' });
 }
 
 describe('ModalCameraPreview component', () => {
@@ -122,6 +136,7 @@ describe('ModalCameraPreview component', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		platformMock.platform = 'android';
+		storeMock.geolocationPermission = undefined;
 		document.documentElement.classList.remove('camera-preview-open');
 		document.body.classList.remove('camera-preview-open');
 	});
@@ -1703,5 +1718,257 @@ describe('ModalCameraPreview component', () => {
 
 		//never throws, never marks state on the destroyed modal
 		expect(wrapper.vm.state.started).toBe(false);
+	});
+
+	it('retries GPS-less when the first capture hangs on the location edge', async () => {
+		vi.useFakeTimers();
+		try {
+			grantPermissions();
+			//first attempt hangs forever (unsettled bridge call on denied
+			//location), second attempt delivers the photo
+			mocks.cameraPreview.capture.mockReturnValueOnce(new Promise(() => {}));
+			mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+			const wrapper = shallowMount(ModalCameraPreview);
+			await flushPromises();
+
+			const capturePromise = wrapper.vm.capture();
+			await flushPromises();
+			expect(wrapper.vm.state.capturing).toBe(true);
+
+			//timeout fires: exactly one GPS-less retry, photo handed off
+			await vi.advanceTimersByTimeAsync(6000);
+			await capturePromise;
+			await flushPromises();
+
+			expect(mocks.cameraPreview.capture).toHaveBeenCalledTimes(2);
+			expect(mocks.cameraPreview.capture.mock.calls[0][0].withExifLocation).toBe(true);
+			expect(mocks.cameraPreview.capture.mock.calls[1][0].withExifLocation).toBeUndefined();
+			expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: true });
+			wrapper.unmount();
+			await flushPromises();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('alerts and re-enables the shutter when both capture attempts hang', async () => {
+		vi.useFakeTimers();
+		try {
+			grantPermissions();
+			//both attempts hang: no photo, but the modal must not brick grey
+			mocks.cameraPreview.capture.mockReturnValue(new Promise(() => {}));
+			const wrapper = shallowMount(ModalCameraPreview);
+			await flushPromises();
+
+			const capturePromise = wrapper.vm.capture();
+			await flushPromises();
+
+			await vi.advanceTimersByTimeAsync(12000);
+			await capturePromise;
+			await flushPromises();
+
+			expect(mocks.cameraPreview.capture).toHaveBeenCalledTimes(2);
+			expect(mocks.modalController.dismiss).not.toHaveBeenCalled();
+			expect(wrapper.vm.state.capturing).toBe(false);
+			expect(wrapper.vm.state.started).toBe(true);
+			expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('CameraPreview capture failed', expect.any(Error));
+			expect(notificationMock.showAlert).toHaveBeenCalled();
+			wrapper.unmount();
+			await flushPromises();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('still requests the GPS capture first when location was already denied', async () => {
+		storeMock.geolocationPermission = false;
+		grantPermissions();
+		mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		await wrapper.vm.capture();
+		await flushPromises();
+
+		//the system location prompt must be preserved (a grant embeds GPS):
+		//the first attempt always carries withExifLocation, a denial resolves
+		//GPS-less natively or falls back to the retry below
+		expect(mocks.cameraPreview.capture).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.capture.mock.calls[0][0].withExifLocation).toBe(true);
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: false });
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('recovers the shutter when the handoff dismiss is blocked', async () => {
+		grantPermissions();
+		mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+		//payload dismiss blocked (e.g. stale canDismiss=false): must not brick grey
+		mocks.modalController.dismiss.mockRejectedValueOnce(new Error('dismiss blocked'));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		await wrapper.vm.capture();
+		await flushPromises();
+
+		expect(mocks.modalController.dismiss).toHaveBeenCalledTimes(1);
+		//the undelivered file is cleaned up, not orphaned; shutter retryable
+		expect(mocks.cameraPreview.deleteFile).toHaveBeenCalledWith({ path: '/capture.jpg' });
+		expect(wrapper.vm.state.capturing).toBe(false);
+		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('CameraPreview capture failed', expect.any(Error));
+		expect(notificationMock.showAlert).toHaveBeenCalled();
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('defers the foreground restart while a photo capture is in flight', async () => {
+		grantPermissions();
+		//hold the capture open so the foreground event lands mid-capture
+		let resolveCapture = null;
+		mocks.cameraPreview.capture.mockReturnValue(new Promise((resolve) => {
+			resolveCapture = resolve;
+		}));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+
+		const capturePromise = wrapper.vm.capture();
+		await flushPromises();
+
+		//background stops the camera, foreground during capture defers (no restart yet)
+		await listener({ isActive: false });
+		await flushPromises();
+		mocks.cameraPreview.start.mockClear();
+		await listener({ isActive: true });
+		await flushPromises();
+		expect(mocks.cameraPreview.start).not.toHaveBeenCalled();
+
+		//capture fails (camera not running after the background stop): the
+		//deferred restart runs so the modal is retryable with a live feed
+		resolveCapture({ value: '/capture.jpg' });
+		await capturePromise;
+		await flushPromises();
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('prompts for location via Geolocation and embeds GPS when granted', async () => {
+		grantPermissions();
+		//OS state askable: the dialog is owned by Geolocation (settles
+		//reliably), the grant flows into the GPS capture
+		geolocationMock.checkPermissions.mockResolvedValue({ location: 'prompt' });
+		geolocationMock.requestPermissions.mockResolvedValue({ location: 'granted' });
+		mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		await wrapper.vm.capture();
+		await flushPromises();
+
+		expect(geolocationMock.requestPermissions).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.capture).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.capture.mock.calls[0][0].withExifLocation).toBe(true);
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: false });
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('goes GPS-less instantly when the location prompt is denied', async () => {
+		grantPermissions();
+		//denial is owned by Geolocation: single GPS-less capture, no 12s hang
+		geolocationMock.checkPermissions.mockResolvedValue({ location: 'prompt' });
+		geolocationMock.requestPermissions.mockResolvedValue({ location: 'denied' });
+		mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		await wrapper.vm.capture();
+		await flushPromises();
+
+		expect(geolocationMock.requestPermissions).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.capture).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.capture.mock.calls[0][0].withExifLocation).toBeUndefined();
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: true });
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('goes GPS-less without prompting when location is permanently denied', async () => {
+		grantPermissions();
+		//the OS shows no dialog in this state: no request, instant GPS-less
+		geolocationMock.checkPermissions.mockResolvedValue({ location: 'denied' });
+		mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		await wrapper.vm.capture();
+		await flushPromises();
+
+		expect(geolocationMock.requestPermissions).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.capture).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.capture.mock.calls[0][0].withExifLocation).toBeUndefined();
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: true });
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('embeds GPS without re-prompting when location is already granted', async () => {
+		grantPermissions();
+		geolocationMock.checkPermissions.mockResolvedValue({ location: 'granted' });
+		mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		await wrapper.vm.capture();
+		await flushPromises();
+
+		expect(geolocationMock.requestPermissions).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.capture).toHaveBeenCalledTimes(1);
+		expect(mocks.cameraPreview.capture.mock.calls[0][0].withExifLocation).toBe(true);
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: false });
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('restarts the feed when the permission dialog releases the camera mid-capture', async () => {
+		grantPermissions();
+		geolocationMock.checkPermissions.mockResolvedValue({ location: 'prompt' });
+		//hold the permission dialog open so it pauses the app mid-capture
+		let resolvePerm = null;
+		geolocationMock.requestPermissions.mockReturnValue(new Promise((resolve) => {
+			resolvePerm = resolve;
+		}));
+		mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+		//user denies: the first attempt hits the session released by the
+		//pause ("Camera is not running") — no alert, the feed restarts and
+		//the attempts run again, delivering the photo GPS-less
+		mocks.cameraPreview.capture.mockRejectedValueOnce(new Error('Camera is not running'));
+		mocks.cameraPreview.capture.mockResolvedValue({ value: '/capture.jpg' });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		const listener = mocks.capacitorApp.addListener.mock.calls[0][1];
+
+		const capturePromise = wrapper.vm.capture();
+		await flushPromises();
+
+		//the dialog pauses/resumes the app: background releases the camera,
+		//foreground defers while the capture is flagged in flight
+		await listener({ isActive: false });
+		await flushPromises();
+		await listener({ isActive: true });
+		await flushPromises();
+		expect(wrapper.vm.state.started).toBe(false);
+
+		resolvePerm({ location: 'denied' });
+		await capturePromise;
+		await flushPromises();
+
+		expect(mocks.cameraPreview.start).toHaveBeenCalledTimes(2);
+		expect(mocks.cameraPreview.capture).toHaveBeenCalledTimes(2);
+		expect(mocks.cameraPreview.capture.mock.calls[0][0].withExifLocation).toBeUndefined();
+		expect(mocks.modalController.dismiss).toHaveBeenCalledWith({ sourcePath: '/capture.jpg', gpsFallback: true });
+		expect(notificationMock.showAlert).not.toHaveBeenCalled();
+		wrapper.unmount();
+		await flushPromises();
 	});
 });
