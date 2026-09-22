@@ -561,5 +561,29 @@ describe('notificationService tests', () => {
             expect(rootStore.ec5LoadingDialog).toStrictEqual(oldDialog);
             expect(oldDialog.dismiss).not.toHaveBeenCalled();
         });
+
+        it('forwards present failures instead of hanging', async () => {
+            const { rootStore, oldDialog } = seedOldDialog();
+            const newDialog = mockNewDialog();
+            newDialog.present.mockRejectedValueOnce(new Error('present failed'));
+
+            await expect(notificationService.showProgressDialog('wait')).rejects.toThrow('present failed');
+
+            //failed replacement keeps the old spinner up instead of losing it
+            expect(rootStore.ec5LoadingDialog).toStrictEqual(oldDialog);
+            expect(oldDialog.dismiss).not.toHaveBeenCalled();
+        });
+
+        it('swallows previous dialog dismiss failures and still resolves', async () => {
+            const { rootStore, oldDialog } = seedOldDialog();
+            const newDialog = mockNewDialog();
+            oldDialog.dismiss.mockRejectedValueOnce(new Error('boom'));
+
+            await notificationService.showProgressDialog('wait');
+
+            expect(rootStore.ec5LoadingDialog).toStrictEqual(newDialog);
+            expect(newDialog.present).toHaveBeenCalled();
+            expect(oldDialog.dismiss).toHaveBeenCalledTimes(1);
+        });
     });
 });
