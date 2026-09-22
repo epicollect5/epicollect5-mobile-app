@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 98.2.8 - build 9828
+
+ - The in-app camera preview layer now leaves the status-bar strip to the app's purple edge-to-edge overlay instead of covering it with the live feed.
+ - Fixed video recording shutter races: double-taps and taps landing mid-start/mid-stop/mid-handoff are dropped instead of starting a second recording against the still-active native session, and a stop tap before the first key frame no longer fails with an invalid-data error.
+
 # 98.2.7 - build 9827
 
  - The entry save latch is now scoped per entry and resets when the progress dialog fails, so a rejected or failed save can no longer leave an entry (or the whole form) locked for retry.
