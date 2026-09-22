@@ -100,7 +100,8 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
 7. Report and confirm follow-up
    - Show version, build, and changed files.
    - Ask whether to commit (`chore: release <new> (build <build>)`) and create an
-     annotated tag (`<build>`, e.g. `9800`). Do not commit or tag unless confirmed.
+     annotated tag (`<new>`, e.g. `98.2.9`, matching the repo's `X.Y.Z` tag
+     history). Do not commit or tag unless confirmed.
 
 ## Constraints (AGENTS.md)
 
