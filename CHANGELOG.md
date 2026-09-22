@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 98.3.0 - build 9830
+
+ - Blocked the hardware back button, toolbar back button, and entry-errors button while a project update is in flight, so navigating away during an update can no longer destroy the project model under the pending continuation.
+
 # 98.2.9 - build 9829
 
  - Fixed the in-app camera getting stuck with a grey shutter and no dismissal after denying the location permission at the shutter: denials now fall back to an instant GPS-less capture so the photo is kept with GPS tags stripped, and the feed restarts automatically if the permission dialog released the camera session mid-capture.
