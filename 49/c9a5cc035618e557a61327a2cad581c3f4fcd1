@@ -1,0 +1,16 @@
+tests/unit/pages/EntriesUpload.spec.js
+  h_2231ff2aa93473 10,14-15,17-20,24,95-96,101-104,137-168,199-373
+tests/unit/use/update-project.spec.js
+  h_2231ff2aa93473 1-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "49c9a5cc035618e557a61327a2cad581c3f4fcd1",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
