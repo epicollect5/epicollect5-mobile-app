@@ -1,0 +1,26 @@
+package.json
+  s_8531a82b30507e::t_6499e2dd6051b6 3
+android/app/build.gradle
+  s_8531a82b30507e::t_179bc606d30aba 16-17
+ios/App/App.xcodeproj/project.pbxproj
+  s_8531a82b30507e::t_e3f8af915c8570 387,395
+  s_8531a82b30507e::t_3d02c87485b95e 417,425
+CHANGELOG.md
+  s_8531a82b30507e::t_6dee13f9341170 3-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "178d0160a850774f9ecac6dc2fd562464016e935",
+  "prompts": {},
+  "sessions": {
+    "s_8531a82b30507e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f36d2e5a5ffeZouSJTPwUNcfGj",
+        "model": "mimo-v2.6-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
