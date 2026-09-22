@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 98.2.9 - build 9829
+
+ - Fixed the in-app camera getting stuck with a grey shutter and no dismissal after denying the location permission at the shutter: denials now fall back to an instant GPS-less capture so the photo is kept with GPS tags stripped, and the feed restarts automatically if the permission dialog released the camera session mid-capture.
+ - Hung native captures now time out into the same GPS-less fallback instead of leaving the modal undismissable, and a blocked handoff dismiss cleans up and re-enables the shutter instead of bricking it.
+
 # 98.2.8 - build 9828
 
  - The in-app camera preview layer now leaves the status-bar strip to the app's purple edge-to-edge overlay instead of covering it with the live feed.
