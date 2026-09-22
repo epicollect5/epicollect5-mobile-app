@@ -309,7 +309,7 @@ The Capacitor core `SystemBars: { insetsHandling: "css" }` migration was rejecte
 
 ### Geometry Dependencies
 
-- `src/components/modals/ModalCameraPreview.vue:310`: repositions the native camera layer using `window.innerWidth`/`window.innerHeight` to align with the WebView's edge-to-edge geometry. Changing the plugin or removing it will break camera-preview alignment.
+- `src/components/modals/ModalCameraPreview.vue:_start`: sizes the native camera layer to the WebView rect (`window.innerWidth` x `window.innerHeight - topInsetDp`, where the inset comes from the camera plugin's `getSafeAreaInsets()`). The layer renders in front of this plugin's purple status-bar overlay, so a full-height layer would cover that strip with the live feed; the reduced height leaves the strip to the overlay. Changing the plugin or removing it will break camera-preview alignment.
 
 ### Cost of Removing the Plugin
 
