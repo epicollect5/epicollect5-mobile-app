@@ -1,0 +1,40 @@
+src/components/modals/ModalCameraPreview.vue
+  s_3cd7af54085544::t_604e4a43f91041 697
+  s_3cd7af54085544::t_db663fe76547aa 560-568
+  s_3cd7af54085544::t_317f34a2ca2e03 195-196,199-208
+  s_3cd7af54085544::t_c68670c956ca82 609,611-619,649-650,653-654,656-658,660-667,670-696,698-708,711,713-727
+  s_3cd7af54085544::t_9537fbec0ea613 545-548,550-552,569-608,648
+  s_3cd7af54085544::t_a77a9dc9919e52 557-559
+  s_3cd7af54085544::t_114e8f363bc4e6 469-486
+  s_3cd7af54085544::t_5a52f46b937741 668
+  s_3cd7af54085544::t_17a3c1b23dcba0 669
+  h_2231ff2aa93473 71,73,75,197-198,655,659
+  s_3cd7af54085544::t_20c9c1015576de 756,767-781,789-796
+  s_3cd7af54085544::t_f5132148789009 76
+  s_3cd7af54085544::t_fb0d9edad26ba1 808,813-816
+  s_3cd7af54085544::t_784accb8c068df 817,1151-1159
+  s_3cd7af54085544::t_86e35f01237454 77-79
+  s_3cd7af54085544::t_a818c86ae14c1a 610
+  h_2231ff2aa93473 72,74,80-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "58dd852d28100db81fe5651a0b7d5da482469127",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3cd7af54085544": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f36a6173dffew0STT2LAIUSIln",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
