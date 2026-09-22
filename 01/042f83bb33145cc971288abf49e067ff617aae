@@ -1,0 +1,20 @@
+src/use/project/update-project.js
+  s_5231ff7577bb39::t_bca6778639b559 26-29,31-35,37,39-49,51-79
+  s_5231ff7577bb39::t_7c49f37421bdec 80-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "01042f83bb33145cc971288abf49e067ff617aae",
+  "prompts": {},
+  "sessions": {
+    "s_5231ff7577bb39": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f35eadbe9ffezAtmNCSAT86fd1",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": null
+    }
+  }
+}
