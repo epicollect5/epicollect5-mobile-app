@@ -31,6 +31,13 @@ describe('android edge-to-edge plugin', () => {
         expect(capacitorConfig.plugins.SystemBars.insetsHandling).toBe('disable');
     });
 
+    //The camera modal sizes its native layer to leave this strip out: the purple
+    //overlay is what the user sees above the feed. A color change here repaints
+    //every status/nav strip, including the camera's.
+    it('paints the system-bar overlays app purple', () => {
+        expect(capacitorConfig.plugins.EdgeToEdge.backgroundColor).toBe('#5b357f');
+    });
+
     // The gradle project id is derived from the package scope, so a Capacitor
     // sync change or an upstream rename surfaces here rather than in the build.
     it('is wired into the committed Android project', () => {
