@@ -68,17 +68,18 @@
 </template>
 
 <script>
-import { reactive, computed, onMounted, onBeforeUnmount } from 'vue';
-import { modalController } from '@ionic/vue';
-import { closeOutline, cameraReverseOutline, flash, flashOutline } from 'ionicons/icons';
-import { App as CapacitorApp } from '@capacitor/app';
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { CameraPreview } from '@capgo/camera-preview';
-import { useRootStore } from '@/stores/root-store';
-import { PARAMETERS } from '@/config';
-import { STRINGS } from '@/config/strings';
-import { notificationService } from '@/services/notification-service';
-import { rollbarService } from '@/services/utilities/rollbar-service';
+import {computed, onBeforeUnmount, onMounted, reactive} from 'vue';
+import {modalController} from '@ionic/vue';
+import {cameraReverseOutline, closeOutline, flash, flashOutline} from 'ionicons/icons';
+import {App as CapacitorApp} from '@capacitor/app';
+import {Directory, Filesystem} from '@capacitor/filesystem';
+import {Geolocation} from '@capacitor/geolocation';
+import {CameraPreview} from '@capgo/camera-preview';
+import {useRootStore} from '@/stores/root-store';
+import {PARAMETERS} from '@/config';
+import {STRINGS} from '@/config/strings';
+import {notificationService} from '@/services/notification-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 export default {
 	props: {
@@ -191,6 +192,20 @@ export default {
 		let handoffPromise = null;
 		let handoffEscapeTimer = null;
 		const HANDOFF_ESCAPE_MS = 3000;
+		//a native capture that never settles (location permission edge on
+		//Android: request resolves neither success nor error) must not brick
+		//the shutter grey forever — bound every capture attempt with this
+		const CAPTURE_TIMEOUT_MS = 12000;
+		//foreground restart deferred while a photo capture/handoff owns the
+		//native session (permission-dialog pause/resume racing the shutter):
+		//the restart runs after the capture settles instead of interleaving
+		//_stop/_start with it
+		let deferredRecover = false;
+		//concurrent canDismiss writes (claim false vs handoff-tail true) must
+		//not reorder: only the most recent request may touch the overlay, so
+		//a late false can never re-lock a delivered true and block the
+		//payload dismiss
+		let dismissableToken = 0;
 		//minimum recording age before a shutter tap may stop it: well above a
 		//double-tap bounce, short enough to never annoy a deliberate stop
 		const MIN_RECORDING_MS = 1000;
@@ -451,6 +466,24 @@ export default {
 			}
 		}
 
+		//the permission dialog pauses/resumes the app, and the background path
+		//releases the camera while a capture is already flagged in flight but
+		//no native capture issued yet — capturing against the dead session
+		//fails with "Camera is not running" and an unwanted error alert.
+		//Restart first instead. Consumes a deferred foreground recovery so it
+		//does not run twice (the capture failure path also recovers)
+		async function _ensureLiveSession() {
+			if (tornDown || state.started) {
+				return;
+			}
+			console.log('CameraPreview.capture restarting feed after permission pause');
+			deferredRecover = false;
+			await _recoverFeed();
+			if (!tornDown && !state.started) {
+				state.capturing = false;
+			}
+		}
+
 		//release a possibly-stale session and restart the feed in the foreground. Shared
 		//by the foreground path (session was stopped while backgrounded) and by the
 		//pending-start path (the start resolved after the app came back)
@@ -509,13 +542,79 @@ export default {
 		}
 
 		//the plugin rejects the whole capture when location is denied, restricted,
-		//or disabled (e.g. "Location permission denied", "Location services are
-		//disabled"): match those states so capture() can retry GPS-less. A retry
-		//on a non-location failure is harmless (it fails the same way), but the
-		//match keeps the extra bridge call off the genuine camera-error path
+		//or disabled on older versions (e.g. "Location permission denied"); on
+		//@capgo/camera-preview 8.x the deny path resolves GPS-less instead — but
+		//a permission edge can leave the bridge call unsettled forever (no resolve
+		//nor reject), which the timeout below also routes into the GPS-less retry
 		function _isLocationError(error) {
+			if (error && error.code === 'CAPTURE_TIMEOUT') {
+				return true;
+			}
 			const message = error && typeof error.message === 'string' ? error.message : String(error);
 			return message.toLowerCase().includes('location');
+		}
+
+		//read the true OS-level location state at capture time. checkPermissions
+		//never prompts, it only reads — granted/denied/prompt tells us whether
+		//Android would even show the capture-time dialog
+		async function _readOsLocationState() {
+			try {
+				const status = await Geolocation.checkPermissions();
+				return status && status.location ? status.location : 'unknown';
+			} catch (error) {
+				return 'unknown';
+			}
+		}
+
+		//bound a single native capture: the bridge call can hang forever on the
+		//location permission edge (Android), which would otherwise leave the
+		//shutter grey and the modal undismissable with nothing logged. On timeout
+		//the race rejects so the caller retries GPS-less; a late native success
+		//afterwards owns a file nobody will consume, so delete it best-effort
+		//instead of leaking it in the plugin cache
+		function _attemptCapture(options) {
+			const capturePromise = Promise.resolve().then(() => CameraPreview.capture(options));
+			let timer = null;
+			const timeoutPromise = new Promise((resolve, reject) => {
+				timer = setTimeout(() => {
+					timer = null;
+					const timeoutError = new Error('CameraPreview capture timed out');
+					timeoutError.code = 'CAPTURE_TIMEOUT';
+					console.log('CameraPreview.capture timed out after ' + CAPTURE_TIMEOUT_MS + 'ms');
+					//late success owns an unconsumed file: clean it up
+					capturePromise.then((late) => {
+						if (late && late.value) {
+							CameraPreview.deleteFile({ path: late.value }).catch((cleanupError) => {
+								console.log('CameraPreview late capture cleanup failed: ' + cleanupError);
+							});
+						}
+					}, () => {});
+					reject(timeoutError);
+				}, CAPTURE_TIMEOUT_MS);
+			});
+			return Promise.race([
+				capturePromise.then((result) => {
+					if (timer) {
+						clearTimeout(timer);
+					}
+					return result;
+				}, (error) => {
+					if (timer) {
+						clearTimeout(timer);
+					}
+					throw error;
+				}),
+				timeoutPromise
+			]);
+		}
+
+		//the native session can die underneath an in-flight capture (the
+		//permission-dialog pause/resume racing the bridge call): the attempt
+		//rejects with "Camera is not running". That is recoverable — restart
+		//once and run the attempts again — unlike a genuine camera failure
+		function _isCameraNotRunningError(error) {
+			const message = error && typeof error.message === 'string' ? error.message : String(error);
+			return message.toLowerCase().includes('camera is not running');
 		}
 
 		async function capture() {
@@ -546,25 +645,88 @@ export default {
 					//Android-only, so passing it would be a no-op
 					withExifLocation: true
 				};
-				let result;
-				//tracks whether the capture fell back GPS-less (location denied):
+				const { withExifLocation: _dropped, ...retryOptions } = captureOptions;
+				//runs the location decision + capture attempts once, returning the
+				//native result and whether it fell back GPS-less (location denied):
 				//photo-take strips any GPS tags from the output while keeping
 				//every other tag, instead of trusting the denied-state source
+				async function _runCaptureAttempts() {
+          //the camera-preview permission callback can leave the bridge call
+					//unsettled when the capture-time dialog is denied (#414: 12s grey
+					//wait before the GPS-less retry). Own the dialog via the official
+					//Geolocation plugin instead — it settles reliably — so the capture
+					//itself never owns a permission prompt
+					let decision = await _readOsLocationState();
+					if (decision === 'prompt') {
+						try {
+							const req = await Geolocation.requestPermissions();
+							if (req && req.location) {
+								decision = req.location;
+							}
+						} catch (reqError) {
+							console.log('CameraPreview location permission request failed: ' + reqError);
+						}
+					}
+					if (decision === 'denied') {
+						//denied (or permanently denied: the OS shows no dialog): go
+						//GPS-less directly — instant, no hang, no wait
+						console.log('CameraPreview.capture GPS-less (location denied)');
+						const result = await _attemptCapture(retryOptions);
+						return { result, gpsFallback: true };
+					}
+					if (decision === 'granted' || decision === 'unknown') {
+						//granted: embed GPS. unknown (state unreadable): attempt GPS
+						//first so any available prompt is preserved; both keep the
+						//timeout net below for the unsettled-call edge
+						try {
+							const result = await _attemptCapture(captureOptions);
+							return { result, gpsFallback: false };
+						} catch (error) {
+							//GPS is best-effort: the plugin rejects the whole capture when
+							//location is denied, restricted, or disabled, and newer
+							//versions can hang the bridge call on the same edge — fall
+							//back to a GPS-less capture instead of failing the photo.
+							//Exactly one retry: a non-location failure rethrows below
+							if (!_isLocationError(error)) {
+								throw error;
+							}
+							console.log('CameraPreview.capture without GPS after location failure: ' + error);
+							const result = await _attemptCapture(retryOptions);
+							return { result, gpsFallback: true };
+						}
+					}
+					//any other state (e.g. a prompt that survived the request
+					//unanswered): never hang the shutter on the edge — go GPS-less
+					console.log('CameraPreview.capture GPS-less (location state: ' + decision + ')');
+					const result = await _attemptCapture(retryOptions);
+					return { result, gpsFallback: true };
+				}
+				await _ensureLiveSession();
+				if (tornDown || !state.started) {
+					return;
+				}
+				let result;
 				let gpsFallback = false;
 				try {
-					result = await CameraPreview.capture(captureOptions);
+					({ result, gpsFallback } = await _runCaptureAttempts());
 				} catch (error) {
-					//GPS is best-effort: the plugin rejects the whole capture when
-					//location is denied, restricted, or disabled, so fall back to
-					//a GPS-less capture instead of failing the photo. Exactly one
-					//retry, flag off: a non-location failure rethrows below
-					if (!_isLocationError(error)) {
+					//the pre-check above cannot win the race: the pause event can
+					//land after it but during the in-flight capture, releasing the
+					//session underneath. Restart once and run the attempts again
+					//instead of alerting — exactly one recovery, a second failure
+					//falls through to the alert path below
+					if (!tornDown && _isCameraNotRunningError(error)) {
+						console.log('CameraPreview.capture retrying after session loss: ' + error);
+						deferredRecover = false;
+						await _recoverFeed();
+						if (tornDown || !state.started) {
+							state.capturing = false;
+							return;
+						}
+						({ result, gpsFallback } = await _runCaptureAttempts());
+					} else {
 						throw error;
 					}
-					console.log('CameraPreview.capture without GPS after location failure: ' + error);
-					const { withExifLocation: _dropped, ...retryOptions } = captureOptions;
-					result = await CameraPreview.capture(retryOptions);
-					gpsFallback = true;
 				}
 				sourcePath = result.value;
 				if (tornDown) {
@@ -591,6 +753,7 @@ export default {
 					await modalController.dismiss({ sourcePath, gpsFallback });
 				} catch (error) {
 					console.log('CameraPreview handoff dismiss failed: ' + error);
+					throw error;
 				}
 			})();
 			try {
@@ -601,6 +764,21 @@ export default {
 		} catch (error) {
 			console.log('CameraPreview.capture failed: ' + error);
 			rollbarService.criticalWithContext('CameraPreview capture failed', error);
+			//a handoff that claimed the file but never delivered it must not
+			//orphan it in the plugin cache nor brick the shutter grey: the
+			//caller never received it, so drop ownership, delete best-effort,
+			//and leave the modal open for a retake
+			if (sourceHandedOff) {
+				sourceHandedOff = false;
+				if (sourcePath) {
+					try {
+						await CameraPreview.deleteFile({ path: sourcePath });
+					} catch (cleanupError) {
+						console.log('CameraPreview failed handoff cleanup failed: ' + cleanupError);
+					}
+					sourcePath = null;
+				}
+			}
 			state.capturing = false;
 			//the modal stays open for a retry, but the user must be told the
 			//capture failed instead of seeing a silently reset shutter
@@ -608,6 +786,14 @@ export default {
 				await notificationService.showAlert(error.message || labels.unknown_error, labels.error);
 			} catch (alertError) {
 				console.log('CameraPreview capture alert failed: ' + alertError);
+			} finally {
+				//a foreground resume that landed mid-capture deferred its feed
+				//restart: the camera was stopped while backgrounded, so recover
+				//now that the modal is retryable again
+				if (deferredRecover && !tornDown && !appInactive) {
+					deferredRecover = false;
+					await _recoverFeed();
+				}
 			}
 		}
 		}
@@ -619,9 +805,15 @@ export default {
 		//back presses, true restores the normal cancel behaviour. Programmatic
 		//dismiss() is gated too, so every self-dismiss below restores true first
 		async function _setModalDismissable(dismissable) {
+			const token = ++dismissableToken;
 			try {
 				if (!modalOverlay) {
 					modalOverlay = await modalController.getTop();
+				}
+				//a newer request superseded this one while getTop() was pending:
+				//drop the stale write so claim-false can never overwrite tail-true
+				if (token !== dismissableToken) {
+					return;
 				}
 				if (modalOverlay) {
 					modalOverlay.canDismiss = dismissable;
@@ -954,6 +1146,15 @@ export default {
 				//teardown began while backgrounded (dismiss before unmount completes):
 				//do not restart the feed or prompt for permissions on a dead modal
 				if (tornDown) {
+					return;
+				}
+				//a photo capture/handoff owns the native session right now (the
+				//permission-dialog pause/resume racing the shutter): restarting
+				//here would interleave _stop/_start with the handoff. Defer
+				//until the capture settles; its finally recovers the feed if the
+				//modal is still open and retryable
+				if (state.capturing || state.handoff) {
+					deferredRecover = true;
 					return;
 				}
 				//wontfix: a background/foreground cycle landing inside an in-flight restart
