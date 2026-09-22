@@ -1,0 +1,30 @@
+tests/unit/components/modals/ModalCameraPreview.spec.js
+  s_3cd7af54085544::t_11f9a53cb79a90 1854-1931,1973
+  s_3cd7af54085544::t_d265118e8c79f6 7
+  s_3cd7af54085544::t_88a06e61cb9447 1942-1946,1967
+  s_3cd7af54085544::t_7a8e1e5866ac71 1783,1793-1795,1797-1798
+  s_3cd7af54085544::t_0b14c45d11092f 1739
+  s_3cd7af54085544::t_a178fb961e517a 120-123
+  s_3cd7af54085544::t_b08d083c44aa2e 1766
+  s_3cd7af54085544::t_7fbdf51f22acde 1932-1941,1947-1966,1968-1972
+  s_3cd7af54085544::t_cd884ad2800339 52-60
+  s_3cd7af54085544::t_32f037efd00b61 78
+  s_3cd7af54085544::t_43bc407d806b1b 1722-1738,1740-1765,1767-1782,1784-1792,1796,1799-1853
+  s_3cd7af54085544::t_0ec6b4efaa865e 139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c8c060d081eef6ed7f05de43fac1a7d5fca6ea9d",
+  "prompts": {},
+  "sessions": {
+    "s_3cd7af54085544": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f36a6173dffew0STT2LAIUSIln",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
