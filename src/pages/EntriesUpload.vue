@@ -373,16 +373,27 @@ export default {
 
 			// Check if we have a project out of date error
 			if (projectOutdatedErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
-				const confirmed = await notificationService.confirmSingle(
-					STRINGS[language].labels.update_project,
-					STRINGS[language].labels.project_outdated
-				);
+				//lock navigation while the prompt is shown: the update itself takes the
+				//lock, but that happens only after the user confirms
+				rootStore.isProjectUpdating = true;
+				try {
+					const confirmed = await notificationService.confirmSingle(
+						STRINGS[language].labels.update_project,
+						STRINGS[language].labels.project_outdated
+					);
 
-				if (confirmed) {
-					await updateProject();
-				} else {
-					//warn user abut project put of date and entries cannot be synced
-					await errorsService.handleWebError(error);
+					if (confirmed) {
+						//updateProject reports its own errors to the user, so a rejection here
+						//would only escape through the fire-and-forget upload chain unobserved
+						await updateProject().catch((updateError) => {
+							console.error('Project update failed', updateError);
+						});
+					} else {
+						//warn user abut project put of date and entries cannot be synced
+						await errorsService.handleWebError(error);
+					}
+				} finally {
+					rootStore.isProjectUpdating = false;
 				}
 			} else if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
 				// Check if we have an auth error
@@ -527,6 +538,10 @@ export default {
 				);
 			},
 			goBack() {
+				//ignore the toolbar back button while an upload or a project update is in flight
+				if (state.isUploading || rootStore.isProjectUpdating) {
+					return;
+				}
 				//refresh Entries page only when an upload was attempted
 				if (rootStore.attemptedUploadOrErrorFix) {
 					rootStore.attemptedUploadOrErrorFix = false;
@@ -548,6 +563,10 @@ export default {
 				}
 			},
 			goToEntriesErrors() {
+				//ignore the toolbar errors button while an upload or a project update is in flight
+				if (state.isUploading || rootStore.isProjectUpdating) {
+					return;
+				}
 				//let's set a flag to refresh entries when user get back,
 				//just in case some entry got deleted or edited
 				rootStore.attemptedUploadOrErrorFix = true;
@@ -585,9 +604,12 @@ export default {
 		//back with back button (Android)
 		useBackButton(10, () => {
 			console.log(window.history);
-			if (!state.isUploading) {
-				methods.goBack();
+			//loader overlay blocks taps but the hardware back button still fires,
+			//and leaving would destroy the model under the pending update continuation
+			if (state.isUploading || rootStore.isProjectUpdating) {
+				return false;
 			}
+			methods.goBack();
 		});
 
 		return {

@@ -23,54 +23,60 @@ export async function updateProject () {
     const labels = STRINGS[language].labels;
     const authErrors = PARAMETERS.AUTH_ERROR_CODES;
 
-    await notificationService.showProgressDialog(
-        labels.wait,
-        labels.updating_project
-    );
+    //lock navigation while the update is in flight: the loader overlay blocks taps,
+    //but the hardware back button and the page controls still fire, and leaving
+    //would destroy the model under the pending update continuation
+    rootStore.isProjectUpdating = true;
 
-    versioningService.updateProject().then(
-        function (changeMade) {
-            entriesDownloadProgressService.clearProject(projectModel.getProjectRef());
-            notificationService.hideProgressDialog(0);
+    try {
+        await notificationService.showProgressDialog(
+            labels.wait,
+            labels.updating_project
+        );
 
-            // If new questions have been added, notify user
-            if (changeMade) {
-                // If a change has been made, we should set the next route as the project-entries page
-                rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES;
+        const changeMade = await versioningService.updateProject();
 
-                notificationService.showAlert(STRINGS[language].status_codes.ec5_137);
-            } else {
-                notificationService.showAlert(STRINGS[language].status_codes.ec5_136);
-            }
-        },
-        async function (error) {
-            console.log(error);
-            notificationService.hideProgressDialog();
-            // Web error
-            console.log('fail');
-            // Check if we have an auth error
-            if (authErrors.indexOf(error?.data?.errors?.[0]?.code) >= 0) {
-                await notificationService.showAlert(
-                    STRINGS[language].status_codes[error.data.errors[0].code]
-                );
-                //1 - set a callback to add the project after logging in
-                rootStore.afterUserIsLoggedIn = {
-                    callback: updateProject,
-                    params: null
-                };
-                //2- Clear any token and ask user to login again
-                await logout();
-                showModalLogin();
-            } else if (error?.isStaleCleanupError) {
-                // Failed to remove the entries of forms/branches removed from the project
-                await notificationService.showAlert(
-                    labels.stale_cleanup_failed,
-                    labels.error
-                );
-            } else {
-                // Other error
-                await errorsService.handleWebError(error);
-            }
+        entriesDownloadProgressService.clearProject(projectModel.getProjectRef());
+        notificationService.hideProgressDialog(0);
+
+        // If new questions have been added, notify user
+        if (changeMade) {
+            // If a change has been made, we should set the next route as the project-entries page
+            rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES;
+
+            notificationService.showAlert(STRINGS[language].status_codes.ec5_137);
+        } else {
+            notificationService.showAlert(STRINGS[language].status_codes.ec5_136);
         }
-    );
+    } catch (error) {
+        console.log(error);
+        notificationService.hideProgressDialog();
+        // Web error
+        console.log('fail');
+        // Check if we have an auth error
+        if (authErrors.indexOf(error?.data?.errors?.[0]?.code) >= 0) {
+            await notificationService.showAlert(
+                STRINGS[language].status_codes[error.data.errors[0].code]
+            );
+            //1 - set a callback to add the project after logging in
+            rootStore.afterUserIsLoggedIn = {
+                callback: updateProject,
+                params: null
+            };
+            //2- Clear any token and ask user to login again
+            await logout();
+            showModalLogin();
+        } else if (error?.isStaleCleanupError) {
+            // Failed to remove the entries of forms/branches removed from the project
+            await notificationService.showAlert(
+                labels.stale_cleanup_failed,
+                labels.error
+            );
+        } else {
+            // Other error
+            await errorsService.handleWebError(error);
+        }
+    } finally {
+        rootStore.isProjectUpdating = false;
+    }
 }
