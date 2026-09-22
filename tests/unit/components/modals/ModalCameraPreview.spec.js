@@ -1735,8 +1735,8 @@ describe('ModalCameraPreview component', () => {
 			await flushPromises();
 			expect(wrapper.vm.state.capturing).toBe(true);
 
-			//timeout fires: exactly one GPS-less retry, photo handed off
-			await vi.advanceTimersByTimeAsync(6000);
+			//timeout fires (12s capture bound): exactly one GPS-less retry, photo handed off
+			await vi.advanceTimersByTimeAsync(12000);
 			await capturePromise;
 			await flushPromises();
 
@@ -1763,7 +1763,8 @@ describe('ModalCameraPreview component', () => {
 			const capturePromise = wrapper.vm.capture();
 			await flushPromises();
 
-			await vi.advanceTimersByTimeAsync(12000);
+			//both attempts hang (12s bound each): no photo, but the modal must not brick grey
+			await vi.advanceTimersByTimeAsync(24000);
 			await capturePromise;
 			await flushPromises();
 
