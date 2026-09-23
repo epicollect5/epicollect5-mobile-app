@@ -1,0 +1,21 @@
+.commandcode/settings.json
+  s_0d3dcd7c750551::t_8f031b1d075117 20,28
+.agents/skills/commit/SKILL.md
+  s_0d3dcd7c750551::t_2899e332dbec4d 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8ee84982306e8c77dfa0845b1dc9998639813aaf",
+  "prompts": {},
+  "sessions": {
+    "s_0d3dcd7c750551": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3087d1edffeHamAPFeLqds570",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
