@@ -17,6 +17,7 @@
       "Shell(git add:*)",
       "Shell(git commit:*)",
       "Shell(git reset:*)",
+      "Shell(git tag:*)",
       "Shell(mkdir:*)"
     ],
     "ask": [
@@ -24,6 +25,7 @@
     ],
     "deny": [
       "Shell(rm -rf:*)",
+      "Shell(npm install:*)",
       "Shell(git push --force:*)",
       "Shell(git reset --hard:*)",
       "Shell(git clean -:*)"

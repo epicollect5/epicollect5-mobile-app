@@ -22,3 +22,4 @@ Do not capitalize the first word of the description.
 Do not end the description with a period.
 Maximum 75 characters total, including type and scope.
 If a group includes both a fix and a feature, prefer the type that best reflects the primary purpose of that group.
+Never add Co-Authored-By, Signed-off-by, or any other trailer or attribution line.
