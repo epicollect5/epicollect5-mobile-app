@@ -27,6 +27,11 @@ const cameraPreviewMock = vi.hoisted(() => ({
     deleteFile: vi.fn().mockResolvedValue({ success: true })
 }));
 
+const fsMock = vi.hoisted(() => ({
+    readFile: vi.fn(),
+    writeFile: vi.fn()
+}));
+
 const utilsMock = vi.hoisted(() => ({
     generateMediaFilename: vi.fn().mockReturnValue('photo_gen.jpg'),
     generateTimestamp: vi.fn().mockReturnValue('123'),
@@ -60,8 +65,9 @@ vi.mock('@/config', () => ({
         IN_APP_CAMERA_DOCS_URL: 'https://docs.example/in-app-camera'
     }
 }));
-vi.mock('@/config/strings', () => ({ STRINGS: { en: { labels: { wait: 'wait', saving: 'saving', unknown_error: 'unknown error' } } } }));
+vi.mock('@/config/strings', () => ({ STRINGS: { en: { labels: { wait: 'wait', saving: 'saving', unknown_error: 'unknown error', error: 'error' } } } }));
 vi.mock('@capacitor/core', () => ({ Capacitor: { convertFileSrc: vi.fn((s) => s) } }));
+vi.mock('@capacitor/filesystem', () => ({ Filesystem: fsMock }));
 vi.mock('@capacitor/camera', () => ({ Camera: { getPhoto: vi.fn() }, CameraResultType: { Uri: 'uri' }, CameraSource: { Photos: 'photos', Camera: 'camera' } }));
 vi.mock('@capgo/camera-preview', () => ({ CameraPreview: cameraPreviewMock }));
 vi.mock('@ionic/vue', () => ({ modalController: modalMock }));
@@ -113,6 +119,8 @@ describe('photoTake tests', () => {
         expect(Camera.getPhoto).not.toHaveBeenCalled();
         expect(modalMock.create).not.toHaveBeenCalled();
         expect(state.answer.answer).toBe('');
+        //leaving to settings/docs dismisses the entry dialog, no camera opens
+        expect(nMock.hideProgressDialog).toHaveBeenCalledWith(0);
     });
 
     it('triggers the notification flow when picking from the gallery', async () => {
@@ -225,6 +233,26 @@ describe('photoTake tests', () => {
 		expect(dialogCall).toBe(-1);
 	});
 
+	it('alerts when the in-app camera fails to start instead of closing silently', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		modalMock.create.mockResolvedValue({
+			present: modalMock.present.mockResolvedValue(undefined),
+			onDidDismiss: modalMock.onDidDismiss.mockReturnValue(Promise.resolve({ data: { startError: 'camera denied' } }))
+		});
+		const rootStore = useRootStore();
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		//a failed start tells the user; a back-button cancel stays silent
+		expect(nMock.showAlert).toHaveBeenCalledWith('camera denied', 'error');
+		expect(resizeMock.resizeToTempDir).not.toHaveBeenCalled();
+		expect(cameraPreviewMock.deleteFile).not.toHaveBeenCalled();
+		expect(media[entryUuid]['q1'].cached).toBe('');
+		expect(state.answer.answer).toBe('');
+		expect(rootStore.isCameraPreviewModalActive).toBe(false);
+	});
+
 	it('resets the answer and cleans up the capture when the in-app resize fails', async () => {
 		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
 		setupModalPresent({ sourcePath: '/capture.jpg' });
@@ -262,6 +290,66 @@ describe('photoTake tests', () => {
 		expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/capture.jpg' });
 	});
 
+	it('restores the previous file bytes when the in-app resize fails on a retake', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: '/capture.jpg' });
+		fsMock.readFile.mockResolvedValueOnce({ data: 'prev-bytes' });
+		fsMock.writeFile.mockResolvedValueOnce();
+		resizeMock.resizeToTempDir.mockRejectedValueOnce(new Error('resize boom'));
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+		media[entryUuid]['q1'].cached = 'existing.jpg';
+		media[entryUuid]['q1'].stored = 'existing.jpg';
+		state.answer.answer = 'existing.jpg';
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		//the retake target is backed up before the write and restored after it fails
+		expect(fsMock.readFile).toHaveBeenCalledWith({ path: '/tmp/existing.jpg' });
+		expect(fsMock.writeFile).toHaveBeenCalledWith({ path: '/tmp/existing.jpg', data: 'prev-bytes', recursive: true });
+		expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+		expect(state.answer.answer).toBe('existing.jpg');
+		expect(nMock.showAlert).toHaveBeenCalledWith('resize boom');
+	});
+
+	it('skips the byte restore when the backup read fails on a retake', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: '/capture.jpg' });
+		fsMock.readFile.mockRejectedValueOnce(new Error('read boom'));
+		resizeMock.resizeToTempDir.mockRejectedValueOnce(new Error('resize boom'));
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+		media[entryUuid]['q1'].cached = 'existing.jpg';
+		media[entryUuid]['q1'].stored = 'existing.jpg';
+		state.answer.answer = 'existing.jpg';
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		//no backup means nothing to restore, but the reference rollback still holds
+		expect(fsMock.writeFile).not.toHaveBeenCalled();
+		expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+		expect(state.answer.answer).toBe('existing.jpg');
+		expect(nMock.showAlert).toHaveBeenCalledWith('resize boom');
+	});
+
+	it('keeps the rollback when the byte restore itself fails', async () => {
+		setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+		setupModalPresent({ sourcePath: '/capture.jpg' });
+		fsMock.readFile.mockResolvedValueOnce({ data: 'prev-bytes' });
+		fsMock.writeFile.mockRejectedValueOnce(new Error('write boom'));
+		resizeMock.resizeToTempDir.mockRejectedValueOnce(new Error('resize boom'));
+		const { media, entryUuid, state, filename, action } = makeArgs('camera');
+		media[entryUuid]['q1'].cached = 'existing.jpg';
+		media[entryUuid]['q1'].stored = 'existing.jpg';
+		state.answer.answer = 'existing.jpg';
+
+		await photoTake({ media, entryUuid, state, filename, action });
+
+		//a double fault is swallowed: references still roll back and the user is told
+		expect(fsMock.writeFile).toHaveBeenCalled();
+		expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
+		expect(state.answer.answer).toBe('existing.jpg');
+		expect(nMock.showAlert).toHaveBeenCalledWith('resize boom');
+	});
+
     it('restores the existing photo when the native capture errors on a retake', async () => {
         setupRootStore();
         nMock.startForegroundService.mockResolvedValue('granted');
@@ -291,6 +379,77 @@ describe('photoTake tests', () => {
         expect(media[entryUuid]['q1'].cached).toBe('photo_gen.jpg');
         expect(state.answer.answer).toBe('photo_gen.jpg');
         expect(state.imageSource).toContain('/tmp/photo_gen.jpg');
+    });
+
+    it('shows wait at entry and bridges the native camera launch gap', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockResolvedValueOnce({ path: '/tmp/orig.jpg' });
+        const { media, entryUuid, state, filename, action } = makeArgs();
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        //entry dialog first, then the fire-and-forget launch-gap bridge,
+        //then the post-capture saving dialog: full lifecycle ordering
+        expect(nMock.showProgressDialog).toHaveBeenCalledWith('wait');
+        expect(nMock.hideProgressDialog).toHaveBeenCalledWith(2000);
+        const waitOrder = nMock.showProgressDialog.mock.invocationCallOrder[0];
+        const bridgeCall = nMock.hideProgressDialog.mock.calls.findIndex((args) => args[0] === 2000);
+        const bridgeOrder = nMock.hideProgressDialog.mock.invocationCallOrder[bridgeCall];
+        const savingCall = nMock.showProgressDialog.mock.calls.findIndex((args) => args[0] === 'saving');
+        const savingOrder = nMock.showProgressDialog.mock.invocationCallOrder[savingCall];
+        expect(waitOrder).toBeLessThan(bridgeOrder);
+        expect(bridgeOrder).toBeLessThan(savingOrder);
+    });
+
+    it('covers the native move with a dialog and hides it when the thumbnail lands', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockResolvedValueOnce({ path: '/tmp/orig.jpg' });
+        const { media, entryUuid, state, filename, action } = makeArgs();
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        //saving dialog shown with the existing labels, hiding the file move
+        const dialogCall = nMock.showProgressDialog.mock.calls.findIndex((args) => args[0] === 'saving' && args[1] === 'wait');
+        expect(dialogCall).toBeGreaterThanOrEqual(0);
+        //shown before the move starts, hidden after the thumbnail state is set
+        const dialogOrder = nMock.showProgressDialog.mock.invocationCallOrder[dialogCall];
+        const moveOrder = moveMock.moveToAppTemporaryDir.mock.invocationCallOrder[0];
+        expect(dialogOrder).toBeLessThan(moveOrder);
+        const hideOrders = nMock.hideProgressDialog.mock.invocationCallOrder;
+        expect(hideOrders[hideOrders.length - 1]).toBeGreaterThan(moveOrder);
+        expect(nMock.hideProgressDialog).toHaveBeenLastCalledWith(0);
+        expect(state.imageSource).toContain('/tmp/photo_gen.jpg');
+    });
+
+    it('hides the saving dialog before alerting when the native move fails', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockResolvedValueOnce({ path: '/tmp/orig.jpg' });
+        moveFileService.moveToAppTemporaryDir.mockRejectedValueOnce(new Error('move boom'));
+        const { media, entryUuid, state, filename, action } = makeArgs();
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(nMock.showAlert).toHaveBeenCalledWith('move boom');
+        //hide-then-alert ordering, same as the in-app branch
+        const hideOrders = nMock.hideProgressDialog.mock.invocationCallOrder;
+        const alertOrder = nMock.showAlert.mock.invocationCallOrder[0];
+        expect(hideOrders[hideOrders.length - 1]).toBeLessThan(alertOrder);
+    });
+
+    it('never shows the saving dialog when the native capture is cancelled', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockRejectedValue(new Error('User cancelled photos app'));
+        const { media, entryUuid, state, filename, action } = makeArgs();
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(moveMock.moveToAppTemporaryDir).not.toHaveBeenCalled();
+        const dialogCall = nMock.showProgressDialog.mock.calls.findIndex((args) => args[0] === 'saving');
+        expect(dialogCall).toBe(-1);
     });
 
     it('restores the existing photo when the native move fails on a retake', async () => {
@@ -471,5 +630,69 @@ describe('photoTake tests', () => {
 
         expect(rootStore.isPhotoCaptureActive).toBe(false);
         expect(media[entryUuid]['q1'].cached).toBe('photo_gen.jpg');
+    });
+
+    it('opens the camera when the foreground service fails to start', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockRejectedValue(new Error('fs boom'));
+        Camera.getPhoto.mockResolvedValueOnce({ path: '/tmp/orig.jpg' });
+        const { media, entryUuid, state, filename, action } = makeArgs();
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        //the failure is logged and the capture proceeds without the service
+        expect(Camera.getPhoto).toHaveBeenCalled();
+        expect(media[entryUuid]['q1'].cached).toBe('photo_gen.jpg');
+        expect(state.answer.answer).toBe('photo_gen.jpg');
+    });
+
+    it('swallows a temp capture cleanup failure after a successful in-app capture', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '/capture.jpg' });
+        cameraPreviewMock.deleteFile.mockRejectedValueOnce(new Error('delete boom'));
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        //the photo already landed: a failed cache cleanup never surfaces
+        expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/capture.jpg' });
+        expect(media[entryUuid]['q1'].cached).toBe('photo_gen.jpg');
+        expect(state.answer.answer).toBe('photo_gen.jpg');
+        expect(state.imageSource).toContain('/tmp/photo_gen.jpg');
+        expect(nMock.showAlert).not.toHaveBeenCalled();
+    });
+
+    it('hides the entry dialog on PWA without launching any camera', async () => {
+        setupRootStore({ platform: PARAMETERS.WEB });
+        const { media, entryUuid, state, filename, action } = makeArgs();
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(Camera.getPhoto).not.toHaveBeenCalled();
+        expect(modalMock.create).not.toHaveBeenCalled();
+        expect(nMock.hideProgressDialog).toHaveBeenCalledWith();
+        expect(state.answer.answer).toBe('');
+    });
+
+    it('falls back to the unknown-error label when the native failure has no message', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockRejectedValue(new Error());
+        const { media, entryUuid, state, filename, action } = makeArgs();
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(nMock.showAlert).toHaveBeenCalledWith('unknown error');
+    });
+
+    it('falls back to the unknown-error label when the in-app resize has no message', async () => {
+        setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
+        setupModalPresent({ sourcePath: '/capture.jpg' });
+        resizeMock.resizeToTempDir.mockRejectedValueOnce(new Error());
+        const { media, entryUuid, state, filename, action } = makeArgs('camera');
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(nMock.showAlert).toHaveBeenCalledWith('unknown error');
     });
 });
