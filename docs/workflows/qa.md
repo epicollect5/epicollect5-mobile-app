@@ -62,23 +62,41 @@ Do not deduplicate them against diff-derived checks, and do not drop them when t
 
 ### B1. Status bar does not overlap or double-pad content
 
-- **Test Description:** Confirm routed page content starts below the status bar, on the oldest and newest supported Android versions.
-- **Expected Result:** The header is fully visible below the status bar, with no content underneath it and no blank strip between the status bar and the header.
-- **Manual Action:** On Android 10 and Android 16 staging devices, open the Projects list, an Entries list, and a routed question page; in each, confirm the header clears the status bar and that no gap appears above it.
+- **Test Description:** Confirm routed page content starts below the status bar on the oldest and newest supported Android versions.
+- **Expected Result:** The header is fully visible below the status bar with no content underneath it and no blank strip between the status bar and the header.
+- **Manual Action:** On Android 10 and Android 16 staging devices; open the Projects list and an Entries list and a routed question page; in each confirm the header clears the status bar and that no gap appears above it.
 
 ### B2. GROUP question keyboard and bottom scroll
 
 - **Test Description:** Confirm the final inputs of a GROUP question remain reachable while the soft keyboard is open.
-- **Expected Result:** With the keyboard open, scrolling to the maximum reveals the final 2-3 GROUP inputs; nothing is trapped behind the keyboard; dismissing it leaves no residual gap.
-- **Manual Action:** On Android 16 staging, open an entry containing a GROUP question with at least 3 inputs; focus the last input; let the keyboard open; scroll to the bottom; confirm every input is reachable; dismiss the keyboard and confirm the layout returns with no gap.
+- **Expected Result:** With the keyboard open scrolling to the maximum reveals the final 2-3 GROUP inputs; nothing is trapped behind the keyboard; dismissing it leaves no residual gap.
+- **Manual Action:** On Android 16 staging open an entry containing a GROUP question with at least 3 inputs; focus the last input; let the keyboard open; scroll to the bottom; confirm every input is reachable; dismiss the keyboard and confirm the layout returns with no gap.
 
 ### B3. Drawer content scrolls clear of the navigation bar
 
 - **Test Description:** Confirm both drawers scroll fully and their last item clears the navigation bar.
 - **Expected Result:** The final item in each drawer scrolls fully into view above the navigation bar or gesture indicator; no item stays permanently obscured.
-- **Manual Action:** On Android 10 and Android 16 staging devices, open the left drawer and scroll to its last item; then open the right drawer and scroll to its last item; confirm both are fully visible and tappable above the navigation controls.
+- **Manual Action:** On Android 10 and Android 16 staging devices; open the left drawer and scroll to its last item; then open the right drawer and scroll to its last item; confirm both are fully visible and tappable above the navigation controls.
 
-B1-B3 are emitted as CSV rows like any other check - apply the comma substitution rule to them too. Android is where the inset failure modes live; run the same steps on iOS as a cross-platform sanity check, since all three surfaces exist there. Mark the cell `N/A` where a surface is absent on PWA.
+### B4. Google login and logout (Android and iOS)
+
+- **Test Description:** Confirm Google sign-in establishes a session and logout clears it on native staging builds.
+- **Expected Result:** The account picker opens; approved sign-in lands on authenticated home with the user persisted across restart; logout returns to the login screen and cold restart stays logged out.
+- **Manual Action:** On a staging Android fresh install tap Sign in with Google; pick the staging test account and approve; confirm home and Projects load; open account/settings and Log out; confirm the login screen; force-close and reopen and confirm still logged out; repeat the same sequence on staging iOS.
+
+### B5. Email passwordless login and logout (Android and iOS)
+
+- **Test Description:** Confirm passwordless email code login establishes a session and logout clears it on native staging builds.
+- **Expected Result:** The code is requested and accepted; sign-in lands on authenticated home with the user persisted across restart; logout returns to the login screen and cold restart stays logged out.
+- **Manual Action:** On a staging Android fresh install choose Email login; enter the staging test email and request the code; enter the received code; confirm home and Projects load; open account/settings and Log out; confirm the login screen; force-close and reopen and confirm still logged out; repeat the same sequence on staging iOS.
+
+### B6. Apple login and logout (iOS only)
+
+- **Test Description:** Confirm Sign in with Apple establishes a session and logout clears it on staging iOS.
+- **Expected Result:** The Apple sheet opens; approved sign-in lands on authenticated home with the user persisted across restart; logout returns to the login screen and cold restart stays logged out.
+- **Manual Action:** On a staging iOS fresh install tap Sign in with Apple; approve with the staging test Apple ID; confirm home and Projects load; open account/settings and Log out; confirm the login screen; force-close and reopen and confirm still logged out.
+
+B1-B6 are emitted as CSV rows like any other check - apply the comma substitution rule to them too. Android is where the inset failure modes live; run the same B1-B3 steps on iOS as a cross-platform sanity check since all three surfaces exist there. B4 and B5 run on Android and iOS with `PWA` pre-filled to `N/A`. B6 runs on iOS only with `Android` pre-filled to `N/A` and `PWA` pre-filled to `N/A`. Mark the cell `N/A` where a surface is absent on PWA.
 
 ## Output Format
 
