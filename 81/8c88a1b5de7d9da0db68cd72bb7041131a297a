@@ -1,0 +1,29 @@
+tests/unit/use/questions/photo-take.spec.js
+  s_8e568f08dc906c::t_fa68755521a43d 122-123
+  s_8e568f08dc906c::t_dd26d125385dfb 236-253
+  s_8e568f08dc906c::t_fda538594b734b 68,70
+  s_8e568f08dc906c::t_dc1abcb065c1a9 254,293-351
+  s_8e568f08dc906c::t_5b2c01c716adc8 453,634-697
+  s_8e568f08dc906c::t_d0370ef6089cb5 30-34
+  s_8e568f08dc906c::t_1e36e205b84899 405-452
+  s_8e568f08dc906c::t_e76c95053096e2 384-404
+  s_8e568f08dc906c::t_2f9b25f87f79f9 255
+  s_8e568f08dc906c::t_fe0fffbb453cee 352
+  s_8e568f08dc906c::t_002862cd225b73 454
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "818c88a1b5de7d9da0db68cd72bb7041131a297a",
+  "prompts": {},
+  "sessions": {
+    "s_8e568f08dc906c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3254e5fdffecaIyxWn6XyaeTi",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
