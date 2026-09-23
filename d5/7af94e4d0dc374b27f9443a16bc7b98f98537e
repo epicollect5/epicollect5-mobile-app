@@ -1,0 +1,22 @@
+tests/unit/use/questions/photo-take.spec.js
+  s_8e568f08dc906c::t_cd7c9988c66994 403-405
+src/use/questions/photo-take.js
+  s_8e568f08dc906c::t_c24def5ab4e4db 73-79,82
+  s_8e568f08dc906c::t_f9151ffa0d3fab 83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d57af94e4d0dc374b27f9443a16bc7b98f98537e",
+  "prompts": {},
+  "sessions": {
+    "s_8e568f08dc906c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3254e5fdffecaIyxWn6XyaeTi",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
