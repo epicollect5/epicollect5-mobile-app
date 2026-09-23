@@ -1,18 +1,33 @@
 {
   "permissions": {
     "allow": [
-      "Shell(gh:*)",
+      "Shell(gh auth status:*)",
+      "Shell(gh label list:*)",
+      "Shell(gh issue create:*)",
+      "Shell(command -v gh:*)",
+      "Shell(rm docs/issues/draft/*)",
       "Shell(npx vitest *)",
-      "Shell(git status)",
-      "Shell(git diff *)",
-      "Shell(git log *)",
-      "Shell(git show *)",
-      "Shell(git branch *)",
-      "Shell(git rev-parse *)",
-      "Shell(git ls-files *)",
+      "Shell(git status:*)",
+      "Shell(git diff:*)",
+      "Shell(git log:*)",
+      "Shell(git show:*)",
+      "Shell(git branch:*)",
+      "Shell(git rev-parse:*)",
+      "Shell(git ls-files:*)",
+      "Shell(git add:*)",
+      "Shell(git commit:*)",
+      "Shell(git reset:*)",
       "Shell(mkdir:*)"
     ],
-    "deny": [],
+    "ask": [
+      "Shell(git push:*)"
+    ],
+    "deny": [
+      "Shell(rm -rf:*)",
+      "Shell(git push --force:*)",
+      "Shell(git reset --hard:*)",
+      "Shell(git clean -:*)"
+    ],
     "defaultMode": "default"
   }
 }
