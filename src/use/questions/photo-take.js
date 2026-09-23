@@ -72,6 +72,13 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
 
             await notificationService.stopForegroundService();
 
+            //cover the file move below: the system camera is gone and the
+            //move + thumbnail decode takes a moment with no other feedback
+            //(same saving dialog as the in-app branch). Single owner: shown
+            //here, hidden after the thumbnail lands or before the failure
+            //alert, so it can never strand
+            await notificationService.showProgressDialog(labels.saving, labels.wait);
+
             //resolve the target filename without touching the references yet
             //(shared pick-rules: reuse cached on retake, stored on edit,
             //generate only for a brand-new file)
@@ -92,6 +99,8 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
             media[entryUuid][state.inputDetails.ref].cached = filename;
             state.answer.answer = filename;
             _loadImageOnView(tempDir + filename);
+            //thumbnail state is set synchronously above: dismiss the dialog
+            await notificationService.hideProgressDialog(0);
         } catch (error) {
             console.log(error);
             await notificationService.stopForegroundService();
