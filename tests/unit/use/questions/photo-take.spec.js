@@ -400,6 +400,9 @@ describe('photoTake tests', () => {
         const savingOrder = nMock.showProgressDialog.mock.invocationCallOrder[savingCall];
         expect(waitOrder).toBeLessThan(bridgeOrder);
         expect(bridgeOrder).toBeLessThan(savingOrder);
+        //the saving dialog leads on return: teardown and move run under its cover
+        const stopOrder = nMock.stopForegroundService.mock.invocationCallOrder[0];
+        expect(savingOrder).toBeLessThan(stopOrder);
     });
 
     it('covers the native move with a dialog and hides it when the thumbnail lands', async () => {

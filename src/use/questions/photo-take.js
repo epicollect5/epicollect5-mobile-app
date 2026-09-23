@@ -70,14 +70,16 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
         try {
             const imageURI = await Camera.getPhoto(cameraOptions);
 
-            await notificationService.stopForegroundService();
-
-            //cover the file move below: the system camera is gone and the
-            //move + thumbnail decode takes a moment with no other feedback
-            //(same saving dialog as the in-app branch). Single owner: shown
-            //here, hidden after the thumbnail lands or before the failure
-            //alert, so it can never strand
+            //cover everything below: the system camera is gone and the
+            //service stop + file move + thumbnail decode take a moment with
+            //no other feedback. Shown FIRST on return so the spinner is
+            //already presenting while the teardown and the move run under
+            //its cover (same saving dialog as the in-app branch). Single
+            //owner: shown here, hidden after the thumbnail lands or before
+            //the failure alert, so it can never strand
             await notificationService.showProgressDialog(labels.saving, labels.wait);
+
+            await notificationService.stopForegroundService();
 
             //resolve the target filename without touching the references yet
             //(shared pick-rules: reuse cached on retake, stored on edit,
