@@ -1,0 +1,20 @@
+docs/workflows/qa.md
+  s_63f48cb8464aa1::t_6c465a2698bb35 79,81-99
+  s_63f48cb8464aa1::t_f80b891cf5b656 65-67,72-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f9855bf8fa980e6568ce3d43fdc68930ec8d5245",
+  "prompts": {},
+  "sessions": {
+    "s_63f48cb8464aa1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3249a09cffeFRvh7pJ9DV69WO",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
