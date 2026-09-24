@@ -287,4 +287,25 @@ describe('ModalAudioRecord component', () => {
         expect(mediaRecorderStopRecordMock).toHaveBeenCalledTimes(2);
         expect(modalController.dismiss).toHaveBeenCalledTimes(1);
     });
+
+    it('leaves another operation indicator alone when the saving dialog fails to open', async () => {
+        const rootStore = useRootStore();
+        rootStore.language = PARAMETERS.DEFAULT_LANGUAGE;
+        rootStore.device = {
+            platform: PARAMETERS.ANDROID
+        };
+        rootStore.tempDir = 'temp/';
+        notificationService.showProgressDialog = vi.fn(() => Promise.reject(new Error('show boom')));
+        notificationService.hideProgressDialog = vi.fn();
+        notificationService.showToast = vi.fn();
+        modalController.dismiss = vi.fn(() => Promise.resolve());
+
+        const wrapper = await mountRecorder();
+
+        await expect(wrapper.vm.stop()).rejects.toThrow('show boom');
+
+        //our dialog never opened: hiding would dismiss another operation's indicator
+        expect(notificationService.hideProgressDialog).not.toHaveBeenCalled();
+        expect(modalController.dismiss).not.toHaveBeenCalled();
+    });
 });

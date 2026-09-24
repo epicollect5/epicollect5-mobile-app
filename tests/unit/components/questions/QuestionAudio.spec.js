@@ -208,6 +208,10 @@ describe('QuestionAudio component', () => {
         mockAndroidPermission();
         const wrapper = await factory();
 
+        //seed a previous recording: a cancel must preserve it, not clear it
+        mediaFile().cached = 'old.mp3';
+        wrapper.vm.state.answer.answer = 'old.mp3';
+
         wrapper.vm.record();
         await flushPromises();
 
@@ -215,8 +219,8 @@ describe('QuestionAudio component', () => {
         await flushPromises();
 
         //no recording was handed over: the entry must not point at a missing file
-        expect(mediaFile().cached).toBe('');
-        expect(wrapper.vm.state.answer.answer).toBe('');
+        expect(mediaFile().cached).toBe('old.mp3');
+        expect(wrapper.vm.state.answer.answer).toBe('old.mp3');
     });
 
     it('releases the gate and alerts when the recorder cannot be presented', async () => {
@@ -350,5 +354,28 @@ describe('QuestionAudio component', () => {
         dismissModal(0);
         await firstPlay;
         expect(useRootStore().isAudioModalActive).toBe(false);
+    });
+
+    it('drops a record tap from another instance while the recorder is open', async () => {
+        mockAndroidPermission();
+        const first = await factory();
+        const second = await factory();
+
+        first.vm.record();
+        await flushPromises();
+        expect(modalController.create).toHaveBeenCalledTimes(1);
+
+        //past the debounce window, so only the shared pending guard can drop it
+        const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + PARAMETERS.DELAY_LONG + 1);
+        try {
+            second.vm.record();
+            await flushPromises();
+        } finally {
+            nowSpy.mockRestore();
+        }
+        expect(modalController.create).toHaveBeenCalledTimes(1);
+
+        dismissModal(0, 'audio_1.mp3');
+        await flushPromises();
     });
 });
