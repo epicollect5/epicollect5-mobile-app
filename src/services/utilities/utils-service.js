@@ -1002,13 +1002,16 @@ export const utilsService = {
      * Leading-edge tap guard: returns true when the tap lands inside the
      * debounce window of the previous accepted tap (drop it).
      * The previous timestamp stays with the caller (per-component setup
-     * scope), so each button owns its window, the clock only moves forward
-     * and nothing strandable is shared across questions or entries.
+     * scope), so each button owns its window and nothing strandable is
+     * shared across questions or entries. A backwards clock jump fails open
+     * (treated as no double-tap): worst case a second tap gets through, and
+     * the modal guards still block real overlaps.
      * @param {number} lastTap - Date.now() of the last accepted tap (0 = none)
      * @param {number} windowMs - debounce window, e.g. PARAMETERS.DELAY_LONG
      * @returns {boolean} true when the tap must be dropped
      */
     isDoubleTap(lastTap, windowMs) {
-        return Date.now() - lastTap < windowMs;
+        const elapsed = Date.now() - lastTap;
+        return elapsed >= 0 && elapsed < windowMs;
     }
 };

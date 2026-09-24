@@ -194,7 +194,7 @@ export default {
 
 		//leading-edge tap guard shared by record() and play(): per-component
 		//setup state, so it dies on unmount and never strands a new entry.
-		//The clock only moves forward, unlike a claimed-until-released flag
+		//Rollback fails open (see isDoubleTap), unlike a claimed-until-released flag
 		let lastAudioTap = 0;
 
 		const projectRef = entriesAddScope.entryService.entry.projectRef;

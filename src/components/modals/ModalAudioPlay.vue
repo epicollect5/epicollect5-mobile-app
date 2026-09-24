@@ -93,27 +93,48 @@ export default {
 		};
 
 		let file_URI;
+		//a double-tapped Stop must not stop the player twice: the first tap
+		//exits through closeOnce below, so a second stop() would land on a
+		//released object
+		let stopping = false;
 		//idempotent close: Stop and the status-4 callback converge here, so a
 		//missing status callback cannot strand the modal (Stop still exits)
-		//and a late callback after Stop cannot double-release/double-dismiss
+		//and a late callback after Stop cannot double-release/double-dismiss.
+		//Release happens once ever; dismissal is confirmed, not assumed: a
+		//failed dismiss leaves closed false and unlatches Stop, so another tap
+		//or a later status callback retries instead of stranding the modal
 		let closed = false;
+		let released = false;
 		function closeOnce() {
 			if (closed) {
 				return;
 			}
-			closed = true;
-			try {
-				mediaPlayer.release();
-			} catch (error) {
-				console.log('audio release failed: ' + error);
+			if (!released) {
+				released = true;
+				try {
+					mediaPlayer.release();
+				} catch (error) {
+					console.log('audio release failed: ' + error);
+				}
 			}
 			//dismiss is the modal exit: an already-dismissed overlay means the
-			//modal is gone either way, anything else is logged
-			Promise.resolve(modalController.dismiss()).catch((error) => {
+			//modal is gone either way, anything else leaves the close open for
+			//retry (a false-resolving dismiss dismissed nothing)
+			Promise.resolve(modalController.dismiss()).then((result) => {
+				if (result === false) {
+					console.log('audio dismiss dismissed nothing, retryable');
+					stopping = false;
+				} else {
+					closed = true;
+				}
+			}).catch((error) => {
 				const gone = error === 'overlay does not exist'
 					|| error?.message === 'overlay does not exist';
-				if (!gone) {
+				if (gone) {
+					closed = true;
+				} else {
 					console.log('audio dismiss failed: ' + error);
+					stopping = false;
 				}
 			});
 		}
@@ -155,11 +176,6 @@ export default {
 			mediaPlayer.play();
 		}
 
-		//a double-tapped Stop must not stop the player twice: the first tap drives
-		//the native player to MEDIA_STOPPED, whose status callback releases it and
-		//dismisses the modal, so a second stop() lands on a released object
-		let stopping = false;
-
 		const methods = {
 			stop() {
 				if (stopping) {
@@ -167,7 +183,11 @@ export default {
 				}
 				stopping = true;
 				try {
-					mediaPlayer.stop();
+					//released implies a previous stop went through: a dismiss
+					//retry must not re-stop an already released player
+					if (!released) {
+						mediaPlayer.stop();
+					}
 				} catch (error) {
 					//this is the only control in the modal: let the user retry rather
 					//than latching it off forever on a native stop failure
