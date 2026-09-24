@@ -156,10 +156,16 @@ export default {
 				//enough for a second tap to get through, and would then stop and
 				//release the already-released recorder
 				stopping = true;
+				//tracks whether this stop() presented the saving dialog: the dialog
+				//is global, so the catch below must only hide what it showed,
+				//otherwise a failed show (or a web dismiss failure) would dismiss
+				//another operation's indicator
+				let dialogShown = false;
 				try {
 					//stop recording
 					if (rootStore.device.platform !== PARAMETERS.WEB) {
 						await notificationService.showProgressDialog(labels.saving, labels.wait);
+						dialogShown = true;
 
 						//stop recording and release resources
 						mediaRecorder.stopRecord();
@@ -176,10 +182,14 @@ export default {
 				} catch (error) {
 					//the saving dialog was already presented above: hide it before
 					//handing control back, otherwise it sticks over the modal when
-					//stopRecord() or release() throws. This is the only control in
+					//stopRecord() or release() throws. Only hides when this stop()
+					//showed it: a failed show must leave another operation's
+					//indicator alone. This is the only control in
 					//the modal: let the user retry rather than latching it off
 					//forever on a native stop/release failure
-					notificationService.hideProgressDialog();
+					if (dialogShown) {
+						notificationService.hideProgressDialog();
+					}
 					stopping = false;
 					throw error;
 				}

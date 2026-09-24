@@ -93,6 +93,16 @@ import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
 
+//shared pending-open guard across all QuestionAudio instances: claimed
+//synchronously before modal creation (play) or after mic permission is
+//granted (top of _doRecord), released on failure/dismissal. Kept separate
+//from rootStore.isAudioModalActive, which stays navigation-only (false
+//during permission). Claimed after permission, not before, because the OS
+//permission dialog blocks WebView taps, so no overlapping tap can land
+//mid-permission; claiming earlier would strand the guard when the plugin
+//never calls back (no dialog, UI still live).
+let pendingAudioOpen = false;
+
 export default {
 	components: {
 		GridQuestionNarrow,
@@ -245,18 +255,21 @@ export default {
 					mediaType: PARAMETERS.QUESTION_TYPES.AUDIO
 				});
 			},
-			record() {
-				//leading-edge debounce (shared with play) plus a read-only
-				//overlay check: a second tap inside the window, or any tap
-				//while an audio overlay is up, is dropped. A double permission
-				//prompt is benign (the plugin dedupes concurrent requests
-				//with an "already in progress" error), and 98.3.1 field
-				//testing showed the granted fast path (stacked modals,
-				//last wins) needs no strandable latch either
-				if (rootStore.isAudioModalActive
-					|| utilsService.isDoubleTap(lastAudioTap, PARAMETERS.DELAY_LONG)) {
-					return;
-				}
+		record() {
+			//leading-edge debounce (shared with play) plus a read-only
+			//overlay check: a second tap inside the window, or any tap
+			//while an audio open is pending or an overlay is up, is dropped.
+			//imp: pendingAudioOpen is claimed after mic permission is granted
+			//(top of _doRecord), not here. The OS permission dialog blocks
+			//WebView taps, so no overlapping tap can land mid-permission;
+			//claiming earlier would strand the guard when the plugin never
+			//calls back (no dialog, UI still live). isAudioModalActive stays
+			//navigation-only (false during permission).
+			if (pendingAudioOpen
+				|| rootStore.isAudioModalActive
+				|| utilsService.isDoubleTap(lastAudioTap, PARAMETERS.DELAY_LONG)) {
+				return;
+			}
 				lastAudioTap = Date.now();
 				if (rootStore.device.platform !== PARAMETERS.WEB) {
 					if (rootStore.device.platform === PARAMETERS.ANDROID) {
@@ -298,17 +311,20 @@ export default {
 					}
 				}
 			},
-			async play() {
-				//same debounce as record(): both actions share one window,
-				//so play cannot stack a second player on top of an in-flight
-				//record or play either
-				if (rootStore.isAudioModalActive
-					|| utilsService.isDoubleTap(lastAudioTap, PARAMETERS.DELAY_LONG)) {
-					return;
-				}
-				lastAudioTap = Date.now();
-				try {
-					scope.ModalAudioPlay = await modalController.create({
+		async play() {
+			//same debounce as record(): both actions share one window,
+			//so play cannot stack a second player on top of an in-flight
+			//record or play either. The pending guard is claimed synchronously
+			//here, before the first await, so taps from any instance are dropped.
+			if (pendingAudioOpen
+				|| rootStore.isAudioModalActive
+				|| utilsService.isDoubleTap(lastAudioTap, PARAMETERS.DELAY_LONG)) {
+				return;
+			}
+			lastAudioTap = Date.now();
+			pendingAudioOpen = true;
+			try {
+				scope.ModalAudioPlay = await modalController.create({
 						cssClass: 'modal-audio-play',
 						component: ModalAudioPlay,
 						showBackdrop: true,
@@ -333,13 +349,15 @@ export default {
 					} finally {
 						rootStore.isAudioModalActive = false;
 					}
-				} catch (error) {
-					//the player could not be presented: surface it, a failed
-					//open must never be silent (same as photo/video)
-					console.log('Audio play failed: ' + error);
-					notificationService.showAlert(error.message || labels.unknown_error);
-				}
-			},
+			} catch (error) {
+				//the player could not be presented: surface it, a failed
+				//open must never be silent (same as photo/video)
+				console.log('Audio play failed: ' + error);
+				notificationService.showAlert(error.message || labels.unknown_error);
+			} finally {
+				pendingAudioOpen = false;
+			}
+		},
 			onFileLoadedPWA(filename) {
 				state.answer.answer = filename;
 			},
@@ -364,39 +382,53 @@ export default {
 		}
 
 		async function _doRecord() {
-			scope.modalAudioRecord = await modalController.create({
-				cssClass: 'modal-audio-record',
-				component: ModalAudioRecord,
-				showBackdrop: true,
-				backdropDismiss: false,
-				componentProps: {
-					inputRef: state.inputDetails.ref,
-					entryUuid,
-					media
-				}
-			});
-
-			//settle on dismissal, not presentation: the overlay gate stays
-			//claimed while the recorder is open, so back-button navigation
-			//cannot leave the question mid-recording
-			const dismissed = scope.modalAudioRecord.onDidDismiss().then((response) => {
-				console.log('filename is: ', response.data);
-				const filename = response.data;
-				//a dismissal carrying no filename (no recording made) must leave the
-				//answer and the media reference untouched: writing an undefined here
-				//would point the entry at a file that does not exist and break the
-				//save with FileError 1
-				if (filename) {
-					state.answer.answer = filename;
-					media[entryUuid][state.inputDetails.ref].cached = filename;
-				}
-			});
-			rootStore.isAudioModalActive = true;
+			//second granted callback racing an in-flight open is dropped here:
+			//the OS dialog blocks WebView taps mid-permission, so this only
+			//covers the granted fast path and programmatic double-invocation
+			if (pendingAudioOpen || rootStore.isAudioModalActive) {
+				return;
+			}
+			//claimed synchronously before the first await, released below on
+			//every path (failure, dismissal); isAudioModalActive stays
+			//navigation-only and is claimed only once presenting
+			pendingAudioOpen = true;
 			try {
-				await scope.modalAudioRecord.present();
-				await dismissed;
+				scope.modalAudioRecord = await modalController.create({
+					cssClass: 'modal-audio-record',
+					component: ModalAudioRecord,
+					showBackdrop: true,
+					backdropDismiss: false,
+					componentProps: {
+						inputRef: state.inputDetails.ref,
+						entryUuid,
+						media
+					}
+				});
+
+				//settle on dismissal, not presentation: the overlay gate stays
+				//claimed while the recorder is open, so back-button navigation
+				//cannot leave the question mid-recording
+				const dismissed = scope.modalAudioRecord.onDidDismiss().then((response) => {
+					console.log('filename is: ', response.data);
+					const filename = response.data;
+					//a dismissal carrying no filename (no recording made) must leave the
+					//answer and the media reference untouched: writing an undefined here
+					//would point the entry at a file that does not exist and break the
+					//save with FileError 1
+					if (filename) {
+						state.answer.answer = filename;
+						media[entryUuid][state.inputDetails.ref].cached = filename;
+					}
+				});
+				rootStore.isAudioModalActive = true;
+				try {
+					await scope.modalAudioRecord.present();
+					await dismissed;
+				} finally {
+					rootStore.isAudioModalActive = false;
+				}
 			} finally {
-				rootStore.isAudioModalActive = false;
+				pendingAudioOpen = false;
 			}
 		}
 
