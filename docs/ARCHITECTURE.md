@@ -257,6 +257,8 @@ methods.prev();
 
 Add any new modal flag here (e.g. `isCameraPreviewModalActive` when `feature/camera-preview` lands — that modal closes via Ionic overlay `backdropDismiss:true` `src/use/questions/photo-take.js:115` while the page handler is suppressed via the flag).
 
+**Deliberately not a modal suppression flag:** `isAudioActionActive` (`src/stores/root-store.js`) is the Record/Play double-tap latch in `src/components/questions/QuestionAudio.vue`. It is claimed synchronously at the tap and spans the async microphone permission prompt, so it must NOT be added to the suppression list above: a plugin callback that never fires would then lock navigation for the session instead of only the two audio buttons. The gate the back handler reads stays `isAudioModalActive`, claimed only while an audio overlay is actually presented.
+
 **Known gaps fixed in this doc baseline:**
 
 - `isExportModalActive` (`src/stores/root-store.js:56` / `src/services/notification-service.js:430`) — progress export modal `backdropDismiss:false`. Guard now in `src/pages/Entries.vue:581` (`if (rootStore.isExportModalActive) return false`) so back does not navigate away with the modal open.

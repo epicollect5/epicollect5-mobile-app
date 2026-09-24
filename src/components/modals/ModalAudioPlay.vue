@@ -132,9 +132,25 @@ export default {
 			mediaPlayer.play();
 		}
 
+		//a double-tapped Stop must not stop the player twice: the first tap drives
+		//the native player to MEDIA_STOPPED, whose status callback releases it and
+		//dismisses the modal, so a second stop() lands on a released object
+		let stopping = false;
+
 		const methods = {
 			stop() {
-				mediaPlayer.stop();
+				if (stopping) {
+					return;
+				}
+				stopping = true;
+				try {
+					mediaPlayer.stop();
+				} catch (error) {
+					//this is the only control in the modal: let the user retry rather
+					//than latching it off forever on a native stop failure
+					stopping = false;
+					throw error;
+				}
 			}
 		};
 

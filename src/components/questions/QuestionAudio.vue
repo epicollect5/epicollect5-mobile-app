@@ -240,69 +240,79 @@ export default {
 					mediaType: PARAMETERS.QUESTION_TYPES.AUDIO
 				});
 			},
-			record() {
-				if (rootStore.device.platform !== PARAMETERS.WEB) {
-					if (rootStore.device.platform === PARAMETERS.ANDROID) {
-						//android permission
-						console.log(cordova.plugins);
-						cordova.plugins.diagnostic.requestRuntimePermission(
-							(status) => {
-								if (status === cordova.plugins.diagnostic.permissionStatus.GRANTED) {
-									console.log('Permission granted');
-									_doRecord();
-								} else {
-									//warn user the permission is required
-									notificationService.showAlert(labels.missing_permission);
-								}
-							},
-							function (error) {
-								console.error('The following error occurred: ' + error);
-								notificationService.showAlert(error);
-							},
-							cordova.plugins.diagnostic.permission.RECORD_AUDIO
-						);
-					} else {
-						//ios permission if needed
-						window.cordova.plugins.diagnostic.requestMicrophoneAuthorization(
-							function (status) {
-								if (status === 'authorized' || status === 1) {
-									console.log('Permission granted');
-									_doRecord();
-								} else {
-									//warn user the permission is required
-									notificationService.showAlert(labels.missing_permission);
-								}
-							},
-							function (error) {
-								console.error(error);
-								notificationService.showAlert(error);
-							}
-						);
+			async record() {
+				//audio recording is native-only, the PWA path uses the dropzone
+				if (rootStore.device.platform === PARAMETERS.WEB) {
+					return;
+				}
+				//a second tap while the permission prompt or a record modal is already
+				//in flight must be ignored: the flag is claimed synchronously, before
+				//the first await, otherwise both taps clear the check while the first
+				//permission request is pending and two record modals are created
+				//(the second present rejects, or both open at once)
+				if (rootStore.isAudioActionActive) {
+					return;
+				}
+				rootStore.isAudioActionActive = true;
+				try {
+					const granted = await _requestMicrophonePermission();
+					if (granted) {
+						await _doRecord();
 					}
+				} catch (error) {
+					//the recorder could not be presented: surface it, a failed open
+					//must never be silent (same as photo/video)
+					console.log('Audio record failed: ' + error);
+					notificationService.showAlert(error.message || labels.unknown_error);
+				} finally {
+					//single owner of the tap latch: released on every path, including a
+					//permission denial and a rejected present(). The presented-overlay gate
+					//(isAudioModalActive) is owned by _doRecord instead, so a permission
+					//callback that never fires strands this latch only: navigation, and
+					//therefore Prev/Next/Quit, keep working
+					rootStore.isAudioActionActive = false;
 				}
 			},
 			async play() {
-				scope.ModalAudioPlay = await modalController.create({
-					cssClass: 'modal-audio-play',
-					component: ModalAudioPlay,
-					showBackdrop: true,
-					backdropDismiss: false,
-					componentProps: {
-						projectRef,
-						inputRef: state.inputDetails.ref,
-						entryUuid,
-						media
+				//same synchronous double-tap guard as record(): both actions share one
+				//flag, so play cannot stack a second player on top of an in-flight
+				//record or play either
+				if (rootStore.isAudioActionActive) {
+					return;
+				}
+				rootStore.isAudioActionActive = true;
+				try {
+					scope.ModalAudioPlay = await modalController.create({
+						cssClass: 'modal-audio-play',
+						component: ModalAudioPlay,
+						showBackdrop: true,
+						backdropDismiss: false,
+						componentProps: {
+							projectRef,
+							inputRef: state.inputDetails.ref,
+							entryUuid,
+							media
+						}
+					});
+
+					//the overlay gate is claimed only once it is actually being presented, and
+					//released only once the user has closed the modal: present() resolves as
+					//soon as the overlay is on screen and playback keeps running after it,
+					//and a rejected present() must not strand the gate
+					const dismissed = scope.ModalAudioPlay.onDidDismiss();
+					rootStore.isAudioModalActive = true;
+					try {
+						await scope.ModalAudioPlay.present();
+						await dismissed;
+					} finally {
+						rootStore.isAudioModalActive = false;
 					}
-				});
-
-				scope.ModalAudioPlay.onDidDismiss().then(() => {
-					//console.log('filename is: ', response.data);
-					//state.answer.answer = response.data;
-					rootStore.isAudioModalActive = false;
-				});
-
-				rootStore.isAudioModalActive = true;
-				return scope.ModalAudioPlay.present();
+				} catch (error) {
+					console.log('Audio play failed: ' + error);
+					notificationService.showAlert(error.message || labels.unknown_error);
+				} finally {
+					rootStore.isAudioActionActive = false;
+				}
 			},
 			onFileLoadedPWA(filename) {
 				state.answer.answer = filename;
@@ -319,6 +329,46 @@ export default {
 			}
 		};
 
+		//resolves true when the microphone permission was granted, false otherwise.
+		//every outcome (granted, denied, plugin error) resolves, so the caller's
+		//guard is always released and never waits on a callback that the native
+		//plugin may drop
+		function _requestMicrophonePermission() {
+			return new Promise((resolve) => {
+				function _onPermissionResult(granted) {
+					if (granted) {
+						console.log('Permission granted');
+					} else {
+						//warn user the permission is required
+						notificationService.showAlert(labels.missing_permission);
+					}
+					resolve(granted);
+				}
+
+				function _onPermissionError(error) {
+					console.error(error);
+					notificationService.showAlert(error);
+					resolve(false);
+				}
+
+				if (rootStore.device.platform === PARAMETERS.ANDROID) {
+					//android permission
+					console.log(cordova.plugins);
+					cordova.plugins.diagnostic.requestRuntimePermission(
+						(status) => _onPermissionResult(status === cordova.plugins.diagnostic.permissionStatus.GRANTED),
+						_onPermissionError,
+						cordova.plugins.diagnostic.permission.RECORD_AUDIO
+					);
+				} else {
+					//ios permission if needed
+					window.cordova.plugins.diagnostic.requestMicrophoneAuthorization(
+						(status) => _onPermissionResult(status === 'authorized' || status === 1),
+						_onPermissionError
+					);
+				}
+			});
+		}
+
 		async function _doRecord() {
 			scope.modalAudioRecord = await modalController.create({
 				cssClass: 'modal-audio-record',
@@ -332,15 +382,28 @@ export default {
 				}
 			});
 
-			scope.modalAudioRecord.onDidDismiss().then((response) => {
+			//settle on dismissal, not presentation: the caller's tap latch stays
+			//claimed while the recorder is open, so a tap during recording cannot
+			//open a second one
+			const dismissed = scope.modalAudioRecord.onDidDismiss().then((response) => {
 				console.log('filename is: ', response.data);
 				const filename = response.data;
-				state.answer.answer = filename;
-				media[entryUuid][state.inputDetails.ref].cached = filename;
-				rootStore.isAudioModalActive = false;
+				//a dismissal carrying no filename (no recording made) must leave the
+				//answer and the media reference untouched: writing an undefined here
+				//would point the entry at a file that does not exist and break the
+				//save with FileError 1
+				if (filename) {
+					state.answer.answer = filename;
+					media[entryUuid][state.inputDetails.ref].cached = filename;
+				}
 			});
 			rootStore.isAudioModalActive = true;
-			return scope.modalAudioRecord.present();
+			try {
+				await scope.modalAudioRecord.present();
+				await dismissed;
+			} finally {
+				rootStore.isAudioModalActive = false;
+			}
 		}
 
 		return {

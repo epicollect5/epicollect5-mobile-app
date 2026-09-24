@@ -289,4 +289,53 @@ describe('ModalAudioPlay component', () => {
         wrapper.find('[data-test="stop"]').trigger('click');
         expect(stopMock).toHaveBeenCalledOnce();
     });
+
+    it('ignores a second stop tap', async () => {
+
+        // Create a mock mediaPlayer object with a play method
+        const stopMock = vi.fn().mockReturnValue(true);
+        const mockMediaPlayer = {
+            play: vi.fn().mockReturnValue(true),
+            stop: stopMock,
+            release: vi.fn().mockReturnValue(true)
+        };
+
+        const rootStore = useRootStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+
+        Capacitor.isNativePlatform.mockReturnValue(true);
+        modalController.dismiss = vi.fn().mockReturnValue(true);
+
+        window.Media = vi.fn(() => mockMediaPlayer);
+
+        const wrapper = shallowMount(ModalAudioPlay, {
+            props: {
+                projectRef,
+                entryUuid,
+                inputRef,
+                media: {
+                    [entryUuid]: {
+                        [inputRef]: {
+                            cached: '',
+                            stored: '',
+                            type
+                        }
+
+                    }
+                }
+            }
+        });
+
+        await flushPromises();
+
+        //double-tap within the same tick: the first tap drives the native player
+        //to MEDIA_STOPPED (release + dismiss), the second must be dropped
+        const firstStop = wrapper.find('[data-test="stop"]').trigger('click');
+        const secondStop = wrapper.find('[data-test="stop"]').trigger('click');
+        await Promise.all([firstStop, secondStop]);
+
+        expect(stopMock).toHaveBeenCalledOnce();
+    });
 });

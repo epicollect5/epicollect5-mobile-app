@@ -32,6 +32,7 @@
 					>
 						<ion-button
 							data-translate="stop"
+							data-test="stop"
 							@click="stop()"
 							class="question-action-button ion-text-nowrap"
 							color="secondary"
@@ -141,24 +142,43 @@ export default {
 			);
 		}
 
+		//a double-tapped Stop must not release the native recorder twice (the
+		//second release throws and the second dismiss rejects with
+		//overlay-does-not-exist), nor stack two saving dialogs
+		let stopping = false;
+
 		const methods = {
 			async stop() {
-				//stop recording
-				if (rootStore.device.platform !== PARAMETERS.WEB) {
-					await notificationService.showProgressDialog(labels.saving, labels.wait);
-
-					//stop recording and release resources
-					mediaRecorder.stopRecord();
-					mediaRecorder.release();
-
-					notificationService.hideProgressDialog();
-					notificationService.showToast(labels.audio_saved);
-
-					modalController.dismiss(filename);
-				} else {
-					modalController.dismiss(filename);
+				if (stopping) {
+					return;
 				}
-				console.log('recordAudio():STOP----------');
+				//claimed before the first await: the saving dialog below yields long
+				//enough for a second tap to get through, and would then stop and
+				//release the already-released recorder
+				stopping = true;
+				try {
+					//stop recording
+					if (rootStore.device.platform !== PARAMETERS.WEB) {
+						await notificationService.showProgressDialog(labels.saving, labels.wait);
+
+						//stop recording and release resources
+						mediaRecorder.stopRecord();
+						mediaRecorder.release();
+
+						notificationService.hideProgressDialog();
+						notificationService.showToast(labels.audio_saved);
+
+						modalController.dismiss(filename);
+					} else {
+						modalController.dismiss(filename);
+					}
+					console.log('recordAudio():STOP----------');
+				} catch (error) {
+					//this is the only control in the modal: let the user retry rather
+					//than latching it off forever on a native stop/release failure
+					stopping = false;
+					throw error;
+				}
 			}
 		};
 

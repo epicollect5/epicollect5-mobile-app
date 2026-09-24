@@ -5,6 +5,8 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
+import { notificationService } from '@/services/notification-service';
+import { modalController } from '@ionic/vue';
 
 
 const routerReplaceMock = vi.fn();
@@ -104,8 +106,12 @@ const resolveLocalFileSystemURLMock = vi.fn((url, successCallback) => {
 window.resolveLocalFileSystemURL = resolveLocalFileSystemURLMock;
 
 const mediaRecorderStartRecordMock = vi.fn();
+const mediaRecorderStopRecordMock = vi.fn();
+const mediaRecorderReleaseMock = vi.fn();
 const mediaRecorderMock = {
-    startRecord: mediaRecorderStartRecordMock
+    startRecord: mediaRecorderStartRecordMock,
+    stopRecord: mediaRecorderStopRecordMock,
+    release: mediaRecorderReleaseMock
 };
 window.Media = vi.fn(() => mediaRecorderMock);
 
@@ -199,9 +205,81 @@ describe('ModalAudioRecord component', () => {
                 // Get the actual translation from the component
                 const actualTranslation = wrapper.get('[data-translate="' + key + '"]').text();
 
-                // Use the translation key in the error message if the assertion fails
-                expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
+                // Use the translation key in the error message if the assertion fails                expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
             });
         });
+    });
+
+    //mount with the file system callback wired up, so the native recorder is
+    //actually constructed and stop() has something to stop
+    async function mountRecorder() {
+        const wrapper = shallowMount(ModalAudioRecord, {
+            props: {
+                entryUuid,
+                inputRef,
+                media: {
+                    [entryUuid]: {
+                        [inputRef]: {
+                            cached: '',
+                            stored: '',
+                            type
+                        }
+
+                    }
+                }
+            }
+        });
+        await fileSuccessCallbackMock({});
+        return wrapper;
+    }
+
+    it('ignores a second stop tap', async () => {
+        const rootStore = useRootStore();
+        rootStore.language = PARAMETERS.DEFAULT_LANGUAGE;
+        rootStore.device = {
+            platform: PARAMETERS.ANDROID
+        };
+        rootStore.tempDir = 'temp/';
+        notificationService.showProgressDialog = vi.fn(() => Promise.resolve());
+        notificationService.hideProgressDialog = vi.fn();
+        notificationService.showToast = vi.fn();
+        modalController.dismiss = vi.fn(() => Promise.resolve());
+
+        const wrapper = await mountRecorder();
+
+        //double-tap: both taps land before the saving dialog yields, so the
+        //second one would otherwise release the recorder a second time
+        const firstStop = wrapper.vm.stop();
+        const secondStop = wrapper.vm.stop();
+        await Promise.all([firstStop, secondStop]);
+
+        expect(mediaRecorderStopRecordMock).toHaveBeenCalledTimes(1);
+        expect(mediaRecorderReleaseMock).toHaveBeenCalledTimes(1);
+        expect(modalController.dismiss).toHaveBeenCalledTimes(1);
+    });
+
+    it('lets the user retry when the native stop fails', async () => {
+        const rootStore = useRootStore();
+        rootStore.language = PARAMETERS.DEFAULT_LANGUAGE;
+        rootStore.device = {
+            platform: PARAMETERS.ANDROID
+        };
+        rootStore.tempDir = 'temp/';
+        notificationService.showProgressDialog = vi.fn(() => Promise.resolve());
+        notificationService.hideProgressDialog = vi.fn();
+        notificationService.showToast = vi.fn();
+        modalController.dismiss = vi.fn(() => Promise.resolve());
+
+        const wrapper = await mountRecorder();
+        mediaRecorderStopRecordMock.mockImplementationOnce(() => {
+            throw new Error('stop boom');
+        });
+
+        await expect(wrapper.vm.stop()).rejects.toThrow('stop boom');
+
+        //the latch is released: the only control in the modal still works
+        await wrapper.vm.stop();
+        expect(mediaRecorderStopRecordMock).toHaveBeenCalledTimes(2);
+        expect(modalController.dismiss).toHaveBeenCalledTimes(1);
     });
 });
