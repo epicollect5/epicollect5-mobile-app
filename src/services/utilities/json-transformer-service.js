@@ -174,7 +174,7 @@ export const JSONTransformerService = {
             }
         });
 
-        if (isGroup || isBranch) return headers;
+        if (isGroup || isBranch) {return headers;}
         return Papa.unparse([headers], {header: false, quotes: false});
     },
 
@@ -224,7 +224,7 @@ export const JSONTransformerService = {
 
         for (const inputRef of form.inputs) {
             const inputDetails = projectModel.getInput(inputRef);
-            if (inputDetails.type === QT.README) continue;
+            if (inputDetails.type === QT.README) {continue;}
             const answer = answers[inputRef]?.answer ?? '';
 
             switch (inputDetails.type) {
@@ -293,7 +293,7 @@ export const JSONTransformerService = {
             }
         }
 
-        if (isGroup || isBranch) return row;
+        if (isGroup || isBranch) {return row;}
         return Papa.unparse([row], {header: false, quotes: false});
     },
 

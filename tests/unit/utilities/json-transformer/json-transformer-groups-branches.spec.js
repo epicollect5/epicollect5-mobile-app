@@ -48,9 +48,9 @@ describe('JSONTransformerService — Plain Group', () => {
 
     it('should generate correct headers for a plain group', () => {
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'q_name') return {type: 'text', ref: 'q_name'};
-            if (ref === PLAIN_GROUP_REF) return {type: 'group', ref: PLAIN_GROUP_REF};
-            if (ref === `${PLAIN_GROUP_REF}_q_sex`) return {type: 'text', ref: `${PLAIN_GROUP_REF}_q_sex`};
+            if (ref === 'q_name') {return {type: 'text', ref: 'q_name'};}
+            if (ref === PLAIN_GROUP_REF) {return {type: 'group', ref: PLAIN_GROUP_REF};}
+            if (ref === `${PLAIN_GROUP_REF}_q_sex`) {return {type: 'text', ref: `${PLAIN_GROUP_REF}_q_sex`};}
         });
         projectModel.getGroupInputRefs.mockReturnValue([`${PLAIN_GROUP_REF}_q_sex`]);
 
@@ -64,9 +64,9 @@ describe('JSONTransformerService — Plain Group', () => {
 
     it('should generate correct row data for a plain group', async () => {
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'q_name') return {type: 'text', ref: 'q_name'};
-            if (ref === PLAIN_GROUP_REF) return {type: 'group', ref: PLAIN_GROUP_REF};
-            if (ref === `${PLAIN_GROUP_REF}_q_sex`) return {type: 'text', ref: `${PLAIN_GROUP_REF}_q_sex`};
+            if (ref === 'q_name') {return {type: 'text', ref: 'q_name'};}
+            if (ref === PLAIN_GROUP_REF) {return {type: 'group', ref: PLAIN_GROUP_REF};}
+            if (ref === `${PLAIN_GROUP_REF}_q_sex`) {return {type: 'text', ref: `${PLAIN_GROUP_REF}_q_sex`};}
         });
         projectModel.getGroupInputRefs.mockReturnValue([`${PLAIN_GROUP_REF}_q_sex`]);
 
@@ -84,9 +84,9 @@ describe('JSONTransformerService — Plain Group', () => {
 
     it('should not bleed branchOwnerInputRef from a branch question into a subsequent plain group', () => {
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === BRANCH_OWNER_INPUT_REF) return {type: 'branch', ref: BRANCH_OWNER_INPUT_REF};
-            if (ref === PLAIN_GROUP_REF) return {type: 'group', ref: PLAIN_GROUP_REF};
-            if (ref === `${PLAIN_GROUP_REF}_q_sex`) return {type: 'text', ref: `${PLAIN_GROUP_REF}_q_sex`};
+            if (ref === BRANCH_OWNER_INPUT_REF) {return {type: 'branch', ref: BRANCH_OWNER_INPUT_REF};}
+            if (ref === PLAIN_GROUP_REF) {return {type: 'group', ref: PLAIN_GROUP_REF};}
+            if (ref === `${PLAIN_GROUP_REF}_q_sex`) {return {type: 'text', ref: `${PLAIN_GROUP_REF}_q_sex`};}
         });
         projectModel.getGroupInputRefs.mockReturnValue([`${PLAIN_GROUP_REF}_q_sex`]);
 
@@ -139,9 +139,9 @@ describe('JSONTransformerService — Group Nested in Branch', () => {
             forms: {[FORM_REF]: {branch: {[BRANCH_OWNER_INPUT_REF]: [GROUP_IN_BRANCH_REF]}}}
         });
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === GROUP_IN_BRANCH_REF) return {type: 'group', ref: GROUP_IN_BRANCH_REF};
-            if (ref === `${GROUP_IN_BRANCH_REF}_q_photo`) return {type: 'text', ref: `${GROUP_IN_BRANCH_REF}_q_photo`};
-            if (ref === `${GROUP_IN_BRANCH_REF}_q_text`) return {type: 'text', ref: `${GROUP_IN_BRANCH_REF}_q_text`};
+            if (ref === GROUP_IN_BRANCH_REF) {return {type: 'group', ref: GROUP_IN_BRANCH_REF};}
+            if (ref === `${GROUP_IN_BRANCH_REF}_q_photo`) {return {type: 'text', ref: `${GROUP_IN_BRANCH_REF}_q_photo`};}
+            if (ref === `${GROUP_IN_BRANCH_REF}_q_text`) {return {type: 'text', ref: `${GROUP_IN_BRANCH_REF}_q_text`};}
         });
         projectModel.getGroupInputRefs.mockReturnValue([
             `${GROUP_IN_BRANCH_REF}_q_photo`,
@@ -223,10 +223,10 @@ describe('JSONTransformerService — Header/Row Parity for Mixed Form', () => {
         }];
 
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'q_name') return {type: 'text', ref: 'q_name'};
-            if (ref === PLAIN_GROUP_REF) return {type: 'group', ref: PLAIN_GROUP_REF};
-            if (ref === `${PLAIN_GROUP_REF}_q_sex`) return {type: 'text', ref: `${PLAIN_GROUP_REF}_q_sex`};
-            if (ref === BRANCH_OWNER_INPUT_REF) return {type: 'branch', ref: BRANCH_OWNER_INPUT_REF};
+            if (ref === 'q_name') {return {type: 'text', ref: 'q_name'};}
+            if (ref === PLAIN_GROUP_REF) {return {type: 'group', ref: PLAIN_GROUP_REF};}
+            if (ref === `${PLAIN_GROUP_REF}_q_sex`) {return {type: 'text', ref: `${PLAIN_GROUP_REF}_q_sex`};}
+            if (ref === BRANCH_OWNER_INPUT_REF) {return {type: 'branch', ref: BRANCH_OWNER_INPUT_REF};}
         });
         projectModel.getGroupInputRefs.mockReturnValue([`${PLAIN_GROUP_REF}_q_sex`]);
         databaseSelectService.countBranchesForQuestion.mockResolvedValue({
@@ -279,8 +279,8 @@ describe('JSONTransformerService — Multiple Plain Groups on the Same Form', ()
     beforeEach(() => {
         projectModel.getInput.mockImplementation((ref) => inputDefs[ref]);
         projectModel.getGroupInputRefs.mockImplementation((formRef, groupRef) => {
-            if (groupRef === 'plain_group_a') return ['q_color'];
-            if (groupRef === 'plain_group_b') return ['q_age'];
+            if (groupRef === 'plain_group_a') {return ['q_color'];}
+            if (groupRef === 'plain_group_b') {return ['q_age'];}
         });
     });
 
@@ -359,9 +359,9 @@ describe('JSONTransformerService — Multiple Branches Each With a Nested Group'
             forms: {[FORM_REF]: {branch: {'branch_a': ['group_in_branch_a']}}}
         });
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'group_in_branch_a') return {type: 'group', ref: 'group_in_branch_a'};
-            if (ref === 'q_photo') return {type: 'text', ref: 'q_photo'};
-            if (ref === 'q_caption') return {type: 'text', ref: 'q_caption'};
+            if (ref === 'group_in_branch_a') {return {type: 'group', ref: 'group_in_branch_a'};}
+            if (ref === 'q_photo') {return {type: 'text', ref: 'q_photo'};}
+            if (ref === 'q_caption') {return {type: 'text', ref: 'q_caption'};}
         });
         projectModel.getGroupInputRefs.mockReturnValue(['q_photo', 'q_caption']);
 
@@ -381,9 +381,9 @@ describe('JSONTransformerService — Multiple Branches Each With a Nested Group'
             forms: {[FORM_REF]: {branch: {'branch_b': ['group_in_branch_b']}}}
         });
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'group_in_branch_b') return {type: 'group', ref: 'group_in_branch_b'};
-            if (ref === 'q_member_name') return {type: 'text', ref: 'q_member_name'};
-            if (ref === 'q_member_age') return {type: 'text', ref: 'q_member_age'};
+            if (ref === 'group_in_branch_b') {return {type: 'group', ref: 'group_in_branch_b'};}
+            if (ref === 'q_member_name') {return {type: 'text', ref: 'q_member_name'};}
+            if (ref === 'q_member_age') {return {type: 'text', ref: 'q_member_age'};}
         });
         projectModel.getGroupInputRefs.mockReturnValue(['q_member_name', 'q_member_age']);
 
@@ -403,9 +403,9 @@ describe('JSONTransformerService — Multiple Branches Each With a Nested Group'
             forms: {[FORM_REF]: {branch: {'branch_a': ['group_in_branch_a']}}}
         });
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'group_in_branch_a') return {type: 'group', ref: 'group_in_branch_a'};
-            if (ref === 'q_photo') return {type: 'text', ref: 'q_photo'};
-            if (ref === 'q_caption') return {type: 'text', ref: 'q_caption'};
+            if (ref === 'group_in_branch_a') {return {type: 'group', ref: 'group_in_branch_a'};}
+            if (ref === 'q_photo') {return {type: 'text', ref: 'q_photo'};}
+            if (ref === 'q_caption') {return {type: 'text', ref: 'q_caption'};}
         });
         projectModel.getGroupInputRefs.mockReturnValue(['q_photo', 'q_caption']);
 
@@ -419,9 +419,9 @@ describe('JSONTransformerService — Multiple Branches Each With a Nested Group'
             forms: {[FORM_REF]: {branch: {'branch_b': ['group_in_branch_b']}}}
         });
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'group_in_branch_b') return {type: 'group', ref: 'group_in_branch_b'};
-            if (ref === 'q_member_name') return {type: 'text', ref: 'q_member_name'};
-            if (ref === 'q_member_age') return {type: 'text', ref: 'q_member_age'};
+            if (ref === 'group_in_branch_b') {return {type: 'group', ref: 'group_in_branch_b'};}
+            if (ref === 'q_member_name') {return {type: 'text', ref: 'q_member_name'};}
+            if (ref === 'q_member_age') {return {type: 'text', ref: 'q_member_age'};}
         });
         projectModel.getGroupInputRefs.mockReturnValue(['q_member_name', 'q_member_age']);
 
@@ -482,8 +482,8 @@ describe('JSONTransformerService — Multiple Groups Inside One Branch', () => {
         });
         projectModel.getInput.mockImplementation((ref) => inputDefs[ref]);
         projectModel.getGroupInputRefs.mockImplementation((formRef, groupRef) => {
-            if (groupRef === 'group_media') return ['q_photo', 'q_video'];
-            if (groupRef === 'group_details') return ['q_notes', 'q_rating'];
+            if (groupRef === 'group_media') {return ['q_photo', 'q_video'];}
+            if (groupRef === 'group_details') {return ['q_notes', 'q_rating'];}
         });
     });
 

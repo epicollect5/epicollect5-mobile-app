@@ -55,7 +55,7 @@ export const writeFileService = {
             let globalBranchIndex = 1;
             outer: for (const [_fRef, inputs] of Object.entries(defaultForms)) {
                 for (const [inputRef, _input] of Object.entries(inputs)) {
-                    if (inputRef === branchRef) break outer;
+                    if (inputRef === branchRef) {break outer;}
                     if (projectModel.getInput(inputRef)?.type === 'branch') {
                         globalBranchIndex++;
                     }

@@ -443,8 +443,8 @@ describe('JSONTransformerService — getBranchCSVHeaders splice correctness', ()
             forms: {'f_1': {branch: {'branch_ref': ['q_text', 'q_num']}}}
         });
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'q_text') return {type: 'text', ref: 'q_text'};
-            if (ref === 'q_num') return {type: 'integer', ref: 'q_num'};
+            if (ref === 'q_text') {return {type: 'text', ref: 'q_text'};}
+            if (ref === 'q_num') {return {type: 'integer', ref: 'q_num'};}
         });
     });
 
@@ -742,8 +742,8 @@ describe('JSONTransformerService — Answer Types Inside a Branch Row', () => {
 
     it('should resolve radio label inside a branch row', async () => {
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'q_radio') return {type: 'radio', ref: 'q_radio', possible_answers: possibleAnswers};
-            if (ref === 'q_check') return {type: 'checkbox', ref: 'q_check', possible_answers: possibleAnswers};
+            if (ref === 'q_radio') {return {type: 'radio', ref: 'q_radio', possible_answers: possibleAnswers};}
+            if (ref === 'q_check') {return {type: 'checkbox', ref: 'q_check', possible_answers: possibleAnswers};}
         });
 
         const answers = {'q_radio': {answer: 'r_a'}, 'q_check': {answer: []}};
@@ -755,8 +755,8 @@ describe('JSONTransformerService — Answer Types Inside a Branch Row', () => {
 
     it('should join checkbox labels inside a branch row', async () => {
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'q_radio') return {type: 'radio', ref: 'q_radio', possible_answers: possibleAnswers};
-            if (ref === 'q_check') return {type: 'checkbox', ref: 'q_check', possible_answers: possibleAnswers};
+            if (ref === 'q_radio') {return {type: 'radio', ref: 'q_radio', possible_answers: possibleAnswers};}
+            if (ref === 'q_check') {return {type: 'checkbox', ref: 'q_check', possible_answers: possibleAnswers};}
         });
 
         const answers = {'q_radio': {answer: ''}, 'q_check': {answer: ['r_a', 'r_b']}};

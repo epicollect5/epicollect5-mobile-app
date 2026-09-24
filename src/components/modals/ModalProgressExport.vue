@@ -48,12 +48,12 @@ export default {
     const computedScope = {
       progress: computed(() => {
         const progress = rootStore.progressExport;
-        if (progress.total === 0) return 0;
+        if (progress.total === 0) {return 0;}
         return progress.done / progress.total;
       }),
       percentageDisplay: computed(() => {
         const progress = rootStore.progressExport;
-        if (progress.total === 0) return '0%';
+        if (progress.total === 0) {return '0%';}
         return Math.round((progress.done / progress.total) * 100) + '%';
       }),
       header: props.header

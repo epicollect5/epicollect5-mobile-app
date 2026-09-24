@@ -470,7 +470,7 @@ buttons
      */
     async showProgressExportModal() {
         const rootStore = useRootStore();
-        if (rootStore.isExportModalActive) return; // prevent multiple modals
+        if (rootStore.isExportModalActive) {return;} // prevent multiple modals
 
         rootStore.isExportModalActive = true;
         const language = rootStore.language;
@@ -494,7 +494,7 @@ buttons
      */
     async hideProgressExportModal() {
         const rootStore = useRootStore();
-        if (!rootStore.isExportModalActive) return;
+        if (!rootStore.isExportModalActive) {return;}
 
         // 1. Dismiss the UI component
         await notificationService.dismissModalSafe();

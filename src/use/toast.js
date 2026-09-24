@@ -13,7 +13,7 @@ export function useToast() {
 
         const isNative = Capacitor.isNativePlatform();
 
-        if (delay > 0) await new Promise((r) => setTimeout(r, delay));
+        if (delay > 0) {await new Promise((r) => setTimeout(r, delay));}
 
         if (isNative) {
             // 1. Native Execution
@@ -48,9 +48,9 @@ export function useToast() {
             opacity: '0'
         });
 
-        if (pos === 'top') el.style.top = '10%';
-        else if (pos === 'center') el.style.top = '50%';
-        else el.style.bottom = '10%';
+        if (pos === 'top') {el.style.top = '10%';}
+        else if (pos === 'center') {el.style.top = '50%';}
+        else {el.style.bottom = '10%';}
 
         document.body.appendChild(el);
 

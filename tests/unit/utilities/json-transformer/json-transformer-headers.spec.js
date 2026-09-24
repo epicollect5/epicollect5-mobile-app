@@ -59,8 +59,8 @@ describe('JSONTransformerService Headers', () => {
 
     it('should recursively flatten group headers', () => {
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'group_1') return { type: 'group', ref: 'group_1' };
-            if (ref === 'q_sub') return { type: 'text', ref: 'q_sub' };
+            if (ref === 'group_1') {return { type: 'group', ref: 'group_1' };}
+            if (ref === 'q_sub') {return { type: 'text', ref: 'q_sub' };}
         });
         projectModel.getGroupInputRefs.mockReturnValue(['q_sub']);
         const form = { details: { ref: 'form_ref' }, inputs: ['group_1'] };

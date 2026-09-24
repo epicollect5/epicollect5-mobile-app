@@ -248,24 +248,24 @@ export const utilsService = {
     // normalize and return canonical "YYYY-MM-DDT00:00:00.000" or "" on invalid
     normalizeToISODateOnlyEmpty(input) {
         // treat null/undefined/empty-string as invalid -> return empty string
-        if (input === null || input === undefined || input === '') return '';
+        if (input === null || input === undefined || input === '') {return '';}
 
         // ensure string
-        if (typeof input !== 'string') input = String(input);
+        if (typeof input !== 'string') {input = String(input);}
 
         // match YYYY-M-D optionally followed by T...
         const m = input.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:T.*)?$/);
-        if (!m) return '';
+        if (!m) {return '';}
 
         const year = Number(m[1]);
         const month = Number(m[2]);
         const day = Number(m[3]);
 
-        if (month < 1 || month > 12) return '';
+        if (month < 1 || month > 12) {return '';}
 
         // max days for the given month/year using UTC to avoid timezone issues
         const maxDays = new Date(Date.UTC(year, month, 0)).getUTCDate();
-        if (day < 1 || day > maxDays) return '';
+        if (day < 1 || day > maxDays) {return '';}
 
         const mm = String(month).padStart(2, '0');
         const dd = String(day).padStart(2, '0');
@@ -276,7 +276,7 @@ export const utilsService = {
     // robust replacement for getISODateOnly that returns "" for invalid inputs
     getISODateOnlySafeEmpty(input) {
         // explicit handling: null or empty string -> return empty string (per your requirement)
-        if (input === null || input === '' || input === undefined) return '';
+        if (input === null || input === '' || input === undefined) {return '';}
 
         if (typeof input === 'string') {
             // try to normalize string formats like "2024-5-4" -> "2024-05-04T00:00:00.000"
@@ -285,7 +285,7 @@ export const utilsService = {
 
         // Non-string path (Date object or timestamp)
         const d = new Date(input || Date.now());
-        if (isNaN(d.getTime())) return ''; // invalid date -> empty string
+        if (isNaN(d.getTime())) {return '';} // invalid date -> empty string
 
         const y = d.getUTCFullYear();
         const m = String(d.getUTCMonth() + 1).padStart(2, '0');

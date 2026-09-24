@@ -94,8 +94,8 @@ describe('JSONTransformerService Row Content', () => {
 
     it('should flatten group data into the main row', async () => {
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'group_1') return { type: 'group', ref: 'group_1' };
-            if (ref === 'q_sub') return { type: 'text', ref: 'q_sub' };
+            if (ref === 'group_1') {return { type: 'group', ref: 'group_1' };}
+            if (ref === 'q_sub') {return { type: 'text', ref: 'q_sub' };}
         });
         projectModel.getGroupInputRefs.mockReturnValue(['q_sub']);
         const form = { details: { ref: 'form_ref' }, inputs: ['group_1'] };
@@ -243,7 +243,7 @@ describe('JSONTransformerService Multi-Branch Logic', () => {
             forms: { 'f_1': { branch: { 'branch_photos': ['photo_caption'] } } }
         });
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'photo_caption') return { type: 'text', ref: 'photo_caption' };
+            if (ref === 'photo_caption') {return { type: 'text', ref: 'photo_caption' };}
         });
 
         const mockMappings = [{
@@ -262,7 +262,7 @@ describe('JSONTransformerService Multi-Branch Logic', () => {
             forms: { 'f_1': { branch: { 'branch_photos': ['photo_caption'] } } }
         });
         projectModel.getInput.mockImplementation((ref) => {
-            if (ref === 'photo_caption') return { type: 'text', ref: 'photo_caption' };
+            if (ref === 'photo_caption') {return { type: 'text', ref: 'photo_caption' };}
         });
 
         const mockMappings = [{
