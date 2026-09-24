@@ -1,0 +1,21 @@
+.github/commit-rules.md
+  s_35aeb210e05269::t_2f0efabad3285b 1-7,9
+AGENTS.md
+  s_35aeb210e05269::t_709f04b020a3d9 56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1c7f6950c825f432d8770a85b9cbb0e2245e2649",
+  "prompts": {},
+  "sessions": {
+    "s_35aeb210e05269": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f2d147b7effe84ke0rr0kTiR4k",
+        "model": "mimo-v2.6-flash-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
