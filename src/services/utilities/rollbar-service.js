@@ -26,7 +26,13 @@ const rollbar = new Rollbar({
     //suppressed items never reach the API (or the itemsPerMinute counter)
     checkIgnore: (isUncaught, args, payload) => {
         try {
-            const context = (payload && payload.custom && payload.custom.context) || 'uncaught';
+            const context = payload && payload.custom && payload.custom.context;
+            if (!context) {
+                //legacy critical() and uncaught items have no stable identity:
+                //throttling them together would hide distinct failures, so they
+                //keep the pre-existing itemsPerMinute backstop only
+                return false;
+            }
             const key = THROTTLE_KEY_PREFIX + context;
             const now = Date.now();
             let last = Number(localStorage.getItem(key)) || 0;

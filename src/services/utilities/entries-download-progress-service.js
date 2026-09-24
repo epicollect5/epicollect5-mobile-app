@@ -1,3 +1,5 @@
+import {rollbarService} from '@/services/utilities/rollbar-service';
+
 const STORAGE_KEY_PREFIX = 'entries-download-progress';
 
 function _getStorageKey(projectRef, formRef) {
@@ -68,6 +70,9 @@ export const entriesDownloadProgressService = {
                 JSON.stringify(progress)
             );
         } catch (error) {
+            //the resume state is lost: without it a partial download cannot be
+            //resumed, so surface the failure instead of only logging it
+            rollbarService.criticalWithContext('entriesDownloadProgressService: persist download progress failed', error);
             console.warn('Failed to save entries download progress:', error);
         }
     },

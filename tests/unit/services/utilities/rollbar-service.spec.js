@@ -139,6 +139,14 @@ describe('rollbarService throttle (checkIgnore)', () => {
 
         expect(report('op: blocked')).toBe(false);
     });
+
+    it('never throttles contextless legacy reports, so unrelated errors cannot hide each other', () => {
+        expect(rollbarConfig.checkIgnore(false, [], {})).toBe(false);
+        expect(rollbarConfig.checkIgnore(false, [], {})).toBe(false);
+        expect(rollbarConfig.checkIgnore(true, [], undefined)).toBe(false);
+        //no throttle key is ever written for contextless items
+        expect(localStorage.length).toBe(0);
+    });
 });
 
 describe('rollbarService.clearThrottleKeys', () => {

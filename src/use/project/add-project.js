@@ -96,7 +96,12 @@ export async function addProject(project, router) {
                                 }, PARAMETERS.DELAY_MEDIUM);
                             }
                         } catch (error) {
-                            rollbarService.criticalWithContext('addProject: project insert failed', error);
+                            //ec5_109 (project already exists) is a handled business
+                            //outcome, not a failure: reporting it would create noise
+                            //and occupy this context's throttle window
+                            if (DB_ERRORS[error.code] !== 'ec5_109') {
+                                rollbarService.criticalWithContext('addProject: project insert failed', error);
+                            }
                             let errorCode = DB_ERRORS[error.code];
                             // Project already exists error
                             if (errorCode === 'ec5_109') {

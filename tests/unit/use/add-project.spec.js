@@ -10,6 +10,7 @@ import { projectModel } from '@/models/project-model.js';
 import { logout } from '@/use/auth/logout';
 import { showModalLogin } from '@/use/auth/show-modal-login';
 import { addProject } from '@/use/project/add-project';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 vi.mock('@/services/utilities/rollbar-service', () => ({
     rollbarService: {
@@ -221,5 +222,29 @@ describe('addProject()', () => {
             name: 'projects',
             query: { refresh: true }
         });
+    });
+
+    it('does not report a handled duplicate-project rejection (ec5_109) to rollbar', async () => {
+        webService.getProject.mockResolvedValue(successResponse);
+        databaseInsertService.insertProject.mockRejectedValue({ code: 0 });
+
+        await expect(addProject(project, router)).resolves.toBeUndefined();
+
+        expect(rollbarService.criticalWithContext).not.toHaveBeenCalled();
+        expect(notificationService.showAlert).toHaveBeenCalledWith('Project already exists');
+    });
+
+    it('reports unexpected insert failures to rollbar before handling them', async () => {
+        const failure = { code: 999 };
+        webService.getProject.mockResolvedValue(successResponse);
+        databaseInsertService.insertProject.mockRejectedValue(failure);
+
+        await expect(addProject(project, router)).resolves.toBeUndefined();
+
+        expect(rollbarService.criticalWithContext).toHaveBeenCalledWith(
+            'addProject: project insert failed',
+            failure
+        );
+        expect(notificationService.hideProgressDialog).toHaveBeenCalled();
     });
 });
