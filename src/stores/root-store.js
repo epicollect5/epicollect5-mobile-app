@@ -53,7 +53,6 @@ export const useRootStore = defineStore('RootStore', {
                 params: null
             },
             isAudioModalActive: false,
-            isAudioActionActive: false,
             isLocationModalActive: false,
             isVideoEncodingModalActive: false,
             isCameraPreviewModalActive: false,

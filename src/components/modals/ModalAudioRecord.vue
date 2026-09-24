@@ -174,8 +174,12 @@ export default {
 					}
 					console.log('recordAudio():STOP----------');
 				} catch (error) {
-					//this is the only control in the modal: let the user retry rather
-					//than latching it off forever on a native stop/release failure
+					//the saving dialog was already presented above: hide it before
+					//handing control back, otherwise it sticks over the modal when
+					//stopRecord() or release() throws. This is the only control in
+					//the modal: let the user retry rather than latching it off
+					//forever on a native stop/release failure
+					notificationService.hideProgressDialog();
 					stopping = false;
 					throw error;
 				}

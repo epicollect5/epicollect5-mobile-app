@@ -997,5 +997,18 @@ export const utilsService = {
     },
     async delay(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
+    },
+    /**
+     * Leading-edge tap guard: returns true when the tap lands inside the
+     * debounce window of the previous accepted tap (drop it).
+     * The previous timestamp stays with the caller (per-component setup
+     * scope), so each button owns its window, the clock only moves forward
+     * and nothing strandable is shared across questions or entries.
+     * @param {number} lastTap - Date.now() of the last accepted tap (0 = none)
+     * @param {number} windowMs - debounce window, e.g. PARAMETERS.DELAY_LONG
+     * @returns {boolean} true when the tap must be dropped
+     */
+    isDoubleTap(lastTap, windowMs) {
+        return Date.now() - lastTap < windowMs;
     }
 };
