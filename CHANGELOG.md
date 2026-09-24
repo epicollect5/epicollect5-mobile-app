@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 98.3.1 - build 9831
+
+ - After returning from the system camera, the saving dialog now stays visible while the captured photo is moved into place and its thumbnail is decoded, instead of leaving the app with no feedback in that gap.
+
 # 98.3.0 - build 9830
 
  - Blocked the hardware back button, toolbar back button, and entry-errors button while a project update is in flight, so navigating away during an update can no longer destroy the project model under the pending continuation.

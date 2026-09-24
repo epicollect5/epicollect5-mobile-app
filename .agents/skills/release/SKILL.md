@@ -27,7 +27,13 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
 ## Steps
 
 0. **Full test suite gate** (mandatory first, before any state reads or edits):
-   - Run `npx vitest --run --silent`.
+   - Run `node scripts/check-node-version.js && NODE_ENV=test npx vitest --run --silent`.
+     Both prefixes are load-bearing, never simplify them away: the node check
+     enforces the `engines` requirement (agent shells can resolve an older Node),
+     and the explicit `NODE_ENV=test` overrides whatever the agent shell inherits.
+     A shell exporting `NODE_ENV=production` makes Vite externalize Node builtins
+     (`path`, `fs`) to empty browser stubs, which fails every spec importing them
+     (`default.resolve is not a function`) even though the repo is green.
    - If any test fails, **stop immediately** — do not bump versions, edit the
      changelog, commit, or tag. Report the failing files/tests and warn the user
      to fix them first; resume the release only once the suite is fully green.
@@ -59,7 +65,8 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
 3. Compute `buildNumber` = new `versionName` with dots removed.
 
 3a. **Android edge-to-edge gate** (mandatory before proceeding):
-   - Run `npx vitest run tests/unit/edge-to-edge.spec.js`. It asserts the pin is exact
+   - Run `NODE_ENV=test npx vitest run tests/unit/edge-to-edge.spec.js`. The explicit
+      `NODE_ENV=test` is required (see step 0). It asserts the pin is exact
      (no caret), that `package-lock.json` resolves the same version, that
      `SystemBars.insetsHandling` is `"disable"`, and that the EdgeToEdge plugin is present
      in the committed Android wiring. If it fails, **stop** - do not hand-verify.
@@ -95,9 +102,9 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
    - Mirror the existing bullet style (` - ` / `- `).
 
 6. Validate
-   - `npx vitest run tests/unit/changelog.spec.js` (enforces heading format,
+   - `NODE_ENV=test npx vitest run tests/unit/changelog.spec.js` (enforces heading format,
      uniqueness, and that the package version has notes).
-   - `npx vitest run tests/unit/edge-to-edge.spec.js` (re-asserts the pin and the native
+   - `NODE_ENV=test npx vitest run tests/unit/edge-to-edge.spec.js` (re-asserts the pin and the native
      wiring after the version bump has touched `package.json`).
 
 7. Report and confirm follow-up
