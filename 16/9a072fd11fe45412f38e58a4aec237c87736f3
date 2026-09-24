@@ -1,0 +1,23 @@
+tests/unit/components/questions/QuestionAudio.spec.js
+  s_c55c971dccb776::t_b7357db46446a2 211-214,222-223
+  s_c55c971dccb776::t_ed543f4b0829cb 358-379
+  s_c55c971dccb776::t_0adccc5f63faf8 380
+tests/unit/components/modals/ModalAudioRecord.spec.js
+  s_c55c971dccb776::t_c913023ce95fdf 290-310
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "169a072fd11fe45412f38e58a4aec237c87736f3",
+  "prompts": {},
+  "sessions": {
+    "s_c55c971dccb776": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f2c3ceb61ffejqpNu56Vc2fu8F",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
