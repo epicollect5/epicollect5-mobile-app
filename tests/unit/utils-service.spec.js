@@ -743,6 +743,22 @@ describe('resolvePhotoFilename', () => {
     });
 });
 
+describe('isDoubleTap', () => {
+    it('drops a tap inside the window', () => {
+        expect(utilsService.isDoubleTap(Date.now(), 1000)).toBe(true);
+    });
+
+    it('allows a tap past the window', () => {
+        expect(utilsService.isDoubleTap(Date.now() - 1001, 1000)).toBe(false);
+    });
+
+    it('fails open on a backwards clock jump', () => {
+        //negative elapsed (lastTap in the future) must not block taps until
+        //the clock catches up
+        expect(utilsService.isDoubleTap(Date.now() + 60000, 1000)).toBe(false);
+    });
+});
+
 
 
 

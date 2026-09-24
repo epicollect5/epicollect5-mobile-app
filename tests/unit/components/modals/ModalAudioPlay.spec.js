@@ -399,4 +399,59 @@ describe('ModalAudioPlay component', () => {
         expect(releaseMock).toHaveBeenCalledTimes(1);
         expect(modalController.dismiss).toHaveBeenCalledTimes(1);
     });
+
+    it('retries the dismiss after a failed exit instead of stranding the modal', async () => {
+        const stopMock = vi.fn().mockReturnValue(true);
+        const releaseMock = vi.fn().mockReturnValue(true);
+        const mockMediaPlayer = {
+            play: vi.fn().mockReturnValue(true),
+            stop: stopMock,
+            release: releaseMock
+        };
+
+        const rootStore = useRootStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+
+        Capacitor.isNativePlatform.mockReturnValue(true);
+        //first exit fails while the modal is still open, retry succeeds
+        modalController.dismiss = vi.fn()
+            .mockImplementationOnce(() => Promise.reject(new Error('dismiss boom')))
+            .mockImplementation(() => Promise.resolve(true));
+
+        window.Media = vi.fn(() => mockMediaPlayer);
+
+        const wrapper = shallowMount(ModalAudioPlay, {
+            props: {
+                projectRef,
+                entryUuid,
+                inputRef,
+                media: {
+                    [entryUuid]: {
+                        [inputRef]: {
+                            cached: '',
+                            stored: '',
+                            type
+                        }
+
+                    }
+                }
+            }
+        });
+
+        await flushPromises();
+
+        wrapper.find('[data-test="stop"]').trigger('click');
+        await flushPromises();
+        expect(modalController.dismiss).toHaveBeenCalledTimes(1);
+
+        //Stop is unlatched and the release is not repeated: the retry only
+        //re-attempts the dismiss and then closes
+        wrapper.find('[data-test="stop"]').trigger('click');
+        await flushPromises();
+        expect(stopMock).toHaveBeenCalledTimes(1);
+        expect(releaseMock).toHaveBeenCalledTimes(1);
+        expect(modalController.dismiss).toHaveBeenCalledTimes(2);
+    });
 });
