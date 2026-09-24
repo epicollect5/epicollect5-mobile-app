@@ -15,16 +15,15 @@ const rollbar = new Rollbar({
     captureUnhandledRejections: true,
     reportLevel: 'error',
     captureIp: false,
-    //global flood backstop (pre-PR was 1): the extra headroom lets retried
-    //items and concurrent contexts through — at 1, a retry was replaced by
-    //a generic rate-limit notice instead of the original error
-    itemsPerMinute: 10,
+    //legacy global cap, unchanged from before this branch: 1 item per minute
+    //across all contextless reports; contexted reports are governed by the
+    //15-min per-context throttle in checkIgnore below
+    itemsPerMinute: 1,
     timeout: 3000,
-    //an item gets the initial attempt plus 3 retries at 30s spacing, so
-    //outages up to ~90s still deliver the original error once connectivity
-    //returns; without retryInterval (null) failed sends are dropped at once
+    //no retryInterval on purpose: a failed send is dropped immediately, as it
+    //was before this branch — retries were removed by decision (they fed the
+    //rate limiter and started the SDK's never-cleared background timer)
     maxRetries: 3,
-    retryInterval: 30000,
     //throttle reporting to one item per operation context per window;
     //suppressed items never reach the API (or the itemsPerMinute counter)
     checkIgnore: (isUncaught, args, payload) => {

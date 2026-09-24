@@ -88,9 +88,9 @@ describe('rollbarService.criticalWithContext', () => {
 });
 
 describe('rollbarService config', () => {
-    it('enables offline queueing with retryInterval', () => {
-        expect(rollbarConfig.retryInterval).toBe(30000);
-        expect(rollbarConfig.itemsPerMinute).toBe(10);
+    it('keeps the legacy rate limit and starts no retry timer', () => {
+        expect(rollbarConfig.retryInterval).toBeUndefined();
+        expect(rollbarConfig.itemsPerMinute).toBe(1);
         expect(typeof rollbarConfig.checkIgnore).toBe('function');
     });
 });
