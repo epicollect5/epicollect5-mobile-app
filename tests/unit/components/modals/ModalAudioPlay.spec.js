@@ -25,6 +25,10 @@ vi.mock('@capacitor/core', () => {
     return { Capacitor };
 });
 
+const rollbarMock = vi.hoisted(() => ({ critical: vi.fn(), criticalWithContext: vi.fn() }));
+
+vi.mock('@/services/utilities/rollbar-service', () => ({ rollbarService: rollbarMock }));
+
 beforeEach(() => {
     // creates a fresh pinia and make it active so it's automatically picked
     // up by any useStore() call without having to pass it to it:
@@ -398,6 +402,7 @@ describe('ModalAudioPlay component', () => {
         await flushPromises();
         expect(releaseMock).toHaveBeenCalledTimes(1);
         expect(modalController.dismiss).toHaveBeenCalledTimes(1);
+        expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
     });
 
     it('retries the dismiss after a failed exit instead of stranding the modal', async () => {
@@ -453,5 +458,103 @@ describe('ModalAudioPlay component', () => {
         expect(stopMock).toHaveBeenCalledTimes(1);
         expect(releaseMock).toHaveBeenCalledTimes(1);
         expect(modalController.dismiss).toHaveBeenCalledTimes(2);
+        expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('audioPlay dismiss failed', expect.any(Error));
+    });
+
+    it('reports a native stop failure and lets the user retry', async () => {
+        const stopMock = vi.fn().mockReturnValue(true);
+        const mockMediaPlayer = {
+            play: vi.fn().mockReturnValue(true),
+            stop: stopMock,
+            release: vi.fn().mockReturnValue(true)
+        };
+
+        const rootStore = useRootStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+
+        Capacitor.isNativePlatform.mockReturnValue(true);
+        modalController.dismiss = vi.fn(() => Promise.resolve(true));
+        window.Media = vi.fn(() => mockMediaPlayer);
+
+        const wrapper = shallowMount(ModalAudioPlay, {
+            props: {
+                projectRef,
+                entryUuid,
+                inputRef,
+                media: {
+                    [entryUuid]: {
+                        [inputRef]: {
+                            cached: '',
+                            stored: '',
+                            type
+                        }
+
+                    }
+                }
+            }
+        });
+
+        await flushPromises();
+
+        stopMock.mockImplementationOnce(() => {
+            throw new Error('stop boom');
+        });
+        expect(() => wrapper.vm.stop()).toThrow('stop boom');
+        expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('audioPlay stop failed', expect.any(Error));
+
+        //the latch is released: the only control in the modal still works
+        wrapper.vm.stop();
+        await flushPromises();
+        expect(stopMock).toHaveBeenCalledTimes(2);
+        expect(modalController.dismiss).toHaveBeenCalledTimes(1);
+    });
+
+    it('reports a native release failure and still exits', async () => {
+        const releaseMock = vi.fn().mockReturnValue(true);
+        const mockMediaPlayer = {
+            play: vi.fn().mockReturnValue(true),
+            stop: vi.fn().mockReturnValue(true),
+            release: releaseMock
+        };
+
+        const rootStore = useRootStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+
+        Capacitor.isNativePlatform.mockReturnValue(true);
+        modalController.dismiss = vi.fn(() => Promise.resolve(true));
+        window.Media = vi.fn(() => mockMediaPlayer);
+
+        const wrapper = shallowMount(ModalAudioPlay, {
+            props: {
+                projectRef,
+                entryUuid,
+                inputRef,
+                media: {
+                    [entryUuid]: {
+                        [inputRef]: {
+                            cached: '',
+                            stored: '',
+                            type
+                        }
+
+                    }
+                }
+            }
+        });
+
+        await flushPromises();
+
+        releaseMock.mockImplementationOnce(() => {
+            throw new Error('release boom');
+        });
+        wrapper.find('[data-test="stop"]').trigger('click');
+        await flushPromises();
+
+        expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('audioPlay release failed', expect.any(Error));
+        expect(modalController.dismiss).toHaveBeenCalledTimes(1);
     });
 });

@@ -19,6 +19,10 @@ const {modalInstances, modalDismissResolvers} = vi.hoisted(() => ({
     modalDismissResolvers: []
 }));
 
+const rollbarMock = vi.hoisted(() => ({ critical: vi.fn(), criticalWithContext: vi.fn() }));
+
+vi.mock('@/services/utilities/rollbar-service', () => ({ rollbarService: rollbarMock }));
+
 vi.mock('@/services/entry/question-common-service', () => {
     const questionCommonService = {
         //fill just the fields the component reads; the real service pulls
@@ -202,6 +206,7 @@ describe('QuestionAudio component', () => {
         expect(useRootStore().isAudioModalActive).toBe(false);
         expect(mediaFile().cached).toBe('audio_1.mp3');
         expect(wrapper.vm.state.answer.answer).toBe('audio_1.mp3');
+        expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
     });
 
     it('leaves the answer untouched when the recorder dismisses with no filename', async () => {
@@ -240,6 +245,7 @@ describe('QuestionAudio component', () => {
         //the rest of the session
         expect(useRootStore().isAudioModalActive).toBe(false);
         expect(notificationService.showAlert).toHaveBeenCalledWith('present boom');
+        expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('audioRecord open failed', expect.any(Error));
     });
 
     it('does not open the recorder when the microphone permission is denied', async () => {
@@ -253,6 +259,8 @@ describe('QuestionAudio component', () => {
         expect(notificationService.showAlert).toHaveBeenCalledWith(
             STRINGS.en.labels.missing_permission
         );
+        //denied via the success callback is a user choice, not a malfunction
+        expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
         expect(useRootStore().isAudioModalActive).toBe(false);
     });
 
@@ -286,6 +294,7 @@ describe('QuestionAudio component', () => {
 
         expect(useRootStore().isAudioModalActive).toBe(false);
         expect(notificationService.showAlert).toHaveBeenCalledWith('play present boom');
+        expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('audioPlay open failed', expect.any(Error));
     });
 
     it('opens the recorder modal for the audio question', async () => {
