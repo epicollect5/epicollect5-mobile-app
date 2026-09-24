@@ -29,6 +29,7 @@ export default [
             'no-console': 'off',
             'no-debugger': 'warn',
             'semi': ['error', 'always'],
+            'curly': ['error', 'all'],
             'no-unused-vars': 'off',
             'quotes': ['error', 'single'],
             // not active in the previous .eslintrc.js (plugin:vue/essential);

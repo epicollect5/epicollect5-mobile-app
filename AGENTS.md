@@ -19,6 +19,7 @@
 - Use reactive(), NEVER ref()
 - No inline logic in templates
 - Group structure: state → methods → computedScope
+- Always wrap `if`/`else`/`for`/`while` bodies in `{}`, even single statements
 - Do NOT place workflow or business logic in components
 
 ## Testing

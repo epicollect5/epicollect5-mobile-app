@@ -117,7 +117,7 @@ When generating Vue components:
 
 ## Linting
 
- - Always use the rules defined in the .eslintrc.js file
+ - Always use the rules defined in the eslint.config.js file
 
 ## State
 
@@ -235,6 +235,7 @@ When in doubt:
 You must follow these rules strictly. If you generate code that violates these, it will fail build.
 
 - **Semicolons**: ALWAYS use semicolons at the end of statements (`'semi': ['error', 'always']`).
+- **Braces**: ALWAYS wrap `if`/`else`/`for`/`while` bodies in `{}`, even single statements (`'curly': ['error', 'all']`).
 - **Quotes**: Use SINGLE quotes for strings (`'quotes': ['error', 'single']`).
 - **Commas**: NEVER use trailing commas (`'comma-dangle': [1, 'never']`).
 - **Variables**: Prefer `const` over `let`, and NEVER use `var`.
