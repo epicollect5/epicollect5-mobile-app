@@ -1,0 +1,18 @@
+AGENTS.md
+  h_2231ff2aa93473 22
+docs/CODE-STYLE.md
+  h_2231ff2aa93473 120,238
+eslint.config.js
+  h_2231ff2aa93473 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3fa6bdaaa919e2c022c4842c70cfb98c13d911d0",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
