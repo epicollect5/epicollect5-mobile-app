@@ -146,6 +146,9 @@ export default {
 		//second release throws and the second dismiss rejects with
 		//overlay-does-not-exist), nor stack two saving dialogs
 		let stopping = false;
+		//split-phase retry: stopRecord() wins over the file once, a release()
+		//failure must not repeat the completed stop on the next tap
+		let stopCompleted = false;
 
 		const methods = {
 			async stop() {
@@ -167,8 +170,12 @@ export default {
 						await notificationService.showProgressDialog(labels.saving, labels.wait);
 						dialogShown = true;
 
-						//stop recording and release resources
-						mediaRecorder.stopRecord();
+						//stop recording and release resources: the stop is done once,
+						//a retry after a release failure skips the completed stop
+						if (!stopCompleted) {
+							mediaRecorder.stopRecord();
+							stopCompleted = true;
+						}
 						mediaRecorder.release();
 
 						notificationService.hideProgressDialog();

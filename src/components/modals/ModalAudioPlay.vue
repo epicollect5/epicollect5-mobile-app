@@ -93,13 +93,36 @@ export default {
 		};
 
 		let file_URI;
+		//idempotent close: Stop and the status-4 callback converge here, so a
+		//missing status callback cannot strand the modal (Stop still exits)
+		//and a late callback after Stop cannot double-release/double-dismiss
+		let closed = false;
+		function closeOnce() {
+			if (closed) {
+				return;
+			}
+			closed = true;
+			try {
+				mediaPlayer.release();
+			} catch (error) {
+				console.log('audio release failed: ' + error);
+			}
+			//dismiss is the modal exit: an already-dismissed overlay means the
+			//modal is gone either way, anything else is logged
+			Promise.resolve(modalController.dismiss()).catch((error) => {
+				const gone = error === 'overlay does not exist'
+					|| error?.message === 'overlay does not exist';
+				if (!gone) {
+					console.log('audio dismiss failed: ' + error);
+				}
+			});
+		}
 		//callback when the audio finishes playing because it got to the end
 		function _onPlayStatusChange(status) {
 			console.log(status);
 			//close modal and release media object
 			if (status === 4) {
-				mediaPlayer.release();
-				modalController.dismiss();
+				closeOnce();
 			}
 		}
 
@@ -151,6 +174,9 @@ export default {
 					stopping = false;
 					throw error;
 				}
+				//exit here, not in the status callback: a native stop that never
+				//sends status-4 would otherwise latch Stop and strand the modal
+				closeOnce();
 			}
 		};
 
