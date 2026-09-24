@@ -1,5 +1,14 @@
 ## Release Notes
 
+# 98.3.2 - build 9832
+
+ - Replaced the audio double-tap store flag with a leading-edge debounce guard, preventing double-taps from stacking overlapping record or play modals across question instances and during microphone permission prompts.
+ - The audio player modal now uses idempotent close logic so a double-tapped Stop, a missing status callback, or a late native callback cannot double-release or strand the modal; a failed dismiss is retried automatically.
+ - The audio recorder modal now tracks which stop/release/dismiss phase completed, so a retry after a later failure skips completed phases instead of re-recording or double-releasing.
+ - The saving dialog in the recorder is now only hidden by the stop that showed it, preventing a failed stop from dismissing another operation's progress indicator.
+ - Rollbar now reports audio modal failures (release, dismiss, stop, permission, and open errors) for production diagnostics.
+ - The double-tap debounce now fails open on backwards clock jumps instead of blocking taps until the clock catches up.
+
 # 98.3.1 - build 9831
 
  - After returning from the system camera, the saving dialog now stays visible while the captured photo is moved into place and its thumbnail is decoded, instead of leaving the app with no feedback in that gap.
