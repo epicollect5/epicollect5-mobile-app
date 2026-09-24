@@ -1,0 +1,18 @@
+src/components/modals/ModalAudioPlay.vue
+  h_2231ff2aa93473 96-99,102-105,107,112-118,121-130,133-135,137,186-190
+src/components/questions/QuestionAudio.vue
+  h_2231ff2aa93473 197
+src/services/utilities/utils-service.js
+  h_2231ff2aa93473 1005-1008,1014-1015
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3bb321f2009a6452a51de478e8b4b46d4af5e487",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
