@@ -1,0 +1,68 @@
+src/main.js
+  h_2231ff2aa93473 248,265
+src/pages/EntriesView.vue
+  h_2231ff2aa93473 140,209,293
+src/pages/EntriesViewBranch.vue
+  h_2231ff2aa93473 118,198,219
+src/services/entries-download-service.js
+  h_2231ff2aa93473 14,33
+src/services/init-service.js
+  h_2231ff2aa93473 13,64,160
+src/services/upload-media-service.js
+  h_2231ff2aa93473 11,120,124
+src/services/utilities/json-transformer-service.js
+  h_2231ff2aa93473 9,352
+src/services/utilities/rollbar-service.js
+  h_2231ff2aa93473 5-9,21-46,185-201,203-204
+src/services/utilities/versioning-service.js
+  h_2231ff2aa93473 14,306
+src/use/entry/clone-entry-branch.js
+  h_2231ff2aa93473 9,45
+src/use/entry/delete-entry.js
+  h_2231ff2aa93473 10,25,130
+src/use/project/add-project.js
+  h_2231ff2aa93473 12,79,99
+src/use/project/delete-project.js
+  h_2231ff2aa93473 13,47
+tests/unit/components/globals/RightDrawer.spec.js
+  h_2231ff2aa93473 29-38
+tests/unit/main.spec.js
+  h_2231ff2aa93473 135
+tests/unit/services/entries-download-service.abort.spec.js
+  h_2231ff2aa93473 13-22
+tests/unit/services/entries-download-service.spec.js
+  h_2231ff2aa93473 13-22
+tests/unit/services/init-service.spec.js
+  h_2231ff2aa93473 5-14
+tests/unit/services/utilities/rollbar-service.spec.js
+  h_2231ff2aa93473 1,12,15-17,89-169
+tests/unit/services/utilities/versioning-service.spec.js
+  h_2231ff2aa93473 14-23
+tests/unit/upload-media-service.spec.js
+  h_2231ff2aa93473 11-20
+tests/unit/use/add-project.spec.js
+  h_2231ff2aa93473 14-23
+tests/unit/use/clone-entry.spec.js
+  h_2231ff2aa93473 11-20
+tests/unit/utilities/json-transformer/json-transformer-additional.spec.js
+  h_2231ff2aa93473 10-19
+tests/unit/utilities/json-transformer/json-transformer-csv-export.spec.js
+  h_2231ff2aa93473 8-17
+tests/unit/utilities/json-transformer/json-transformer-groups-branches.spec.js
+  h_2231ff2aa93473 10-19
+tests/unit/utilities/json-transformer/json-transformer-headers.spec.js
+  h_2231ff2aa93473 8-17
+tests/unit/utilities/json-transformer/json-transformer-rows.spec.js
+  h_2231ff2aa93473 8-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2545f72f858304bf0a42529c7210e9289fb3cdf5",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
