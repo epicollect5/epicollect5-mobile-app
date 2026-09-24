@@ -8,6 +8,7 @@ import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { errorsService } from '@/services/errors-service';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 export const uploadMediaService = {
 
@@ -116,9 +117,11 @@ export const uploadMediaService = {
                                     }
                                 }
                                 catch (e) {
+                                    rollbarService.criticalWithContext('uploadMediaService: upload error handling failed', e);
                                     reject({ data: errorObj });
                                 }
                             } catch (e) {
+                                rollbarService.criticalWithContext('uploadMediaService: upload error response parse failed', e);
                                 reject({ data: errorObj });
                             }
                             //todo catch file read error on the server

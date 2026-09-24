@@ -10,6 +10,16 @@ import { notificationService } from '@/services/notification-service';
 import { entriesDownloadProgressService } from '@/services/utilities/entries-download-progress-service';
 import { modalController } from '@ionic/vue';
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        init: vi.fn(),
+        configure: vi.fn(),
+        clearThrottleKeys: vi.fn(),
+        criticalWithContext: vi.fn(),
+        critical: vi.fn()
+    }
+}));
+
 vi.mock('@/config/strings', () => ({
     STRINGS: {
         en: {

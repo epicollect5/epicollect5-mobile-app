@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const rollbarInstance = vi.hoisted(() => ({
     critical: vi.fn(),
@@ -9,7 +9,11 @@ vi.mock('rollbar', () => ({
     default: vi.fn(() => rollbarInstance)
 }));
 
+import Rollbar from 'rollbar';
 import { rollbarService } from '@/services/utilities/rollbar-service';
+
+//constructor args are captured once at import, before any mock clearing
+const rollbarConfig = Rollbar.mock.calls[0][0];
 
 describe('rollbarService.criticalWithContext', () => {
     beforeEach(() => {
@@ -80,5 +84,86 @@ describe('rollbarService.criticalWithContext', () => {
         expect(() => rollbarService.criticalWithContext('op failed', () => {})).not.toThrow();
 
         expect(rollbarInstance.critical).toHaveBeenCalledTimes(3);
+    });
+});
+
+describe('rollbarService config', () => {
+    it('enables offline queueing with retryInterval', () => {
+        expect(rollbarConfig.retryInterval).toBe(5000);
+        expect(rollbarConfig.itemsPerMinute).toBe(1);
+        expect(typeof rollbarConfig.checkIgnore).toBe('function');
+    });
+});
+
+describe('rollbarService throttle (checkIgnore)', () => {
+    const report = (context) => rollbarConfig.checkIgnore(false, [], { custom: { context } });
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        localStorage.clear();
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('sends the first report per context and suppresses the second within the window', () => {
+        expect(report('op: one')).toBe(false);
+        expect(report('op: one')).toBe(true);
+    });
+
+    it('keeps contexts isolated, so one noisy operation cannot starve another', () => {
+        expect(report('op: a')).toBe(false);
+        expect(report('op: a')).toBe(true);
+        expect(report('op: b')).toBe(false);
+    });
+
+    it('sends again once the last report is older than the window', () => {
+        const stale = String(Date.now() - 16 * 60 * 1000);
+        localStorage.setItem('rollbar_last_report:op: stale', stale);
+
+        expect(report('op: stale')).toBe(false);
+    });
+
+    it('treats a future timestamp (clock rollback) as expired and sends', () => {
+        const future = String(Date.now() + 60 * 1000);
+        localStorage.setItem('rollbar_last_report:op: rolled', future);
+
+        expect(report('op: rolled')).toBe(false);
+    });
+
+    it('fails open when localStorage throws, so reporting never breaks', () => {
+        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+            throw new Error('storage blocked');
+        });
+
+        expect(report('op: blocked')).toBe(false);
+    });
+});
+
+describe('rollbarService.clearThrottleKeys', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        localStorage.clear();
+    });
+
+    it('removes every throttle key on boot but leaves unrelated keys alone', () => {
+        localStorage.setItem('rollbar_last_report:op a', String(Date.now()));
+        localStorage.setItem('rollbar_last_report:op b', String(Date.now()));
+        localStorage.setItem('unrelated_key', 'keep');
+
+        rollbarService.clearThrottleKeys();
+
+        expect(localStorage.getItem('rollbar_last_report:op a')).toBeNull();
+        expect(localStorage.getItem('rollbar_last_report:op b')).toBeNull();
+        expect(localStorage.getItem('unrelated_key')).toBe('keep');
+    });
+
+    it('is not triggered by configure(), so mid-session toggles keep the window', () => {
+        localStorage.setItem('rollbar_last_report:op a', String(Date.now()));
+
+        rollbarService.configure({ enabled: true });
+
+        expect(localStorage.getItem('rollbar_last_report:op a')).not.toBeNull();
     });
 });

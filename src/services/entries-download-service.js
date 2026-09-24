@@ -11,6 +11,7 @@ import {databaseDeleteService} from '@/services/database/database-delete-service
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {versioningService} from '@/services/utilities/versioning-service';
 import {logout} from '@/use/auth/logout';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 function initDownloader({state, rootStore, labels, language, projectModel}) {
   function resetDownloadButtonState() {
@@ -29,6 +30,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     try {
       entriesDownloadProgressService.save(projectModel.getProjectRef(), formRef, state.downloadCache[formRef]);
     } catch (error) {
+      rollbarService.criticalWithContext('entriesDownloadService: persist download progress failed', error);
       console.warn('Failed to persist entries download progress:', error);
     }
   }

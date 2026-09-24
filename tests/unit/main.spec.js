@@ -132,7 +132,7 @@ vi.mock('@/services/utilities/utils-service', () => ({
         stripTrailingSlash: vi.fn((s) => s)
     }
 }));
-vi.mock('@/services/utilities/rollbar-service', () => ({rollbarService: {init: vi.fn()}}));
+vi.mock('@/services/utilities/rollbar-service', () => ({rollbarService: {init: vi.fn(), configure: vi.fn(), clearThrottleKeys: vi.fn(), criticalWithContext: vi.fn(), critical: vi.fn()}}));
 vi.mock('@/services/notification-service', () => ({notificationService: {showAlert: vi.fn()}}));
 vi.mock('@/services/database/database-create-service', () => ({createDatabaseService: {execute: vi.fn()}}));
 vi.mock('@capacitor/splash-screen', () => ({SplashScreen: {hide: vi.fn()}}));

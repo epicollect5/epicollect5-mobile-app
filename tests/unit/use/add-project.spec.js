@@ -11,6 +11,16 @@ import { logout } from '@/use/auth/logout';
 import { showModalLogin } from '@/use/auth/show-modal-login';
 import { addProject } from '@/use/project/add-project';
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        init: vi.fn(),
+        configure: vi.fn(),
+        clearThrottleKeys: vi.fn(),
+        criticalWithContext: vi.fn(),
+        critical: vi.fn()
+    }
+}));
+
 vi.mock('@/services/web-service', () => ({
     webService: { getProject: vi.fn() }
 }));

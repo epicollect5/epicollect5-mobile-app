@@ -8,6 +8,16 @@ import { databaseUpdateService } from '@/services/database/database-update-servi
 import { utilsService } from '@/services/utilities/utils-service';
 import { projectModel } from '@/models/project-model.js';
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        init: vi.fn(),
+        configure: vi.fn(),
+        clearThrottleKeys: vi.fn(),
+        criticalWithContext: vi.fn(),
+        critical: vi.fn()
+    }
+}));
+
 vi.mock('@/services/database/database-select-service', () => ({
     databaseSelectService: { getUser: vi.fn() }
 }));

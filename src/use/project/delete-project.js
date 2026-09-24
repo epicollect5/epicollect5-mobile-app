@@ -10,6 +10,7 @@ import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { useBookmarkStore } from '@/stores/bookmark-store';
 import { entriesDownloadProgressService } from '@/services/utilities/entries-download-progress-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 
 /**
@@ -43,6 +44,7 @@ export async function deleteProject (router) {
         await databaseDeleteService.deleteProject(projectRef);
         await _onDeleteSuccess();
     } catch (error) {
+        rollbarService.criticalWithContext('deleteProject: project delete failed', error);
         console.log(error);
         notificationService.hideProgressDialog();
         await notificationService.showAlert(labels.unknown_error, labels.error);

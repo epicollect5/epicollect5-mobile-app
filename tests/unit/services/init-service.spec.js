@@ -2,6 +2,16 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { Filesystem } from '@capacitor/filesystem';
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        init: vi.fn(),
+        configure: vi.fn(),
+        clearThrottleKeys: vi.fn(),
+        criticalWithContext: vi.fn(),
+        critical: vi.fn()
+    }
+}));
+
 // 1. Mock Capacitor Filesystem
 vi.mock('@capacitor/filesystem', () => ({
     Filesystem: {

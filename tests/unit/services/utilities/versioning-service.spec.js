@@ -11,6 +11,16 @@ import { downloadFileService } from '@/services/download-file-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        init: vi.fn(),
+        configure: vi.fn(),
+        clearThrottleKeys: vi.fn(),
+        criticalWithContext: vi.fn(),
+        critical: vi.fn()
+    }
+}));
+
 vi.mock('@/services/database/database-select-service', () => ({
     databaseSelectService: {
         selectEntries: vi.fn().mockResolvedValue({ rows: { length: 0 } }),
