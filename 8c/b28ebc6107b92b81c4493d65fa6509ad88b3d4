@@ -1,0 +1,29 @@
+.agents/skills/release/SKILL.md
+  s_0d3dcd7c750551::t_74dbee888f1a34 30-36,68-69,105,107
+package.json
+  s_0d3dcd7c750551::t_307a5b05bbb885 3
+CHANGELOG.md
+  s_0d3dcd7c750551::t_c11399d8dc8818 3-6
+ios/App/App.xcodeproj/project.pbxproj
+  s_0d3dcd7c750551::t_9aae843de24cdd 387,417
+  s_0d3dcd7c750551::t_ba9abc399348a0 395,425
+android/app/build.gradle
+  s_0d3dcd7c750551::t_08bf222be73062 16
+  s_0d3dcd7c750551::t_6760c6c2a6ff0e 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8cb28ebc6107b92b81c4493d65fa6509ad88b3d4",
+  "prompts": {},
+  "sessions": {
+    "s_0d3dcd7c750551": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3087d1edffeHamAPFeLqds570",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
