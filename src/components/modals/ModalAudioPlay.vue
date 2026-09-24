@@ -59,6 +59,7 @@ import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 import { Capacitor } from '@capacitor/core';
 
 export default {
@@ -115,6 +116,7 @@ export default {
 					mediaPlayer.release();
 				} catch (error) {
 					console.log('audio release failed: ' + error);
+					rollbarService.criticalWithContext('audioPlay release failed', error);
 				}
 			}
 			//dismiss is the modal exit: an already-dismissed overlay means the
@@ -134,6 +136,7 @@ export default {
 					closed = true;
 				} else {
 					console.log('audio dismiss failed: ' + error);
+					rollbarService.criticalWithContext('audioPlay dismiss failed', error);
 					stopping = false;
 				}
 			});
@@ -191,6 +194,7 @@ export default {
 				} catch (error) {
 					//this is the only control in the modal: let the user retry rather
 					//than latching it off forever on a native stop failure
+					rollbarService.criticalWithContext('audioPlay stop failed', error);
 					stopping = false;
 					throw error;
 				}

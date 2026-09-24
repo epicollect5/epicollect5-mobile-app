@@ -91,6 +91,7 @@ import QuestionLabelAction from '@/components/QuestionLabelAction';
 import Dropzone from '@/components/Dropzone';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
 
 //shared pending-open guard across all QuestionAudio instances: claimed
@@ -287,6 +288,7 @@ export default {
 							},
 							function (error) {
 								console.error('The following error occurred: ' + error);
+								rollbarService.criticalWithContext('audioRecord permission failed', error);
 								notificationService.showAlert(error);
 							},
 							cordova.plugins.diagnostic.permission.RECORD_AUDIO
@@ -305,6 +307,7 @@ export default {
 							},
 							function (error) {
 								console.error(error);
+								rollbarService.criticalWithContext('audioRecord permission failed', error);
 								notificationService.showAlert(error);
 							}
 						);
@@ -353,6 +356,7 @@ export default {
 				//the player could not be presented: surface it, a failed
 				//open must never be silent (same as photo/video)
 				console.log('Audio play failed: ' + error);
+				rollbarService.criticalWithContext('audioPlay open failed', error);
 				notificationService.showAlert(error.message || labels.unknown_error);
 			} finally {
 				pendingAudioOpen = false;
@@ -378,6 +382,7 @@ export default {
 		//(same as photo/video, same as play() above)
 		function _onRecordOpenError(error) {
 			console.log('Audio record failed: ' + error);
+			rollbarService.criticalWithContext('audioRecord open failed', error);
 			notificationService.showAlert((error && error.message) || labels.unknown_error);
 		}
 

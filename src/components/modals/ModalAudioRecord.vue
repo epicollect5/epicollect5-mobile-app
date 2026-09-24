@@ -60,6 +60,7 @@ import { readonly } from 'vue';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
 import { utilsService } from '@/services/utilities/utils-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 import { notificationService } from '@/services/notification-service';
 
 export default {
@@ -122,6 +123,10 @@ export default {
 								console.log('current_path: ' + tempDir + filename);
 							},
 							function onRecordingError(error) {
+								//the dismissal below carries an empty filename, which the
+								//question reads as a cancel: report here or the native
+								//failure is untraceable
+								rollbarService.criticalWithContext('audioRecord recording failed', error);
 								notificationService.showAlert(error.code, labels.error);
 								filename = '';
 								modalController.dismiss(filename);
@@ -146,9 +151,10 @@ export default {
 		//second release throws and the second dismiss rejects with
 		//overlay-does-not-exist), nor stack two saving dialogs
 		let stopping = false;
-		//split-phase retry: stopRecord() wins over the file once, a release()
-		//failure must not repeat the completed stop on the next tap
+		//split-phase retry: stop and release are each done once, a later
+		//failure (release, dismiss) must not repeat a completed phase
 		let stopCompleted = false;
+		let released = false;
 
 		const methods = {
 			async stop() {
@@ -162,41 +168,59 @@ export default {
 				//tracks whether this stop() presented the saving dialog: the dialog
 				//is global, so the catch below must only hide what it showed,
 				//otherwise a failed show (or a web dismiss failure) would dismiss
-				//another operation's indicator
+				//another operation's indicator. The handle snapshot narrows it
+				//further: if another operation replaced the dialog since, its
+				//owner hides it, not us (residual: the hide itself is delayed, so
+				//a swap inside that window still races - owned by the service)
 				let dialogShown = false;
+				let ownDialog = null;
 				try {
 					//stop recording
+					let dismissed = true;
 					if (rootStore.device.platform !== PARAMETERS.WEB) {
 						await notificationService.showProgressDialog(labels.saving, labels.wait);
 						dialogShown = true;
+						ownDialog = rootStore.ec5LoadingDialog;
 
-						//stop recording and release resources: the stop is done once,
-						//a retry after a release failure skips the completed stop
+						//stop recording and release resources: each phase runs once,
+						//a retry after a later failure skips completed phases
 						if (!stopCompleted) {
 							mediaRecorder.stopRecord();
 							stopCompleted = true;
 						}
-						mediaRecorder.release();
+						if (!released) {
+							mediaRecorder.release();
+							released = true;
+						}
 
 						notificationService.hideProgressDialog();
 						notificationService.showToast(labels.audio_saved);
 
-						modalController.dismiss(filename);
+						//awaited: a rejected dismiss must unlatch Stop below instead
+						//of stranding the modal with no working exit
+						dismissed = await modalController.dismiss(filename);
 					} else {
-						modalController.dismiss(filename);
+						dismissed = await modalController.dismiss(filename);
+					}
+					if (dismissed === false) {
+						//nothing was dismissed and the modal is still open: leave
+						//Stop usable so the user can retry the exit
+						stopping = false;
+						return;
 					}
 					console.log('recordAudio():STOP----------');
 				} catch (error) {
 					//the saving dialog was already presented above: hide it before
 					//handing control back, otherwise it sticks over the modal when
-					//stopRecord() or release() throws. Only hides when this stop()
-					//showed it: a failed show must leave another operation's
-					//indicator alone. This is the only control in
-					//the modal: let the user retry rather than latching it off
-					//forever on a native stop/release failure
-					if (dialogShown) {
+					//stopRecord(), release() or the modal dismiss throws. Only hides
+					//what this stop() showed and still owns: a failed show - or a
+					//dialog since replaced by another operation - is left alone.
+					//This is the only control in the modal: let the user retry
+					//rather than latching it off forever on a failure
+					if (dialogShown && rootStore.ec5LoadingDialog === ownDialog) {
 						notificationService.hideProgressDialog();
 					}
+					rollbarService.criticalWithContext('audioRecord stop failed', error);
 					stopping = false;
 					throw error;
 				}
