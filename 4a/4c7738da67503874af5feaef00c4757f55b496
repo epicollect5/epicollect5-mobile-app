@@ -1,0 +1,18 @@
+tests/unit/components/modals/ModalAudioPlay.spec.js
+  h_2231ff2aa93473 28-31,405,461-558
+tests/unit/components/modals/ModalAudioRecord.spec.js
+  h_2231ff2aa93473 26-29,264,289,346-461
+tests/unit/components/questions/QuestionAudio.spec.js
+  h_2231ff2aa93473 22-25,209,248,262-263,297
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4a4c7738da67503874af5feaef00c4757f55b496",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
