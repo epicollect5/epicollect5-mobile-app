@@ -205,7 +205,8 @@ describe('ModalAudioRecord component', () => {
                 // Get the actual translation from the component
                 const actualTranslation = wrapper.get('[data-translate="' + key + '"]').text();
 
-                // Use the translation key in the error message if the assertion fails                expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
+                // Use the translation key in the error message if the assertion fails
+                expect(actualTranslation).toBe(expectedTranslation[key], `Translation for key '${key}' does not match.`);
             });
         });
     });
@@ -276,6 +277,10 @@ describe('ModalAudioRecord component', () => {
         });
 
         await expect(wrapper.vm.stop()).rejects.toThrow('stop boom');
+
+        //the saving dialog presented before the native stop must be hidden
+        //even on failure, otherwise it sticks over the modal
+        expect(notificationService.hideProgressDialog).toHaveBeenCalled();
 
         //the latch is released: the only control in the modal still works
         await wrapper.vm.stop();

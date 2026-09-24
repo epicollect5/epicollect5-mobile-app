@@ -166,41 +166,40 @@ describe('QuestionAudio component', () => {
         const wrapper = await factory();
 
         //the first tap holds the recorder open (its dismissal never resolves yet)
-        const firstRecord = wrapper.vm.record();
+        wrapper.vm.record();
         await flushPromises();
         expect(modalController.create).toHaveBeenCalledTimes(1);
         expect(useRootStore().isAudioModalActive).toBe(true);
-        expect(useRootStore().isAudioActionActive).toBe(true);
 
-        //second tap of the double-tap: dropped, never a second recorder
-        await wrapper.vm.record();
+        //second tap of the double-tap: inside the debounce window, dropped,
+        //never a second recorder
+        wrapper.vm.record();
         await flushPromises();
         expect(modalController.create).toHaveBeenCalledTimes(1);
 
-        //play shares the flag: no player stacked on an in-flight recorder
+        //play shares the window: no player stacked on an in-flight recorder
         await wrapper.vm.play();
         expect(modalController.create).toHaveBeenCalledTimes(1);
 
         dismissModal(0, 'audio_1.mp3');
-        await firstRecord;
+        await flushPromises();
         expect(useRootStore().isAudioModalActive).toBe(false);
     });
 
-    it('releases the guard once the recorder is dismissed and keeps the filename', async () => {
+    it('keeps the filename once the recorder is dismissed', async () => {
         mockAndroidPermission();
         const wrapper = await factory();
 
-        const firstRecord = wrapper.vm.record();
+        wrapper.vm.record();
         await flushPromises();
         //present() resolving is not the end of the flow: the recorder is still
-        //open, so the guard must still be held
+        //open, so the overlay gate must still be held
         expect(useRootStore().isAudioModalActive).toBe(true);
 
         dismissModal(0, 'audio_1.mp3');
-        await firstRecord;
+        await flushPromises();
 
         expect(useRootStore().isAudioModalActive).toBe(false);
-        expect(useRootStore().isAudioActionActive).toBe(false);
         expect(mediaFile().cached).toBe('audio_1.mp3');
         expect(wrapper.vm.state.answer.answer).toBe('audio_1.mp3');
     });
@@ -209,18 +208,18 @@ describe('QuestionAudio component', () => {
         mockAndroidPermission();
         const wrapper = await factory();
 
-        const firstRecord = wrapper.vm.record();
+        wrapper.vm.record();
         await flushPromises();
 
         dismissModal(0, undefined);
-        await firstRecord;
+        await flushPromises();
 
         //no recording was handed over: the entry must not point at a missing file
         expect(mediaFile().cached).toBe('');
         expect(wrapper.vm.state.answer.answer).toBe('');
     });
 
-    it('releases the guard and alerts when the recorder cannot be presented', async () => {
+    it('releases the gate and alerts when the recorder cannot be presented', async () => {
         mockAndroidPermission();
         modalController.create.mockImplementationOnce(() => Promise.resolve({
             present: vi.fn(() => Promise.reject(new Error('present boom'))),
@@ -229,9 +228,11 @@ describe('QuestionAudio component', () => {
         }));
         const wrapper = await factory();
 
-        await wrapper.vm.record();
+        wrapper.vm.record();
+        await flushPromises();
+        await flushPromises();
 
-        //a stranded flag would swallow the EntriesAdd hardware back button for
+        //a stranded gate would swallow the EntriesAdd hardware back button for
         //the rest of the session
         expect(useRootStore().isAudioModalActive).toBe(false);
         expect(notificationService.showAlert).toHaveBeenCalledWith('present boom');
@@ -241,7 +242,8 @@ describe('QuestionAudio component', () => {
         mockAndroidPermission(false);
         const wrapper = await factory();
 
-        await wrapper.vm.record();
+        wrapper.vm.record();
+        await flushPromises();
 
         expect(modalController.create).not.toHaveBeenCalled();
         expect(notificationService.showAlert).toHaveBeenCalledWith(
@@ -268,7 +270,7 @@ describe('QuestionAudio component', () => {
         expect(useRootStore().isAudioModalActive).toBe(false);
     });
 
-    it('releases the guard and alerts when the player cannot be presented', async () => {
+    it('releases the gate and alerts when the player cannot be presented', async () => {
         modalController.create.mockImplementationOnce(() => Promise.resolve({
             present: vi.fn(() => Promise.reject(new Error('play present boom'))),
             onDidDismiss: vi.fn(() => new Promise(() => {
@@ -286,7 +288,7 @@ describe('QuestionAudio component', () => {
         mockAndroidPermission();
         const wrapper = await factory();
 
-        const firstRecord = wrapper.vm.record();
+        wrapper.vm.record();
         await flushPromises();
 
         expect(modalController.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -295,7 +297,7 @@ describe('QuestionAudio component', () => {
         }));
 
         dismissModal(0, 'audio_1.mp3');
-        await firstRecord;
+        await flushPromises();
     });
 
     it('keeps the navigation gate free while the permission prompt is pending', async () => {
@@ -311,19 +313,42 @@ describe('QuestionAudio component', () => {
         });
         const wrapper = await factory();
 
-        const pending = wrapper.vm.record();
+        wrapper.vm.record();
         await flushPromises();
 
-        //the tap latch may strand, but the flag the EntriesAdd back handler reads
-        //must never be claimed before an overlay is actually presented: a hung
-        //callback would otherwise lock the hardware back for the whole session
+        //no latch strands and the flag the EntriesAdd back handler reads
+        //is never claimed before an overlay is actually presented: a hung
+        //callback strands nothing, navigation keeps working
         expect(modalController.create).not.toHaveBeenCalled();
-        expect(useRootStore().isAudioActionActive).toBe(true);
         expect(useRootStore().isAudioModalActive).toBe(false);
 
-        //a later tap is dropped while the latch is held (never a second prompt)
-        await wrapper.vm.record();
+        //a later tap lands inside the debounce window and is dropped
+        //(past the window it simply re-asks, same as the first tap)
+        wrapper.vm.record();
         expect(modalController.create).not.toHaveBeenCalled();
-        void pending;
+    });
+
+    it('drops a record tap racing an open player past the debounce window', async () => {
+        mockAndroidPermission();
+        const wrapper = await factory();
+
+        const firstPlay = wrapper.vm.play();
+        await flushPromises();
+        expect(useRootStore().isAudioModalActive).toBe(true);
+
+        //slow second tap: past the debounce window, but the read-only
+        //overlay check still drops it, never a recorder over the player
+        const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + PARAMETERS.DELAY_LONG + 1);
+        try {
+            wrapper.vm.record();
+            await flushPromises();
+        } finally {
+            nowSpy.mockRestore();
+        }
+        expect(modalController.create).toHaveBeenCalledTimes(1);
+
+        dismissModal(0);
+        await firstPlay;
+        expect(useRootStore().isAudioModalActive).toBe(false);
     });
 });
