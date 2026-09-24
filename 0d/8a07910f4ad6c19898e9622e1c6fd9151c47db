@@ -1,0 +1,28 @@
+docs/ARCHITECTURE.md
+  h_2231ff2aa93473 260-261
+src/components/modals/ModalAudioPlay.vue
+  h_2231ff2aa93473 135-139,142-153
+src/components/modals/ModalAudioRecord.vue
+  h_2231ff2aa93473 35,145-149,152-162,164-166,168-169,171-180
+src/components/questions/QuestionAudio.vue
+  h_2231ff2aa93473 243-260,262-273,277-296,298-315,332-371,385-388,391-398,401-406
+src/stores/root-store.js
+  h_2231ff2aa93473 56
+tests/unit/components/modals/ModalAudioPlay.spec.js
+  h_2231ff2aa93473 292-340
+tests/unit/components/modals/ModalAudioRecord.spec.js
+  h_2231ff2aa93473 8-9,109-110,112-114,208,212-285
+tests/unit/components/questions/QuestionAudio.spec.js
+  h_2231ff2aa93473 1-329
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0d8a07910f4ad6c19898e9622e1c6fd9151c47db",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
