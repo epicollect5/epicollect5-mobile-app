@@ -1,0 +1,28 @@
+src/components/questions/QuestionAudio.vue
+  s_f1a86d41c35dd3::t_c40fd37f34e158 248-257,260-268,270-286,288-297,302-303,305-306,309
+  s_f1a86d41c35dd3::t_412111d8cb1ed9 269,287
+  s_f1a86d41c35dd3::t_2ee07c33805bce 185-189
+  s_f1a86d41c35dd3::t_fc587ea9e58919 358-363
+  s_f1a86d41c35dd3::t_b74e83e8b6b151 337-338
+  s_f1a86d41c35dd3::t_8d13cbb78329dd 379-381
+src/services/utilities/utils-service.js
+  s_f1a86d41c35dd3::t_c419e6688635de 1000-1012
+src/components/modals/ModalAudioRecord.vue
+  s_f1a86d41c35dd3::t_fee66e88a13728 177-182
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "86ca8775b7002d47895122974ece43cd37182478",
+  "prompts": {},
+  "sessions": {
+    "s_f1a86d41c35dd3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f2d1067eaffeOEIuojO7kosfKL",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
