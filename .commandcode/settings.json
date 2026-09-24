@@ -3,10 +3,11 @@
     "allow": [
       "Shell(gh auth status:*)",
       "Shell(gh label list:*)",
-      "Shell(gh issue create:*)",
       "Shell(command -v gh:*)",
-      "Shell(rm docs/issues/draft/*)",
+      "Shell(rm docs/issues/draft/*.md)",
       "Shell(npx vitest *)",
+      "Shell(NODE_ENV=test npx vitest *)",
+      "Shell(node scripts/check-node-version.js:*)",
       "Shell(git status:*)",
       "Shell(git diff:*)",
       "Shell(git log:*)",
@@ -16,12 +17,13 @@
       "Shell(git ls-files:*)",
       "Shell(git add:*)",
       "Shell(git commit:*)",
-      "Shell(git reset:*)",
-      "Shell(git tag:*)",
       "Shell(mkdir:*)"
     ],
     "ask": [
-      "Shell(git push:*)"
+      "Shell(git push:*)",
+      "Shell(git tag:*)",
+      "Shell(git reset:*)",
+      "Shell(gh issue create:*)"
     ],
     "deny": [
       "Shell(rm -rf:*)",
