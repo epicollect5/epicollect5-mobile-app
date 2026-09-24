@@ -42,7 +42,6 @@
               class="question-action-button ion-text-nowrap"
               color="secondary"
               expand="block"
-              :disabled="isPhotoCaptureActive"
               @click="takePicture('camera')"
           >
             <ion-icon
@@ -60,7 +59,6 @@
               class="question-action-button ion-margin-top ion-text-nowrap"
               color="secondary"
               expand="block"
-              :disabled="isPhotoCaptureActive"
               @click="takePicture('gallery')"
           >
             <ion-icon
@@ -490,9 +488,6 @@ export default {
       }),
       isPWA: computed(() => {
         return rootStore.isPWA;
-      }),
-      isPhotoCaptureActive: computed(() => {
-        return rootStore.isPhotoCaptureActive;
       })
     };
 

@@ -127,12 +127,30 @@ describe('photoTake tests', () => {
         setupRootStore();
         nMock.startForegroundService.mockResolvedValue('open_settings');
         const { media, entryUuid, state, filename } = makeArgs('gallery');
-
         await photoTake({ media, entryUuid, state, filename, action: 'gallery' });
 
         expect(nMock.startForegroundService).toHaveBeenCalled();
         expect(Camera.getPhoto).not.toHaveBeenCalled();
         expect(modalMock.create).not.toHaveBeenCalled();
+    });
+
+    it('keeps the dialog up across a successful gallery pick', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockResolvedValueOnce({ path: '/tmp/picked.jpg' });
+        const { media, entryUuid, state, filename } = makeArgs('gallery');
+
+        await photoTake({ media, entryUuid, state, filename, action: 'gallery' });
+
+        //same single-dialog lifecycle as the camera: entry dialog never
+        //dismissed at launch, no second show on return, removed after thumbnail
+        expect(nMock.showProgressDialog).toHaveBeenCalledTimes(1);
+        expect(nMock.showProgressDialog).toHaveBeenCalledWith('wait');
+        expect(moveMock.moveToAppTemporaryDir).toHaveBeenCalledWith('/tmp/picked.jpg', 'photo_gen.jpg');
+        expect(media[entryUuid]['q1'].cached).toBe('photo_gen.jpg');
+        expect(state.answer.answer).toBe('photo_gen.jpg');
+        expect(state.imageSource).toContain('/tmp/photo_gen.jpg');
+        expect(nMock.hideProgressDialog).toHaveBeenLastCalledWith(0);
     });
 
     it('leaves media empty when the user cancels a fresh photo capture', async () => {
@@ -146,6 +164,9 @@ describe('photoTake tests', () => {
         expect(Camera.getPhoto).toHaveBeenCalled();
         expect(media[entryUuid]['q1'].cached).toBe('');
         expect(state.answer.answer).toBe('');
+        //the kept-up entry dialog is removed on return with no alert
+        expect(nMock.hideProgressDialog).toHaveBeenCalled();
+        expect(nMock.showAlert).not.toHaveBeenCalled();
     });
 
     it('preserves an existing photo when the user cancels the capture', async () => {
@@ -161,6 +182,9 @@ describe('photoTake tests', () => {
 
         expect(media[entryUuid]['q1'].cached).toBe('existing.jpg');
         expect(state.answer.answer).toBe('existing.jpg');
+        //the kept-up entry dialog is removed on return with no alert
+        expect(nMock.hideProgressDialog).toHaveBeenCalled();
+        expect(nMock.showAlert).not.toHaveBeenCalled();
     });
 
     it('opens the in-app modal on Android when inAppCamera flag is on and action is camera', async () => {
@@ -381,7 +405,7 @@ describe('photoTake tests', () => {
         expect(state.imageSource).toContain('/tmp/photo_gen.jpg');
     });
 
-    it('shows wait at entry and bridges the native camera launch gap', async () => {
+    it('keeps a single wait dialog up across the native camera', async () => {
         setupRootStore();
         nMock.startForegroundService.mockResolvedValue('granted');
         Camera.getPhoto.mockResolvedValueOnce({ path: '/tmp/orig.jpg' });
@@ -389,23 +413,22 @@ describe('photoTake tests', () => {
 
         await photoTake({ media, entryUuid, state, filename, action });
 
-        //entry dialog first, then the fire-and-forget launch-gap bridge,
-        //then the post-capture saving dialog: full lifecycle ordering
+        //exactly one dialog for the whole flow: shown at entry, never
+        //dismissed at launch, no second show on return (a swap would flash)
+        expect(nMock.showProgressDialog).toHaveBeenCalledTimes(1);
         expect(nMock.showProgressDialog).toHaveBeenCalledWith('wait');
-        expect(nMock.hideProgressDialog).toHaveBeenCalledWith(2000);
-        const waitOrder = nMock.showProgressDialog.mock.invocationCallOrder[0];
         const bridgeCall = nMock.hideProgressDialog.mock.calls.findIndex((args) => args[0] === 2000);
-        const bridgeOrder = nMock.hideProgressDialog.mock.invocationCallOrder[bridgeCall];
-        const savingCall = nMock.showProgressDialog.mock.calls.findIndex((args) => args[0] === 'saving');
-        const savingOrder = nMock.showProgressDialog.mock.invocationCallOrder[savingCall];
-        expect(waitOrder).toBeLessThan(bridgeOrder);
-        expect(bridgeOrder).toBeLessThan(savingOrder);
-        //the saving dialog leads on return: teardown and move run under its cover
+        expect(bridgeCall).toBe(-1);
+        //teardown and move run under its cover, removed after the thumbnail
         const stopOrder = nMock.stopForegroundService.mock.invocationCallOrder[0];
-        expect(savingOrder).toBeLessThan(stopOrder);
+        const moveOrder = moveMock.moveToAppTemporaryDir.mock.invocationCallOrder[0];
+        const hideOrders = nMock.hideProgressDialog.mock.invocationCallOrder;
+        expect(stopOrder).toBeLessThan(moveOrder);
+        expect(hideOrders[hideOrders.length - 1]).toBeGreaterThan(moveOrder);
+        expect(nMock.hideProgressDialog).toHaveBeenLastCalledWith(0);
     });
 
-    it('covers the native move with a dialog and hides it when the thumbnail lands', async () => {
+    it('covers the native move with the kept-up dialog and hides it when the thumbnail lands', async () => {
         setupRootStore();
         nMock.startForegroundService.mockResolvedValue('granted');
         Camera.getPhoto.mockResolvedValueOnce({ path: '/tmp/orig.jpg' });
@@ -413,20 +436,18 @@ describe('photoTake tests', () => {
 
         await photoTake({ media, entryUuid, state, filename, action });
 
-        //saving dialog shown with the existing labels, hiding the file move
-        const dialogCall = nMock.showProgressDialog.mock.calls.findIndex((args) => args[0] === 'saving' && args[1] === 'wait');
-        expect(dialogCall).toBeGreaterThanOrEqual(0);
-        //shown before the move starts, hidden after the thumbnail state is set
-        const dialogOrder = nMock.showProgressDialog.mock.invocationCallOrder[dialogCall];
+        //the single entry dialog covers the file move: no second show
+        expect(nMock.showProgressDialog).toHaveBeenCalledTimes(1);
+        expect(nMock.showProgressDialog).toHaveBeenCalledWith('wait');
+        //hidden after the thumbnail state is set
         const moveOrder = moveMock.moveToAppTemporaryDir.mock.invocationCallOrder[0];
-        expect(dialogOrder).toBeLessThan(moveOrder);
         const hideOrders = nMock.hideProgressDialog.mock.invocationCallOrder;
         expect(hideOrders[hideOrders.length - 1]).toBeGreaterThan(moveOrder);
         expect(nMock.hideProgressDialog).toHaveBeenLastCalledWith(0);
         expect(state.imageSource).toContain('/tmp/photo_gen.jpg');
     });
 
-    it('hides the saving dialog before alerting when the native move fails', async () => {
+    it('hides the dialog before alerting when the native move fails', async () => {
         setupRootStore();
         nMock.startForegroundService.mockResolvedValue('granted');
         Camera.getPhoto.mockResolvedValueOnce({ path: '/tmp/orig.jpg' });
@@ -442,7 +463,7 @@ describe('photoTake tests', () => {
         expect(hideOrders[hideOrders.length - 1]).toBeLessThan(alertOrder);
     });
 
-    it('never shows the saving dialog when the native capture is cancelled', async () => {
+    it('never shows a second dialog when the native capture is cancelled', async () => {
         setupRootStore();
         nMock.startForegroundService.mockResolvedValue('granted');
         Camera.getPhoto.mockRejectedValue(new Error('User cancelled photos app'));

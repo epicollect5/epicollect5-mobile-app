@@ -56,11 +56,12 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
             return;
         }
 
-        //bridge the native camera launch gap: intentionally fire-and-forget
-        //(never awaited, so the camera intent fires immediately) dismisses
-        //the spinner ~2s later underneath the camera activity. Awaiting here
-        //would stall the launch itself by the delay
-        notificationService.hideProgressDialog(2000);
+        //the entry wait dialog stays up across the native camera (88.9.8
+        //behavior): it covers the launch gap, sits invisible underneath the
+        //camera activity, and is already on screen the instant the camera
+        //dismisses — re-showing after return is always late on iOS (WebView
+        //resume plus create/present). Dismissed after the thumbnail lands,
+        //with onImageLoad as the render-tied backstop
 
         //snapshot the previous references: a failed replacement must restore
         //them instead of dropping the existing photo from the entry
@@ -70,16 +71,14 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
         try {
             const imageURI = await Camera.getPhoto(cameraOptions);
 
-            //cover everything below: the system camera is gone and the
-            //service stop + file move + thumbnail decode take a moment with
-            //no other feedback. Shown FIRST on return so the spinner is
-            //already presenting while the teardown and the move run under
-            //its cover (same saving dialog as the in-app branch). Single
-            //owner: shown here, hidden after the thumbnail lands or before
-            //the failure alert, so it can never strand
-            await notificationService.showProgressDialog(labels.saving, labels.wait);
-
             await notificationService.stopForegroundService();
+
+            //no second dialog here: the entry wait dialog stayed up across
+            //the camera and already covers the teardown and the move below.
+            //Presenting another one on top would stack two spinners and flash
+            //on the swap. Single owner: shown at entry, hidden after the
+            //thumbnail lands or before the failure alert, so it can never
+            //strand (onImageLoad hides it on actual render as a backstop)
 
             //resolve the target filename without touching the references yet
             //(shared pick-rules: reuse cached on retake, stored on edit,
