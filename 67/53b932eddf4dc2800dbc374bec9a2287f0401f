@@ -1,0 +1,24 @@
+src/services/utilities/entries-download-progress-service.js
+  h_2231ff2aa93473 1-2,73-75
+src/services/utilities/rollbar-service.js
+  h_2231ff2aa93473 29-35
+src/use/project/add-project.js
+  h_2231ff2aa93473 99-104
+tests/unit/services/utilities/entries-download-progress-service.spec.js
+  h_2231ff2aa93473 3-13,48-62
+tests/unit/services/utilities/rollbar-service.spec.js
+  h_2231ff2aa93473 142-149
+tests/unit/use/add-project.spec.js
+  h_2231ff2aa93473 13,226-249
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6753b932eddf4dc2800dbc374bec9a2287f0401f",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
