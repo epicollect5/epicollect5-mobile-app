@@ -1,0 +1,26 @@
+.commandcode/settings.json
+  s_0d3dcd7c750551::t_9252db8b100334 9-10
+  h_2231ff2aa93473 7,23-26
+  h_2231ff2aa93473 37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "67f92b73e67c44d3d69bed8d208c3cae86b06d37",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_0d3dcd7c750551": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3087d1edffeHamAPFeLqds570",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
