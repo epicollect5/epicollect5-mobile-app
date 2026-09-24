@@ -53,7 +53,7 @@ Assume this runs at scale and causes inconsistencies after months in production.
 
 Commit messages follow Conventional Commits:
 
-- Format: `<type>: <description>`
+- Format: `<type>(<scope>): <description>` — scope is optional for docs, test and chore commits
 - Allowed types: feat, fix, refactor, perf, docs, test, build, ci, chore, style, revert
 - Use imperative mood (e.g. "add", "fix", "remove")
 - Do not capitalize the first word of the description

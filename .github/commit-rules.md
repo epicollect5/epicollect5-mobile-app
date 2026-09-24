@@ -1,3 +1,9 @@
-- When generating commit messages, use the Conventional Commits format. 
-- The subject line must never exceed 50 characters. 
+- When generating commit messages, use the Conventional Commits format.
+- Format: `<type>(<scope>): <description>` — scope is optional for docs, test and chore commits.
+- Allowed types: feat, fix, refactor, perf, docs, test, build, ci, chore, style, revert.
+- Use the imperative mood (e.g. "add", "fix", "remove").
+- Do not capitalize the first word of the description.
+- Do not end the description with a period.
+- Maximum 75 characters total, including type and scope.
 - Do not include a body unless the changes are highly complex.
+- Never add Co-Authored-By, Signed-off-by, or any other trailer or attribution line.
