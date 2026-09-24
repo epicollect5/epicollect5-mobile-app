@@ -10,6 +10,7 @@ import {PARAMETERS, MIGRATIONS, DEMO_PROJECT} from '@/config';
 import {STRINGS} from '@/config/strings';
 import axios from 'axios';
 import {Filesystem, Directory} from '@capacitor/filesystem';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 export const initService = {
 
@@ -60,6 +61,7 @@ export const initService = {
                 // Resolve the promise with the db instance
                 resolve(db);
             }, (err) => {
+                rollbarService.criticalWithContext('initService: ios db open failed', err);
                 console.error('Critical database open error:', err);
                 reject(err);
             });
@@ -155,6 +157,7 @@ export const initService = {
             }
 
         } catch (error) {
+            rollbarService.criticalWithContext('initService: legacy db migration failed', error);
             console.error('Migration Logic Failure:', error);
             return false;
         }

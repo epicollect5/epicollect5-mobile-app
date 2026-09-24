@@ -7,6 +7,7 @@ import {STRINGS} from '@/config/strings';
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {deleteFileService} from '@/services/filesystem/delete-file-service';
 import {entriesDownloadProgressService} from '@/services/utilities/entries-download-progress-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 export async function deleteEntry(state, router, bookmarkStore, rootStore, language, labels) {
     const projectRef = projectModel.getProjectRef();
@@ -21,6 +22,7 @@ export async function deleteEntry(state, router, bookmarkStore, rootStore, langu
                 })
             );
         } catch (error) {
+            rollbarService.criticalWithContext('deleteEntry: delete entries failed', error);
             console.log(error);
             await notificationService.showAlert(labels.unknown_error);
             return;
@@ -125,6 +127,7 @@ export async function deleteEntry(state, router, bookmarkStore, rootStore, langu
                 });
             })
             .catch(async (error) => {
+                rollbarService.criticalWithContext('deleteEntry: hierarchy delete failed', error);
                 console.log(error);
                 await notificationService.showAlert(labels.unknown_error);
             });
