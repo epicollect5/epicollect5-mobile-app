@@ -1,0 +1,22 @@
+CHANGELOG.md
+  h_2231ff2aa93473 3-11
+android/app/build.gradle
+  h_2231ff2aa93473 16-17
+ios/App/App.xcodeproj/project.pbxproj
+  h_2231ff2aa93473 387,395,417,425
+package-lock.json
+  h_2231ff2aa93473 3,9
+package.json
+  h_2231ff2aa93473 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0211e9457329690d5374ed6a992b211b4137d012",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
