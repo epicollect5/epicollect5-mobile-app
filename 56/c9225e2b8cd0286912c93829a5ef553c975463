@@ -1,0 +1,34 @@
+src/components/modals/ModalProgressExport.vue
+  h_2231ff2aa93473 51,56
+src/services/filesystem/write-file-service.js
+  h_2231ff2aa93473 58
+src/services/notification-service.js
+  h_2231ff2aa93473 473,497
+src/services/utilities/json-transformer-service.js
+  h_2231ff2aa93473 177,227,296
+src/services/utilities/utils-service.js
+  h_2231ff2aa93473 251,254,258,264,268,279,288
+src/use/toast.js
+  h_2231ff2aa93473 16,51-53
+tests/unit/utilities/json-transformer/json-transformer-additional.spec.js
+  h_2231ff2aa93473 446-447,745-746,758-759
+tests/unit/utilities/json-transformer/json-transformer-groups-branches.spec.js
+  h_2231ff2aa93473 51-53,67-69,87-89,142-144,226-229,282-283,362-364,384-386,406-408,422-424,485-486
+tests/unit/utilities/json-transformer/json-transformer-headers.spec.js
+  h_2231ff2aa93473 62-63
+tests/unit/utilities/json-transformer/json-transformer-rows.spec.js
+  h_2231ff2aa93473 97-98,246,265
+vite.config.js
+  h_2231ff2aa93473 39-42,49-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "56c9225e2b8cd0286912c93829a5ef553c975463",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
