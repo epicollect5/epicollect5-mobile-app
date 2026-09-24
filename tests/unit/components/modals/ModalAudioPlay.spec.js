@@ -288,6 +288,12 @@ describe('ModalAudioPlay component', () => {
 
         wrapper.find('[data-test="stop"]').trigger('click');
         expect(stopMock).toHaveBeenCalledOnce();
+
+        //Stop exits without waiting for the status-4 callback: a native stop
+        //that never sends it must not strand the modal
+        await flushPromises();
+        expect(releaseMock).toHaveBeenCalledOnce();
+        expect(modalController.dismiss).toHaveBeenCalledOnce();
     });
 
     it('ignores a second stop tap', async () => {
@@ -337,5 +343,60 @@ describe('ModalAudioPlay component', () => {
         await Promise.all([firstStop, secondStop]);
 
         expect(stopMock).toHaveBeenCalledOnce();
+    });
+
+    it('treats a late status-4 after Stop as a no-op', async () => {
+        const stopMock = vi.fn().mockReturnValue(true);
+        const releaseMock = vi.fn().mockReturnValue(true);
+        const mockMediaPlayer = {
+            play: vi.fn().mockReturnValue(true),
+            stop: stopMock,
+            release: releaseMock
+        };
+
+        const rootStore = useRootStore();
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+
+        Capacitor.isNativePlatform.mockReturnValue(true);
+        modalController.dismiss = vi.fn(() => Promise.resolve());
+
+        //capture the status callback the component hands to the native player
+        let playStatusCallback;
+        window.Media = vi.fn((file_URI, success, error, onStatusChange) => {
+            playStatusCallback = onStatusChange;
+            return mockMediaPlayer;
+        });
+
+        const wrapper = shallowMount(ModalAudioPlay, {
+            props: {
+                projectRef,
+                entryUuid,
+                inputRef,
+                media: {
+                    [entryUuid]: {
+                        [inputRef]: {
+                            cached: '',
+                            stored: '',
+                            type
+                        }
+
+                    }
+                }
+            }
+        });
+
+        await flushPromises();
+
+        wrapper.find('[data-test="stop"]').trigger('click');
+        await flushPromises();
+        expect(modalController.dismiss).toHaveBeenCalledTimes(1);
+
+        //late native callback after the Stop-driven exit: no second release/dismiss
+        playStatusCallback(4);
+        await flushPromises();
+        expect(releaseMock).toHaveBeenCalledTimes(1);
+        expect(modalController.dismiss).toHaveBeenCalledTimes(1);
     });
 });

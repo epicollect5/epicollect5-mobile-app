@@ -288,6 +288,35 @@ describe('ModalAudioRecord component', () => {
         expect(modalController.dismiss).toHaveBeenCalledTimes(1);
     });
 
+    it('does not repeat a completed stop when release fails', async () => {
+        const rootStore = useRootStore();
+        rootStore.language = PARAMETERS.DEFAULT_LANGUAGE;
+        rootStore.device = {
+            platform: PARAMETERS.ANDROID
+        };
+        rootStore.tempDir = 'temp/';
+        notificationService.showProgressDialog = vi.fn(() => Promise.resolve());
+        notificationService.hideProgressDialog = vi.fn();
+        notificationService.showToast = vi.fn();
+        modalController.dismiss = vi.fn(() => Promise.resolve());
+
+        const wrapper = await mountRecorder();
+        mediaRecorderReleaseMock.mockImplementationOnce(() => {
+            throw new Error('release boom');
+        });
+
+        await expect(wrapper.vm.stop()).rejects.toThrow('release boom');
+
+        //the completed stop is not repeated: only the release is retried
+        expect(mediaRecorderStopRecordMock).toHaveBeenCalledTimes(1);
+        expect(modalController.dismiss).not.toHaveBeenCalled();
+
+        await wrapper.vm.stop();
+        expect(mediaRecorderStopRecordMock).toHaveBeenCalledTimes(1);
+        expect(mediaRecorderReleaseMock).toHaveBeenCalledTimes(2);
+        expect(modalController.dismiss).toHaveBeenCalledTimes(1);
+    });
+
     it('leaves another operation indicator alone when the saving dialog fails to open', async () => {
         const rootStore = useRootStore();
         rootStore.language = PARAMETERS.DEFAULT_LANGUAGE;
