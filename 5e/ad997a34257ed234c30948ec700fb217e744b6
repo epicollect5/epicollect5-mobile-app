@@ -1,0 +1,23 @@
+src/components/modals/ModalAudioRecord.vue
+  s_c55c971dccb776::t_68f696cbbddbbf 173-178
+  s_c55c971dccb776::t_389eafba160c10 149-151
+src/components/modals/ModalAudioPlay.vue
+  s_c55c971dccb776::t_8bdfe30491e24e 177-179
+  s_c55c971dccb776::t_2012da64bd37fa 96-119,125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5ead997a34257ed234c30948ec700fb217e744b6",
+  "prompts": {},
+  "sessions": {
+    "s_c55c971dccb776": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f2c3ceb61ffejqpNu56Vc2fu8F",
+        "model": "muse-spark-1.3-contributor-free"
+      },
+      "human_author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
