@@ -3,14 +3,13 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
 import { versioningService } from '@/services/utilities/versioning-service';
 import { notificationService } from '@/services/notification-service';
-import { logout } from '@/use/auth/logout';
-import { showModalLogin } from '@/use/auth/show-modal-login';
 import { updateLocalProject } from '@/use/project/update-local-project';
 import { PARAMETERS } from '@/config';
 import { errorsService } from '@/services/errors-service';
 import { projectModel } from '@/models/project-model';
+import { alertController } from '@ionic/vue';
+import { showUpdaterModal } from '@/components/modals/ModalProjectUpdater.vue';
 
-// Mocking the services using your preferred style
 vi.mock('@/services/utilities/versioning-service', () => ({
     versioningService: {
         checkProjectVersion: vi.fn(),
@@ -28,8 +27,6 @@ vi.mock('@/services/notification-service', () => ({
     }
 }));
 
-vi.mock('@/use/auth/logout', () => ({ logout: vi.fn() }));
-vi.mock('@/use/auth/show-modal-login', () => ({ showModalLogin: vi.fn() }));
 vi.mock('@/services/errors-service', () => ({
     errorsService: { handleWebError: vi.fn() }
 }));
@@ -44,19 +41,58 @@ vi.mock('@/config', () => ({
 vi.mock('@/config/strings', () => ({
     STRINGS: {
         en: {
-            labels: { wait: 'wait', updating_project: 'updating', loading_entries: 'loading', update_project: 'update', project_outdated: 'outdated' },
+            labels: {
+                wait: 'wait',
+                updating_project: 'updating',
+                loading_entries: 'loading',
+                update_project: 'update',
+                project_outdated: 'outdated',
+                learn_more: 'Learn More',
+                cancel: 'Cancel',
+                ok: 'Ok',
+                error: 'Error',
+                stale_cleanup_failed: 'cleanup failed'
+            },
             status_codes: {
                 ec5_70: 'Please log in',
                 ec5_71: 'Permission denied',
                 ec5_77: 'Private project',
                 ec5_78: 'Access denied',
                 ec5_50: 'JWT Error',
-                ec5_51: 'JWT Invalid',
-                other_error: 'Something went wrong'
+                ec5_51: 'JWT Invalid'
             }
         }
     }
 }));
+
+vi.mock('@ionic/vue', () => ({
+    alertController: {
+        create: vi.fn()
+    }
+}));
+
+vi.mock('@/components/modals/ModalProjectUpdater.vue', () => ({
+    showUpdaterModal: vi.fn(),
+    dismissUpdaterModal: vi.fn().mockResolvedValue()
+}));
+
+function mockConfirm(confirmed) {
+    alertController.create.mockImplementation(async (options) => {
+        const buttons = options.buttons;
+        return {
+            present: vi.fn().mockImplementation(async () => {
+                if (confirmed) {
+                    const ok = buttons[buttons.length - 1];
+                    ok.handler();
+                } else {
+                    const cancel = buttons.find((button) => button.role === 'cancel');
+                    cancel.handler();
+                }
+            }),
+            dismiss: vi.fn().mockResolvedValue()
+        };
+    });
+}
 
 describe('updateLocalProject()', () => {
 
@@ -64,162 +100,118 @@ describe('updateLocalProject()', () => {
         setActivePinia(createPinia());
         vi.clearAllMocks();
 
-        // Setup default store state
         const rootStore = useRootStore();
         rootStore.language = 'en';
         rootStore.continueProjectVersionUpdate = true;
 
-        // Start with a clean but loaded project model so the update flow guard passes
         projectModel.destroy();
         projectModel.loadExtraStructure({ project: { details: {} } });
+        showUpdaterModal.mockResolvedValue({ modal: {} });
     });
 
-    it('returns false immediately if project is up to date', async () => {
+    it('returns UP_TO_DATE immediately if project is up to date', async () => {
         versioningService.checkProjectVersion.mockResolvedValue(true);
 
         const result = await updateLocalProject();
 
-        expect(result).toBe(false);
+        expect(result.outcome).toBe('UP_TO_DATE');
         expect(versioningService.checkProjectVersion).toHaveBeenCalled();
-        expect(notificationService.confirmSingle).not.toHaveBeenCalled();
+        expect(alertController.create).not.toHaveBeenCalled();
     });
 
-    it('asks for confirmation and returns false if user cancels', async () => {
+    it('asks for confirmation and returns DECLINED if user cancels', async () => {
         versioningService.checkProjectVersion.mockResolvedValue(false);
-        notificationService.confirmSingle.mockResolvedValue(false);
+        mockConfirm(false);
 
         const result = await updateLocalProject();
 
-        expect(result).toBe(false);
-        expect(notificationService.confirmSingle).toHaveBeenCalled();
+        expect(result.outcome).toBe('DECLINED');
+        expect(alertController.create).toHaveBeenCalled();
         expect(versioningService.updateProject).not.toHaveBeenCalled();
     });
 
-    it('updates project and shows success alert when confirmed', async () => {
-        // 1. Get the store instance
+    it('updates project and returns UPDATED when confirmed', async () => {
         const rootStore = useRootStore();
-
-        // 2. Setup the "Outdated" state
         versioningService.checkProjectVersion.mockResolvedValue(false);
-
-        // 3. IMPORTANT: This must be true to enter the 'if' block
         rootStore.continueProjectVersionUpdate = true;
-
-        // 4. Setup the "User said Yes" state
-        notificationService.confirmSingle.mockResolvedValue(true);
-
-        // 5. Setup the "Update worked" state
+        mockConfirm(true);
         versioningService.updateProject.mockResolvedValue(true);
 
         const result = await updateLocalProject();
 
-        // This should now be true
-        expect(result).toBe(true);
-        expect(notificationService.showAlert).toHaveBeenCalled();
-        expect(notificationService.confirmSingle).toHaveBeenCalledWith(
-            expect.any(String),
-            expect.any(String),
-            PARAMETERS.UPDATE_PROJECT_DOCS_URL
-        );
+        expect(result.outcome).toBe('UPDATED');
+        expect(alertController.create).toHaveBeenCalled();
     });
 
-    it('handles Auth Errors by setting callback and calling logout', async () => {
-        const rootStore = useRootStore();
+    it('returns CANCELLED when stale after version check', async () => {
         versioningService.checkProjectVersion.mockResolvedValue(false);
-        notificationService.confirmSingle.mockResolvedValue(true);
 
-        // Simulate an Auth Error based on your PARAMETERS.AUTH_ERROR_CODES
-        const authError = {
-            data: {
-                errors: [{ code: 'ec5_70' }] // Assuming ec5_70 is an auth error
-            }
-        };
-        versioningService.updateProject.mockRejectedValue(authError);
+        const result = await updateLocalProject(() => false);
+
+        expect(result.outcome).toBe('CANCELLED');
+        expect(alertController.create).not.toHaveBeenCalled();
+    });
+
+    it('aborted confirm resolves CANCELLED without updater', async () => {
+        versioningService.checkProjectVersion.mockResolvedValue(false);
+        alertController.create.mockImplementation(async () => ({
+            present: vi.fn().mockImplementation(() => new Promise(() => {})),
+            dismiss: vi.fn().mockResolvedValue()
+        }));
+        const controller = new AbortController();
+        const pending = updateLocalProject(() => true, controller.signal);
+        controller.abort();
+
+        const result = await pending;
+
+        expect(result.outcome).toBe('CANCELLED');
+        expect(showUpdaterModal).not.toHaveBeenCalled();
+        expect(versioningService.updateProject).not.toHaveBeenCalled();
+    });
+
+    it('shows first auth error without login retry (fail-fast)', async () => {
+        versioningService.checkProjectVersion.mockResolvedValue(false);
+        mockConfirm(true);
+        versioningService.updateProject.mockRejectedValue({
+            data: { errors: [{ code: 'ec5_70' }] }
+        });
 
         const result = await updateLocalProject();
 
-        expect(result).toBe(false);
-        // Verify the callback was attached to the store
-        expect(rootStore.afterUserIsLoggedIn.callback).toBeDefined();
-        expect(typeof rootStore.afterUserIsLoggedIn.callback).toBe('function');
-
-        expect(logout).toHaveBeenCalled();
-        expect(showModalLogin).toHaveBeenCalled();
-        expect(notificationService.showToast).toHaveBeenCalled();
+        expect(result.outcome).toBe('UPDATE_FAILED');
+        expect(notificationService.showAlert).toHaveBeenCalled();
+        expect(errorsService.handleWebError).not.toHaveBeenCalled();
     });
 
-    // Test every code defined in PARAMETERS.AUTH_ERROR_CODES
-    PARAMETERS.AUTH_ERROR_CODES.forEach((errorCode) => {
-        it(`handles auth error code ${errorCode} correctly`, async () => {
-            const rootStore = useRootStore();
-            versioningService.checkProjectVersion.mockResolvedValue(false);
-            notificationService.confirmSingle.mockResolvedValue(true);
-
-            // Simulate the specific Auth Error response
-            const authError = {
-                data: {
-                    errors: [{ code: errorCode }]
-                }
-            };
-            versioningService.updateProject.mockRejectedValue(authError);
-
-            const result = await updateLocalProject();
-
-            expect(result).toBe(false);
-
-            // 1. Check if callback is set
-            expect(rootStore.afterUserIsLoggedIn.callback).toBeDefined();
-
-            // 2. Check if notification toast was shown
-            expect(notificationService.showToast).toHaveBeenCalled();
-
-            // 3. Check if logout and login modal were triggered
-            expect(logout).toHaveBeenCalled();
-            expect(showModalLogin).toHaveBeenCalled();
-
-            // 4. Ensure WebError service was NOT called for auth issues
-            expect(errorsService.handleWebError).not.toHaveBeenCalled();
-        });
-    });
-
-    it('returns false and logs error if checkProjectVersion fails', async () => {
+    it('returns UP_TO_DATE and logs error if checkProjectVersion fails', async () => {
         const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
         versioningService.checkProjectVersion.mockRejectedValue(new Error('Network Fail'));
 
         const result = await updateLocalProject();
 
-        expect(result).toBe(false);
+        expect(result.outcome).toBe('UP_TO_DATE');
         expect(consoleSpy).toHaveBeenCalled();
         consoleSpy.mockRestore();
     });
 
     it('handles non-auth errors using errorsService.handleWebError', async () => {
         versioningService.checkProjectVersion.mockResolvedValue(false);
-        notificationService.confirmSingle.mockResolvedValue(true);
-
+        mockConfirm(true);
         const regularError = {
-            data: {
-                errors: [{ code: 'ec5_999' }] // Not in the auth list
-            }
+            data: { errors: [{ code: 'ec5_999' }] }
         };
         versioningService.updateProject.mockRejectedValue(regularError);
 
         const result = await updateLocalProject();
 
-        expect(result).toBe(false);
-
-        // Ensure standard error handler was used
+        expect(result.outcome).toBe('UPDATE_FAILED');
         expect(errorsService.handleWebError).toHaveBeenCalledWith(regularError);
-
-        // Ensure auth logic was skipped
-        expect(logout).not.toHaveBeenCalled();
-        expect(showModalLogin).not.toHaveBeenCalled();
     });
 
     it('locks navigation while the update is in flight and releases it on success', async () => {
         const rootStore = useRootStore();
         versioningService.checkProjectVersion.mockResolvedValue(false);
-        notificationService.confirmSingle.mockResolvedValue(true);
+        mockConfirm(true);
 
         let seenDuringUpdate;
         versioningService.updateProject.mockImplementation(async () => {
@@ -229,7 +221,7 @@ describe('updateLocalProject()', () => {
 
         const result = await updateLocalProject();
 
-        expect(result).toBe(true);
+        expect(result.outcome).toBe('UPDATED');
         expect(seenDuringUpdate).toBe(true);
         expect(rootStore.isProjectUpdating).toBe(false);
     });
@@ -237,78 +229,37 @@ describe('updateLocalProject()', () => {
     it('releases the navigation lock when the update fails', async () => {
         const rootStore = useRootStore();
         versioningService.checkProjectVersion.mockResolvedValue(false);
-        notificationService.confirmSingle.mockResolvedValue(true);
+        mockConfirm(true);
         versioningService.updateProject.mockRejectedValue({
             data: { errors: [{ code: 'ec5_999' }] }
         });
 
         const result = await updateLocalProject();
 
-        expect(result).toBe(false);
+        expect(result.outcome).toBe('UPDATE_FAILED');
         expect(rootStore.isProjectUpdating).toBe(false);
     });
 
     it('never sets the navigation lock when no update runs', async () => {
         const rootStore = useRootStore();
         versioningService.checkProjectVersion.mockResolvedValue(false);
-        notificationService.confirmSingle.mockResolvedValue(false);
+        mockConfirm(false);
 
         const result = await updateLocalProject();
 
-        expect(result).toBe(false);
+        expect(result.outcome).toBe('DECLINED');
         expect(rootStore.isProjectUpdating).toBe(false);
         expect(versioningService.updateProject).not.toHaveBeenCalled();
     });
 
-    it('skips the deferred update after login when no project is loaded', async () => {
-        const rootStore = useRootStore();
+    it('updater presentation failure never starts update', async () => {
         versioningService.checkProjectVersion.mockResolvedValue(false);
-        notificationService.confirmSingle.mockResolvedValue(true);
+        mockConfirm(true);
+        showUpdaterModal.mockRejectedValue(new Error('present failed'));
 
-        // Simulate an Auth Error so the retry callback gets stored
-        const authError = {
-            data: {
-                errors: [{ code: 'ec5_70' }]
-            }
-        };
-        versioningService.updateProject.mockRejectedValue(authError);
+        const result = await updateLocalProject();
 
-        await updateLocalProject();
-        expect(rootStore.afterUserIsLoggedIn.callback).toBeDefined();
-
-        // Empty project model, as when the user is on a page with no active project
-        projectModel.destroy();
-
-        // The retry must not crash nor hit the versioning service again
-        await expect(rootStore.afterUserIsLoggedIn.callback()).resolves.toBe(false);
-        expect(versioningService.updateProject).toHaveBeenCalledTimes(1);
-        expect(notificationService.showAlert).not.toHaveBeenCalled();
-    });
-
-    it('runs the deferred update after login when a project is loaded', async () => {
-        const rootStore = useRootStore();
-        versioningService.checkProjectVersion.mockResolvedValue(false);
-        notificationService.confirmSingle.mockResolvedValue(true);
-
-        const authError = {
-            data: {
-                errors: [{ code: 'ec5_70' }]
-            }
-        };
-        versioningService.updateProject.mockRejectedValue(authError);
-
-        await updateLocalProject();
-        expect(rootStore.afterUserIsLoggedIn.callback).toBeDefined();
-
-        // A project is loaded in the model, e.g. the user is still on the project's entries page
-        projectModel.loadExtraStructure({ project: { details: {} } });
-
-        // The retry update now succeeds
-        versioningService.updateProject.mockResolvedValue(false);
-
-        await expect(rootStore.afterUserIsLoggedIn.callback()).resolves.toBe(true);
-        expect(versioningService.updateProject).toHaveBeenCalledTimes(2);
+        expect(result.outcome).toBe('UPDATE_FAILED');
+        expect(versioningService.updateProject).not.toHaveBeenCalled();
     });
 });
-
-
