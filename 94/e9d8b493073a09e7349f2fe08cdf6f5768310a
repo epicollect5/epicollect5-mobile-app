@@ -1,0 +1,14 @@
+tests/unit/upload-data-service.spec.js
+  h_2231ff2aa93473 499-501
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "94e9d8b493073a09e7349f2fe08cdf6f5768310a",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
