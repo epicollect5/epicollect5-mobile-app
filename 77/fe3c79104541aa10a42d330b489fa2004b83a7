@@ -1,0 +1,30 @@
+public/assets/ec5-status-codes/ca.json
+  h_2231ff2aa93473 128
+public/assets/ec5-status-codes/de.json
+  h_2231ff2aa93473 128
+public/assets/ec5-status-codes/en.json
+  h_2231ff2aa93473 128
+public/assets/ec5-status-codes/es.json
+  h_2231ff2aa93473 128
+public/assets/ec5-status-codes/fr.json
+  h_2231ff2aa93473 128
+public/assets/ec5-status-codes/it.json
+  h_2231ff2aa93473 128
+public/assets/ec5-status-codes/pl.json
+  h_2231ff2aa93473 128
+public/assets/ec5-status-codes/pt.json
+  h_2231ff2aa93473 128
+public/assets/ec5-status-codes/sl.json
+  h_2231ff2aa93473 128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "77fe3c79104541aa10a42d330b489fa2004b83a7",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
