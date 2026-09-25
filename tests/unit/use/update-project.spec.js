@@ -9,6 +9,7 @@ import { logout } from '@/use/auth/logout';
 import { showModalLogin } from '@/use/auth/show-modal-login';
 import { updateProject } from '@/use/project/update-project';
 import { PARAMETERS } from '@/config';
+import { STRINGS } from '@/config/strings';
 import { errorsService } from '@/services/errors-service';
 import { projectModel } from '@/models/project-model';
 
@@ -93,8 +94,24 @@ describe('updateProject()', () => {
 
         expect(lockSeenDuringUpdate).toBe(true);
         expect(rootStore.isProjectUpdating).toBe(false);
-        expect(rootStore.nextRoute).toBe(PARAMETERS.ROUTES.ENTRIES);
+        expect(rootStore.nextRoute).toBe(null);
         expect(notificationService.showAlert).toHaveBeenCalled();
+    });
+
+    it('leaves routing untouched even when no questions were added', async () => {
+        const rootStore = useRootStore();
+        rootStore.nextRoute = 'upload-page';
+
+        versioningService.updateProject.mockImplementation(async () => {
+            return false;
+        });
+
+        await updateProject();
+
+        expect(rootStore.nextRoute).toBe('upload-page');
+        expect(notificationService.showAlert).toHaveBeenCalledWith(
+            STRINGS.en.status_codes.ec5_136
+        );
     });
 
     it('does not resolve before the versioning update has settled', async () => {

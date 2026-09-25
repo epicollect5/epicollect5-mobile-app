@@ -52,10 +52,10 @@ describe('entries-list-service', () => {
         expect(firstCallFilters.from).toBe(null);
     });
 
-    it('resets countWithFilters to 0 on empty result', async () => {
+    it('resets countWithFilters to 0 when no entries match', async () => {
         databaseSelectService.countEntries
             .mockResolvedValueOnce(rows([{ total: 0 }]))
-            .mockResolvedValueOnce(rows([]));
+            .mockResolvedValueOnce(rows([{ total: 0, oldest: null, newest: null }]));
 
         const result = await entriesListService.getFilterCounts('p1', 'f1', '', { ...PARAMETERS.FILTERS_DEFAULT });
 
@@ -68,7 +68,7 @@ describe('entries-list-service', () => {
         projectModel.getParentFormRef.mockReturnValue('');
         projectModel.getFormName.mockReturnValue('');
 
-        const context = entriesListService.resolveFormContext({
+        const context = entriesListService.setActiveForm({
             projectRef: 'p1',
             formRef: 'f1',
             hierarchyNavigation: [],
@@ -93,7 +93,7 @@ describe('entries-list-service', () => {
         projectModel.getParentFormRef.mockReturnValue('');
         projectModel.getFormName.mockReturnValue('');
 
-        const context = entriesListService.resolveFormContext({
+        const context = entriesListService.setActiveForm({
             projectRef: 'p1',
             formRef: 'missing',
             hierarchyNavigation: [],

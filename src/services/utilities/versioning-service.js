@@ -134,11 +134,7 @@ export const versioningService = {
                 console.log('failed updated entries for form: ' + form.formRef);
             }
             if (onProgress) {
-                try {
-                    onProgress({ formIndex: formIndex + 1, formsTotal: forms.length, formRef: form.formRef });
-                } catch (progressError) {
-                    console.log('update progress failed: ' + progressError);
-                }
+                onProgress({ formIndex: formIndex + 1, formsTotal: forms.length, formRef: form.formRef });
             }
         }
 

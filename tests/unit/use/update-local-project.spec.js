@@ -1,4 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
 import { versioningService } from '@/services/utilities/versioning-service';
@@ -72,8 +73,7 @@ vi.mock('@ionic/vue', () => ({
 }));
 
 vi.mock('@/components/modals/ModalProjectUpdater.vue', () => ({
-    showUpdaterModal: vi.fn(),
-    dismissUpdaterModal: vi.fn().mockResolvedValue()
+    showUpdaterModal: vi.fn()
 }));
 
 function mockConfirm(confirmed) {
@@ -102,11 +102,17 @@ describe('updateLocalProject()', () => {
 
         const rootStore = useRootStore();
         rootStore.language = 'en';
-        rootStore.continueProjectVersionUpdate = true;
+        rootStore.device = { platform: 'android' };
+        rootStore.continueProjectVersionBackgroundCheck = true;
 
         projectModel.destroy();
         projectModel.loadExtraStructure({ project: { details: {} } });
-        showUpdaterModal.mockResolvedValue({ modal: {} });
+        showUpdaterModal.mockResolvedValue({
+            modal: {
+                onDidDismiss: vi.fn().mockResolvedValue(),
+                dismiss: vi.fn().mockResolvedValue()
+            }
+        });
     });
 
     it('returns UP_TO_DATE immediately if project is up to date', async () => {
@@ -114,7 +120,7 @@ describe('updateLocalProject()', () => {
 
         const result = await updateLocalProject();
 
-        expect(result.outcome).toBe('UP_TO_DATE');
+        expect(result).toBe(false);
         expect(versioningService.checkProjectVersion).toHaveBeenCalled();
         expect(alertController.create).not.toHaveBeenCalled();
     });
@@ -125,7 +131,7 @@ describe('updateLocalProject()', () => {
 
         const result = await updateLocalProject();
 
-        expect(result.outcome).toBe('DECLINED');
+        expect(result).toBe(false);
         expect(alertController.create).toHaveBeenCalled();
         expect(versioningService.updateProject).not.toHaveBeenCalled();
     });
@@ -133,40 +139,35 @@ describe('updateLocalProject()', () => {
     it('updates project and returns UPDATED when confirmed', async () => {
         const rootStore = useRootStore();
         versioningService.checkProjectVersion.mockResolvedValue(false);
-        rootStore.continueProjectVersionUpdate = true;
+        rootStore.continueProjectVersionBackgroundCheck = true;
         mockConfirm(true);
         versioningService.updateProject.mockResolvedValue(true);
 
         const result = await updateLocalProject();
 
-        expect(result.outcome).toBe('UPDATED');
+        expect(result).toBe(true);
         expect(alertController.create).toHaveBeenCalled();
     });
 
-    it('returns CANCELLED when stale after version check', async () => {
+    it('locks hardware back while confirmation is pending', async () => {
+        const rootStore = useRootStore();
         versioningService.checkProjectVersion.mockResolvedValue(false);
-
-        const result = await updateLocalProject(() => false);
-
-        expect(result.outcome).toBe('CANCELLED');
-        expect(alertController.create).not.toHaveBeenCalled();
-    });
-
-    it('aborted confirm resolves CANCELLED without updater', async () => {
-        versioningService.checkProjectVersion.mockResolvedValue(false);
-        alertController.create.mockImplementation(async () => ({
-            present: vi.fn().mockImplementation(() => new Promise(() => {})),
-            dismiss: vi.fn().mockResolvedValue()
-        }));
-        const controller = new AbortController();
-        const pending = updateLocalProject(() => true, controller.signal);
-        controller.abort();
-
+        let confirmButtons;
+        alertController.create.mockImplementation(async (options) => {
+            confirmButtons = options.buttons;
+            return {
+                present: vi.fn().mockResolvedValue(),
+                dismiss: vi.fn().mockResolvedValue()
+            };
+        });
+        const pending = updateLocalProject();
+        await flushPromises();
+        expect(rootStore.isProjectUpdating).toBe(true);
+        const cancel = confirmButtons.find((button) => button.role === 'cancel');
+        cancel.handler();
         const result = await pending;
-
-        expect(result.outcome).toBe('CANCELLED');
-        expect(showUpdaterModal).not.toHaveBeenCalled();
-        expect(versioningService.updateProject).not.toHaveBeenCalled();
+        expect(result).toBe(false);
+        expect(rootStore.isProjectUpdating).toBe(false);
     });
 
     it('shows first auth error without login retry (fail-fast)', async () => {
@@ -178,7 +179,7 @@ describe('updateLocalProject()', () => {
 
         const result = await updateLocalProject();
 
-        expect(result.outcome).toBe('UPDATE_FAILED');
+        expect(result).toBe(false);
         expect(notificationService.showAlert).toHaveBeenCalled();
         expect(errorsService.handleWebError).not.toHaveBeenCalled();
     });
@@ -189,7 +190,7 @@ describe('updateLocalProject()', () => {
 
         const result = await updateLocalProject();
 
-        expect(result.outcome).toBe('UP_TO_DATE');
+        expect(result).toBe(false);
         expect(consoleSpy).toHaveBeenCalled();
         consoleSpy.mockRestore();
     });
@@ -204,7 +205,7 @@ describe('updateLocalProject()', () => {
 
         const result = await updateLocalProject();
 
-        expect(result.outcome).toBe('UPDATE_FAILED');
+        expect(result).toBe(false);
         expect(errorsService.handleWebError).toHaveBeenCalledWith(regularError);
     });
 
@@ -221,7 +222,7 @@ describe('updateLocalProject()', () => {
 
         const result = await updateLocalProject();
 
-        expect(result.outcome).toBe('UPDATED');
+        expect(result).toBe(true);
         expect(seenDuringUpdate).toBe(true);
         expect(rootStore.isProjectUpdating).toBe(false);
     });
@@ -236,7 +237,7 @@ describe('updateLocalProject()', () => {
 
         const result = await updateLocalProject();
 
-        expect(result.outcome).toBe('UPDATE_FAILED');
+        expect(result).toBe(false);
         expect(rootStore.isProjectUpdating).toBe(false);
     });
 
@@ -247,7 +248,7 @@ describe('updateLocalProject()', () => {
 
         const result = await updateLocalProject();
 
-        expect(result.outcome).toBe('DECLINED');
+        expect(result).toBe(false);
         expect(rootStore.isProjectUpdating).toBe(false);
         expect(versioningService.updateProject).not.toHaveBeenCalled();
     });
@@ -259,7 +260,7 @@ describe('updateLocalProject()', () => {
 
         const result = await updateLocalProject();
 
-        expect(result.outcome).toBe('UPDATE_FAILED');
+        expect(result).toBe(false);
         expect(versioningService.updateProject).not.toHaveBeenCalled();
     });
 });
