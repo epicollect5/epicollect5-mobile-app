@@ -246,6 +246,7 @@ export const app = createApp(App)
             db = await initService.openDB(deviceInfo.platform);
         } catch (error) {
             console.log(error);
+            rollbarService.criticalWithContext('boot: openDB failed', error);
             await notificationService.showAlert(error, STRINGS[rootStore.language].labels.unknown_error);
             return false;
         }
@@ -262,6 +263,7 @@ export const app = createApp(App)
             console.log('Database version migrated to ->  ', dbStore.dbVersion);
         } catch (error) {
             console.log(error);
+            rollbarService.criticalWithContext('boot: migrateDB failed', error);
             await notificationService.showAlert(JSON.stringify(error));
         }
 
