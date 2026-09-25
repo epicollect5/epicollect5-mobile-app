@@ -125,7 +125,7 @@
   "ec5_134": "El valor ya existe, debe ser único",
   "ec5_135": "Sin conexión a Internet.",
   "ec5_136": "Formularios actualizados.",
-  "ec5_137": "Formularios actualizados.<br/><br/>  Se han añadido nuevas preguntas. <br/><br/> Por favor verifique sus entradas",
+  "ec5_137": "El proyecto y sus formularios se han actualizado. <br/><br/>Es posible que se hayan añadido o eliminado preguntas. <br/><br/>Los requisitos podrían haber cambiado<br/><br/> Revisa tus entradas",
   "ec5_138": "No se puede descargar el logo del proyecto.",
   "ec5_139": "Algunas entradas no se pudieron cargar, compruebe si hay entradas incompletas.",
   "ec5_140": "Lo sentimos, no puede guardar esta entrada hasta que llegue al final del formulario, porque ha editado una pregunta de 'jumps'.",

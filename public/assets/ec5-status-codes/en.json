@@ -125,7 +125,7 @@
   "ec5_134": "Value already exist, must be unique",
   "ec5_135": "No Internet Connection",
   "ec5_136": "Forms updated.",
-  "ec5_137": "Forms updated. <br/><br/> New questions have been added. <br/><br/> Please check your entries",
+  "ec5_137": "The project and its forms have been updated. <br/><br/>Questions might have been added or removed. <br/><br/>Requirements might have changed<br/><br/> Please check your entries",
   "ec5_138": "Unable to download Project logo.",
   "ec5_139": "Some entries could not be uploaded, please check for incomplete entries.",
   "ec5_140": "Sorry, you cannot save this entry until you reach the end of the form, because you have edited a 'jump' question.",

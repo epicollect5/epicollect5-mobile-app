@@ -125,7 +125,7 @@
   "ec5_134": "El valor ja existeix, ha de ser únic",
   "ec5_135": "Sense connexió a Internet.",
   "ec5_136": "Formularis actualitzats.",
-  "ec5_137": "Formularis actualitzats. <br/><br/>S'han afegit noves preguntes. <br/><br/>Si us plau, comproveu les vostres entrades",
+  "ec5_137": "El projecte i els seus formularis s'han actualitzat. <br/><br/>És possible que s'hagin afegit o eliminat preguntes. <br/><br/>Els requisits poden haver canviat<br/><br/> Revisa les teves entrades",
   "ec5_138": "No s'ha pogut baixar el logotip del projecte.",
   "ec5_139": "No s'han pogut pujar algunes entrades. Comproveu si hi ha entrades incompletes.",
   "ec5_140": "Ho sentim, no podeu desar aquesta entrada fins que no arribeu al final del formulari, perquè heu editat una pregunta de 'jump'.",
