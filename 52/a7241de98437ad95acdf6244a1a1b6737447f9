@@ -1,0 +1,22 @@
+src/services/utilities/versioning-service.js
+  h_2231ff2aa93473 137
+tests/unit/services/entry/entries-list-service.spec.js
+  h_2231ff2aa93473 55,58,71,96
+tests/unit/services/entry/update-local-project.spec.js
+  h_2231ff2aa93473 68,82,89,134,143,145,154,156,171,173-174
+tests/unit/use/update-local-project.spec.js
+  h_2231ff2aa93473 2,76,105-106,110-115,123,134,142,148,152-153,155-167,169-170,182,193,208,225,240,251,263
+tests/unit/use/update-project.spec.js
+  h_2231ff2aa93473 12,97,101-116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "52a7241de98437ad95acdf6244a1a1b6737447f9",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
