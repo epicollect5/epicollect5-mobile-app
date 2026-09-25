@@ -146,7 +146,6 @@ export async function updateLocalProject(isCurrent, abortSignal) {
     rootStore.isProjectUpdating = true;
     rootStore.progressUpdate = { total: 0, done: 0 };
     rootStore.updateDone = false;
-    rootStore.updateSummary = null;
     const shownAt = Date.now();
     let handle = null;
     const updaterTitle = (STRINGS[language].labels.updating_project_title || STRINGS[language].labels.updating_project || '').replace(/\.\s*$/, '');
@@ -167,9 +166,6 @@ export async function updateLocalProject(isCurrent, abortSignal) {
     const summary = {
         formsTotal: 0,
         formsDone: 0,
-        staleFormRefs: [],
-        staleBranchRefs: [],
-        addedForms: [],
         changeMade: false,
         previousLastUpdated: null,
         lastUpdated: null
@@ -191,7 +187,6 @@ export async function updateLocalProject(isCurrent, abortSignal) {
         rootStore.isProjectUpdating = false;
         rootStore.progressUpdate = { total: 0, done: 0 };
         rootStore.updateDone = false;
-        rootStore.updateSummary = null;
     } else {
         // Keep the "updating" phase visible for a minimum time so the
         // modal never flashes, then flip to the done phase and wait for
@@ -206,7 +201,6 @@ export async function updateLocalProject(isCurrent, abortSignal) {
             rootStore.isProjectUpdating = false;
             return { outcome: UPDATE_OUTCOMES.CANCELLED };
         }
-        rootStore.updateSummary = summary;
         rootStore.updateDone = true;
         if (abortSignal) {
             if (abortSignal.aborted) {

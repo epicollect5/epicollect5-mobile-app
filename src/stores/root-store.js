@@ -67,7 +67,6 @@ export const useRootStore = defineStore('RootStore', {
                 done: 0
             },
             updateDone: false,
-            updateSummary: null,
             ec5LoadingDialog: null,
             hasGoogleServices: true,
             entriesAddScope: {},

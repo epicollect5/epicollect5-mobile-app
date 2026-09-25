@@ -154,7 +154,6 @@ export default ModalProjectUpdater;
 export async function showUpdaterModal(header) {
   const rootStore = useRootStore();
   rootStore.updateDone = false;
-  rootStore.updateSummary = null;
   rootStore.progressUpdate = { total: 0, done: 0 };
   const modal = await modalController.create({
     cssClass: 'modal-project-updater',

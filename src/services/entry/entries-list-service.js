@@ -73,9 +73,11 @@ export const entriesListService = {
 
         let currentFormRef = formRef || '';
         let form = currentFormRef ? projectModel.getExtraForm(currentFormRef) : {};
+        let fellBack = false;
         if (currentFormRef === '' || Object.keys(form).length === 0) {
             currentFormRef = projectModel.getFirstFormRef();
             form = currentFormRef ? projectModel.getExtraForm(currentFormRef) : {};
+            fellBack = true;
         }
         if (!currentFormRef || Object.keys(form).length === 0) {
             const error = new Error('No valid forms');
@@ -84,10 +86,14 @@ export const entriesListService = {
         }
 
         const lastItem = navigation[navigation.length - 1];
-        const parentEntryUuid = lastItem ? lastItem.parentEntryUuid : '';
+        let parentEntryUuid = lastItem ? lastItem.parentEntryUuid : '';
         let parentEntryName = '';
         if (lastItem) {
             parentEntryName = '"' + lastItem.parentEntryName + '"';
+        }
+        if (fellBack) {
+            parentEntryUuid = '';
+            parentEntryName = '';
         }
         const nextFormRef = projectModel.getNextFormRef(currentFormRef) || '';
         const parentFormRef = projectModel.getParentFormRef(currentFormRef) || '';

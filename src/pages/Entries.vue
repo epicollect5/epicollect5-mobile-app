@@ -210,8 +210,7 @@ export default {
       showResolved: false,
       isLoading: false,
       leaving: false,
-      pendingRequest: null,
-      versionCheckPending: false
+      pendingRequest: null
     });
 
     let updateAbortController = null;
@@ -389,7 +388,7 @@ export default {
         await hideOwnedLoader(loadId, loader, PARAMETERS.DELAY_LONG);
         loader = { shown: false, seq: 0 };
 
-        const shouldCheck = (init.initialisedNow || state.versionCheckPending) && !skipVersionCheck;
+        const shouldCheck = init.initialisedNow && !skipVersionCheck;
         if (!shouldCheck || !isCurrent(loadId)) {
           return;
         }
@@ -398,25 +397,23 @@ export default {
         const result = await updateLocalProject(isCurrentFn, updateAbortController.signal);
         updateAbortController = null;
         if (!isCurrent(loadId)) {
-          if (result && result.outcome === 'CANCELLED') {
-            state.versionCheckPending = true;
-          }
           return;
         }
         if (result.outcome === 'CANCELLED') {
-          state.versionCheckPending = true;
           return;
         }
         if (result.outcome === 'DECLINED' || result.outcome === 'UP_TO_DATE') {
-          state.versionCheckPending = false;
           return;
         }
         if (result.outcome === 'UPDATE_FAILED') {
-          state.versionCheckPending = false;
           state.pendingRequest = null;
           return;
         }
-        state.versionCheckPending = false;
+        // Post-update drill always restarts from the first form, which is
+        // compulsory and always present: the viewed form may be gone and the
+        // old hierarchy no longer applies.
+        state.formRef = projectModel.getFirstFormRef();
+        rootStore.hierarchyNavigation = [];
         const reloadLoader = await showOwnedLoader(loadId);
         const reloadData = await fetchListData(state.projectRef);
         if (!isCurrent(loadId)) {
@@ -517,13 +514,13 @@ export default {
     onIonViewWillEnter(() => {
       state.leaving = false;
       if (state.isLoading) {
-        state.pendingRequest = { skipVersionCheck: !state.versionCheckPending };
+        state.pendingRequest = { skipVersionCheck: true };
         return;
       }
       if (state.loadToken === 0) {
         return;
       }
-      requestLoad({ skipVersionCheck: !state.versionCheckPending });
+      requestLoad({ skipVersionCheck: true });
     });
 
     onIonViewWillLeave(async () => {
@@ -535,6 +532,9 @@ export default {
         menuController.open('right-drawer');
       },
       goBack() {
+        if (state.isFetching || state.isAddingFakeEntries) {
+          return;
+        }
         beginLeave();
         if (state.parentFormRef === '') {
           projectModel.destroy();

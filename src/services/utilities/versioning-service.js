@@ -151,29 +151,6 @@ export const versioningService = {
             }
         }
 
-        // Capture stale refs before deletion so the summary survives cleanup.
-        // Best-effort: never blocks the update if the probe fails.
-        if (summary) {
-            try {
-                summary.staleFormRefs = await this._getStaleFormRefs(projectModel.getProjectRef());
-            } catch (staleError) {
-                console.log('stale forms probe failed: ' + staleError);
-                summary.staleFormRefs = [];
-            }
-            try {
-                summary.staleBranchRefs = await this._getStaleBranchRefs(projectModel.getProjectRef());
-            } catch (staleError) {
-                console.log('stale branches probe failed: ' + staleError);
-                summary.staleBranchRefs = [];
-            }
-            try {
-                summary.addedForms = this._diffAddedForms(this.previousProjectStructure, projectModel.getProjectExtra());
-            } catch (diffError) {
-                console.log('added forms diff failed: ' + diffError);
-                summary.addedForms = [];
-            }
-        }
-
         // Remove the entries (and their media) of any forms or
         // branches that have been removed from the project structure,
         // comparing the stored entries against the current structure.
@@ -629,21 +606,5 @@ export const versioningService = {
             }
         }
         return inputRefs;
-    },
-
-    _diffAddedForms (previousExtra, currentExtra) {
-        const added = [];
-        if (!previousExtra || !currentExtra) {
-            return added;
-        }
-        const previousForms = previousExtra.forms || {};
-        const currentForms = currentExtra.forms || {};
-        const keys = Object.keys(currentForms);
-        for (let i = 0; i < keys.length; i++) {
-            if (!previousForms[keys[i]] || Object.keys(previousForms[keys[i]]).length === 0) {
-                added.push(keys[i]);
-            }
-        }
-        return added;
     }
 };
