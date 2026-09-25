@@ -1,0 +1,20 @@
+tests/unit/services/entry/entries-list-service.spec.js
+  h_2231ff2aa93473 1-107
+tests/unit/services/entry/fetch-project-row.spec.js
+  h_2231ff2aa93473 1-32
+tests/unit/services/entry/update-local-project.spec.js
+  h_2231ff2aa93473 1-204
+tests/unit/use/update-local-project.spec.js
+  h_2231ff2aa93473 10-11,44-55,62,68-96,109,112,117,119,122,124,128-129,133,137,142-143,146,149,151-152,155-170,172-177,179,181-183,186,192,199,201,207,214,224,232,239,246,250,255,257-258,260,262-263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "69820eb0dedb43c233bcecc0e2fe71b46b8ebc48",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
