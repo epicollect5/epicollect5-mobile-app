@@ -1,0 +1,22 @@
+src/main.js
+  h_2231ff2aa93473 249,266
+src/services/entry/branch-entry-service.js
+  h_2231ff2aa93473 17,173
+src/services/entry/media-service.js
+  h_2231ff2aa93473 67,132
+src/services/utilities/rollbar-service.js
+  h_2231ff2aa93473 83-86,94-104,106-114,116,118,121-134,136-145,147-148,150-151,153-154
+src/use/entry/clone-entry-branch.js
+  h_2231ff2aa93473 8,46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a6056e10d680ca9a3fd015322546e2da2ed49013",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
