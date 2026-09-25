@@ -7,6 +7,15 @@
 - Do NOT introduce new patterns unless explicitly requested
 - Follow existing architecture and conventions from docs/
 
+## Refactoring Rules
+
+A behaviour-preserving refactor changes structure while preserving behaviour, contracts, and trust boundaries.
+
+* Trust existing internal contracts. Tests, established calling patterns, store initialisations, and model invariants are evidence of intended data shapes.
+* New guards, validation, fallbacks, catch blocks, or abstractions require a concrete justification — identify the specific boundary or demonstrated failure mode that requires them. The mere possibility that a value could be invalid is not sufficient.
+* Unrelated hardening is outside the scope of a refactor.
+* Prefer minimal diffs.
+
 ## Architecture Constraints
 
 - Components = UI only (no business logic)
@@ -33,9 +42,12 @@
 - docs/CODE-STYLE.md overrides generic Vue best practices
 - Always follow existing patterns in the codebase over external examples
 
-## System Risks Check (MANDATORY)
+## System Risks Check (MANDATORY for new features)
 
-For any feature, do NOT assume correctness. Identify how it can break.
+Applies to: **new features, new data flows, new persistence/state, and new external integrations.**
+Does **not** apply mechanically to behaviour-preserving refactors — see Refactoring Rules above.
+
+For work in scope, do NOT assume correctness. Identify how the new behaviour can break.
 
 You MUST:
 
@@ -45,7 +57,7 @@ You MUST:
 * Identify anything cached/stored and when it becomes invalid
 * Consider side effects on other parts of the system
 
-List at least three concrete risks.
+List at least three concrete risks specific to the new behaviour.
 If none, justify why for each point.
 
 Assume this runs at scale and causes inconsistencies after months in production.

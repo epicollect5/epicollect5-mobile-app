@@ -36,7 +36,7 @@ Review changes for:
 - **N+1 queries**: eager loading omissions, loops triggering individual queries.
 - **Performance issues**: unnecessary queries, missing caching, inefficient algorithms.
 - **Security vulnerabilities**: injection risks, missing authorization checks, exposed secrets.
-- **Missing edge cases**: unvalidated input, missing type checks, unchecked return values.
+- **Missing edge cases**: unvalidated input at trust boundaries (user input, network/API responses, external/plugin/SDK responses, or persisted data whose schema cannot be assumed), missing checks on genuinely optional values, unchecked error paths from external calls.
 - **Missing tests**: features or fixes that should have corresponding automated tests.
 
 ## Explicitly Ignore
@@ -47,6 +47,7 @@ Do NOT comment on:
 - Naming conventions.
 - Style-only feedback.
 - Unrelated refactoring suggestions.
+- Defensive validation added during a refactor where the original code already trusted the contract and no concrete boundary or failure mode is identified.
 
 ## Output Format
 

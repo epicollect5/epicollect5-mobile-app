@@ -637,7 +637,7 @@ This is one of the more coupled flows in the app because it touches:
 - The version check runs only on cold project initialization, never on warm filter/watch reloads.
 - Declining an update is terminal for the visit: no retry is scheduled and warm loads never re-prompt.
 - Update failures are fail-fast: the first error is shown, with no login retry and no deferred post-login callback on this path. Staleness remains enforced downstream — uploads, downloads, and the server reject outdated structures in their own flows.
-- A confirmed update runs inside `ModalProjectUpdater` (fullscreen, `backdropDismiss: false`, no close affordance until done). Navigation is locked for the whole update via `rootStore.isProjectUpdating`, which suppresses the hardware back handler — no route leave can interleave with `versioningService.updateProject()`, which has no cancellation mechanism.
+- A confirmed update runs inside `ModalProjectUpdater` (fullscreen, `backdropDismiss: false`, no close affordance until done). Navigation is locked from the confirmation prompt onward via `rootStore.isProjectUpdating`, which suppresses the hardware back handler — no route leave can interleave with the confirm alert or `versioningService.updateProject()`, neither of which can be cancelled.
 - After a successful update the entries drill restarts from the first form (compulsory, always present) with cleared hierarchy navigation.
 
 ## Filesystem and Media Architecture
