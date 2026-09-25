@@ -210,4 +210,22 @@ describe('exportService.exportEntriesZipArchive', () => {
 
         expect(Filesystem.deleteFile).toHaveBeenCalled();
     });
+
+    it('should hide the export modal when the export pipeline fails', async () => {
+        exportHierarchySpy.mockRejectedValueOnce(new Error('DB read failed'));
+
+        const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+
+        expect(result).toBe(false);
+        expect(notificationService.hideProgressExportModal).toHaveBeenCalled();
+    });
+
+    it('should hide the export modal when sharing fails', async () => {
+        Share.share.mockRejectedValueOnce(new Error('Unexpected error during sharing'));
+
+        const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+
+        expect(result).toBe(false);
+        expect(notificationService.hideProgressExportModal).toHaveBeenCalled();
+    });
 });

@@ -383,10 +383,13 @@ export const exportService = {
         } catch (error) {
             console.error('Archive failed:', error);
             rollbarService.critical(error);
+            await notificationService.hideProgressExportModal();
             await notificationService.showAlert(STRINGS[language].labels.unknown_error);
             return false;
         } finally {
-            // Always cleanup
+            // Always cleanup and ensure the modal flag is reset
+            // (hide is idempotent when the modal was never shown or already hidden)
+            await notificationService.hideProgressExportModal();
             await deleteFileService.removeDirectoryIfExists(
                 archivePath,
                 archiveDirectory
