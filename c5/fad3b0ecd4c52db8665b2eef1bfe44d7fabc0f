@@ -1,0 +1,30 @@
+src/components/modals/ModalProjectUpdater.vue
+  h_2231ff2aa93473 1-188
+src/config/strings.js
+  h_2231ff2aa93473 240,517,794,1071,1348,1625,1902,2179,2456
+src/pages/Entries.vue
+  h_2231ff2aa93473 104,129-130,163,170,175,198,206-214,217-218,221,228-290,293-309,311-323,325-338,340-387,389-390,392-448,450-474,477,479-482,484-485,487-498,500-509,513-530,538,552-553,556,558,569,648,664,666-675,685,695-696,700-701
+src/services/entry/entries-list-service.js
+  h_2231ff2aa93473 1-128
+src/services/utilities/versioning-service.js
+  h_2231ff2aa93473 54-59,130-135,142-174,223-226,632-647
+src/stores/root-store.js
+  h_2231ff2aa93473 64-70
+src/theme/components/modals/ModalProjectUpdater.scss
+  h_2231ff2aa93473 1-15
+src/use/project/fetch-project-row.js
+  h_2231ff2aa93473 1-17
+src/use/project/update-local-project.js
+  h_2231ff2aa93473 1-10,12-20,23-56,58-67,69-82,84-98,100-103,105-107,109-112,114-130,132,135-152,154-164,167-246,248-262,264-267,269
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c5fad3b0ecd4c52db8665b2eef1bfe44d7fabc0f",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
