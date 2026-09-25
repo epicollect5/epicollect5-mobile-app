@@ -1,0 +1,20 @@
+src/config/strings.js
+  h_2231ff2aa93473 412
+src/models/project-model.js
+  h_2231ff2aa93473 94
+src/pages/EntriesUpload.vue
+  h_2231ff2aa93473 409-412
+src/services/upload-data-service.js
+  h_2231ff2aa93473 43-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a821fd61199e8191670fdb5d5e1625f58f94b934",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
