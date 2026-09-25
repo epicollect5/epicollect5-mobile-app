@@ -1,0 +1,14 @@
+tests/unit/services/utilities/utils-service.getProjectNameMarkup.spec.js
+  h_2231ff2aa93473 331
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "99cefadced1358bc6688dda4e4a167c5c09a17ef",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
