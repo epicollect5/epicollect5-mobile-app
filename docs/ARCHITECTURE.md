@@ -259,7 +259,8 @@ Add any new modal flag here (e.g. `isCameraPreviewModalActive` when `feature/cam
 
 **Known gaps fixed in this doc baseline:**
 
-- `isExportModalActive` (`src/stores/root-store.js:56` / `src/services/notification-service.js:430`) — progress export modal `backdropDismiss:false`. Guard now in `src/pages/Entries.vue:581` (`if (rootStore.isExportModalActive) return false`) so back does not navigate away with the modal open.
+- `isExportModalActive` (`src/stores/root-store.js` / `src/services/notification-service.js`) — progress export modal `backdropDismiss:false`. Guard now in `src/pages/Entries.vue` (`if (rootStore.isExportModalActive) return false`) so back does not navigate away with the modal open.
+- `isProjectUpdating` / `isProjectUpdateModalActive` — project updater modal `backdropDismiss:false` with no close affordance until done. Same `Entries.vue` back handler suppresses back for the whole update, since `versioningService.updateProject()` cannot be cancelled and leaving would orphan model/DB mutations.
 - `EntriesDownload` `promptOpen` (`src/pages/EntriesDownload.vue:141,185`) — handler now mirrors `goBack()` (`if (state.isFetching || state.promptOpen) return`).
 
 No `App.addListener('backButton')` is used; native back is solely `useBackButton`. All handlers share priority `10`, so registration order determines tie-break — keep guards in sync with their `goBack`/`prev` early returns and prefer `onIonViewWillEnter/Leave` if priority ordering ever matters.
@@ -630,6 +631,14 @@ This is one of the more coupled flows in the app because it touches:
 - DB project metadata
 - stored entries
 - media/logo assets
+
+### Entries-page update contract
+
+- The version check runs only on cold project initialization, never on warm filter/watch reloads.
+- Declining an update is terminal for the visit: no retry is scheduled and warm loads never re-prompt.
+- Update failures are fail-fast: the first error is shown, with no login retry and no deferred post-login callback on this path. Staleness remains enforced downstream — uploads, downloads, and the server reject outdated structures in their own flows.
+- A confirmed update runs inside `ModalProjectUpdater` (fullscreen, `backdropDismiss: false`, no close affordance until done). Navigation is locked for the whole update via `rootStore.isProjectUpdating`, which suppresses the hardware back handler — no route leave can interleave with `versioningService.updateProject()`, which has no cancellation mechanism.
+- After a successful update the entries drill restarts from the first form (compulsory, always present) with cleared hierarchy navigation.
 
 ## Filesystem and Media Architecture
 
