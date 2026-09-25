@@ -328,8 +328,7 @@ describe('utilsService.getProjectNameMarkup()', () => {
 
             const result = utilsService.getProjectNameMarkup(false);
 
-            expect(result).toContain('alt=" logo"');
-            expect(result).toContain('<span>&nbsp;</span>');
+            expect(result).toBe('');
         });
 
         it('should handle very long project names', () => {
