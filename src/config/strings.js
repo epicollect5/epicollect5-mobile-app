@@ -409,7 +409,7 @@ export const STRINGS = {
             ios_location_permission_denied: 'Epicollect5 permesso di localizzazione negato, abilitarlo nelle impostazioni',
             ios_location_permission_restricted: 'Epicollect5 permesso di localizzazione solo per utente corrente',
             android_location_permission_denied_always: 'Epicollect5 permesso geolocalizzazione negato, per favore garantirlo. Non èpossible usare geolocalizzazione senza il permesso appropriato',
-            no_projects_found: 'Nesun progetto trovato',
+            no_projects_found: 'Nessun progetto trovato',
             date_selected_is: 'Data selezionata: ',
             time_selected_is: 'Ora selezionata: ',
             preparing_scanner: 'Preparazione scanner...',

@@ -406,6 +406,10 @@ export default {
 					if (confirmed) {
 						//the user is not logged in or token expired,
 						// clear token and send to login page
+						//drop any stale post-login callback (e.g. a deferred addProject
+						//from the projects search): the upload login must not fire it,
+						//it would wipe the active model on UNIQUE failure and crash upload
+						rootStore.afterUserIsLoggedIn = { callback: null, params: null };
 						await logout();
 						showModalLogin();
 					}
