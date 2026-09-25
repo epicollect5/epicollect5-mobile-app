@@ -1,0 +1,16 @@
+src/services/export-service.js
+  h_2231ff2aa93473 386,390-392
+tests/unit/services/export-service/export-entries.spec.js
+  h_2231ff2aa93473 213-230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "bb1edbc130308f355b29806535e5173c913b5fee",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
