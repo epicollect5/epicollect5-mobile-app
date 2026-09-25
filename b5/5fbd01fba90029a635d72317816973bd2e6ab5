@@ -1,0 +1,18 @@
+src/models/project-model.js
+  h_2231ff2aa93473 62,65,71,74
+src/pages/Entries.vue
+  h_2231ff2aa93473 387
+src/services/utilities/utils-service.js
+  h_2231ff2aa93473 549-551
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b55fbd01fba90029a635d72317816973bd2e6ab5",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
