@@ -51,12 +51,10 @@ export const versioningService = {
     },
 
     //Update the project and all entries
-    //opts is optional and invocation-local: { onProgress, summary }
+    //opts is optional and invocation-local: { onProgress }
     //return contract stays boolean for existing callers
-    async updateProject (opts) {
-        const options = opts || {};
-        const onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
-        const summary = options.summary || null;
+    async updateProject (opts = {}) {
+        const onProgress = typeof opts.onProgress === 'function' ? opts.onProgress : null;
 
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -127,10 +125,6 @@ export const versioningService = {
 
         // Update entries for each form
         const forms = projectModel.getFormsInOrder();
-        if (summary) {
-            summary.formsTotal = forms.length;
-            summary.previousLastUpdated = previousLastUpdated;
-        }
         for (let formIndex = 0; formIndex < forms.length; formIndex++) {
             const form = forms[formIndex];
             try {
@@ -145,9 +139,6 @@ export const versioningService = {
                 } catch (progressError) {
                     console.log('update progress failed: ' + progressError);
                 }
-            }
-            if (summary) {
-                summary.formsDone = formIndex + 1;
             }
         }
 
@@ -197,10 +188,6 @@ export const versioningService = {
         }
 
         const result = this.changeMade;
-        if (summary) {
-            summary.changeMade = result;
-            summary.lastUpdated = lastUpdated;
-        }
         // Reset changeMade back to false
         this.changeMade = false;
         return result;

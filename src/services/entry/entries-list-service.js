@@ -3,14 +3,6 @@ import { STRINGS } from '@/config/strings';
 import { projectModel } from '@/models/project-model.js';
 import { databaseSelectService } from '@/services/database/database-select-service';
 
-function cloneFilters(filters) {
-    return { ...filters };
-}
-
-function freshUnfilteredFilters() {
-    return { ...PARAMETERS.FILTERS_DEFAULT };
-}
-
 function toISODate(value) {
     if (!value) {
         return null;
@@ -21,19 +13,20 @@ function toISODate(value) {
 export const entriesListService = {
 
     async getFilterCounts(projectRef, formRef, parentEntryUuid, activeFilters) {
-        const workingFilters = cloneFilters(activeFilters || {});
+        const workingFilters = { ...activeFilters };
         if (!workingFilters.status) {
             workingFilters.status = PARAMETERS.STATUS.ALL;
         }
 
+        // COUNT(*) always returns exactly one row: trust the query contract.
         const resultWithoutFilters = await databaseSelectService.countEntries(
             projectRef,
             formRef,
             parentEntryUuid,
-            freshUnfilteredFilters(),
+            { ...PARAMETERS.FILTERS_DEFAULT },
             PARAMETERS.STATUS.ALL
         );
-        const countNoFilters = resultWithoutFilters.rows.length > 0 ? resultWithoutFilters.rows.item(0).total : 0;
+        const countNoFilters = resultWithoutFilters.rows.item(0).total;
 
         const result = await databaseSelectService.countEntries(
             projectRef,
@@ -43,46 +36,39 @@ export const entriesListService = {
             workingFilters.status
         );
 
-        let countWithFilters = 0;
-        if (result.rows.length > 0) {
-            const total = result.rows.item(0).total || 0;
-            countWithFilters = total;
-            if (total > 0) {
-                const oldestDateISO = toISODate(result.rows.item(0).oldest);
-                const newestDateISO = toISODate(result.rows.item(0).newest);
-                if (workingFilters.oldest === null && workingFilters.newest === null) {
-                    workingFilters.oldest = oldestDateISO;
-                    workingFilters.newest = newestDateISO;
-                    workingFilters.from = oldestDateISO;
-                    workingFilters.to = newestDateISO;
-                }
+        const total = result.rows.item(0).total || 0;
+        if (total > 0) {
+            const oldestDateISO = toISODate(result.rows.item(0).oldest);
+            const newestDateISO = toISODate(result.rows.item(0).newest);
+            if (workingFilters.oldest === null && workingFilters.newest === null) {
+                workingFilters.oldest = oldestDateISO;
+                workingFilters.newest = newestDateISO;
+                workingFilters.from = oldestDateISO;
+                workingFilters.to = newestDateISO;
             }
         }
 
         return {
             countNoFilters,
-            countWithFilters,
+            countWithFilters: total,
             filters: workingFilters
         };
     },
 
-    resolveFormContext(params) {
+    setActiveForm(params) {
         const { projectRef, formRef, hierarchyNavigation, language, bookmarks } = params;
-        const navigation = Array.isArray(hierarchyNavigation) ? hierarchyNavigation : [];
+        const navigation = hierarchyNavigation;
         const labels = STRINGS[language].labels;
 
         let currentFormRef = formRef || '';
         let form = currentFormRef ? projectModel.getExtraForm(currentFormRef) : {};
         let fellBack = false;
         if (currentFormRef === '' || Object.keys(form).length === 0) {
+            // The project is guaranteed to hold at least one form (checked
+            // at cold init), so the first form always exists here.
             currentFormRef = projectModel.getFirstFormRef();
-            form = currentFormRef ? projectModel.getExtraForm(currentFormRef) : {};
+            form = projectModel.getExtraForm(currentFormRef);
             fellBack = true;
-        }
-        if (!currentFormRef || Object.keys(form).length === 0) {
-            const error = new Error('No valid forms');
-            error.code = 'NO_FORMS';
-            throw error;
         }
 
         const lastItem = navigation[navigation.length - 1];
@@ -105,7 +91,7 @@ export const entriesListService = {
         }
 
         let bookmarkId = null;
-        const list = Array.isArray(bookmarks) ? bookmarks : [];
+        const list = bookmarks;
         for (let i = 0; i < list.length; i++) {
             const bookmark = list[i];
             if (bookmark.projectRef === projectRef && bookmark.formRef === currentFormRef) {
@@ -122,7 +108,7 @@ export const entriesListService = {
             formRef: currentFormRef,
             parentEntryUuid,
             parentEntryName,
-            currentFormName: form.details ? form.details.name : '',
+            currentFormName: form.details.name,
             nextFormRef,
             parentFormRef,
             parentFormName,

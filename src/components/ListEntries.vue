@@ -161,7 +161,7 @@ export default {
 		const methods = {
 			viewEntry(entry) {
 				// Project update cannot take place if navigating away
-        rootStore.continueProjectVersionUpdate = false;
+        rootStore.continueProjectVersionBackgroundCheck = false;
         rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES;
 				rootStore.routeParams = {
 					entryUuid: entry.entry_uuid,
@@ -176,7 +176,7 @@ export default {
 			//Go to the entries page for the child of an entry
 			goToChildEntriesPage(entryUuid, title) {
 				// Project update cannot take place if navigating away
-				rootStore.continueProjectVersionUpdate = false;
+				rootStore.continueProjectVersionBackgroundCheck = false;
 
 				// Add this entry uuid as parent entry uuid to the history
 				const hierarchyNavigation = [...rootStore.hierarchyNavigation];

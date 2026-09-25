@@ -45,8 +45,10 @@
     </div>
     <div v-else>
       <ion-item lines="none">
-        <ion-label class="ion-text-center">
-          {{ doneMessage }}
+        <ion-label
+            class="ion-text-center"
+            v-html="doneMessage"
+        >
         </ion-label>
       </ion-item>
       <grid-question-narrow>
@@ -61,7 +63,7 @@
                 slot="start"
                 :icon="checkmark"
             ></ion-icon>
-            {{ okLabel }}
+            {{ labels.ok }}
           </ion-button>
         </template>
       </grid-question-narrow>
@@ -92,56 +94,47 @@ const ModalProjectUpdater = {
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
     const state = reactive({});
+    const doneMessage = STRINGS[language].status_codes.ec5_137;
+    const projectHeaderMarkup = utilsService.getProjectNameMarkup();
     const methods = {
       async dismiss() {
         if (rootStore.updateDone !== true) {
           return;
         }
-        try {
-          await modalController.dismiss();
-        } catch (error) {
-          console.log('updater ok dismiss failed: ' + error);
-        }
+        await modalController.dismiss();
       }
     };
     const computedScope = {
       isDone: computed(() => {
         return rootStore.updateDone === true;
       }),
-      projectHeaderMarkup: computed(() => {
-        return utilsService.getProjectNameMarkup();
-      }),
       progress: computed(() => {
         const progress = rootStore.progressUpdate;
-        if (!progress || progress.total === 0) {
+        if (progress.total === 0) {
           return 0;
         }
         return progress.done / progress.total;
       }),
       percentageDisplay: computed(() => {
         const progress = rootStore.progressUpdate;
-        if (!progress || progress.total === 0) {
+        if (progress.total === 0) {
           return '0%';
         }
         return Math.round((progress.done / progress.total) * 100) + '%';
       }),
       statusDisplay: computed(() => {
         const progress = rootStore.progressUpdate;
-        if (!progress || progress.total === 0) {
+        if (progress.total === 0) {
           return '';
         }
         return progress.done + ' / ' + progress.total;
-      }),
-      doneMessage: computed(() => {
-        return labels.project_updated;
-      }),
-      okLabel: computed(() => {
-        return labels.ok;
       })
     };
     return {
       labels,
       state,
+      doneMessage,
+      projectHeaderMarkup,
       ...methods,
       ...computedScope,
       checkmark
@@ -153,8 +146,6 @@ export default ModalProjectUpdater;
 
 export async function showUpdaterModal(header) {
   const rootStore = useRootStore();
-  rootStore.updateDone = false;
-  rootStore.progressUpdate = { total: 0, done: 0 };
   const modal = await modalController.create({
     cssClass: 'modal-project-updater',
     component: ModalProjectUpdater,
@@ -167,20 +158,6 @@ export async function showUpdaterModal(header) {
   rootStore.isProjectUpdateModalActive = true;
   await modal.present();
   return { modal };
-}
-
-export async function dismissUpdaterModal(handle) {
-  const rootStore = useRootStore();
-  if (!handle || !handle.modal) {
-    rootStore.isProjectUpdateModalActive = false;
-    return;
-  }
-  try {
-    await handle.modal.dismiss();
-  } catch (error) {
-    console.log('updater dismiss failed: ' + error);
-  }
-  rootStore.isProjectUpdateModalActive = false;
 }
 </script>
 

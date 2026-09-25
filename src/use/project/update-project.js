@@ -39,18 +39,17 @@ export async function updateProject () {
         entriesDownloadProgressService.clearProject(projectModel.getProjectRef());
         notificationService.hideProgressDialog(0);
 
+        // Stay on the requesting page: the update changes no routing, so the
+        // upload/download flow that requested it continues where it was.
         // If new questions have been added, notify user
         if (changeMade) {
-            // If a change has been made, we should set the next route as the project-entries page
-            rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES;
-
-            notificationService.showAlert(STRINGS[language].status_codes.ec5_137);
+            await notificationService.showAlert(STRINGS[language].status_codes.ec5_137);
         } else {
-            notificationService.showAlert(STRINGS[language].status_codes.ec5_136);
+            await notificationService.showAlert(STRINGS[language].status_codes.ec5_136);
         }
     } catch (error) {
         console.log(error);
-        notificationService.hideProgressDialog();
+        await notificationService.hideProgressDialog();
         // Web error
         console.log('fail');
         // Check if we have an auth error

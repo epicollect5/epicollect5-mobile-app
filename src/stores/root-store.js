@@ -17,7 +17,7 @@ export const useRootStore = defineStore('RootStore', {
             collectErrors: true,
             inAppCamera: false,
             inAppCameraVideo: false,
-            continueProjectVersionUpdate: false,
+            continueProjectVersionBackgroundCheck: false,
             user: {
                 jwt: null,
                 name: '',
