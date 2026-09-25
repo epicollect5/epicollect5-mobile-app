@@ -384,7 +384,7 @@ export default {
 
         // Check and update project version (background check) if needed
         updateLocalProject(scope).then((updated) => {
-          if (updated) {
+          if (updated && projectModel.hasInitialised()) {
             notificationService.hideProgressDialog();
             _loadFormEntries();
           }

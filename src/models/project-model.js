@@ -59,19 +59,19 @@ export const projectModel = {
         this.mapping = {};
     },
     getProjectName() {
-        return this.project_extra.project.details.name;
+        return (this.project_extra.project ? this.project_extra.project.details.name : '');
     },
     getSmallDescription() {
-        return this.project_extra.project.details.small_description;
+        return (this.project_extra.project ? this.project_extra.project.details.small_description : '');
     },
     getDescription() {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const labels = STRINGS[language].labels;
-        return this.project_extra.project.details.description || labels.not_available;
+        return (this.project_extra.project ? this.project_extra.project.details.description : '') || labels.not_available;
     },
     getSlug() {
-        return this.project_extra.project.details.slug;
+        return (this.project_extra.project ? this.project_extra.project.details.slug : '');
     },
     getProjectRef() {
         return (this.project_extra.project ? this.project_extra.project.details.ref : '');

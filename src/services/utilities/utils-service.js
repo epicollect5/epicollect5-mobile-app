@@ -546,6 +546,9 @@ export const utilsService = {
     getProjectNameMarkup(hideName) {
         const rootStore = useRootStore();
         const projectName = projectModel.getProjectName();
+        if (!projectName) {
+            return '';
+        }
         const alt = `${projectName} logo`;
         const nameMarkup = hideName ? '' : `<span>&nbsp;${projectName.toUpperCase()}</span>`;
 
