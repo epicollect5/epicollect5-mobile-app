@@ -1,0 +1,30 @@
+src/pages/Entries.vue
+  h_2231ff2aa93473 373
+  h_2231ff2aa93473 163,170,172,222,228-229,233,240,244-246,248,251,253-256,261,316,321-322,325-326,329,332-333,341,344-345,347,349-355,359-363,370,376,378,389-393,424-425,437,451,519-520,528,541
+src/use/project/update-project.js
+  h_2231ff2aa93473 46,48,52
+  h_2231ff2aa93473 42-43
+src/components/ListEntries.vue
+  h_2231ff2aa93473 164,179
+src/components/modals/ModalProjectUpdater.vue
+  h_2231ff2aa93473 48-51,66,97-98,104,113,120,127,136-137
+src/services/entry/entries-list-service.js
+  h_2231ff2aa93473 16,21,26,29,39-47,53,58,60,67-68,70,94,111
+src/services/utilities/versioning-service.js
+  h_2231ff2aa93473 54,56-57
+src/stores/root-store.js
+  h_2231ff2aa93473 20
+src/use/project/update-local-project.js
+  h_2231ff2aa93473 9,11-20,22,28-34,40,46,51,55,57,60,66,75,78,81-82,85-91,95,100-101,106,108-109,115,117-120,122-124,140,142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6eedf8ce123bd7a2bacc4b8ea4804907d932965b",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
