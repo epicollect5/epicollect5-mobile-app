@@ -1,0 +1,15 @@
+.modal-project-updater {
+  .spinner-update {
+    margin: 24px auto;
+    display: block;
+  }
+  .progress-update {
+    padding: 0 24px 24px;
+  }
+  .updater-body {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}

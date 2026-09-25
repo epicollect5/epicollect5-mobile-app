@@ -51,7 +51,12 @@ export const versioningService = {
     },
 
     //Update the project and all entries
-    async updateProject () {
+    //opts is optional and invocation-local: { onProgress, summary }
+    //return contract stays boolean for existing callers
+    async updateProject (opts) {
+        const options = opts || {};
+        const onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
+        const summary = options.summary || null;
 
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -122,12 +127,50 @@ export const versioningService = {
 
         // Update entries for each form
         const forms = projectModel.getFormsInOrder();
-        for (const form of forms) {
+        if (summary) {
+            summary.formsTotal = forms.length;
+            summary.previousLastUpdated = previousLastUpdated;
+        }
+        for (let formIndex = 0; formIndex < forms.length; formIndex++) {
+            const form = forms[formIndex];
             try {
                 await this.selectAndUpdateEntries(form.formRef);
                 console.log('successfully updated entries for form: ' + form.formRef);
             } catch (_) {
                 console.log('failed updated entries for form: ' + form.formRef);
+            }
+            if (onProgress) {
+                try {
+                    onProgress({ formIndex: formIndex + 1, formsTotal: forms.length, formRef: form.formRef });
+                } catch (progressError) {
+                    console.log('update progress failed: ' + progressError);
+                }
+            }
+            if (summary) {
+                summary.formsDone = formIndex + 1;
+            }
+        }
+
+        // Capture stale refs before deletion so the summary survives cleanup.
+        // Best-effort: never blocks the update if the probe fails.
+        if (summary) {
+            try {
+                summary.staleFormRefs = await this._getStaleFormRefs(projectModel.getProjectRef());
+            } catch (staleError) {
+                console.log('stale forms probe failed: ' + staleError);
+                summary.staleFormRefs = [];
+            }
+            try {
+                summary.staleBranchRefs = await this._getStaleBranchRefs(projectModel.getProjectRef());
+            } catch (staleError) {
+                console.log('stale branches probe failed: ' + staleError);
+                summary.staleBranchRefs = [];
+            }
+            try {
+                summary.addedForms = this._diffAddedForms(this.previousProjectStructure, projectModel.getProjectExtra());
+            } catch (diffError) {
+                console.log('added forms diff failed: ' + diffError);
+                summary.addedForms = [];
             }
         }
 
@@ -177,6 +220,10 @@ export const versioningService = {
         }
 
         const result = this.changeMade;
+        if (summary) {
+            summary.changeMade = result;
+            summary.lastUpdated = lastUpdated;
+        }
         // Reset changeMade back to false
         this.changeMade = false;
         return result;
@@ -582,5 +629,21 @@ export const versioningService = {
             }
         }
         return inputRefs;
+    },
+
+    _diffAddedForms (previousExtra, currentExtra) {
+        const added = [];
+        if (!previousExtra || !currentExtra) {
+            return added;
+        }
+        const previousForms = previousExtra.forms || {};
+        const currentForms = currentExtra.forms || {};
+        const keys = Object.keys(currentForms);
+        for (let i = 0; i < keys.length; i++) {
+            if (!previousForms[keys[i]] || Object.keys(previousForms[keys[i]]).length === 0) {
+                added.push(keys[i]);
+            }
+        }
+        return added;
     }
 };

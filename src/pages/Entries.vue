@@ -101,7 +101,7 @@
       <!-- form name (and filters button)  toolbar -->
       <toolbar-form-name
           :isFetching="state.isFetching"
-          :projectRef="projectRef"
+          :projectRef="state.projectRef"
           :parentEntryName="state.parentEntryName"
           :currentFormName="state.currentFormName"
           :formRef="state.formRef"
@@ -126,7 +126,8 @@
       >
         <list-entries
             v-show="!state.isFetching"
-            :projectRef="projectRef"
+            :key="state.formRef + state.parentEntryUuid"
+            :projectRef="state.projectRef"
             :entries="state.entries"
             :nextFormRef="state.nextFormRef"
             :formRef="state.formRef"
@@ -159,19 +160,19 @@ import {formModel} from '@/models/form-model.js';
 import {useRouter, useRoute} from 'vue-router';
 import {onMounted, watch} from 'vue';
 import {updateLocalProject} from '@/use/project/update-local-project';
+import {fetchProjectRow} from '@/use/project/fetch-project-row';
 import {addFakeEntries} from '@/use/entries/add-fake-entries';
 import {format} from 'date-fns';
 import {fetchEntries} from '@/use/entries/fetch-entries.js';
 import ListEntries from '@/components/ListEntries.vue';
 import ToolbarFormName from '@/components/ToolbarFormName.vue';
 import {provide} from 'vue';
-import {useBackButton} from '@ionic/vue';
-import {databaseSelectService} from '@/services/database/database-select-service';
+import {useBackButton, onIonViewWillEnter, onIonViewWillLeave} from '@ionic/vue';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
-import {bookmarksService} from '@/services/utilities/bookmarks-service';
 import {entryService} from '@/services/entry/entry-service';
 import {locationService} from '@/services/utilities/location-cordova-service';
+import {entriesListService} from '@/services/entry/entries-list-service';
 
 
 export default {
@@ -183,7 +184,6 @@ export default {
     const labels = STRINGS[language].labels;
     const router = useRouter();
     const route = useRoute();
-    const scope = {};
     const state = reactive({
       isFetching: true,
       entries: [],
@@ -195,224 +195,348 @@ export default {
       parentEntryName: '',
       formRef: '',
       nextFormRef: '',
+      parentFormRef: '',
       parentEntryUuid: '',
       hasUnsyncedEntries: false,
-      status: PARAMETERS.STATUS.ALL,
       backLabel: STRINGS[language].labels.projects,
       allMediaUuids: [],
       branchMediaUuids: [],
       filters: {...PARAMETERS.FILTERS_DEFAULT},
       isDebug: PARAMETERS.DEBUG,
-      isAddingFakeEntries: false
+      isAddingFakeEntries: false,
+      projectRef: '',
+      loadToken: 0,
+      loaderSeq: 0,
+      showResolved: false,
+      isLoading: false,
+      leaving: false,
+      pendingRequest: null,
+      versionCheckPending: false
     });
+
+    let updateAbortController = null;
 
     const routeParams = rootStore.routeParams;
 
-    // Attempt to get project/form refs from state params or Models, if already initialized
-    scope.projectRef = routeParams.projectRef
+    state.projectRef = routeParams.projectRef
         ? routeParams.projectRef
         : projectModel.getProjectRef();
 
     state.formRef =
         routeParams.formRef !== '' ? routeParams.formRef : formModel.formRef;
 
-    function _updateEntriesFilterByDates() {
-      let oldestDateISO;
-      let newestDateISO;
-
-      return new Promise((resolve) => {
-        (async () => {
-          //get count without filters to have the total reference in the UI
-          //i.e "Found 6/50 entries"
-          //imp: not the most optimised solution, for now it will do
-          const resultWithoutFilters = await databaseSelectService.countEntries(
-              scope.projectRef,
-              state.formRef,
-              state.parentEntryUuid,
-              PARAMETERS.FILTERS_DEFAULT,
-              PARAMETERS.STATUS.ALL
-          );
-
-          //set entries counter without any filter
-
-          state.countNoFilters = resultWithoutFilters.rows.item(0).total;
-
-          const result = await databaseSelectService.countEntries(
-              scope.projectRef,
-              state.formRef,
-              state.parentEntryUuid,
-              state.filters,
-              state.filters.status
-          );
-
-          if (result.rows.length > 0) {
-            //any entries found?
-            if (result.rows.item(0).total > 0) {
-              //update entries counter with filters
-              state.countWithFilters = result.rows.item(0).total;
-
-              //oldest and newest values here are filtered,
-              oldestDateISO = result.rows.item(0).oldest.split('T')[0];
-              newestDateISO = result.rows.item(0).newest.split('T')[0];
-
-              //we save the oldest and newest on the first run only to reset
-              //dates if needed
-              if (
-                  state.filters.oldest === null &&
-                  state.filters.newest === null
-              ) {
-                state.filters.oldest = oldestDateISO;
-                state.filters.newest = newestDateISO;
-                //set from and to on first run.
-                state.filters.from = oldestDateISO;
-                state.filters.to = newestDateISO;
-              }
-            } else {
-              state.countWithFilters = 0;
-            }
-          }
-          resolve(result.rows.item(0).total);
-        })();
-      });
+    function isCurrent(loadId) {
+      if (loadId !== state.loadToken) {
+        return false;
+      }
+      if (state.leaving) {
+        return false;
+      }
+      return true;
     }
 
-    //Retrieve the project and entries
-    scope.getProjectAndEntries = async function () {
+    async function showOwnedLoader(loadId) {
+      const seq = state.loaderSeq + 1;
+      state.loaderSeq = seq;
+      state.showResolved = false;
+      try {
+        await notificationService.showProgressDialog(
+            STRINGS[language].labels.wait,
+            STRINGS[language].labels.loading_entries
+        );
+      } catch (_) {
+        return { shown: false, seq };
+      }
+      if (loadId !== state.loadToken || state.leaving) {
+        try {
+          await notificationService.hideProgressDialog(0);
+        } catch (hideError) {
+          console.log('hide owned loader failed: ' + hideError);
+        }
+        return { shown: false, seq };
+      }
+      if (seq !== state.loaderSeq) {
+        try {
+          await notificationService.hideProgressDialog(0);
+        } catch (hideError) {
+          console.log('hide owned loader failed: ' + hideError);
+        }
+        return { shown: false, seq };
+      }
+      state.showResolved = true;
+      return { shown: true, seq };
+    }
 
-      await notificationService.showProgressDialog(
-          STRINGS[language].labels.wait,
-          STRINGS[language].labels.loading_entries
+    async function hideOwnedLoader(loadId, acquisition, delay) {
+      if (!acquisition || !acquisition.shown) {
+        return;
+      }
+      if (loadId !== state.loadToken) {
+        return;
+      }
+      if (acquisition.seq !== state.loaderSeq) {
+        return;
+      }
+      if (!state.showResolved) {
+        return;
+      }
+      if (delay) {
+        await utilsService.delay(delay);
+      }
+      if (loadId !== state.loadToken || acquisition.seq !== state.loaderSeq) {
+        return;
+      }
+      await notificationService.hideProgressDialog();
+      state.showResolved = false;
+    }
+
+    async function ensureColdInit(projectRef, loadId) {
+      if (projectModel.hasInitialised() && projectModel.getProjectRef() === projectRef) {
+        return { initialisedNow: false };
+      }
+      const row = await fetchProjectRow(projectRef);
+      if (!isCurrent(loadId)) {
+        return { initialisedNow: false, stale: true };
+      }
+      projectModel.initialise(row);
+      if (projectModel.getProjectRef() !== projectRef) {
+        const error = new Error('Wrong project initialised');
+        error.code = 'PROJECT_MISMATCH';
+        throw error;
+      }
+      rootStore.continueProjectVersionUpdate = true;
+      return { initialisedNow: true };
+    }
+
+    async function fetchListData(projectRef) {
+      const context = entriesListService.resolveFormContext({
+        projectRef,
+        formRef: state.formRef,
+        hierarchyNavigation: [...rootStore.hierarchyNavigation],
+        language,
+        bookmarks: [...bookmarkStore.bookmarks]
+      });
+      const counts = await entriesListService.getFilterCounts(
+          projectRef,
+          context.formRef,
+          context.parentEntryUuid,
+          state.filters
       );
+      const response = await fetchEntries({
+        projectRef,
+        formRef: context.formRef,
+        parentEntryUuid: context.parentEntryUuid,
+        currentEntryOffset: 0,
+        filters: counts.filters
+      });
+      return {
+        context,
+        counts,
+        response,
+        projectName: utilsService.getProjectNameMarkup()
+      };
+    }
 
-      //Load the form model
-      function _loadForm() {
-        let form = projectModel.getExtraForm(state.formRef);
-        // We set the first form ref as the current form ref if we don't have one already or if the form doesn't exist
-        if (
-            state.formRef === '' ||
-            (Object.keys(form).length === 0 && form.constructor === Object)
-        ) {
-          state.formRef = projectModel.getFirstFormRef();
-          form = projectModel.getExtraForm(state.formRef);
-          // Reset the hierarchy navigation
-          rootStore.hierarchyNavigation = [];
-        }
-
-        formModel.initialise(form);
-
-        // Set scope variables
-        const lastIndex = rootStore.hierarchyNavigation.length - 1;
-        const lastItem = rootStore.hierarchyNavigation[lastIndex];
-        state.parentEntryUuid = lastItem ? lastItem.parentEntryUuid : '';
-        state.parentEntryName = lastItem
-            ? '"' + lastItem.parentEntryName + '"'
-            : '';
-        state.currentFormName = formModel.getName();
-        state.nextFormRef = projectModel.getNextFormRef(state.formRef);
-
-        state.parentFormRef = projectModel.getParentFormRef(state.formRef);
-        if (state.parentFormRef) {
-          //child form
-          state.parentFormName = projectModel.getFormName(state.parentFormRef);
-          state.backLabel = state.parentFormName;
-        } else {
-          //top parent form goes back to projects
-          state.backLabel = STRINGS[language].labels.projects;
-        }
-
-        //imp: Do we have this page bookmarked?
-        bookmarkStore.bookmarkId = bookmarksService.getBookmarkId(
-            scope.projectRef,
-            state.formRef,
-            state.parentEntryUuid
-        );
+    function commitResult(data) {
+      const { context, counts, response } = data;
+      if (context.resetHierarchy) {
+        rootStore.hierarchyNavigation = [];
       }
+      const form = projectModel.getExtraForm(context.formRef);
+      formModel.initialise(form);
+      bookmarkStore.bookmarkId = context.bookmarkId;
+      state.projectName = data.projectName;
+      state.formRef = context.formRef;
+      state.parentEntryUuid = context.parentEntryUuid;
+      state.parentEntryName = context.parentEntryName;
+      state.currentFormName = context.currentFormName;
+      state.nextFormRef = context.nextFormRef;
+      state.parentFormRef = context.parentFormRef;
+      state.parentFormName = context.parentFormName;
+      state.backLabel = context.backLabel;
+      state.countNoFilters = counts.countNoFilters;
+      state.countWithFilters = counts.countWithFilters;
+      state.filters = counts.filters;
+      state.entries = response.entries;
+      state.branchMediaUuids = response.branchMediaUuids;
+      state.allMediaUuids = response.allMediaUuids;
+      state.hasUnsyncedEntries = response.hasUnsyncedEntries;
+    }
 
-      function _loadFormEntries() {
-        state.entries = [];
-        //get markup to show project logo in page header
-        state.projectName = utilsService.getProjectNameMarkup();
+    async function runLoad(options) {
+      const opts = options || {};
+      const skipVersionCheck = opts.skipVersionCheck === true;
+      const loadId = state.loadToken + 1;
+      state.loadToken = loadId;
+      state.isLoading = true;
+      state.isFetching = true;
+      let loader = { shown: false, seq: 0 };
+      try {
+        const projectRef = state.projectRef;
+        const init = await ensureColdInit(projectRef, loadId);
+        if (init.stale || !isCurrent(loadId)) {
+          return;
+        }
+        loader = await showOwnedLoader(loadId);
+        const data = await fetchListData(projectRef);
+        if (!isCurrent(loadId)) {
+          return;
+        }
+        commitResult(data);
+        if (isCurrent(loadId)) {
+          state.isFetching = false;
+        }
+        await hideOwnedLoader(loadId, loader, PARAMETERS.DELAY_LONG);
+        loader = { shown: false, seq: 0 };
 
-        _loadForm();
-
-        _updateEntriesFilterByDates().then(function (total) {
-          console.log('Total unfiltered entries: ' + total);
-          //no entries at all yet so disable filters controls
-
-          setTimeout(function () {
-            const {formRef, parentEntryUuid, filters, status} = state;
-            const {projectRef} = scope;
-            const fetchParams = {
-              projectRef,
-              formRef,
-              parentEntryUuid,
-              currentEntryOffset: 0,
-              filters,
-              status
-            };
-
-            //get the first entries chunk
-            fetchEntries(fetchParams).then((response) => {
-              state.entries = response.entries;
-              state.branchMediaUuids = response.branchMediaUuids;
-
-              state.hasUnsyncedEntries = response.hasUnsyncedEntries;
-              state.allMediaUuids = response.allMediaUuids;
-
-              state.isFetching = false;
-              setTimeout(function () {
-                notificationService.hideProgressDialog();
-              }, PARAMETERS.DELAY_LONG);
-            });
-          }, 0);
-        });
-      }
-
-      // Check if the project is not already loaded
-      console.log('project store ->', projectModel.getProjectRef() || 'n/a');
-      if (!projectModel.hasInitialised()) {
-        console.log('Project not initialized, scope.projectRef ->', scope.projectRef);
-        const result = await databaseSelectService.selectProject(
-            scope.projectRef
-        );
-        // Can update
-        rootStore.continueProjectVersionUpdate = true;
-        // Initialise the project model
-        projectModel.initialise(result.rows.item(0));
-        // Load the form entries
-        _loadFormEntries();
-
-        // Check and update project version (background check) if needed
-        updateLocalProject(scope).then((updated) => {
-          if (updated && projectModel.hasInitialised()) {
-            notificationService.hideProgressDialog();
-            _loadFormEntries();
+        const shouldCheck = (init.initialisedNow || state.versionCheckPending) && !skipVersionCheck;
+        if (!shouldCheck || !isCurrent(loadId)) {
+          return;
+        }
+        updateAbortController = new AbortController();
+        const isCurrentFn = () => isCurrent(loadId);
+        const result = await updateLocalProject(isCurrentFn, updateAbortController.signal);
+        updateAbortController = null;
+        if (!isCurrent(loadId)) {
+          if (result && result.outcome === 'CANCELLED') {
+            state.versionCheckPending = true;
           }
-        });
-      } else {
-        // Otherwise just load the form entries
-        _loadFormEntries();
+          return;
+        }
+        if (result.outcome === 'CANCELLED') {
+          state.versionCheckPending = true;
+          return;
+        }
+        if (result.outcome === 'DECLINED' || result.outcome === 'UP_TO_DATE') {
+          state.versionCheckPending = false;
+          return;
+        }
+        if (result.outcome === 'UPDATE_FAILED') {
+          state.versionCheckPending = false;
+          state.pendingRequest = null;
+          return;
+        }
+        state.versionCheckPending = false;
+        const reloadLoader = await showOwnedLoader(loadId);
+        const reloadData = await fetchListData(state.projectRef);
+        if (!isCurrent(loadId)) {
+          return;
+        }
+        commitResult(reloadData);
+        if (isCurrent(loadId)) {
+          state.isFetching = false;
+        }
+        await hideOwnedLoader(loadId, reloadLoader, PARAMETERS.DELAY_LONG);
+      } catch (error) {
+        if (!isCurrent(loadId)) {
+          return;
+        }
+        state.isFetching = false;
+        try {
+          await notificationService.hideProgressDialog(0);
+        } catch (hideError) {
+          console.log('hide loader on error failed: ' + hideError);
+        }
+        state.showResolved = false;
+        if (error && (error.code === 'PROJECT_MISSING' || error.code === 'PROJECT_MISMATCH' || error.code === 'NO_FORMS')) {
+          await notificationService.showAlert(STRINGS[language].labels.error);
+          if (!projectModel.hasInitialised()) {
+            router.replace({
+              name: PARAMETERS.ROUTES.PROJECTS,
+              query: {refresh: true}
+            });
+          }
+        } else {
+          await notificationService.showAlert(STRINGS[language].labels.error);
+        }
+        state.pendingRequest = null;
+      } finally {
+        if (isCurrent(loadId)) {
+          state.isLoading = false;
+          const next = state.pendingRequest;
+          state.pendingRequest = null;
+          if (next && !state.leaving) {
+            await runLoad(next);
+          }
+        } else if (state.loadToken === loadId) {
+          state.isLoading = false;
+        } else {
+          const next = !state.leaving ? state.pendingRequest : null;
+          if (!state.leaving && next && state.loadToken > loadId) {
+            state.isLoading = false;
+            state.pendingRequest = null;
+            await runLoad(next);
+          } else if (state.loadToken === loadId) {
+            state.isLoading = false;
+          }
+        }
+        if (state.loadToken === loadId && state.leaving) {
+          state.isLoading = false;
+        }
       }
-    };
+    }
+
+    function requestLoad(options) {
+      if (state.isLoading) {
+        state.pendingRequest = options || {};
+        return;
+      }
+      runLoad(options || {});
+    }
+
+    async function beginLeave() {
+      state.leaving = true;
+      state.loadToken = state.loadToken + 1;
+      state.loaderSeq = state.loaderSeq + 1;
+      state.pendingRequest = null;
+      if (updateAbortController) {
+        try {
+          updateAbortController.abort();
+        } catch (abortError) {
+          console.log('abort failed: ' + abortError);
+        }
+        updateAbortController = null;
+      }
+      if (state.showResolved) {
+        try {
+          await notificationService.hideProgressDialog(0);
+        } catch (hideError) {
+          console.log('hide loader on leave failed: ' + hideError);
+        }
+        state.showResolved = false;
+      }
+      rootStore.continueProjectVersionUpdate = false;
+    }
 
     onMounted(async () => {
       console.log('Component Entries is mounted!');
-      // Retrieve the project and entries
-      await scope.getProjectAndEntries();
+      state.leaving = false;
+      await requestLoad({});
+    });
+
+    onIonViewWillEnter(() => {
+      state.leaving = false;
+      if (state.isLoading) {
+        state.pendingRequest = { skipVersionCheck: !state.versionCheckPending };
+        return;
+      }
+      if (state.loadToken === 0) {
+        return;
+      }
+      requestLoad({ skipVersionCheck: !state.versionCheckPending });
+    });
+
+    onIonViewWillLeave(async () => {
+      await beginLeave();
     });
 
     const methods = {
       openRightDrawer() {
         menuController.open('right-drawer');
       },
-      //redirect to projects list (first form)
-      //otherwise go up one level in the hierarchy
       goBack() {
-        // Project update cannot take place if navigating away
-        rootStore.continueProjectVersionUpdate = false;
-
+        beginLeave();
         if (state.parentFormRef === '') {
-          //reset stores
           projectModel.destroy();
           formModel.destroy();
 
@@ -421,19 +545,17 @@ export default {
             query: {refresh: true}
           });
         } else {
-          // Remove last parent object from the history
           const hierarchyNavigation = [...rootStore.hierarchyNavigation];
           hierarchyNavigation.pop();
           rootStore.hierarchyNavigation = [...hierarchyNavigation];
 
-          const routeParams = {...rootStore.routeParams};
-          routeParams.formRef = state.parentFormRef;
+          const nextParams = {...rootStore.routeParams};
+          nextParams.formRef = state.parentFormRef;
 
-          //reset formRef if we are at the top level
           if (rootStore.hierarchyNavigation.length === 0) {
-            routeParams.formRef = '';
+            nextParams.formRef = '';
           }
-          rootStore.routeParams = routeParams;
+          rootStore.routeParams = nextParams;
           router.replace({
             name: PARAMETERS.ROUTES.ENTRIES,
             query: {
@@ -444,8 +566,7 @@ export default {
         }
       },
       goToUploadPage() {
-        // Project update cannot take place if navigating away
-        rootStore.continueProjectVersionUpdate = false;
+        beginLeave();
         rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES;
         rootStore.routeParamsEntries = rootStore.routeParams;
 
@@ -457,7 +578,6 @@ export default {
         return format(new Date(utcDateString), 'dd MMM, yyyy @ h:mma');
       },
       viewEntry(entry) {
-        // Project update cannot take place if navigating away
         rootStore.continueProjectVersionUpdate = false;
         rootStore.nextRoute = PARAMETERS.ROUTES.ENTRIES;
 
@@ -472,17 +592,13 @@ export default {
         });
       },
       async addEntry() {
-        //Project update cannot take place if navigating away
         rootStore.continueProjectVersionUpdate = false;
 
-        //reset file delete queue (in case previous entries leftovers)
         rootStore.queueFilesToDelete = [];
 
-        // Show loader
         await notificationService.showProgressDialog(
             STRINGS[language].labels.wait
         );
-        // Set up a new entry
         entryService.setUpNew(
             state.formRef,
             state.parentEntryUuid,
@@ -505,7 +621,6 @@ export default {
           name: PARAMETERS.ROUTES.ENTRIES_ADD
         });
       },
-      //generate fake entries for debugging
       async addFakeEntries() {
         const {formRef, parentEntryUuid, parentFormRef} = state;
         const params = {formRef, parentEntryUuid, parentFormRef};
@@ -525,20 +640,16 @@ export default {
         }, PARAMETERS.DELAY_FAST);
       },
       applyFilters(params) {
-        //if filters changed, refresh entries
         if (!utilsService.objectsMatch(state.filters, params.filters)) {
           state.isFetching = true;
           state.filters = params.filters;
-          state.countWithFilters = params.count;
 
           console.log('countNoFilters', state.countNoFilters);
-          //re-fetch entries
-          scope.getProjectAndEntries();
+          requestLoad({ skipVersionCheck: true });
         }
       }
     };
 
-    //re-fetch entries list when needed (after add or delete)
     watch(
         () => [
           {
@@ -549,45 +660,31 @@ export default {
         ],
         async (changes) => {
           console.log('WATCH ROUTING CALLED WITH ->', route.name);
-          // Indicate whether a project update can take place
-          // e.g. if the user goes to a different page, then this must be set to false;
           rootStore.continueProjectVersionUpdate = false;
-          //imp: fix this it gets checked all the  time
-          if (changes[0].refreshEntries === 'true') {
+          if (changes[0].refreshEntries === 'true' && !state.leaving) {
             state.isFetching = true;
-            await notificationService.showProgressDialog(
-                STRINGS[language].labels.wait,
-                STRINGS[language].labels.loading_entries
-            );
-            setTimeout(async () => {
-              // Retrieve the project and entries
-              state.formRef = rootStore.routeParams.formRef;
-              scope.projectRef = rootStore.routeParams.projectRef
-                  ? rootStore.routeParams.projectRef
-                  : projectModel.getProjectRef();
-              //reset filters since we are navigating to another form
-              state.filters = {...PARAMETERS.FILTERS_DEFAULT};
-              //re-fetch entries
-              //	console.error('ENTRIES PAGE routeParams -> ', rootStore.routeParams);
-              await scope.getProjectAndEntries();
-            }, PARAMETERS.DELAY_LONG);
+            await utilsService.delay(PARAMETERS.DELAY_LONG);
+            if (state.leaving) {
+              return;
+            }
+            state.formRef = rootStore.routeParams.formRef;
+            state.projectRef = rootStore.routeParams.projectRef
+                ? rootStore.routeParams.projectRef
+                : projectModel.getProjectRef();
+            state.filters = {...PARAMETERS.FILTERS_DEFAULT};
+            await requestLoad({ skipVersionCheck: true });
           }
         }
     );
 
     provide('entriesState', state);
 
-    //back to projects list with back button (Android)
     useBackButton(10, () => {
       console.log(window.history);
       console.log('useBackButton Entries');
-      // Ignore back while export modal is open (progress export uses isExportModalActive)
-      // or while a project update is in flight (loader blocks taps but not hardware back;
-      // leaving would destroy the model under the pending update continuation)
-      if (rootStore.isExportModalActive || rootStore.isProjectUpdating) {
+      if (rootStore.isExportModalActive || rootStore.isProjectUpdating || rootStore.isProjectUpdateModalActive) {
         return false;
       }
-      // Project update cannot take place if navigating away
       rootStore.continueProjectVersionUpdate = false;
 
       if (!(state.isAddingFakeEntries || state.isFetching)) {
@@ -595,12 +692,13 @@ export default {
       }
     });
 
+    const computedScope = {};
+
     return {
       labels,
-      ...methods,
-      ...scope,
       state,
-      //icons
+      ...methods,
+      ...computedScope,
       cloudUpload,
       add,
       chevronBackOutline,

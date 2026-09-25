@@ -61,6 +61,13 @@ export const useRootStore = defineStore('RootStore', {
             isDrawModalActive: false,
             isExportModalActive: false,
             isProjectUpdating: false,
+            isProjectUpdateModalActive: false,
+            progressUpdate: {
+                total: 0,
+                done: 0
+            },
+            updateDone: false,
+            updateSummary: null,
             ec5LoadingDialog: null,
             hasGoogleServices: true,
             entriesAddScope: {},
