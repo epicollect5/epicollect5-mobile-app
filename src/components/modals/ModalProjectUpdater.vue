@@ -19,7 +19,10 @@
     </ion-toolbar>
   </ion-header>
   <ion-content class="ion-text-center">
-    <div class="updater-body">
+    <div
+        class="updater-body"
+        :class="{ 'updater-done': isDone }"
+    >
     <div v-if="!isDone">
       <ion-spinner
           class="spinner-update"
@@ -36,11 +39,9 @@
             <strong>{{ percentageDisplay }}</strong>
           </ion-label>
         </ion-item>
-        <ion-item lines="none">
-          <ion-label class="ion-text-center">
-            {{ statusDisplay }}
-          </ion-label>
-        </ion-item>
+        <strong>
+          <p>{{ statusDisplay }}</p>
+        </strong>
       </div>
     </div>
     <div v-else>

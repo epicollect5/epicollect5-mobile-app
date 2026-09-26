@@ -55,7 +55,7 @@ export const entriesListService = {
         let currentFormRef = formRef;
         let form = projectModel.getExtraForm(currentFormRef);
         let fellBack = false;
-        if (currentFormRef === '') {
+        if (currentFormRef === ''  || !form.details) {
             // The project is guaranteed to hold at least one form (checked
             // at cold init), so the first form always exists here.
             currentFormRef = projectModel.getFirstFormRef();
