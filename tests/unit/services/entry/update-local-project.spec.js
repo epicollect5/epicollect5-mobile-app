@@ -114,7 +114,8 @@ function mockConfirm(confirmed) {
                     target.handler();
                 }
             }),
-            dismiss: vi.fn().mockResolvedValue()
+            dismiss: vi.fn().mockResolvedValue(),
+            onDidDismiss: vi.fn().mockResolvedValue()
         };
     });
 }

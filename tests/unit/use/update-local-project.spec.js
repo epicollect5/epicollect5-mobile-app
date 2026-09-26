@@ -90,7 +90,8 @@ function mockConfirm(confirmed) {
                     cancel.handler();
                 }
             }),
-            dismiss: vi.fn().mockResolvedValue()
+            dismiss: vi.fn().mockResolvedValue(),
+            onDidDismiss: vi.fn().mockResolvedValue()
         };
     });
 }
@@ -158,7 +159,8 @@ describe('updateLocalProject()', () => {
             confirmButtons = options.buttons;
             return {
                 present: vi.fn().mockResolvedValue(),
-                dismiss: vi.fn().mockResolvedValue()
+                dismiss: vi.fn().mockResolvedValue(),
+                onDidDismiss: vi.fn().mockImplementation(() => new Promise(() => {}))
             };
         });
         const pending = updateLocalProject();
@@ -169,6 +171,27 @@ describe('updateLocalProject()', () => {
         const result = await pending;
         expect(result).toBe(false);
         expect(rootStore.isProjectUpdating).toBe(false);
+    });
+
+    it('settles as decline when the prompt is dismissed without a button press', async () => {
+        const rootStore = useRootStore();
+        versioningService.checkProjectVersion.mockResolvedValue(false);
+        let resolveDismissal;
+        alertController.create.mockImplementation(async () => ({
+            present: vi.fn().mockResolvedValue(),
+            dismiss: vi.fn().mockResolvedValue(),
+            onDidDismiss: vi.fn().mockImplementation(() => new Promise((resolve) => {
+                resolveDismissal = resolve;
+            }))
+        }));
+        const pending = updateLocalProject();
+        await flushPromises();
+        expect(rootStore.isProjectUpdating).toBe(true);
+        resolveDismissal();
+        const result = await pending;
+        expect(result).toBe(false);
+        expect(rootStore.isProjectUpdating).toBe(false);
+        expect(versioningService.updateProject).not.toHaveBeenCalled();
     });
 
     it('shows first auth error without login retry (fail-fast)', async () => {

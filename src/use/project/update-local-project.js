@@ -54,6 +54,11 @@ async function confirmProjectUpdate() {
                     buttons,
                     cssClass: 'alert-confirm-single-vertical-' + rootStore.device.platform.toLowerCase()
                 });
+                // Any dismissal route (e.g. Android back) settles as decline:
+                // resolve is idempotent, so a late button tap is a safe no-op.
+                createdAlert.onDidDismiss().then(() => {
+                    resolve(false);
+                });
                 await createdAlert.present();
             } catch (presentError) {
                 console.log('update confirm failed: ' + presentError);
