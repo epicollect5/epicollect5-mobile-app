@@ -1,0 +1,18 @@
+src/use/project/update-local-project.js
+  h_2231ff2aa93473 57-61
+tests/unit/services/entry/update-local-project.spec.js
+  h_2231ff2aa93473 117-118
+tests/unit/use/update-local-project.spec.js
+  h_2231ff2aa93473 93-94,162-163,176-196
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d6ab88d35871f6072e691e85d4229753a1e637cf",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
