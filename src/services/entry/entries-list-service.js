@@ -3,20 +3,11 @@ import { STRINGS } from '@/config/strings';
 import { projectModel } from '@/models/project-model.js';
 import { databaseSelectService } from '@/services/database/database-select-service';
 
-function toISODate(value) {
-    if (!value) {
-        return null;
-    }
-    return String(value).split('T')[0];
-}
-
 export const entriesListService = {
 
     async getFilterCounts(projectRef, formRef, parentEntryUuid, activeFilters) {
+        // Clone: date seeding below must not leak into the caller's object.
         const workingFilters = { ...activeFilters };
-        if (!workingFilters.status) {
-            workingFilters.status = PARAMETERS.STATUS.ALL;
-        }
 
         // COUNT(*) always returns exactly one row: trust the query contract.
         const resultWithoutFilters = await databaseSelectService.countEntries(
@@ -36,10 +27,11 @@ export const entriesListService = {
             workingFilters.status
         );
 
-        const total = result.rows.item(0).total || 0;
+        const total = result.rows.item(0).total;
         if (total > 0) {
-            const oldestDateISO = toISODate(result.rows.item(0).oldest);
-            const newestDateISO = toISODate(result.rows.item(0).newest);
+            const oldestDateISO = result.rows.item(0).oldest.split('T')[0];
+            const newestDateISO = result.rows.item(0).newest.split('T')[0];
+            // Seed the date bounds once so the toolbar can reset them later.
             if (workingFilters.oldest === null && workingFilters.newest === null) {
                 workingFilters.oldest = oldestDateISO;
                 workingFilters.newest = newestDateISO;
@@ -60,10 +52,10 @@ export const entriesListService = {
         const navigation = hierarchyNavigation;
         const labels = STRINGS[language].labels;
 
-        let currentFormRef = formRef || '';
-        let form = currentFormRef ? projectModel.getExtraForm(currentFormRef) : {};
+        let currentFormRef = formRef;
+        let form = projectModel.getExtraForm(currentFormRef);
         let fellBack = false;
-        if (currentFormRef === '' || Object.keys(form).length === 0) {
+        if (currentFormRef === '') {
             // The project is guaranteed to hold at least one form (checked
             // at cold init), so the first form always exists here.
             currentFormRef = projectModel.getFirstFormRef();
@@ -102,7 +94,7 @@ export const entriesListService = {
             }
         }
 
-        const resetHierarchy = (formRef || '') === '' || formRef !== currentFormRef;
+        const resetHierarchy = fellBack;
 
         return {
             formRef: currentFormRef,

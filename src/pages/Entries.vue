@@ -205,9 +205,7 @@ export default {
       filters: {...PARAMETERS.FILTERS_DEFAULT},
       isDebug: PARAMETERS.DEBUG,
       isAddingFakeEntries: false,
-      projectRef: '',
-      isLoading: false,
-      pendingRequest: null
+      projectRef: ''
     });
 
     const routeParams = rootStore.routeParams;
@@ -216,49 +214,22 @@ export default {
         ? routeParams.projectRef
         : projectModel.getProjectRef();
 
-    state.formRef =
-        routeParams.formRef !== '' ? routeParams.formRef : formModel.formRef;
+    state.formRef = routeParams.formRef || formModel.formRef || '';
 
-    async function showEntriesLoader() {
-      try {
-        await notificationService.showProgressDialog(
-            STRINGS[language].labels.wait,
-            STRINGS[language].labels.loading_entries
-        );
-      } catch (showError) {
-        console.log('show loader failed: ' + showError);
-      }
-    }
-
-    async function hideEntriesLoader(delay) {
-      if (delay) {
-        await utilsService.delay(delay);
-      }
-      await notificationService.hideProgressDialog();
-    }
-
-    async function ensureColdInit(projectRef) {
+    async function checkIfProjectReady(projectRef) {
+      // Warm path: same project already in memory, nothing to initialise.
       if (projectModel.hasInitialised() && projectModel.getProjectRef() === projectRef) {
-        return { initialisedNow: false };
+        return false;
       }
+      // Cold path: load the project tapped in the previous page.
       const result = await databaseSelectService.selectProject(projectRef);
-      if (result.rows.length === 0) {
-        throw new Error('Project row missing');
-      }
-      const row = result.rows.item(0);
-      projectModel.initialise(row);
-      if (projectModel.getProjectRef() !== projectRef) {
-        throw new Error('Wrong project initialised');
-      }
-      if (projectModel.getFormRefsInOrder().length === 0) {
-        throw new Error('Project has no forms');
-      }
+      projectModel.initialise(result.rows.item(0));
       rootStore.continueProjectVersionBackgroundCheck = true;
-      return { initialisedNow: true };
+      return true;
     }
 
     async function fetchListData(projectRef) {
-      const context = entriesListService.setActiveForm({
+      const activeForm = entriesListService.setActiveForm({
         projectRef,
         formRef: state.formRef,
         hierarchyNavigation: [...rootStore.hierarchyNavigation],
@@ -267,66 +238,68 @@ export default {
       });
       const counts = await entriesListService.getFilterCounts(
           projectRef,
-          context.formRef,
-          context.parentEntryUuid,
+          activeForm.formRef,
+          activeForm.parentEntryUuid,
           state.filters
       );
-      const response = await fetchEntries({
+      const queryResult = await fetchEntries({
         projectRef,
-        formRef: context.formRef,
-        parentEntryUuid: context.parentEntryUuid,
+        formRef: activeForm.formRef,
+        parentEntryUuid: activeForm.parentEntryUuid,
         currentEntryOffset: 0,
         filters: counts.filters
       });
       return {
-        context,
+        activeForm,
         counts,
-        response,
+        queryResult,
         projectName: utilsService.getProjectNameMarkup()
       };
     }
 
-    function commitResult(data) {
-      const { context, counts, response } = data;
-      if (context.resetHierarchy) {
+    function updateLocalState(data) {
+      const { projectName, activeForm, counts, queryResult } = data;
+      if (activeForm.resetHierarchy) {
         rootStore.hierarchyNavigation = [];
       }
-      const form = projectModel.getExtraForm(context.formRef);
+      const form = projectModel.getExtraForm(activeForm.formRef);
       formModel.initialise(form);
-      bookmarkStore.bookmarkId = context.bookmarkId;
-      state.projectName = data.projectName;
-      state.formRef = context.formRef;
-      state.parentEntryUuid = context.parentEntryUuid;
-      state.parentEntryName = context.parentEntryName;
-      state.currentFormName = context.currentFormName;
-      state.nextFormRef = context.nextFormRef;
-      state.parentFormRef = context.parentFormRef;
-      state.parentFormName = context.parentFormName;
-      state.backLabel = context.backLabel;
+      bookmarkStore.bookmarkId = activeForm.bookmarkId;
+      state.projectName = projectName;
+      state.formRef = activeForm.formRef;
+      state.parentEntryUuid = activeForm.parentEntryUuid;
+      state.parentEntryName = activeForm.parentEntryName;
+      state.currentFormName = activeForm.currentFormName;
+      state.nextFormRef = activeForm.nextFormRef;
+      state.parentFormRef = activeForm.parentFormRef;
+      state.parentFormName = activeForm.parentFormName;
+      state.backLabel = activeForm.backLabel;
       state.countNoFilters = counts.countNoFilters;
       state.countWithFilters = counts.countWithFilters;
       state.filters = counts.filters;
-      state.entries = response.entries;
-      state.branchMediaUuids = response.branchMediaUuids;
-      state.allMediaUuids = response.allMediaUuids;
-      state.hasUnsyncedEntries = response.hasUnsyncedEntries;
+      state.entries = queryResult.entries;
+      state.branchMediaUuids = queryResult.branchMediaUuids;
+      state.allMediaUuids = queryResult.allMediaUuids;
+      state.hasUnsyncedEntries = queryResult.hasUnsyncedEntries;
     }
 
-    async function runLoad(options) {
-      const skipVersionCheck = options.skipVersionCheck === true;
-      state.isLoading = true;
+    async function getEntriesPageContent(skipProjectVersionCheck) {
       state.isFetching = true;
       try {
         const projectRef = state.projectRef;
-        const init = await ensureColdInit(projectRef);
-        await showEntriesLoader();
+        const isProjectReady = await checkIfProjectReady(projectRef);
+        await notificationService.showProgressDialog(
+            STRINGS[language].labels.wait,
+            STRINGS[language].labels.loading_entries
+        );
         const data = await fetchListData(projectRef);
-        commitResult(data);
+        updateLocalState(data);
         state.isFetching = false;
-        await hideEntriesLoader(PARAMETERS.DELAY_LONG);
+        await notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
 
-        const shouldCheck = init.initialisedNow && !skipVersionCheck;
-        if (!shouldCheck) {
+        // List-first: the version check runs only on cold init, never on
+        // filter/watch reloads.
+        if (!isProjectReady || skipProjectVersionCheck) {
           return;
         }
         const updated = await updateLocalProject();
@@ -338,15 +311,18 @@ export default {
         // old hierarchy no longer applies.
         state.formRef = projectModel.getFirstFormRef();
         rootStore.hierarchyNavigation = [];
-        await showEntriesLoader();
+        await notificationService.showProgressDialog(
+            STRINGS[language].labels.wait,
+            STRINGS[language].labels.loading_entries
+        );
         const reloadData = await fetchListData(state.projectRef);
-        commitResult(reloadData);
+        updateLocalState(reloadData);
         state.isFetching = false;
-        await hideEntriesLoader(PARAMETERS.DELAY_LONG);
+        await notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
       } catch (error) {
         rollbarService.criticalWithContext('Entries list load failed', error);
         state.isFetching = false;
-        await hideEntriesLoader(0);
+        await notificationService.hideProgressDialog(0);
         await notificationService.showAlert(STRINGS[language].labels.error);
         if (!projectModel.hasInitialised()) {
           router.replace({
@@ -354,28 +330,12 @@ export default {
             query: {refresh: true}
           });
         }
-        state.pendingRequest = null;
-      } finally {
-        state.isLoading = false;
-        const next = state.pendingRequest;
-        state.pendingRequest = null;
-        if (next) {
-          await runLoad(next);
-        }
       }
     }
 
-    function requestLoad(options) {
-      if (state.isLoading) {
-        state.pendingRequest = options;
-        return;
-      }
-      runLoad(options);
-    }
-
-    onMounted(() => {
+    onMounted(async () => {
       console.log('Component Entries is mounted!');
-      requestLoad({});
+      await getEntriesPageContent(false);
     });
 
     const methods = {
@@ -495,13 +455,13 @@ export default {
           });
         }, PARAMETERS.DELAY_FAST);
       },
-      applyFilters(params) {
+      async applyFilters(params) {
         if (!utilsService.objectsMatch(state.filters, params.filters)) {
           state.isFetching = true;
           state.filters = params.filters;
 
           console.log('countNoFilters', state.countNoFilters);
-          requestLoad({ skipVersionCheck: true });
+          await getEntriesPageContent(true);
         }
       }
     };
@@ -525,7 +485,7 @@ export default {
                 ? rootStore.routeParams.projectRef
                 : projectModel.getProjectRef();
             state.filters = {...PARAMETERS.FILTERS_DEFAULT};
-            requestLoad({skipVersionCheck: true});
+            await getEntriesPageContent(true);
           }
         }
     );

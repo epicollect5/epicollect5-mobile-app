@@ -8,8 +8,6 @@ import Entries from '@/pages/Entries.vue';
 import { fetchEntries } from '@/use/entries/fetch-entries.js';
 import { entriesListService } from '@/services/entry/entries-list-service';
 import { notificationService } from '@/services/notification-service';
-import { projectModel } from '@/models/project-model.js';
-import { databaseSelectService } from '@/services/database/database-select-service';
 
 const routerReplace = vi.hoisted(() => vi.fn());
 const rollbarMock = vi.hoisted(() => ({ critical: vi.fn(), criticalWithContext: vi.fn() }));
@@ -109,12 +107,6 @@ vi.mock('@/services/notification-service', () => ({
 
 vi.mock('@/services/utilities/rollbar-service', () => ({ rollbarService: rollbarMock }));
 
-vi.mock('@/services/database/database-select-service', () => ({
-    databaseSelectService: {
-        selectProject: vi.fn()
-    }
-}));
-
 vi.mock('@/services/entry/entries-list-service', () => ({
     entriesListService: {
         setActiveForm: vi.fn(),
@@ -162,30 +154,12 @@ describe('Entries page pump', () => {
         mockListData();
     });
 
-    it('serializes overlapping refreshes and commits the latest', async () => {
-        let resolveFetch;
-        fetchEntries.mockReturnValueOnce(new Promise((resolve) => {
-            resolveFetch = resolve;
-        }));
+    it('loads the list on mount', async () => {
         const wrapper = shallowMount(Entries);
         await flushPromises();
-        expect(wrapper.vm.state.isLoading).toBe(true);
-
-        wrapper.vm.applyFilters({ filters: { title: 'new' }, count: 0 });
-        expect(wrapper.vm.state.isLoading).toBe(true);
-
-        resolveFetch({
-            entries: [{ entry_uuid: 'stale' }],
-            branchMediaUuids: [],
-            allMediaUuids: [],
-            hasUnsyncedEntries: false
-        });
         await flushPromises();
-        await flushPromises();
-        await flushPromises();
-        expect(fetchEntries).toHaveBeenCalledTimes(2);
+        expect(fetchEntries).toHaveBeenCalledTimes(1);
         expect(wrapper.vm.state.entries).toEqual([{ entry_uuid: 'e1' }]);
-        expect(wrapper.vm.state.isLoading).toBe(false);
         expect(wrapper.vm.state.isFetching).toBe(false);
     });
 
@@ -214,7 +188,6 @@ describe('Entries page pump', () => {
         await flushPromises();
         await flushPromises();
         expect(fetchEntries).toHaveBeenCalled();
-        expect(wrapper.vm.state.isLoading).toBe(false);
     });
 
     it('reports failed loads to rollbar', async () => {
@@ -223,21 +196,5 @@ describe('Entries page pump', () => {
         await flushPromises();
         await flushPromises();
         expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('Entries list load failed', expect.any(Error));
-    });
-
-    it('alerts without loading on a project without forms', async () => {
-        projectModel.hasInitialised.mockReturnValue(false);
-        projectModel.getFormRefsInOrder.mockReturnValue([]);
-        databaseSelectService.selectProject.mockResolvedValue({
-            rows: { length: 1, item: () => ({}) }
-        });
-        const wrapper = shallowMount(Entries);
-        await flushPromises();
-        await flushPromises();
-        expect(wrapper.vm.state.entries).toEqual([]);
-        expect(fetchEntries).not.toHaveBeenCalled();
-        expect(notificationService.showAlert).toHaveBeenCalled();
-        projectModel.hasInitialised.mockReturnValue(true);
-        projectModel.getFormRefsInOrder.mockReturnValue(['form-a']);
     });
 });

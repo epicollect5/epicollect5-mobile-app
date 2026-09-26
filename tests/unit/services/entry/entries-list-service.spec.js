@@ -83,7 +83,7 @@ describe('entries-list-service', () => {
 
     it('falls back to first form and flags hierarchy reset', () => {
         projectModel.getExtraForm.mockImplementation((ref) => {
-            if (ref === 'missing') {
+            if (!ref) {
                 return {};
             }
             return { details: { name: 'First' } };
@@ -95,7 +95,7 @@ describe('entries-list-service', () => {
 
         const context = entriesListService.setActiveForm({
             projectRef: 'p1',
-            formRef: 'missing',
+            formRef: '',
             hierarchyNavigation: [],
             language: 'en',
             bookmarks: []

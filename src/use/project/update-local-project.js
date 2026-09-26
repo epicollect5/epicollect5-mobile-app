@@ -125,6 +125,9 @@ export async function updateLocalProject() {
     }
 
     if (capturedError) {
+        // Fail-fast: each failure reports its own UI, no login retry and no
+        // deferred callback. Staleness is enforced downstream by uploads,
+        // downloads and the server.
         const authErrors = PARAMETERS.AUTH_ERROR_CODES;
         const code = capturedError?.data?.errors?.[0]?.code;
         if (capturedError?.isStaleCleanupError) {
