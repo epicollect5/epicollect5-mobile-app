@@ -1,0 +1,18 @@
+src/services/entry/entries-list-service.js
+  h_2231ff2aa93473 58
+src/components/modals/ModalProjectUpdater.vue
+  h_2231ff2aa93473 22-25,42-44
+src/theme/components/modals/ModalProjectUpdater.scss
+  h_2231ff2aa93473 3,7-10,18-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "246990a1987b50ef3ee2d245eb23eaa39247ce08",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
