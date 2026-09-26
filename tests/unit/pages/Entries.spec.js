@@ -66,7 +66,7 @@ vi.mock('@/models/form-model.js', () => ({
 }));
 
 vi.mock('@/use/project/update-local-project', () => ({
-    updateLocalProject: vi.fn().mockResolvedValue({ outcome: 'UP_TO_DATE' })
+    updateLocalProject: vi.fn().mockResolvedValue(false)
 }));
 
 vi.mock('@/use/entries/fetch-entries.js', () => ({

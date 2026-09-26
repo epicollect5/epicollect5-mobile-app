@@ -6,6 +6,7 @@ import { versioningService } from '@/services/utilities/versioning-service';
 import { notificationService } from '@/services/notification-service';
 import { updateLocalProject } from '@/use/project/update-local-project';
 import { PARAMETERS } from '@/config';
+import { STRINGS } from '@/config/strings';
 import { errorsService } from '@/services/errors-service';
 import { projectModel } from '@/models/project-model';
 import { alertController } from '@ionic/vue';
@@ -207,6 +208,21 @@ describe('updateLocalProject()', () => {
 
         expect(result).toBe(false);
         expect(errorsService.handleWebError).toHaveBeenCalledWith(regularError);
+    });
+
+    it('shows stale cleanup failed alert when isStaleCleanupError is set', async () => {
+        versioningService.checkProjectVersion.mockResolvedValue(false);
+        mockConfirm(true);
+        versioningService.updateProject.mockRejectedValue({ isStaleCleanupError: true });
+
+        const result = await updateLocalProject();
+
+        expect(result).toBe(false);
+        expect(notificationService.showAlert).toHaveBeenCalledWith(
+            STRINGS.en.labels.stale_cleanup_failed,
+            STRINGS.en.labels.error
+        );
+        expect(errorsService.handleWebError).not.toHaveBeenCalled();
     });
 
     it('locks navigation while the update is in flight and releases it on success', async () => {
