@@ -1,0 +1,23 @@
+src/pages/Entries.vue
+  h_2231ff2aa93473 217,219-220,224,226,232,241-242,245,247-248,253,255,260-262,265,267,269-276,280-283,286,290-293,296,298,300-302,314-316,319,321,336,338,458,464,488
+  h_2231ff2aa93473 208,222,228,268,294,317,325
+src/services/entry/entries-list-service.js
+  h_2231ff2aa93473 9,30,32-34,55-56,58,97
+src/use/project/update-local-project.js
+  h_2231ff2aa93473 128-130
+tests/unit/pages/Entries.spec.js
+  h_2231ff2aa93473 157,161
+tests/unit/services/entry/entries-list-service.spec.js
+  h_2231ff2aa93473 86,98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fdccf2d11bca83344360fc140245b40290a42d0c",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
