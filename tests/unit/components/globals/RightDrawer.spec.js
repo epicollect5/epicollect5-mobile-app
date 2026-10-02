@@ -26,6 +26,16 @@ import ModalBookmarkAdd from '@/components/modals/ModalBookmarkAdd';
 
 const projectRef = 'test-ref';
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        init: vi.fn(),
+        configure: vi.fn(),
+        clearThrottleKeys: vi.fn(),
+        criticalWithContext: vi.fn(),
+        critical: vi.fn()
+    }
+}));
+
 vi.mock('@/components/modals/ModalLogin', () => ({
     name: 'ModalLogin',
     template: '<div></div>'

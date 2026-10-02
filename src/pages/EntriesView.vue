@@ -137,6 +137,7 @@ import {STRINGS} from '@/config/strings';
 import {deleteEntry} from '@/use/entry/delete-entry';
 import {cloneEntry} from '@/use/entry/clone-entry';
 import {fetchAnswers} from '@/use/answers/fetch-answers';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 import {
   desktopOutline,
@@ -205,6 +206,7 @@ export default {
     if (formExists) {
       // Retrieve the answers
       fetchAnswers(state, language, labels).catch((error) => {
+        rollbarService.criticalWithContext('EntriesView: fetch answers failed', error);
         console.error('Failed to fetch answers:', error);
         state.isFetching = false;
       });
@@ -288,6 +290,7 @@ export default {
             await notificationService.showProgressDialog(labels.wait, labels.loading_entry);
             setTimeout(async () => {
               fetchAnswers(state, language, labels).catch((error) => {
+                rollbarService.criticalWithContext('EntriesView: refresh answers failed', error);
                 console.error('Failed to fetch answers:', error);
                 state.isFetching = false;
                 notificationService.hideProgressDialog();

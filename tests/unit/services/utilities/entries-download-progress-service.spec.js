@@ -1,5 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { entriesDownloadProgressService } from '@/services/utilities/entries-download-progress-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
+
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        init: vi.fn(),
+        configure: vi.fn(),
+        clearThrottleKeys: vi.fn(),
+        criticalWithContext: vi.fn(),
+        critical: vi.fn()
+    }
+}));
 
 describe('entriesDownloadProgressService', () => {
     beforeEach(() => {
@@ -32,6 +43,21 @@ describe('entriesDownloadProgressService', () => {
 
         expect(entriesDownloadProgressService.load('project-ref', 'form-ref')).toEqual(progress);
         expect(window.localStorage.getItem('entries-download-progress:project-ref:form-ref')).toBe(JSON.stringify(progress));
+    });
+
+    it('reports to rollbar when persisting progress fails, without throwing', () => {
+        const failure = new Error('quota exceeded');
+        const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw failure;
+        });
+
+        expect(() => entriesDownloadProgressService.save('project-ref', 'form-ref', { urls: {} })).not.toThrow();
+
+        expect(rollbarService.criticalWithContext).toHaveBeenCalledWith(
+            'entriesDownloadProgressService: persist download progress failed',
+            failure
+        );
+        setItemSpy.mockRestore();
     });
 
     it('clears persisted progress for a project form', () => {

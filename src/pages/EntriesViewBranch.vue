@@ -115,6 +115,7 @@ import ItemDividerError from '@/components/ItemDividerError.vue';
 import {cloneEntryBranch} from '@/use/entry/clone-entry-branch';
 import {fetchBranchAnswers} from '@/use/answers/fetch-branch-answers';
 import {deleteEntryBranch} from '@/use/entry/delete-entry-branch';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 export default {
   components: {ListAnswers, ItemDividerError},
@@ -194,6 +195,7 @@ export default {
     };
 
     fetchBranchAnswers(state, language, labels).catch((error) => {
+      rollbarService.criticalWithContext('EntriesViewBranch: fetch branch answers failed', error);
       console.error('Failed to fetch answers:', error);
       state.isFetching = false;
       notificationService.hideProgressDialog();
@@ -214,6 +216,7 @@ export default {
             state.isFetching = true;
             setTimeout(async () => {
                fetchBranchAnswers( state, language, labels).catch((error) => {
+                  rollbarService.criticalWithContext('EntriesViewBranch: refresh branch answers failed', error);
                   console.error('Failed to fetch answers:', error);
                   state.isFetching = false;
                   notificationService.hideProgressDialog();

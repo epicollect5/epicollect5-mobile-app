@@ -11,6 +11,7 @@ import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { answerService } from '@/services/entry/answer-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 
 export const versioningService = {
@@ -302,6 +303,7 @@ export const versioningService = {
                 await this._removeRemovedBranchEntries(projectRef, staleBranch.formRef, staleBranch.branchRef);
             }
         } catch (error) {
+            rollbarService.criticalWithContext('versioningService: remove stale entries failed', error);
             console.error('Failed to remove entries of forms/branches removed from the project', error);
             error.isStaleCleanupError = true;
             throw error;

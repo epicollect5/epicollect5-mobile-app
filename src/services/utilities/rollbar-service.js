@@ -2,6 +2,11 @@ import Rollbar from 'rollbar';
 import { Capacitor } from '@capacitor/core';
 import { useRootStore } from '@/stores/root-store';
 
+//client-side reporting throttle: at most one report per operation context
+//per window; keys are wiped on boot by clearThrottleKeys() below
+const THROTTLE_WINDOW_MS = 15 * 60 * 1000;
+const THROTTLE_KEY_PREFIX = 'rollbar_last_report:';
+
 //https://docs.rollbar.com/docs/rollbarjs-configuration-reference
 const rollbar = new Rollbar({
     enabled: true,
@@ -10,9 +15,43 @@ const rollbar = new Rollbar({
     captureUnhandledRejections: true,
     reportLevel: 'error',
     captureIp: false,
+    //legacy global cap, unchanged from before this branch: 1 item per minute
+    //across all contextless reports; contexted reports are governed by the
+    //15-min per-context throttle in checkIgnore below
     itemsPerMinute: 1,
     timeout: 3000,
+    //no retryInterval on purpose: a failed send is dropped immediately, as it
+    //was before this branch — retries were removed by decision (they fed the
+    //rate limiter and started the SDK's never-cleared background timer)
     maxRetries: 3,
+    //throttle reporting to one item per operation context per window;
+    //suppressed items never reach the API (or the itemsPerMinute counter)
+    checkIgnore: (isUncaught, args, payload) => {
+        try {
+            const context = payload && payload.custom && payload.custom.context;
+            if (!context) {
+                //legacy critical() and uncaught items have no stable identity:
+                //throttling them together would hide distinct failures, so they
+                //keep the pre-existing itemsPerMinute backstop only
+                return false;
+            }
+            const key = THROTTLE_KEY_PREFIX + context;
+            const now = Date.now();
+            let last = Number(localStorage.getItem(key)) || 0;
+            if (now < last) {
+                //device clock moved backwards: treat the stamp as expired
+                last = 0;
+            }
+            if (now - last < THROTTLE_WINDOW_MS) {
+                return true;
+            }
+            localStorage.setItem(key, String(now));
+            return false;
+        } catch (error) {
+            //fail-open: reporting must never throw (private mode, quota)
+            return false;
+        }
+    },
     payload: {
         environment: '',//to be set at run time,
         source_map_enabled: true,
@@ -151,7 +190,26 @@ export const rollbarService = {
     configure(params) {
         rollbar.configure(params);
     },
+    //boot-only: wipes per-context throttle timestamps so every session starts
+    //with a fresh window. Called by init() only — do NOT call from configure()
+    //or elsewhere mid-session, it would reset the 15-min throttle.
+    clearThrottleKeys() {
+        try {
+            const stale = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith(THROTTLE_KEY_PREFIX)) {
+                    stale.push(k);
+                }
+            }
+            stale.forEach((k) => localStorage.removeItem(k));
+        } catch (ignored) {
+            //fail-open: private mode / quota errors must not break boot
+        }
+    },
     init(app) {
+        //direct reference, not this.: safe if init is ever destructured
+        rollbarService.clearThrottleKeys();
         const rootStore = useRootStore();
         let environment = rootStore.device.operatingSystem + ' ' + rootStore.device.osVersion;
         environment += ' - ' + rootStore.device.model;

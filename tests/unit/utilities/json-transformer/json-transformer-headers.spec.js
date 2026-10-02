@@ -5,6 +5,16 @@ import { describe, it, expect, vi } from 'vitest';
 import { JSONTransformerService } from '@/services/utilities/json-transformer-service';
 import { projectModel } from '@/models/project-model.js';
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        init: vi.fn(),
+        configure: vi.fn(),
+        clearThrottleKeys: vi.fn(),
+        criticalWithContext: vi.fn(),
+        critical: vi.fn()
+    }
+}));
+
 vi.mock('@/stores/root-store', () => ({
     useRootStore: () => ({ device: { identifier: 'test-device', platform: 'ios' }, isPWA: false })
 }));

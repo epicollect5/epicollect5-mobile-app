@@ -7,6 +7,16 @@ import {utilsService} from '@/services/utilities/utils-service';
 import Papa from 'papaparse';
 import {PARAMETERS} from '@/config';
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        init: vi.fn(),
+        configure: vi.fn(),
+        clearThrottleKeys: vi.fn(),
+        criticalWithContext: vi.fn(),
+        critical: vi.fn()
+    }
+}));
+
 vi.mock('@/stores/root-store', () => ({
     useRootStore: () => ({device: {identifier: 'test-device', platform: 'ios'}, isPWA: false})
 }));

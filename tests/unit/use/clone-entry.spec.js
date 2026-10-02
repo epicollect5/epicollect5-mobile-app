@@ -8,6 +8,16 @@ import {PARAMETERS} from '@/config';
 import {projectModel} from '@/models/project-model';
 import {entryCommonService} from '@/services/entry/entry-common-service';
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        init: vi.fn(),
+        configure: vi.fn(),
+        clearThrottleKeys: vi.fn(),
+        criticalWithContext: vi.fn(),
+        critical: vi.fn()
+    }
+}));
+
 // 1. Mock the services
 vi.mock('@/services/notification-service');
 vi.mock('@/services/database/database-insert-service');

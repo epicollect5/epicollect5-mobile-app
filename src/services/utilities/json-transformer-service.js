@@ -6,6 +6,7 @@ import {databaseSelectService} from '@/services/database/database-select-service
 import {utilsService} from '@/services/utilities/utils-service';
 import Papa from 'papaparse';
 import {fromLatLon} from 'utm'; // Import the specific function
+import {rollbarService} from '@/services/utilities/rollbar-service';
 /**
  * PRIVATE HELPERS
  */
@@ -348,6 +349,7 @@ export const JSONTransformerService = {
                 zone: `${result.zoneNum}${result.zoneLetter}`
             };
         } catch (e) {
+            rollbarService.criticalWithContext('JSONTransformerService: utm conversion failed', e);
             console.error('UTM Conversion Error:', e);
             return {easting: '', northing: '', zone: ''};
         }

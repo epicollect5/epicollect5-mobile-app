@@ -10,6 +10,16 @@ import { databaseDeleteService } from '@/services/database/database-delete-servi
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { modalController } from '@ionic/vue';
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        init: vi.fn(),
+        configure: vi.fn(),
+        clearThrottleKeys: vi.fn(),
+        criticalWithContext: vi.fn(),
+        critical: vi.fn()
+    }
+}));
+
 vi.mock('@/config/strings', () => ({
     STRINGS: {
         en: {
