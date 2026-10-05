@@ -54,13 +54,13 @@ export const entriesListService = {
 
         let currentFormRef = formRef;
         let form = projectModel.getExtraForm(currentFormRef);
-        let fellBack = false;
+        let resetHierarchy = false;
         if (currentFormRef === ''  || !form.details) {
             // The project is guaranteed to hold at least one form (checked
             // at cold init), so the first form always exists here.
             currentFormRef = projectModel.getFirstFormRef();
             form = projectModel.getExtraForm(currentFormRef);
-            fellBack = true;
+            resetHierarchy = true;
         }
 
         const lastItem = navigation[navigation.length - 1];
@@ -69,7 +69,7 @@ export const entriesListService = {
         if (lastItem) {
             parentEntryName = '"' + lastItem.parentEntryName + '"';
         }
-        if (fellBack) {
+        if (resetHierarchy) {
             parentEntryUuid = '';
             parentEntryName = '';
         }
@@ -93,8 +93,6 @@ export const entriesListService = {
                 }
             }
         }
-
-        const resetHierarchy = fellBack;
 
         return {
             formRef: currentFormRef,
