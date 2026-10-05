@@ -258,7 +258,7 @@ export default {
     }
 
     function updateLocalState(data) {
-      const { projectName, activeForm, counts, queryResult } = data;
+      const {projectName, activeForm, counts, queryResult} = data;
       if (activeForm.resetHierarchy) {
         rootStore.hierarchyNavigation = [];
       }
@@ -493,16 +493,17 @@ export default {
     provide('entriesState', state);
 
     useBackButton(10, () => {
-      console.log(window.history);
       console.log('useBackButton Entries');
       if (rootStore.isExportModalActive || rootStore.isProjectUpdating || rootStore.isProjectUpdateModalActive) {
         return false;
       }
-      rootStore.continueProjectVersionBackgroundCheck = false;
 
-      if (!(state.isAddingFakeEntries || state.isFetching)) {
-        methods.goBack();
+      if (state.isAddingFakeEntries || state.isFetching) {
+        return false;
       }
+
+      rootStore.continueProjectVersionBackgroundCheck = false;
+      methods.goBack();
     });
 
     const computedScope = {};
