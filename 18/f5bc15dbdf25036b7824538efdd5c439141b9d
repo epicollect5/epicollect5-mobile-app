@@ -1,0 +1,14 @@
+src/services/entry/entries-list-service.js
+  h_2231ff2aa93473 57,63,72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "18f5bc15dbdf25036b7824538efdd5c439141b9d",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
