@@ -1,0 +1,18 @@
+src/main.js
+  h_2231ff2aa93473 85-94,114,240,265,268,283,312,316,327,332,339,343,368,372,394,399,404
+src/pages/Projects.vue
+  h_2231ff2aa93473 121-123
+src/services/init-service.js
+  h_2231ff2aa93473 80-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a701c97bd7d984e64956fe5b416ada66c4006404",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
