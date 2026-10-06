@@ -1,0 +1,14 @@
+src/main.js
+  h_2231ff2aa93473 404
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c438e5c42ec92f6082a4f18b0dffd6bc81f3342b",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
