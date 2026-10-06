@@ -118,6 +118,9 @@ export default {
       state.projects = projects;
       state.isFetching = false;
       notificationService.hideProgressDialog();
+      if (PARAMETERS.DEBUG && window.__bootT0) {
+        console.log('[boot] projects-list: ' + Math.round(performance.now() - window.__bootT0) + 'ms');
+      }
     });
 
     const computedScope = {

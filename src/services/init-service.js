@@ -77,6 +77,9 @@ export const initService = {
             } else {
                 document.addEventListener('deviceready', () => {
                     console.log('deviceready called');
+                    if (PARAMETERS.DEBUG && window.__bootT0) {
+                        console.log('[boot] deviceready: ' + Math.round(performance.now() - window.__bootT0) + 'ms');
+                    }
 
                     if (platform === PARAMETERS.ANDROID) {
                         db = window.sqlitePlugin.openDatabase({

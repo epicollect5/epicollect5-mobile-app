@@ -82,6 +82,16 @@ export const app = createApp(App)
 //wrap with IIFE to use top level await t.ly/Nhzb
 (async function () {
 
+    //temporary cold-boot profiling: VITE_DEBUG-gated, to be removed afterwards
+    const bootT0 = performance.now();
+    window.__bootT0 = bootT0;
+    function bootMark(stage) {
+        if (PARAMETERS.DEBUG) {
+            console.log('[boot] ' + stage + ': ' + Math.round(performance.now() - bootT0) + 'ms');
+        }
+    }
+    bootMark('start');
+
     const rootStore = useRootStore();
     //register all Ionic components globally
     Object.keys(IonComponents).forEach((key) => {
@@ -101,6 +111,7 @@ export const app = createApp(App)
 
     //get device info
     const deviceInfo = await initService.getDeviceInfo();
+    bootMark('device-info');
     console.log('Platform: => ', deviceInfo.platform.toLocaleUpperCase());
     //make deviceInfo global
     rootStore.device = deviceInfo;
@@ -226,6 +237,7 @@ export const app = createApp(App)
         rootStore.app = await initService.getAppInfo();
         //get device language
         rootStore.language = await initService.getLanguage();
+        bootMark('app-info+language');
         console.log('Device language -> ', rootStore.language);
         const labels = STRINGS[rootStore.language].labels;
 
@@ -250,8 +262,10 @@ export const app = createApp(App)
             await notificationService.showAlert(error, STRINGS[rootStore.language].labels.unknown_error);
             return false;
         }
+        bootMark('openDB-open');
         //create db tables if needed
         await createDatabaseService.execute(db);
+        bootMark('tables-created');
         //make db available globally
         dbStore.db = db;
         dbStore.dbVersion = await initService.getDBVersion();
@@ -266,6 +280,7 @@ export const app = createApp(App)
             rollbarService.criticalWithContext('boot: migrateDB failed', error);
             await notificationService.showAlert(JSON.stringify(error));
         }
+        bootMark('migrated');
 
         //create media dirs (only on devices)
         if (Capacitor.isNativePlatform()) {
@@ -294,9 +309,11 @@ export const app = createApp(App)
                 );
             }
         }
+        bootMark('dirs');
 
         //set server URL
         rootStore.serverUrl = await initService.getServerUrl();
+        bootMark('server-url');
         console.log('Server URL -> ', rootStore.serverUrl);
 
         //set bookmarks in a pinia store
@@ -307,19 +324,23 @@ export const app = createApp(App)
             await notificationService.showAlert(labels.bookmarks_loading_error);
             bookmarkStore.setBookmarks([]);
         }
+        bootMark('bookmarks');
 
 
         //clear temporary tables
         await initService.tidyTempTables();
+        bootMark('tidy-temp');
 
         //get the user preferred entries order
         const dbEntriesOrder = await initService.getEntriesOrder();
         if (dbEntriesOrder !== null) {
             dbStore.dbEntriesOrder = dbEntriesOrder;
         }
+        bootMark('entries-order');
 
         //insert demo project to DB
         await initService.insertDemoProject();
+        bootMark('demo-project');
 
         //text size preferences
         rootStore.selectedTextSize = await initService.getSelectedTextSize();
@@ -344,9 +365,11 @@ export const app = createApp(App)
             console.log('Failed to load in-app camera video preference: ' + error);
             rootStore.inAppCameraVideo = false;
         }
+        bootMark('prefs');
 
         // Attempt to retrieve the jwt token
         rootStore.user = await initService.retrieveJwtToken();
+        bootMark('jwt');
     }
 
     /**
@@ -368,14 +391,17 @@ export const app = createApp(App)
 
     //mount app
     router.isReady().then(async () => {
+        bootMark('router-ready');
         //init error reporting
         rollbarService.init(app);
         console.log('Mounting app');
         app.mount('#app');
+        bootMark('mounted');
 
         if (!rootStore.isPWA) {
             setTimeout(async () => {
                     await SplashScreen.hide();
+                    bootMark('splash-hidden');
                 }, PARAMETERS.DELAY_EXTRA_LONG
             );
         }
