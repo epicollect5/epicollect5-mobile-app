@@ -401,7 +401,7 @@ export const app = createApp(App)
             setTimeout(async () => {
                     await SplashScreen.hide();
                     bootMark('splash-hidden');
-                }, PARAMETERS.DELAY_MEDIUM
+                }, PARAMETERS.DELAY_LONG
             );
         }
     });
