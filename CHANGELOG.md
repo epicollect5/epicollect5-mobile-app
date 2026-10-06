@@ -1,5 +1,14 @@
 ## Release Notes
 
+# 98.3.3 - build 9833
+
+ - Project updates now show a dedicated progress modal with a title while forms are being updated, and dismissing the update prompt counts as declining instead of leaving the update unsettled.
+ - After a project update the app stays on the requesting page instead of forcing a jump to the entries list, and the entries list resets to the first form so it cannot point at a removed form.
+ - Fixed crashes when the project fails to load: uploads, entry cloning, the entries list, and the project name now guard against the missing project instead of throwing.
+ - A failed export now hides the progress modal and shows an error alert instead of leaving the loader stuck on screen.
+ - Reworded the post-update notice (ec5_137) to say questions might have been added or removed and requirements might have changed, in all languages.
+ - Fixed the Italian typo "Nesun progetto trovato" to "Nessun progetto trovato".
+
 # 98.3.2 - build 9832
 
  - Replaced the audio double-tap store flag with a leading-edge debounce guard, preventing double-taps from stacking overlapping record or play modals across question instances and during microphone permission prompts.
