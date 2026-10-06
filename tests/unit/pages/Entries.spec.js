@@ -8,6 +8,9 @@ import Entries from '@/pages/Entries.vue';
 import { fetchEntries } from '@/use/entries/fetch-entries.js';
 import { entriesListService } from '@/services/entry/entries-list-service';
 import { notificationService } from '@/services/notification-service';
+import { updateLocalProject } from '@/use/project/update-local-project';
+import { projectModel } from '@/models/project-model.js';
+import { databaseSelectService } from '@/services/database/database-select-service';
 
 const routerReplace = vi.hoisted(() => vi.fn());
 const rollbarMock = vi.hoisted(() => ({ critical: vi.fn(), criticalWithContext: vi.fn() }));
@@ -67,6 +70,12 @@ vi.mock('@/models/form-model.js', () => ({
 
 vi.mock('@/use/project/update-local-project', () => ({
     updateLocalProject: vi.fn().mockResolvedValue(false)
+}));
+
+vi.mock('@/services/database/database-select-service', () => ({
+    databaseSelectService: {
+        selectProject: vi.fn()
+    }
 }));
 
 vi.mock('@/use/entries/fetch-entries.js', () => ({
@@ -196,5 +205,24 @@ describe('Entries page pump', () => {
         await flushPromises();
         await flushPromises();
         expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('Entries list load failed', expect.any(Error));
+    });
+
+    it('syncs routeParams to the first form after a post-update reset', async () => {
+        const rootStore = useRootStore();
+        rootStore.routeParams = { projectRef: 'p1', formRef: 'form-child' };
+        rootStore.hierarchyNavigation = [{ parentEntryUuid: 'p', parentEntryName: 'P' }];
+        projectModel.hasInitialised.mockReturnValueOnce(false);
+        databaseSelectService.selectProject.mockResolvedValueOnce({
+            rows: { length: 1, item: () => ({ projectRef: 'p1' }) }
+        });
+        updateLocalProject.mockResolvedValueOnce(true);
+
+        shallowMount(Entries);
+        await flushPromises();
+        await flushPromises();
+        await flushPromises();
+
+        expect(rootStore.routeParams.formRef).toBe('form-a');
+        expect(rootStore.hierarchyNavigation).toEqual([]);
     });
 });

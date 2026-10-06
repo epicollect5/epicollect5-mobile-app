@@ -297,6 +297,10 @@ export default {
         state.isFetching = false;
         await notificationService.hideProgressDialog(PARAMETERS.DELAY_LONG);
 
+        /*
+         * False positive (review): bookmark refresh intentionally skips version check — by design. See docs/known-review-false-positives.md
+         * (`src/pages/Entries.vue`, getEntriesPageContent skipProjectVersionCheck guard).
+         */
         // List-first: the version check runs only on cold init, never on
         // filter/watch reloads.
         if (!isProjectReady || skipProjectVersionCheck) {
@@ -310,6 +314,7 @@ export default {
         // compulsory and always present: the viewed form may be gone and the
         // old hierarchy no longer applies.
         state.formRef = projectModel.getFirstFormRef();
+        rootStore.routeParams = {...rootStore.routeParams, formRef: state.formRef};
         rootStore.hierarchyNavigation = [];
         await notificationService.showProgressDialog(
             STRINGS[language].labels.wait,
