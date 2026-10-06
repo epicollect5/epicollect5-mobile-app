@@ -1,0 +1,14 @@
+src/main.js
+  h_2231ff2aa93473 315-316,320-331,334-336,338-342,345,348,350-367,370-371
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3edb270dbd59e639ea9d75ed1caa5693b7fe6550",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
