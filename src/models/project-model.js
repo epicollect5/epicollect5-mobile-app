@@ -91,7 +91,7 @@ export const projectModel = {
         return this.project_extra.forms?.[formRef] ? this.project_extra.forms[formRef] : {};
     },
     getFirstFormRef() {
-        return (this.project_extra.project.forms[0]) ? this.project_extra.project.forms[0] : '';
+        return (this.project_extra.project?.forms?.[0]) ? this.project_extra.project.forms[0] : '';
     },
     getLastFormRef() {
         return (this.project_extra.project.forms[this.project_extra.project.forms.length - 1]) ? this.project_extra.project.forms[this.project_extra.project.forms.length - 1] : '';

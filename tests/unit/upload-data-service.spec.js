@@ -496,6 +496,9 @@ describe('uploadDataService.handleUploadError()', () => {
         }
     });
 
+    it('execute() rejects cleanly instead of throwing when no project is loaded', async () => {
+        await expect(uploadDataService.execute(5)).rejects.toBeUndefined();
+    });
 
 });
 

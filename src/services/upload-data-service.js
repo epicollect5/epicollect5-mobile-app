@@ -40,6 +40,12 @@ export const uploadDataService = {
         const self = this;
 
         return new Promise(function (resolve, reject) {
+            // No active project loaded (e.g. model wiped by a failed re-add):
+            // reject cleanly instead of throwing on an empty project model
+            if (!projectModel.hasInitialised()) {
+                reject();
+                return;
+            }
             const rootStore = useRootStore();
             const language = rootStore.language;
             let currentEntryIndex = 0;
