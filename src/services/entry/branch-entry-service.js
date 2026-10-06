@@ -14,6 +14,7 @@ import {Capacitor} from '@capacitor/core';
 import {JSONTransformerService} from '@/services/utilities/json-transformer-service';
 import {webService} from '@/services/web-service';
 import {wasJumpEdited} from '@/use/questions/was-jump-edited';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 
 export const branchEntryService = {
     type: PARAMETERS.BRANCH_ENTRY,
@@ -169,6 +170,7 @@ export const branchEntryService = {
 
             function _onError(error) {
                 console.log(error);
+                rollbarService.critical(error);
                 reject(error);
             }
 

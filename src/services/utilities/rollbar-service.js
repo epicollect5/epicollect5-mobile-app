@@ -80,7 +80,10 @@ export const rollbarService = {
         app.provide('rollbar', rollbar);
     },
     critical(error) {
-        rollbar.critical(error);
+        try {
+            const reportableError = error instanceof Error ? error : new Error(_safeStringify(error));
+            rollbar.critical(reportableError);
+        } catch (ignored) { /* fire-and-forget */ }
     },
     //Shared reporter for caught errors: fingerprints by operation context for
     //Rollbar grouping (the default fingerprint is stack frames + class, which
@@ -88,65 +91,67 @@ export const rollbarService = {
     //name and cause chain, and passes through diagnostic fields (code,
     //resizeContext, ...) via custom so they are not lost in the wrapper
     criticalWithContext(context, error) {
-        let reportableError;
-        const custom = { context };
-        if (error instanceof Error) {
-            reportableError = new Error(context + ': ' + error.message);
-            reportableError.stack = error.stack;
-            if (error.name && error.name !== 'Error') {
-                reportableError.name = error.name;
-            }
-            if (error.cause !== undefined) {
-                reportableError.cause = error.cause;
-            }
-            //own enumerable diagnostics ride in custom (never on the wrapper,
-            //where Rollbar would ignore them): each read is guarded so a
-            //throwing getter cannot break reporting
-            try {
-                const keys = Object.keys(error);
-                for (const key of keys) {
-                    if (key === 'message' || key === 'stack' || key === 'cause' || key === 'name') {
-                        continue;
-                    }
-                    try {
-                        custom[key] = error[key];
-                    } catch (ignored) {
-                        custom[key] = _safeStringify(error[key]);
-                    }
+        try {
+            let reportableError;
+            const custom = { context };
+            if (error instanceof Error) {
+                reportableError = new Error(context + ': ' + error.message);
+                reportableError.stack = error.stack;
+                if (error.name && error.name !== 'Error') {
+                    reportableError.name = error.name;
                 }
-                if (typeof Object.getOwnPropertySymbols === 'function') {
-                    const symbols = Object.getOwnPropertySymbols(error);
-                    for (const sym of symbols) {
-                        try {
-                            if (Object.prototype.propertyIsEnumerable.call(error, sym)) {
-                                custom[sym.toString()] = error[sym];
-                            }
-                        } catch (ignored) {
+                if (error.cause !== undefined) {
+                    reportableError.cause = error.cause;
+                }
+                //own enumerable diagnostics ride in custom (never on the wrapper,
+                //where Rollbar would ignore them): each read is guarded so a
+                //throwing getter cannot break reporting
+                try {
+                    const keys = Object.keys(error);
+                    for (const key of keys) {
+                        if (key === 'message' || key === 'stack' || key === 'cause' || key === 'name') {
                             continue;
                         }
+                        try {
+                            custom[key] = error[key];
+                        } catch (ignored) {
+                            custom[key] = _safeStringify(error[key]);
+                        }
                     }
-                }
-            } catch (ignored) {
-                console.log('rollbar custom fields skipped: ' + ignored);
-            }
-        } else if (error && (typeof error === 'object' || typeof error === 'function')) {
-            reportableError = new Error(context + ': ' + _safeStringify(error));
-            try {
-                const keys = Object.keys(error);
-                for (const key of keys) {
-                    try {
-                        custom[key] = error[key];
-                    } catch (ignored) {
-                        custom[key] = _safeStringify(error[key]);
+                    if (typeof Object.getOwnPropertySymbols === 'function') {
+                        const symbols = Object.getOwnPropertySymbols(error);
+                        for (const sym of symbols) {
+                            try {
+                                if (Object.prototype.propertyIsEnumerable.call(error, sym)) {
+                                    custom[sym.toString()] = error[sym];
+                                }
+                            } catch (ignored) {
+                                continue;
+                            }
+                        }
                     }
+                } catch (ignored) {
+                    console.log('rollbar custom fields skipped: ' + ignored);
                 }
-            } catch (ignored) {
-                console.log('rollbar custom fields skipped: ' + ignored);
+            } else if (error && (typeof error === 'object' || typeof error === 'function')) {
+                reportableError = new Error(context + ': ' + _safeStringify(error));
+                try {
+                    const keys = Object.keys(error);
+                    for (const key of keys) {
+                        try {
+                            custom[key] = error[key];
+                        } catch (ignored) {
+                            custom[key] = _safeStringify(error[key]);
+                        }
+                    }
+                } catch (ignored) {
+                    console.log('rollbar custom fields skipped: ' + ignored);
+                }
+            } else {
+                reportableError = new Error(context + ': ' + _safeStringify(error));
             }
-        } else {
-            reportableError = new Error(context + ': ' + _safeStringify(error));
-        }
-        rollbar.critical(reportableError, custom);
+            rollbar.critical(reportableError, custom);
+        } catch (ignored) { /* fire-and-forget */ }
     },
     configure(params) {
         rollbar.configure(params);

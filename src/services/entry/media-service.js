@@ -64,6 +64,7 @@ export const mediaService = {
                 //error callback
                 function _onError(error) {
                     console.log(error);
+                    rollbarService.criticalWithContext('saveMedia: operation failed', error);
                     reject(error);
                 }
 
@@ -128,6 +129,7 @@ export const mediaService = {
                 }
             })().catch((error) => {
                 console.log(error);
+                rollbarService.criticalWithContext('saveMedia: unexpected error', error);
                 reject(error);
             });
         });

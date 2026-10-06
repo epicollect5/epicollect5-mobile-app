@@ -5,6 +5,7 @@ import {PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
 import {databaseInsertService} from '@/services/database/database-insert-service';
 import {utilsService} from '@/services/utilities/utils-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 import {useRootStore} from '@/stores/root-store';
 
 export async function cloneEntryBranch(state, goBack) {
@@ -42,6 +43,7 @@ export async function cloneEntryBranch(state, goBack) {
         } catch (error) {
             // Handle error if the insert fails
             console.error(error);
+            rollbarService.critical(error);
             await notificationService.showAlert(
                 error?.message || labels.unknown_error
             );
