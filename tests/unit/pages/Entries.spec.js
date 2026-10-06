@@ -222,6 +222,7 @@ describe('Entries page pump', () => {
         await flushPromises();
         await flushPromises();
 
+        expect(fetchEntries).toHaveBeenCalledTimes(2);
         expect(rootStore.routeParams.formRef).toBe('form-a');
         expect(rootStore.hierarchyNavigation).toEqual([]);
     });
