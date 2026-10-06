@@ -1,0 +1,16 @@
+src/pages/Entries.vue
+  h_2231ff2aa93473 300-303,317
+tests/unit/pages/Entries.spec.js
+  h_2231ff2aa93473 11-13,75-80,209-227
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4ab286e858ae7b0276ca355741c54bcb264b69ae",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
