@@ -311,65 +311,78 @@ export const app = createApp(App)
         }
         bootMark('dirs');
 
+        //independent boot reads run in parallel (measured ~0.4s serially on
+        //A33): each task keeps its original error behaviour, i.e. bookmarks
+        //alerts and falls back to [], a rejected in-app camera read falls
+        //back to its default, anything else still aborts boot as before
+        const bootData = await Promise.all([
+            initService.getServerUrl().then((serverUrl) => {
+                bootMark('server-url');
+                return serverUrl;
+            }),
+            bookmarksService.getBookmarks().catch(async () => {
+                await notificationService.showAlert(labels.bookmarks_loading_error);
+                return [];
+            }).then((bookmarks) => {
+                bootMark('bookmarks');
+                return bookmarks;
+            }),
+            initService.tidyTempTables().then(() => {
+                bootMark('tidy-temp');
+            }),
+            initService.getEntriesOrder().then((dbEntriesOrder) => {
+                bootMark('entries-order');
+                return dbEntriesOrder;
+            }),
+            initService.insertDemoProject().then(() => {
+                bootMark('demo-project');
+            }),
+            initService.getSelectedTextSize(),
+            initService.getCollectErrorsPreference(),
+            //in-app camera preferences (opt-in, default false): a rejected read must
+            //not block boot, jwt retrieval, or app mount. false here is a deliberate
+            //default-only fallback (not a persisted change): the saved setting is
+            //untouched, so the next boot re-reads it and an opt-in user is only
+            //affected for this session
+            initService.getInAppCameraPreference().catch((error) => {
+                console.log('Failed to load in-app camera preference: ' + error);
+                return false;
+            }),
+            initService.getInAppCameraVideoPreference().catch((error) => {
+                console.log('Failed to load in-app camera video preference: ' + error);
+                return false;
+            }),
+            initService.retrieveJwtToken().then((user) => {
+                bootMark('jwt');
+                return user;
+            })
+        ]);
+        bootMark('prefs');
+
         //set server URL
-        rootStore.serverUrl = await initService.getServerUrl();
-        bootMark('server-url');
+        rootStore.serverUrl = bootData[0];
         console.log('Server URL -> ', rootStore.serverUrl);
 
         //set bookmarks in a pinia store
-        try {
-            const bookmarks = await bookmarksService.getBookmarks();
-            bookmarkStore.setBookmarks(bookmarks);
-        } catch (error) {
-            await notificationService.showAlert(labels.bookmarks_loading_error);
-            bookmarkStore.setBookmarks([]);
-        }
-        bootMark('bookmarks');
-
-
-        //clear temporary tables
-        await initService.tidyTempTables();
-        bootMark('tidy-temp');
+        bookmarkStore.setBookmarks(bootData[1]);
 
         //get the user preferred entries order
-        const dbEntriesOrder = await initService.getEntriesOrder();
-        if (dbEntriesOrder !== null) {
-            dbStore.dbEntriesOrder = dbEntriesOrder;
+        if (bootData[3] !== null) {
+            dbStore.dbEntriesOrder = bootData[3];
         }
-        bootMark('entries-order');
-
-        //insert demo project to DB
-        await initService.insertDemoProject();
-        bootMark('demo-project');
 
         //text size preferences
-        rootStore.selectedTextSize = await initService.getSelectedTextSize();
+        rootStore.selectedTextSize = bootData[5];
 
         //collect errors preferences
-        rootStore.collectErrors = await initService.getCollectErrorsPreference();
+        rootStore.collectErrors = bootData[6];
 
-        //in-app camera preferences (opt-in, default false): a rejected read must
-        //not block boot, jwt retrieval, or app mount. false here is a deliberate
-        //default-only fallback (not a persisted change): the saved setting is
-        //untouched, so the next boot re-reads it and an opt-in user is only
-        //affected for this session
-        try {
-            rootStore.inAppCamera = await initService.getInAppCameraPreference();
-        } catch (error) {
-            console.log('Failed to load in-app camera preference: ' + error);
-            rootStore.inAppCamera = false;
-        }
-        try {
-            rootStore.inAppCameraVideo = await initService.getInAppCameraVideoPreference();
-        } catch (error) {
-            console.log('Failed to load in-app camera video preference: ' + error);
-            rootStore.inAppCameraVideo = false;
-        }
-        bootMark('prefs');
+        //in-app camera preferences
+        rootStore.inAppCamera = bootData[7];
+        rootStore.inAppCameraVideo = bootData[8];
 
         // Attempt to retrieve the jwt token
-        rootStore.user = await initService.retrieveJwtToken();
-        bootMark('jwt');
+        rootStore.user = bootData[9];
     }
 
     /**
@@ -402,7 +415,7 @@ export const app = createApp(App)
             setTimeout(async () => {
                     await SplashScreen.hide();
                     bootMark('splash-hidden');
-                }, PARAMETERS.DELAY_EXTRA_LONG
+                }, PARAMETERS.DELAY_LONG
             );
         }
     });

@@ -189,6 +189,45 @@ describe('Init Service', () => {
         });
     });
 
+    describe('resolveWhenDbReady()', () => {
+        it('resolves as soon as the probe query succeeds', async () => {
+            const mockDb = { id: 'ready-db' };
+            mockDb.transaction = vi.fn((cb) => {
+                cb({ executeSql: vi.fn((query, params, success) => success()) });
+            });
+
+            const result = await initService.resolveWhenDbReady(mockDb);
+
+            expect(result.id).toBe('ready-db');
+            expect(mockDb.transaction).toHaveBeenCalled();
+        });
+
+        it('falls back to the timeout cap when the probe query fails', async () => {
+            const mockDb = {
+                id: 'slow-db',
+                transaction: vi.fn((cb) => {
+                    cb({ executeSql: vi.fn((query, params, success, error) => error()) });
+                })
+            };
+
+            const promise = initService.resolveWhenDbReady(mockDb);
+            vi.advanceTimersByTime(10);
+            const result = await promise;
+
+            expect(result.id).toBe('slow-db');
+        });
+
+        it('falls back to the timeout cap when transaction throws synchronously', async () => {
+            const mockDb = { id: 'throwing-db' };
+
+            const promise = initService.resolveWhenDbReady(mockDb);
+            vi.advanceTimersByTime(10);
+            const result = await promise;
+
+            expect(result.id).toBe('throwing-db');
+        });
+    });
+
     describe('getInAppCameraPreference()', () => {
         it('resolves false when the settings row is absent', async () => {
             selectSettingMock.mockResolvedValue({ rows: { length: 0 } });

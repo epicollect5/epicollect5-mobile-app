@@ -89,21 +89,56 @@ export const initService = {
                             androidLockWorkaround: 1//to be tested if this makes problems
                         });
                         console.log('Database opened correctly, using default location');
-                        setTimeout(() => {
-                            resolve(db);
-                        }, PARAMETERS.DELAY_LONG);
+                        this.resolveWhenDbReady(db).then((readyDb) => {
+                            resolve(readyDb);
+                        });
                     }
 
                     if (platform === PARAMETERS.IOS) {
                         this.initDatabaseIOS().then((db) => {
-                            setTimeout(() => {
-                                resolve(db);
-                            }, PARAMETERS.DELAY_LONG);
+                            this.resolveWhenDbReady(db).then((readyDb) => {
+                                resolve(readyDb);
+                            });
                         }, (error) => {
                             reject(error);
                         });
                     }
                 });
+            }
+        });
+    },
+
+    //The fixed DELAY_LONG sleep this replaces was added for iOS open
+    //warnings (e7597e9) and Android regressions (dca0005): the sqlite
+    //handle may not answer immediately after open. Probe it with a trivial
+    //query instead, keeping DELAY_LONG as the worst-case cap (same bound
+    //as before) so a silent handle can never stall boot for longer.
+    resolveWhenDbReady(db) {
+        return new Promise((resolve) => {
+            let settled = false;
+            const timer = setTimeout(() => {
+                if (!settled) {
+                    settled = true;
+                    resolve(db);
+                }
+            }, PARAMETERS.DELAY_LONG);
+            try {
+                db.transaction((tx) => {
+                    tx.executeSql('SELECT 1', [], () => {
+                        if (!settled) {
+                            settled = true;
+                            clearTimeout(timer);
+                            resolve(db);
+                        }
+                    }, () => {
+                        //statement failed, fall through to the timeout cap
+                    });
+                }, () => {
+                    //transaction failed, fall through to the timeout cap
+                });
+            } catch (error) {
+                //transaction threw synchronously, fall through to the timeout cap
+                console.log('DB readiness probe failed: ' + error);
             }
         });
     },
