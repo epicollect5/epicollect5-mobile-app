@@ -25,3 +25,9 @@ Findings that look like defects but are by design. The review workflow (`docs/wo
   Reported as: "after the three-second escape it clears the guard while the payload handoff is still pending, allowing an empty dismissal to win and leave the completed capture undelivered."
 
   Why it is accepted as-is: the escape only fires after a 3s stalled native stop (abnormal — the normal handoff is milliseconds), and the alternative is a permanently unclosable modal on a hung stop. The fallback is exactly today's pre-fix behaviour (empty dismiss + possible cache orphan), and the stall is reported to Rollbar as `CameraPreview handoff stalled` so genuine hangs are visible.
+
+- **Bookmark refresh skips the project version check** (`src/pages/Entries.vue`, `getEntriesPageContent skipProjectVersionCheck guard`)
+
+  Reported as: "When a bookmark opens on an Entries page that remains mounted, the bookmark handler destroys the project model and this refresh loads it again. Passing `true` skips the version check even on that cold load, so an outdated bookmarked project can display entries without an update prompt."
+
+  Why it is by design: bookmark opens intentionally skip the project update prompt because applying an update resets the list to the first form and clears the hierarchy, which would invalidate the saved bookmark destination. Staleness is enforced downstream by uploads, downloads and the server, and the next Projects-page cold open still prompts.
