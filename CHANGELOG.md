@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 98.3.4 - build 9834
+
+ - Cold start is faster: the startup database wait is now a readiness probe that resolves as soon as the database answers (keeping the previous one-second wait as a fallback cap), and the splash screen hides after one second instead of two. Measured tap-to-Projects time dropped from around 5.6s to around 3.9s on a Galaxy A33 and from around 4s to around 2.2s on a Galaxy S25.
+
 # 98.3.3 - build 9833
 
  - Project updates now show a dedicated progress modal with a title while forms are being updated, and dismissing the update prompt counts as declining instead of leaving the update unsettled.
