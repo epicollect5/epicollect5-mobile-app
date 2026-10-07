@@ -1,0 +1,16 @@
+tests/unit/main.spec.js
+  h_2231ff2aa93473 60,273-306
+tests/unit/services/init-service.spec.js
+  h_2231ff2aa93473 214-224,227,231-256
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ed6ea06eedc8437a7ecc4b3c6fc009de3eeb8221",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
