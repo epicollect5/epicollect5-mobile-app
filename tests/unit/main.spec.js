@@ -57,6 +57,7 @@ vi.mock('@/config', () => ({
         DEFAULT_LANGUAGE: 'en',
         DEBUG: 0,
         DELAY_EXTRA_LONG: 1,
+        DELAY_LONG: 100,
         DEFAULT_SERVER_URL: '',
         PRODUCTION_SERVER_URL: 'https://prod.server.com'
     },
@@ -267,6 +268,40 @@ describe('Main.js Architecture', () => {
         expect(rootStore.isPWA).toBe(false);
         expect(initService.openDB).toHaveBeenCalled();
         expect(initService.insertDemoProject).toHaveBeenCalled();
+    });
+
+    it('Native: hides the splash screen only after DELAY_LONG once mounted', async () => {
+        vi.useFakeTimers();
+        try {
+            const {PARAMETERS} = await import('@/config');
+            const {initService} = await import('@/services/init-service');
+            const {bookmarksService} = await import('@/services/utilities/bookmarks-service');
+            const {SplashScreen} = await import('@capacitor/splash-screen');
+
+            initService.getDeviceInfo.mockResolvedValue({platform: 'android'});
+            initService.openDB.mockResolvedValue({executeSql: vi.fn()});
+            initService.getAppInfo.mockResolvedValue({});
+            initService.getLanguage.mockResolvedValue('en');
+            initService.getDBVersion.mockResolvedValue(1);
+            bookmarksService.getBookmarks.mockResolvedValue([]);
+
+            await import('@/main');
+            //let the mocked boot chain run through to mount
+            await vi.advanceTimersByTimeAsync(0);
+
+            //splash stays up while mounting...
+            expect(SplashScreen.hide).not.toHaveBeenCalled();
+
+            //...and stays up right until the delay elapses...
+            await vi.advanceTimersByTimeAsync(PARAMETERS.DELAY_LONG - 1);
+            expect(SplashScreen.hide).not.toHaveBeenCalled();
+
+            //...then hides exactly once
+            await vi.advanceTimersByTimeAsync(1);
+            expect(SplashScreen.hide).toHaveBeenCalledTimes(1);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('Native: enables both in-app camera flags when preferences resolve true', async () => {

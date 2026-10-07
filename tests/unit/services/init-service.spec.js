@@ -211,10 +211,47 @@ describe('Init Service', () => {
             };
 
             const promise = initService.resolveWhenDbReady(mockDb);
-            vi.advanceTimersByTime(10);
+            let resolved = false;
+            promise.then(() => {
+                resolved = true;
+            });
+
+            //a failed probe must not resolve early...
+            vi.advanceTimersByTime(9);
+            expect(resolved).toBe(false);
+
+            //...it resolves at the cap
+            vi.advanceTimersByTime(1);
             const result = await promise;
 
+            expect(resolved).toBe(true);
             expect(result.id).toBe('slow-db');
+        });
+
+        it('waits the full cap when the probe never answers', async () => {
+            const mockDb = {
+                id: 'silent-db',
+                transaction: vi.fn(() => {
+                    //neither success nor error: the silent-handle case the cap protects
+                })
+            };
+
+            const promise = initService.resolveWhenDbReady(mockDb);
+            let resolved = false;
+            promise.then(() => {
+                resolved = true;
+            });
+
+            //must stay pending before the cap...
+            vi.advanceTimersByTime(9);
+            expect(resolved).toBe(false);
+
+            //...then resolve at the limit
+            vi.advanceTimersByTime(1);
+            const result = await promise;
+
+            expect(resolved).toBe(true);
+            expect(result.id).toBe('silent-db');
         });
 
         it('falls back to the timeout cap when transaction throws synchronously', async () => {
