@@ -9,8 +9,7 @@ import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { errorsService } from '@/services/errors-service';
 import { projectModel } from '@/models/project-model';
-import { alertController } from '@ionic/vue';
-import { showUpdaterModal } from '@/components/modals/ModalProjectUpdater.vue';
+import { alertController, modalController } from '@ionic/vue';
 
 vi.mock('@/services/utilities/versioning-service', () => ({
     versioningService: {
@@ -70,11 +69,11 @@ vi.mock('@/config/strings', () => ({
 vi.mock('@ionic/vue', () => ({
     alertController: {
         create: vi.fn()
+    },
+    modalController: {
+        create: vi.fn(),
+        dismiss: vi.fn()
     }
-}));
-
-vi.mock('@/components/modals/ModalProjectUpdater.vue', () => ({
-    showUpdaterModal: vi.fn()
 }));
 
 function mockConfirm(confirmed) {
@@ -109,11 +108,10 @@ describe('updateLocalProject()', () => {
 
         projectModel.destroy();
         projectModel.loadExtraStructure({ project: { details: {} } });
-        showUpdaterModal.mockResolvedValue({
-            modal: {
-                onDidDismiss: vi.fn().mockResolvedValue(),
-                dismiss: vi.fn().mockResolvedValue()
-            }
+        modalController.create.mockResolvedValue({
+            present: vi.fn().mockResolvedValue(),
+            onDidDismiss: vi.fn().mockResolvedValue(),
+            dismiss: vi.fn().mockResolvedValue()
         });
     });
 
@@ -295,7 +293,7 @@ describe('updateLocalProject()', () => {
     it('updater presentation failure never starts update', async () => {
         versioningService.checkProjectVersion.mockResolvedValue(false);
         mockConfirm(true);
-        showUpdaterModal.mockRejectedValue(new Error('present failed'));
+        modalController.create.mockRejectedValue(new Error('present failed'));
 
         const result = await updateLocalProject();
 

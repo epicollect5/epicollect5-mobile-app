@@ -8,6 +8,7 @@ import { databaseDeleteService } from '@/services/database/database-delete-servi
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { notificationService } from '@/services/notification-service';
 import { entriesDownloadProgressService } from '@/services/utilities/entries-download-progress-service';
+import { updateProject } from '@/use/project/update-project';
 import { modalController } from '@ionic/vue';
 
 vi.mock('@/config/strings', () => ({
@@ -20,8 +21,7 @@ vi.mock('@/config/strings', () => ({
                 updating_project: 'Updating Forms.'
             },
             status_codes: {
-                ec5_11: 'Project does not exist',
-                ec5_137: 'Not found'
+                ec5_11: 'Project does not exist'
             }
         }
     }
@@ -65,7 +65,6 @@ vi.mock('@/services/notification-service', () => ({
         showDismissAlert: vi.fn(),
         showAlert: vi.fn(),
         showToast: vi.fn(),
-        showProgressDialog: vi.fn(),
         hideProgressDialog: vi.fn(),
         dismissModalSafe: vi.fn()
     }
@@ -108,9 +107,12 @@ vi.mock('@/services/database/database-select-service', () => ({
 
 vi.mock('@/services/utilities/versioning-service', () => ({
     versioningService: {
-        checkProjectVersion: vi.fn(),
-        updateProject: vi.fn()
+        checkProjectVersion: vi.fn()
     }
+}));
+
+vi.mock('@/use/project/update-project', () => ({
+    updateProject: vi.fn()
 }));
 
 const labels = {
@@ -165,6 +167,7 @@ describe('entriesDownloadService mid-download project update', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         versioningService.checkProjectVersion.mockResolvedValue(true);
+        updateProject.mockResolvedValue(true);
         databaseSelectService.countUnsyncedEntries.mockResolvedValue({
             rows: {
                 item: () => ({
@@ -242,12 +245,11 @@ describe('entriesDownloadService mid-download project update', () => {
 
         //Project outdated and the user declines the update: abort
         versioningService.checkProjectVersion.mockResolvedValue(false);
-        notificationService.confirmSingle.mockResolvedValue(false);
+        updateProject.mockResolvedValue(false);
         await expect(options.shouldAbort()).resolves.toEqual({ versionChanged: true, projectUpdated: false });
 
         //Project outdated and the user updates: abort
-        notificationService.confirmSingle.mockResolvedValue(true);
-        versioningService.updateProject.mockResolvedValue();
+        updateProject.mockResolvedValue(true);
         await expect(options.shouldAbort()).resolves.toEqual({ versionChanged: true, projectUpdated: true });
     });
 

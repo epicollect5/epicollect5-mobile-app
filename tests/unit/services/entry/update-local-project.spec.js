@@ -61,11 +61,11 @@ vi.mock('@/models/project-model.js', () => ({
 vi.mock('@ionic/vue', () => ({
     alertController: {
         create: vi.fn()
+    },
+    modalController: {
+        create: vi.fn(),
+        dismiss: vi.fn()
     }
-}));
-
-vi.mock('@/components/modals/ModalProjectUpdater.vue', () => ({
-    showUpdaterModal: vi.fn()
 }));
 
 vi.mock('@/services/utilities/utils-service', () => ({
@@ -78,8 +78,7 @@ import { updateLocalProject } from '@/use/project/update-local-project';
 import { useRootStore } from '@/stores/root-store';
 import { versioningService } from '@/services/utilities/versioning-service';
 import { projectModel } from '@/models/project-model.js';
-import { alertController } from '@ionic/vue';
-import { showUpdaterModal } from '@/components/modals/ModalProjectUpdater.vue';
+import { alertController, modalController } from '@ionic/vue';
 import { notificationService } from '@/services/notification-service';
 
 function setupStores() {
@@ -125,6 +124,11 @@ describe('update-local-project', () => {
         vi.clearAllMocks();
         setupStores();
         projectModel.hasInitialised.mockReturnValue(true);
+        modalController.create.mockResolvedValue({
+            present: vi.fn().mockResolvedValue(),
+            onDidDismiss: vi.fn().mockResolvedValue(),
+            dismiss: vi.fn().mockResolvedValue()
+        });
     });
 
     it('returns UP_TO_DATE without prompting', async () => {
@@ -150,7 +154,7 @@ describe('update-local-project', () => {
     it('updater presentation failure never starts update', async () => {
         versioningService.checkProjectVersion.mockResolvedValue(false);
         mockConfirm(true);
-        showUpdaterModal.mockRejectedValue(new Error('present failed'));
+        modalController.create.mockRejectedValue(new Error('present failed'));
 
         const result = await updateLocalProject();
 
@@ -161,18 +165,18 @@ describe('update-local-project', () => {
     it('successful update dismisses updater before returning', async () => {
         versioningService.checkProjectVersion.mockResolvedValue(false);
         mockConfirm(true);
-        showUpdaterModal.mockResolvedValue({
-            modal: {
-                onDidDismiss: vi.fn().mockResolvedValue(),
-                dismiss: vi.fn().mockResolvedValue()
-            }
-        });
+        const modal = {
+            present: vi.fn().mockResolvedValue(),
+            onDidDismiss: vi.fn().mockResolvedValue(),
+            dismiss: vi.fn().mockResolvedValue()
+        };
+        modalController.create.mockResolvedValue(modal);
         versioningService.updateProject.mockResolvedValue(true);
 
         const result = await updateLocalProject();
 
         expect(result).toBe(true);
-        expect(showUpdaterModal).toHaveBeenCalled();
+        expect(modalController.create).toHaveBeenCalled();
         expect(notificationService.showAlert).not.toHaveBeenCalled();
     });
 });

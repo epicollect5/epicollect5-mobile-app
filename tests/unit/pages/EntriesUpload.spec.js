@@ -292,18 +292,12 @@ describe('EntriesUpload page', () => {
         wrapper.unmount();
     });
 
-    it('holds the navigation lock while the project outdated prompt is shown and releases it on cancel', async () => {
-        const rootStore = useRootStore();
+    it('only dismisses the prompt when the project update is declined', async () => {
         const projectOutdatedError = {
             data: { errors: [{ code: PARAMETERS.PROJECT_OUTDATED_ERROR_CODES[0] }] }
         };
         rejectUploadWith(projectOutdatedError);
-
-        let lockSeenDuringPrompt;
-        notificationService.confirmSingle.mockImplementation(async () => {
-            lockSeenDuringPrompt = rootStore.isProjectUpdating;
-            return false;
-        });
+        updateProject.mockResolvedValue(false);
 
         const wrapper = mountPage();
         await flushPromises();
@@ -311,51 +305,35 @@ describe('EntriesUpload page', () => {
         await wrapper.vm.uploadData();
         await flushPromises();
 
-        expect(notificationService.confirmSingle).toHaveBeenCalled();
-        expect(lockSeenDuringPrompt).toBe(true);
-        expect(rootStore.isProjectUpdating).toBe(false);
-        expect(updateProject).not.toHaveBeenCalled();
-        expect(errorsService.handleWebError).toHaveBeenCalledWith(projectOutdatedError);
-
-        wrapper.unmount();
-    });
-
-    it('keeps the navigation lock through a confirmed project update and releases it afterwards', async () => {
-        const rootStore = useRootStore();
-        const projectOutdatedError = {
-            data: { errors: [{ code: PARAMETERS.PROJECT_OUTDATED_ERROR_CODES[0] }] }
-        };
-        rejectUploadWith(projectOutdatedError);
-        updateProject.mockResolvedValue();
-
-        let lockSeenDuringPrompt;
-        notificationService.confirmSingle.mockImplementation(async () => {
-            lockSeenDuringPrompt = rootStore.isProjectUpdating;
-            return true;
-        });
-
-        const wrapper = mountPage();
-        await flushPromises();
-
-        await wrapper.vm.uploadData();
-        await flushPromises();
-
-        expect(lockSeenDuringPrompt).toBe(true);
         expect(updateProject).toHaveBeenCalledTimes(1);
-        expect(rootStore.isProjectUpdating).toBe(false);
         expect(errorsService.handleWebError).not.toHaveBeenCalled();
 
         wrapper.unmount();
     });
 
-    it('releases the navigation lock after a failed project update without leaking the rejection', async () => {
-        const rootStore = useRootStore();
+    it('does not surface an error when the project update completes', async () => {
+        rejectUploadWith({
+            data: { errors: [{ code: PARAMETERS.PROJECT_OUTDATED_ERROR_CODES[0] }] }
+        });
+        updateProject.mockResolvedValue(true);
+
+        const wrapper = mountPage();
+        await flushPromises();
+
+        await wrapper.vm.uploadData();
+        await flushPromises();
+
+        expect(updateProject).toHaveBeenCalledTimes(1);
+        expect(errorsService.handleWebError).not.toHaveBeenCalled();
+
+        wrapper.unmount();
+    });
+
+    it('reports a rejected project update without leaking it', async () => {
         rejectUploadWith({
             data: { errors: [{ code: PARAMETERS.PROJECT_OUTDATED_ERROR_CODES[0] }] }
         });
         updateProject.mockRejectedValue(new Error('update failed'));
-
-        notificationService.confirmSingle.mockResolvedValue(true);
         const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         const wrapper = mountPage();
@@ -365,8 +343,8 @@ describe('EntriesUpload page', () => {
         await flushPromises();
 
         expect(updateProject).toHaveBeenCalledTimes(1);
-        expect(rootStore.isProjectUpdating).toBe(false);
         expect(errorSpy).toHaveBeenCalled();
+        expect(errorsService.handleWebError).not.toHaveBeenCalled();
 
         errorSpy.mockRestore();
         wrapper.unmount();

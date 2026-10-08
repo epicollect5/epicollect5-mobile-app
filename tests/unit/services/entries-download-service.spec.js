@@ -8,6 +8,7 @@ import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
 import { databaseSelectService } from '@/services/database/database-select-service';
+import { updateProject } from '@/use/project/update-project';
 import { modalController } from '@ionic/vue';
 
 vi.mock('@/config/strings', () => ({
@@ -30,7 +31,6 @@ vi.mock('@/config/strings', () => ({
             },
             status_codes: {
                 ec5_11: 'Project does not exist',
-                ec5_137: 'Forms updated.',
                 ec5_143: 'Entries downloaded',
                 ec5_144: 'No entries found'
             }
@@ -69,9 +69,12 @@ vi.mock('@ionic/vue', () => ({
 
 vi.mock('@/services/utilities/versioning-service', () => ({
     versioningService: {
-        checkProjectVersion: vi.fn(),
-        updateProject: vi.fn()
+        checkProjectVersion: vi.fn()
     }
+}));
+
+vi.mock('@/use/project/update-project', () => ({
+    updateProject: vi.fn()
 }));
 
 vi.mock('@/services/utilities/download-service', () => ({
@@ -180,11 +183,10 @@ describe('entriesDownloadService project version checks', () => {
         vi.useFakeTimers();
         vi.clearAllMocks();
         versioningService.checkProjectVersion.mockResolvedValue(true);
-        versioningService.updateProject.mockResolvedValue(true);
+        updateProject.mockResolvedValue(true);
         downloadService.downloadFormEntries.mockResolvedValue(true);
         entriesDownloadProgressService.load.mockReturnValue({...emptyProgress});
         notificationService.confirmSingle.mockResolvedValue(true);
-        notificationService.showProgressDialog.mockResolvedValue();
         databaseDeleteService.deleteEntriesBeforeDownload.mockResolvedValue();
         databaseSelectService.countUnsyncedEntries.mockResolvedValue({
             rows: {
@@ -224,13 +226,10 @@ describe('entriesDownloadService project version checks', () => {
         await downloader.downloadEntries('form-b');
         await settleDownload();
 
-        expect(versioningService.updateProject).toHaveBeenCalledTimes(1);
-        expect(notificationService.showProgressDialog).toHaveBeenCalledWith(
-            'Please Wait...',
-            'Updating Forms.'
-        );
-        expect(notificationService.hideProgressDialog).toHaveBeenCalledWith(0);
-        expect(notificationService.showAlert).toHaveBeenCalledWith('Forms updated.', 'Project is outdated');
+        expect(updateProject).toHaveBeenCalledTimes(1);
+        expect(notificationService.showProgressDialog).not.toHaveBeenCalled();
+        //the updater modal owns the success notice: no duplicate alert here
+        expect(notificationService.showAlert).not.toHaveBeenCalled();
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
         expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
         expect(state.enabledButtons['form-a']).toBe(true);
@@ -408,13 +407,13 @@ describe('entriesDownloadService project version checks', () => {
     it('does not download when the user declines the project update', async () => {
         const state = createState();
         versioningService.checkProjectVersion.mockResolvedValue(false);
-        notificationService.confirmSingle.mockResolvedValue(false);
+        updateProject.mockResolvedValue(false);
         const downloader = createDownloader(state);
 
         await downloader.downloadEntries('form-a');
         await settleDownload();
 
-        expect(versioningService.updateProject).not.toHaveBeenCalled();
+        expect(updateProject).toHaveBeenCalledTimes(1);
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
         expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
         expect(state.isFetching).toBe(false);
@@ -434,7 +433,7 @@ describe('entriesDownloadService project version checks', () => {
         await downloader.downloadEntries('form-a', true);
         await settleDownload();
 
-        expect(versioningService.updateProject).not.toHaveBeenCalled();
+        expect(updateProject).not.toHaveBeenCalled();
         expect(downloadService.downloadFormEntries).toHaveBeenCalledWith('form-a', expect.objectContaining({
             startUrl: 'page-1',
             initialTotalEntries: 10,
@@ -446,14 +445,13 @@ describe('entriesDownloadService project version checks', () => {
     it('does not download when updating the project fails', async () => {
         const state = createState();
         versioningService.checkProjectVersion.mockResolvedValue(false);
-        versioningService.updateProject.mockRejectedValue(new Error('update failed'));
+        updateProject.mockResolvedValue(false);
         const downloader = createDownloader(state);
 
         await downloader.downloadEntries('form-a');
         await settleDownload();
 
-        expect(errorsService.handleWebError).toHaveBeenCalled();
-        expect(notificationService.hideProgressDialog).toHaveBeenCalledWith(0);
+        expect(updateProject).toHaveBeenCalledTimes(1);
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
         expect(state.isFetching).toBe(false);
     });
@@ -521,8 +519,7 @@ describe('entriesDownloadService project version checks', () => {
         await settleDownload();
 
         //Project trashed: no update prompt, no local wipe, no download
-        expect(versioningService.updateProject).not.toHaveBeenCalled();
-        expect(notificationService.confirmSingle).not.toHaveBeenCalled();
+        expect(updateProject).not.toHaveBeenCalled();
         expect(databaseDeleteService.deleteEntriesBeforeDownload).not.toHaveBeenCalled();
         expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
         //The user is told the project does not exist
