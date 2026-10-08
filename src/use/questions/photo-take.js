@@ -106,8 +106,15 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
             console.log(error);
             await notificationService.stopForegroundService();
             await notificationService.hideProgressDialog();
-            if (!(typeof error.message === 'string' && error.message.toLowerCase().includes('user cancelled photos app'))) {
-                rollbarService.criticalWithContext('photoTake capture failed', error);
+            const errorMessage = typeof error.message === 'string' ? error.message.toLowerCase() : '';
+            if (!errorMessage.includes('user cancelled photos app')) {
+                //any "user denied ..." rejection is the plugin's permission refusal
+                //(camera, photos, ...): a deliberate user choice, not a failure, so it
+                //is surfaced to the user but never paged to Rollbar
+                const permissionDenied = errorMessage.includes('user denied');
+                if (!permissionDenied) {
+                    rollbarService.criticalWithContext('photoTake capture failed', error);
+                }
                 //restore the previous references so a failed retake does not drop
                 //the existing photo (fresh captures restore '' as before, so the
                 //entry save never points at a missing file)

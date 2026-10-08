@@ -187,6 +187,31 @@ describe('photoTake tests', () => {
         expect(nMock.showAlert).not.toHaveBeenCalled();
     });
 
+    it('does not report a camera permission denial to rollbar but still alerts', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockRejectedValueOnce(new Error('User denied access to camera'));
+        const { media, entryUuid, state, filename, action } = makeArgs();
+
+        await photoTake({ media, entryUuid, state, filename, action });
+
+        expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
+        expect(nMock.showAlert).toHaveBeenCalledWith('User denied access to camera');
+        expect(media[entryUuid]['q1'].cached).toBe('');
+        expect(state.answer.answer).toBe('');
+    });
+
+    it('does not report a photos permission denial to rollbar', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        Camera.getPhoto.mockRejectedValueOnce(new Error('User denied access to photos'));
+        const { media, entryUuid, state, filename } = makeArgs('gallery');
+
+        await photoTake({ media, entryUuid, state, filename, action: 'gallery' });
+
+        expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
+    });
+
     it('opens the in-app modal on Android when inAppCamera flag is on and action is camera', async () => {
         setupRootStore({ platform: PARAMETERS.ANDROID, inAppCamera: true });
         setupModalPresent({ sourcePath: '/capture.jpg' });
