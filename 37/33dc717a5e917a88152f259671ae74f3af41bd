@@ -1,0 +1,16 @@
+src/use/questions/photo-take.js
+  h_2231ff2aa93473 109-117
+tests/unit/use/questions/photo-take.spec.js
+  h_2231ff2aa93473 190-214
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3733dc717a5e917a88152f259671ae74f3af41bd",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
