@@ -1,0 +1,20 @@
+docs/ARCHITECTURE.md
+  h_2231ff2aa93473 601-602
+docs/known-review-false-positives.md
+  h_2231ff2aa93473 33-39
+src/services/database/database-update-service.js
+  h_2231ff2aa93473 104-107
+src/services/upload-data-service.js
+  h_2231ff2aa93473 102-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ebe960dd4aeebc24851964dfd71f307e9364c172",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
