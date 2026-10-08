@@ -1,0 +1,16 @@
+src/components/modals/ModalCameraPreview.vue
+  h_2231ff2aa93473 240-245,509-514,1194-1200
+tests/unit/components/modals/ModalCameraPreview.spec.js
+  h_2231ff2aa93473 281-282,861-881,940-941
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f042b50605b04af9140642d6117fe333dc723e77",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
