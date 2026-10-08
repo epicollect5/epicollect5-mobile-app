@@ -237,7 +237,12 @@ export default {
 				showSettingsAlert: true
 			});
 			if (result.camera !== 'granted' || (computedScope.isVideoMode.value && result.microphone !== 'granted')) {
-				throw new Error('Camera permission denied');
+				//tag the refusal so the start/restart catch sites can tell a deliberate
+				//user denial (already surfaced by the settings alert, not a failure)
+				//from a genuine camera failure and skip Rollbar for it
+				const permissionDeniedError = new Error('Camera permission denied');
+				permissionDeniedError.permissionDenied = true;
+				throw permissionDeniedError;
 			}
 		}
 
@@ -501,8 +506,12 @@ export default {
 				await _start();
 			} catch (error) {
 				console.log('CameraPreview restart failed: ' + error);
-				//the modal cannot recover: tell the caller instead of closing silently
-				rollbarService.criticalWithContext('CameraPreview restart failed', error);
+				//the modal cannot recover: tell the caller instead of closing silently.
+				//a denied permission is a deliberate user choice, not a failure, so it
+				//is shown to the user but never paged to Rollbar
+				if (!(error && error.permissionDenied)) {
+					rollbarService.criticalWithContext('CameraPreview restart failed', error);
+				}
 				await dismiss({ startError: (error && error.message) || labels.unknown_error });
 			} finally {
 				restartInProgress = false;
@@ -1182,9 +1191,13 @@ export default {
 			_setCameraLayerVisible(true);
 			_start().catch((error) => {
 				console.log('CameraPreview.start failed: ' + error);
-				//the modal cannot open: report and tell the caller (permission
-				//denied, camera unavailable) instead of a silent cancel
-				rollbarService.criticalWithContext('CameraPreview.start failed', error);
+				//the modal cannot open: tell the caller instead of a silent cancel.
+				//a denied permission is a deliberate user choice, not a failure, so it
+				//is shown to the user (settings alert + startError) but never paged to
+				//Rollbar
+				if (!(error && error.permissionDenied)) {
+					rollbarService.criticalWithContext('CameraPreview.start failed', error);
+				}
 				dismiss({ startError: (error && error.message) || labels.unknown_error }).catch((dismissError) => {
 					console.log('CameraPreview dismiss failed: ' + dismissError);
 				});
