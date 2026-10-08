@@ -1,0 +1,30 @@
+tests/unit/components/modals/ModalProjectUpdater.spec.js
+  h_2231ff2aa93473 1-51
+tests/unit/pages/EntriesUpload.spec.js
+  h_2231ff2aa93473 295,300,308-309,314-315,318,332,347
+tests/unit/services/entries-download-service.abort.spec.js
+  h_2231ff2aa93473 11,24,110,114-117,170,248,252
+tests/unit/services/entries-download-service.spec.js
+  h_2231ff2aa93473 11,72,76-79,186,229-232,410,416,436,448,454,522
+tests/unit/services/entry/update-local-project.spec.js
+  h_2231ff2aa93473 64-67,81,127-131,157,168-173,179
+tests/unit/use/confirm-project-update.spec.js
+  h_2231ff2aa93473 1-121
+tests/unit/use/show-updater-modal.spec.js
+  h_2231ff2aa93473 1-74
+tests/unit/use/update-local-project.spec.js
+  h_2231ff2aa93473 12,72-75,111-114,296
+tests/unit/use/update-project.spec.js
+  h_2231ff2aa93473 11,16,39-41,46,54,59,65-88,101-103,106,108,110-154,156-157,159,161-168,170,173,175,177,179-180,185-186,191,212,214,218,220,222,224,229,234,236-237,242,245,247,253,255-258,261
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "84e7ffcf7741cc6cd948348c4f346a4d0033af2d",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
