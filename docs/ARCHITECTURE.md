@@ -598,6 +598,8 @@ This ordering is important because branch and child rows depend on parent UUID r
 
 **Remote entries (`is_remote=1`) are skipped during upload** because they are inserted with `can_edit=0`. However, adding a child entry or branch to a remote entry marks it unsynced. The remote parent remains skipped during upload, but its locally-created children and branches are uploaded. The parent's `synced` status is updated once all its children are uploaded.
 
+Consequence: a skipped entry never reaches the server, so no `ec5_201` (project out of date) can come back for it and it can never trigger the update prompt. This is most visible after **Unsync All Entries**, whose query has no `can_edit` filter: the next upload re-marks these non-editable rows synced locally without pushing anything, which looks like the version guard being skipped. The server's guard (`EntriesUploadService::isProjectVersionValid()`, before the create/update fork) is unconditional — it only ever sees entries that are actually sent. See `docs/known-review-false-positives.md`.
+
 ### Native Download
 
 `entriesDownloadService` orchestrates the download flow:

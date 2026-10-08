@@ -31,3 +31,9 @@ Findings that look like defects but are by design. The review workflow (`docs/wo
   Reported as: "When a bookmark opens on an Entries page that remains mounted, the bookmark handler destroys the project model and this refresh loads it again. Passing `true` skips the version check even on that cold load, so an outdated bookmarked project can display entries without an update prompt."
 
   Why it is by design: bookmark opens intentionally skip the project update prompt because applying an update resets the list to the first form and clears the hierarchy, which would invalidate the saved bookmark destination. Staleness is enforced downstream by uploads, downloads and the server, and the next Projects-page cold open still prompts.
+
+- **Unsynced non-editable (remote) entries are re-synced without an upload, so no project-version prompt fires for them** (`src/services/upload-data-service.js`, `can_edit === 0` skip branch)
+
+  Reported as: "Unsync All Entries then upload fires no outdated-project prompt even on a stale project, so the `ec5_201` guard is being skipped for updates."
+
+  Why it is by design: every entry that is actually written is version-checked server-side (`EntriesUploadService::isProjectVersionValid()`, called before the create/update fork, unconditional in all branches). A non-editable entry is never sent — there is nothing the user may change — so it is skipped and only re-marked synced locally once its branches finish. The guard therefore covers all real writes; what looks like a bypass is an entry that was never in scope. `database-update-service.unsyncAllEntries()` has no `can_edit` filter and unsyncs every row with `synced < INCOMPLETE`, which is what puts these rows into the pending set in the first place. See the Native Upload section of `docs/ARCHITECTURE.md`.

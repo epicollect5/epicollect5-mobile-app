@@ -99,6 +99,10 @@ export const uploadDataService = {
                                 console.log('synced code: ' + res.rows.item(0).synced);
                                 // Check if the user can edit
                                 // If we have a synced value HAS_UNSYNCED_CHILD_ENTRIES, then we will also ignore
+                                // A non-editable entry is never sent, so no ec5_201 (project out of date) can
+                                // come back for it and the update prompt cannot fire for it — "Unsync All
+                                // Entries" includes these rows regardless, so the upload just re-marks them
+                                // synced here. See docs/known-review-false-positives.md (can_edit === 0 skip branch)
                                 if (res.rows.item(0).can_edit === 0 || res.rows.item(0).synced === PARAMETERS.SYNCED_CODES.HAS_UNSYNCED_CHILD_ENTRIES) {
                                     _updateProgress();
                                     // Can't edit, so just insert branches

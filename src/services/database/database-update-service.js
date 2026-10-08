@@ -101,7 +101,10 @@ export const databaseUpdateService = {
 
         return await this.updateRows(query, params);
     },
-    //Unsync all entries (that aren't incomplete)
+    //Unsync all entries (that aren't incomplete).
+    //No can_edit filter: non-editable remote rows are included even though the
+    //uploader never sends them (it only re-marks them synced), so this is not a
+    //missing project-version guard. See docs/ARCHITECTURE.md "Native Upload".
     async unsyncAllEntries(projectRef) {
 
         const query = 'UPDATE entries SET synced=?, synced_error=? WHERE project_ref=? AND synced <?';
