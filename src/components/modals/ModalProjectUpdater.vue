@@ -44,7 +44,7 @@
         </strong>
       </div>
     </div>
-    <div v-else>
+    <div v-else class="animate__animated animate__fadeIn">
       <ion-item lines="none">
         <ion-label
             class="ion-text-center"
@@ -144,22 +144,6 @@ const ModalProjectUpdater = {
 };
 
 export default ModalProjectUpdater;
-
-export async function showUpdaterModal(header) {
-  const rootStore = useRootStore();
-  const modal = await modalController.create({
-    cssClass: 'modal-project-updater',
-    component: ModalProjectUpdater,
-    showBackdrop: true,
-    backdropDismiss: false,
-    componentProps: {
-      header
-    }
-  });
-  rootStore.isProjectUpdateModalActive = true;
-  await modal.present();
-  return { modal };
-}
 </script>
 
 <style src="@/theme/components/modals/ModalProjectUpdater.scss" lang="scss"></style>

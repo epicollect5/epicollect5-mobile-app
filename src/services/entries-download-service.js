@@ -11,6 +11,7 @@ import {databaseDeleteService} from '@/services/database/database-delete-service
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {versioningService} from '@/services/utilities/versioning-service';
 import {logout} from '@/use/auth/logout';
+import {updateProject} from '@/use/project/update-project';
 
 function initDownloader({state, rootStore, labels, language, projectModel}) {
   function resetDownloadButtonState() {
@@ -135,30 +136,17 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     }
 
     if (!isUpToDate) {
-      const confirmed = await notificationService.confirmSingle(
-        STRINGS[language].labels.update_project,
-        STRINGS[language].labels.project_outdated
-      );
+      //same confirm + updater modal as the upload and entries flows:
+      //updateProject owns the prompt, the modal and the error reporting
+      const updated = await updateProject();
 
-      if (confirmed) {
-        try {
-          await notificationService.showProgressDialog(
-            STRINGS[language].labels.wait,
-            STRINGS[language].labels.updating_project
-          );
-          await versioningService.updateProject();
-          await notificationService.hideProgressDialog(0);
-          // Project changes invalidate cached page URLs and entry counts.
-          clearProjectDownloadCache();
-          return {shouldProceed: true, projectUpdated: true};
-        } catch (error) {
-          await notificationService.hideProgressDialog(0);
-          await errorsService.handleWebError(error);
-          return {shouldProceed: false, projectUpdated: false};
-        }
-      } else {
+      if (!updated) {
         return {shouldProceed: false, projectUpdated: false};
       }
+
+      // Project changes invalidate cached page URLs and entry counts.
+      clearProjectDownloadCache();
+      return {shouldProceed: true, projectUpdated: true};
     }
 
     return {shouldProceed: true, projectUpdated: false};
@@ -186,9 +174,13 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
       return modal.present();
     }
 
-    const handleProjectUpdated = async (message) => {
+    const refreshFormsAfterProjectUpdate = () => {
       state.forms = projectModel.getFormsInOrder();
       resetDownloadButtonState();
+    };
+
+    const handleProjectUpdated = async (message) => {
+      refreshFormsAfterProjectUpdate();
       await notificationService.showAlert(message, STRINGS[language].labels.project_outdated);
     };
 
@@ -217,8 +209,9 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
         if (versionCheck.projectUpdated) {
           //Project structure changed: refresh the form buttons and clear all
           //download progress. Do not start a download automatically, the user
-          //must start again from the first form button.
-          await handleProjectUpdated(STRINGS[language].status_codes.ec5_137);
+          //must start again from the first form button. The updater modal
+          //already told the user the project was updated.
+          refreshFormsAfterProjectUpdate();
           state.isFetching = false;
           return;
         }

@@ -4,69 +4,9 @@ import { versioningService } from '@/services/utilities/versioning-service';
 import { notificationService } from '@/services/notification-service';
 import { STRINGS } from '@/config/strings';
 import { errorsService } from '@/services/errors-service';
-import { alertController } from '@ionic/vue';
 import { utilsService } from '@/services/utilities/utils-service';
-import { showUpdaterModal } from '@/components/modals/ModalProjectUpdater.vue';
-
-async function cleanupUpdateModal(handle) {
-    const rootStore = useRootStore();
-    if (handle) {
-        await handle.modal.dismiss();
-    }
-    rootStore.isProjectUpdating = false;
-    rootStore.isProjectUpdateModalActive = false;
-    rootStore.progressUpdate = { total: 0, done: 0 };
-    rootStore.updateDone = false;
-}
-
-async function confirmProjectUpdate() {
-    const rootStore = useRootStore();
-    const language = rootStore.language;
-    return new Promise((resolve) => {
-        (async () => {
-            const buttons = [];
-            buttons.push({
-                text: STRINGS[language].labels.learn_more,
-                handler: () => {
-                    window.open(PARAMETERS.UPDATE_PROJECT_DOCS_URL, '_system', 'location=yes');
-                    return false;
-                }
-            });
-            buttons.push(
-                {
-                    text: STRINGS[language].labels.cancel,
-                    role: 'cancel',
-                    handler: () => {
-                        resolve(false);
-                    }
-                },
-                {
-                    text: STRINGS[language].labels.ok,
-                    handler: () => {
-                        resolve(true);
-                    }
-                }
-            );
-            try {
-                const createdAlert = await alertController.create({
-                    header: STRINGS[language].labels.project_outdated,
-                    message: STRINGS[language].labels.update_project,
-                    buttons,
-                    cssClass: 'alert-confirm-single-vertical-' + rootStore.device.platform.toLowerCase()
-                });
-                // Any dismissal route (e.g. Android back) settles as decline:
-                // resolve is idempotent, so a late button tap is a safe no-op.
-                createdAlert.onDidDismiss().then(() => {
-                    resolve(false);
-                });
-                await createdAlert.present();
-            } catch (presentError) {
-                console.log('update confirm failed: ' + presentError);
-                resolve(false);
-            }
-        })();
-    });
-}
+import { confirmProjectUpdate } from '@/use/project/confirm-project-update.js';
+import { showUpdaterModal, cleanupUpdateModal } from '@/use/project/show-updater-modal.js';
 
 export async function updateLocalProject() {
     const rootStore = useRootStore();

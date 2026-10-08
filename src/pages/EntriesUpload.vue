@@ -373,28 +373,13 @@ export default {
 
 			// Check if we have a project out of date error
 			if (projectOutdatedErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
-				//lock navigation while the prompt is shown: the update itself takes the
-				//lock, but that happens only after the user confirms
-				rootStore.isProjectUpdating = true;
-				try {
-					const confirmed = await notificationService.confirmSingle(
-						STRINGS[language].labels.update_project,
-						STRINGS[language].labels.project_outdated
-					);
-
-					if (confirmed) {
-						//updateProject reports its own errors to the user, so a rejection here
-						//would only escape through the fire-and-forget upload chain unobserved
-						await updateProject().catch((updateError) => {
-							console.error('Project update failed', updateError);
-						});
-					} else {
-						//warn user abut project put of date and entries cannot be synced
-						await errorsService.handleWebError(error);
-					}
-				} finally {
-					rootStore.isProjectUpdating = false;
-				}
+				//updateProject owns the confirm prompt, the updater modal and the
+				//navigation lock: it reports its own errors to the user, so a rejection
+				//here would only escape through the fire-and-forget upload chain unobserved.
+				//Declining the prompt only dismisses it, with no further warning.
+				await updateProject().catch((updateError) => {
+					console.error('Project update failed', updateError);
+				});
 			} else if (authErrors.indexOf(error?.data?.errors[0]?.code) >= 0) {
 				// Check if we have an auth error
 				//if error code is ec5_78 it means the user is logged in but has no role in the requested project
