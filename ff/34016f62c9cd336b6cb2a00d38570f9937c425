@@ -1,0 +1,16 @@
+.agents/skills/release/SKILL.md
+  h_2231ff2aa93473 76-80
+docs/workflows/qa.md
+  h_2231ff2aa93473 61,99-111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ff34016f62c9cd336b6cb2a00d38570f9937c425",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
