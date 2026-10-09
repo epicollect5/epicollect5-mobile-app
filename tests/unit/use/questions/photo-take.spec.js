@@ -187,7 +187,7 @@ describe('photoTake tests', () => {
         expect(nMock.showAlert).not.toHaveBeenCalled();
     });
 
-    it('does not report a camera permission denial to rollbar but still alerts', async () => {
+    it('surfaces a camera permission denial to the user and reports the original message', async () => {
         setupRootStore();
         nMock.startForegroundService.mockResolvedValue('granted');
         Camera.getPhoto.mockRejectedValueOnce(new Error('User denied access to camera'));
@@ -195,13 +195,19 @@ describe('photoTake tests', () => {
 
         await photoTake({ media, entryUuid, state, filename, action });
 
-        expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
+        //the report reaches rollbar and is dropped there by the central
+        //ignoredMessages list (asserted in rollbar-service.spec), so this
+        //caller stays unconditional
+        expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith(
+            'photoTake capture failed',
+            expect.objectContaining({ message: 'User denied access to camera' })
+        );
         expect(nMock.showAlert).toHaveBeenCalledWith('User denied access to camera');
         expect(media[entryUuid]['q1'].cached).toBe('');
         expect(state.answer.answer).toBe('');
     });
 
-    it('does not report a photos permission denial to rollbar', async () => {
+    it('reports a photos permission denial the same way as a camera one', async () => {
         setupRootStore();
         nMock.startForegroundService.mockResolvedValue('granted');
         Camera.getPhoto.mockRejectedValueOnce(new Error('User denied access to photos'));
@@ -209,7 +215,11 @@ describe('photoTake tests', () => {
 
         await photoTake({ media, entryUuid, state, filename, action: 'gallery' });
 
-        expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
+        expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith(
+            'photoTake capture failed',
+            expect.objectContaining({ message: 'User denied access to photos' })
+        );
+        expect(nMock.showAlert).toHaveBeenCalledWith('User denied access to photos');
     });
 
     it('opens the in-app modal on Android when inAppCamera flag is on and action is camera', async () => {
