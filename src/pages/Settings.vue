@@ -92,6 +92,15 @@
 							></ion-icon>
 						</ion-range>
 					</ion-item>
+					<ion-item
+						lines="none"
+						button
+						detail
+						@click="openThemeSelector()"
+					>
+						<ion-label>{{ labels.theme }}</ion-label>
+						<ion-note slot="end" class="settings-theme-value">{{ themeLabel }}</ion-note>
+					</ion-item>
 				</ion-card-content>
 			</ion-card>
 
@@ -240,17 +249,18 @@
 </template>
 
 <script>
-import { chevronBackOutline, add, remove, checkmark, openOutline } from 'ionicons/icons';
+import { chevronBackOutline, add, remove, checkmark, openOutline, sunny, moon, contrast } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { useRouter } from 'vue-router';
 import { PARAMETERS } from '@/config';
-import { useBackButton } from '@ionic/vue';
+import { useBackButton, actionSheetController } from '@ionic/vue';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { notificationService } from '@/services/notification-service';
 import { rollbarService } from '@/services/utilities/rollbar-service';
+import { themeService } from '@/services/theme-service';
 
 export default {
 	components: {},
@@ -265,6 +275,7 @@ export default {
 			collectErrors: rootStore.collectErrors,
 			inAppCamera: rootStore.inAppCamera,
 			inAppCameraVideo: rootStore.inAppCameraVideo,
+			theme: rootStore.theme,
 			isSaving: false
 		});
 		const zoomLevels = PARAMETERS.ZOOM_LEVELS;
@@ -333,15 +344,26 @@ export default {
 								failed = true;
 							}
 							break;
-						case PARAMETERS.SETTINGS_KEYS.IN_APP_CAMERA_VIDEO:
+					case PARAMETERS.SETTINGS_KEYS.IN_APP_CAMERA_VIDEO:
 
-							try {
-								await databaseInsertService.insertSetting(key, state.inAppCameraVideo ? 'true' : 'false');
-								rootStore.inAppCameraVideo = state.inAppCameraVideo;
-							} catch (error) {
-								console.log(error);
-								failed = true;
-							}
+						try {
+							await databaseInsertService.insertSetting(key, state.inAppCameraVideo ? 'true' : 'false');
+							rootStore.inAppCameraVideo = state.inAppCameraVideo;
+						} catch (error) {
+							console.log(error);
+							failed = true;
+						}
+						break;
+					case PARAMETERS.SETTINGS_KEYS.THEME:
+
+						try {
+							await databaseInsertService.insertSetting(key, state.theme);
+							rootStore.theme = state.theme;
+							themeService.applyTheme(state.theme);
+						} catch (error) {
+							console.log(error);
+							failed = true;
+						}
 						break;
 				}
 			}
@@ -370,6 +392,39 @@ export default {
 			updateInAppCameraVideo(e) {
 				state.inAppCameraVideo = e.detail.checked;
 			},
+			async openThemeSelector() {
+				const sheet = await actionSheetController.create({
+					header: labels.theme,
+					cssClass: 'theme-action-sheet',
+					buttons: [
+						{
+							text: labels.theme_light,
+							icon: sunny,
+							role: state.theme === PARAMETERS.THEMES.LIGHT ? 'selected' : undefined,
+							handler: () => {
+								state.theme = PARAMETERS.THEMES.LIGHT;
+							}
+						},
+						{
+							text: labels.theme_dark,
+							icon: moon,
+							role: state.theme === PARAMETERS.THEMES.DARK ? 'selected' : undefined,
+							handler: () => {
+								state.theme = PARAMETERS.THEMES.DARK;
+							}
+						},
+						{
+							text: labels.theme_system,
+							icon: contrast,
+							role: state.theme === PARAMETERS.THEMES.SYSTEM ? 'selected' : undefined,
+							handler: () => {
+								state.theme = PARAMETERS.THEMES.SYSTEM;
+							}
+						}
+					]
+				});
+				await sheet.present();
+			},
 			openInAppCameraDocs() {
 				window.open(PARAMETERS.IN_APP_CAMERA_DOCS_URL, '_system', 'location=yes');
 			}
@@ -387,6 +442,15 @@ export default {
 			}),
 			hasEasterEggProject: computed(() => {
 				return rootStore.easterEgg;
+			}),
+			themeLabel: computed(() => {
+				if (state.theme === PARAMETERS.THEMES.DARK) {
+					return labels.theme_dark;
+				}
+				if (state.theme === PARAMETERS.THEMES.SYSTEM) {
+					return labels.theme_system;
+				}
+				return labels.theme_light;
 			})
 		};
 
