@@ -1,0 +1,18 @@
+android/app/src/main/java/uk/ac/imperial/epicollect/five/MainActivity.java
+  h_2231ff2aa93473 11-17
+android/app/src/main/java/uk/ac/imperial/epicollect/five/NightModePlugin.java
+  h_2231ff2aa93473 1-43
+android/app/src/main/res/values/styles.xml
+  h_2231ff2aa93473 4-6,8,12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "683c2b6c387486e2d2f4624c80634c4f562852b0",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
