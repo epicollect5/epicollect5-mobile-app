@@ -17,6 +17,7 @@ import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {bookmarksService} from '@/services/utilities/bookmarks-service';
 import {initService} from '@/services/init-service';
+import {themeService} from '@/services/theme-service';
 import {webService} from '@/services/web-service';
 import {mediaDirsService} from '@/services/filesystem/media-dirs-service';
 
@@ -35,6 +36,7 @@ import '@ionic/vue/css/display.css';
 
 /* Theme variables */
 import '@/theme/variables.css';
+import '@/theme/dark.scss';
 import '@/theme/animate.min.css';
 import '@/theme/core.scss';
 import '@/theme/zoom.scss';
@@ -343,6 +345,16 @@ export const app = createApp(App)
             console.log('Failed to load in-app camera video preference: ' + error);
             rootStore.inAppCameraVideo = false;
         }
+
+        //theme preference (light/dark/system): a rejected read must not block
+        //boot, so fall back to the default ('light') for this session only
+        try {
+            rootStore.theme = await initService.getThemePreference();
+        } catch (error) {
+            console.log('Failed to load theme preference: ' + error);
+            rootStore.theme = PARAMETERS.DEFAULT_THEME;
+        }
+        themeService.applyTheme(rootStore.theme);
 
         // Attempt to retrieve the jwt token
         rootStore.user = await initService.retrieveJwtToken();

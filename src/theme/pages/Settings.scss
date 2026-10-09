@@ -7,3 +7,21 @@
 .settings-input-label {
     @include settings-input-label-base;
 }
+
+//theme row value matches the row label size (ion-note defaults to 0.875rem)
+body ion-note.settings-theme-value {
+    font-size: 1rem;
+}
+
+//theme selector sheet: option rows use the same size as the header
+body .theme-action-sheet {
+    .action-sheet-title,
+    .action-sheet-button {
+        font-size: 1.25rem;
+    }
+
+    //separator between the header and the options
+    .action-sheet-title {
+        border-bottom: 1px solid var(--app-border);
+    }
+}

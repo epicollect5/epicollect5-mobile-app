@@ -1,0 +1,168 @@
+/* Dark theme: toggled by themeService via body.theme-dark.
+   Only inverts light-theme surface assumptions (white -> #1e1e1e, #333 -> white).
+   Purple primary, color="dark" navbars and tertiary colors are untouched. */
+body.theme-dark {
+    color-scheme: dark;
+
+    --ion-background-color: #1e1e1e;
+    --ion-background-color-rgb: 30, 30, 30;
+    --ion-text-color: #e6e6e6;
+    --ion-text-color-rgb: 230, 230, 230;
+    --ion-item-background: #1e1e1e;
+    --ion-card-background: #1e1e1e;
+    --ion-border-color: #3a3a3c;
+    --ion-placeholder-color: #9a9a9e;
+
+    --app-surface: #1e1e1e;
+    --app-surface-muted: #2c2c2e;
+    --app-text: #e6e6e6;
+    --app-border: #444446;
+
+    /* Ionic never defines its --ion-color-step-* / --ion-text-color-step-* /
+       --ion-background-color-step-* ramps at runtime, so components fall back
+       to fixed light-theme grays (#262626 text, #f2f2f2 panels) that are
+       invisible on dark surfaces (card titles, searchbar text, loading
+       dialog, action sheet buttons...). Invert the ramp with opaque values:
+       light steps are solid grays mixed toward black from white, so dark
+       steps are solid grays mixed toward white from #1e1e1e (translucent
+       alphas would make solid light-mode surfaces look transparent). */
+    --ion-color-step-50: #292929;
+    --ion-color-step-100: #353535;
+    --ion-color-step-150: #404040;
+    --ion-color-step-200: #4b4b4b;
+    --ion-color-step-250: #565656;
+    --ion-color-step-300: #626262;
+    --ion-color-step-350: #6d6d6d;
+    --ion-color-step-400: #787878;
+    --ion-color-step-450: #838383;
+    --ion-color-step-500: #8e8e8e;
+    --ion-color-step-550: #9a9a9a;
+    --ion-color-step-600: #a5a5a5;
+    --ion-color-step-650: #b0b0b0;
+    --ion-color-step-700: #bbbbbb;
+    --ion-color-step-750: #c7c7c7;
+    --ion-color-step-800: #d2d2d2;
+    --ion-color-step-850: #dddddd;
+    --ion-color-step-900: #e8e8e8;
+    --ion-color-step-950: #f4f4f4;
+
+    /* text steps count lightness from the text color: invert the ramp */
+    --ion-text-color-step-50: #f2f2f2;
+    --ion-text-color-step-100: #e6e6e6;
+    --ion-text-color-step-150: #d9d9d9;
+    --ion-text-color-step-200: #cccccc;
+    --ion-text-color-step-250: #bfbfbf;
+    --ion-text-color-step-300: #b3b3b3;
+    --ion-text-color-step-350: #a6a6a6;
+    --ion-text-color-step-400: #999999;
+    --ion-text-color-step-450: #8c8c8c;
+    --ion-text-color-step-500: #808080;
+    --ion-text-color-step-550: #737373;
+    --ion-text-color-step-600: #666666;
+    --ion-text-color-step-650: #595959;
+    --ion-text-color-step-700: #4d4d4d;
+    --ion-text-color-step-750: #404040;
+    --ion-text-color-step-800: #333333;
+    --ion-text-color-step-850: #262626;
+    --ion-text-color-step-900: #1a1a1a;
+    --ion-text-color-step-950: #0d0d0d;
+
+    --ion-background-color-step-50: #292929;
+    --ion-background-color-step-100: #353535;
+    --ion-background-color-step-150: #404040;
+    --ion-background-color-step-200: #4b4b4b;
+    --ion-background-color-step-250: #565656;
+    --ion-background-color-step-300: #626262;
+    --ion-background-color-step-350: #6d6d6d;
+    --ion-background-color-step-400: #787878;
+    --ion-background-color-step-450: #838383;
+    --ion-background-color-step-500: #8e8e8e;
+    --ion-background-color-step-550: #9a9a9a;
+    --ion-background-color-step-600: #a5a5a5;
+    --ion-background-color-step-650: #b0b0b0;
+    --ion-background-color-step-700: #bbbbbb;
+    --ion-background-color-step-750: #c7c7c7;
+    --ion-background-color-step-800: #d2d2d2;
+    --ion-background-color-step-850: #dddddd;
+    --ion-background-color-step-900: #e8e8e8;
+    --ion-background-color-step-950: #f4f4f4;
+}
+
+/* Form headers pin the light palette via color="light" (black text) or
+   ion-title's --color: initial (black): invert them in dark. */
+body.theme-dark {
+    ion-item-divider.entry-name,
+    ion-item-divider.entry-title,
+    ion-item-divider.form-name {
+        color: var(--app-text) !important;
+    }
+
+    /* color="light" toolbars (Settings/Profile headers, form name rows) pin
+       the light palette: grey background with black text. Invert them. */
+    ion-toolbar.ion-color-light {
+        --ion-color-base: var(--app-surface) !important;
+        --ion-color-contrast: var(--app-text) !important;
+    }
+
+    ion-title.form-name-label,
+    ion-title.form-name-label-errors {
+        --color: var(--app-text) !important;
+    }
+
+    /* searchbar placeholder/clear icons fall back to black */
+    ion-searchbar {
+        --placeholder-color: var(--app-text);
+        --clear-button-color: var(--app-text);
+    }
+
+    /* color="dark" chips (integer/decimal +/-) keep dark text/borders:
+       force white content colors without touching other dark-colored parts */
+    ion-chip.ion-color-dark {
+        --ion-color-base-rgb: 255, 255, 255 !important;
+        --ion-color-shade: var(--app-text) !important;
+    }
+
+    /* loading dialog: keep the spinner visible on the dark panel */
+    .ec5LoadingDialog {
+        --spinner-color: var(--app-text);
+    }
+
+    /* warning banners (e.g. "Unsynced entries") keep the light warning
+       background in both themes: their text must stay dark */
+    ion-item.item-warning {
+        --color: var(--ion-color-warning-contrast);
+        color: var(--ion-color-warning-contrast);
+    }
+}
+
+/* brand colors one notch down in dark (Material-style: ~18% less saturation,
+   ~6% deeper) to reduce glare on dark surfaces. Only base/rgb/shade/tint are
+   remapped; contrast colors (white/black text) stay put. Values derived from
+   variables.css with shade = base x 0.88 and tint = base + (255 - base) x 0.10,
+   matching the light-theme formula. */
+body.theme-dark {
+    --ion-color-primary: #614080;
+    --ion-color-primary-rgb: 97, 64, 128;
+    --ion-color-primary-shade: #553871;
+    --ion-color-primary-tint: #71538d;
+
+    --ion-color-secondary: #7aae93;
+    --ion-color-secondary-rgb: 122, 174, 147;
+    --ion-color-secondary-shade: #6b9981;
+    --ion-color-secondary-tint: #87b69e;
+
+    --ion-color-tertiary: #b257a6;
+    --ion-color-tertiary-rgb: 178, 87, 166;
+    --ion-color-tertiary-shade: #9d4d92;
+    --ion-color-tertiary-tint: #ba68af;
+
+    --ion-color-warning: #da9516;
+    --ion-color-warning-rgb: 218, 149, 22;
+    --ion-color-warning-shade: #c08313;
+    --ion-color-warning-tint: #dea02d;
+
+    --ion-color-danger: #964847;
+    --ion-color-danger-rgb: 150, 72, 71;
+    --ion-color-danger-shade: #843f3e;
+    --ion-color-danger-tint: #a15a59;
+}
