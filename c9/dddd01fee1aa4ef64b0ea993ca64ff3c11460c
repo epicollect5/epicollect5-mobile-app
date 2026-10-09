@@ -1,0 +1,20 @@
+src/components/modals/ModalEntriesBranchFilter.vue
+  h_2231ff2aa93473 58,72
+src/components/modals/ModalEntriesFilter.vue
+  h_2231ff2aa93473 66,91
+src/components/questions/QuestionDate.vue
+  h_2231ff2aa93473 54
+src/components/questions/QuestionTime.vue
+  h_2231ff2aa93473 44,52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c9dddd01fee1aa4ef64b0ea993ca64ff3c11460c",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
