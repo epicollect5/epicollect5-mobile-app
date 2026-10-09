@@ -1,0 +1,20 @@
+src/main.js
+  h_2231ff2aa93473 20,39,349-358
+src/theme/dark.scss
+  h_2231ff2aa93473 1-168
+src/theme/pages/Settings.scss
+  h_2231ff2aa93473 10-27
+src/theme/variables.css
+  h_2231ff2aa93473 70-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c0e817b40b0a3d2567a301043b344ea69d5c87ac",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
