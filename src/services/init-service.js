@@ -581,6 +581,27 @@ export const initService = {
         });
     },
 
+    //Get the theme preference (light/dark/system, defaults to light)
+    async getThemePreference() {
+        return new Promise((resolve, reject) => {
+            databaseSelectService.selectSetting(PARAMETERS.SETTINGS_KEYS.THEME).then(function (res) {
+
+                //if not found, the user has left the default
+                if (res.rows.length === 0) {
+                    resolve(PARAMETERS.DEFAULT_THEME);
+                    return;
+                }
+
+                //validate against the whitelist (legacy/invalid values fall back to light)
+                const value = res.rows.item(0).value;
+                const validThemes = Object.values(PARAMETERS.THEMES);
+                resolve(validThemes.includes(value) ? value : PARAMETERS.DEFAULT_THEME);
+            }, function (error) {
+                reject(error);
+            });
+        });
+    },
+
     async retrieveJwtToken() {
         const rootStore = useRootStore();
         return new Promise(function (resolve, reject) {

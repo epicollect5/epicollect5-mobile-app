@@ -1,0 +1,65 @@
+import {PARAMETERS} from '@/config';
+import {Capacitor, registerPlugin} from '@capacitor/core';
+
+const SYSTEM_MEDIA_QUERY = '(prefers-color-scheme: dark)';
+
+//local native plugin: pins the night mode independently of the device theme
+const nightModePlugin = registerPlugin('NightMode');
+
+const NIGHT_MODES = {
+    [PARAMETERS.THEMES.LIGHT]: 'no',
+    [PARAMETERS.THEMES.DARK]: 'yes',
+    [PARAMETERS.THEMES.SYSTEM]: 'follow_system'
+};
+
+//last preference passed to applyTheme(), used by the system listener
+//to re-apply only while the preference is 'system'
+let lastPreference = PARAMETERS.DEFAULT_THEME;
+let systemMediaQuery = null;
+
+function getSystemMediaQuery() {
+    if (!systemMediaQuery) {
+        //registered once, guarded so repeated applyTheme() calls never stack listeners
+        systemMediaQuery = window.matchMedia(SYSTEM_MEDIA_QUERY);
+        systemMediaQuery.addEventListener('change', () => {
+            if (lastPreference === PARAMETERS.THEMES.SYSTEM) {
+                applyTheme(lastPreference);
+            }
+        });
+    }
+    return systemMediaQuery;
+}
+
+function isEffectiveDark(preference) {
+    if (preference === PARAMETERS.THEMES.DARK) {
+        return true;
+    }
+    if (preference === PARAMETERS.THEMES.SYSTEM) {
+        return getSystemMediaQuery().matches;
+    }
+    return false;
+}
+
+function applyTheme(preference) {
+    lastPreference = preference;
+    const effectiveDark = isEffectiveDark(preference);
+    document.body.classList.toggle('theme-dark', effectiveDark);
+    //root-level scheme drives UA widgets (native date/time pickers);
+    //the PWA never calls applyTheme, so the light index.html meta stays valid
+    document.documentElement.style.setProperty(
+        'color-scheme',
+        effectiveDark ? 'dark' : 'light'
+    );
+
+    //native dialogs/pickers must follow the in-app choice, not the device
+    //theme (fire-and-forget: a failed call never affects the web theme)
+    if (Capacitor.isNativePlatform()) {
+        nightModePlugin.setNightMode({mode: NIGHT_MODES[preference]}).catch((error) => {
+            console.log('Night mode sync failed: ' + error);
+        });
+    }
+}
+
+export const themeService = {
+    applyTheme
+};
