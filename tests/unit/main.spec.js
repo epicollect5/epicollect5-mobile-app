@@ -59,7 +59,13 @@ vi.mock('@/config', () => ({
         DELAY_EXTRA_LONG: 1,
         DELAY_LONG: 100,
         DEFAULT_SERVER_URL: '',
-        PRODUCTION_SERVER_URL: 'https://prod.server.com'
+        PRODUCTION_SERVER_URL: 'https://prod.server.com',
+        DEFAULT_THEME: 'light',
+        THEMES: {
+            LIGHT: 'light',
+            DARK: 'dark',
+            SYSTEM: 'system'
+        }
     },
     STRINGS: {
         en: {
@@ -90,6 +96,7 @@ vi.mock('@/components/globals/RightDrawer.vue', () => ({default: {}}));
 vi.mock('@/components/ListAnswers.vue', () => ({default: {}}));
 vi.mock('@/components/ListItemAnswer.vue', () => ({default: {}}));
 vi.mock('@/theme/variables.css', () => ({}));
+vi.mock('@/theme/dark.scss', () => ({}));
 vi.mock('@/theme/core.scss', () => ({}));
 vi.mock('@/theme/animate.min.css', () => ({}));
 vi.mock('@/theme/question.scss', () => ({}));
@@ -120,8 +127,13 @@ vi.mock('@/services/init-service', () => ({
         getCollectErrorsPreference: vi.fn(() => Promise.resolve(true)),
         getInAppCameraPreference: vi.fn(() => Promise.resolve(false)),
         getInAppCameraVideoPreference: vi.fn(() => Promise.resolve(false)),
+        getThemePreference: vi.fn(() => Promise.resolve('light')),
         retrieveJwtToken: vi.fn(() => Promise.resolve({name: 'Test User'}))
     }
+}));
+
+vi.mock('@/services/theme-service', () => ({
+    themeService: {applyTheme: vi.fn()}
 }));
 
 
@@ -353,6 +365,58 @@ describe('Main.js Architecture', () => {
         expect(rootStore.inAppCameraVideo).toBe(false);
         expect(initService.retrieveJwtToken).toHaveBeenCalled();
         expect(rootStore.user).toEqual({name: 'Test User'});
+    });
+
+    it('Native: reads the theme preference and applies it before mount', async () => {
+        const {initService} = await import('@/services/init-service');
+        const {themeService} = await import('@/services/theme-service');
+        const {rollbarService} = await import('@/services/utilities/rollbar-service');
+        const {bookmarksService} = await import('@/services/utilities/bookmarks-service');
+
+        initService.getDeviceInfo.mockResolvedValue({platform: 'android'});
+        initService.openDB.mockResolvedValue({executeSql: vi.fn()});
+        initService.getAppInfo.mockResolvedValue({});
+        initService.getLanguage.mockResolvedValue('en');
+        initService.getDBVersion.mockResolvedValue(1);
+        bookmarksService.getBookmarks.mockResolvedValue([]);
+        initService.getThemePreference.mockResolvedValue('system');
+
+        await import('@/main');
+        await flushPromises();
+
+        const {useRootStore} = await import('@/stores/root-store');
+        const rootStore = useRootStore();
+
+        expect(initService.getThemePreference).toHaveBeenCalled();
+        expect(rootStore.theme).toBe('system');
+        expect(themeService.applyTheme).toHaveBeenCalledWith('system');
+        //applied during boot, before the mount sequence (rollbar init runs just before mount)
+        expect(themeService.applyTheme.mock.invocationCallOrder[0])
+            .toBeLessThan(rollbarService.init.mock.invocationCallOrder[0]);
+    });
+
+    it('Native: applies the default theme when the preference read rejects', async () => {
+        const {initService} = await import('@/services/init-service');
+        const {themeService} = await import('@/services/theme-service');
+        const {bookmarksService} = await import('@/services/utilities/bookmarks-service');
+
+        initService.getDeviceInfo.mockResolvedValue({platform: 'android'});
+        initService.openDB.mockResolvedValue({executeSql: vi.fn()});
+        initService.getAppInfo.mockResolvedValue({});
+        initService.getLanguage.mockResolvedValue('en');
+        initService.getDBVersion.mockResolvedValue(1);
+        bookmarksService.getBookmarks.mockResolvedValue([]);
+        initService.getThemePreference.mockRejectedValue(new Error('db locked'));
+
+        await import('@/main');
+        await flushPromises();
+
+        const {useRootStore} = await import('@/stores/root-store');
+        const rootStore = useRootStore();
+
+        expect(rootStore.theme).toBe(PARAMETERS.DEFAULT_THEME);
+        expect(themeService.applyTheme).toHaveBeenCalledWith('light');
+        expect(initService.retrieveJwtToken).toHaveBeenCalled();
     });
 
     it('handles Branch ADD entry logic when branch params are present', async () => {
