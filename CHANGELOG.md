@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 98.3.5 - build 9835
+
+ - Updating a project now goes through a single confirmation in both the entries and upload flows: "Learn more" opens the documentation without deciding, "Cancel" declines and "OK" starts the update. Dismissing the prompt — including with the Android back button — counts as declining, so an update can no longer be left half-applied. The separate "Forms updated." notice has been removed.
+ - Rollbar no longer reports deliberate camera and photo permission denials, from either the system camera or the in-app camera, so choosing not to grant access no longer creates error reports. These are now filtered in one central list instead of at each call site.
+ - The test scripts force NODE_ENV=test, so a shell exporting NODE_ENV=production can no longer make the unit suite fail with confusing module-resolution errors.
+
 # 98.3.4 - build 9834
 
  - Cold start is faster: the startup database wait is now a readiness probe that resolves as soon as the database answers (keeping the previous one-second wait as a fallback cap), and the splash screen hides after one second instead of two. Measured tap-to-Projects time dropped from around 5.6s to around 3.9s on a Galaxy A33 and from around 4s to around 2.2s on a Galaxy S25.
