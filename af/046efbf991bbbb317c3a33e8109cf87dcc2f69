@@ -1,0 +1,16 @@
+src/services/init-service.js
+  h_2231ff2aa93473 584-604
+src/services/theme-service.js
+  h_2231ff2aa93473 1-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "af046efbf991bbbb317c3a33e8109cf87dcc2f69",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
