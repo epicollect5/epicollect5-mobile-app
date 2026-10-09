@@ -316,6 +316,36 @@
             }
         }
     }
+
+    // Android 16+ WebView renders date/time inputs as inline segmented editing
+    // and only opens the native picker from the picker indicator. Stretch the
+    // (hidden) indicator over the field so any tap opens the picker as before,
+    // and hide the added segments while the field is empty.
+    .plt-android & {
+        .datetime-value {
+            input[type="date"],
+            input[type="time"] {
+                position: relative;            //containing block for the stretched indicator
+                text-align: center;            //centre the value now the indicator is out of flow
+                padding-left: 40px !important;  //symmetric padding clears the icon and centres the value
+                padding-right: 40px !important;
+                &::-webkit-calendar-picker-indicator {
+                    position: absolute;
+                    inset: 0;
+                    width: 100%;
+                    height: 100%;
+                    margin: 0;
+                    padding: 0;
+                    opacity: 0;              //invisible but still tappable
+                    z-index: 2;              //above the segments and the decorative icon
+                }
+                //hide the segments the Android 16 WebView adds when the field is empty
+                &.is-empty::-webkit-datetime-edit {
+                    opacity: 0;
+                }
+            }
+        }
+    }
 }
 
 // ==================== POSSIBLE ANSWERS STYLES ====================
