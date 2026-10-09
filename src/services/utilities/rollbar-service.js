@@ -3,6 +3,25 @@ import { Capacitor } from '@capacitor/core';
 import { useRootStore } from '@/stores/root-store';
 
 //https://docs.rollbar.com/docs/rollbarjs-configuration-reference
+//Messages the SDK drops before sending (rollbar `ignoredMessages`: matched
+//case-insensitively as regexes against the error message). These are deliberate
+//user choices, not failures, so they must never page us. Kept in one place on
+//purpose: a new suppression must not mean touching every callsite. This runs for
+//every reporting path (critical/criticalWithContext, the Vue errorHandler,
+//captureUncaught and captureUnhandledRejections).
+//Keep entries specific: a bare "denied"/"permission denied" would also swallow
+//genuine failures (e.g. an EACCES filesystem error).
+//Structural conditions (error codes) cannot be expressed here and still need a
+//guard at the callsite.
+const IGNORED_MESSAGES = [
+    // @capacitor/camera: user backed out of the capture app
+    'user cancelled photos app',
+    // @capacitor/camera: permission refusal ("User denied access to camera" / "photos")
+    'user denied',
+    // @capgo/camera-preview, and our own _ensurePermission() throw
+    'camera permission denied'
+];
+
 const rollbar = new Rollbar({
     enabled: true,
     accessToken: import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN,
@@ -13,6 +32,7 @@ const rollbar = new Rollbar({
     itemsPerMinute: 1,
     timeout: 3000,
     maxRetries: 3,
+    ignoredMessages: IGNORED_MESSAGES,
     payload: {
         environment: '',//to be set at run time,
         source_map_enabled: true,

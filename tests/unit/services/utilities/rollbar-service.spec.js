@@ -5,8 +5,15 @@ const rollbarInstance = vi.hoisted(() => ({
     configure: vi.fn()
 }));
 
+//captured once at import time, before beforeEach clears the mock call history:
+//the SDK options are only passed to the constructor during module evaluation
+const rollbarCtorOptions = vi.hoisted(() => ({ value: null }));
+
 vi.mock('rollbar', () => ({
-    default: vi.fn(() => rollbarInstance)
+    default: vi.fn((options) => {
+        rollbarCtorOptions.value = options;
+        return rollbarInstance;
+    })
 }));
 
 import { rollbarService } from '@/services/utilities/rollbar-service';
@@ -80,5 +87,41 @@ describe('rollbarService.criticalWithContext', () => {
         expect(() => rollbarService.criticalWithContext('op failed', () => {})).not.toThrow();
 
         expect(rollbarInstance.critical).toHaveBeenCalledTimes(3);
+    });
+});
+
+describe('rollbarService ignoredMessages', () => {
+
+    //replicates the SDK's messageIsIgnored predicate: each entry becomes a
+    //case-insensitive RegExp tested against the reported error message
+    const sdkDrops = (message) => rollbarCtorOptions.value.ignoredMessages.some(
+        (pattern) => new RegExp(pattern, 'gi').test(message)
+    );
+
+    it('configures the SDK with one central suppression list', () => {
+        expect(rollbarCtorOptions.value.ignoredMessages).toEqual([
+            'user cancelled photos app',
+            'user denied',
+            'camera permission denied'
+        ]);
+    });
+
+    it('drops deliberate user choices instead of paging us', () => {
+        expect(sdkDrops('photoTake capture failed: User denied access to camera')).toBe(true);
+        expect(sdkDrops('photoTake capture failed: User denied access to photos')).toBe(true);
+        expect(sdkDrops('videoShoot capture failed: User denied access to camera')).toBe(true);
+        expect(sdkDrops('CameraPreview.start failed: Camera permission denied')).toBe(true);
+        expect(sdkDrops('CameraPreview restart failed: Camera permission denied')).toBe(true);
+        //the native capgo message our own throw mirrors
+        expect(sdkDrops('CameraPreview.start failed: camera permission denied. enable camera access in Settings.')).toBe(true);
+        expect(sdkDrops('photoTake capture failed: User cancelled photos app')).toBe(true);
+    });
+
+    it('never drops genuine failures', () => {
+        expect(sdkDrops('photoTake capture failed: move boom')).toBe(false);
+        expect(sdkDrops('CameraPreview.start failed: camera in use')).toBe(false);
+        //a broad "denied" would swallow a real filesystem permission error
+        expect(sdkDrops('saveMedia: operation failed: EACCES: permission denied, open /tmp/photo.jpg')).toBe(false);
+        expect(sdkDrops('boot: migrateDB failed: UNIQUE constraint failed')).toBe(false);
     });
 });
