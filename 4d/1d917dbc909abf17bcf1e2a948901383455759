@@ -1,0 +1,16 @@
+src/services/utilities/rollbar-service.js
+  h_2231ff2aa93473 6-24,35
+tests/unit/services/utilities/rollbar-service.spec.js
+  h_2231ff2aa93473 8-11,13-16,92-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4d1d917dbc909abf17bcf1e2a948901383455759",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
