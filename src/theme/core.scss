@@ -178,7 +178,7 @@ ion-chip {
     border-radius: 5px;
     padding: 20px;
     &:hover {
-        background-color: #fff !important;
+        background-color: var(--app-surface) !important;
     }
 }
 .invisible {
@@ -274,7 +274,7 @@ ion-toolbar.form-name {
 }
 ion-item-divider.entry-name,
 ion-item-divider.entry-title {
-    background-color: #fff !important;
+    background-color: var(--app-surface) !important;
     padding: 0;
     ion-label {
         width: 100%;
@@ -299,7 +299,7 @@ ion-item-divider.entry-error-global {
 }
 
 ion-item-divider.form-name {
-    background-color: #fff !important;
+    background-color: var(--app-surface) !important;
     padding: 0 !important;
     ion-label.form-name-label {
         width: 100%;
@@ -308,7 +308,7 @@ ion-item-divider.form-name {
     }
     background: none;
     font-weight: 700;
-    color: var(--ion-color-dark);
+    color: var(--app-text);
     ion-toolbar {
         --background: none;
         --padding-bottom: 0;
@@ -379,7 +379,7 @@ ion-item-divider.form-name {
     ion-card-content {
         padding: 16px;
         min-height: 50px;
-        color: #333;
+        color: var(--app-text);
     }
     .answer-error {
         color: var(--ion-color-danger);
@@ -495,7 +495,7 @@ ion-item-divider.form-name {
     padding: 6px 0;
 
     .filters-count {
-        color: #333;
+        color: var(--app-text);
         font-weight: 700;
         font-size: 13px;
         span {
@@ -521,7 +521,7 @@ ion-item-divider.form-name {
     margin: 4px 0;
     --border-radius: 4px;
     font-weight: 700;
-    --detail-icon-color: #333 !important;
+    --detail-icon-color: var(--app-text) !important;
     --min-height: 36px !important;
     ion-label {
         margin: 8px 0;
@@ -596,8 +596,8 @@ ion-item.item-warning {
 }
 .filter-by-date-to,
 .filter-by-date-from {
-    --background: #fff;
-    --color: #333;
+    --background: var(--app-surface);
+    --color: var(--app-text);
     ion-title {
         font-size: 18px;
         margin-right: 5px;

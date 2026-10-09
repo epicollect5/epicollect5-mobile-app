@@ -2,7 +2,7 @@
     display: flex;
     flex-basis: 100%;
     align-items: center;
-    color: #333;
+    color: var(--app-text);
     margin: 8px 0px;
 }
 
@@ -10,7 +10,7 @@
 .hr-divider:after {
     content: "";
     flex-grow: 1;
-    background: #333;
+    background: var(--app-text);
     height: 1px;
     font-size: 0px;
     line-height: 0px;

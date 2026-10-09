@@ -67,7 +67,7 @@
 @mixin question-input-base {
     padding: 10px;
     width: 100%;
-    color: #333;
+    color: var(--app-text);
     outline-color: var(--ion-color-primary) !important;
     &:focus {
         outline-color: var(--ion-color-primary) !important;
@@ -101,7 +101,7 @@
         height: 200px;
         padding: 10px;
         border: 1px solid var(--ion-color-light-shade);
-        background-color: #ffffff;
+        background-color: var(--app-surface);
         object-fit: cover;
     }
 }
@@ -219,7 +219,7 @@
         padding: 16px !important;
     }
     p {
-        color: #333;
+        color: var(--app-text);
         font-size: 16px;
     }
 }
@@ -243,10 +243,16 @@
     &.entries-filters {
         padding-right: 0 !important;
         .datetime-value {
-            background-color: #ffffff !important;
+            background-color: var(--app-surface) !important;
             input[type="date"],
             input[type="time"] {
                 padding: 6px 6px 6px 40px;
+                color: var(--app-text);
+            }
+            .time-icon,
+            .date-icon-left,
+            .date-icon-right {
+                color: var(--app-text);
             }
         }
     }
@@ -272,6 +278,8 @@
             appearance: none;
             font-size: 14px;
             font-weight: 400;
+            //keep dark text on the mint chip background in both themes
+            color: #222;
             z-index: 1;
             &::-webkit-inner-spin-button,
             &::-webkit-calendar-picker-indicator {
@@ -294,6 +302,8 @@
             pointer-events: none;
             top: 50%;
             transform: translateY(-50%);
+            //keep dark on the mint chip in both themes (like the inputs)
+            color: #222;
         }
         .date-icon-right {
             position: absolute;
@@ -302,6 +312,7 @@
             right: 16px;
             z-index: 0;
             pointer-events: none;
+            color: #222;
         }
     }
     &.web-picker {
@@ -330,33 +341,33 @@
     display: block;
     border-bottom: 1px solid var(--ion-color-light-shade);
     &.checkbox-checked {
-        background-color: #eee;
+        background-color: var(--app-surface-muted);
     }
     &.radio-checked {
-        background-color: #eee;
+        background-color: var(--app-surface-muted);
     }
     .possible-answer-label,
     .saved-answer-label {
         white-space: normal;
         font-size: 16px;
-        color: #222;
+        color: var(--app-text);
     }
 
     .possible-answer-radio,
     .saved-answer-checkbox {
         width: 1em;
         height: 1em;
-        background-color: white;
+        background-color: var(--app-surface);
         border-radius: 50%;
         vertical-align: middle;
-        border: 1px solid #ddd;
+        border: 1px solid var(--app-border);
         appearance: none;
         -webkit-appearance: none;
         outline: none;
         cursor: pointer;
         &:checked {
             background-color: var(--ion-color-secondary);
-            border: 1px solid #333;
+            border: 1px solid var(--app-text);
         }
         margin-top: 0 !important;
         padding: 5px;
@@ -437,7 +448,7 @@
     margin: 4px 0;
     --border-radius: 4px;
     font-weight: 700;
-    --detail-icon-color: #333 !important;
+    --detail-icon-color: var(--app-text) !important;
     --min-height: 36px !important;
     ion-label {
         margin: 8px 0;
@@ -485,7 +496,7 @@
     ion-card-content {
         padding: 16px;
         min-height: 50px;
-        color: #333;
+        color: var(--app-text);
     }
     .answer-error {
         color: var(--ion-color-danger);
@@ -606,7 +617,7 @@
 }
 
 @mixin form-name-divider-base {
-    background-color: #fff !important;
+    background-color: var(--app-surface) !important;
     padding: 0 !important;
     ion-label.form-name-label {
         width: 100%;
@@ -615,7 +626,7 @@
     }
     background: none;
     font-weight: 700;
-    color: var(--ion-color-dark);
+    color: var(--app-text);
     ion-toolbar {
         --background: none;
         --padding-bottom: 0;
@@ -702,7 +713,7 @@
             --background: transparent;
             ion-button,
             ion-icon {
-                color: #333;
+                color: var(--app-text);
             }
         }
     }
@@ -975,7 +986,7 @@
 
 @mixin dropzone-active-base {
     border: 2px solid var(--ion-color-primary);
-    background-color: #eee;
+    background-color: var(--app-surface-muted);
 }
 
 @mixin dropzone-preview-base {
@@ -1008,10 +1019,10 @@
 @mixin leaflet-control-locate-me-base {
     width: 34px;
     height: 34px;
-    background: #ffffff url(@/leaflet/images/locate-me@2x.png) no-repeat center;
+    background: var(--app-surface) url(@/leaflet/images/locate-me@2x.png) no-repeat center;
     &:hover {
         cursor: pointer;
-        background-color: #eeeeee;
+        background-color: var(--app-surface-muted);
     }
 }
 
@@ -1070,8 +1081,8 @@
 }
 
 @mixin filter-by-date-base {
-    --background: #fff;
-    --color: #333;
+    --background: var(--app-surface);
+    --color: var(--app-text);
     ion-title {
         font-size: 18px;
         margin-right: 5px;

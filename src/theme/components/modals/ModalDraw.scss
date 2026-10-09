@@ -2,7 +2,7 @@
 
 .modal-draw {
     ion-content {
-        --background: #f5f5f5;
+        --background: var(--app-surface-muted);
     }
 
     .modal-draw__canvas-wrap {
