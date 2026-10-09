@@ -63,6 +63,7 @@
 							<input type="date"
 								   :min="state.filters.oldest"
 								   :max="state.filters.newest"
+								   :class="{ 'is-empty': !state.filters.from }"
 								   class="question-input question-datetimepicker"
 								   v-model.trim="state.filters.from"
 								   @change="filterByDate()" />
@@ -87,6 +88,7 @@
 								<input type="date"
 									   :min="state.filters.oldest"
 									   :max="state.filters.newest"
+									   :class="{ 'is-empty': !state.filters.to }"
 									   class="question-input question-datetimepicker"
 									   v-model.trim="state.filters.to"
 									   @change="filterByDate()" />

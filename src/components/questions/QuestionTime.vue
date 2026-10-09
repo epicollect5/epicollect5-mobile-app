@@ -41,6 +41,7 @@
 						v-if="hasSeconds"
 						type="time"
 						step="1"
+						:class="{ 'is-empty': !state.time.answer }"
 						class="question-input question-datetimepicker"
 						v-model.trim="state.time.answer"
 						@change="getTime()"
@@ -48,6 +49,7 @@
 					<input
 						v-else
 						type="time"
+						:class="{ 'is-empty': !state.time.answer }"
 						class="question-input question-datetimepicker"
 						v-model.trim="state.time.answer"
 						@change="getTime()"

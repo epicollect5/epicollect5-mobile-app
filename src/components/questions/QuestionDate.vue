@@ -51,6 +51,7 @@
 								></ion-icon>
 								<input
 									type="date"
+									:class="{ 'is-empty': !state.date.answer }"
 									class="question-input question-datetimepicker"
 									v-model.trim="state.date.answer"
 									@change="getDate()"
