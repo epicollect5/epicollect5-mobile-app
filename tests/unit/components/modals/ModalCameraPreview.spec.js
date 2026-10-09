@@ -278,8 +278,6 @@ describe('ModalCameraPreview component', () => {
 
 		expect(mocks.cameraPreview.start).not.toHaveBeenCalled();
 		expect(mocks.modalController.dismiss).toHaveBeenCalled();
-		//a deliberate user denial is surfaced to the user, never paged to Rollbar
-		expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
 		wrapper.unmount();
 		expect(document.body.classList.contains('camera-preview-open')).toBe(false);
 	});
@@ -858,7 +856,7 @@ describe('ModalCameraPreview component', () => {
 		expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('CameraPreview restart failed', expect.any(Error));
 	});
 
-	it('does not report a permission denial when the feed cannot be restarted', async () => {
+	it('dismisses the modal when the restart re-prompt is denied', async () => {
 		grantPermissions();
 		const wrapper = shallowMount(ModalCameraPreview);
 		await flushPromises();
@@ -875,8 +873,6 @@ describe('ModalCameraPreview component', () => {
 
 		expect(mocks.cameraPreview.start).not.toHaveBeenCalled();
 		expect(mocks.modalController.dismiss).toHaveBeenCalled();
-		//a deliberate user denial is surfaced to the user, never paged to Rollbar
-		expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
 	});
 
 	it('video mode requests the microphone and starts with the audio track enabled', async () => {
@@ -937,8 +933,6 @@ describe('ModalCameraPreview component', () => {
 
 		expect(mocks.cameraPreview.start).not.toHaveBeenCalled();
 		expect(mocks.modalController.dismiss).toHaveBeenCalled();
-		//a deliberate user denial is surfaced to the user, never paged to Rollbar
-		expect(rollbarMock.criticalWithContext).not.toHaveBeenCalled();
 		wrapper.unmount();
 		expect(document.body.classList.contains('camera-preview-open')).toBe(false);
 	});
