@@ -27,7 +27,14 @@ vi.mock('@/config', () => ({
         SETTINGS_KEYS: {
             IN_APP_CAMERA: 'in_app_camera',
             IN_APP_CAMERA_VIDEO: 'in_app_camera_video',
-            COLLECT_ERRORS: 'collect_errors'
+            COLLECT_ERRORS: 'collect_errors',
+            THEME: 'theme'
+        },
+        DEFAULT_THEME: 'light',
+        THEMES: {
+            LIGHT: 'light',
+            DARK: 'dark',
+            SYSTEM: 'system'
         }
     }
 }));
@@ -324,6 +331,47 @@ describe('Init Service', () => {
             const result = await initService.getInAppCameraVideoPreference();
 
             expect(result).toBe(false);
+        });
+    });
+
+    describe('getThemePreference()', () => {
+        it('resolves "light" when the settings row is absent', async () => {
+            selectSettingMock.mockResolvedValue({ rows: { length: 0 } });
+
+            const result = await initService.getThemePreference();
+
+            expect(result).toBe('light');
+            expect(selectSettingMock).toHaveBeenCalledWith('theme');
+        });
+
+        it('resolves "system" when the stored value is "system"', async () => {
+            selectSettingMock.mockResolvedValue({
+                rows: { length: 1, item: () => ({ value: 'system' }) }
+            });
+
+            const result = await initService.getThemePreference();
+
+            expect(result).toBe('system');
+        });
+
+        it('resolves "dark" when the stored value is "dark"', async () => {
+            selectSettingMock.mockResolvedValue({
+                rows: { length: 1, item: () => ({ value: 'dark' }) }
+            });
+
+            const result = await initService.getThemePreference();
+
+            expect(result).toBe('dark');
+        });
+
+        it('resolves "light" when the stored value is not in the whitelist', async () => {
+            selectSettingMock.mockResolvedValue({
+                rows: { length: 1, item: () => ({ value: 'solarized' }) }
+            });
+
+            const result = await initService.getThemePreference();
+
+            expect(result).toBe('light');
         });
     });
 });
