@@ -1,0 +1,22 @@
+src/theme/components/auth/CardLoginDefault.scss
+  h_2231ff2aa93473 5,13
+src/theme/components/modals/ModalDraw.scss
+  h_2231ff2aa93473 5
+src/theme/components/modals/ModalPenSettings.scss
+  h_2231ff2aa93473 3,11,21,27,39,60,66,70
+src/theme/core.scss
+  h_2231ff2aa93473 181,277,302,311,382,498,524,599-600
+src/theme/mixins.scss
+  h_2231ff2aa93473 70,104,222,246,250-255,281-282,305-306,315,344,347,353,360,363,370,451,499,620,629,716,989,1022,1025,1084-1085
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cb8c1127434991e101f9d96df18c0c5e6e0a2387",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
