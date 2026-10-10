@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Night variant (API 31+): the system splash uses the background COLOR,
+         not the branded PNG, so Android 12+ gets a dark splash in dark mode.
+         API 29-30 (Android 10-11) keep the original white branded drawable. -->
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:background">@color/splash_night</item>
+        <item name="android:windowSplashScreenBackground">@color/splash_night</item>
+    </style>
+</resources>
