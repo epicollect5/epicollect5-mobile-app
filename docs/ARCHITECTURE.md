@@ -328,6 +328,33 @@ Both options are gated on device evidence - see `docs/workflows/qa.md`, Baseline
 - **Core-first (preferred once verified).** Drop the plugin, set `SystemBars.insetsHandling: "css"`, and finish the inset CSS prototyped on `spike/core-insets-from-master` (`d10bd42`, `5da2e26`).
 - **Fork.** Fork the plugin at 8.0.8 and restore the IME bottom margin on top of its runtime top-inset detection. The repo already vendors dependencies through its own org (`github:epicollect5/...` in `package.json`), but a fork defers the coupling rather than removing it.
 
+## Native Night Mode (Theme)
+
+The Settings theme (Light / Dark / System) must drive **native** UI as well as the web layer: date/time pickers, dialogs and other OS-rendered controls follow the in-app choice, not the device theme. Orchestration lives in `src/services/theme-service.js`.
+
+### Plugins
+
+Both native platforms ship a local Capacitor plugin behind the same JS contract (`registerPlugin('NightMode')` → `setNightMode({ mode })`, where `mode` is `no` | `yes` | `follow_system`, mapped from the Light / Dark / System preference):
+
+| Platform | Source | Mechanism |
+|---|---|---|
+| Android | `android/app/src/main/java/uk/ac/imperial/epicollect/five/NightModePlugin.java` | `AppCompatDelegate.setDefaultNightMode(...)` (must run on the main thread) |
+| iOS | `ios/App/App/NightModePlugin.swift` | `window.overrideUserInterfaceStyle` on the bridge window |
+
+The JS call is guarded by `PARAMETERS.ANDROID` / `PARAMETERS.IOS`; the PWA never calls either plugin. Known limits: system-server UI (runtime permission prompts, share sheet) always follows the device, on both platforms.
+
+### iOS registration gotcha (before running `cap copy ios` by hand)
+
+Capacitor does **not** auto-discover iOS plugins: `CapacitorBridge.registerPlugins()` only registers classes listed in `packageClassList` of `ios/App/App/capacitor.config.json`. Every `npx cap copy ios` **regenerates that list from npm-installed plugins only** (`@capacitor/cli` `dist/util/iosplugin.js` overwrites `packageClassList` wholesale), silently dropping local classes such as `NightModePlugin` — the class stays compiled but is never registered.
+
+Three layers keep this from breaking:
+
+1. `scripts/ensure-ios-nightmode-plugin.js` re-inserts the class idempotently and runs automatically after `cap copy` in the `ios:build` / `ios:open` npm scripts.
+2. If you run a raw `npx cap copy ios` / `npx cap sync ios` outside those scripts, run that script afterwards (its header says the same).
+3. `tests/unit/nightmode-plugin-registration.spec.js` fails the normal test gate if the class ever drops out of `packageClassList`, if the npm wiring is removed, or if the Xcode project stops compiling the file.
+
+Failure symptom if the registration is lost: no crash — the JS fire-and-forget `.catch` swallows the rejection — but native iOS controls silently stop following the in-app theme (they follow the device instead). Look for `Night mode sync failed` in the console.
+
 ## PWA Architecture
 
 ### Boot Flow
