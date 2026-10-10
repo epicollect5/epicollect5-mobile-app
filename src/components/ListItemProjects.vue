@@ -17,9 +17,7 @@
 			>
 		</ion-avatar>
 
-		<ion-label class="ion-text-nowrap">
-			<p>{{ project.name }}</p>
-		</ion-label>
+		<ion-label class="ion-text-nowrap">{{ project.name }}</ion-label>
 	</ion-item>
 </template>
 
