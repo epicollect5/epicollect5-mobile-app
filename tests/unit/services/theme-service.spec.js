@@ -1,10 +1,11 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { PARAMETERS } from '@/config';
 
-const nativeState = vi.hoisted(() => ({ isNative: false }));
+const platformState = vi.hoisted(() => ({ platform: 'web' }));
 const setNightModeMock = vi.hoisted(() => vi.fn(() => Promise.resolve()));
 
 vi.mock('@capacitor/core', () => ({
-    Capacitor: { isNativePlatform: vi.fn(() => nativeState.isNative) },
+    Capacitor: { getPlatform: vi.fn(() => platformState.platform) },
     registerPlugin: vi.fn(() => ({ setNightMode: setNightModeMock }))
 }));
 
@@ -19,7 +20,7 @@ describe('Theme Service', () => {
         vi.resetModules();
 
         systemMatches = false;
-        nativeState.isNative = false;
+        platformState.platform = PARAMETERS.WEB;
         setNightModeMock.mockClear();
         addEventListenerMock = vi.fn();
         window.matchMedia = vi.fn(() => ({
@@ -92,7 +93,7 @@ describe('Theme Service', () => {
     });
 
     it('pins the native night mode to match the in-app preference', () => {
-        nativeState.isNative = true;
+        platformState.platform = PARAMETERS.ANDROID;
 
         themeService.applyTheme('light');
         expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'no' });
@@ -104,8 +105,25 @@ describe('Theme Service', () => {
         expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'follow_system' });
     });
 
-    it('never touches the native night mode outside native platforms', () => {
+    it('drives the same night mode contract on iOS', () => {
+        platformState.platform = PARAMETERS.IOS;
+
         themeService.applyTheme('light');
+        expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'no' });
+
+        themeService.applyTheme('dark');
+        expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'yes' });
+
+        themeService.applyTheme('system');
+        expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'follow_system' });
+    });
+
+    it('never calls the native plugin on the web', () => {
+        platformState.platform = PARAMETERS.WEB;
+
+        themeService.applyTheme('light');
+        themeService.applyTheme('dark');
+        themeService.applyTheme('system');
 
         expect(setNightModeMock).not.toHaveBeenCalled();
     });
