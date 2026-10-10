@@ -8,10 +8,20 @@ body.theme-dark {
     --ion-background-color-rgb: 30, 30, 30;
     --ion-text-color: #e6e6e6;
     --ion-text-color-rgb: 230, 230, 230;
-    --ion-item-background: #1e1e1e;
-    --ion-card-background: #1e1e1e;
+    /* items are transparent so they show their container: the page in lists,
+       the lifted card background inside cards (full-bleed rows used to paint
+       #1e1e1e over the card and left only its padding gaps visible) */
+    --ion-item-background: transparent;
+    /* lifted off the page background: the light-theme elevation is the card
+       shadow, which does not read on dark — the tonal step replaces it */
+    --ion-card-background: #36343b;
     --ion-border-color: #3a3a3c;
     --ion-placeholder-color: #9a9a9e;
+    /* the light palette's shade doubles as this app's divider/border color
+       (#d7d8da — list rows, projects list, possible answers, line dividers):
+       it glares on dark surfaces, so remap it. No text uses it; color="light"
+       pressed states read it at low opacity, which still reads correctly. */
+    --ion-color-light-shade: #3a3a3c;
 
     --app-surface: #1e1e1e;
     --app-surface-muted: #2c2c2e;
@@ -132,6 +142,25 @@ body.theme-dark {
     ion-item.item-warning {
         --color: var(--ion-color-warning-contrast);
         color: var(--ion-color-warning-contrast);
+    }
+
+    /* in-item labels resolve their text via --color: make it deterministic
+       (project names, list titles, drawer/modal rows) instead of relying on
+       the inheritance chain. Colored items (color="...") and the warning
+       banners are excluded: their labels must inherit the item's contrast
+       (black text on orange/red), not the dark-page text color. */
+    ion-item:not(.ion-color):not(.item-warning) ion-label {
+        --color: var(--app-text) !important;
+    }
+
+    /* color="dark" labels are #222428 text pinned by the light palette: flip
+       them only where they sit on dark page/modal surfaces. Labels on colored
+       cards (warning/light cards in ModalAccountDeletion) keep their dark
+       text — those surfaces stay light in both themes. */
+    .center-item-content-wrapper ion-label.ion-color-dark,
+    .profile__label ion-label.ion-color-dark,
+    ion-card ion-item ion-label.ion-color-dark {
+        color: var(--app-text) !important;
     }
 }
 

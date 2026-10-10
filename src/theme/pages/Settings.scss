@@ -8,9 +8,14 @@
     @include settings-input-label-base;
 }
 
-//theme row value matches the row label size (ion-note defaults to 0.875rem)
+//theme row value: matches the row label size (ion-note defaults to 0.875rem)
+//and neutralizes the item's slotted-note padding (padding-top:18/bottom:10),
+//whose asymmetry sits the text 4px below the centered chevron
 body ion-note.settings-theme-value {
     font-size: 1rem;
+    align-self: center;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 //theme selector sheet: option rows use the same size as the header
