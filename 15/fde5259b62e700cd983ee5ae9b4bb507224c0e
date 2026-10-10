@@ -1,0 +1,22 @@
+ios/App/App.xcodeproj/project.pbxproj
+  h_2231ff2aa93473 15,31,87,241
+ios/App/App/NightModePlugin.swift
+  h_2231ff2aa93473 1-47
+ios/App/App/capacitor.config.json
+  h_2231ff2aa93473 63
+package.json
+  h_2231ff2aa93473 24-25
+scripts/ensure-ios-nightmode-plugin.js
+  h_2231ff2aa93473 1-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "15fde5259b62e700cd983ee5ae9b4bb507224c0e",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
