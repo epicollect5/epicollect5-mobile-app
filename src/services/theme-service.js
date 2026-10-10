@@ -3,7 +3,9 @@ import {Capacitor, registerPlugin} from '@capacitor/core';
 
 const SYSTEM_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
-//local native plugin: pins the night mode independently of the device theme
+//local native plugin: pins the night mode independently of the device theme.
+//See docs/ARCHITECTURE.md "Native Night Mode (Theme)" — includes the iOS
+//packageClassList gotcha and its guard script/test.
 const nightModePlugin = registerPlugin('NightMode');
 
 const NIGHT_MODES = {
@@ -52,8 +54,11 @@ function applyTheme(preference) {
     );
 
     //native dialogs/pickers must follow the in-app choice, not the device
-    //theme (fire-and-forget: a failed call never affects the web theme)
-    if (Capacitor.isNativePlatform()) {
+    //theme. Android and iOS each ship a NightMode plugin; the web/PWA has
+    //neither and must not be called. Fire-and-forget: a failed call never
+    //affects the web theme.
+    const platform = Capacitor.getPlatform();
+    if (platform === PARAMETERS.ANDROID || platform === PARAMETERS.IOS) {
         nightModePlugin.setNightMode({mode: NIGHT_MODES[preference]}).catch((error) => {
             console.log('Night mode sync failed: ' + error);
         });
