@@ -40,7 +40,8 @@ export const authAppleService = {
                         async function (error) {
                             console.log(error);
                             //clashing accounts?
-                            const errors = error.data.errors;
+                            //error may be undefined on network failure (webService rejects with error.response)
+                            const errorCode = errorsService.getWebErrorCode(error);
                             let credentials;
                             try {
                                 credentials = jwtDecode(appleJwtToken);
@@ -53,7 +54,7 @@ export const authAppleService = {
                                 return;
                             }
 
-                            if (errors[0].code === 'ec5_384') {
+                            if (errorCode === 'ec5_384') {
                                 //need to confirm email
                                 account.code = null;
                                 webService.getEmailConfirmationCode(credentials.email).then(async function () {
@@ -85,7 +86,7 @@ export const authAppleService = {
                                 });
                             }
 
-                            if (errors[0].code === 'ec5_390') {
+                            if (errorCode === 'ec5_390') {
                                 //need to confirm the password
                                 notificationService.hideProgressDialog();
                                 //show modal to enter password
@@ -105,7 +106,7 @@ export const authAppleService = {
                                 return modalsHandlerService.confirmPassword.present();
                             }
 
-                            if (errors[0].code !== 'ec5_390' && errors[0].code !== 'ec5_384') {
+                            if (errorCode !== 'ec5_390' && errorCode !== 'ec5_384') {
                                 // hide any modals
                                 await modalsHandlerService.dismissAll();
                                 notificationService.hideProgressDialog();
