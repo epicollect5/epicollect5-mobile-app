@@ -1,0 +1,20 @@
+src/services/auth/auth-apple-service.js
+  h_2231ff2aa93473 43-44,57,89,109
+src/services/auth/auth-google-service.js
+  h_2231ff2aa93473 82-84,114,134,145-146
+tests/unit/services/auth/auth-apple-service.spec.js
+  h_2231ff2aa93473 1-163
+tests/unit/services/auth/auth-google-service.spec.js
+  h_2231ff2aa93473 1-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "680cc0918861597d1b7e8daad30cf256aa3627bc",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
