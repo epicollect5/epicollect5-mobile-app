@@ -1,0 +1,14 @@
+tests/unit/services/theme-service.spec.js
+  h_2231ff2aa93473 108-122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b5afa2364453789206ec19b5d61cec79d16df610",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
