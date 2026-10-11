@@ -26,6 +26,11 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     });
   }
 
+  function refreshFormsAfterProjectUpdate() {
+    state.forms = projectModel.getFormsInOrder();
+    resetDownloadButtonState();
+  }
+
   function persistFormDownloadCache(formRef) {
     try {
       entriesDownloadProgressService.save(projectModel.getProjectRef(), formRef, state.downloadCache[formRef]);
@@ -141,6 +146,23 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
       const updated = await updateProject();
 
       if (!updated) {
+        //updateProject defers itself as the post-login retry on auth errors:
+        //chain the page refresh onto that retry so a deferred success does
+        //not leave stale forms and buttons
+        if (rootStore.afterUserIsLoggedIn?.callback === updateProject) {
+          const retryUpdate = rootStore.afterUserIsLoggedIn.callback;
+          rootStore.afterUserIsLoggedIn = {
+            callback: async () => {
+              const ok = await retryUpdate();
+              if (ok) {
+                clearProjectDownloadCache();
+                refreshFormsAfterProjectUpdate();
+              }
+              return ok;
+            },
+            params: null
+          };
+        }
         return {shouldProceed: false, projectUpdated: false};
       }
 
@@ -173,11 +195,6 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
 
       return modal.present();
     }
-
-    const refreshFormsAfterProjectUpdate = () => {
-      state.forms = projectModel.getFormsInOrder();
-      resetDownloadButtonState();
-    };
 
     const handleProjectUpdated = async (message) => {
       refreshFormsAfterProjectUpdate();
