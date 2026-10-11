@@ -1,0 +1,14 @@
+src/theme/dark.scss
+  h_2231ff2aa93473 147-154
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d00e11e047ecf3d95f319b1fd29f99a883d385db",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
