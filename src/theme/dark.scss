@@ -121,6 +121,7 @@ body.theme-dark {
 
     /* searchbar placeholder/clear icons fall back to black */
     ion-searchbar {
+        --background: var(--ion-card-background);
         --placeholder-color: var(--app-text);
         --clear-button-color: var(--app-text);
     }
