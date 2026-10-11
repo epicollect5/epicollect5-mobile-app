@@ -1,0 +1,14 @@
+src/config/strings.js
+  h_2231ff2aa93473 1181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8a569a2e6533788bae29288da0768e72d638d823",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
