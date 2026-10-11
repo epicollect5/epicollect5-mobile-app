@@ -1178,7 +1178,7 @@ export const STRINGS = {
             enter_password: 'Wprowadź hasło w celu weryfikacji',
             code_was_sent: 'Kod został wysłany do weryfikacji',
             account_exists: 'Account już istnieje',
-            login_with_email: 'Zaloguj się za pomocą e-maila',
+            login_with_email: 'Zaloguj się e-mailem',
             sign_in_with_google: 'Zaloguj się przez Google',
             sign_in_with_apple: 'Zaloguj się przez Apple',
             passwordless_teaser: 'Wyślemy ci kod do skrzynki odbiorczej',
