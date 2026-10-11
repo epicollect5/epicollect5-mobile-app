@@ -47,7 +47,9 @@ function applyTheme(preference) {
     const effectiveDark = isEffectiveDark(preference);
     document.body.classList.toggle('theme-dark', effectiveDark);
     //root-level scheme drives UA widgets (native date/time pickers);
-    //the PWA never calls applyTheme, so the light index.html meta stays valid
+    //applyTheme runs on all platforms (boot and Settings saves, PWA
+    //included — only the NightMode plugin call below is native-only),
+    //so the light index.html meta only covers first paint
     document.documentElement.style.setProperty(
         'color-scheme',
         effectiveDark ? 'dark' : 'light'
