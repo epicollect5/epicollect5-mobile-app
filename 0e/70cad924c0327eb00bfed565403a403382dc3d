@@ -1,0 +1,14 @@
+tests/unit/services/entries-download-service.spec.js
+  h_2231ff2aa93473 459-494
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0e70cad924c0327eb00bfed565403a403382dc3d",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
