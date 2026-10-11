@@ -5,14 +5,20 @@
 				<ion-row v-if="isGoogleAuthEnabled || isDebug">
 					<ion-col>
 						<div class="ion-text-center">
-							<sign-in-with-google-button @signin="performLoginGoogle()" />
+							<sign-in-with-google-button
+								:label="labels.sign_in_with_google"
+								@signin="performLoginGoogle()"
+							 />
 						</div>
 					</ion-col>
 				</ion-row>
 				<ion-row v-if="isAppleAuthEnabled || isDebug">
 					<ion-col>
 						<div class="ion-text-center">
-							<sign-in-with-apple-button @signin="performLoginApple()" />
+							<sign-in-with-apple-button
+								:label="labels.sign_in_with_apple"
+								@signin="performLoginApple()"
+							 />
 						</div>
 					</ion-col>
 				</ion-row>

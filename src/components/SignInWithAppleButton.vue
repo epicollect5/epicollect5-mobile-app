@@ -18,7 +18,7 @@
 				></path>
 			</svg>
 		</span>
-		<span class="signin-apple-btn-contents">Sign in with Apple</span>
+		<span class="signin-apple-btn-contents">{{ label }}</span>
 	</button>
 </template>
 
@@ -27,6 +27,12 @@ import { reactive } from '@vue/reactivity';
 
 export default {
 	name: 'SignInWithAppleButton',
+	props: {
+		label: {
+			type: String,
+			required: true
+		}
+	},
 	emits: ['signin'],
 	setup(props, { emit }) {
 		const state = reactive({});
@@ -41,6 +47,7 @@ export default {
 
 		return {
 			state,
+			...props,
 			...methods,
 			...computedScope
 		};

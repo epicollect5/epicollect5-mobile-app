@@ -33,7 +33,7 @@
 				></path>
 			</svg>
 		</span>
-		<span class="signin-google-btn-contents">Sign in with Google</span>
+		<span class="signin-google-btn-contents">{{ label }}</span>
 	</button>
 </template>
 
@@ -42,6 +42,12 @@ import { reactive } from '@vue/reactivity';
 
 export default {
 	name: 'SignInWithGoogleButton',
+	props: {
+		label: {
+			type: String,
+			required: true
+		}
+	},
 	emits: ['signin'],
 	setup(props, { emit }) {
 		const state = reactive({});
@@ -56,6 +62,7 @@ export default {
 
 		return {
 			state,
+			...props,
 			...methods,
 			...computedScope
 		};
