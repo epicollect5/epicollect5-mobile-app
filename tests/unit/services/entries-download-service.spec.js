@@ -456,6 +456,42 @@ describe('entriesDownloadService project version checks', () => {
         expect(state.isFetching).toBe(false);
     });
 
+    it('refreshes forms when the deferred post-login project update succeeds', async () => {
+        const state = createState();
+        const rootStore = {language: 'en', progressTransfer: {}, afterUserIsLoggedIn: {callback: null, params: null}};
+        versioningService.checkProjectVersion.mockResolvedValue(false);
+        updateProject.mockImplementationOnce(async () => {
+            rootStore.afterUserIsLoggedIn = {callback: updateProject, params: null};
+            return false;
+        });
+        updateProject.mockResolvedValue(true);
+        const downloader = entriesDownloadService.initDownloader({
+            state,
+            rootStore,
+            labels,
+            language: 'en',
+            projectModel
+        });
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
+        expect(downloadService.downloadFormEntries).not.toHaveBeenCalled();
+        const deferred = rootStore.afterUserIsLoggedIn.callback;
+        expect(deferred).toBeTypeOf('function');
+
+        //the deferred update brings a new form: the page must pick it up
+        projectModel.getFormsInOrder.mockReturnValueOnce([
+            {formRef: 'form-a'},
+            {formRef: 'form-b'},
+            {formRef: 'form-c'}
+        ]);
+        await deferred();
+
+        expect(state.forms).toEqual([{formRef: 'form-a'}, {formRef: 'form-b'}, {formRef: 'form-c'}]);
+        expect(entriesDownloadProgressService.clearProject).toHaveBeenCalledWith('project-ref');
+    });
+
     it('cleans up the transfer state when the connection drops during entry download', async () => {
         const state = createState();
         downloadService.downloadFormEntries.mockRejectedValue(new Error('network unavailable'));
