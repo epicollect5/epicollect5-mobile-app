@@ -35,11 +35,31 @@ describe('native NightMode plugin registration', () => {
         }
     });
 
+    it('ships the ensure script that performs the re-insertion', () => {
+        //the wiring test above only matches the script path as a string:
+        //it still passes if the file is deleted or stops touching the list
+        const scriptPath = path.join(rootDir, 'scripts/ensure-ios-nightmode-plugin.js');
+
+        expect(fs.existsSync(scriptPath)).toBe(true);
+        const script = fs.readFileSync(scriptPath, 'utf8');
+        expect(script).toContain('NightModePlugin');
+        expect(script).toContain('packageClassList');
+    });
+
     it('is wired into the committed Xcode project', () => {
         const pbxproj = readText('ios/App/App.xcodeproj/project.pbxproj');
 
         expect(pbxproj).toContain('/* NightModePlugin.swift */ = {isa = PBXFileReference');
         expect(pbxproj).toContain('NightModePlugin.swift in Sources');
+        //the build-file record alone is not enough: its id must be listed
+        //in the target's Sources phase, otherwise the plugin never compiles
+        const buildFileId = (pbxproj.match(/([0-9A-F]+) \/\* NightModePlugin\.swift in Sources \*\/ = \{isa = PBXBuildFile/) || [])[1];
+        expect(buildFileId).toBeTruthy();
+        const sourcesSection = pbxproj.slice(
+            pbxproj.indexOf('/* Begin PBXSourcesBuildPhase section */'),
+            pbxproj.indexOf('/* End PBXSourcesBuildPhase section */')
+        );
+        expect(sourcesSection).toContain(buildFileId);
     });
 
     //Both platforms must expose the same JS contract consumed by theme-service.js
