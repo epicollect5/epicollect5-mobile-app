@@ -1,0 +1,14 @@
+tests/unit/components/SignInButtons.spec.js
+  h_2231ff2aa93473 51,61-63,67,77,84-86,90,110,112-115,127,129-132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ef469e4d0d3a7c33c05e0bee78b97a264d03aa36",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
