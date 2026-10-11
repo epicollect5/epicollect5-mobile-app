@@ -52,7 +52,7 @@ export async function updateProject () {
         return false;
     }
 
-    let capturedError = null;
+    let failure = null;
     try {
         await versioningService.updateProject({
             onProgress: (progress) => {
@@ -60,10 +60,10 @@ export async function updateProject () {
             }
         });
     } catch (error) {
-        capturedError = error;
+        failure = { error };
     }
 
-    if (capturedError) {
+    if (failure) {
         await cleanupUpdateModal(handle);
     } else {
         // Stay on the requesting page: the update changes no routing, so the
@@ -79,7 +79,8 @@ export async function updateProject () {
         entriesDownloadProgressService.clearProject(projectModel.getProjectRef());
     }
 
-    if (capturedError) {
+    if (failure) {
+        const capturedError = failure.error;
         // Check if we have an auth error
         if (authErrors.indexOf(capturedError?.data?.errors?.[0]?.code) >= 0) {
             await notificationService.showAlert(
