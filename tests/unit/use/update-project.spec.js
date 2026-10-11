@@ -224,6 +224,22 @@ describe('updateProject()', () => {
         expect(result).toBe(false);
     });
 
+    it('reports a falsy rejection as a failed update, never as success', async () => {
+        const rootStore = useRootStore();
+        const modal = mockModal();
+        //axios timeouts with no server response reject with undefined
+        versioningService.updateProject.mockRejectedValue(undefined);
+
+        const result = await updateProject();
+
+        expect(result).toBe(false);
+        expect(rootStore.updateDone).toBe(false);
+        expect(modal.dismiss).toHaveBeenCalledTimes(1);
+        expect(errorsService.handleWebError).toHaveBeenCalledWith(undefined);
+        expect(entriesDownloadProgressService.clearProject).not.toHaveBeenCalled();
+        expect(rootStore.isProjectUpdating).toBe(false);
+    });
+
     it('releases the navigation lock on an auth error and stores the retry callback', async () => {
         const rootStore = useRootStore();
         mockModal();
