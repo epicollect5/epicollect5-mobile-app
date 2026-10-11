@@ -48,7 +48,7 @@ afterEach(() => {
 describe('SignInWithGoogleButton.vue', () => {
 
     it('renders the official full-color Google G (never a monochrome icon)', () => {
-        wrapper = mount(SignInWithGoogleButton);
+        wrapper = mount(SignInWithGoogleButton, { props: { label: 'Sign in with Google' } });
         const svg = wrapper.find('.signin-google-btn-icon svg');
         expect(svg.exists()).toBe(true);
         const html = svg.html();
@@ -58,13 +58,13 @@ describe('SignInWithGoogleButton.vue', () => {
         expect(html).toContain('#34A853');
     });
 
-    it('labels the action with the guideline text', () => {
-        wrapper = mount(SignInWithGoogleButton);
-        expect(wrapper.find('.signin-google-btn-contents').text()).toBe('Sign in with Google');
+    it('renders the localized label passed via props', () => {
+        wrapper = mount(SignInWithGoogleButton, { props: { label: 'Mit Google anmelden' } });
+        expect(wrapper.find('.signin-google-btn-contents').text()).toBe('Mit Google anmelden');
     });
 
     it('emits signin on click (no auth logic in the component)', async () => {
-        wrapper = mount(SignInWithGoogleButton);
+        wrapper = mount(SignInWithGoogleButton, { props: { label: 'Sign in with Google' } });
         await wrapper.find('button[type="button"]').trigger('click');
         expect(wrapper.emitted('signin')).toBeTruthy();
         expect(wrapper.emitted('signin')).toHaveLength(1);
@@ -74,20 +74,20 @@ describe('SignInWithGoogleButton.vue', () => {
 describe('SignInWithAppleButton.vue', () => {
 
     it('renders the official Apple logo artwork driven by the button color', () => {
-        wrapper = mount(SignInWithAppleButton);
+        wrapper = mount(SignInWithAppleButton, { props: { label: 'Sign in with Apple' } });
         const logo = wrapper.find('.signin-apple-btn-icon svg');
         expect(logo.exists()).toBe(true);
         expect(logo.html()).toContain('currentColor');
         expect(logo.html()).toContain('M12.6902416,29.5');
     });
 
-    it('labels the action with the guideline title', () => {
-        wrapper = mount(SignInWithAppleButton);
-        expect(wrapper.find('.signin-apple-btn-contents').text()).toBe('Sign in with Apple');
+    it('renders the localized label passed via props', () => {
+        wrapper = mount(SignInWithAppleButton, { props: { label: 'Mit Apple anmelden' } });
+        expect(wrapper.find('.signin-apple-btn-contents').text()).toBe('Mit Apple anmelden');
     });
 
     it('emits signin on click (no auth logic in the component)', async () => {
-        wrapper = mount(SignInWithAppleButton);
+        wrapper = mount(SignInWithAppleButton, { props: { label: 'Sign in with Apple' } });
         await wrapper.find('button[type="button"]').trigger('click');
         expect(wrapper.emitted('signin')).toBeTruthy();
         expect(wrapper.emitted('signin')).toHaveLength(1);
@@ -107,9 +107,12 @@ describe('CardLoginDefault.vue sign-in buttons', () => {
         });
     }
 
-    it('renders the Google button when Google auth is enabled', () => {
+    it('renders the Google button with the localized label', () => {
         wrapper = mountCardLogin(['google']);
-        expect(wrapper.findComponent(SignInWithGoogleButton).exists()).toBe(true);
+        const button = wrapper.findComponent(SignInWithGoogleButton);
+        expect(button.exists()).toBe(true);
+        expect(button.props('label')).toBe('Sign in with Google');
+        expect(button.find('.signin-google-btn-contents').text()).toBe('Sign in with Google');
     });
 
     it('delegates the Google signin event to the auth service', async () => {
@@ -121,9 +124,12 @@ describe('CardLoginDefault.vue sign-in buttons', () => {
         });
     });
 
-    it('renders the Apple button when Apple auth is enabled on iOS 13+', () => {
+    it('renders the Apple button with the localized label on iOS 13+', () => {
         wrapper = mountCardLogin(['apple']);
-        expect(wrapper.findComponent(SignInWithAppleButton).exists()).toBe(true);
+        const button = wrapper.findComponent(SignInWithAppleButton);
+        expect(button.exists()).toBe(true);
+        expect(button.props('label')).toBe('Sign in with Apple');
+        expect(button.find('.signin-apple-btn-contents').text()).toBe('Sign in with Apple');
     });
 
     it('delegates the Apple signin event to the auth service', async () => {
