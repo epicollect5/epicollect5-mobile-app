@@ -341,7 +341,7 @@ Both native platforms ship a local Capacitor plugin behind the same JS contract 
 | Android | `android/app/src/main/java/uk/ac/imperial/epicollect/five/NightModePlugin.java` | `AppCompatDelegate.setDefaultNightMode(...)` (must run on the main thread) |
 | iOS | `ios/App/App/NightModePlugin.swift` | `window.overrideUserInterfaceStyle` on the bridge window |
 
-The JS call is guarded by `PARAMETERS.ANDROID` / `PARAMETERS.IOS`; the PWA never calls either plugin. Known limits: system-server UI (runtime permission prompts, share sheet) always follows the device, on both platforms.
+The JS call is guarded by `PARAMETERS.ANDROID` / `PARAMETERS.IOS`; the PWA never calls either plugin. Known limits: system-server UI (runtime permission prompts, share sheet) always follows the device, on both platforms. The Android splash (`android/app/src/main/res/values-night*`) also follows the device night mode, not the in-app setting: it resolves at process start, before the NightMode plugin applies the saved choice — so a Light-setting user on a dark device briefly sees the dark splash, and vice versa. Splash-only, accepted behavior.
 
 ### iOS registration gotcha (before running `cap copy ios` by hand)
 
