@@ -1,0 +1,14 @@
+tests/unit/nightmode-plugin-registration.spec.js
+  h_2231ff2aa93473 38-48,54-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "98fc36a470c1db2d70246afdf61b9cba316be818",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
