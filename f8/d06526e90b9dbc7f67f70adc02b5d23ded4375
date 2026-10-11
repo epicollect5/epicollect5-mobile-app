@@ -1,0 +1,26 @@
+src/components/CardLoginDefault.vue
+  h_2231ff2aa93473 8-11,18-21
+src/components/SignInWithAppleButton.vue
+  h_2231ff2aa93473 21,30-35,50
+src/components/SignInWithGoogleButton.vue
+  h_2231ff2aa93473 36,45-50,65
+src/config/strings.js
+  h_2231ff2aa93473 54-55,336-337,618-619,900-901,1182-1183,1464-1465,1746-1747,2028-2029,2310-2311
+src/theme/components/auth/CardLoginDefault.scss
+  h_2231ff2aa93473 21,29
+src/theme/components/auth/SignInWithAppleButton.scss
+  h_2231ff2aa93473 12
+src/theme/components/auth/SignInWithGoogleButton.scss
+  h_2231ff2aa93473 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f8d06526e90b9dbc7f67f70adc02b5d23ded4375",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
