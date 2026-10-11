@@ -349,7 +349,7 @@ Capacitor does **not** auto-discover iOS plugins: `CapacitorBridge.registerPlugi
 
 Three layers keep this from breaking:
 
-1. `scripts/ensure-ios-nightmode-plugin.js` re-inserts the class idempotently and runs automatically after `cap copy` in the `ios:build` / `ios:open` npm scripts.
+1. `scripts/ensure-ios-nightmode-plugin.js` re-inserts the class idempotently and runs automatically after `cap copy` in the `ios:build` / `ios:open` npm scripts and in the shared `native:debug` / `native:prod` / `native:copy` / `prod` scripts (the canonical build path), which copy all platforms.
 2. If you run a raw `npx cap copy ios` / `npx cap sync ios` outside those scripts, run that script afterwards (its header says the same).
 3. `tests/unit/nightmode-plugin-registration.spec.js` fails the normal test gate if the class ever drops out of `packageClassList`, if the npm wiring is removed, or if the Xcode project stops compiling the file.
 
