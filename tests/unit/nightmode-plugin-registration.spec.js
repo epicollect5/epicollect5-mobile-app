@@ -23,8 +23,10 @@ describe('native NightMode plugin registration', () => {
 
     it('is re-inserted after every cap copy by the ensure-script wiring', () => {
         const pkg = readJson('package.json');
-        for (const script of ['ios:build', 'ios:open']) {
-            const copyIndex = pkg.scripts[script].indexOf('npx cap copy ios');
+        for (const script of ['ios:build', 'ios:open', 'native:debug', 'native:prod', 'native:copy', 'prod']) {
+            //ios scripts copy ios only, shared scripts copy all platforms:
+            //both regenerate the ios packageClassList
+            const copyIndex = pkg.scripts[script].indexOf('npx cap copy');
             const ensureIndex = pkg.scripts[script].indexOf('scripts/ensure-ios-nightmode-plugin.js');
 
             expect(copyIndex).toBeGreaterThan(-1);
