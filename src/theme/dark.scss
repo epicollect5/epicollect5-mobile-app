@@ -144,6 +144,14 @@ body.theme-dark {
         color: var(--ion-color-warning-contrast);
     }
 
+    /* error text sits directly on the dark card: the danger base (1.94:1
+       on the card background) is unreadable there, so use a brighter error
+       text (5.14:1). The variable itself stays put — red backgrounds with
+       white text depend on it. */
+    .answer-card .answer-error {
+        color: #f28b82;
+    }
+
     /* in-item labels resolve their text via --color: make it deterministic
        (project names, list titles, drawer/modal rows) instead of relying on
        the inheritance chain. Colored items (color="...") and the warning
