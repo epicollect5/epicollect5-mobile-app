@@ -1,0 +1,14 @@
+tests/unit/use/update-project.spec.js
+  h_2231ff2aa93473 227-242
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "759b7a871f8a8c8ecea5c3b677f963b1ac5d8cbf",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
