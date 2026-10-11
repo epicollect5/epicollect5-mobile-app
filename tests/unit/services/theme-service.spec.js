@@ -105,6 +105,21 @@ describe('Theme Service', () => {
         expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'follow_system' });
     });
 
+    it('still applies the web theme when the native call rejects', async () => {
+        platformState.platform = PARAMETERS.ANDROID;
+        setNightModeMock.mockImplementation(() => Promise.reject(new Error('no bridge')));
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+        expect(() => themeService.applyTheme('dark')).not.toThrow();
+        expect(document.body.classList.contains('theme-dark')).toBe(true);
+        await vi.waitFor(() => {
+            expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Night mode sync failed'));
+        });
+
+        logSpy.mockRestore();
+        setNightModeMock.mockImplementation(() => Promise.resolve());
+    });
+
     it('drives the same night mode contract on iOS', () => {
         platformState.platform = PARAMETERS.IOS;
 
