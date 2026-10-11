@@ -79,8 +79,9 @@ export const authGoogleService = {
                         async function (error) {
                             console.log(error);
                             //clashing accounts?
-                            const errors = error.data.errors;
-                            if (errors[0].code === 'ec5_383') {
+                            //error may be undefined on network failure (webService rejects with error.response)
+                            const errorCode = errorsService.getWebErrorCode(error);
+                            if (errorCode === 'ec5_383') {
                                 account.code = null;
                                 //need to confirm email
                                 webService.getEmailConfirmationCode(account.email).then(async function () {
@@ -110,7 +111,7 @@ export const authGoogleService = {
                                 });
                             }
 
-                            if (errors[0].code === 'ec5_390') {
+                            if (errorCode === 'ec5_390') {
                                 //need to confirm the password
                                 notificationService.hideProgressDialog();
                                 //show modal to enter password
@@ -130,7 +131,7 @@ export const authGoogleService = {
                                 return modalsHandlerService.confirmPassword.present();
                             }
 
-                            if (errors[0].code !== 'ec5_390' && errors[0].code !== 'ec5_383') {
+                            if (errorCode !== 'ec5_390' && errorCode !== 'ec5_383') {
                                 // hide any modals
                                 await modalsHandlerService.dismissAll();
                                 notificationService.hideProgressDialog();
@@ -141,7 +142,8 @@ export const authGoogleService = {
                 }, function (error) {
                     //t.ly/wlpO => SIGN IN CANCELLED gets code 12501
                     //Need to check both the number and the string
-                    if (error.code === 12501 || error.code === '12501') {
+                    //error may be undefined (getGoogleCodeNatively rejects with no arg when no serverAuthCode)
+                    if (error && (error.code === 12501 || error.code === '12501')) {
                         notificationService.showAlert(STRINGS[language].status_codes.ec5_103, labels.error + ' ' + error);
                     }
                     notificationService.hideProgressDialog();

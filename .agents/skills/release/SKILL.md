@@ -73,9 +73,11 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
 
 3b. **Physical Android QA** (required before release):
    - Run the **Baseline Regression Suite** in `docs/workflows/qa.md` in full: B1 (status
-     bar), B2 (GROUP question keyboard and bottom scroll), B3 (drawer scroll). Mandatory on
-     every release, not only when the diff touches insets, because these surfaces share one
-     inset configuration.
+     bar), B2 (GROUP question keyboard and bottom scroll), B3 (drawer scroll), B7 (DATE
+     question picker and value layout) and B8 (TIME question picker and value layout).
+     Mandatory on every release, not only when the diff touches insets or the date/time
+     questions, because these surfaces share one inset configuration and the native
+     date/time pickers have regressed on Android WebView updates before.
    - Add the release-specific checks on top: modal and camera-preview geometry.
    - iOS: sanity open (no crash).
    - Record results in `docs/QA-<version>.md`.

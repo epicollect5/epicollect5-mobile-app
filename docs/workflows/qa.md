@@ -58,7 +58,7 @@ Rules:
 
 Every QA report MUST include the checks below, regardless of the diff. They are emitted even when the change does not touch layout, insets, navigation, or question rendering, and they are **not** diff-derived.
 
-Do not deduplicate them against diff-derived checks, and do not drop them when the diff is small or unrelated. They are the standing guard for the shared Android inset configuration (`capacitor.config.json` `SystemBars`/`EdgeToEdge`, `src/components/globals/BaseLayout.vue`, `LeftDrawer.vue`, `RightDrawer.vue`), where a change to one surface silently breaks another.
+Do not deduplicate them against diff-derived checks, and do not drop them when the diff is small or unrelated. They are the standing guard for the shared Android inset configuration (`capacitor.config.json` `SystemBars`/`EdgeToEdge`, `src/components/globals/BaseLayout.vue`, `LeftDrawer.vue`, `RightDrawer.vue`), where a change to one surface silently breaks another, and (B7-B8) for the shared DATE and TIME question components (`QuestionDate.vue`, `QuestionTime.vue` and the entries-filter date fields), whose native pickers have regressed before on Android WebView updates.
 
 ### B1. Status bar does not overlap or double-pad content
 
@@ -96,7 +96,19 @@ Do not deduplicate them against diff-derived checks, and do not drop them when t
 - **Expected Result:** The Apple sheet opens; approved sign-in lands on authenticated home with the user persisted across restart; logout returns to the login screen and cold restart stays logged out.
 - **Manual Action:** On a staging iOS fresh install tap Sign in with Apple; approve with the staging test Apple ID; confirm home and Projects load; open account/settings and Log out; confirm the login screen; force-close and reopen and confirm still logged out.
 
-B1-B6 are emitted as CSV rows like any other check - apply the comma substitution rule to them too. Android is where the inset failure modes live; run the same B1-B3 steps on iOS as a cross-platform sanity check since all three surfaces exist there. B4 and B5 run on Android and iOS with `PWA` pre-filled to `N/A`. B6 runs on iOS only with `Android` pre-filled to `N/A` and `PWA` pre-filled to `N/A`. Mark the cell `N/A` where a surface is absent on PWA.
+### B7. DATE question picker and value layout
+
+- **Test Description:** Confirm the DATE question field opens its picker on the first tap and lays out its value correctly on native staging builds.
+- **Expected Result:** Tapping anywhere in the date field opens the date picker on the first tap (no focus-only dead tap); an untouched empty field shows no placeholder segments such as `gg/mm/aaaa` and reads as empty; a selected date is shown centred within the field; the clear (X) icon empties the field; the from/to date fields in the entries-list filter modal open the picker the same way.
+- **Manual Action:** On Android 10 and Android 16 staging (and iOS); open a form with a DATE question; tap the field and confirm the picker opens on the first tap; select a date and confirm it appears centred in the field; tap the clear icon and confirm the field is empty again; leave another date question untouched and confirm no placeholder segments are shown; open the entries-list filter modal and confirm its from/to date fields also open the picker on the first tap.
+
+### B8. TIME question picker and value layout
+
+- **Test Description:** Confirm the TIME question field opens the matching picker on the first tap and lays out its value correctly on native staging builds.
+- **Expected Result:** Tapping anywhere in a no-seconds time field (e.g. `HH:mm` or `hh:mm`) opens the clock picker on the first tap; a seconds format (e.g. `HH:mm:ss` or `mm:ss`) opens the wheel picker on the first tap; a selected time is shown centred within the field; the clear (X) icon empties the field; an untouched empty field shows no placeholder segments such as `--:--`.
+- **Manual Action:** On Android 10 and Android 16 staging (and iOS); open a form with TIME questions in a no-seconds format and a seconds format; tap each field and confirm the matching picker opens on the first tap; select a time and confirm it appears centred in the field; tap the clear icon and confirm the field is empty again; leave another time question untouched and confirm no placeholder segments are shown.
+
+B1-B8 are emitted as CSV rows like any other check - apply the comma substitution rule to them too. Android is where the inset failure modes live; run the same B1-B3 steps on iOS as a cross-platform sanity check since all three surfaces exist there. B4 and B5 run on Android and iOS with `PWA` pre-filled to `N/A`. B6 runs on iOS only with `Android` pre-filled to `N/A` and `PWA` pre-filled to `N/A`. B7 and B8 run on Android and iOS and also on PWA (the DATE and TIME questions exist on all three platforms) so do not pre-fill their cells with `N/A`. Mark the cell `N/A` where a surface is absent on PWA.
 
 ## Output Format
 

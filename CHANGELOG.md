@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 98.3.6 - build 9836
+
+ - Fixed a crash during Google and Apple sign-in: when the authentication request failed without a server response (for example a network timeout on cellular), the app threw a TypeError reading the missing error payload instead of showing an error message. The sign-in flow now falls back to the standard error handling, dismisses the progress dialog, and shows the user an appropriate message.
+ - On Android 16, tapping anywhere on a date or time question field now opens the native picker, not just tapping the calendar or clock icon.
+ - Empty date and time inputs are now visibly marked as empty, matching the styling of the other question types.
+
 # 98.3.5 - build 9835
 
  - Updating a project now goes through a single confirmation in both the entries and upload flows: "Learn more" opens the documentation without deciding, "Cancel" declines and "OK" starts the update. Dismissing the prompt — including with the Android back button — counts as declining, so an update can no longer be left half-applied. The separate "Forms updated." notice has been removed.

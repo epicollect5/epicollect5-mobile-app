@@ -55,6 +55,7 @@
 					<input type="date"
 						   :min="state.filters.oldest"
 						   :max="state.filters.newest"
+						   :class="{ 'is-empty': !state.filters.from }"
 						   v-model="state.filters.from"
 						   @change="filterByDate()" />
 				</div>
@@ -68,6 +69,7 @@
 					<input type="date"
 						   :min="state.filters.oldest"
 						   :max="state.filters.newest"
+						   :class="{ 'is-empty': !state.filters.to }"
 						   v-model="state.filters.to"
 						   @change="filterByDate()" />
 				</div>
