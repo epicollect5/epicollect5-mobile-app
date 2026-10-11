@@ -132,6 +132,21 @@ body.theme-dark {
         --ion-color-shade: var(--app-text) !important;
     }
 
+    /* email login is an outline color="dark" button: its text/border resolve
+       from --ion-color-base (button.md.css maps outline+ion-color to the base,
+       not --color), which stays #222428 in dark mode and is unreadable on the
+       dark card — point it at the light font color instead (the mail icon
+       inherits the button text color) */
+    ion-button.email-login-btn.ion-color-dark {
+        --ion-color-base: var(--app-text) !important;
+        --background: #131314;
+    }
+
+    ion-button.email-login-btn.ion-color-dark::part(native) {
+        border-color: #8e918f;
+        background: #131314;
+    }
+
     /* loading dialog: keep the spinner visible on the dark panel */
     .ec5LoadingDialog {
         --spinner-color: var(--app-text);

@@ -1,0 +1,65 @@
+/* Sign in with Apple button.
+   Same chrome as the Google button (fills, strokes, metrics, layout)
+   so both providers render identically and theme together; only the
+   logo and label differ. Logo is the official artwork path driven by
+   the button color (all-black/all-white with the title, per HIG). */
+.signin-apple-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    max-width: 210px;
+    height: 50px;
+    margin: 0 auto;
+    padding: 0 12px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    border: 1px solid #747775;
+    border-radius: 4px;
+    color: #1f1f1f;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 22px;
+    cursor: pointer;
+}
+
+.signin-apple-btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.signin-apple-btn-icon svg {
+    display: block;
+    width: 22px;
+    height: 22px;
+}
+
+.signin-apple-btn-contents {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.signin-apple-btn:focus-visible {
+    outline: 2px solid #000000;
+    outline-offset: 2px;
+}
+
+body.theme-dark .signin-apple-btn {
+    background-color: #131314;
+    border-color: #8e918f;
+    color: #e3e3e3;
+}
+
+body.theme-dark .signin-apple-btn:focus-visible {
+    outline-color: #ffffff;
+}

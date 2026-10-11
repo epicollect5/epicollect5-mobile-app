@@ -77,7 +77,7 @@ export default defineConfig(({ mode, command }) => {
                         // element with <template #content> slots would break
                         // the SFC compiler ("Codegen node is missing")
                         isCustomElement: (tag) => tag.includes('-') &&
-                            !['base-layout', 'grid-question-narrow'].includes(tag)
+                            !['base-layout', 'grid-question-narrow', 'sign-in-with-google-button', 'sign-in-with-apple-button'].includes(tag)
                     }
                 }
             } : {}),

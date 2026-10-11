@@ -5,24 +5,14 @@
 				<ion-row v-if="isGoogleAuthEnabled || isDebug">
 					<ion-col>
 						<div class="ion-text-center">
-							<img
-								:src="getGoogleSigninButtonImage()"
-								width="210"
-								height="50"
-								@click="performLoginGoogle()"
-							/>
+							<sign-in-with-google-button @signin="performLoginGoogle()" />
 						</div>
 					</ion-col>
 				</ion-row>
 				<ion-row v-if="isAppleAuthEnabled || isDebug">
 					<ion-col>
 						<div class="ion-text-center">
-							<img
-								:src="getAppleSigninButtonImage()"
-								width="210"
-								height="50"
-								@click="performLoginApple()"
-							/>
+							<sign-in-with-apple-button @signin="performLoginApple()" />
 						</div>
 					</ion-col>
 				</ion-row>
@@ -44,12 +34,10 @@
 								color="dark"
 								@click="openModalPasswordlessSend()"
 							>
-								<img
+								<ion-icon
 									slot="start"
-									:src="getEmailSigninButtonImage()"
-									width="24"
-									height="24"
-								/>
+									:icon="mailOutline"
+								></ion-icon>
 								&nbsp;
 								{{ labels.login_with_email }}
 							</ion-button>
@@ -63,16 +51,20 @@
 
 <script>
 import { reactive, computed } from '@vue/reactivity';
+import { mailOutline } from 'ionicons/icons';
 import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
 import ModalPasswordlessSend from '@/components/modals/ModalPasswordlessSend.vue';
+import SignInWithGoogleButton from '@/components/SignInWithGoogleButton.vue';
+import SignInWithAppleButton from '@/components/SignInWithAppleButton.vue';
 import { authGoogleService } from '@/services/auth/auth-google-service';
 import { authAppleService } from '@/services/auth/auth-apple-service';
 import { modalsHandlerService } from '@/services/modals/modals-handler-service';
 
 export default {
+	components: { SignInWithGoogleButton, SignInWithAppleButton },
 	props: {
 		authMethods: {
 			type: Array,
@@ -110,15 +102,6 @@ export default {
 		const methods = {
 			dismiss() {
 				modalController.dismiss();
-			},
-			getGoogleSigninButtonImage() {
-				return PARAMETERS.GOOGLE_SIGNIN_BUTTON_IMAGE;
-			},
-			getAppleSigninButtonImage() {
-				return PARAMETERS.APPLE_SIGNIN_BUTTON_IMAGE;
-			},
-			getEmailSigninButtonImage() {
-				return PARAMETERS.EMAIL_SIGNIN_BUTTON_IMAGE;
 			},
 			async openModalPasswordlessSend() {
 				modalsHandlerService.passwordlessSend = await modalController.create({
@@ -172,7 +155,9 @@ export default {
 			labels,
 			state,
 			...computedScope,
-			...methods
+			...methods,
+			//icons
+			mailOutline
 		};
 	}
 };

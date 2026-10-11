@@ -1,0 +1,65 @@
+/* Sign in with Google button.
+   Custom button following the Google branding guidelines:
+   official full-color "G" (inlined in the component, never recolored)
+   directly on the theme fill, theme chrome via body.theme-dark.
+   Left-aligned layout so the logo lines up with the Apple button. */
+.signin-google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    max-width: 210px;
+    height: 50px;
+    margin: 0 auto;
+    padding: 0 12px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    border: 1px solid #747775;
+    border-radius: 4px;
+    color: #1f1f1f;
+    font-family: 'Google Sans', Roboto, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 22px;
+    cursor: pointer;
+}
+
+.signin-google-btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.signin-google-btn-icon svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+}
+
+.signin-google-btn-contents {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.signin-google-btn:focus-visible {
+    outline: 2px solid #4285f4;
+    outline-offset: 2px;
+}
+
+body.theme-dark .signin-google-btn {
+    background-color: #131314;
+    border-color: #8e918f;
+    color: #e3e3e3;
+}
+
+body.theme-dark .signin-google-btn:focus-visible {
+    outline-color: #8ab4f8;
+}
