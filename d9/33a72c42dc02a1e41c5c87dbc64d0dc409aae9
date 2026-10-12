@@ -1,0 +1,48 @@
+android/app/capacitor.build.gradle
+  h_2231ff2aa93473 31
+android/app/src/main/assets/capacitor.plugins.json
+  h_2231ff2aa93473 78-81
+android/app/src/main/res/values/styles.xml
+  h_2231ff2aa93473 26-48
+android/capacitor.settings.gradle
+  h_2231ff2aa93473 62-64
+ios/App/App/NightModePlugin.swift
+  h_2231ff2aa93473 8-12,49-52
+ios/App/App/capacitor.config.json
+  h_2231ff2aa93473 59
+ios/App/Podfile
+  h_2231ff2aa93473 32
+ios/App/Podfile.lock
+  h_2231ff2aa93473 53-54,139,204-205,242,260
+package-lock.json
+  h_2231ff2aa93473 35,59,492-510,4442
+package.json
+  h_2231ff2aa93473 64,88
+src/components/DateTimeField.vue
+  h_2231ff2aa93473 1-355
+src/components/modals/ModalEntriesBranchFilter.vue
+  h_2231ff2aa93473 55-62,71-78,122-123,126-128,333-348
+src/components/modals/ModalEntriesFilter.vue
+  h_2231ff2aa93473 56-63,73-80,120,125-126,134-136,352-367,384
+src/components/questions/QuestionDate.vue
+  h_2231ff2aa93473 24-34,56-57,60-63,97,135-137,152
+src/components/questions/QuestionTime.vue
+  h_2231ff2aa93473 23-25,27-33,54-55,58-61,95,131-133,146
+src/services/utilities/datetime-picker-service.js
+  h_2231ff2aa93473 1-150
+src/theme/components/ui/DateTimeField.scss
+  h_2231ff2aa93473 1-44
+vite.config.js
+  h_2231ff2aa93473 80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d933a72c42dc02a1e41c5c87dbc64d0dc409aae9",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
