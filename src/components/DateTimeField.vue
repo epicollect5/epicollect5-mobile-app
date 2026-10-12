@@ -9,6 +9,7 @@
 				></ion-icon>
 				<ion-button
 					class="question-action-button datetime-picker-button ion-text-nowrap"
+					:class="{'has-error': hasError}"
 					color="secondary"
 					expand="block"
 					:aria-label="pickerAriaLabel"
@@ -18,12 +19,18 @@
 				</ion-button>
 			</ion-col>
 			<ion-col size="auto">
-				<ion-icon
-					class="datetime-clear-icon"
-					size="large"
-					:icon="closeOutline"
+				<ion-button
+					class="datetime-clear-button"
+					fill="clear"
+					:aria-label="labels.clear"
 					@click="clearField"
-				></ion-icon>
+				>
+					<ion-icon
+						class="datetime-clear-icon"
+						size="large"
+						:icon="closeOutline"
+					></ion-icon>
+				</ion-button>
 			</ion-col>
 		</ion-row>
 		<input
@@ -33,6 +40,8 @@
 			:max="webInputMax"
 			:step="webInputStep"
 			:value="webInputValue"
+			tabindex="-1"
+			aria-hidden="true"
 			@change="onWebChange"
 		/>
 	</ion-grid>
@@ -73,6 +82,10 @@ export default {
 		locale: {
 			type: String,
 			default: ''
+		},
+		hasError: {
+			type: Boolean,
+			default: false
 		}
 	},
 	emits: ['change', 'clear'],
@@ -380,6 +393,7 @@ export default {
 
 		return {
 			state,
+			labels,
 			...computedScope,
 			...methods,
 			...props,

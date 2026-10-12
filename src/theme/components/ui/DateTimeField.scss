@@ -52,6 +52,23 @@
     text-overflow: ellipsis;
 }
 
+//mirror the legacy chip's invalid-answer affordance: shared validation CSS
+//only styles ion-chip.has-error, so the shared field opts in explicitly
+.datetime-picker-button.has-error {
+    @include question-has-error-border-base;
+}
+
+//the clear control used to be a bare icon; as a button it needs a tappable
+//target without inflating the row height next to the 38px picker button
+.datetime-clear-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    margin: 0;
+    height: auto;
+}
+
 .datetime-clear-icon {
     cursor: pointer;
     vertical-align: middle;

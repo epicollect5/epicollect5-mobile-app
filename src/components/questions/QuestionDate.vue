@@ -27,6 +27,7 @@
 						type="date"
 						:answer="state.answer.answer"
 						:datetime-format="state.inputDetails.datetime_format"
+						:has-error="hasError"
 						@change="onDateChange"
 						@clear="clearDate"
 					></date-time-field>
