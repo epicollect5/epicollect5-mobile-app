@@ -93,6 +93,13 @@ describe('datetime-picker-service', () => {
         expect(timeValue).toBeNull();
     });
 
+    it('detects dismissal text in the message despite a non-dismissal code', async () => {
+        presentMock.mockRejectedValueOnce({ code: 'OS-PLUG-0001', message: 'dismissed by the user' });
+        const value = await datetimePickerService.presentDate({ value: '2026-10-09' });
+        expect(value).toBeNull();
+        expect(DatetimePicker.present).toHaveBeenCalled();
+    });
+
     it('rethrows non-dismissal errors', async () => {
         presentMock.mockRejectedValueOnce(new Error('boom'));
         await expect(datetimePickerService.presentDate({ value: '2026-10-09' })).rejects.toThrow('boom');
