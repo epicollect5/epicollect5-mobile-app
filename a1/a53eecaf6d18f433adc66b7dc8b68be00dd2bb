@@ -1,0 +1,24 @@
+tests/unit/components/DateTimeField.formats.spec.js
+  h_2231ff2aa93473 2,35-38,123-127,138,142-143,154
+tests/unit/components/DateTimeField.spec.js
+  h_2231ff2aa93473 75,80-88,93-108,119-122,262,265
+tests/unit/components/modals/ModalEntriesBranchFilter.spec.js
+  h_2231ff2aa93473 12,17,134-143,154-158,162,167-170
+tests/unit/components/modals/ModalEntriesFilter.spec.js
+  h_2231ff2aa93473 10,15,133-143,165-168
+tests/unit/components/questions/QuestionDate.spec.js
+  h_2231ff2aa93473 62,81-86,140
+tests/unit/components/questions/QuestionTime.spec.js
+  h_2231ff2aa93473 66,85-90,145,182-184,189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a1a53eecaf6d18f433adc66b7dc8b68be00dd2bb",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
