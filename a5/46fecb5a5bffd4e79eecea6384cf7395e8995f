@@ -1,0 +1,18 @@
+src/components/ListItemProjects.vue
+  h_2231ff2aa93473 10,13-25,27,70-74,77-78,80
+src/theme/components/lists/ListItemProjects.scss
+  h_2231ff2aa93473 15-29
+tests/unit/components/ListItemProjects.spec.js
+  h_2231ff2aa93473 28,30,36,39-60,112,120,122-143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a546fecb5a5bffd4e79eecea6384cf7395e8995f",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
