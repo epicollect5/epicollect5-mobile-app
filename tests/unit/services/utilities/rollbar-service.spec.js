@@ -10,7 +10,7 @@ const rollbarInstance = vi.hoisted(() => ({
 const rollbarCtorOptions = vi.hoisted(() => ({ value: null }));
 
 vi.mock('rollbar', () => ({
-    default: vi.fn((options) => {
+    default: vi.fn(function (options) {
         rollbarCtorOptions.value = options;
         return rollbarInstance;
     })

@@ -173,7 +173,7 @@ describe('ModalAudioPlay component', () => {
         Capacitor.isNativePlatform.mockReturnValue(true);
         modalController.dismiss = vi.fn().mockReturnValue(true);
 
-        window.Media = vi.fn((file_URI, success, error, _onPlayStatusChange) => {
+        window.Media = vi.fn(function (file_URI, success, error, _onPlayStatusChange) {
             _onPlayStatusChangeMock.mockImplementation((status) => {
                 // Call _onPlayStatusChangeMock with the provided status value
                 _onPlayStatusChange(status);
@@ -259,7 +259,7 @@ describe('ModalAudioPlay component', () => {
         Capacitor.isNativePlatform.mockReturnValue(true);
         modalController.dismiss = vi.fn().mockReturnValue(true);
 
-        window.Media = vi.fn((file_URI, success, error, _onPlayStatusChange) => {
+        window.Media = vi.fn(function (file_URI, success, error, _onPlayStatusChange) {
             _onPlayStatusChangeMock.mockImplementation((status) => {
                 // Call _onPlayStatusChangeMock with the provided status value
                 _onPlayStatusChange(status);
@@ -318,7 +318,7 @@ describe('ModalAudioPlay component', () => {
         Capacitor.isNativePlatform.mockReturnValue(true);
         modalController.dismiss = vi.fn().mockReturnValue(true);
 
-        window.Media = vi.fn(() => mockMediaPlayer);
+        window.Media = vi.fn(function () { return mockMediaPlayer; });
 
         const wrapper = shallowMount(ModalAudioPlay, {
             props: {
@@ -368,7 +368,7 @@ describe('ModalAudioPlay component', () => {
 
         //capture the status callback the component hands to the native player
         let playStatusCallback;
-        window.Media = vi.fn((file_URI, success, error, onStatusChange) => {
+        window.Media = vi.fn(function (file_URI, success, error, onStatusChange) {
             playStatusCallback = onStatusChange;
             return mockMediaPlayer;
         });
@@ -425,7 +425,7 @@ describe('ModalAudioPlay component', () => {
             .mockImplementationOnce(() => Promise.reject(new Error('dismiss boom')))
             .mockImplementation(() => Promise.resolve(true));
 
-        window.Media = vi.fn(() => mockMediaPlayer);
+        window.Media = vi.fn(function () { return mockMediaPlayer; });
 
         const wrapper = shallowMount(ModalAudioPlay, {
             props: {
@@ -476,7 +476,7 @@ describe('ModalAudioPlay component', () => {
 
         Capacitor.isNativePlatform.mockReturnValue(true);
         modalController.dismiss = vi.fn(() => Promise.resolve(true));
-        window.Media = vi.fn(() => mockMediaPlayer);
+        window.Media = vi.fn(function () { return mockMediaPlayer; });
 
         const wrapper = shallowMount(ModalAudioPlay, {
             props: {
@@ -526,7 +526,7 @@ describe('ModalAudioPlay component', () => {
 
         Capacitor.isNativePlatform.mockReturnValue(true);
         modalController.dismiss = vi.fn(() => Promise.resolve(true));
-        window.Media = vi.fn(() => mockMediaPlayer);
+        window.Media = vi.fn(function () { return mockMediaPlayer; });
 
         const wrapper = shallowMount(ModalAudioPlay, {
             props: {

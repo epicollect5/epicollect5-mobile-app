@@ -35,9 +35,11 @@ describe('downloadFileService.downloadProjectLogo()', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         device.platform = 'android';
-        window.FileTransfer = vi.fn().mockImplementation(() => ({
-            download: vi.fn((uri, filePath, success) => success({ toURL: () => filePath }))
-        }));
+        window.FileTransfer = vi.fn().mockImplementation(function () {
+            return {
+                download: vi.fn((uri, filePath, success) => success({ toURL: () => filePath }))
+            };
+        });
     });
 
     it('ensures the logo directory exists before downloading', async () => {

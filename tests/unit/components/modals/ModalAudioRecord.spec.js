@@ -117,7 +117,7 @@ const mediaRecorderMock = {
     stopRecord: mediaRecorderStopRecordMock,
     release: mediaRecorderReleaseMock
 };
-window.Media = vi.fn(() => mediaRecorderMock);
+window.Media = vi.fn(function () { return mediaRecorderMock; });
 
 describe('ModalAudioRecord component', () => {
 
@@ -441,7 +441,7 @@ describe('ModalAudioRecord component', () => {
         //capture the error callback the component hands to the native recorder
         const realMedia = window.Media;
         let recordingErrorCallback;
-        window.Media = vi.fn((file_URI, successCallback, errorCallback) => {
+        window.Media = vi.fn(function (file_URI, successCallback, errorCallback) {
             recordingErrorCallback = errorCallback;
             return mediaRecorderMock;
         });
