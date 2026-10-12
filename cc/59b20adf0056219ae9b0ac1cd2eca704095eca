@@ -1,0 +1,16 @@
+tests/unit/services/download-file-service.spec.js
+  h_2231ff2aa93473 38-42
+tests/unit/services/utilities/rollbar-service.spec.js
+  h_2231ff2aa93473 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cc59b20adf0056219ae9b0ac1cd2eca704095eca",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
