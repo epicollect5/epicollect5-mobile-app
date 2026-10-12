@@ -33,8 +33,9 @@
          names in the plugin's android/src/main/res/values/styles.xml — the
          datetime-picker.spec.js test fails if they drift. Accent #673C90 is
          the brand primary and matches what the legacy WebView pickers
-         resolved from AppTheme (identical in both modes, so one definition
-         covers light and dark). -->
+         resolved from AppTheme in light mode; dark mode uses the #B39DDB
+         override in values-night/styles.xml, because #673C90 washes out on
+         dark surfaces. -->
     <style name="MaterialLightTheme"
         parent="android:Theme.Material.Light.Dialog.Alert">
         <item name="android:colorAccent">#673C90</item>
