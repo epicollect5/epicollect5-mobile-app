@@ -71,7 +71,7 @@ describe('native NightMode plugin registration', () => {
         expect(swift).toContain('setNightMode');
         expect(swift).toContain('tintColor');
         //dark surfaces need the lighter same-hue purple (#673C90 washes out)
-        expect(swift).toContain('179/255');
+        expect(swift).toContain('UIColor(red: 179/255, green: 157/255, blue: 219/255, alpha: 1)');
         expect(java).toContain('@CapacitorPlugin(name = "NightMode")');
         expect(java).toContain('setNightMode');
     });
