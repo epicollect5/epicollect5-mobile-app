@@ -1,0 +1,14 @@
+docs/known-review-false-positives.md
+  h_2231ff2aa93473 39-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b96bbb002491aeece54ec298bf9ff59ff77498d3",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
