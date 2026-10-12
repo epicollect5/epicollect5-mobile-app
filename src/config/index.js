@@ -59,7 +59,6 @@ export const PARAMETERS = {
         LDAP: 'ldap'
     },
 
-    PROJECT_LOGO_PRIVATE: './assets/images/ec5-locked.png',
     PROJECT_LOGO_PLACEHOLDER: './assets/images/ec5-placeholder-100x100.jpg',
 
     CHECKBOX_SVG: '/assets/svg/checkbox.svg',
