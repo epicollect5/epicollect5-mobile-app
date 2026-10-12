@@ -84,7 +84,7 @@ describe('QuestionTime.vue - native time field', () => {
 
 	it('updates the answer on change', async () => {
 		const wrapper = factory();
-		wrapper.vm.onTimeChange('1970-01-01T14:30:00.000');
+		wrapper.findComponent({ name: 'DateTimeField' }).vm.$emit('change', '1970-01-01T14:30:00.000');
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.state.answer.answer).toBe('1970-01-01T14:30:00.000');
 	});
@@ -92,7 +92,7 @@ describe('QuestionTime.vue - native time field', () => {
 	it('clears the answer on clear', async () => {
 		const wrapper = factory();
 		wrapper.vm.state.answer.answer = '1970-01-01T14:30:00.000';
-		wrapper.vm.clearTime();
+		wrapper.findComponent({ name: 'DateTimeField' }).vm.$emit('clear');
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.state.answer.answer).toBe('');
 	});

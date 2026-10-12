@@ -80,7 +80,7 @@ describe('QuestionDate.vue - native date field', () => {
 
 	it('updates the answer on change', async () => {
 		const wrapper = factory();
-		wrapper.vm.onDateChange('2026-10-09T00:00:00.000');
+		wrapper.findComponent({ name: 'DateTimeField' }).vm.$emit('change', '2026-10-09T00:00:00.000');
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.state.answer.answer).toBe('2026-10-09T00:00:00.000');
 	});
@@ -88,7 +88,7 @@ describe('QuestionDate.vue - native date field', () => {
 	it('clears the answer on clear', async () => {
 		const wrapper = factory();
 		wrapper.vm.state.answer.answer = '2026-10-09T00:00:00.000';
-		wrapper.vm.clearDate();
+		wrapper.findComponent({ name: 'DateTimeField' }).vm.$emit('clear');
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.state.answer.answer).toBe('');
 	});
