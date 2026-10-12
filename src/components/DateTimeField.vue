@@ -14,7 +14,7 @@
 					:aria-label="pickerAriaLabel"
 					@click="openPicker"
 				>
-					{{displayValue}}
+					<span class="datetime-picker-value">{{displayValue}}</span>
 				</ion-button>
 			</ion-col>
 			<ion-col size="auto">

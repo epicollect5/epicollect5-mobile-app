@@ -2,6 +2,9 @@
 
 .datetime-button-col {
     position: relative;
+    //the row wraps by default: without this the col's min-content width
+    //(button padding + a long value) pushes the clear icon to a new line
+    min-width: 0;
 }
 
 //decorative picker icon pinned to the left edge of the button, vertically
@@ -28,6 +31,25 @@
     //height; ours sits outside as an overlay, so pin the same height
     min-height: 38px;
     text-transform: none;
+    //hh:mm:ss with 12-hour AM/PM (e.g. "02:30:05 PM") is the longest value;
+    //16px made it wide enough to wrap the clear icon onto its own line
+    font-size: 14px;
+    //clear the overlay icon (16px offset + 18px icon) on the start side
+    //and keep the answer 16px from the end edge, mirroring the icon offset
+    --padding-start: 40px;
+    --padding-end: 16px;
+}
+
+.datetime-picker-value {
+    //ion-button centres its slotted content in its shadow DOM, so
+    //text-align cannot reach it; an auto margin on the slotted span
+    //absorbs the free space and pins the answer to the end of the button
+    margin-inline-start: auto;
+    //shrink (never overflow) when even the smaller font does not fit:
+    //the span is a flex item, so it truncates instead of pushing the
+    //clear icon out of the row
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .datetime-clear-icon {
