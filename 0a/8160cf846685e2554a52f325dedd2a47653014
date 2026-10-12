@@ -1,0 +1,16 @@
+src/components/DateTimeField.vue
+  h_2231ff2aa93473 17
+src/theme/components/ui/DateTimeField.scss
+  h_2231ff2aa93473 5-7,34-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0a8160cf846685e2554a52f325dedd2a47653014",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
