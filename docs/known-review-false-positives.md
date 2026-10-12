@@ -37,3 +37,9 @@ Findings that look like defects but are by design. The review workflow (`docs/wo
   Reported as: "Unsync All Entries then upload fires no outdated-project prompt even on a stale project, so the `ec5_201` guard is being skipped for updates."
 
   Why it is by design: every entry that is actually written is version-checked server-side (`EntriesUploadService::isProjectVersionValid()`, called before the create/update fork, unconditional in all branches). A non-editable entry is never sent — there is nothing the user may change — so it is skipped and only re-marked synced locally once its branches finish. The guard therefore covers all real writes; what looks like a bypass is an entry that was never in scope. `database-update-service.unsyncAllEntries()` has no `can_edit` filter and unsyncs every row with `synced < INCOMPLETE`, which is what puts these rows into the pending set in the first place. See the Native Upload section of `docs/ARCHITECTURE.md`.
+
+- **The picker-icon attribute comparison in DateTimeField.spec.js is meaningful, not a serialized-object mismatch** (`tests/unit/components/DateTimeField.spec.js`, picker icon attribute comparison)
+
+  Reported as: "This compares serialized attributes on plain custom elements, so both SVG icon objects stringify identically and the assertion fails instead of verifying the icons differ. Compare the component's `pickerIcon` values or stub `ion-icon` and inspect its prop."
+
+  Why it is by design: `ionicons/icons` exports each icon as a full SVG data-URI **string** (`typeof timeOutline === 'string'`, e.g. `data:image/svg+xml;utf8,<svg …>`), not an object. The `:icon` binding therefore renders a distinct `icon` attribute per picker type, so `expect(timeIcon.attributes('icon')).not.toBe(pickerIcon.attributes('icon'))` compares two genuinely different values — it passes today and still fails if both picker types rendered the same icon, which is exactly what it guards.
