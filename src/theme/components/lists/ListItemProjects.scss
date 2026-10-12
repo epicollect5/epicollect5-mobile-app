@@ -12,3 +12,18 @@
     width: 18px;
     height: 18px;
 }
+
+.project-lock-icon {
+    //inline svg (like the sign-in logos): fill the 32px avatar box and
+    //keep the logo frame the imgs get in core.scss (ring + avatar radius)
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 6px;
+    border: 1px solid var(--ion-color-primary);
+    border-radius: var(--border-radius);
+    //dark lock on the light theme, light lock on the dark one
+    //(:root vs body.theme-dark, see variables.css / dark.scss)
+    color: var(--app-text);
+}

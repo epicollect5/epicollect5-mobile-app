@@ -25,19 +25,38 @@ function mountComponent(projects, page) {
     });
 }
 
-describe('ListItemProjects.vue getProjectLogo() — search page (add-project)', () => {
+describe('ListItemProjects.vue showLockIcon() — search page (add-project)', () => {
 
-    it('returns the locked placeholder for private projects, regardless of project.logo', () => {
+    it('is true for private projects when searching', () => {
         wrapper = mountComponent(
             [{ ref: 'p1', name: 'Private', access: 'private', logo: null }],
             'add-project'
         );
 
-        expect(wrapper.vm.getProjectLogo({ access: 'private', logo: null }))
-            .toBe(PARAMETERS.PROJECT_LOGO_PRIVATE);
-        expect(wrapper.vm.getProjectLogo({ access: 'private', logo: DATA_URI }))
-            .toBe(PARAMETERS.PROJECT_LOGO_PRIVATE);
+        expect(wrapper.vm.showLockIcon({ access: 'private' })).toBe(true);
     });
+
+    it('is false for public projects when searching', () => {
+        wrapper = mountComponent(
+            [{ ref: 'p1', name: 'Public', access: 'public', logo: DATA_URI }],
+            'add-project'
+        );
+
+        expect(wrapper.vm.showLockIcon({ access: 'public' })).toBe(false);
+    });
+
+    it('is false on the local list page (projects), regardless of access', () => {
+        wrapper = mountComponent(
+            [{ ref: 'p1', name: 'Local', logo: 'file:///persistent/logos/p1/mobile-logo.jpg' }],
+            'projects'
+        );
+
+        expect(wrapper.vm.showLockIcon({ access: 'private' })).toBe(false);
+        expect(wrapper.vm.showLockIcon({ access: 'public' })).toBe(false);
+    });
+});
+
+describe('ListItemProjects.vue getProjectLogo() — search page (add-project)', () => {
 
     it('returns the embedded base64 data URI for public projects', () => {
         wrapper = mountComponent(
@@ -90,7 +109,7 @@ describe('ListItemProjects.vue getProjectLogo() — local list page (projects)',
 
 describe('ListItemProjects.vue template', () => {
 
-    it('binds the resolved logo to <img :src> for each project (search page)', () => {
+    it('renders the inline lock svg for private projects instead of an img', () => {
         const projects = [
             { ref: 'p1', name: 'Public', access: 'public', logo: DATA_URI },
             { ref: 'p2', name: 'Private', access: 'private', logo: null }
@@ -98,9 +117,30 @@ describe('ListItemProjects.vue template', () => {
         wrapper = mountComponent(projects, 'add-project');
 
         const imgs = wrapper.findAll('img');
-        expect(imgs).toHaveLength(2);
+        expect(imgs).toHaveLength(1);
         expect(imgs[0].attributes('src')).toBe(DATA_URI);
-        expect(imgs[1].attributes('src')).toBe(PARAMETERS.PROJECT_LOGO_PRIVATE);
+
+        const locks = wrapper.findAll('svg.project-lock-icon');
+        expect(locks).toHaveLength(1);
+        expect(locks[0].find('path').attributes('fill')).toBe('currentColor');
+    });
+
+    it('hides the loading spinner for private projects (the icon has no load event)', () => {
+        wrapper = mountComponent(
+            [{ ref: 'p1', name: 'Private', access: 'private', logo: null }],
+            'add-project'
+        );
+
+        expect(wrapper.find('ion-spinner').isVisible()).toBe(false);
+    });
+
+    it('shows the loading spinner for public projects until the logo loads', () => {
+        wrapper = mountComponent(
+            [{ ref: 'p1', name: 'Public', access: 'public', logo: DATA_URI }],
+            'add-project'
+        );
+
+        expect(wrapper.find('ion-spinner').isVisible()).toBe(true);
     });
 
     it('emits project-selected with the clicked project', async () => {
