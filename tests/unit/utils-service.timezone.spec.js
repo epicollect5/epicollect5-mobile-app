@@ -21,7 +21,13 @@ describe('utils-service timezone handling', () => {
     });
 
     afterEach(() => {
-        process.env.TZ = realTZ;
+        //assigning undefined to process.env.TZ stores the literal "undefined",
+        //so restore the unset state explicitly when TZ was not set at import
+        if (realTZ === undefined) {
+            delete process.env.TZ;
+        } else {
+            process.env.TZ = realTZ;
+        }
     });
 
     it('renders the local wall time per timezone for the same instant', () => {
