@@ -153,18 +153,19 @@ describe('ModalEntriesFilter date fields', () => {
         expect(wrapper.vm.state.filters.from).toBe('2026-01-15');
         await vi.advanceTimersByTimeAsync(PARAMETERS.DELAY_LONG);
         await flushPromises();
-        expect(databaseSelectService.countEntries).toHaveBeenCalled();
+        expect(databaseSelectService.countEntries.mock.calls[0][3].from).toBe('2026-01-15');
     });
 
     it('clears from and re-filters on clear', async () => {
         databaseSelectService.countEntries = vi.fn().mockResolvedValue(mockCountResult(3));
-        const wrapper = mountFilter();
+        const wrapper = mountFilter({ from: '2026-01-15' });
 
-        wrapper.vm.onFromClear();
+        wrapper.findAllComponents({ name: 'DateTimeField' })[0].vm.$emit('clear');
         expect(wrapper.vm.state.filters.from).toBeNull();
         //the scheduled re-count must run: clearing must still re-filter
         await vi.advanceTimersByTimeAsync(PARAMETERS.DELAY_LONG);
         await flushPromises();
         expect(databaseSelectService.countEntries).toHaveBeenCalled();
+        expect(databaseSelectService.countEntries.mock.calls[0][3].from).toBeNull();
     });
 });

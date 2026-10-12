@@ -160,9 +160,9 @@ describe('ModalEntriesBranchFilter date fields', () => {
 
     it('clears from and re-filters on clear', async () => {
         databaseSelectService.countBranchesForQuestion = vi.fn().mockResolvedValue(mockCountResult(3));
-        const wrapper = mountFilter();
+        const wrapper = mountFilter({ from: '2026-01-15' });
 
-        wrapper.vm.onFromClear();
+        wrapper.findAllComponents({ name: 'DateTimeField' })[0].vm.$emit('clear');
         expect(wrapper.vm.state.filters.from).toBeNull();
         await flushPromises();
         await new Promise((resolve) => setTimeout(resolve, 30));
