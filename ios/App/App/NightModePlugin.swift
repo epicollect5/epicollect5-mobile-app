@@ -5,6 +5,11 @@ import Capacitor
 // Local plugin: pins the window's interface style independently of the iOS
 // system appearance, so native pickers/sheets follow the in-app
 // Light/Dark/System selection (Android equivalent: NightModePlugin.java).
+// It also pins the window tint to the brand primary, so tint-following
+// native controls (UIDatePicker selection, alert actions, image-picker
+// buttons) match the app instead of system blue. Explicitly colored
+// controls keep their own color (e.g. the datetime sheet's Done/Cancel
+// buttons, hardcoded blue in the plugin source).
 // Registered via packageClassList in capacitor.config.json — see
 // scripts/ensure-ios-nightmode-plugin.js, since `cap copy ios` rewrites that
 // list from npm-installed plugins only.
@@ -41,6 +46,10 @@ public class NightModePlugin: CAPPlugin, CAPBridgedPlugin {
             }
 
             window.overrideUserInterfaceStyle = style
+            //brand primary #673C90, applied on every call (boot and theme
+            //saves) so it survives window recreation; tint is
+            //appearance-independent
+            window.tintColor = UIColor(red: 103/255, green: 60/255, blue: 144/255, alpha: 1)
             call.resolve()
         }
     }

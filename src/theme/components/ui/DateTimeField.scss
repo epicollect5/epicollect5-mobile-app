@@ -1,0 +1,44 @@
+@use '@/theme/mixins' as *;
+
+.datetime-button-col {
+    position: relative;
+}
+
+//decorative picker icon pinned to the left edge of the button, vertically
+//centred; it cannot live in the button's start slot because ion-button
+//centres its shadow-DOM content group, so the icon would drift with the
+//label (and sit mid-button when unanswered)
+.datetime-button-col > .datetime-picker-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    pointer-events: none;
+    //match the button label exactly (secondary contrast, both themes)
+    color: var(--ion-color-secondary-contrast, #000);
+}
+
+.datetime-picker-button {
+    //same sizing as the photo take/pick action buttons; expand="block"
+    //fills the column, so empty and answered states keep the same
+    //width and height
+    @include question-action-button-base;
+    //photo buttons measure 38px: their slot icon (1.35em) sets the content
+    //height; ours sits outside as an overlay, so pin the same height
+    min-height: 38px;
+    text-transform: none;
+}
+
+.datetime-clear-icon {
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.datetime-web-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}

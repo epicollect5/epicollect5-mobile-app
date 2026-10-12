@@ -23,4 +23,27 @@
         parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
     </style>
+
+    <!-- Brand accents for the Capawesome datetime-picker dialogs. The plugin
+         hardcodes its own stock framework dialog themes (no color params, no
+         AppTheme inheritance), so without this the sheets fall back to
+         default device colors. Redefining the same style names here wins over
+         the AAR at resource-merge time (app > library); the spinner variants
+         inherit these items via their parents. Keep in sync with the style
+         names in the plugin's android/src/main/res/values/styles.xml — the
+         datetime-picker.spec.js test fails if they drift. Accent #673C90 is
+         the brand primary and matches what the legacy WebView pickers
+         resolved from AppTheme (identical in both modes, so one definition
+         covers light and dark). -->
+    <style name="MaterialLightTheme"
+        parent="android:Theme.Material.Light.Dialog.Alert">
+        <item name="android:colorAccent">#673C90</item>
+        <item name="android:colorControlActivated">#673C90</item>
+    </style>
+
+    <style name="MaterialDarkTheme"
+        parent="android:Theme.Material.Dialog.Alert">
+        <item name="android:colorAccent">#673C90</item>
+        <item name="android:colorControlActivated">#673C90</item>
+    </style>
 </resources>

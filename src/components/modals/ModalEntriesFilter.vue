@@ -53,22 +53,14 @@
 
 				<div>
 					<ion-label>{{ labels.from }}</ion-label>
-					<ion-chip class="chip-datetimepicker entries-filters"
-							  outline
-							  mode="ios">
-						<div class="datetime-value">
-							<ion-icon class="date-icon-left"
-									  size="small"
-									  :icon="calendarClearOutline"></ion-icon>
-							<input type="date"
-								   :min="state.filters.oldest"
-								   :max="state.filters.newest"
-								   :class="{ 'is-empty': !state.filters.from }"
-								   class="question-input question-datetimepicker"
-								   v-model.trim="state.filters.from"
-								   @change="filterByDate()" />
-						</div>
-					</ion-chip>
+					<date-time-field
+						type="date"
+						:answer="state.filters.from"
+						:min="state.filters.oldest"
+						:max="state.filters.newest"
+						@change="onFromChange"
+						@clear="onFromClear"
+					></date-time-field>
 				</div>
 			</ion-title>
 		</ion-toolbar>
@@ -78,22 +70,14 @@
 				<div>
 					<div>
 						<ion-label>{{ labels.to }}</ion-label>
-						<ion-chip class="chip-datetimepicker entries-filters"
-								  outline
-								  mode="ios">
-							<div class="datetime-value">
-								<ion-icon class="date-icon-left"
-										  size="small"
-										  :icon="calendarClearOutline"></ion-icon>
-								<input type="date"
-									   :min="state.filters.oldest"
-									   :max="state.filters.newest"
-									   :class="{ 'is-empty': !state.filters.to }"
-									   class="question-input question-datetimepicker"
-									   v-model.trim="state.filters.to"
-									   @change="filterByDate()" />
-							</div>
-						</ion-chip>
+						<date-time-field
+							type="date"
+							:answer="state.filters.to"
+							:min="state.filters.oldest"
+							:max="state.filters.newest"
+							@change="onToChange"
+							@clear="onToClear"
+						></date-time-field>
 					</div>
 				</div>
 			</ion-title>
@@ -133,12 +117,13 @@ import {
 	filter,
 	cloud,
 	removeCircle,
-	cloudOutline,
-	calendarClearOutline
+	cloudOutline
 } from 'ionicons/icons';
 import { STRINGS } from '@/config/strings';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { rollbarService } from '@/services/utilities/rollbar-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import DateTimeField from '@/components/DateTimeField.vue';
 import { useRootStore } from '@/stores/root-store';
 import { reactive, computed } from '@vue/reactivity';
 import { modalController } from '@ionic/vue';
@@ -146,6 +131,9 @@ import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 
 export default {
+	components: {
+		DateTimeField
+	},
 	props: {
 		countNoFilters: {
 			type: Number,
@@ -361,6 +349,22 @@ export default {
 				}
 				state.isFetching = false;
 			}, PARAMETERS.DELAY_LONG);
+		},
+		onFromChange (canonical) {
+			state.filters.from = utilsService.getInputFormattedDate(canonical);
+			methods.filterByDate();
+		},
+		onToChange (canonical) {
+			state.filters.to = utilsService.getInputFormattedDate(canonical);
+			methods.filterByDate();
+		},
+		onFromClear () {
+			state.filters.from = null;
+			methods.filterByDate();
+		},
+		onToClear () {
+			state.filters.to = null;
+			methods.filterByDate();
 		}
 		};
 
@@ -377,8 +381,7 @@ export default {
 			filter,
 			cloud,
 			removeCircle,
-			cloudOutline,
-			calendarClearOutline
+			cloudOutline
 		};
 	}
 };

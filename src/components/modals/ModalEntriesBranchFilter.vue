@@ -52,12 +52,14 @@
 			<ion-title class="ion-text-end">
 				<div>
 					<ion-label>{{ labels.from }}</ion-label>
-					<input type="date"
-						   :min="state.filters.oldest"
-						   :max="state.filters.newest"
-						   :class="{ 'is-empty': !state.filters.from }"
-						   v-model="state.filters.from"
-						   @change="filterByDate()" />
+					<date-time-field
+						type="date"
+						:answer="state.filters.from"
+						:min="state.filters.oldest"
+						:max="state.filters.newest"
+						@change="onFromChange"
+						@clear="onFromClear"
+					></date-time-field>
 				</div>
 			</ion-title>
 		</ion-toolbar>
@@ -66,12 +68,14 @@
 			<ion-title class="ion-text-end">
 				<div>
 					<ion-label>{{ labels.to }}</ion-label>
-					<input type="date"
-						   :min="state.filters.oldest"
-						   :max="state.filters.newest"
-						   :class="{ 'is-empty': !state.filters.to }"
-						   v-model="state.filters.to"
-						   @change="filterByDate()" />
+					<date-time-field
+						type="date"
+						:answer="state.filters.to"
+						:min="state.filters.oldest"
+						:max="state.filters.newest"
+						@change="onToChange"
+						@clear="onToClear"
+					></date-time-field>
 				</div>
 			</ion-title>
 		</ion-toolbar>
@@ -115,8 +119,13 @@ import { PARAMETERS } from '@/config';
 import { readonly } from 'vue';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { rollbarService } from '@/services/utilities/rollbar-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import DateTimeField from '@/components/DateTimeField.vue';
 
 export default {
+	components: {
+		DateTimeField
+	},
 	props: {
 		countNoFilters: {
 			type: Number,
@@ -321,6 +330,22 @@ export default {
 				}
 				state.isFetching = false;
 			}, PARAMETERS.DELAY_LONG);
+		},
+		onFromChange (canonical) {
+			state.filters.from = utilsService.getInputFormattedDate(canonical);
+			methods.filterByDate();
+		},
+		onToChange (canonical) {
+			state.filters.to = utilsService.getInputFormattedDate(canonical);
+			methods.filterByDate();
+		},
+		onFromClear () {
+			state.filters.from = null;
+			methods.filterByDate();
+		},
+		onToClear () {
+			state.filters.to = null;
+			methods.filterByDate();
 		}
 		};
 

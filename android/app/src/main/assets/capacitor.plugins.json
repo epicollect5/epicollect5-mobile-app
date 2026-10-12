@@ -76,6 +76,10 @@
 		"classpath": "io.capawesome.capacitorjs.plugins.foregroundservice.ForegroundServicePlugin"
 	},
 	{
+		"pkg": "@capawesome-team/capacitor-datetime-picker",
+		"classpath": "io.capawesome.capacitorjs.plugins.datetimepicker.DatetimePickerPlugin"
+	},
+	{
 		"pkg": "@capawesome/capacitor-android-edge-to-edge-support",
 		"classpath": "io.capawesome.capacitorjs.plugins.androidedgetoedgesupport.EdgeToEdgePlugin"
 	},
