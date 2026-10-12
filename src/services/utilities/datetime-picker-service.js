@@ -77,11 +77,13 @@ function isDismissal(error) {
     if (!error) {
         return false;
     }
-    const code = error.code || error.message || '';
-    if (typeof code === 'string') {
-        const lowered = code.toLowerCase();
-        if (lowered.includes('dismissed') || lowered.includes('cancel')) {
-            return true;
+    const texts = [error.code, error.message];
+    for (const text of texts) {
+        if (typeof text === 'string') {
+            const lowered = text.toLowerCase();
+            if (lowered.includes('dismissed') || lowered.includes('cancel')) {
+                return true;
+            }
         }
     }
     return false;
