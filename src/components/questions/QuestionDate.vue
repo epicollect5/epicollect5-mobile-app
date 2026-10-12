@@ -21,7 +21,7 @@
 			>
 				{{ labels.required }}
 			</div>
-			<grid-question-narrow>
+			<grid-question-narrow wide>
 				<template #content>
 					<date-time-field
 						type="date"
