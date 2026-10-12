@@ -1,0 +1,28 @@
+tests/unit/components/DateTimeField.formats.spec.js
+  h_2231ff2aa93473 90-102
+tests/unit/components/DateTimeField.spec.js
+  h_2231ff2aa93473 131-133,138-152,197-218
+tests/unit/components/questions/QuestionDate.spec.js
+  h_2231ff2aa93473 2,5-7,96-179
+tests/unit/components/questions/QuestionTime.spec.js
+  h_2231ff2aa93473 2,6-8,100-182
+tests/unit/datetime-picker.spec.js
+  h_2231ff2aa93473 45-48
+tests/unit/nightmode-plugin-registration.spec.js
+  h_2231ff2aa93473 73-74
+tests/unit/services/utilities/datetime-picker-service.spec.js
+  h_2231ff2aa93473 149-171
+tests/unit/utils-service.timezone.spec.js
+  h_2231ff2aa93473 1-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2137d80ccab2e4cec56d5ce5d8d788b336fa2681",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
