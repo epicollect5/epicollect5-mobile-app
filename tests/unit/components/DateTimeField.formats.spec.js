@@ -100,4 +100,67 @@ describe('DateTimeField.vue - button text with real formatters', () => {
         expect(input.attributes('step')).toBe('1');
         expect(input.element.value).toBe('14:30:05');
     });
+
+    it('saves web date input as canonical answers', async () => {
+        const wrapper = mount(DateTimeField, {
+            props: {
+                type: 'date',
+                answer: '',
+                datetimeFormat: PARAMETERS.DATE_FORMAT_1
+            }
+        });
+        const input = wrapper.find('input.datetime-web-input');
+        input.element.value = '2026-10-09';
+        await input.trigger('change');
+        expect(wrapper.emitted('change')[0]).toEqual(['2026-10-09T00:00:00.000']);
+    });
+
+    it('saves web minute-only time input as canonical answers', async () => {
+        const wrapper = mount(DateTimeField, {
+            props: {
+                type: 'time',
+                answer: '',
+                datetimeFormat: PARAMETERS.TIME_FORMAT_3
+            }
+        });
+        const input = wrapper.find('input.datetime-web-input');
+        input.element.value = '14:30';
+        await input.trigger('change');
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const datePart = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+        expect(wrapper.emitted('change')[0]).toEqual([datePart + 'T14:30:00.000']);
+    });
+
+    it('saves web time with seconds as canonical answers', async () => {
+        const wrapper = mount(DateTimeField, {
+            props: {
+                type: 'time',
+                answer: '',
+                datetimeFormat: PARAMETERS.TIME_FORMAT_1
+            }
+        });
+        const input = wrapper.find('input.datetime-web-input');
+        input.element.value = '14:30:05';
+        await input.trigger('change');
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const datePart = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+        expect(wrapper.emitted('change')[0]).toEqual([datePart + 'T14:30:05.000']);
+    });
+
+    it('emits clear when the web input is emptied', async () => {
+        const wrapper = mount(DateTimeField, {
+            props: {
+                type: 'date',
+                answer: '2026-10-09',
+                datetimeFormat: PARAMETERS.DATE_FORMAT_1
+            }
+        });
+        const input = wrapper.find('input.datetime-web-input');
+        input.element.value = '';
+        await input.trigger('change');
+        expect(wrapper.emitted('clear')).toBeTruthy();
+        expect(wrapper.emitted('change')).toBeFalsy();
+    });
 });

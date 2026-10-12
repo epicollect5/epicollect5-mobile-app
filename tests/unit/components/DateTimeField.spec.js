@@ -225,6 +225,17 @@ describe('DateTimeField.vue', () => {
         expect(wrapper.emitted('change')).toBeFalsy();
     });
 
+    it('names empty picker buttons for assistive technology', () => {
+        const emptyDate = factory({ type: 'date', answer: '' });
+        expect(emptyDate.find('.datetime-picker-button').attributes('aria-label')).toBe('The date selected is: ');
+
+        const emptyTime = factory({ type: 'time', answer: '', datetimeFormat: PARAMETERS.TIME_FORMAT_3 });
+        expect(emptyTime.find('.datetime-picker-button').attributes('aria-label')).toBe('The time selected is: ');
+
+        const answered = factory({ type: 'date', answer: '2026-10-09T00:00:00.000' });
+        expect(answered.find('.datetime-picker-button').attributes('aria-label')).toBeUndefined();
+    });
+
     it('emits clear when the clear icon is tapped', async () => {
         const wrapper = factory({ type: 'date', answer: '2026-10-09T00:00:00.000' });
 
