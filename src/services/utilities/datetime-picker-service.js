@@ -116,16 +116,30 @@ async function presentDate(params) {
 }
 
 async function presentTime(params) {
-    const { value, locale, theme } = params || {};
+    const { value, locale, theme, is24Hour } = params || {};
     if (!isSupported()) {
         return null;
+    }
+    //The plugin derives the 12/24-hour clock from the locale, ignoring our
+    //format: en-US always yields a 12-hour picker, so 24-hour formats
+    //(HH:mm, HH:mm:ss) must request a 24-hour locale instead. en-GB keeps
+    //English UI strings with a 24-hour clock; every other supported app
+    //language already defaults to 24 hours. Applies to Android and iOS.
+    //Known limit, same as legacy: 12-hour formats (hh:mm, hh:mm:ss) only
+    //get a 12-hour clock in English — no same-language locale produces the
+    //bare AM/PM marker the plugin heuristic requires, so other languages
+    //show a 24-hour clock. Stored values stay correct either way (the
+    //dialog returns HOUR_OF_DAY and the display converts).
+    let resolvedLocale = locale || getLocale();
+    if (is24Hour && resolvedLocale === 'en-US') {
+        resolvedLocale = 'en-GB';
     }
     try {
         const result = await DatetimePicker.present({
             mode: 'time',
             format: TIME_FORMAT,
             value,
-            locale: locale || getLocale(),
+            locale: resolvedLocale,
             theme: theme || getTheme()
         });
         return result.value;

@@ -46,10 +46,23 @@ public class NightModePlugin: CAPPlugin, CAPBridgedPlugin {
             }
 
             window.overrideUserInterfaceStyle = style
-            //brand primary #673C90, applied on every call (boot and theme
-            //saves) so it survives window recreation; tint is
-            //appearance-independent
-            window.tintColor = UIColor(red: 103/255, green: 60/255, blue: 144/255, alpha: 1)
+            //brand accent per effective appearance: #673C90 washes out on
+            //dark surfaces, so dark uses #B39DDB (same hue family). Applied
+            //on every call (boot and theme saves) so it survives window
+            //recreation; re-evaluated for follow_system via the window traits.
+            let effectiveDark: Bool
+            if style == .dark {
+                effectiveDark = true
+            } else if style == .light {
+                effectiveDark = false
+            } else {
+                effectiveDark = window.traitCollection.userInterfaceStyle == .dark
+            }
+            if effectiveDark {
+                window.tintColor = UIColor(red: 179/255, green: 157/255, blue: 219/255, alpha: 1)
+            } else {
+                window.tintColor = UIColor(red: 103/255, green: 60/255, blue: 144/255, alpha: 1)
+            }
             call.resolve()
         }
     }

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Night variant of the Capawesome datetime-picker dialog theme: the
+         base #673C90 accent washes out on dark surfaces, so dark mode uses
+         #B39DDB (same hue family, readable on near-black). Applies to all
+         API levels in night mode; explicit light keeps the base definition. -->
+    <style name="MaterialDarkTheme"
+        parent="android:Theme.Material.Dialog.Alert">
+        <item name="android:colorAccent">#B39DDB</item>
+        <item name="android:colorControlActivated">#B39DDB</item>
+    </style>
+</resources>

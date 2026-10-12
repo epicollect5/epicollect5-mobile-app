@@ -28,8 +28,9 @@
 		<input
 			class="datetime-web-input"
 			:type="webInputType"
-			:min="min"
-			:max="max"
+			:min="webInputMin"
+			:max="webInputMax"
+			:step="webInputStep"
 			:value="webInputValue"
 			@change="onWebChange"
 		/>
@@ -118,6 +119,26 @@ export default {
 					return 'time';
 				}
 				return 'date';
+			}),
+			webInputMin: computed(() => {
+				if (props.type === 'date') {
+					return props.min;
+				}
+				return undefined;
+			}),
+			webInputMax: computed(() => {
+				if (props.type === 'date') {
+					return props.max;
+				}
+				return undefined;
+			}),
+			webInputStep: computed(() => {
+				//seconds need an explicit step, otherwise the browser
+				//picker is minute-precision (restores legacy step="1")
+				if (props.type === 'time' && computedScope.hasSeconds.value) {
+					return 1;
+				}
+				return undefined;
 			}),
 			webInputValue: computed(() => {
 				if (!props.answer) {
@@ -296,7 +317,13 @@ export default {
 					if (datetimePickerService.isSupported()) {
 						const picked = await datetimePickerService.presentTime({
 							value: getPickerValueForTime(),
-							locale: getLocale()
+							locale: getLocale(),
+							//24-hour formats need a 24-hour locale, otherwise
+							//the plugin shows a 12-hour clock (see service)
+							is24Hour: [
+								PARAMETERS.TIME_FORMAT_1,
+								PARAMETERS.TIME_FORMAT_3
+							].includes(props.datetimeFormat)
 						});
 						if (picked === null) {
 							return;
