@@ -1,5 +1,13 @@
 ## Release Notes
 
+# 98.4.0 - build 9840
+
+ - Dark mode is now available: a theme selector in settings offers light and dark, the choice applies at startup on all platforms, and native night mode follows on Android (DayNight theme with a dark splash variant for Android 12+) and iOS (new NightMode plugin called only on Android and iOS).
+ - The login screen now uses theme-aware sign-in buttons for email, Google and Apple instead of static images, with localized labels including a shortened Polish email sign-in text.
+ - Fixed downloads leaving stale forms and buttons behind: when a project update is deferred as a post-login retry, a deferred success now clears the download cache and refreshes the form list.
+ - Fixed update errors that reject with no value being treated as success: a falsy rejection is now reported as a failed update.
+ - Dark-theme polish: card surfaces, item labels, the theme row value, the searchbar input background, answer error text brightness, and the project name now follow the active theme.
+
 # 98.3.6 - build 9836
 
  - Fixed a crash during Google and Apple sign-in: when the authentication request failed without a server response (for example a network timeout on cellular), the app threw a TypeError reading the missing error payload instead of showing an error message. The sign-in flow now falls back to the standard error handling, dismisses the progress dialog, and shows the user an appropriate message.
