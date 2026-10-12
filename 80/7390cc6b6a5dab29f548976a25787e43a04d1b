@@ -1,0 +1,14 @@
+android/app/src/main/res/values/styles.xml
+  h_2231ff2aa93473 36-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "807390cc6b6a5dab29f548976a25787e43a04d1b",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
