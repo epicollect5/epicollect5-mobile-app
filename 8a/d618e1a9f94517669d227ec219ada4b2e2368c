@@ -1,0 +1,18 @@
+src/components/GridQuestionNarrow.vue
+  h_2231ff2aa93473 5-6,23-32
+src/components/questions/QuestionDate.vue
+  h_2231ff2aa93473 24
+src/components/questions/QuestionTime.vue
+  h_2231ff2aa93473 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8ad618e1a9f94517669d227ec219ada4b2e2368c",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
