@@ -1,14 +1,14 @@
-import {mount} from '@vue/test-utils';
-import {describe, it, expect, beforeEach, vi} from 'vitest';
-import {setActivePinia, createPinia} from 'pinia';
+import { mount } from '@vue/test-utils';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
 import QuestionTime from '@/components/questions/QuestionTime.vue';
-import {useRootStore} from '@/stores/root-store';
+import { useRootStore } from '@/stores/root-store';
 
 vi.mock('@/services/entry/question-common-service', () => {
 	const questionCommonService = {
 		setUpInputParams: vi.fn()
 	};
-	return {questionCommonService};
+	return { questionCommonService };
 });
 
 vi.mock('@/services/utilities/utils-service', () => {
@@ -20,7 +20,7 @@ vi.mock('@/services/utilities/utils-service', () => {
 		toISOStringLocale: vi.fn(() => ''),
 		hasQuestionError: vi.fn(() => false)
 	};
-	return {utilsService};
+	return { utilsService };
 });
 
 const ION_STUBS = {
@@ -40,8 +40,8 @@ const ION_STUBS = {
 describe('QuestionTime.vue - native time field', () => {
 	beforeEach(() => {
 		setActivePinia(createPinia());
-		//android with a format without seconds renders the HTML input chip
-		useRootStore().device = {platform: 'android'};
+		//android with a format without seconds renders the shared field
+		useRootStore().device = { platform: 'android' };
 	});
 
 	const factory = (props = {}) => {
@@ -55,25 +55,42 @@ describe('QuestionTime.vue - native time field', () => {
 				entriesAddState: {}
 			},
 			global: {
-				stubs: ION_STUBS
+				stubs: {
+					...ION_STUBS,
+					'date-time-field': {
+						name: 'DateTimeField',
+						template: '<div class="date-time-field-stub"></div>',
+						props: ['type', 'answer', 'datetimeFormat', 'min', 'max', 'locale']
+					}
+				}
 			}
 		});
 	};
 
-	it('keeps the native input[type="time"]', () => {
+	it('renders the shared date-time-field', () => {
 		const wrapper = factory();
-		expect(wrapper.find('input[type="time"]').exists()).toBe(true);
+		expect(wrapper.findComponent({ name: 'DateTimeField' }).exists()).toBe(true);
 	});
 
-	it('marks the input as is-empty when there is no answer', () => {
+	it('passes answer and datetime-format to the shared field', () => {
 		const wrapper = factory();
-		expect(wrapper.find('input[type="time"]').classes()).toContain('is-empty');
+		const field = wrapper.findComponent({ name: 'DateTimeField' });
+		expect(field.exists()).toBe(true);
+		expect(field.props('type')).toBe('time');
 	});
 
-	it('removes is-empty once an answer is set', async () => {
+	it('updates the answer on change', async () => {
 		const wrapper = factory();
-		wrapper.vm.state.time.answer = '14:30';
+		wrapper.vm.onTimeChange('1970-01-01T14:30:00.000');
 		await wrapper.vm.$nextTick();
-		expect(wrapper.find('input[type="time"]').classes()).not.toContain('is-empty');
+		expect(wrapper.vm.state.answer.answer).toBe('1970-01-01T14:30:00.000');
+	});
+
+	it('clears the answer on clear', async () => {
+		const wrapper = factory();
+		wrapper.vm.state.answer.answer = '1970-01-01T14:30:00.000';
+		wrapper.vm.clearTime();
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.state.answer.answer).toBe('');
 	});
 });

@@ -127,3 +127,32 @@ describe('ModalEntriesFilter count failure', () => {
         expect(wrapper.vm.state.isFetching).toBe(false);
     });
 });
+
+describe('ModalEntriesFilter date fields', () => {
+    it('renders shared date-time-fields for from and to with min and max', () => {
+        const wrapper = mountFilter();
+        //shallowMount stubs the local DateTimeField: assert via html tag
+        expect(wrapper.html()).toContain('date-time-field');
+        expect(wrapper.vm.onFromChange).toBeDefined();
+        expect(wrapper.vm.onToChange).toBeDefined();
+    });
+
+    it('updates from and re-filters on change', async () => {
+        databaseSelectService.countEntries = vi.fn().mockResolvedValue(mockCountResult(3));
+        const wrapper = mountFilter();
+
+        wrapper.vm.onFromChange('2026-01-15T00:00:00.000');
+        expect(wrapper.vm.state.filters.from).toBe('2026-01-15');
+        await vi.advanceTimersByTimeAsync(PARAMETERS.DELAY_LONG);
+        await flushPromises();
+        expect(databaseSelectService.countEntries).toHaveBeenCalled();
+    });
+
+    it('clears from and re-filters on clear', async () => {
+        databaseSelectService.countEntries = vi.fn().mockResolvedValue(mockCountResult(3));
+        const wrapper = mountFilter();
+
+        wrapper.vm.onFromClear();
+        expect(wrapper.vm.state.filters.from).toBeNull();
+    });
+});

@@ -1,13 +1,13 @@
-import {mount} from '@vue/test-utils';
-import {describe, it, expect, beforeEach, vi} from 'vitest';
-import {setActivePinia, createPinia} from 'pinia';
+import { mount } from '@vue/test-utils';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
 import QuestionDate from '@/components/questions/QuestionDate.vue';
 
 vi.mock('@/services/entry/question-common-service', () => {
 	const questionCommonService = {
 		setUpInputParams: vi.fn()
 	};
-	return {questionCommonService};
+	return { questionCommonService };
 });
 
 vi.mock('@/services/utilities/utils-service', () => {
@@ -18,7 +18,7 @@ vi.mock('@/services/utilities/utils-service', () => {
 		toISOStringLocale: vi.fn(() => ''),
 		hasQuestionError: vi.fn(() => false)
 	};
-	return {utilsService};
+	return { utilsService };
 });
 
 const ION_STUBS = {
@@ -51,25 +51,42 @@ describe('QuestionDate.vue - native date field', () => {
 				entriesAddState: {}
 			},
 			global: {
-				stubs: ION_STUBS
+				stubs: {
+					...ION_STUBS,
+					'date-time-field': {
+						name: 'DateTimeField',
+						template: '<div class="date-time-field-stub"></div>',
+						props: ['type', 'answer', 'datetimeFormat', 'min', 'max', 'locale']
+					}
+				}
 			}
 		});
 	};
 
-	it('keeps the native input[type="date"]', () => {
+	it('renders the shared date-time-field', () => {
 		const wrapper = factory();
-		expect(wrapper.find('input[type="date"]').exists()).toBe(true);
+		expect(wrapper.findComponent({ name: 'DateTimeField' }).exists()).toBe(true);
 	});
 
-	it('marks the input as is-empty when there is no answer', () => {
+	it('passes answer and datetime-format to the shared field', () => {
 		const wrapper = factory();
-		expect(wrapper.find('input[type="date"]').classes()).toContain('is-empty');
+		const field = wrapper.findComponent({ name: 'DateTimeField' });
+		expect(field.exists()).toBe(true);
+		expect(field.props('type')).toBe('date');
 	});
 
-	it('removes is-empty once an answer is set', async () => {
+	it('updates the answer on change', async () => {
 		const wrapper = factory();
-		wrapper.vm.state.date.answer = '2026-10-09';
+		wrapper.vm.onDateChange('2026-10-09T00:00:00.000');
 		await wrapper.vm.$nextTick();
-		expect(wrapper.find('input[type="date"]').classes()).not.toContain('is-empty');
+		expect(wrapper.vm.state.answer.answer).toBe('2026-10-09T00:00:00.000');
+	});
+
+	it('clears the answer on clear', async () => {
+		const wrapper = factory();
+		wrapper.vm.state.answer.answer = '2026-10-09T00:00:00.000';
+		wrapper.vm.clearDate();
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.state.answer.answer).toBe('');
 	});
 });
