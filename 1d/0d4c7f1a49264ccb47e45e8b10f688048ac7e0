@@ -1,0 +1,22 @@
+android/app/src/main/res/values-night/styles.xml
+  h_2231ff2aa93473 1-13
+ios/App/App/NightModePlugin.swift
+  h_2231ff2aa93473 49-65
+package-lock.json
+  h_2231ff2aa93473 4442
+src/components/DateTimeField.vue
+  h_2231ff2aa93473 31-33,123-142,320-326
+src/services/utilities/datetime-picker-service.js
+  h_2231ff2aa93473 119,123-136,142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1d0d4c7f1a49264ccb47e45e8b10f688048ac7e0",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
