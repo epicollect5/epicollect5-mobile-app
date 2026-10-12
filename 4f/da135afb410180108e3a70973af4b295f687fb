@@ -1,0 +1,16 @@
+tests/unit/datetime-picker.spec.js
+  h_2231ff2aa93473 8-16,49-51,53-56,58
+tests/unit/nightmode-plugin-registration.spec.js
+  h_2231ff2aa93473 74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4fda135afb410180108e3a70973af4b295f687fb",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
