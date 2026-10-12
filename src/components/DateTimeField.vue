@@ -11,6 +11,7 @@
 					class="question-action-button datetime-picker-button ion-text-nowrap"
 					color="secondary"
 					expand="block"
+					:aria-label="pickerAriaLabel"
 					@click="openPicker"
 				>
 					{{displayValue}}
@@ -98,6 +99,18 @@ export default {
 					return timeOutline;
 				}
 				return calendarClearOutline;
+			}),
+			pickerAriaLabel: computed(() => {
+				//empty buttons have no text content for assistive technology,
+				//so name them with the translated picker label; when answered
+				//the formatted value itself is the accessible name
+				if (computedScope.displayValue.value) {
+					return null;
+				}
+				if (props.type === 'time') {
+					return labels.time_selected_is;
+				}
+				return labels.date_selected_is;
 			}),
 			displayValue: computed(() => {
 				if (!props.answer) {
