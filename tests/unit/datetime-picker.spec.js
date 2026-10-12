@@ -42,5 +42,9 @@ describe('capacitor datetime-picker plugin', () => {
         expect(styles).toContain('name="MaterialLightTheme"');
         expect(styles).toContain('name="MaterialDarkTheme"');
         expect(styles).toContain('#673C90');
+        //dark surfaces need the lighter same-hue purple (#673C90 washes out)
+        const nightStyles = readText('android/app/src/main/res/values-night/styles.xml');
+        expect(nightStyles).toContain('name="MaterialDarkTheme"');
+        expect(nightStyles).toContain('#B39DDB');
     });
 });

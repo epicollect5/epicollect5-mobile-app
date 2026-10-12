@@ -1,8 +1,11 @@
 import { mount } from '@vue/test-utils';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import QuestionTime from '@/components/questions/QuestionTime.vue';
 import { useRootStore } from '@/stores/root-store';
+import { questionCommonService } from '@/services/entry/question-common-service';
+import { utilsService } from '@/services/utilities/utils-service';
+import { PARAMETERS } from '@/config';
 
 vi.mock('@/services/entry/question-common-service', () => {
 	const questionCommonService = {
@@ -91,6 +94,89 @@ describe('QuestionTime.vue - native time field', () => {
 		wrapper.vm.state.answer.answer = '1970-01-01T14:30:00.000';
 		wrapper.vm.clearTime();
 		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.state.answer.answer).toBe('');
+	});
+});
+
+describe('QuestionTime.vue - cached answers and defaults', () => {
+	beforeEach(() => {
+		setActivePinia(createPinia());
+		useRootStore().device = { platform: 'android' };
+		//mimic the real setUpInputParams contract (input details + answer)
+		questionCommonService.setUpInputParams.mockImplementation((state, inputRef, entriesAddState) => {
+			state.inputDetails = entriesAddState.inputDetails;
+			state.currentInputRef = inputRef;
+			state.error = entriesAddState.error;
+			state.required = !!entriesAddState.inputDetails.is_required;
+			state.question = entriesAddState.inputDetails.question;
+			state.answer = entriesAddState.answers[inputRef];
+		});
+	});
+
+	afterEach(() => {
+		questionCommonService.setUpInputParams.mockReset();
+	});
+
+	const factoryWithState = (inputDetails, answer) => {
+		return mount(QuestionTime, {
+			props: {
+				inputRef: 'time_ref',
+				type: 'time'
+			},
+			global: {
+				provide: {
+					entriesAddState: {
+						inputDetails,
+						answers: { time_ref: answer },
+						error: { errors: [] }
+					}
+				},
+				stubs: {
+					...ION_STUBS,
+					'date-time-field': {
+						name: 'DateTimeField',
+						template: '<div class="date-time-field-stub"></div>',
+						props: ['type', 'answer', 'datetimeFormat', 'min', 'max', 'locale']
+					}
+				}
+			}
+		});
+	};
+
+	it.each([
+		PARAMETERS.TIME_FORMAT_1,
+		PARAMETERS.TIME_FORMAT_2,
+		PARAMETERS.TIME_FORMAT_3,
+		PARAMETERS.TIME_FORMAT_4,
+		PARAMETERS.TIME_FORMAT_5
+	])('renders the cached answer for format %s', (format) => {
+		const wrapper = factoryWithState(
+			{ datetime_format: format, question: 'Q?' },
+			{ answer: '1970-01-01T14:30:05.000', was_jumped: false }
+		);
+		const field = wrapper.findComponent({ name: 'DateTimeField' });
+		expect(field.props('type')).toBe('time');
+		expect(field.props('answer')).toBe('1970-01-01T14:30:05.000');
+		expect(field.props('datetimeFormat')).toBe(format);
+	});
+
+	it('defaults to the current time when requested', () => {
+		//utils-service is mocked in this file: drive the wiring with
+		//controlled values and assert the canonical answer is stored
+		utilsService.getISOTime.mockReturnValueOnce('2026-10-09T08:15:30.000');
+		const wrapper = factoryWithState(
+			{ datetime_format: PARAMETERS.TIME_FORMAT_3, set_to_current_datetime: true, question: 'Q?' },
+			{ answer: '', was_jumped: false }
+		);
+		expect(utilsService.getISOTime).toHaveBeenCalledWith(expect.any(Date), PARAMETERS.TIME_FORMAT_3);
+		expect(wrapper.vm.state.answer.answer).toBe('2026-10-09T08:15:30.000');
+	});
+
+	it('leaves an empty answer alone without the default flag', () => {
+		const wrapper = factoryWithState(
+			{ datetime_format: PARAMETERS.TIME_FORMAT_3, question: 'Q?' },
+			{ answer: '', was_jumped: false }
+		);
 		expect(wrapper.vm.state.answer.answer).toBe('');
 	});
 });

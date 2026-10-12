@@ -87,4 +87,17 @@ describe('DateTimeField.vue - button text with real formatters', () => {
         expect(labelFor({ type: 'date', answer: '' })).toBe('');
         expect(labelFor({ type: 'time', answer: '' })).toBe('');
     });
+
+    it('passes seconds-capable values to the web input', () => {
+        const wrapper = mount(DateTimeField, {
+            props: {
+                type: 'time',
+                answer: '2026-10-09T14:30:05.000',
+                datetimeFormat: PARAMETERS.TIME_FORMAT_1
+            }
+        });
+        const input = wrapper.find('input.datetime-web-input');
+        expect(input.attributes('step')).toBe('1');
+        expect(input.element.value).toBe('14:30:05');
+    });
 });

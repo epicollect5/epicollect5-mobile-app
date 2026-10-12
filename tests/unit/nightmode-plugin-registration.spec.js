@@ -70,6 +70,8 @@ describe('native NightMode plugin registration', () => {
         expect(swift).toContain('jsName = "NightMode"');
         expect(swift).toContain('setNightMode');
         expect(swift).toContain('tintColor');
+        //dark surfaces need the lighter same-hue purple (#673C90 washes out)
+        expect(swift).toContain('179/255');
         expect(java).toContain('@CapacitorPlugin(name = "NightMode")');
         expect(java).toContain('setNightMode');
     });

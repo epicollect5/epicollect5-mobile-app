@@ -128,9 +128,26 @@ describe('DateTimeField.vue', () => {
 
         await wrapper.find('.datetime-picker-button').trigger('click');
 
-        expect(datetimePickerService.presentTime).toHaveBeenCalled();
+        expect(datetimePickerService.presentTime).toHaveBeenCalledWith(expect.objectContaining({
+            is24Hour: true
+        }));
         expect(utilsService.getISOTime).toHaveBeenCalled();
         expect(wrapper.emitted('change')).toBeTruthy();
+    });
+
+    it('requests a 12-hour picker for 12-hour time formats', async () => {
+        datetimePickerService.presentTime.mockResolvedValueOnce('02:30');
+        const wrapper = factory({
+            type: 'time',
+            answer: '',
+            datetimeFormat: PARAMETERS.TIME_FORMAT_4
+        });
+
+        await wrapper.find('.datetime-picker-button').trigger('click');
+
+        expect(datetimePickerService.presentTime).toHaveBeenCalledWith(expect.objectContaining({
+            is24Hour: false
+        }));
     });
 
     it('opens the Cordova wheel selector on native with seconds', async () => {
@@ -175,6 +192,28 @@ describe('DateTimeField.vue', () => {
 
         expect(showPicker).toHaveBeenCalled();
         expect(datetimePickerService.presentDate).not.toHaveBeenCalled();
+    });
+
+    it('adds step seconds to the web input for seconds formats only', async () => {
+        Capacitor.isNativePlatform.mockReturnValue(false);
+        datetimePickerService.isSupported.mockReturnValue(false);
+
+        const seconds = factory({
+            type: 'time',
+            answer: '',
+            datetimeFormat: PARAMETERS.TIME_FORMAT_1
+        });
+        expect(seconds.find('input.datetime-web-input').attributes('step')).toBe('1');
+
+        const minutes = factory({
+            type: 'time',
+            answer: '',
+            datetimeFormat: PARAMETERS.TIME_FORMAT_3
+        });
+        expect(minutes.find('input.datetime-web-input').attributes('step')).toBeUndefined();
+
+        const date = factory({ type: 'date', answer: '' });
+        expect(date.find('input.datetime-web-input').attributes('step')).toBeUndefined();
     });
 
     it('leaves the answer untouched when the picker is dismissed', async () => {

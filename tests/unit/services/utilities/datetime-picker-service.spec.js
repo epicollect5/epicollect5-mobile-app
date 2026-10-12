@@ -146,4 +146,27 @@ describe('datetime-picker-service', () => {
         window.matchMedia = vi.fn(() => ({ matches: false }));
         expect(datetimePickerService.getWheelTheme()).toBe('light');
     });
+
+    it('requests a 24-hour locale for 24-hour time formats', async () => {
+        presentMock.mockResolvedValueOnce({ value: '14:30' });
+        await datetimePickerService.presentTime({ value: '14:30', locale: 'en-US', is24Hour: true });
+        expect(DatetimePicker.present).toHaveBeenCalledWith(expect.objectContaining({
+            mode: 'time',
+            locale: 'en-GB'
+        }));
+
+        presentMock.mockResolvedValueOnce({ value: '02:30' });
+        await datetimePickerService.presentTime({ value: '02:30', locale: 'en-US' });
+        expect(DatetimePicker.present).toHaveBeenCalledWith(expect.objectContaining({
+            mode: 'time',
+            locale: 'en-US'
+        }));
+
+        presentMock.mockResolvedValueOnce({ value: '14:30' });
+        await datetimePickerService.presentTime({ value: '14:30', locale: 'fr-FR', is24Hour: true });
+        expect(DatetimePicker.present).toHaveBeenCalledWith(expect.objectContaining({
+            mode: 'time',
+            locale: 'fr-FR'
+        }));
+    });
 });
