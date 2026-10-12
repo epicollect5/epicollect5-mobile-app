@@ -58,18 +58,12 @@
     @include question-has-error-border-base;
 }
 
-//the clear control used to be a bare icon; as a button it needs a tappable
-//target without inflating the row height next to the 38px picker button
-.datetime-clear-button {
-    --padding-start: 8px;
-    --padding-end: 8px;
-    --padding-top: 0;
-    --padding-bottom: 0;
-    margin: 0;
-    height: auto;
-}
-
+//tappable clear glyph sitting next to the 38px picker button: pin a 36x36
+//hit area instead of the stock size="large" (32px)
 .datetime-clear-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
     cursor: pointer;
     vertical-align: middle;
 }

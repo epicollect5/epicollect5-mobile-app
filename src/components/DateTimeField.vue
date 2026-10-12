@@ -19,18 +19,11 @@
 				</ion-button>
 			</ion-col>
 			<ion-col size="auto">
-				<ion-button
-					class="datetime-clear-button"
-					fill="clear"
-					:aria-label="labels.clear"
+				<ion-icon
+					class="datetime-clear-icon"
+					:icon="closeCircleOutline"
 					@click="clearField"
-				>
-					<ion-icon
-						class="datetime-clear-icon"
-						size="large"
-						:icon="closeOutline"
-					></ion-icon>
-				</ion-button>
+				></ion-icon>
 			</ion-col>
 		</ion-row>
 		<input
@@ -50,7 +43,7 @@
 <script>
 import { reactive, computed } from '@vue/reactivity';
 import { Capacitor } from '@capacitor/core';
-import { calendarClearOutline, closeOutline, timeOutline } from 'ionicons/icons';
+import { calendarClearOutline, closeCircleOutline, timeOutline } from 'ionicons/icons';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
@@ -393,12 +386,11 @@ export default {
 
 		return {
 			state,
-			labels,
 			...computedScope,
 			...methods,
 			...props,
 			calendarClearOutline,
-			closeOutline,
+			closeCircleOutline,
 			timeOutline
 		};
 	}
