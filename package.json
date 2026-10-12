@@ -122,6 +122,7 @@
     "@vitest/ui": "^4.1.11",
     "@vue/compiler-sfc": "^3.4.27",
     "@vue/test-utils": "^2.4.1",
+    "agent-browser": "^0.27.0",
     "eslint": "^9.0.0",
     "eslint-plugin-vue": "^9.0.0",
     "globals": "^15.0.0",
