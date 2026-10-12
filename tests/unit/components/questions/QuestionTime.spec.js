@@ -63,7 +63,7 @@ describe('QuestionTime.vue - native time field', () => {
 					'date-time-field': {
 						name: 'DateTimeField',
 						template: '<div class="date-time-field-stub"></div>',
-						props: ['type', 'answer', 'datetimeFormat', 'min', 'max', 'locale']
+						props: ['type', 'answer', 'datetimeFormat', 'min', 'max', 'locale', 'hasError']
 					}
 				}
 			}
@@ -80,6 +80,12 @@ describe('QuestionTime.vue - native time field', () => {
 		const field = wrapper.findComponent({ name: 'DateTimeField' });
 		expect(field.exists()).toBe(true);
 		expect(field.props('type')).toBe('time');
+	});
+
+	it('forwards the question error state to the shared field', () => {
+		utilsService.hasQuestionError.mockReturnValueOnce(true);
+		const wrapper = factory();
+		expect(wrapper.findComponent({ name: 'DateTimeField' }).props('hasError')).toBe(true);
 	});
 
 	it('updates the answer on change', async () => {
@@ -136,7 +142,7 @@ describe('QuestionTime.vue - cached answers and defaults', () => {
 					'date-time-field': {
 						name: 'DateTimeField',
 						template: '<div class="date-time-field-stub"></div>',
-						props: ['type', 'answer', 'datetimeFormat', 'min', 'max', 'locale']
+						props: ['type', 'answer', 'datetimeFormat', 'min', 'max', 'locale', 'hasError']
 					}
 				}
 			}
@@ -173,10 +179,14 @@ describe('QuestionTime.vue - cached answers and defaults', () => {
 	});
 
 	it('leaves an empty answer alone without the default flag', () => {
+		//clear first: the mock returns '' even when called, so without this
+		//an accidental default-time call would still satisfy the assertion
+		utilsService.getISOTime.mockClear();
 		const wrapper = factoryWithState(
 			{ datetime_format: PARAMETERS.TIME_FORMAT_3, question: 'Q?' },
 			{ answer: '', was_jumped: false }
 		);
+		expect(utilsService.getISOTime).not.toHaveBeenCalled();
 		expect(wrapper.vm.state.answer.answer).toBe('');
 	});
 });

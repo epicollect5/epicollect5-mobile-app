@@ -7,12 +7,12 @@ import { databaseSelectService } from '@/services/database/database-select-servi
 import { rollbarService } from '@/services/utilities/rollbar-service';
 import flushPromises from 'flush-promises';
 
-function mountFilter() {
+function mountFilter(filterOverrides = {}) {
     return shallowMount(ModalEntriesFilter, {
         props: {
             countNoFilters: 10,
             countWithFilters: 5,
-            filters: { ...PARAMETERS.FILTERS_DEFAULT },
+            filters: { ...PARAMETERS.FILTERS_DEFAULT, ...filterOverrides },
             projectRef: 'project-ref',
             formRef: 'form-ref',
             parentEntryUuid: ''
@@ -130,9 +130,17 @@ describe('ModalEntriesFilter count failure', () => {
 
 describe('ModalEntriesFilter date fields', () => {
     it('renders shared date-time-fields for from and to with min and max', () => {
-        const wrapper = mountFilter();
-        //shallowMount stubs the local DateTimeField: assert via html tag
-        expect(wrapper.html()).toContain('date-time-field');
+        const wrapper = mountFilter({ oldest: '2026-01-01', newest: '2026-02-01' });
+        //shallowMount stubs the local DateTimeField: assert both fields exist
+        //and each keeps its bounds, otherwise a missing field or a lost
+        //min/max binding still passes a single substring check
+        const fields = wrapper.findAllComponents({ name: 'DateTimeField' });
+        expect(fields.length).toBe(2);
+        for (const field of fields) {
+            expect(field.props('type')).toBe('date');
+            expect(field.props('min')).toBe('2026-01-01');
+            expect(field.props('max')).toBe('2026-02-01');
+        }
         expect(wrapper.vm.onFromChange).toBeDefined();
         expect(wrapper.vm.onToChange).toBeDefined();
     });
@@ -154,5 +162,9 @@ describe('ModalEntriesFilter date fields', () => {
 
         wrapper.vm.onFromClear();
         expect(wrapper.vm.state.filters.from).toBeNull();
+        //the scheduled re-count must run: clearing must still re-filter
+        await vi.advanceTimersByTimeAsync(PARAMETERS.DELAY_LONG);
+        await flushPromises();
+        expect(databaseSelectService.countEntries).toHaveBeenCalled();
     });
 });

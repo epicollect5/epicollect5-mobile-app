@@ -72,19 +72,38 @@ describe('DateTimeField.vue', () => {
         });
     }
 
-    it('renders a grid with picker button and clear icon on the side', () => {
+    it('renders a grid with picker button and clear button on the side', () => {
         const wrapper = factory();
         expect(wrapper.find('ion-grid.datetime-field-grid').exists()).toBe(true);
         expect(wrapper.find('ion-row.ion-align-items-center').exists()).toBe(true);
         const buttons = wrapper.findAll('ion-button');
-        expect(buttons.length).toBe(1);
-        expect(buttons[0].classes()).toContain('datetime-picker-button');
-        expect(buttons[0].classes()).toContain('question-action-button');
-        expect(buttons[0].attributes('color')).toBe('secondary');
-        expect(buttons[0].attributes('expand')).toBe('block');
-        const clearIcon = wrapper.find('ion-icon.datetime-clear-icon');
+        expect(buttons.length).toBe(2);
+        const pickerButton = wrapper.find('ion-button.datetime-picker-button');
+        expect(pickerButton.classes()).toContain('question-action-button');
+        expect(pickerButton.attributes('color')).toBe('secondary');
+        expect(pickerButton.attributes('expand')).toBe('block');
+        const clearButton = wrapper.find('ion-button.datetime-clear-button');
+        expect(clearButton.exists()).toBe(true);
+        expect(clearButton.attributes('aria-label')).toBe('Clear');
+        const clearIcon = wrapper.find('ion-button.datetime-clear-button ion-icon.datetime-clear-icon');
         expect(clearIcon.exists()).toBe(true);
         expect(clearIcon.attributes('size')).toBe('large');
+    });
+
+    it('marks the picker button invalid only when the field has an error', () => {
+        const invalid = factory({ hasError: true });
+        expect(invalid.find('.datetime-picker-button').classes()).toContain('has-error');
+
+        const valid = factory();
+        expect(valid.find('.datetime-picker-button').classes()).not.toContain('has-error');
+    });
+
+    it('hides the programmatic web input from keyboard and assistive tech', () => {
+        Capacitor.isNativePlatform.mockReturnValue(false);
+        const wrapper = factory({ type: 'date', answer: '' });
+        const input = wrapper.find('input.datetime-web-input');
+        expect(input.attributes('tabindex')).toBe('-1');
+        expect(input.attributes('aria-hidden')).toBe('true');
     });
 
     it('shows the picker icon pinned left with formatted value, empty when unanswered', () => {
@@ -97,6 +116,10 @@ describe('DateTimeField.vue', () => {
         const time = factory({ type: 'time', answer: '', datetimeFormat: PARAMETERS.TIME_FORMAT_3 });
         const timeIcon = time.find('.datetime-button-col > ion-icon.datetime-picker-icon');
         expect(timeIcon.exists()).toBe(true);
+        /*
+         * False positive (review): picker icon attribute comparison is meaningful — by design. See docs/known-review-false-positives.md
+         * (`tests/unit/components/DateTimeField.spec.js`, picker icon attribute comparison).
+         */
         expect(timeIcon.attributes('icon')).not.toBe(pickerIcon.attributes('icon'));
 
         const timeAnswered = factory({ type: 'time', answer: '1970-01-01T14:30:00.000', datetimeFormat: PARAMETERS.TIME_FORMAT_3 });
@@ -236,10 +259,10 @@ describe('DateTimeField.vue', () => {
         expect(answered.find('.datetime-picker-button').attributes('aria-label')).toBeUndefined();
     });
 
-    it('emits clear when the clear icon is tapped', async () => {
+    it('emits clear when the clear control is pressed', async () => {
         const wrapper = factory({ type: 'date', answer: '2026-10-09T00:00:00.000' });
 
-        await wrapper.find('ion-icon.datetime-clear-icon').trigger('click');
+        await wrapper.find('ion-button.datetime-clear-button').trigger('click');
 
         expect(wrapper.emitted('clear')).toBeTruthy();
     });

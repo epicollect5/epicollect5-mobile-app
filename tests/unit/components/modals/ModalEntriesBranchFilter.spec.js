@@ -9,12 +9,12 @@ import flushPromises from 'flush-promises';
 
 const DELAY_LONG = PARAMETERS.DELAY_LONG;
 
-function mountFilter() {
+function mountFilter(filterOverrides = {}) {
     return shallowMount(ModalEntriesBranchFilter, {
         props: {
             countNoFilters: 10,
             countWithFilters: 5,
-            filters: { ...PARAMETERS.FILTERS_DEFAULT },
+            filters: { ...PARAMETERS.FILTERS_DEFAULT, ...filterOverrides },
             ownerInputRef: 'input-ref',
             ownerEntryUuid: 'owner-uuid'
         }
@@ -131,8 +131,16 @@ describe('ModalEntriesBranchFilter count failure', () => {
 
 describe('ModalEntriesBranchFilter date fields', () => {
     it('renders shared date-time-fields for from and to with min and max', () => {
-        const wrapper = mountFilter();
-        expect(wrapper.html()).toContain('date-time-field');
+        const wrapper = mountFilter({ oldest: '2026-01-01', newest: '2026-02-01' });
+        //both fields must render and keep their bounds; a missing picker or a
+        //lost min/max binding would otherwise go unnoticed
+        const fields = wrapper.findAllComponents({ name: 'DateTimeField' });
+        expect(fields.length).toBe(2);
+        for (const field of fields) {
+            expect(field.props('type')).toBe('date');
+            expect(field.props('min')).toBe('2026-01-01');
+            expect(field.props('max')).toBe('2026-02-01');
+        }
         expect(wrapper.vm.onFromChange).toBeDefined();
         expect(wrapper.vm.onToChange).toBeDefined();
     });
@@ -143,12 +151,22 @@ describe('ModalEntriesBranchFilter date fields', () => {
 
         wrapper.vm.onFromChange('2026-01-15T00:00:00.000');
         expect(wrapper.vm.state.filters.from).toBe('2026-01-15');
+        //the scheduled re-count must run and see the new bound
+        await flushPromises();
+        await new Promise((resolve) => setTimeout(resolve, 30));
+        expect(databaseSelectService.countBranchesForQuestion).toHaveBeenCalled();
+        expect(databaseSelectService.countBranchesForQuestion.mock.calls[0][2].from).toBe('2026-01-15');
     });
 
     it('clears from and re-filters on clear', async () => {
+        databaseSelectService.countBranchesForQuestion = vi.fn().mockResolvedValue(mockCountResult(3));
         const wrapper = mountFilter();
 
         wrapper.vm.onFromClear();
         expect(wrapper.vm.state.filters.from).toBeNull();
+        await flushPromises();
+        await new Promise((resolve) => setTimeout(resolve, 30));
+        expect(databaseSelectService.countBranchesForQuestion).toHaveBeenCalled();
+        expect(databaseSelectService.countBranchesForQuestion.mock.calls[0][2].from).toBeNull();
     });
 });

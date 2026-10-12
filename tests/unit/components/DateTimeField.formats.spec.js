@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import DateTimeField from '@/components/DateTimeField.vue';
 import { PARAMETERS } from '@/config';
@@ -30,6 +30,10 @@ vi.mock('@/services/utilities/datetime-picker-service', () => ({
 describe('DateTimeField.vue - button text with real formatters', () => {
     beforeEach(() => {
         setActivePinia(createPinia());
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     function labelFor(props) {
@@ -116,6 +120,11 @@ describe('DateTimeField.vue - button text with real formatters', () => {
     });
 
     it('saves web minute-only time input as canonical answers', async () => {
+        //freeze the clock: the component reads the date at change time and
+        //the assertion reads it again, so an unfrozen clock can straddle
+        //local midnight and compare different days
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 9, 9, 9, 0, 0));
         const wrapper = mount(DateTimeField, {
             props: {
                 type: 'time',
@@ -126,13 +135,12 @@ describe('DateTimeField.vue - button text with real formatters', () => {
         const input = wrapper.find('input.datetime-web-input');
         input.element.value = '14:30';
         await input.trigger('change');
-        const now = new Date();
-        const pad = (n) => String(n).padStart(2, '0');
-        const datePart = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
-        expect(wrapper.emitted('change')[0]).toEqual([datePart + 'T14:30:00.000']);
+        expect(wrapper.emitted('change')[0]).toEqual(['2026-10-09T14:30:00.000']);
     });
 
     it('saves web time with seconds as canonical answers', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 9, 9, 9, 0, 0));
         const wrapper = mount(DateTimeField, {
             props: {
                 type: 'time',
@@ -143,10 +151,7 @@ describe('DateTimeField.vue - button text with real formatters', () => {
         const input = wrapper.find('input.datetime-web-input');
         input.element.value = '14:30:05';
         await input.trigger('change');
-        const now = new Date();
-        const pad = (n) => String(n).padStart(2, '0');
-        const datePart = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
-        expect(wrapper.emitted('change')[0]).toEqual([datePart + 'T14:30:05.000']);
+        expect(wrapper.emitted('change')[0]).toEqual(['2026-10-09T14:30:05.000']);
     });
 
     it('emits clear when the web input is emptied', async () => {

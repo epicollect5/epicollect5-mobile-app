@@ -59,7 +59,7 @@ describe('QuestionDate.vue - native date field', () => {
 					'date-time-field': {
 						name: 'DateTimeField',
 						template: '<div class="date-time-field-stub"></div>',
-						props: ['type', 'answer', 'datetimeFormat', 'min', 'max', 'locale']
+						props: ['type', 'answer', 'datetimeFormat', 'min', 'max', 'locale', 'hasError']
 					}
 				}
 			}
@@ -76,6 +76,12 @@ describe('QuestionDate.vue - native date field', () => {
 		const field = wrapper.findComponent({ name: 'DateTimeField' });
 		expect(field.exists()).toBe(true);
 		expect(field.props('type')).toBe('date');
+	});
+
+	it('forwards the question error state to the shared field', () => {
+		utilsService.hasQuestionError.mockReturnValueOnce(true);
+		const wrapper = factory();
+		expect(wrapper.findComponent({ name: 'DateTimeField' }).props('hasError')).toBe(true);
 	});
 
 	it('updates the answer on change', async () => {
@@ -131,7 +137,7 @@ describe('QuestionDate.vue - cached answers and defaults', () => {
 					'date-time-field': {
 						name: 'DateTimeField',
 						template: '<div class="date-time-field-stub"></div>',
-						props: ['type', 'answer', 'datetimeFormat', 'min', 'max', 'locale']
+						props: ['type', 'answer', 'datetimeFormat', 'min', 'max', 'locale', 'hasError']
 					}
 				}
 			}
