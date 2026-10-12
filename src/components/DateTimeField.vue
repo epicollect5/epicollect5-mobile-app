@@ -271,13 +271,12 @@ export default {
 			if (event && event.currentTarget && event.currentTarget.closest) {
 				const grid = event.currentTarget.closest('.datetime-field-grid');
 				if (grid) {
-					const input = grid.querySelector('input.datetime-web-input');
-					if (input) {
-						return input;
-					}
+					return grid.querySelector('input.datetime-web-input');
 				}
 			}
-			return document.querySelector('input.datetime-web-input');
+			//never fall back to a document-wide query: with several fields on
+			//the page it would open a picker on a different field's input
+			return null;
 		}
 
 		function openWebPicker(event) {
