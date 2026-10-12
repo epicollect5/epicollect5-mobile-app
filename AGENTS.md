@@ -36,6 +36,9 @@ A behaviour-preserving refactor changes structure while preserving behaviour, co
 - Use Vitest only
 - Always import from 'vitest'
 - Use vi.fn(), never jest.fn()
+- Always prefix test runs with `NODE_ENV=test` (e.g. `NODE_ENV=test npx vitest run <file>`);
+  without it, tests fail with misleading environment errors. The npm scripts
+  (`test:unit`, `vitest`) already set it
 
 ## Priority Rules
 
