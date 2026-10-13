@@ -1,0 +1,16 @@
+src/theme/components/modals/ModalProgressTransfer.scss
+  h_2231ff2aa93473 7-14
+tests/unit/components/modals/ModalProgressTransfer.spec.js
+  h_2231ff2aa93473 4-5,53-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6b9314c362718c1ce0d609246ba7b9ec83d50804",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
