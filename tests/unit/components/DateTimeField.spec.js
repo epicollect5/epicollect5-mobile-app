@@ -96,6 +96,15 @@ describe('DateTimeField.vue', () => {
         expect(valid.find('.datetime-picker-button').attributes('color')).toBe('secondary');
     });
 
+    it('remounts the picker button when the error flips', async () => {
+        //in-place updates (class or color) do not land on the rendered
+        //custom element: the key forces a fresh element instead
+        const wrapper = factory();
+        const before = wrapper.find('.datetime-picker-button').element;
+        await wrapper.setProps({ hasError: true });
+        expect(wrapper.find('.datetime-picker-button').element).not.toBe(before);
+    });
+
     it('hides the programmatic web input from keyboard and assistive tech', () => {
         Capacitor.isNativePlatform.mockReturnValue(false);
         const wrapper = factory({ type: 'date', answer: '' });

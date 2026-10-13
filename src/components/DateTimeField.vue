@@ -9,6 +9,7 @@
 				></ion-icon>
 				<ion-button
 					class="question-action-button datetime-picker-button ion-text-nowrap"
+					:key="hasError ? 'picker-error' : 'picker'"
 					:color="hasError ? 'danger' : 'secondary'"
 					expand="block"
 					:aria-label="pickerAriaLabel"
