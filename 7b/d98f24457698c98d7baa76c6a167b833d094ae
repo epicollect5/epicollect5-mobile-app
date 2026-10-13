@@ -1,0 +1,14 @@
+src/theme/mixins.scss
+  h_2231ff2aa93473 744-750
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7bd98f24457698c98d7baa76c6a167b833d094ae",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
