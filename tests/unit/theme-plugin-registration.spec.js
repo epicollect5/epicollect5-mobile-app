@@ -16,11 +16,21 @@ const exists = (filePath) => fs.existsSync(path.join(rootDir, filePath));
 // instead of on a device.
 
 describe('native Theme plugin registration', () => {
+    //pinned to an immutable ref: a release tag (v1.0.0) or a full commit
+    //hash. Branch refs (#main) and empty refs (#) silently move and must fail.
+    const GITHUB_PINNED_DEP = /^github:epicollect5\/capacitor-plugin-theme#(v\d+\.\d+\.\d+|[0-9a-f]{40})$/;
+
     it('is installed pinned from github, never the npm registry', () => {
         const pkg = readJson('package.json');
         const dep = pkg.dependencies['@epicollect5/capacitor-plugin-theme'];
 
-        expect(dep).toMatch(/^github:epicollect5\/capacitor-plugin-theme#/);
+        expect(dep).toMatch(GITHUB_PINNED_DEP);
+    });
+
+    it('rejects moving, partial or empty refs', () => {
+        expect('github:epicollect5/capacitor-plugin-theme#main').not.toMatch(GITHUB_PINNED_DEP);
+        expect('github:epicollect5/capacitor-plugin-theme#').not.toMatch(GITHUB_PINNED_DEP);
+        expect('github:epicollect5/capacitor-plugin-theme#v1.0').not.toMatch(GITHUB_PINNED_DEP);
     });
 
     it('ships no local plugin sources', () => {
