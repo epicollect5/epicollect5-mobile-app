@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 98.5.1 - build 9851
+
+ - The native theme plugin now ships as a github-only package (@epicollect5/capacitor-plugin-theme) instead of local sources, so platform updates can no longer silently drop its registration; the app calls setTheme with the Light/Dark/System choice directly.
+ - Progress loader titles (uploading and downloading entries, uploading photos, audios and videos, exporting, encoding video) and the audio play and record titles and icons now follow the app theme, so they stay readable in dark mode; transparent modal headers use theme-aware text in both themes.
+ - Stronger test gates: the plugin registration spec now pins the github dependency to a release tag or commit hash and checks the iOS Podfile, Android Gradle and plugin classpath entries, with new specs for the progress, export, encoding and audio modals.
+
 # 98.5.0 - build 9850
 
  - DATE and TIME questions now open the native date and time pickers on Android and iOS instead of the in-app picker; the entries-list filter modals use the same field for their from/to dates; time formats with seconds keep the wheel picker.
