@@ -1,0 +1,20 @@
+src/components/questions/QuestionDate.vue
+  h_2231ff2aa93473 136-145,149,156
+src/components/questions/QuestionTime.vue
+  h_2231ff2aa93473 132-141,145,150
+tests/unit/components/questions/QuestionDate.spec.js
+  h_2231ff2aa93473 101-118
+tests/unit/components/questions/QuestionTime.spec.js
+  h_2231ff2aa93473 105-122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2c7f2b4104cbb598d1f8e6cc6578f2075b2ef5ec",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}

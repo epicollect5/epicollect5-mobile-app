@@ -1,0 +1,14 @@
+tests/unit/services/entry/validate-answer-errors.spec.js
+  h_2231ff2aa93473 1-121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ee99f25abbb79818744b1bc7f3452f73588b36f8",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
