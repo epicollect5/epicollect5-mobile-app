@@ -1,5 +1,14 @@
 ## Release Notes
 
+# 98.5.0 - build 9850
+
+ - DATE and TIME questions now open the native date and time pickers on Android and iOS instead of the in-app picker; the entries-list filter modals use the same field for their from/to dates; time formats with seconds keep the wheel picker.
+ - Native pickers follow the app theme on both platforms, so they render dark when dark mode is saved, and they open in the app language.
+ - Time entry fixes: seconds formats show and pick seconds correctly, 24-hour formats keep a 24-hour clock, and a cancelled picker leaves the field untouched instead of being reported as an error.
+ - Date and time fields now mark an invalid value, expose an accessible clear control that stays on the row for long values, and no longer open another field's picker when several share a page.
+ - Private projects now show a theme-aware lock icon instead of the static image, and the unused Google sign-in image asset was removed.
+ - Upgraded Vitest to 4.1.11 to address CVE-2026-84373.
+
 # 98.4.0 - build 9840
 
  - Dark mode is now available: a theme selector in settings offers light and dark, the choice applies at startup on all platforms, and native night mode follows on Android (DayNight theme with a dark splash variant for Android 12+) and iOS (new NightMode plugin called only on Android and iOS).
