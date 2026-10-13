@@ -120,6 +120,17 @@ describe('QuestionTime.vue - native time field', () => {
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.state.error.errors.test_ref.message).toBe('');
 	});
+
+	it('keys the shared field by error state', () => {
+		//the field lives in grid-question-narrow's slot: the key forces a
+		//fresh element on error flips instead of trusting a patch
+		const clean = factory();
+		expect(clean.findComponent({ name: 'DateTimeField' }).vm.$.vnode.key).toBe('time-ok');
+
+		utilsService.hasQuestionError.mockReturnValueOnce(true);
+		const errored = factory();
+		expect(errored.findComponent({ name: 'DateTimeField' }).vm.$.vnode.key).toBe('time-error');
+	});
 });
 
 describe('QuestionTime.vue - cached answers and defaults', () => {
