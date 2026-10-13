@@ -53,9 +53,15 @@
 }
 
 //mirror the legacy chip's invalid-answer affordance: shared validation CSS
-//only styles ion-chip.has-error, so the shared field opts in explicitly
-.datetime-picker-button.has-error {
+//only styles ion-chip.has-error. The class lives on a plain wrapper, not on
+//the Stencil button itself: dynamic classes on the custom element do not
+//patch off reliably once rendered, while plain elements toggle correctly.
+.datetime-picker-button-wrap {
+    display: block;
+}
+.datetime-picker-button-wrap.has-error {
     @include question-has-error-border-base;
+    border-radius: 6px;
 }
 
 //tappable clear glyph sitting next to the 38px picker button: pin a 36x36

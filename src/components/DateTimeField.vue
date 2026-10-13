@@ -7,16 +7,20 @@
 					size="small"
 					:icon="pickerIcon"
 				></ion-icon>
-				<ion-button
-					class="question-action-button datetime-picker-button ion-text-nowrap"
+				<span
+					class="datetime-picker-button-wrap"
 					:class="{'has-error': hasError}"
-					color="secondary"
-					expand="block"
-					:aria-label="pickerAriaLabel"
-					@click="openPicker"
 				>
-					<span class="datetime-picker-value">{{displayValue}}</span>
-				</ion-button>
+					<ion-button
+						class="question-action-button datetime-picker-button ion-text-nowrap"
+						color="secondary"
+						expand="block"
+						:aria-label="pickerAriaLabel"
+						@click="openPicker"
+					>
+						<span class="datetime-picker-value">{{displayValue}}</span>
+					</ion-button>
+				</span>
 			</ion-col>
 			<ion-col size="auto">
 				<ion-icon
