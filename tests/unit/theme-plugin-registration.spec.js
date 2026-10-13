@@ -48,13 +48,16 @@ describe('native Theme plugin registration', () => {
         const config = readJson('ios/App/App/capacitor.config.json');
 
         expect(config.packageClassList).toContain('ThemePlugin');
+        expect(readText('ios/App/Podfile')).toContain('pod \'Epicollect5CapacitorPluginTheme\', :path => \'../../node_modules/@epicollect5/capacitor-plugin-theme\'');
     });
 
     it('is auto-registered on Android from the npm package', () => {
         expect(readText('android/capacitor.settings.gradle')).toContain('node_modules/@epicollect5/capacitor-plugin-theme/android');
+        expect(readText('android/app/capacitor.build.gradle')).toContain('implementation project(\':epicollect5-capacitor-plugin-theme\')');
         const plugins = readJson('android/app/src/main/assets/capacitor.plugins.json');
+        const plugin = plugins.find((entry) => entry.pkg === '@epicollect5/capacitor-plugin-theme');
 
-        expect(plugins.some((plugin) => plugin.pkg === '@epicollect5/capacitor-plugin-theme')).toBe(true);
+        expect(plugin?.classpath).toBe('uk.ac.imperial.epicollect.plugin.theme.ThemePlugin');
     });
 
     //Both platforms must expose the same JS contract consumed by theme-service.js
