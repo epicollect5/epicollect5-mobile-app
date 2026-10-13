@@ -88,13 +88,12 @@ describe('DateTimeField.vue', () => {
         expect(clearIcon.attributes('size')).toBeUndefined();
     });
 
-    it('marks the picker wrapper invalid only when the field has an error', () => {
+    it('flips the picker button to danger only when the field has an error', () => {
         const invalid = factory({ hasError: true });
-        expect(invalid.find('.datetime-picker-button-wrap').classes()).toContain('has-error');
-        expect(invalid.find('.datetime-picker-button').classes()).not.toContain('has-error');
+        expect(invalid.find('.datetime-picker-button').attributes('color')).toBe('danger');
 
         const valid = factory();
-        expect(valid.find('.datetime-picker-button-wrap').classes()).not.toContain('has-error');
+        expect(valid.find('.datetime-picker-button').attributes('color')).toBe('secondary');
     });
 
     it('hides the programmatic web input from keyboard and assistive tech', () => {
