@@ -20,6 +20,8 @@ describe('ModalPasswordlessLogin', () => {
         expect(scss).toContain('body.theme-dark .modal-passwordless-login');
         expect(scss).toContain('--background: #000');
         expect(scss).toContain('caret-color: var(--app-text)');
+        expect(scss).toContain('--highlight-color-focused: var(--app-text)');
+        expect(scss).toContain('--padding-start: 12px');
     });
 
     it('renders the code input', () => {
