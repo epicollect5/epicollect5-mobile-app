@@ -2,7 +2,6 @@ import { mount } from '@vue/test-utils';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import QuestionDate from '@/components/questions/QuestionDate.vue';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
 import { questionCommonService } from '@/services/entry/question-common-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { PARAMETERS } from '@/config';
@@ -118,16 +117,17 @@ describe('QuestionDate.vue - native date field', () => {
 		expect(wrapper.vm.state.error.errors.test_ref.message).toBe('');
 	});
 
-	it('keys the grid wrapper by error state', () => {
-		//the field lives in grid-question-narrow's slot: the key on the
-		//grid (same level as the toggling error div) forces a fresh
-		//subtree on error flips instead of trusting a stale slot patch
-		const clean = factory();
-		expect(clean.findComponent(GridQuestionNarrow).vm.$.vnode.key).toBe('grid-ok');
-
+	it('forwards a real boolean error state to the shared field', () => {
+		//regression guard for the boolean-casting trap: the parent's hasError
+		//must be a real boolean, never a message string. An empty string bound
+		//to the field's Boolean has-error prop is cast to true by Vue, which
+		//left the picker stuck in the red error style after the answer was set.
 		utilsService.hasQuestionError.mockReturnValueOnce(true);
-		const errored = factory();
-		expect(errored.findComponent(GridQuestionNarrow).vm.$.vnode.key).toBe('grid-error');
+		const wrapper = factory();
+		expect(wrapper.findComponent({ name: 'DateTimeField' }).props('hasError')).toBe(true);
+
+		const clean = factory();
+		expect(clean.findComponent({ name: 'DateTimeField' }).props('hasError')).toBe(false);
 	});
 });
 

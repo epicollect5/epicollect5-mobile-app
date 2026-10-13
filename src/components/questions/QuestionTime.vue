@@ -20,11 +20,11 @@
 			>
 				{{ labels.required }}
 			</div>
-			<grid-question-narrow
-				wide
-				:key="hasError ? 'grid-error' : 'grid-ok'"
-			>
+			<grid-question-narrow wide>
 				<template #content>
+					<!--hasError is a real boolean (see hasQuestionError); do not
+						pass the error message here — an empty string is cast to
+						true by the field's Boolean prop and pins it in error-->
 					<date-time-field
 						type="time"
 						:answer="state.answer.answer"

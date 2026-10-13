@@ -88,18 +88,18 @@ describe('DateTimeField.vue', () => {
         expect(clearIcon.attributes('size')).toBeUndefined();
     });
 
-    it('swaps the danger and secondary buttons on error flip', async () => {
+    it('flips the picker button to danger on error flip', async () => {
+        //the color must follow a REAL boolean hasError both ways. Passing an
+        //empty string here would be cast to true by the Boolean prop and the
+        //button would never return to secondary (see utilsService.hasQuestionError)
         const wrapper = factory();
-        expect(wrapper.find('[data-test="picker-button-ok"]').exists()).toBe(true);
-        expect(wrapper.find('[data-test="picker-button-error"]').exists()).toBe(false);
+        expect(wrapper.find('.datetime-picker-button').attributes('color')).toBe('secondary');
 
         await wrapper.setProps({ hasError: true });
-        expect(wrapper.find('[data-test="picker-button-error"]').exists()).toBe(true);
-        expect(wrapper.find('[data-test="picker-button-ok"]').exists()).toBe(false);
+        expect(wrapper.find('.datetime-picker-button').attributes('color')).toBe('danger');
 
         await wrapper.setProps({ hasError: false });
-        expect(wrapper.find('[data-test="picker-button-ok"]').exists()).toBe(true);
-        expect(wrapper.find('[data-test="picker-button-error"]').exists()).toBe(false);
+        expect(wrapper.find('.datetime-picker-button').attributes('color')).toBe('secondary');
     });
 
     it('hides the programmatic web input from keyboard and assistive tech', () => {

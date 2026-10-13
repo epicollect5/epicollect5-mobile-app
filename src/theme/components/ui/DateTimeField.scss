@@ -52,12 +52,6 @@
     text-overflow: ellipsis;
 }
 
-//invalid answers flip the picker button itself to the danger color: the
-//color prop is a declared Stencil property with a reliable update channel,
-//while a dynamic has-error class on the custom element does not patch off
-//reliably once rendered (mirror the legacy chip's invalid affordance
-//otherwise — shared validation CSS only styles ion-chip.has-error).
-
 //tappable clear glyph sitting next to the 38px picker button: pin a 36x36
 //hit area instead of the stock size="large" (32px)
 .datetime-clear-icon {

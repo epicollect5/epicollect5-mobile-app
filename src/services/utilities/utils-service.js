@@ -613,9 +613,11 @@ export const utilsService = {
         return 'n/a';
     },
     hasQuestionError(state) {
+        //must return a real boolean: consumers pass this into Boolean props
+        //(date/time field, checkbox/radio lists) and Vue's boolean casting
+        //turns an empty string into true, which pinned those in the error state
         if (Object.keys(state.error.errors).length > 0) {
-            return state.error?.errors[state.currentInputRef]?.message;
-
+            return !!state.error?.errors[state.currentInputRef]?.message;
         }
         return false;
     },

@@ -7,27 +7,14 @@
 					size="small"
 					:icon="pickerIcon"
 				></ion-icon>
-				<!--two static branches instead of one dynamic button: once
-					rendered, class and color updates no longer land on this
-					custom element, so each error state gets a fresh element
-					(the same reason the question-error string below toggles
-					while the button did not).-->
+				<!--hasError must arrive as a real boolean: this is a
+					Boolean-typed prop, and Vue casts an empty string ("")
+					to true. Callers used to pass a message string that is
+					"" once cleared, so the picker stayed danger/red forever
+					even though the error text had gone. Keep it a boolean. -->
 				<ion-button
-					v-if="hasError"
-					data-test="picker-button-error"
 					class="question-action-button datetime-picker-button ion-text-nowrap"
-					color="danger"
-					expand="block"
-					:aria-label="pickerAriaLabel"
-					@click="openPicker"
-				>
-					<span class="datetime-picker-value">{{displayValue}}</span>
-				</ion-button>
-				<ion-button
-					v-else
-					data-test="picker-button-ok"
-					class="question-action-button datetime-picker-button ion-text-nowrap"
-					color="secondary"
+					:color="hasError ? 'danger' : 'secondary'"
 					expand="block"
 					:aria-label="pickerAriaLabel"
 					@click="openPicker"
@@ -94,6 +81,9 @@ export default {
 			default: ''
 		},
 		hasError: {
+			//Boolean on purpose: drives the danger/secondary switch below. Do
+			//not loosen this to accept the raw error message — an empty string
+			//would be cast to true and freeze the picker in the error style.
 			type: Boolean,
 			default: false
 		}

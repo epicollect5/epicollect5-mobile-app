@@ -759,6 +759,40 @@ describe('isDoubleTap', () => {
     });
 });
 
+describe('hasQuestionError', () => {
+    //This one is a nasty trap: the result is passed straight into
+    //Boolean-typed child props (the date/time picker, the checkbox/radio
+    //lists). Vue casts an EMPTY STRING to true, so returning the message
+    //string pinned those components in the red error style forever once the
+    //answer cleared it. The return value must therefore always be a boolean.
+    const stateWith = (message) => ({
+        currentInputRef: 'ref_1',
+        error: { errors: { ref_1: { message } } }
+    });
+
+    it('returns true for a non-empty error message', () => {
+        expect(utilsService.hasQuestionError(stateWith('Required'))).toBe(true);
+    });
+
+    it('returns false for a cleared (empty string) message, not the string', () => {
+        const result = utilsService.hasQuestionError(stateWith(''));
+        expect(result).toBe(false);
+        //the exact value matters: "" would be cast to true on a Boolean prop
+        expect(result).not.toBe('');
+    });
+
+    it('returns false when there are no error entries', () => {
+        expect(utilsService.hasQuestionError({ currentInputRef: 'ref_1', error: { errors: [] } })).toBe(false);
+    });
+
+    it('returns false when the current input has no error entry', () => {
+        expect(utilsService.hasQuestionError({
+            currentInputRef: 'ref_1',
+            error: { errors: { other_ref: { message: 'Required' } } }
+        })).toBe(false);
+    });
+});
+
 
 
 
