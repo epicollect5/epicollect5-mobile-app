@@ -1,0 +1,34 @@
+android/app/capacitor.build.gradle
+  h_2231ff2aa93473 35
+android/app/src/main/assets/capacitor.plugins.json
+  h_2231ff2aa93473 94-97
+android/capacitor.settings.gradle
+  h_2231ff2aa93473 74-76
+docs/ARCHITECTURE.md
+  h_2231ff2aa93473 337-341,345-346,348-354,356,358,360
+ios/App/App/capacitor.config.json
+  h_2231ff2aa93473 62
+ios/App/Podfile
+  h_2231ff2aa93473 35
+ios/App/Podfile.lock
+  h_2231ff2aa93473 67-68,147,219-220,253,266
+package-lock.json
+  h_2231ff2aa93473 39,531-538
+package.json
+  h_2231ff2aa93473 17-18,20,24-25,27,68
+src/services/theme-service.js
+  h_2231ff2aa93473 6-8
+tests/unit/theme-plugin-registration.spec.js
+  h_2231ff2aa93473 8,11-16,19-21,23,26-30,32-34,37-38,40,43-45,47,52-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a32a669f0f9148e0967bae95b96cd966e82ebc9d",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
