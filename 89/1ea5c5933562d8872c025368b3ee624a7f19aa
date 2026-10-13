@@ -1,0 +1,16 @@
+tests/unit/components/modals/ModalAudioPlay.spec.js
+  h_2231ff2aa93473 560-584
+tests/unit/components/modals/ModalAudioRecord.spec.js
+  h_2231ff2aa93473 462-485
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "891ea5c5933562d8872c025368b3ee624a7f19aa",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
