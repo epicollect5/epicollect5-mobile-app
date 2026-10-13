@@ -36,6 +36,18 @@ describe('ModalProgressTransfer', () => {
         expect(wrapper.find('ion-buttons-stub').exists()).toBe(false);
     });
 
+    it('lets the title inherit the theme text color', () => {
+        //color="dark" pins #222428 text in both themes: invisible on the
+        //dark modal surface, so the title must not pin any color
+        const wrapper = shallowMount(ModalProgressTransfer, {
+            props: {
+                header: 'Downloading entries'
+            }
+        });
+
+        expect(wrapper.find('ion-title').attributes('color')).toBeUndefined();
+    });
+
     it('confirms, calls onClose, and dismisses when the close button is enabled', async () => {
         const calls = [];
         const onClose = vi.fn(async () => {

@@ -59,9 +59,9 @@
 		"DatetimePickerPlugin",
 		"CameraPreview",
 		"CapacitorZipPlugin",
+		"ThemePlugin",
 		"VideoEditorPlugin",
 		"NativeSettingsPlugin",
-		"NightModePlugin",
 		"CDVPlugin"
 	]
 }

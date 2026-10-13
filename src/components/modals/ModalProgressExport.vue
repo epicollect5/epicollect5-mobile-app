@@ -3,7 +3,6 @@
     <ion-toolbar>
       <ion-title
           class="ion-text-center"
-          color="dark"
       >
         {{ header }}
       </ion-title>

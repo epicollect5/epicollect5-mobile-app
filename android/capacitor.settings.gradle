@@ -71,6 +71,9 @@ project(':capgo-camera-preview').projectDir = new File('../node_modules/@capgo/c
 include ':capgo-capacitor-zip'
 project(':capgo-capacitor-zip').projectDir = new File('../node_modules/@capgo/capacitor-zip/android')
 
+include ':epicollect5-capacitor-plugin-theme'
+project(':epicollect5-capacitor-plugin-theme').projectDir = new File('../node_modules/@epicollect5/capacitor-plugin-theme/android')
+
 include ':whiteguru-capacitor-plugin-video-editor'
 project(':whiteguru-capacitor-plugin-video-editor').projectDir = new File('../node_modules/@whiteguru/capacitor-plugin-video-editor/android')
 

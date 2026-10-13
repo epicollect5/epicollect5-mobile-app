@@ -92,6 +92,10 @@
 		"classpath": "ee.forgr.plugin.capacitor_zip.CapacitorZipPlugin"
 	},
 	{
+		"pkg": "@epicollect5/capacitor-plugin-theme",
+		"classpath": "uk.ac.imperial.epicollect.plugin.theme.ThemePlugin"
+	},
+	{
 		"pkg": "@whiteguru/capacitor-plugin-video-editor",
 		"classpath": "com.whiteguru.capacitor.plugin.videoeditor.VideoEditorPlugin"
 	},

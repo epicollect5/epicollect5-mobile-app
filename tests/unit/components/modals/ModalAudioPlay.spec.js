@@ -557,4 +557,29 @@ describe('ModalAudioPlay component', () => {
         expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('audioPlay release failed', expect.any(Error));
         expect(modalController.dismiss).toHaveBeenCalledTimes(1);
     });
+
+    it('lets the title and note icon inherit the theme text color', () => {
+        //color="dark" pins #222428 in both themes: invisible on the dark
+        //modal surface, so neither may pin any color
+        const wrapper = shallowMount(ModalAudioPlay, {
+            props: {
+                projectRef,
+                entryUuid,
+                inputRef,
+                media: {
+                    [entryUuid]: {
+                        [inputRef]: {
+                            cached: '',
+                            stored: '',
+                            type
+                        }
+
+                    }
+                }
+            }
+        });
+
+        expect(wrapper.find('ion-title').attributes('color')).toBeUndefined();
+        expect(wrapper.find('ion-icon.audio-note').attributes('color')).toBeUndefined();
+    });
 });

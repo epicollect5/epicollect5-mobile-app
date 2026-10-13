@@ -1,8 +1,7 @@
 <template>
 	<ion-header class="ion-no-border">
 		<ion-toolbar>
-			<ion-title class="ion-text-center"
-					   color="dark">{{ header }}
+			<ion-title class="ion-text-center">{{ header }}
 			</ion-title>
 			<ion-buttons
 				v-if="showCloseButton"

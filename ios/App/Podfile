@@ -32,6 +32,7 @@ def capacitor_pods
   pod 'CapawesomeTeamCapacitorDatetimePicker', :path => '../../node_modules/@capawesome-team/capacitor-datetime-picker'
   pod 'CapgoCameraPreview', :path => '../../node_modules/@capgo/camera-preview'
   pod 'CapgoCapacitorZip', :path => '../../node_modules/@capgo/capacitor-zip'
+  pod 'Epicollect5CapacitorPluginTheme', :path => '../../node_modules/@epicollect5/capacitor-plugin-theme'
   pod 'WhiteguruCapacitorPluginVideoEditor', :path => '../../node_modules/@whiteguru/capacitor-plugin-video-editor'
   pod 'CapacitorNativeSettings', :path => '../../node_modules/capacitor-native-settings'
   pod 'CordovaPlugins', :path => '../capacitor-cordova-ios-plugins'
