@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import QuestionDate from '@/components/questions/QuestionDate.vue';
+import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
 import { questionCommonService } from '@/services/entry/question-common-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { PARAMETERS } from '@/config';
@@ -117,15 +118,16 @@ describe('QuestionDate.vue - native date field', () => {
 		expect(wrapper.vm.state.error.errors.test_ref.message).toBe('');
 	});
 
-	it('keys the shared field by error state', () => {
-		//the field lives in grid-question-narrow's slot: the key forces a
-		//fresh element on error flips instead of trusting a patch
+	it('keys the grid wrapper by error state', () => {
+		//the field lives in grid-question-narrow's slot: the key on the
+		//grid (same level as the toggling error div) forces a fresh
+		//subtree on error flips instead of trusting a stale slot patch
 		const clean = factory();
-		expect(clean.findComponent({ name: 'DateTimeField' }).vm.$.vnode.key).toBe('date-ok');
+		expect(clean.findComponent(GridQuestionNarrow).vm.$.vnode.key).toBe('grid-ok');
 
 		utilsService.hasQuestionError.mockReturnValueOnce(true);
 		const errored = factory();
-		expect(errored.findComponent({ name: 'DateTimeField' }).vm.$.vnode.key).toBe('date-error');
+		expect(errored.findComponent(GridQuestionNarrow).vm.$.vnode.key).toBe('grid-error');
 	});
 });
 

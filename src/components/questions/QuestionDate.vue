@@ -21,11 +21,13 @@
 			>
 				{{ labels.required }}
 			</div>
-			<grid-question-narrow wide>
+			<grid-question-narrow
+				wide
+				:key="hasError ? 'grid-error' : 'grid-ok'"
+			>
 				<template #content>
 					<date-time-field
 						type="date"
-						:key="hasError ? 'date-error' : 'date-ok'"
 						:answer="state.answer.answer"
 						:datetime-format="state.inputDetails.datetime_format"
 						:has-error="hasError"
