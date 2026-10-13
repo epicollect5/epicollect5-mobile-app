@@ -1,0 +1,34 @@
+android/app/src/main/java/uk/ac/imperial/epicollect/five/MainActivity.java
+  h_2231ff2aa93473 15
+android/app/src/main/java/uk/ac/imperial/epicollect/five/ThemePlugin.java
+  h_2231ff2aa93473 16-17,20-21,24,26,28,31
+docs/ARCHITECTURE.md
+  h_2231ff2aa93473 337,341-342,344,348,352,354,356
+ios/App/App.xcodeproj/project.pbxproj
+  h_2231ff2aa93473 15,31,87,241
+ios/App/App/ThemePlugin.swift
+  h_2231ff2aa93473 7,14,16-19,21,24-25,29-30,32,34,37
+ios/App/App/capacitor.config.json
+  h_2231ff2aa93473 64
+package.json
+  h_2231ff2aa93473 17-18,20,24-25,27
+scripts/ensure-ios-theme-plugin.js
+  h_2231ff2aa93473 6,13
+src/services/theme-service.js
+  h_2231ff2aa93473 6,9,45,53,58-59
+tests/unit/services/theme-service.spec.js
+  h_2231ff2aa93473 5,9,24,95,99,102,105,110,116,120,123,127,130,133,143
+tests/unit/theme-plugin-registration.spec.js
+  h_2231ff2aa93473 12,17,21,30,41,45,52-53,56,67-68,70-71,75-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "068f7cdca39b3d55fda915a235cfc73001da30cc",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
