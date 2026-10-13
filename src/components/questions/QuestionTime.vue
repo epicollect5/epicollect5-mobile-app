@@ -129,13 +129,25 @@ export default {
 		});
 
 		const methods = {
+			resetInputError() {
+				//a failed submit pins the error until the next validation:
+				//answering must lift it at once, otherwise the red border
+				//and message survive picking a valid time. A still-invalid
+				//answer is re-flagged on the next submit.
+				const inputError = state.error.errors[state.currentInputRef];
+				if (inputError) {
+					inputError.message = '';
+				}
+			},
 			onTimeChange(canonical) {
 				state.answer.answer = canonical;
 				state.answer.was_jumped = false;
+				methods.resetInputError();
 			},
 			clearTime() {
 				state.answer.answer = '';
 				state.answer.was_jumped = false;
+				methods.resetInputError();
 			}
 		};
 

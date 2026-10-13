@@ -98,6 +98,24 @@ describe('QuestionDate.vue - native date field', () => {
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.state.answer.answer).toBe('');
 	});
+
+	it('resets the input error on change', async () => {
+		const wrapper = factory();
+		wrapper.vm.state.currentInputRef = 'test_ref';
+		wrapper.vm.state.error.errors = { test_ref: { message: 'required' } };
+		wrapper.findComponent({ name: 'DateTimeField' }).vm.$emit('change', '2026-10-09T00:00:00.000');
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.state.error.errors.test_ref.message).toBe('');
+	});
+
+	it('resets the input error on clear', async () => {
+		const wrapper = factory();
+		wrapper.vm.state.currentInputRef = 'test_ref';
+		wrapper.vm.state.error.errors = { test_ref: { message: 'required' } };
+		wrapper.findComponent({ name: 'DateTimeField' }).vm.$emit('clear');
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.state.error.errors.test_ref.message).toBe('');
+	});
 });
 
 describe('QuestionDate.vue - cached answers and defaults', () => {

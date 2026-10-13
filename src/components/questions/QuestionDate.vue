@@ -133,15 +133,27 @@ export default {
 		});
 
 		const methods = {
+			resetInputError() {
+				//a failed submit pins the error until the next validation:
+				//answering must lift it at once, otherwise the red border
+				//and message survive picking a valid date. A still-invalid
+				//answer is re-flagged on the next submit.
+				const inputError = state.error.errors[state.currentInputRef];
+				if (inputError) {
+					inputError.message = '';
+				}
+			},
 			onDateChange(canonical) {
 				state.answer.answer = canonical;
 				state.answer.was_jumped = false;
+				methods.resetInputError();
 			},
 			clearDate() {
 				console.log('clear clicked');
 
 				state.answer.answer = '';
 				state.answer.was_jumped = false;
+				methods.resetInputError();
 			}
 		};
 
