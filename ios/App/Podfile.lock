@@ -64,6 +64,8 @@ PODS:
     - CapacitorCordova
     - GoogleSignIn (~> 5.0.2)
     - GoogleUtilities (~> 7.2.2)
+  - Epicollect5CapacitorPluginTheme (1.0.0):
+    - Capacitor
   - GoogleSignIn (5.0.2):
     - AppAuth (~> 1.2)
     - GTMAppAuth (~> 1.0)
@@ -142,6 +144,7 @@ DEPENDENCIES:
   - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
   - CordovaPluginsResources (from `../capacitor-cordova-ios-plugins`)
   - CordovaPluginsStatic (from `../capacitor-cordova-ios-plugins`)
+  - "Epicollect5CapacitorPluginTheme (from `../../node_modules/@epicollect5/capacitor-plugin-theme`)"
   - "WhiteguruCapacitorPluginVideoEditor (from `../../node_modules/@whiteguru/capacitor-plugin-video-editor`)"
 
 SPEC REPOS:
@@ -213,6 +216,8 @@ EXTERNAL SOURCES:
     :path: "../capacitor-cordova-ios-plugins"
   CordovaPluginsStatic:
     :path: "../capacitor-cordova-ios-plugins"
+  Epicollect5CapacitorPluginTheme:
+    :path: "../../node_modules/@epicollect5/capacitor-plugin-theme"
   WhiteguruCapacitorPluginVideoEditor:
     :path: "../../node_modules/@whiteguru/capacitor-plugin-video-editor"
 
@@ -245,6 +250,7 @@ SPEC CHECKSUMS:
   CordovaPlugins: 6ea6eb912f2f3c86a44b38eabd3d17d7c524b77f
   CordovaPluginsResources: da93847212bf7b16ba770e4d6c3e7dba820174c7
   CordovaPluginsStatic: 266754236b2d6f17c487977ff4c8f493d951feb5
+  Epicollect5CapacitorPluginTheme: 9b9fcc60a2f1ee8fa30427d6a4a45dc93d5c84dd
   GoogleSignIn: 7137d297ddc022a7e0aa4619c86d72c909fa7213
   GoogleUtilities: 31c5b01f978a70c6cff2afc6272b3f1921614b43
   GTMAppAuth: 0ff230db599948a9ad7470ca667337803b3fc4dd
@@ -257,6 +263,6 @@ SPEC CHECKSUMS:
   WhiteguruCapacitorPluginVideoEditor: 1a56d775023055c927da6fc08161b2b97b14e5b1
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 
-PODFILE CHECKSUM: 3bd701553536f4255dcc6a2eee528fb410135d6f
+PODFILE CHECKSUM: 037f660056994908517b3aec51b1d9a7d1e80443
 
 COCOAPODS: 1.16.2

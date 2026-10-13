@@ -5,67 +5,52 @@ import {describe, expect, it} from 'vitest';
 const rootDir = path.resolve(__dirname, '../..');
 const readJson = (filePath) => JSON.parse(fs.readFileSync(path.join(rootDir, filePath), 'utf8'));
 const readText = (filePath) => fs.readFileSync(path.join(rootDir, filePath), 'utf8');
+const exists = (filePath) => fs.existsSync(path.join(rootDir, filePath));
 
 // Keep in sync with docs/ARCHITECTURE.md ("Native Night Mode (Theme)").
-// iOS does not auto-discover plugins: `npx cap copy ios` regenerates
-// packageClassList in the copied capacitor.config.json from npm-installed
-// plugins only, silently dropping local classes like ThemePlugin. The
-// ensure script (wired into the ios npm scripts) puts the entry back, and
-// these assertions catch a lost registration in the normal test gate instead
-// of on a device.
+// The Theme plugin is npm-installed from github-only
+// (epicollect5/capacitor-plugin-theme, never the npm registry), so both
+// platforms auto-register it on `cap sync`/`copy` — no local sources, no
+// ensure script, no manual MainActivity registration. These assertions catch
+// a regression to local copies or an unpinned dep in the normal test gate
+// instead of on a device.
 
 describe('native Theme plugin registration', () => {
-    it('is listed in the copied capacitor.config.json packageClassList', () => {
+    it('is installed pinned from github, never the npm registry', () => {
+        const pkg = readJson('package.json');
+        const dep = pkg.dependencies['@epicollect5/capacitor-plugin-theme'];
+
+        expect(dep).toMatch(/^github:epicollect5\/capacitor-plugin-theme#/);
+    });
+
+    it('ships no local plugin sources', () => {
+        expect(exists('ios/App/App/ThemePlugin.swift')).toBe(false);
+        expect(exists('android/app/src/main/java/uk/ac/imperial/epicollect/five/ThemePlugin.java')).toBe(false);
+        expect(exists('scripts/ensure-ios-theme-plugin.js')).toBe(false);
+    });
+
+    it('needs no manual registration', () => {
+        expect(readText('android/app/src/main/java/uk/ac/imperial/epicollect/five/MainActivity.java')).not.toContain('ThemePlugin');
+        expect(readText('ios/App/App.xcodeproj/project.pbxproj')).not.toContain('ThemePlugin.swift');
+    });
+
+    it('is auto-registered on iOS from the npm package', () => {
         const config = readJson('ios/App/App/capacitor.config.json');
 
         expect(config.packageClassList).toContain('ThemePlugin');
     });
 
-    it('is re-inserted after every cap copy by the ensure-script wiring', () => {
-        const pkg = readJson('package.json');
-        for (const script of ['ios:build', 'ios:open', 'native:debug', 'native:prod', 'native:copy', 'prod']) {
-            //ios scripts copy ios only, shared scripts copy all platforms:
-            //both regenerate the ios packageClassList
-            const copyIndex = pkg.scripts[script].indexOf('npx cap copy');
-            const ensureIndex = pkg.scripts[script].indexOf('scripts/ensure-ios-theme-plugin.js');
+    it('is auto-registered on Android from the npm package', () => {
+        expect(readText('android/capacitor.settings.gradle')).toContain('node_modules/@epicollect5/capacitor-plugin-theme/android');
+        const plugins = readJson('android/app/src/main/assets/capacitor.plugins.json');
 
-            expect(copyIndex).toBeGreaterThan(-1);
-            //runs after the copy that wipes the list
-            expect(ensureIndex).toBeGreaterThan(copyIndex);
-        }
-    });
-
-    it('ships the ensure script that performs the re-insertion', () => {
-        //the wiring test above only matches the script path as a string:
-        //it still passes if the file is deleted or stops touching the list
-        const scriptPath = path.join(rootDir, 'scripts/ensure-ios-theme-plugin.js');
-
-        expect(fs.existsSync(scriptPath)).toBe(true);
-        const script = fs.readFileSync(scriptPath, 'utf8');
-        expect(script).toContain('ThemePlugin');
-        expect(script).toContain('packageClassList');
-    });
-
-    it('is wired into the committed Xcode project', () => {
-        const pbxproj = readText('ios/App/App.xcodeproj/project.pbxproj');
-
-        expect(pbxproj).toContain('/* ThemePlugin.swift */ = {isa = PBXFileReference');
-        expect(pbxproj).toContain('ThemePlugin.swift in Sources');
-        //the build-file record alone is not enough: its id must be listed
-        //in the target's Sources phase, otherwise the plugin never compiles
-        const buildFileId = (pbxproj.match(/([0-9A-F]+) \/\* ThemePlugin\.swift in Sources \*\/ = \{isa = PBXBuildFile/) || [])[1];
-        expect(buildFileId).toBeTruthy();
-        const sourcesSection = pbxproj.slice(
-            pbxproj.indexOf('/* Begin PBXSourcesBuildPhase section */'),
-            pbxproj.indexOf('/* End PBXSourcesBuildPhase section */')
-        );
-        expect(sourcesSection).toContain(buildFileId);
+        expect(plugins.some((plugin) => plugin.pkg === '@epicollect5/capacitor-plugin-theme')).toBe(true);
     });
 
     //Both platforms must expose the same JS contract consumed by theme-service.js
     it('ships matching plugin sources on both platforms', () => {
-        const swift = readText('ios/App/App/ThemePlugin.swift');
-        const java = readText('android/app/src/main/java/uk/ac/imperial/epicollect/five/ThemePlugin.java');
+        const swift = readText('node_modules/@epicollect5/capacitor-plugin-theme/ios/Plugin/ThemePlugin.swift');
+        const java = readText('node_modules/@epicollect5/capacitor-plugin-theme/android/src/main/java/uk/ac/imperial/epicollect/plugin/theme/ThemePlugin.java');
 
         expect(swift).toContain('jsName = "Theme"');
         expect(swift).toContain('setTheme');

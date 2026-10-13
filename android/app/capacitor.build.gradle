@@ -32,6 +32,7 @@ dependencies {
     implementation project(':capawesome-capacitor-android-edge-to-edge-support')
     implementation project(':capgo-camera-preview')
     implementation project(':capgo-capacitor-zip')
+    implementation project(':epicollect5-capacitor-plugin-theme')
     implementation project(':whiteguru-capacitor-plugin-video-editor')
     implementation project(':capacitor-native-settings')
     implementation "com.google.android.gms:play-services-auth:15.0.1"

@@ -3,9 +3,9 @@ import {Capacitor, registerPlugin} from '@capacitor/core';
 
 const SYSTEM_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
-//local native plugin: pins the native theme independently of the device theme.
-//See docs/ARCHITECTURE.md "Native Night Mode (Theme)" — includes the iOS
-//packageClassList gotcha and its guard script/test.
+//native plugin (github:epicollect5/capacitor-plugin-theme): pins the native
+//theme independently of the device theme.
+//See docs/ARCHITECTURE.md "Native Night Mode (Theme)".
 const themePlugin = registerPlugin('Theme');
 
 //last preference passed to applyTheme(), used by the system listener
