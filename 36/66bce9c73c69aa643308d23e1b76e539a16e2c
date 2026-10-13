@@ -1,0 +1,28 @@
+src/components/DateTimeField.vue
+  h_2231ff2aa93473 10-14,17,84-86
+src/components/questions/QuestionDate.vue
+  h_2231ff2aa93473 24,26-28
+src/components/questions/QuestionTime.vue
+  h_2231ff2aa93473 23,25-27
+src/services/utilities/utils-service.js
+  h_2231ff2aa93473 616-618,620
+tests/unit/components/DateTimeField.spec.js
+  h_2231ff2aa93473 91-94,96,99,102
+tests/unit/components/questions/QuestionDate.spec.js
+  h_2231ff2aa93473 120-124,126-130
+tests/unit/components/questions/QuestionTime.spec.js
+  h_2231ff2aa93473 124-128,130-134
+tests/unit/utils-service.spec.js
+  h_2231ff2aa93473 762-795
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3666bce9c73c69aa643308d23e1b76e539a16e2c",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
