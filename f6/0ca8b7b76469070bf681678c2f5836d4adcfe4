@@ -1,0 +1,20 @@
+src/components/modals/ModalProgressTransfer.vue
+  h_2231ff2aa93473 4
+tests/unit/components/modals/ModalProgressEncoding.spec.js
+  h_2231ff2aa93473 1-26
+tests/unit/components/modals/ModalProgressExport.spec.js
+  h_2231ff2aa93473 1-27
+tests/unit/components/modals/ModalProgressTransfer.spec.js
+  h_2231ff2aa93473 39-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f60ca8b7b76469070bf681678c2f5836d4adcfe4",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
