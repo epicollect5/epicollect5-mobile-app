@@ -1,0 +1,18 @@
+src/components/questions/QuestionDate.vue
+  h_2231ff2aa93473 142-146
+src/components/questions/QuestionTime.vue
+  h_2231ff2aa93473 138-142
+src/use/questions/handle-next.js
+  h_2231ff2aa93473 70-72,89-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "91077dac57d70f40e5b6ec49137ff270f8f591e5",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
