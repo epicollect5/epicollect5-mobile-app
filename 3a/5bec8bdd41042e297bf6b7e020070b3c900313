@@ -1,0 +1,18 @@
+src/theme/mixins.scss
+  h_2231ff2aa93473 768-776
+tests/unit/components/modals/ModalAudioPlay.spec.js
+  h_2231ff2aa93473 4-5,587-595
+tests/unit/components/modals/ModalAudioRecord.spec.js
+  h_2231ff2aa93473 4-5,488-496
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3a5bec8bdd41042e297bf6b7e020070b3c900313",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
