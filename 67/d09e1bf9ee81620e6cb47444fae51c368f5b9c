@@ -1,0 +1,14 @@
+tests/unit/theme-plugin-registration.spec.js
+  h_2231ff2aa93473 51,56,58,60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "67d09e1bf9ee81620e6cb47444fae51c368f5b9c",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
