@@ -741,6 +741,13 @@
     ion-header {
         ion-toolbar {
             --background: transparent;
+            //transparent bar over the modal surface: the global toolbar
+            //--color (primary contrast, white) would leave titles unreadable
+            //in Light mode, while a pinned dark color is unreadable in Dark
+            //mode — use the theme-aware text color in both
+            ion-title {
+                color: var(--app-text);
+            }
             ion-button,
             ion-icon {
                 color: var(--app-text);
