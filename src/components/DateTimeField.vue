@@ -7,10 +7,27 @@
 					size="small"
 					:icon="pickerIcon"
 				></ion-icon>
+				<!--two static branches instead of one dynamic button: once
+					rendered, class and color updates no longer land on this
+					custom element, so each error state gets a fresh element
+					(the same reason the question-error string below toggles
+					while the button did not).-->
 				<ion-button
+					v-if="hasError"
+					data-test="picker-button-error"
 					class="question-action-button datetime-picker-button ion-text-nowrap"
-					:key="hasError ? 'picker-error' : 'picker'"
-					:color="hasError ? 'danger' : 'secondary'"
+					color="danger"
+					expand="block"
+					:aria-label="pickerAriaLabel"
+					@click="openPicker"
+				>
+					<span class="datetime-picker-value">{{displayValue}}</span>
+				</ion-button>
+				<ion-button
+					v-else
+					data-test="picker-button-ok"
+					class="question-action-button datetime-picker-button ion-text-nowrap"
+					color="secondary"
 					expand="block"
 					:aria-label="pickerAriaLabel"
 					@click="openPicker"

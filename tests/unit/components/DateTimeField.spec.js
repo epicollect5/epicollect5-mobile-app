@@ -88,21 +88,18 @@ describe('DateTimeField.vue', () => {
         expect(clearIcon.attributes('size')).toBeUndefined();
     });
 
-    it('flips the picker button to danger only when the field has an error', () => {
-        const invalid = factory({ hasError: true });
-        expect(invalid.find('.datetime-picker-button').attributes('color')).toBe('danger');
-
-        const valid = factory();
-        expect(valid.find('.datetime-picker-button').attributes('color')).toBe('secondary');
-    });
-
-    it('remounts the picker button when the error flips', async () => {
-        //in-place updates (class or color) do not land on the rendered
-        //custom element: the key forces a fresh element instead
+    it('swaps the danger and secondary buttons on error flip', async () => {
         const wrapper = factory();
-        const before = wrapper.find('.datetime-picker-button').element;
+        expect(wrapper.find('[data-test="picker-button-ok"]').exists()).toBe(true);
+        expect(wrapper.find('[data-test="picker-button-error"]').exists()).toBe(false);
+
         await wrapper.setProps({ hasError: true });
-        expect(wrapper.find('.datetime-picker-button').element).not.toBe(before);
+        expect(wrapper.find('[data-test="picker-button-error"]').exists()).toBe(true);
+        expect(wrapper.find('[data-test="picker-button-ok"]').exists()).toBe(false);
+
+        await wrapper.setProps({ hasError: false });
+        expect(wrapper.find('[data-test="picker-button-ok"]').exists()).toBe(true);
+        expect(wrapper.find('[data-test="picker-button-error"]').exists()).toBe(false);
     });
 
     it('hides the programmatic web input from keyboard and assistive tech', () => {
