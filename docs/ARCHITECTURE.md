@@ -334,26 +334,26 @@ The Settings theme (Light / Dark / System) must drive **native** UI as well as t
 
 ### Plugins
 
-Both native platforms ship a local Capacitor plugin behind the same JS contract (`registerPlugin('NightMode')` → `setNightMode({ mode })`, where `mode` is `no` | `yes` | `follow_system`, mapped from the Light / Dark / System preference):
+Both native platforms ship a local Capacitor plugin behind the same JS contract (`registerPlugin('Theme')` → `setTheme({ theme })`, where `theme` is the `light` | `dark` | `system` preference passed straight through):
 
 | Platform | Source | Mechanism |
 |---|---|---|
-| Android | `android/app/src/main/java/uk/ac/imperial/epicollect/five/NightModePlugin.java` | `AppCompatDelegate.setDefaultNightMode(...)` (must run on the main thread) |
-| iOS | `ios/App/App/NightModePlugin.swift` | `window.overrideUserInterfaceStyle` on the bridge window |
+| Android | `android/app/src/main/java/uk/ac/imperial/epicollect/five/ThemePlugin.java` | `AppCompatDelegate.setDefaultNightMode(...)` (must run on the main thread) |
+| iOS | `ios/App/App/ThemePlugin.swift` | `window.overrideUserInterfaceStyle` on the bridge window |
 
-The JS call is guarded by `PARAMETERS.ANDROID` / `PARAMETERS.IOS`; the PWA never calls either plugin. Known limits: system-server UI (runtime permission prompts, share sheet) always follows the device, on both platforms. The Android splash (`android/app/src/main/res/values-night*`) also follows the device night mode, not the in-app setting: it resolves at process start, before the NightMode plugin applies the saved choice — so a Light-setting user on a dark device briefly sees the dark splash, and vice versa. Splash-only, accepted behavior.
+The JS call is guarded by `PARAMETERS.ANDROID` / `PARAMETERS.IOS`; the PWA never calls either plugin. Known limits: system-server UI (runtime permission prompts, share sheet) always follows the device, on both platforms. The Android splash (`android/app/src/main/res/values-night*`) also follows the device night mode, not the in-app setting: it resolves at process start, before the Theme plugin applies the saved choice — so a Light-setting user on a dark device briefly sees the dark splash, and vice versa. Splash-only, accepted behavior.
 
 ### iOS registration gotcha (before running `cap copy ios` by hand)
 
-Capacitor does **not** auto-discover iOS plugins: `CapacitorBridge.registerPlugins()` only registers classes listed in `packageClassList` of `ios/App/App/capacitor.config.json`. Every `npx cap copy ios` **regenerates that list from npm-installed plugins only** (`@capacitor/cli` `dist/util/iosplugin.js` overwrites `packageClassList` wholesale), silently dropping local classes such as `NightModePlugin` — the class stays compiled but is never registered.
+Capacitor does **not** auto-discover iOS plugins: `CapacitorBridge.registerPlugins()` only registers classes listed in `packageClassList` of `ios/App/App/capacitor.config.json`. Every `npx cap copy ios` **regenerates that list from npm-installed plugins only** (`@capacitor/cli` `dist/util/iosplugin.js` overwrites `packageClassList` wholesale), silently dropping local classes such as `ThemePlugin` — the class stays compiled but is never registered.
 
 Three layers keep this from breaking:
 
-1. `scripts/ensure-ios-nightmode-plugin.js` re-inserts the class idempotently and runs automatically after `cap copy` in the `ios:build` / `ios:open` npm scripts and in the shared `native:debug` / `native:prod` / `native:copy` / `prod` scripts (the canonical build path), which copy all platforms.
+1. `scripts/ensure-ios-theme-plugin.js` re-inserts the class idempotently and runs automatically after `cap copy` in the `ios:build` / `ios:open` npm scripts and in the shared `native:debug` / `native:prod` / `native:copy` / `prod` scripts (the canonical build path), which copy all platforms.
 2. If you run a raw `npx cap copy ios` / `npx cap sync ios` outside those scripts, run that script afterwards (its header says the same).
-3. `tests/unit/nightmode-plugin-registration.spec.js` fails the normal test gate if the class ever drops out of `packageClassList`, if the npm wiring is removed, or if the Xcode project stops compiling the file.
+3. `tests/unit/theme-plugin-registration.spec.js` fails the normal test gate if the class ever drops out of `packageClassList`, if the npm wiring is removed, or if the Xcode project stops compiling the file.
 
-Failure symptom if the registration is lost: no crash — the JS fire-and-forget `.catch` swallows the rejection — but native iOS controls silently stop following the in-app theme (they follow the device instead). Look for `Night mode sync failed` in the console.
+Failure symptom if the registration is lost: no crash — the JS fire-and-forget `.catch` swallows the rejection — but native iOS controls silently stop following the in-app theme (they follow the device instead). Look for `Theme sync failed` in the console.
 
 ## PWA Architecture
 

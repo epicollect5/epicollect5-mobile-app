@@ -4,37 +4,37 @@ import Capacitor
 
 // Local plugin: pins the window's interface style independently of the iOS
 // system appearance, so native pickers/sheets follow the in-app
-// Light/Dark/System selection (Android equivalent: NightModePlugin.java).
+// Light/Dark/System selection (Android equivalent: ThemePlugin.java).
 // It also pins the window tint to the brand primary, so tint-following
 // native controls (UIDatePicker selection, alert actions, image-picker
 // buttons) match the app instead of system blue. Explicitly colored
 // controls keep their own color (e.g. the datetime sheet's Done/Cancel
 // buttons, hardcoded blue in the plugin source).
 // Registered via packageClassList in capacitor.config.json — see
-// scripts/ensure-ios-nightmode-plugin.js, since `cap copy ios` rewrites that
+// scripts/ensure-ios-theme-plugin.js, since `cap copy ios` rewrites that
 // list from npm-installed plugins only.
-@objc(NightModePlugin)
-public class NightModePlugin: CAPPlugin, CAPBridgedPlugin {
-    public let identifier = "NightModePlugin"
-    public let jsName = "NightMode"
+@objc(ThemePlugin)
+public class ThemePlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "ThemePlugin"
+    public let jsName = "Theme"
     public let pluginMethods: [CAPPluginMethod] = [
-        CAPPluginMethod(name: "setNightMode", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "setTheme", returnType: CAPPluginReturnPromise)
     ]
 
-    @objc func setNightMode(_ call: CAPPluginCall) {
-        let mode = call.getString("mode") ?? ""
+    @objc func setTheme(_ call: CAPPluginCall) {
+        let theme = call.getString("theme") ?? ""
 
         DispatchQueue.main.async {
             let style: UIUserInterfaceStyle
-            switch mode {
-            case "no":
+            switch theme {
+            case "light":
                 style = .light
-            case "yes":
+            case "dark":
                 style = .dark
-            case "follow_system":
+            case "system":
                 style = .unspecified
             default:
-                call.reject("Invalid night mode: \(mode)")
+                call.reject("Invalid theme: \(theme)")
                 return
             }
 

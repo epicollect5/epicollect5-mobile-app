@@ -13,22 +13,22 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  * OS-rendered dialogs (date/time pickers, etc.) follow the in-app
  * Light/Dark/System selection instead of the system uiMode.
  */
-@CapacitorPlugin(name = "NightMode")
-public class NightModePlugin extends Plugin {
+@CapacitorPlugin(name = "Theme")
+public class ThemePlugin extends Plugin {
 
     @PluginMethod
-    public void setNightMode(PluginCall call) {
-        String mode = call.getString("mode");
+    public void setTheme(PluginCall call) {
+        String theme = call.getString("theme");
 
         final int nightMode;
-        if ("no".equals(mode)) {
+        if ("light".equals(theme)) {
             nightMode = AppCompatDelegate.MODE_NIGHT_NO;
-        } else if ("yes".equals(mode)) {
+        } else if ("dark".equals(theme)) {
             nightMode = AppCompatDelegate.MODE_NIGHT_YES;
-        } else if ("follow_system".equals(mode)) {
+        } else if ("system".equals(theme)) {
             nightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
         } else {
-            call.reject("Invalid night mode: " + mode);
+            call.reject("Invalid theme: " + theme);
             return;
         }
 

@@ -3,14 +3,14 @@
  * `npx cap copy ios` (used by ios:build / ios:open) regenerates
  * packageClassList in ios/App/App/capacitor.config.json from npm-installed
  * plugins only (@capacitor/cli dist/util/iosplugin.js), silently dropping
- * locally-declared classes. Re-insert the local NightModePlugin entry after
+ * locally-declared classes. Re-insert the local ThemePlugin entry after
  * every copy. If you run a raw `npx cap sync ios` outside the npm scripts,
  * run this file afterwards too.
  */
 import fs from 'node:fs';
 
 const CONFIG = new URL('../ios/App/App/capacitor.config.json', import.meta.url);
-const LOCAL_CLASS = 'NightModePlugin';
+const LOCAL_CLASS = 'ThemePlugin';
 
 const config = JSON.parse(fs.readFileSync(CONFIG, 'utf-8'));
 

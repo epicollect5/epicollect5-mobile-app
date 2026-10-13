@@ -3,16 +3,10 @@ import {Capacitor, registerPlugin} from '@capacitor/core';
 
 const SYSTEM_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
-//local native plugin: pins the night mode independently of the device theme.
+//local native plugin: pins the native theme independently of the device theme.
 //See docs/ARCHITECTURE.md "Native Night Mode (Theme)" — includes the iOS
 //packageClassList gotcha and its guard script/test.
-const nightModePlugin = registerPlugin('NightMode');
-
-const NIGHT_MODES = {
-    [PARAMETERS.THEMES.LIGHT]: 'no',
-    [PARAMETERS.THEMES.DARK]: 'yes',
-    [PARAMETERS.THEMES.SYSTEM]: 'follow_system'
-};
+const themePlugin = registerPlugin('Theme');
 
 //last preference passed to applyTheme(), used by the system listener
 //to re-apply only while the preference is 'system'
@@ -48,7 +42,7 @@ function applyTheme(preference) {
     document.body.classList.toggle('theme-dark', effectiveDark);
     //root-level scheme drives UA widgets (native date/time pickers);
     //applyTheme runs on all platforms (boot and Settings saves, PWA
-    //included — only the NightMode plugin call below is native-only),
+    //included — only the Theme plugin call below is native-only),
     //so the light index.html meta only covers first paint
     document.documentElement.style.setProperty(
         'color-scheme',
@@ -56,13 +50,13 @@ function applyTheme(preference) {
     );
 
     //native dialogs/pickers must follow the in-app choice, not the device
-    //theme. Android and iOS each ship a NightMode plugin; the web/PWA has
+    //theme. Android and iOS each ship a Theme plugin; the web/PWA has
     //neither and must not be called. Fire-and-forget: a failed call never
     //affects the web theme.
     const platform = Capacitor.getPlatform();
     if (platform === PARAMETERS.ANDROID || platform === PARAMETERS.IOS) {
-        nightModePlugin.setNightMode({mode: NIGHT_MODES[preference]}).catch((error) => {
-            console.log('Night mode sync failed: ' + error);
+        themePlugin.setTheme({theme: preference}).catch((error) => {
+            console.log('Theme sync failed: ' + error);
         });
     }
 }

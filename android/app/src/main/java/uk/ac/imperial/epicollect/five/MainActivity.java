@@ -12,7 +12,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         //local plugin: queued into the bridge builder before the bridge loads
-        registerPlugin(NightModePlugin.class);
+        registerPlugin(ThemePlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

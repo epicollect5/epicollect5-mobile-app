@@ -2,11 +2,11 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { PARAMETERS } from '@/config';
 
 const platformState = vi.hoisted(() => ({ platform: 'web' }));
-const setNightModeMock = vi.hoisted(() => vi.fn(() => Promise.resolve()));
+const setThemeMock = vi.hoisted(() => vi.fn(() => Promise.resolve()));
 
 vi.mock('@capacitor/core', () => ({
     Capacitor: { getPlatform: vi.fn(() => platformState.platform) },
-    registerPlugin: vi.fn(() => ({ setNightMode: setNightModeMock }))
+    registerPlugin: vi.fn(() => ({ setTheme: setThemeMock }))
 }));
 
 describe('Theme Service', () => {
@@ -21,7 +21,7 @@ describe('Theme Service', () => {
 
         systemMatches = false;
         platformState.platform = PARAMETERS.WEB;
-        setNightModeMock.mockClear();
+        setThemeMock.mockClear();
         addEventListenerMock = vi.fn();
         window.matchMedia = vi.fn(() => ({
             get matches() {
@@ -92,45 +92,45 @@ describe('Theme Service', () => {
         setProperty.mockRestore();
     });
 
-    it('pins the native night mode to match the in-app preference', () => {
+    it('pins the native theme to match the in-app preference', () => {
         platformState.platform = PARAMETERS.ANDROID;
 
         themeService.applyTheme('light');
-        expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'no' });
+        expect(setThemeMock).toHaveBeenCalledWith({ theme: 'light' });
 
         themeService.applyTheme('dark');
-        expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'yes' });
+        expect(setThemeMock).toHaveBeenCalledWith({ theme: 'dark' });
 
         themeService.applyTheme('system');
-        expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'follow_system' });
+        expect(setThemeMock).toHaveBeenCalledWith({ theme: 'system' });
     });
 
     it('still applies the web theme when the native call rejects', async () => {
         platformState.platform = PARAMETERS.ANDROID;
-        setNightModeMock.mockImplementation(() => Promise.reject(new Error('no bridge')));
+        setThemeMock.mockImplementation(() => Promise.reject(new Error('no bridge')));
         const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
         expect(() => themeService.applyTheme('dark')).not.toThrow();
         expect(document.body.classList.contains('theme-dark')).toBe(true);
         await vi.waitFor(() => {
-            expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Night mode sync failed'));
+            expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Theme sync failed'));
         });
 
         logSpy.mockRestore();
-        setNightModeMock.mockImplementation(() => Promise.resolve());
+        setThemeMock.mockImplementation(() => Promise.resolve());
     });
 
-    it('drives the same night mode contract on iOS', () => {
+    it('drives the same theme contract on iOS', () => {
         platformState.platform = PARAMETERS.IOS;
 
         themeService.applyTheme('light');
-        expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'no' });
+        expect(setThemeMock).toHaveBeenCalledWith({ theme: 'light' });
 
         themeService.applyTheme('dark');
-        expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'yes' });
+        expect(setThemeMock).toHaveBeenCalledWith({ theme: 'dark' });
 
         themeService.applyTheme('system');
-        expect(setNightModeMock).toHaveBeenCalledWith({ mode: 'follow_system' });
+        expect(setThemeMock).toHaveBeenCalledWith({ theme: 'system' });
     });
 
     it('never calls the native plugin on the web', () => {
@@ -140,7 +140,7 @@ describe('Theme Service', () => {
         themeService.applyTheme('dark');
         themeService.applyTheme('system');
 
-        expect(setNightModeMock).not.toHaveBeenCalled();
+        expect(setThemeMock).not.toHaveBeenCalled();
     });
 
     it('never stacks listeners across repeated saves', () => {

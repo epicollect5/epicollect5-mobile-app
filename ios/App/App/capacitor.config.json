@@ -61,7 +61,7 @@
 		"CapacitorZipPlugin",
 		"VideoEditorPlugin",
 		"NativeSettingsPlugin",
-		"NightModePlugin",
+		"ThemePlugin",
 		"CDVPlugin"
 	]
 }
