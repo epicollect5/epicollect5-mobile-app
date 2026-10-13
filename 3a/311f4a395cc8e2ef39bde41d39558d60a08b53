@@ -1,0 +1,16 @@
+src/theme/components/modals/ModalPasswordlessSend.scss
+  h_2231ff2aa93473 6-19
+tests/unit/components/modals/ModalPasswordlessSend.spec.js
+  h_2231ff2aa93473 1-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3a311f4a395cc8e2ef39bde41d39558d60a08b53",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
