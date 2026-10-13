@@ -4,14 +4,12 @@
 			<ion-title
 				data-translate="recording_audio"
 				class="ion-text-center"
-				color="dark"
 			>{{ labels.recording_audio }}</ion-title>
 		</ion-toolbar>
 	</ion-header>
 	<ion-content>
 		<div class="ion-text-center ion-padding">
 			<ion-icon
-				color="dark"
 				class="audio-mic ion-text-center"
 				:icon="micCircleOutline"
 			>

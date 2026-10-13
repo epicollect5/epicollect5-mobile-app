@@ -459,4 +459,28 @@ describe('ModalAudioRecord component', () => {
         expect(notificationService.showAlert).toHaveBeenCalled();
         expect(modalController.dismiss).toHaveBeenCalledWith('');
     });
+
+    it('lets the title and mic icon inherit the theme text color', () => {
+        //color="dark" pins #222428 in both themes: invisible on the dark
+        //modal surface, so neither may pin any color
+        const wrapper = shallowMount(ModalAudioRecord, {
+            props: {
+                entryUuid,
+                inputRef,
+                media: {
+                    [entryUuid]: {
+                        [inputRef]: {
+                            cached: '',
+                            stored: '',
+                            type
+                        }
+
+                    }
+                }
+            }
+        });
+
+        expect(wrapper.find('ion-title').attributes('color')).toBeUndefined();
+        expect(wrapper.find('ion-icon.audio-mic').attributes('color')).toBeUndefined();
+    });
 });

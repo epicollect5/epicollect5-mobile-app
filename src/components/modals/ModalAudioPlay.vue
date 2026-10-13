@@ -4,14 +4,12 @@
 			<ion-title
 				data-translate="playing_audio"
 				class="ion-text-center"
-				color="dark"
 			>{{ labels.playing_audio }}</ion-title>
 		</ion-toolbar>
 	</ion-header>
 	<ion-content>
 		<div class="ion-text-center ion-padding">
 			<ion-icon
-				color="dark"
 				class="audio-note ion-text-center"
 				:icon="musicalNote"
 			>
