@@ -963,6 +963,210 @@ describe('ModalCameraPreview component', () => {
 		expect(mocks.cameraPreview.deleteFile).not.toHaveBeenCalled();
 	});
 
+	it('formats the elapsed recording time as zero-padded mm:ss', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		wrapper.vm.state.elapsedSeconds = 0;
+		expect(wrapper.vm.formattedElapsed).toBe('00:00');
+		wrapper.vm.state.elapsedSeconds = 7;
+		expect(wrapper.vm.formattedElapsed).toBe('00:07');
+		wrapper.vm.state.elapsedSeconds = 65;
+		expect(wrapper.vm.formattedElapsed).toBe('01:05');
+		//minutes keep growing past an hour instead of rolling over to hh:mm
+		wrapper.vm.state.elapsedSeconds = 3900;
+		expect(wrapper.vm.formattedElapsed).toBe('65:00');
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('shows the elapsed pill over the feed only while recording', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		expect(wrapper.findAll('.recording-elapsed').length).toBe(0);
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+		await wrapper.vm.$nextTick();
+		expect(wrapper.findAll('.recording-elapsed').length).toBe(1);
+
+		//a deliberate stop lands past the double-tap debounce window
+		ageRecording();
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(false);
+		await wrapper.vm.$nextTick();
+		expect(wrapper.findAll('.recording-elapsed').length).toBe(0);
+	});
+
+	it('ticks the elapsed pill from the native start and resets it when the stop lands', async () => {
+		vi.useFakeTimers();
+		try {
+			grantPermissions();
+			const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+			await flushPromises();
+
+			await wrapper.vm.shutter();
+			await flushPromises();
+			expect(wrapper.vm.state.recording).toBe(true);
+			expect(wrapper.vm.state.elapsedSeconds).toBe(0);
+
+			//readout derived from the confirmed native start, not by counting ticks
+			await vi.advanceTimersByTimeAsync(5000);
+			expect(wrapper.vm.state.elapsedSeconds).toBe(5);
+
+			await vi.advanceTimersByTimeAsync(60000);
+			expect(wrapper.vm.state.elapsedSeconds).toBe(65);
+
+			//stopping the take clears the readout for the next one
+			await wrapper.vm.shutter();
+			await flushPromises();
+			expect(wrapper.vm.state.recording).toBe(false);
+			expect(wrapper.vm.state.elapsedSeconds).toBe(0);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('releases the elapsed timer when unmounted mid-recording', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		//the pill timer must not outlive the modal
+		const clearSpy = vi.spyOn(globalThis, 'clearInterval');
+		wrapper.unmount();
+		await flushPromises();
+		expect(clearSpy).toHaveBeenCalled();
+		clearSpy.mockRestore();
+	});
+
+	//jsdom has no real sensor: synthesise the event the component listens for
+	function emitDeviceOrientation(gamma) {
+		const event = new Event('deviceorientation');
+		event.gamma = gamma;
+		window.dispatchEvent(event);
+	}
+
+	it('keeps the pill at the original top-centre placement in the portrait grip', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		expect(wrapper.vm.state.pillGrip).toBe('portrait');
+		expect(wrapper.vm.pillStyle).toEqual({
+			top: '16px',
+			left: '50%',
+			right: 'auto',
+			transform: 'translateX(-50%)'
+		});
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('lifts the pill onto the physical top when the recording starts in landscape', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		//the grip measured on device while the pill was sitting on the left
+		emitDeviceOrientation(-77);
+		await wrapper.vm.shutter();
+		await flushPromises();
+
+		expect(wrapper.vm.state.recording).toBe(true);
+		expect(wrapper.vm.state.pillGrip).toBe('landscape-neg');
+		expect(wrapper.vm.pillStyle).toEqual({
+			top: '50%',
+			right: '0',
+			left: 'auto',
+			transform: 'translate(calc(50% - 32px), -50%) rotate(90deg)'
+		});
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('mirrors the pill placement for the opposite landscape grip', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		emitDeviceOrientation(77);
+		await wrapper.vm.shutter();
+		await flushPromises();
+
+		expect(wrapper.vm.state.pillGrip).toBe('landscape-pos');
+		expect(wrapper.vm.pillStyle).toEqual({
+			top: '50%',
+			left: '0',
+			right: 'auto',
+			transform: 'translate(calc(-50% + 32px), -50%) rotate(-90deg)'
+		});
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('holds the placement for the whole take regardless of device orientation', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+		expect(wrapper.vm.state.pillGrip).toBe('portrait');
+
+		//turned mid-recording: the readout must stay exactly where it appeared
+		emitDeviceOrientation(-77);
+		expect(wrapper.vm.state.pillGrip).toBe('portrait');
+		expect(wrapper.vm.pillStyle).toEqual({
+			top: '16px',
+			left: '50%',
+			right: 'auto',
+			transform: 'translateX(-50%)'
+		});
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('stops tracking the physical grip when unmounted', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
+		await flushPromises();
+
+		const removeSpy = vi.spyOn(window, 'removeEventListener');
+		wrapper.unmount();
+		await flushPromises();
+
+		expect(removeSpy).toHaveBeenCalledWith('deviceorientation', expect.any(Function));
+		removeSpy.mockRestore();
+	});
+
+	it('does not watch the sensor in photo mode', async () => {
+		grantPermissions();
+		const addSpy = vi.spyOn(window, 'addEventListener');
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		expect(addSpy).not.toHaveBeenCalledWith('deviceorientation', expect.any(Function));
+		addSpy.mockRestore();
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
 	it('blocks dismissal while recording so the back button is ignored, and restores it on stop', async () => {
 		grantPermissions();
 		const overlay = {};
