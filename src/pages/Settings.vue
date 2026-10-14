@@ -71,8 +71,24 @@
 					>
 						<ion-label>{{ labels.text_size }}</ion-label>
 					</ion-item>
-					<ion-item lines="none">
+					<ion-item
+						lines="none"
+						class="zoom-stepper-row"
+					>
+						<ion-button
+							fill="clear"
+							class="zoom-stepper-btn"
+							aria-label="Decrease text size"
+							:disabled="isMinZoom"
+							@click="decreaseTextSize()"
+						>
+							<ion-icon
+								slot="icon-only"
+								:icon="remove"
+							></ion-icon>
+						</ion-button>
 						<ion-range
+							class="zoom-slider"
 							min="0"
 							:max="zoomLevels"
 							step="1"
@@ -82,15 +98,19 @@
 							:value="state.selectedTextSize"
 							@ionChange="updateSelectedTextSize($event)"
 						>
+						</ion-range>
+						<ion-button
+							fill="clear"
+							class="zoom-stepper-btn"
+							aria-label="Increase text size"
+							:disabled="isMaxZoom"
+							@click="increaseTextSize()"
+						>
 							<ion-icon
-								slot="start"
-								:icon="remove"
-							></ion-icon>
-							<ion-icon
-								slot="end"
+								slot="icon-only"
 								:icon="add"
 							></ion-icon>
-						</ion-range>
+						</ion-button>
 					</ion-item>
 					<ion-item
 						lines="none"
@@ -380,6 +400,20 @@ export default {
 				state.selectedTextSize = e.detail.value;
 				rootStore.selectedTextSize = state.selectedTextSize;
 			},
+			decreaseTextSize() {
+				const current = parseInt(state.selectedTextSize, 10) || 0;
+				if (current > 0) {
+					state.selectedTextSize = current - 1;
+					rootStore.selectedTextSize = state.selectedTextSize;
+				}
+			},
+			increaseTextSize() {
+				const current = parseInt(state.selectedTextSize, 10) || 0;
+				if (current < zoomLevels) {
+					state.selectedTextSize = current + 1;
+					rootStore.selectedTextSize = state.selectedTextSize;
+				}
+			},
 			updateCollectErrors(e) {
 				state.collectErrors = e.detail.checked;
 				rootStore.collectErrors = state.collectErrors;
@@ -451,6 +485,12 @@ export default {
 					return labels.theme_system;
 				}
 				return labels.theme_light;
+			}),
+			isMinZoom: computed(() => {
+				return (parseInt(state.selectedTextSize, 10) || 0) <= 0;
+			}),
+			isMaxZoom: computed(() => {
+				return (parseInt(state.selectedTextSize, 10) || 0) >= zoomLevels;
 			})
 		};
 

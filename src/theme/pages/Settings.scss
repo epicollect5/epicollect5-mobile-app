@@ -18,6 +18,50 @@ body ion-note.settings-theme-value {
     padding-bottom: 0;
 }
 
+//zoom stepper row: strip the item's default side padding so the
+//- / + buttons and slider get the full card width
+ion-item.zoom-stepper-row {
+    --padding-start: 4px;
+    --padding-end: 4px;
+    --inner-padding-start: 0;
+    --inner-padding-end: 0;
+}
+
+//zoom slider: solid theme-aware track/fill and a larger knob.
+//(Ionic defaults are 26%-alpha primary for the track and an 18px knob,
+//which wash out on the dark card. --ion-color-step-* only exists in the
+//dark ramp, so the track needs a light-mode fallback or it vanishes.)
+ion-range.zoom-slider {
+    --zoom-track: var(--ion-color-step-400, #a6a6a6);
+    --bar-height: 6px;
+    --knob-size: 28px;
+    --bar-background: var(--zoom-track);
+    --bar-background-active: var(--ion-color-primary);
+}
+
+//inactive tick markers blend into the track so the bar reads as one
+//continuous line; ticks at/below the knob stay transparent so the
+//primary fill shows through
+ion-range.zoom-slider::part(tick) {
+    background: var(--zoom-track);
+}
+ion-range.zoom-slider::part(tick-active) {
+    background: transparent;
+}
+
+//zoom stepper buttons: large tap targets in theme text color.
+//(default primary is muted purple #614080 in dark mode and glares on the
+//dark card; --ion-text-color flips automatically per theme)
+ion-button.zoom-stepper-btn {
+    --color: var(--ion-text-color);
+    --padding-start: 12px;
+    --padding-end: 12px;
+    min-height: 48px;
+    ion-icon {
+        font-size: 28px;
+    }
+}
+
 //theme selector sheet: option rows use the same size as the header
 body .theme-action-sheet {
     .action-sheet-title,

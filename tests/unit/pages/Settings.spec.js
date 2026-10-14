@@ -237,4 +237,36 @@ describe('Settings page', () => {
         expect(rootStoreMock.theme).toBe('light');
         expect(themeService.applyTheme).not.toHaveBeenCalled();
     });
+
+    it('steps the zoom level up and down by one', () => {
+        const wrapper = mountSettings();
+
+        wrapper.vm.increaseTextSize();
+        expect(wrapper.vm.state.selectedTextSize).toBe(1);
+        expect(rootStoreMock.selectedTextSize).toBe(1);
+
+        wrapper.vm.decreaseTextSize();
+        expect(wrapper.vm.state.selectedTextSize).toBe(0);
+        expect(rootStoreMock.selectedTextSize).toBe(0);
+    });
+
+    it('clamps the zoom stepper to the first and last levels', () => {
+        const wrapper = mountSettings();
+
+        //the stored default is the string '0': clamping leaves it untouched
+        wrapper.vm.decreaseTextSize();
+        expect(Number(wrapper.vm.state.selectedTextSize)).toBe(0);
+        expect(wrapper.vm.isMinZoom).toBe(true);
+        expect(wrapper.vm.isMaxZoom).toBe(false);
+
+        wrapper.vm.state.selectedTextSize = 0;
+        wrapper.vm.decreaseTextSize();
+        expect(wrapper.vm.state.selectedTextSize).toBe(0);
+
+        wrapper.vm.state.selectedTextSize = PARAMETERS.ZOOM_LEVELS;
+        wrapper.vm.increaseTextSize();
+        expect(wrapper.vm.state.selectedTextSize).toBe(PARAMETERS.ZOOM_LEVELS);
+        expect(wrapper.vm.isMaxZoom).toBe(true);
+        expect(wrapper.vm.isMinZoom).toBe(false);
+    });
 });
