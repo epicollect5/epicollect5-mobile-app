@@ -1,0 +1,18 @@
+src/pages/Settings.vue
+  h_2231ff2aa93473 74-89,91,100-107,110,113,403-416,488-493
+src/theme/pages/Settings.scss
+  h_2231ff2aa93473 21-64
+tests/unit/pages/Settings.spec.js
+  h_2231ff2aa93473 240-271
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d8705e0e09bd7010f0940952996303af142df5e1",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
