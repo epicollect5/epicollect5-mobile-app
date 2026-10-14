@@ -1,0 +1,14 @@
+src/use/entries/add-fake-entries.js
+  h_2231ff2aa93473 28-30,34-40,54-57,61-62,90-93,97-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ab2c5cbd7bb2dba596041ab24cb1fb35d98bd34e",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
