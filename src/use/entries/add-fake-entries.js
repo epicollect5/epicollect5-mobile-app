@@ -25,8 +25,18 @@ export async function addFakeEntries (params) {
             //todo add a popup to ask how many so we do not recompile ;)
             const howManyEntries = PARAMETERS.HOW_MANY_ENTRIES;
             const howManyBranches = PARAMETERS.HOW_MANY_BRANCH_ENTRIES;
+            const EPOCH_CREATED_AT = '1970-01-01T12:24:27.000Z';
+            const SPREAD_DAYS = 90;
+            const EPOCH_EVERY_N = 10;
             let currentBranchIndex;
             const branches = [];
+
+            function _getDeterministicCreatedAt (index, total) {
+                const denominator = Math.max(total - 1, 1);
+                const dayOffset = ((index - 1) / denominator) * SPREAD_DAYS;
+                const randomDate = new Date(Date.now() - dayOffset * 24 * 60 * 60 * 1000);
+                return utilsService.getISODateTime(randomDate);
+            }
 
             // Loop branches and create flat array
             for (const [key, value] of Object.entries(formModel.formStructure.branch)) {
@@ -41,12 +51,15 @@ export async function addFakeEntries (params) {
                 // Add fake answers for all questions in this entry
                 console.log(i + '. - adding fake entry for ' + entryService.entry.entryUuid);
 
-                // Randomly decide whether to override `created_at` with the epoch time
-                if (Math.random() < 0.5) { // Adjust the probability by changing `0.5`
-                    entryService.entry.createdAt = '1970-01-01T12:24:27.000Z';
+                // Every Nth entry keeps the epoch time so we always have some epoch dates;
+                // the rest are spread deterministically between today and 90 days back
+                if (i % EPOCH_EVERY_N === 0) {
+                    entryService.entry.createdAt = EPOCH_CREATED_AT;
                     console.warn(
                         `${i}. - created_at is epoch for entry: ${entryService.entry.entryUuid}`
                     );
+                } else {
+                    entryService.entry.createdAt = _getDeterministicCreatedAt(i, howManyEntries);
                 }
 
                 entryCommonService
@@ -74,12 +87,15 @@ export async function addFakeEntries (params) {
                                     branches[currentBranchIndex]
                                 );
 
-                                // Randomly decide whether to override `created_at` with the epoch time
-                                if (Math.random() < 0.5) { // Adjust the probability by changing `0.5`
-                                    branchEntryService.entry.createdAt = '1970-01-01T12:24:27.000Z';
+                                // Branch follows its parent: epoch iff the parent entry is epoch,
+                                // otherwise spread deterministically between today and 90 days back
+                                if (i % EPOCH_EVERY_N === 0) {
+                                    branchEntryService.entry.createdAt = EPOCH_CREATED_AT;
                                     console.warn(
                                         `${i}. - created_at is epoch for BRANCH entry: ${branchEntryService.entry.entryUuid}`
                                     );
+                                } else {
+                                    branchEntryService.entry.createdAt = _getDeterministicCreatedAt(j, howManyBranches);
                                 }
 
                                 // Add fake answers for all questions in this branch entry
