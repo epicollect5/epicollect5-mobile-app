@@ -133,6 +133,13 @@ body.theme-dark {
         --ion-color-shade: var(--app-text) !important;
     }
 
+    /* the global chip hover fill is --app-surface (#1e1e1e). A touch tap leaves
+       :hover stuck on the +/- chip, so the transparent chip repainted black
+       against the card it sits on: keep it on the card background instead */
+    ion-chip:hover {
+        background-color: var(--ion-card-background) !important;
+    }
+
     /* email login is an outline color="dark" button: its text/border resolve
        from --ion-color-base (button.md.css maps outline+ion-color to the base,
        not --color), which stays #222428 in dark mode and is unreadable on the
