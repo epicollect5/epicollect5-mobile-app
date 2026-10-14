@@ -112,6 +112,7 @@ import { nuclear, chevronBackOutline, add, remove, checkmark } from 'ionicons/ic
 import { reactive, computed } from '@vue/reactivity';
 import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings';
+import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { useRouter } from 'vue-router';
 import { useBackButton } from '@ionic/vue';
@@ -136,11 +137,16 @@ export default {
 
 		const methods = {
 			goBack() {
-				console.log(rootStore.nextRoute);
-				router.replace({
-					name: rootStore.nextRoute,
-					params: { ...rootStore.routeParams }
-				});
+				if (rootStore.nextRoute) {
+					router.replace({
+						name: rootStore.nextRoute,
+						params: { ...rootStore.routeParams }
+					});
+				} else {
+					router.replace({
+						name: PARAMETERS.ROUTES.PROJECTS
+					});
+				}
 			},
 			async openModalAccountDeletion() {
 				scope.ModalAccountDeletion = await modalController.create({

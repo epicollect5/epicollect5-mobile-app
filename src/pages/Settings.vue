@@ -302,10 +302,16 @@ export default {
 
 		const methods = {
 			goBack() {
-				router.replace({
-					name: rootStore.nextRoute,
-					query: { ...rootStore.routeParams }
-				});
+				if (rootStore.nextRoute) {
+					router.replace({
+						name: rootStore.nextRoute,
+						query: { ...rootStore.routeParams }
+					});
+				} else {
+					router.replace({
+						name: PARAMETERS.ROUTES.PROJECTS
+					});
+				}
 			},
 			async saveSettings() {
 				let failed = false;
