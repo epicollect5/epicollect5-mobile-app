@@ -1,0 +1,14 @@
+tests/unit/components/modals/ModalCameraPreview.spec.js
+  h_2231ff2aa93473 966-1169
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9c75e11f518464f5f0b9053bac6e31886c386a97",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
