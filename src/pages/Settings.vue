@@ -66,7 +66,7 @@
 				</ion-card-header>
 				<ion-card-content class="ion-text-left ion-no-padding">
 					<ion-item
-						lines="full"
+						lines="none"
 						class="ion-text-left"
 					>
 						<ion-label>{{ labels.text_size }}</ion-label>

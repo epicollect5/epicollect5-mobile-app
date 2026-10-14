@@ -25,6 +25,7 @@ ion-item.zoom-stepper-row {
     --padding-end: 4px;
     --inner-padding-start: 0;
     --inner-padding-end: 0;
+    border-bottom: 1px solid var(--ion-color-light-shade);
 }
 
 //zoom slider: solid theme-aware track/fill and a larger knob.
