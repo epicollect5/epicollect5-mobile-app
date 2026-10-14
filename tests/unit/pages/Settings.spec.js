@@ -24,12 +24,14 @@ const rootStoreMock = vi.hoisted(() => ({
     routeParams: {}
 }));
 
+const routerReplace = vi.hoisted(() => vi.fn());
+
 vi.mock('@/stores/root-store', () => ({
     useRootStore: () => rootStoreMock
 }));
 
 vi.mock('vue-router', () => ({
-    useRouter: () => ({ replace: vi.fn() })
+    useRouter: () => ({ replace: routerReplace })
 }));
 
 vi.mock('@ionic/vue', () => ({
@@ -108,6 +110,8 @@ describe('Settings page', () => {
         rootStoreMock.inAppCamera = false;
         rootStoreMock.inAppCameraVideo = false;
         rootStoreMock.theme = 'light';
+        rootStoreMock.nextRoute = 'projects';
+        rootStoreMock.routeParams = {};
         databaseInsertService.insertSetting.mockResolvedValue();
     });
 
@@ -268,5 +272,40 @@ describe('Settings page', () => {
         expect(wrapper.vm.state.selectedTextSize).toBe(PARAMETERS.ZOOM_LEVELS);
         expect(wrapper.vm.isMaxZoom).toBe(true);
         expect(wrapper.vm.isMinZoom).toBe(false);
+    });
+
+    it('navigates to the saved route when going back', () => {
+        rootStoreMock.nextRoute = 'entries';
+        rootStoreMock.routeParams = { projectRef: 'p1' };
+        const wrapper = mountSettings();
+
+        wrapper.vm.goBack();
+
+        expect(routerReplace).toHaveBeenCalledWith({
+            name: 'entries',
+            query: { projectRef: 'p1' }
+        });
+    });
+
+    it('falls back to the projects page when the saved route is missing', () => {
+        rootStoreMock.nextRoute = null;
+        const wrapper = mountSettings();
+
+        wrapper.vm.goBack();
+
+        expect(routerReplace).toHaveBeenCalledWith({
+            name: PARAMETERS.ROUTES.PROJECTS
+        });
+    });
+
+    it('falls back to the projects page when the saved route is empty', () => {
+        rootStoreMock.nextRoute = '';
+        const wrapper = mountSettings();
+
+        wrapper.vm.goBack();
+
+        expect(routerReplace).toHaveBeenCalledWith({
+            name: PARAMETERS.ROUTES.PROJECTS
+        });
     });
 });
