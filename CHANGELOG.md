@@ -1,5 +1,16 @@
 ## Release Notes
 
+# 98.5.2 - build 9852
+
+ - In-app camera video recording now shows the elapsed time (mm:ss) in a pill over the live feed; when the recording is started in landscape the pill is moved onto the physical top edge so it stays readable.
+ - Date and time questions were reworked around the native pickers: an invalid value clears its error once answered, the picker button remounts when the error state flips, the twin picker buttons no longer swap on error, and the error is shown as a plain danger border instead of a filled button.
+ - Modal inputs are readable in dark mode again: the email and code fields, the focused caret and the input padding now follow the active theme.
+ - Zoom controls on the entry page are visible and tappable, with the zoom divider moved below the stepper row.
+ - Going back from the Profile page now falls back to the projects page when there is no previous route.
+ - Tapping an item no longer leaves a stuck hover highlight on chips.
+ - Fake entry dates used for testing are now spread deterministically over 90 days instead of being clustered.
+ - Test coverage added for the recording pill, the Profile back navigation and the date error reset.
+
 # 98.5.1 - build 9851
 
  - The native theme plugin now ships as a github-only package (@epicollect5/capacitor-plugin-theme) instead of local sources, so platform updates can no longer silently drop its registration; the app calls setTheme with the Light/Dark/System choice directly.
