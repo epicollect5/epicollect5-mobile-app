@@ -15,16 +15,18 @@
 					</ion-icon>
 				</ion-button>
 			</ion-buttons>
-			<div
-				v-if="state.recording"
-				slot="end"
-				class="recording-indicator"
-			>
-				<span class="recording-dot"></span>
-			</div>
 		</ion-toolbar>
 	</ion-header>
-	<div class="camera-viewport"></div>
+	<div class="camera-viewport">
+		<div
+			v-if="state.recording"
+			class="recording-elapsed"
+			:style="pillStyle"
+		>
+			<span class="recording-dot"></span>
+			<span>{{ formattedElapsed }}</span>
+		</div>
+	</div>
 	<div class="camera-footer">
 		<div class="camera-controls">
 			<div class="camera-controls-side">
@@ -98,6 +100,17 @@ export default {
 			capturing: false,
 			started: false,
 			recording: false,
+			//seconds since the confirmed native recording start, shown as mm:ss
+			//in the pill over the feed while recording
+			elapsedSeconds: 0,
+			//which physical edge the pill is anchored to. The orientation lock
+			//freezes every system orientation signal (display rotation, Configuration,
+			//screen.orientation, innerWidth) at portrait, so the grip can only come
+			//from the accelerometer. Sampled once when the recording starts and held
+			//for the whole take, so turning the device mid-recording never moves it.
+			//'portrait' keeps the original top-centre placement; the landscape values
+			//lift the pill onto the physical top
+			pillGrip: 'portrait',
 			//true while a startRecordVideo/stopRecordVideo transition is in flight:
 			//template-bindable so the shutter shows the modal as busy and a tap
 			//landing mid-transition is dropped instead of racing the native bridge
@@ -129,6 +142,9 @@ export default {
 		let recordingListener = null;
 		let appStateListenerPromise = null;
 		let recordingListenerPromise = null;
+		//latest grip read off the accelerometer. Deliberately not reactive: the take
+		//samples it once on the shutter, so rotating mid-recording cannot move the pill
+		let latestGrip = 'portrait';
 		let flashTimer = null;
 		//true while the app is in the background (screen off, app switcher, incoming
 		//call): the camera is stopped to release it, and restarted on return so the
@@ -185,6 +201,9 @@ export default {
 		//Only read while state.recording is true, which always implies a
 		//successful start refreshed it — no reset needed on the stop paths
 		let recordingStartedAt = 0;
+		//ticks state.elapsedSeconds while recording: cleared on every stop path
+		//(finalize/abort/handoff) and on unmount, so it never leaks across takes
+		let recordingTimer = null;
 		//the in-flight capture/record handoff (stop + payload dismiss), observable so
 		//teardown can wait for it instead of racing it. A handoff still pending past
 		//HANDOFF_ESCAPE_MS releases the exit again (empty dismiss + possible cache
@@ -209,14 +228,106 @@ export default {
 		//minimum recording age before a shutter tap may stop it: well above a
 		//double-tap bounce, short enough to never annoy a deliberate stop
 		const MIN_RECORDING_MS = 1000;
+		//past this tilt the device counts as landscape when the take samples the grip.
+		//One reading decides one take, so no hysteresis band is needed
+		const GRIP_LANDSCAPE_THRESHOLD = 45;
+		//pill half-height (~15px) plus the 16px gap wanted from the screen edge when
+		//the pill is lifted onto the physical top: shared by both landscape grips
+		const PILL_EDGE_OFFSET_PX = 32;
 
 		const computedScope = {
 			//video mode hides the flip/flash controls (recording keeps the shutter as
 			//the only control) and turns the shutter into a record/stop toggle
 			isVideoMode: computed(() => props.mode === 'video'),
 			isFlashActive: computed(() => state.flashMode !== 'off'),
-			flashIcon: computed(() => state.flashMode !== 'off' ? flash : flashOutline)
+			flashIcon: computed(() => state.flashMode !== 'off' ? flash : flashOutline),
+			//fixed mm:ss readout for the recording pill (minutes grow past 59)
+			formattedElapsed: computed(() => {
+				const total = state.elapsedSeconds || 0;
+				const minutes = Math.floor(total / 60);
+				const seconds = total % 60;
+				return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+			}),
+			//the pill's whole geometry lives here so the template only binds it.
+			//The DOM stays portrait while you hold the device landscape, so "top" of
+			//the viewport is physically the side: in landscape the pill is moved onto
+			//the portrait edge that maps to the physical top and rotated so the text
+			//reads horizontally. Portrait keeps the original placement verbatim.
+			pillStyle: computed(() => {
+				if (state.pillGrip === 'landscape-neg') {
+					//portrait-top is on the physical left, so the portrait right edge is
+					//the physical top. 50% centres the pill on that edge; the offset is
+					//the pill's own half-height plus the gap wanted from the screen edge,
+					//which has no header to sit under
+					return {
+						top: '50%',
+						right: '0',
+						left: 'auto',
+						transform: `translate(calc(50% - ${PILL_EDGE_OFFSET_PX}px), -50%) rotate(90deg)`
+					};
+				}
+				if (state.pillGrip === 'landscape-pos') {
+					//mirror of the above for the opposite landscape grip
+					return {
+						top: '50%',
+						left: '0',
+						right: 'auto',
+						transform: `translate(calc(-50% + ${PILL_EDGE_OFFSET_PX}px), -50%) rotate(-90deg)`
+					};
+				}
+				return {
+					top: '16px',
+					left: '50%',
+					right: 'auto',
+					transform: 'translateX(-50%)'
+				};
+			})
 		};
+
+		//While recording, refresh the pill from the confirmed native start time
+		//(not by counting ticks, so throttled intervals cannot drift)
+		function _startElapsedTimer() {
+			_clearElapsedTimer();
+			recordingTimer = setInterval(() => {
+				if (tornDown || !state.recording) {
+					return;
+				}
+				state.elapsedSeconds = Math.max(0, Math.floor((Date.now() - recordingStartedAt) / 1000));
+			}, 500);
+		}
+
+		function _clearElapsedTimer() {
+			if (recordingTimer) {
+				clearInterval(recordingTimer);
+				recordingTimer = null;
+			}
+			state.elapsedSeconds = 0;
+		}
+
+		//gamma is gravity-derived, so it reports the physical grip even while the
+		//orientation lock pins every system signal at portrait (verified on device:
+		//275 events / 5s at gamma -77 while the viewport read portrait-primary).
+		//It only feeds a non-reactive snapshot: the take samples that snapshot on
+		//the shutter, so rotating the device mid-recording never moves the pill
+		function _onDeviceOrientation(event) {
+			const gamma = event && typeof event.gamma === 'number' ? event.gamma : null;
+			if (gamma === null) {
+				return;
+			}
+			if (Math.abs(gamma) <= GRIP_LANDSCAPE_THRESHOLD) {
+				latestGrip = 'portrait';
+				return;
+			}
+			latestGrip = gamma < 0 ? 'landscape-neg' : 'landscape-pos';
+		}
+
+		function _trackPhysicalOrientation() {
+			window.addEventListener('deviceorientation', _onDeviceOrientation);
+		}
+
+		function _stopTrackingPhysicalOrientation() {
+			window.removeEventListener('deviceorientation', _onDeviceOrientation);
+		}
 
 		//The native camera preview runs behind the WebView (toBack), so while the modal
 		//is open the underlying app UI must not paint over it. Toggle a body/html class
@@ -878,6 +989,9 @@ export default {
 			recordingStartInProgress = true;
 			state.transitioning = true;
 			state.recording = true;
+			//freeze the pill's placement for this take: whatever the device does for
+			//the rest of the recording, the readout stays where it appeared
+			state.pillGrip = latestGrip;
 			//block back-press teardown before the native start lands, so dismiss
 			//cannot tear the modal down mid-start
 			await _setModalDismissable(false);
@@ -889,10 +1003,12 @@ export default {
 				//not against the optimistic flag above (the bridge resolves before
 				//the first key frame exists)
 				recordingStartedAt = Date.now();
+				_startElapsedTimer();
 			} catch (error) {
 				console.log('CameraPreview.startRecordVideo failed: ' + error);
 				rollbarService.criticalWithContext('CameraPreview startRecordVideo failed', error);
 				state.recording = false;
+				_clearElapsedTimer();
 				await _setModalDismissable(true);
 				//the modal stays open for a retry, but the user must be told
 				//the recording failed to start instead of seeing a reset shutter
@@ -910,6 +1026,9 @@ export default {
 
 		//hand the finished recording to the caller and close the modal
 		async function _handOffRecording(videoFilePath) {
+			//the take is over on every path that reaches the handoff (shutter stop,
+			//native recordingFinished): stop the pill timer before anything awaits
+			_clearElapsedTimer();
 			if (!videoFilePath) {
 				console.log('CameraPreview returned no video file path');
 				return;
@@ -987,6 +1106,7 @@ export default {
 					modalController.dismiss();
 				}
 			} finally {
+				_clearElapsedTimer();
 				recordingStopInProgress = false;
 				state.transitioning = false;
 			}
@@ -1023,6 +1143,7 @@ export default {
 					console.log('CameraPreview.stopRecordVideo failed: ' + error);
 				}
 			} finally {
+				_clearElapsedTimer();
 				recordingStopInProgress = false;
 				state.transitioning = false;
 			}
@@ -1208,6 +1329,9 @@ export default {
 				recordingListenerPromise.then((handle) => {
 					recordingListener = handle;
 				});
+				//the pill needs the physical grip: the orientation lock hides it from
+				//every other signal, so watch the accelerometer instead
+				_trackPhysicalOrientation();
 			}
 		});
 
@@ -1229,6 +1353,10 @@ export default {
 				clearTimeout(flashTimer);
 				flashTimer = null;
 			}
+			//never leave the pill timer ticking on the destroyed modal
+			_clearElapsedTimer();
+			//nor a grip listener writing state into it
+			_stopTrackingPhysicalOrientation();
 			//a handoff still in flight owns the payload dismissal: wait for it
 			//(bounded) so back-press teardown cannot steal it with listener removal
 			//while the native stop settles. Past the timeout the normal body below

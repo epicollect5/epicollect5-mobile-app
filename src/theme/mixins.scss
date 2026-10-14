@@ -904,6 +904,29 @@
         //transparent spacer between the bars: the native feed shows through here
         flex: 1 1 auto;
         min-height: 0;
+        //positioning root for the recording pill anchored over the feed
+        position: relative;
+    }
+    //elapsed-time pill shown over the feed while recording. Appearance only: the
+    //geometry (top/left/right/transform) comes from the pillStyle computed, which
+    //also lifts the pill onto the physical top when held landscape. Colours are
+    //hardcoded (not --ion-*) so the white pill reads identically in light and dark
+    .recording-elapsed {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: #fff;
+        color: #1a1a1a;
+        font-size: 15px;
+        font-weight: 600;
+        //fixed-width digits so the pill does not jitter as the seconds tick
+        font-variant-numeric: tabular-nums;
+        transform-origin: center;
+        //taps pass through to the feed underneath
+        pointer-events: none;
     }
     .camera-footer {
         //bottom bar: app purple, covers the bottom of the feed and the nav-button
@@ -952,11 +975,6 @@
     .flash-button.active {
         --background: rgba(255, 165, 0, 0.75);
         --color: #fff;
-    }
-    .recording-indicator {
-        display: flex;
-        align-items: center;
-        margin-right: 16px;
     }
     .recording-dot {
         width: 12px;
