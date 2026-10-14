@@ -1,0 +1,14 @@
+tests/unit/pages/Settings.spec.js
+  h_2231ff2aa93473 27-28,34,113-114,276-310
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f7c2470787f397b0ac913e987e4d2f284927e9d2",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
