@@ -24,8 +24,11 @@
     margin-right: 0;
     //fixed label width (fits "Desde", the longest From/To across
     //languages) so both pickers start at the same x and match;
-    //text right-aligned so it hugs its button
+    //text right-aligned so it hugs its button.
+    //align-self (not just the row's align-items): pins centering
+    //on the label itself whatever the row computes to
     flex: 0 0 72px;
+    align-self: center;
     text-align: right;
 }
 
@@ -59,6 +62,18 @@
 //so hide the clear icon and reclaim its column gap
 .modal-entries-filter .datetime-clear-icon {
     display: none;
+}
+
+//legacy filter-by-date rules (core.scss) target any date input inside
+//these toolbars and force position:relative + min-width:170px: that
+//drags our hidden web input into flow, stretching the grid ~26px and
+//pushing the label off-center. Keep it out of flow. Specificity is
+//deliberately one class above the legacy rule (a tie would resolve
+//by stylesheet order, which the device bundle wins for core.scss).
+.modal-entries-filter .filter-by-date-from .filter-date-row input.datetime-web-input,
+.modal-entries-filter .filter-by-date-to .filter-date-row input.datetime-web-input {
+    position: absolute;
+    min-width: 0;
 }
 
 .modal-entries-filter .datetime-button-col {
