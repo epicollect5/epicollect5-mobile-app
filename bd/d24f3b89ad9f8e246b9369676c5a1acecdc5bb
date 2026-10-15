@@ -1,0 +1,14 @@
+src/theme/components/modals/ModalEntriesFilter.scss
+  h_2231ff2aa93473 16-18,26-27,29,32-43,45-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bdd24f3b89ad9f8e246b9369676c5a1acecdc5bb",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
