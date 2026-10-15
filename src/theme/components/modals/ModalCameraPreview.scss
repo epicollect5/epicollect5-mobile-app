@@ -48,6 +48,21 @@ body.camera-preview-open ion-app {
     flex-direction: column;
 }
 
+//Landscape fix: the activity stays landscape (the OS cannot be forced back to
+//portrait), so the chrome is counter-rotated 90 degrees to present a portrait UI.
+//The box swaps to portrait dimensions (100vh wide, 100vw tall) centred on the
+//viewport; rotated 90 degrees about its centre it fills the landscape viewport
+//exactly. The rotation itself is bound inline (layerStyle) since it needs the
+//JS-computed direction.
+.modal-camera-preview-layer.camera-landscape-fix {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    width: 100vh;
+    height: 100vw;
+}
+
 .camera-flash {
     position: absolute;
     inset: 0;

@@ -139,6 +139,9 @@ describe('ModalCameraPreview component', () => {
 		storeMock.geolocationPermission = undefined;
 		document.documentElement.classList.remove('camera-preview-open');
 		document.body.classList.remove('camera-preview-open');
+		//default viewport is portrait; landscape tests override per-test
+		Object.defineProperty(window, 'innerWidth', { value: 768, configurable: true });
+		Object.defineProperty(window, 'innerHeight', { value: 1024, configurable: true });
 	});
 
 	afterEach(() => {
@@ -982,7 +985,7 @@ describe('ModalCameraPreview component', () => {
 		await flushPromises();
 	});
 
-	it('shows the elapsed pill over the feed only while recording', async () => {
+	it('shows the elapsed pill next to the close button only while recording', async () => {
 		grantPermissions();
 		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
 		await flushPromises();
@@ -1049,75 +1052,9 @@ describe('ModalCameraPreview component', () => {
 		clearSpy.mockRestore();
 	});
 
-	//jsdom has no real sensor: synthesise the event the component listens for
-	function emitDeviceOrientation(gamma) {
-		const event = new Event('deviceorientation');
-		event.gamma = gamma;
-		window.dispatchEvent(event);
-	}
-
-	it('keeps the pill at the original top-centre placement in the portrait grip', async () => {
-		grantPermissions();
-		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
-		await flushPromises();
-
-		expect(wrapper.vm.state.pillGrip).toBe('portrait');
-		expect(wrapper.vm.pillStyle).toEqual({
-			top: '16px',
-			left: '50%',
-			right: 'auto',
-			transform: 'translateX(-50%)'
-		});
-
-		wrapper.unmount();
-		await flushPromises();
-	});
-
-	it('lifts the pill onto the physical top when the recording starts in landscape', async () => {
-		grantPermissions();
-		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
-		await flushPromises();
-
-		//the grip measured on device while the pill was sitting on the left
-		emitDeviceOrientation(-77);
-		await wrapper.vm.shutter();
-		await flushPromises();
-
-		expect(wrapper.vm.state.recording).toBe(true);
-		expect(wrapper.vm.state.pillGrip).toBe('landscape-neg');
-		expect(wrapper.vm.pillStyle).toEqual({
-			top: '50%',
-			right: '0',
-			left: 'auto',
-			transform: 'translate(calc(50% - 32px), -50%) rotate(90deg)'
-		});
-
-		wrapper.unmount();
-		await flushPromises();
-	});
-
-	it('mirrors the pill placement for the opposite landscape grip', async () => {
-		grantPermissions();
-		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
-		await flushPromises();
-
-		emitDeviceOrientation(77);
-		await wrapper.vm.shutter();
-		await flushPromises();
-
-		expect(wrapper.vm.state.pillGrip).toBe('landscape-pos');
-		expect(wrapper.vm.pillStyle).toEqual({
-			top: '50%',
-			left: '0',
-			right: 'auto',
-			transform: 'translate(calc(-50% + 32px), -50%) rotate(-90deg)'
-		});
-
-		wrapper.unmount();
-		await flushPromises();
-	});
-
-	it('holds the placement for the whole take regardless of device orientation', async () => {
+	//the pill is fixed next to the close button, portrait in every orientation:
+	//no sensor is involved, so there is nothing to synthesise and nothing to track
+	it('pins the recording pill next to the close button in portrait', async () => {
 		grantPermissions();
 		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
 		await flushPromises();
@@ -1125,46 +1062,150 @@ describe('ModalCameraPreview component', () => {
 		await wrapper.vm.shutter();
 		await flushPromises();
 		expect(wrapper.vm.state.recording).toBe(true);
-		expect(wrapper.vm.state.pillGrip).toBe('portrait');
 
-		//turned mid-recording: the readout must stay exactly where it appeared
-		emitDeviceOrientation(-77);
-		expect(wrapper.vm.state.pillGrip).toBe('portrait');
-		expect(wrapper.vm.pillStyle).toEqual({
-			top: '16px',
-			left: '50%',
-			right: 'auto',
-			transform: 'translateX(-50%)'
-		});
+		const pill = wrapper.find('.camera-topbar .recording-elapsed');
+		expect(pill.exists()).toBe(true);
+		expect(pill.attributes('style')).toBeUndefined();
 
 		wrapper.unmount();
 		await flushPromises();
 	});
 
-	it('stops tracking the physical grip when unmounted', async () => {
+	it('pins the recording pill next to the close button in landscape too', async () => {
 		grantPermissions();
+		Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
+		Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
 		const wrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
 		await flushPromises();
 
-		const removeSpy = vi.spyOn(window, 'removeEventListener');
+		await wrapper.vm.shutter();
+		await flushPromises();
+		expect(wrapper.vm.state.recording).toBe(true);
+
+		//same fixed spot: the counter-rotated chrome already presents portrait,
+		//so no grip compensation exists to move it
+		expect(wrapper.find('.camera-topbar .recording-elapsed').exists()).toBe(true);
+
 		wrapper.unmount();
 		await flushPromises();
-
-		expect(removeSpy).toHaveBeenCalledWith('deviceorientation', expect.any(Function));
-		removeSpy.mockRestore();
 	});
 
-	it('does not watch the sensor in photo mode', async () => {
+	it('never listens to the orientation sensor in any mode', async () => {
 		grantPermissions();
 		const addSpy = vi.spyOn(window, 'addEventListener');
-		const wrapper = shallowMount(ModalCameraPreview);
+		const photoWrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		const videoWrapper = shallowMount(ModalCameraPreview, { props: { mode: 'video' } });
 		await flushPromises();
 
 		expect(addSpy).not.toHaveBeenCalledWith('deviceorientation', expect.any(Function));
 		addSpy.mockRestore();
 
+		photoWrapper.unmount();
+		videoWrapper.unmount();
+		await flushPromises();
+	});
+
+	it('counter-rotates the chrome to portrait when the activity is landscape', async () => {
+		grantPermissions();
+		Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
+		Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		//the OS cannot be forced back to portrait, so the layer is spun -90 degrees
+		//(landscape-primary) to present a portrait UI at full size
+		expect(wrapper.vm.state.uiLandscapeFix).toBe(true);
+		expect(wrapper.vm.state.uiRotation).toBe(-90);
+		expect(wrapper.vm.layerStyle).toEqual({
+			transform: expect.stringContaining('rotate(-90deg)')
+		});
+		expect(wrapper.find('.modal-camera-preview-layer.camera-landscape-fix').exists()).toBe(true);
+		//the native session still starts fullscreen behind the rotated chrome
+		expect(mocks.cameraPreview.start).toHaveBeenCalledWith(expectStartOptions(768));
+
 		wrapper.unmount();
 		await flushPromises();
+	});
+
+	it('uses a full-bleed native layer in landscape so no status-sized strip is left over', async () => {
+		grantPermissions();
+		mocks.cameraPreview.getSafeAreaInsets.mockResolvedValue({ top: 48, orientation: 1 });
+		Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
+		Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		//the portrait status-strip reservation would surface as a bottom strip
+		//here: skip the inset read entirely and cover the whole viewport
+		expect(mocks.cameraPreview.getSafeAreaInsets).not.toHaveBeenCalled();
+		expect(mocks.cameraPreview.start).toHaveBeenCalledWith(expectStartOptions(768));
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('floats a bare close button over the feed instead of a header bar', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		expect(wrapper.find('.camera-topbar .close-button').exists()).toBe(true);
+		expect(wrapper.vm.closeCircleOutline).toBeDefined();
+		//plain container, no toolbar: toolbar shadow styles would override the
+		//button fill, while here it renders exactly like the flip/flash buttons
+		expect(wrapper.find('ion-toolbar').exists()).toBe(false);
+		expect(wrapper.find('ion-buttons').exists()).toBe(false);
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('mirrors the counter-rotation for the opposite landscape grip', async () => {
+		grantPermissions();
+		Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
+		Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
+		Object.defineProperty(window.screen, 'orientation', { value: { angle: 270, type: 'landscape-secondary' }, configurable: true });
+		try {
+			const wrapper = shallowMount(ModalCameraPreview);
+			await flushPromises();
+
+			expect(wrapper.vm.state.uiLandscapeFix).toBe(true);
+			expect(wrapper.vm.state.uiRotation).toBe(90);
+			expect(wrapper.vm.layerStyle.transform).toContain('rotate(90deg)');
+
+			wrapper.unmount();
+			await flushPromises();
+		} finally {
+			Object.defineProperty(window.screen, 'orientation', { value: undefined, configurable: true });
+		}
+	});
+
+	it('follows the device rotation while open and stops tracking on close', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		expect(wrapper.vm.state.uiLandscapeFix).toBe(false);
+		expect(wrapper.vm.layerStyle).toEqual({});
+
+		//rotated to landscape mid-session: the portrait fix kicks in live
+		Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
+		Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
+		window.dispatchEvent(new Event('resize'));
+		expect(wrapper.vm.state.uiLandscapeFix).toBe(true);
+
+		//back to portrait: the fix drops out again
+		Object.defineProperty(window, 'innerWidth', { value: 768, configurable: true });
+		Object.defineProperty(window, 'innerHeight', { value: 1024, configurable: true });
+		window.dispatchEvent(new Event('orientationchange'));
+		expect(wrapper.vm.state.uiLandscapeFix).toBe(false);
+
+		const removeSpy = vi.spyOn(window, 'removeEventListener');
+		wrapper.unmount();
+		await flushPromises();
+		expect(removeSpy).toHaveBeenCalledWith('resize', expect.any(Function));
+		expect(removeSpy).toHaveBeenCalledWith('orientationchange', expect.any(Function));
+		removeSpy.mockRestore();
 	});
 
 	it('blocks dismissal while recording so the back button is ignored, and restores it on stop', async () => {

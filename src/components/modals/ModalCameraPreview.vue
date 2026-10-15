@@ -1,31 +1,31 @@
 <template>
-	<div class="modal-camera-preview-layer">
+	<div
+		class="modal-camera-preview-layer"
+		:class="{ 'camera-landscape-fix': state.uiLandscapeFix }"
+		:style="layerStyle"
+	>
 	<div v-if="state.flash" class="camera-flash"></div>
-	<ion-header class="ion-no-border">
-		<ion-toolbar>
-			<ion-buttons slot="start">
-				<ion-button
-					@click="dismiss()"
-					:disabled="state.handoff"
-				>
-					<ion-icon
-						slot="icon-only"
-						:icon="closeOutline"
-					>
-					</ion-icon>
-				</ion-button>
-			</ion-buttons>
-		</ion-toolbar>
-	</ion-header>
-	<div class="camera-viewport">
+	<div class="camera-topbar">
 		<div
 			v-if="state.recording"
 			class="recording-elapsed"
-			:style="pillStyle"
 		>
 			<span class="recording-dot"></span>
 			<span>{{ formattedElapsed }}</span>
 		</div>
+		<ion-button
+			class="close-button"
+			@click="dismiss()"
+			:disabled="state.handoff"
+		>
+			<ion-icon
+				slot="icon-only"
+				:icon="closeCircleOutline"
+			>
+			</ion-icon>
+		</ion-button>
+	</div>
+	<div class="camera-viewport">
 	</div>
 	<div class="camera-footer">
 		<div class="camera-controls">
@@ -72,7 +72,7 @@
 <script>
 import {computed, onBeforeUnmount, onMounted, reactive} from 'vue';
 import {modalController} from '@ionic/vue';
-import {cameraReverseOutline, closeOutline, flash, flashOutline} from 'ionicons/icons';
+import {cameraReverseOutline, closeCircleOutline, flash, flashOutline} from 'ionicons/icons';
 import {App as CapacitorApp} from '@capacitor/app';
 import {Directory, Filesystem} from '@capacitor/filesystem';
 import {Geolocation} from '@capacitor/geolocation';
@@ -101,16 +101,8 @@ export default {
 			started: false,
 			recording: false,
 			//seconds since the confirmed native recording start, shown as mm:ss
-			//in the pill over the feed while recording
+			//in the pill next to the close button while recording
 			elapsedSeconds: 0,
-			//which physical edge the pill is anchored to. The orientation lock
-			//freezes every system orientation signal (display rotation, Configuration,
-			//screen.orientation, innerWidth) at portrait, so the grip can only come
-			//from the accelerometer. Sampled once when the recording starts and held
-			//for the whole take, so turning the device mid-recording never moves it.
-			//'portrait' keeps the original top-centre placement; the landscape values
-			//lift the pill onto the physical top
-			pillGrip: 'portrait',
 			//true while a startRecordVideo/stopRecordVideo transition is in flight:
 			//template-bindable so the shutter shows the modal as busy and a tap
 			//landing mid-transition is dropped instead of racing the native bridge
@@ -130,7 +122,12 @@ export default {
 			//ourselves so the flash toggle and foreground restarts follow the
 			//camera the user actually sees (the native switch may settle after
 			//flip() resolves, so a fresh bridge read can still report the old side)
-			cameraPosition: 'rear'
+			cameraPosition: 'rear',
+			//true while the activity is landscape: the chrome is counter-rotated
+			//90 degrees (see _updateLandscapeFix) so the camera always presents
+			//a portrait UI. uiRotation is the counter-rotation sign
+			uiLandscapeFix: false,
+			uiRotation: 0
 		});
 
 		let sourcePath = null;
@@ -142,9 +139,6 @@ export default {
 		let recordingListener = null;
 		let appStateListenerPromise = null;
 		let recordingListenerPromise = null;
-		//latest grip read off the accelerometer. Deliberately not reactive: the take
-		//samples it once on the shutter, so rotating mid-recording cannot move the pill
-		let latestGrip = 'portrait';
 		let flashTimer = null;
 		//true while the app is in the background (screen off, app switcher, incoming
 		//call): the camera is stopped to release it, and restarted on return so the
@@ -228,12 +222,6 @@ export default {
 		//minimum recording age before a shutter tap may stop it: well above a
 		//double-tap bounce, short enough to never annoy a deliberate stop
 		const MIN_RECORDING_MS = 1000;
-		//past this tilt the device counts as landscape when the take samples the grip.
-		//One reading decides one take, so no hysteresis band is needed
-		const GRIP_LANDSCAPE_THRESHOLD = 45;
-		//pill half-height (~15px) plus the 16px gap wanted from the screen edge when
-		//the pill is lifted onto the physical top: shared by both landscape grips
-		const PILL_EDGE_OFFSET_PX = 32;
 
 		const computedScope = {
 			//video mode hides the flip/flash controls (recording keeps the shutter as
@@ -248,38 +236,17 @@ export default {
 				const seconds = total % 60;
 				return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
 			}),
-			//the pill's whole geometry lives here so the template only binds it.
-			//The DOM stays portrait while you hold the device landscape, so "top" of
-			//the viewport is physically the side: in landscape the pill is moved onto
-			//the portrait edge that maps to the physical top and rotated so the text
-			//reads horizontally. Portrait keeps the original placement verbatim.
-			pillStyle: computed(() => {
-				if (state.pillGrip === 'landscape-neg') {
-					//portrait-top is on the physical left, so the portrait right edge is
-					//the physical top. 50% centres the pill on that edge; the offset is
-					//the pill's own half-height plus the gap wanted from the screen edge,
-					//which has no header to sit under
-					return {
-						top: '50%',
-						right: '0',
-						left: 'auto',
-						transform: `translate(calc(50% - ${PILL_EDGE_OFFSET_PX}px), -50%) rotate(90deg)`
-					};
-				}
-				if (state.pillGrip === 'landscape-pos') {
-					//mirror of the above for the opposite landscape grip
-					return {
-						top: '50%',
-						left: '0',
-						right: 'auto',
-						transform: `translate(calc(-50% + ${PILL_EDGE_OFFSET_PX}px), -50%) rotate(-90deg)`
-					};
+			//counter-rotation for the landscape fix: the portrait box (sized by the
+			//camera-landscape-fix class) is centred on the viewport and spun so its
+			//top lands on the physical top. The recording pill needs no such logic:
+			//it sits in the top bar next to the close button, portrait in every
+			//orientation like the rest of the chrome
+			layerStyle: computed(() => {
+				if (!state.uiLandscapeFix) {
+					return {};
 				}
 				return {
-					top: '16px',
-					left: '50%',
-					right: 'auto',
-					transform: 'translateX(-50%)'
+					transform: `translate(-50%, -50%) rotate(${state.uiRotation}deg)`
 				};
 			})
 		};
@@ -304,31 +271,6 @@ export default {
 			state.elapsedSeconds = 0;
 		}
 
-		//gamma is gravity-derived, so it reports the physical grip even while the
-		//orientation lock pins every system signal at portrait (verified on device:
-		//275 events / 5s at gamma -77 while the viewport read portrait-primary).
-		//It only feeds a non-reactive snapshot: the take samples that snapshot on
-		//the shutter, so rotating the device mid-recording never moves the pill
-		function _onDeviceOrientation(event) {
-			const gamma = event && typeof event.gamma === 'number' ? event.gamma : null;
-			if (gamma === null) {
-				return;
-			}
-			if (Math.abs(gamma) <= GRIP_LANDSCAPE_THRESHOLD) {
-				latestGrip = 'portrait';
-				return;
-			}
-			latestGrip = gamma < 0 ? 'landscape-neg' : 'landscape-pos';
-		}
-
-		function _trackPhysicalOrientation() {
-			window.addEventListener('deviceorientation', _onDeviceOrientation);
-		}
-
-		function _stopTrackingPhysicalOrientation() {
-			window.removeEventListener('deviceorientation', _onDeviceOrientation);
-		}
-
 		//The native camera preview runs behind the WebView (toBack), so while the modal
 		//is open the underlying app UI must not paint over it. Toggle a body/html class
 		//(styled in ModalCameraPreview.scss) that hides the routed page and blanks the
@@ -338,6 +280,43 @@ export default {
 			rootElements.forEach((element) => {
 				element.classList.toggle('camera-preview-open', visible);
 			});
+		}
+
+		//The device cannot be forced back to portrait (the camera plugin's
+		//lockAndroidOrientation only freezes the current rotation, and the OS
+		//ignores orientation locks on newer Android), so when the activity is
+		//landscape the chrome is counter-rotated 90 degrees via JS/CSS to present
+		//a portrait UI instead. Detection is read off the Screen Orientation API
+		//(screen.orientation) with a viewport fallback, never a native call.
+		function _updateLandscapeFix() {
+			if (tornDown) {
+				return;
+			}
+			if (window.innerWidth <= window.innerHeight) {
+				state.uiLandscapeFix = false;
+				state.uiRotation = 0;
+				return;
+			}
+			state.uiLandscapeFix = true;
+			//counter-rotate against the display rotation so the layer top lands on
+			//the physical top: landscape-secondary (angle 270) needs +90,
+			//everything else (-90) covers landscape-primary and the API-less
+			//fallback, where the exact grip cannot be told apart.
+			//No scaling: the portrait box (100vh x 100vw) rotated 90 degrees about
+			//its centre fills the landscape viewport exactly, so nothing clips
+			const orientation = window.screen && window.screen.orientation;
+			const angle = orientation && typeof orientation.angle === 'number' ? orientation.angle : 0;
+			state.uiRotation = angle === 270 ? 90 : -90;
+		}
+
+		function _trackViewportOrientation() {
+			window.addEventListener('resize', _updateLandscapeFix);
+			window.addEventListener('orientationchange', _updateLandscapeFix);
+		}
+
+		function _stopTrackingViewportOrientation() {
+			window.removeEventListener('resize', _updateLandscapeFix);
+			window.removeEventListener('orientationchange', _updateLandscapeFix);
 		}
 
 		async function _ensurePermission() {
@@ -449,8 +428,11 @@ export default {
 				//native layer exactly with the WebView: top below the purple strip,
 				//bottom behind the modal's opaque footer (no nav-area leak). Cover crops
 				//the stream sides instead of letterboxing (the plugin rejects aspectRatio
-				//combined with explicit width/height, so no aspectRatio here)
-				const topInsetDp = await _getTopInsetDp();
+				//combined with explicit width/height, so no aspectRatio here).
+				//Portrait only: in landscape the same subtraction surfaces as a
+				//status-bar-sized strip along the bottom edge, so the layer goes
+				//full-bleed there instead
+				const topInsetDp = window.innerWidth > window.innerHeight ? 0 : await _getTopInsetDp();
 				if (tornDown) {
 					await _forceStopPlugin();
 					return;
@@ -470,7 +452,9 @@ export default {
 					height: Math.max(1, window.innerHeight - topInsetDp),
 					aspectMode: 'cover',
 					//do not let the device rotate while the camera is open (rotating breaks
-					//the layout); the plugin restores the previous orientation on stop()
+					//the layout); the plugin freezes the current rotation and restores
+					//the previous orientation on stop(). When it froze landscape the
+					//chrome is counter-rotated to portrait via the landscape fix above
 					lockAndroidOrientation: true
 				};
 			}
@@ -989,9 +973,6 @@ export default {
 			recordingStartInProgress = true;
 			state.transitioning = true;
 			state.recording = true;
-			//freeze the pill's placement for this take: whatever the device does for
-			//the rest of the recording, the readout stays where it appeared
-			state.pillGrip = latestGrip;
 			//block back-press teardown before the native start lands, so dismiss
 			//cannot tear the modal down mid-start
 			await _setModalDismissable(false);
@@ -1303,6 +1284,8 @@ export default {
 
 		onMounted(() => {
 			_setCameraLayerVisible(true);
+			_updateLandscapeFix();
+			_trackViewportOrientation();
 			_start().catch((error) => {
 				console.log('CameraPreview.start failed: ' + error);
 				//the modal cannot open: report and tell the caller (permission
@@ -1329,9 +1312,6 @@ export default {
 				recordingListenerPromise.then((handle) => {
 					recordingListener = handle;
 				});
-				//the pill needs the physical grip: the orientation lock hides it from
-				//every other signal, so watch the accelerometer instead
-				_trackPhysicalOrientation();
 			}
 		});
 
@@ -1349,14 +1329,13 @@ export default {
 			//marking state on the destroyed modal
 			tornDown = true;
 			_setCameraLayerVisible(false);
+			_stopTrackingViewportOrientation();
 			if (flashTimer) {
 				clearTimeout(flashTimer);
 				flashTimer = null;
 			}
 			//never leave the pill timer ticking on the destroyed modal
 			_clearElapsedTimer();
-			//nor a grip listener writing state into it
-			_stopTrackingPhysicalOrientation();
 			//a handoff still in flight owns the payload dismissal: wait for it
 			//(bounded) so back-press teardown cannot steal it with listener removal
 			//while the native stop settles. Past the timeout the normal body below
@@ -1419,7 +1398,7 @@ export default {
 			flip,
 			toggleFlash,
 			dismiss,
-			closeOutline,
+			closeCircleOutline,
 			cameraReverseOutline,
 			flash,
 			flashOutline

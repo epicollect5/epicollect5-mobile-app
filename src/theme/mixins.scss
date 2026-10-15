@@ -892,19 +892,25 @@
         --background: transparent;
         background: transparent !important;
     }
-    ion-header {
-        //top bar: app purple so the white close icon is visible and the strip
-        //visually continues the native status bar painted by the camera plugin
-        ion-toolbar {
-            --background: var(--ion-color-primary);
+    //plain container, deliberately not a toolbar: toolbar shadow styles force
+    //their own fill onto slotted buttons, so the X can only match the
+    //flip/flash buttons from the same plain light-DOM context
+    .camera-topbar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        background: transparent;
+        padding-top: env(safe-area-inset-top);
+        //keep the button clear of the notch/cutout on either side
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        .close-button {
             --color: #fff;
-            ion-button {
-                //dark translucent fill keeps the close icon visible on the purple
-                --background: rgba(0, 0, 0, 0.4);
-                --color: #fff;
-                ion-icon {
-                    color: #fff;
-                }
+            margin: 16px;
+            ion-icon {
+                color: #fff;
+                font-size: 38px;
             }
         }
     }
@@ -912,15 +918,12 @@
         //transparent spacer between the bars: the native feed shows through here
         flex: 1 1 auto;
         min-height: 0;
-        //positioning root for the recording pill anchored over the feed
-        position: relative;
     }
-    //elapsed-time pill shown over the feed while recording. Appearance only: the
-    //geometry (top/left/right/transform) comes from the pillStyle computed, which
-    //also lifts the pill onto the physical top when held landscape. Colours are
-    //hardcoded (not --ion-*) so the white pill reads identically in light and dark
+    //elapsed-time pill shown next to the close button while recording, portrait in
+    //every orientation like the rest of the chrome. Static top-bar row item, so no
+    //absolute geometry is needed. Colours are hardcoded (not --ion-*) so the white
+    //pill reads identically in light and dark
     .recording-elapsed {
-        position: absolute;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -932,9 +935,6 @@
         font-weight: 600;
         //fixed-width digits so the pill does not jitter as the seconds tick
         font-variant-numeric: tabular-nums;
-        transform-origin: center;
-        //taps pass through to the feed underneath
-        pointer-events: none;
     }
     .camera-footer {
         //bottom bar: app purple, covers the bottom of the feed and the nav-button
@@ -976,7 +976,8 @@
         opacity: 0.5;
     }
     .flip-button,
-    .flash-button {
+    .flash-button,
+    .close-button {
         --background: rgba(0, 0, 0, 0.4);
         --color: #fff;
     }
