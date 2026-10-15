@@ -482,9 +482,17 @@
     --min-height: 36px !important;
     ion-label {
         margin: 8px 0;
+        //dark mode paints labels light: pin the form name to the
+        //button face (secondary contrast is black in both themes).
+        //--color, not color: the label resolves its text via
+        //color: var(--color) in its shadow DOM, which a plain
+        //color declaration cannot reach
+        --color: var(--ion-color-secondary-contrast);
+        color: var(--ion-color-secondary-contrast);
     }
     ion-icon {
         margin: 6px 0 !important;
+        color: var(--ion-color-secondary-contrast);
     }
 }
 

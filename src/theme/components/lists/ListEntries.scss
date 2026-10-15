@@ -24,6 +24,15 @@
     @include child-entries-item-button-base;
 }
 
+//dark's --color pin (dark.scss) matches this label through the outer
+//uncolored ancestor item and carries !important: outrank it (extra
+//class so this wins regardless of stylesheet order), or the name
+//stays app-text light in dark mode. Do NOT remove the dark rule to
+//fix this: it serves every other in-item label.
+body.theme-dark .list-entries-item-child ion-item.child-entries-item-button ion-label.ion-text-nowrap {
+    --color: var(--ion-color-secondary-contrast) !important;
+}
+
 .list-entries-item-child {
     @include list-entries-item-child-base;
 }

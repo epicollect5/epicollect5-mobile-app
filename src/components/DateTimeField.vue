@@ -1,6 +1,6 @@
 <template>
 	<ion-grid class="ion-no-padding datetime-field-grid">
-		<ion-row class="ion-align-items-center">
+		<ion-row class="ion-align-items-center datetime-field-row">
 			<ion-col class="datetime-button-col">
 				<ion-icon
 					class="datetime-picker-icon"
@@ -25,7 +25,7 @@
 			<ion-col size="auto">
 				<ion-icon
 					class="datetime-clear-icon"
-					:icon="closeCircleOutline"
+					:icon="closeOutline"
 					@click="clearField"
 				></ion-icon>
 			</ion-col>
@@ -47,7 +47,7 @@
 <script>
 import { reactive, computed } from '@vue/reactivity';
 import { Capacitor } from '@capacitor/core';
-import { calendarClearOutline, closeCircleOutline, timeOutline } from 'ionicons/icons';
+import { calendarClearOutline, closeOutline, timeOutline } from 'ionicons/icons';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings.js';
 import { useRootStore } from '@/stores/root-store';
@@ -397,7 +397,7 @@ export default {
 			...methods,
 			...props,
 			calendarClearOutline,
-			closeCircleOutline,
+			closeOutline,
 			timeOutline
 		};
 	}

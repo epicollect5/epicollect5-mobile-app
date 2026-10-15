@@ -7,3 +7,10 @@
 .modal-entries-filter {
     @include modal-transparent-header-base;
 }
+
+//breathing room below the From/To date picker toolbars (scoped to
+//the filter modal: the same classes also appear on the Entries page)
+.modal-entries-filter .filter-by-date-from,
+.modal-entries-filter .filter-by-date-to {
+    margin-bottom: 16px;
+}

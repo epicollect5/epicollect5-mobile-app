@@ -49,7 +49,7 @@
 		</ion-item>
 
 		<ion-toolbar class="filter-by-date-from">
-			<ion-title class="ion-text-end">
+			<ion-title class="ion-text-start">
 
 				<div>
 					<ion-label>{{ labels.from }}</ion-label>
@@ -66,7 +66,7 @@
 		</ion-toolbar>
 
 		<ion-toolbar class="filter-by-date-to">
-			<ion-title class="ion-text-end">
+			<ion-title class="ion-text-start">
 				<div>
 					<div>
 						<ion-label>{{ labels.to }}</ion-label>
@@ -302,29 +302,28 @@ export default {
 			//drop any pending title search so it cannot repopulate the fresh filters
 			clearTimeout(request_timeout);
 			const requestId = ++latestCountRequest;
-			(state.filters = { ...PARAMETERS.FILTERS_DEFAULT }),
-				setTimeout(async () => {
-					const result = await _getEntriesCount({
-							projectRef,
-							formRef,
-							parentEntryUuid,
-					filters: state.filters,
-						status: state.filters.status
-					});
-					if (requestId !== latestCountRequest) {
-						//a newer request has since been issued; ignore this stale response
-						return;
-					}
-					if (result) {
-						//re-count entries
-						state.count = result.total;
-						state.filters.oldest = result.oldest;
-						state.filters.newest = result.newest;
-						state.filters.from = result.oldest;
-						state.filters.to = result.newest;
-					}
-					state.isFetching = false;
-					}, PARAMETERS.DELAY_LONG);
+			state.filters = { ...PARAMETERS.FILTERS_DEFAULT };
+			setTimeout(async () => {
+				const result = await _getEntriesCount({
+					projectRef,
+					formRef,
+					parentEntryUuid,
+					filters: state.filters
+				});
+				if (requestId !== latestCountRequest) {
+					//a newer request has since been issued; ignore this stale response
+					return;
+				}
+				if (result) {
+					//re-count entries
+					state.count = result.total;
+					state.filters.oldest = result.oldest;
+					state.filters.newest = result.newest;
+					state.filters.from = result.oldest;
+					state.filters.to = result.newest;
+				}
+				state.isFetching = false;
+			}, PARAMETERS.DELAY_LONG);
 			},
 		filterByDate () {
 			//v-model updates when picking a date in the datepicker

@@ -1,5 +1,28 @@
 @use '@/theme/mixins' as *;
 
+//single-control wrapper: the bordered row reads as one input,
+//the button and the clear icon flush against its edges
+.datetime-field-row {
+    //visible on white without glaring; dark surfaces get their own
+    //value in the override below (same hardcoded-per-theme pattern
+    //as the sign-in buttons)
+    border: 1px solid #8c8c8c;
+    border-radius: 8px;
+    //clip the button's square corners to the rounded border
+    overflow: hidden;
+    //ion-button ships 4px vertical / 2px horizontal host margins:
+    //zero them so it sits flush inside the border (grid cols are
+    //already padding-free via ion-no-padding)
+    .datetime-picker-button {
+        margin: 0;
+        //only --border-radius reaches the shadow-DOM native button,
+        //so per-corner removal is impossible: zero it and let the
+        //row's own 8px clip round the outer corners, leaving the
+        //button's right edge square against the clear icon
+        --border-radius: 0;
+    }
+}
+
 .datetime-button-col {
     position: relative;
     //the row wraps by default: without this the col's min-content width
@@ -52,14 +75,21 @@
     text-overflow: ellipsis;
 }
 
-//tappable clear glyph sitting next to the 38px picker button: pin a 36x36
-//hit area instead of the stock size="large" (32px)
+//clear control next to the 38px picker button: the tap box stays
+//36px, only the glyph is 24px. Needed because the icon svg always
+//fills 100% of the host, so font-size alone cannot shrink it: with
+//the host's forced content-box, 24px + 6px padding = 36px tap box
 .datetime-clear-icon {
-    font-size: 36px;
-    width: 36px;
-    height: 36px;
+    width: 24px;
+    height: 24px;
+    padding: 6px;
     cursor: pointer;
     vertical-align: middle;
+}
+
+body.theme-dark .datetime-field-row {
+    //lighter than the #1e1e1e surface so it reads in dark mode
+    border-color: #8e8e93;
 }
 
 .datetime-web-input {
