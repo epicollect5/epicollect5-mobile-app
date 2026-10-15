@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 98.5.4 - build 9854
+
+ - The in-app camera now always presents a portrait UI: when the device is held landscape the chrome is counter-rotated 90 degrees via CSS, the native layer goes full-bleed so no status-sized strip is left over, and the header is a transparent floating close button matching the flash and flip buttons.
+ - The video recording timer now sits fixed next to the close button in every orientation instead of moving with the device tilt; the accelerometer tracking is gone.
+ - The entries filter keeps its date input out of flow so the labels stay centred.
+
 # 98.5.3 - build 9853
 
  - Date and time fields are now a single bordered control with no inner padding; the picker button merges into the row edge and the border follows the light and dark themes.
