@@ -51,8 +51,8 @@
 		<ion-toolbar class="filter-by-date-from">
 			<ion-title class="ion-text-start">
 
-				<div>
-					<ion-label>{{ labels.from }}</ion-label>
+				<div class="filter-date-row">
+					<ion-label class="filter-date-label">{{ labels.from }}</ion-label>
 					<date-time-field
 						type="date"
 						:answer="state.filters.from"
@@ -67,18 +67,16 @@
 
 		<ion-toolbar class="filter-by-date-to">
 			<ion-title class="ion-text-start">
-				<div>
-					<div>
-						<ion-label>{{ labels.to }}</ion-label>
-						<date-time-field
-							type="date"
-							:answer="state.filters.to"
-							:min="state.filters.oldest"
-							:max="state.filters.newest"
-							@change="onToChange"
-							@clear="onToClear"
-						></date-time-field>
-					</div>
+				<div class="filter-date-row">
+					<ion-label class="filter-date-label">{{ labels.to }}</ion-label>
+					<date-time-field
+						type="date"
+						:answer="state.filters.to"
+						:min="state.filters.oldest"
+						:max="state.filters.newest"
+						@change="onToChange"
+						@clear="onToClear"
+					></date-time-field>
 				</div>
 			</ion-title>
 		</ion-toolbar>

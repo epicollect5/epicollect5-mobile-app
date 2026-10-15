@@ -8,9 +8,42 @@
     @include modal-transparent-header-base;
 }
 
-//breathing room below the From/To date picker toolbars (scoped to
-//the filter modal: the same classes also appear on the Entries page)
+//label + picker on one row again (From: {picker} X): the field flexes
+//to fill whatever the short label leaves
+.modal-entries-filter .filter-date-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-entries-filter .filter-date-row .filter-date-label {
+    //filter-by-date-base adds a right margin: the row gap covers it
+    margin-right: 0;
+    //fixed label width (fits "Desde", the longest From/To across
+    //languages) so both pickers start at the same x and match
+    flex: 0 0 72px;
+}
+
+.modal-entries-filter .filter-date-row date-time-field {
+    flex: 1;
+    min-width: 0;
+}
+
+//tight rhythm between the From/To rows (scoped to the filter modal).
+//ion-toolbar enforces a 56px min-height around the ~40px control:
+//collapse it so only this margin separates the rows
 .modal-entries-filter .filter-by-date-from,
 .modal-entries-filter .filter-by-date-to {
-    margin-bottom: 16px;
+    margin-bottom: 8px;
+    --min-height: 0;
+}
+
+//no per-field X here: the modal reset button clears the dates,
+//so hide the clear icon and reclaim its column gap
+.modal-entries-filter .datetime-clear-icon {
+    display: none;
+}
+
+.modal-entries-filter .datetime-button-col {
+    padding-right: 0;
 }
