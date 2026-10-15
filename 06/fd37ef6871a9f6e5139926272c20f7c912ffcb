@@ -1,0 +1,16 @@
+src/components/modals/ModalEntriesFilter.vue
+  h_2231ff2aa93473 54-55,70-79
+src/theme/components/modals/ModalEntriesFilter.scss
+  h_2231ff2aa93473 11-34,37-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "06fd37ef6871a9f6e5139926272c20f7c912ffcb",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
