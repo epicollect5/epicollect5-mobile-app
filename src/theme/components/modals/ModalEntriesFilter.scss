@@ -13,6 +13,9 @@
 .modal-entries-filter .filter-date-row {
     display: flex;
     align-items: center;
+    //the label+picker pair hugs the right end as one unit: label
+    //immediately left of its button, never stranded far left
+    justify-content: flex-end;
     gap: 8px;
 }
 
@@ -20,13 +23,27 @@
     //filter-by-date-base adds a right margin: the row gap covers it
     margin-right: 0;
     //fixed label width (fits "Desde", the longest From/To across
-    //languages) so both pickers start at the same x and match
+    //languages) so both pickers start at the same x and match;
+    //text right-aligned so it hugs its button
     flex: 0 0 72px;
+    text-align: right;
 }
 
-.modal-entries-filter .filter-date-row date-time-field {
-    flex: 1;
+.modal-entries-filter .filter-date-row > .datetime-field-grid {
+    //compact picker at the right end of the row. NOTE: target
+    //the rendered ion-grid root, not the date-time-field tag: Vue
+    //replaces the tag with the component root, so the tag selector
+    //matches nothing in production (grid falls back to full width).
+    //Margins pinned to 0: the row's flex-end does the pushing, and
+    //this neutralizes any auto margins from older global grid rules.
+    //Shrink allowed (0 1, not 0 0): on ~320px screens the 320px
+    //basis must yield, or flex-end pushes the labels off-screen
+    flex: 0 1 auto;
+    width: 320px;
+    max-width: 100%;
     min-width: 0;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 //tight rhythm between the From/To rows (scoped to the filter modal).
