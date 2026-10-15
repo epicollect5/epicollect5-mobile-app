@@ -1,0 +1,28 @@
+src/components/DateTimeField.vue
+  h_2231ff2aa93473 28,50,400
+  h_2231ff2aa93473 3
+src/components/modals/ModalEntriesFilter.vue
+  h_2231ff2aa93473 52,69
+  h_2231ff2aa93473 305-326,389
+src/theme/components/lists/ListEntries.scss
+  h_2231ff2aa93473 27-35
+src/theme/components/modals/ModalEntriesFilter.scss
+  h_2231ff2aa93473 10-16
+src/theme/components/ui/DateTimeField.scss
+  h_2231ff2aa93473 3-25,78-81,83-85,90-94
+src/theme/core.scss
+  h_2231ff2aa93473 528-534,538
+src/theme/mixins.scss
+  h_2231ff2aa93473 485-491,495
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "90817b4426b903d6abb0fce95ff0365773ca23d9",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
