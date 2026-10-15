@@ -1,5 +1,11 @@
 ## Release Notes
 
+# 98.5.3 - build 9853
+
+ - Date and time fields are now a single bordered control with no inner padding; the picker button merges into the row edge and the border follows the light and dark themes.
+ - The entries filter now lines the From and To pickers up next to their labels in compact right-aligned rows of matching width; the per-field clear icons are gone since the reset button covers clearing.
+ - The child-form button in the entries list keeps its dark text on the green button in dark mode instead of flipping light.
+
 # 98.5.2 - build 9852
 
  - In-app camera video recording now shows the elapsed time (mm:ss) in a pill over the live feed; when the recording is started in landscape the pill is moved onto the physical top edge so it stays readable.
