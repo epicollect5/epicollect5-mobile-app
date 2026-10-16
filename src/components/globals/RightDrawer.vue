@@ -293,7 +293,6 @@ import {useDBStore} from '@/stores/db-store';
 import {useBookmarkStore} from '@/stores/bookmark-store';
 import {STRINGS} from '@/config/strings';
 import {utilsService} from '@/services/utilities/utils-service';
-import {Share} from '@capacitor/share';
 import {Capacitor} from '@capacitor/core';
 
 import {
@@ -367,7 +366,10 @@ export default {
         const projectSlug = projectModel.getSlug();
 
         try {
-          await exportService.sendToDevice(projectRef, projectSlug);
+          const exportedPath = await exportService.sendToDevice(projectRef, projectSlug);
+          if (!exportedPath) {
+            return;
+          }
 
           const documentsFolder = utilsService.getPlatformDocumentsFolder();
           //Warn users and show the download folder according to the platform
@@ -565,18 +567,6 @@ export default {
           name: PARAMETERS.ROUTES.ENTRIES_UPLOAD
         });
         menuController.close();
-      },
-      async invite() {
-        try {
-          await Share.share({
-            title: 'Join ' + projectModel.getProjectName() + ' on Epicollect5',
-            text: 'Tap the link on your Android or iOS device to join',
-            url: rootStore.serverUrl + '/open/project/' + projectModel.getSlug(),
-            dialogTitle: 'Join ' + projectModel.getProjectName() + ' on Epicollect5'
-          });
-        } catch (error) {
-          console.log('User cancelled shared action');
-        }
       }
     };
 

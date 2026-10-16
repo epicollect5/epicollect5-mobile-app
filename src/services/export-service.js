@@ -16,6 +16,11 @@ import {notificationService} from '@/services/notification-service';
 import {rollbarService} from '@/services/utilities/rollbar-service';
 import {deleteFileService} from '@/services/filesystem/delete-file-service';
 
+//Single in-flight lock for both export pipelines: they share progressExport
+//state and archive helpers, and concurrent runs clobber each other's files
+//(same zip filename / same output dir) and collide on the native share sheet
+let isExporting = false;
+
 export const exportService = {
 
     async exportHierarchyEntries(projectRef, directory = Directory.Documents) {
@@ -295,6 +300,11 @@ export const exportService = {
         }
     },
     async exportEntriesZipArchive(projectRef, projectSlug) {
+        //Ignore double taps while an export is already running
+        if (isExporting) {
+            return PARAMETERS.SHARE_STATUS.NOT_SHARED;
+        }
+        isExporting = true;
         const rootStore = useRootStore();
         const language = rootStore.language;
         const projectName = projectModel.getProjectName();
@@ -372,6 +382,10 @@ export const exportService = {
                 if (msg.includes('cancel')) {
                     // User dismissed — not an error
                     shareStatus = PARAMETERS.SHARE_STATUS.NOT_SHARED;
+                } else if (msg.includes('sharing is in progress') || msg.includes('already sharing')) {
+                    //Native share sheet already open (e.g. overlapping exports
+                    //or share from elsewhere): benign, not an error
+                    shareStatus = PARAMETERS.SHARE_STATUS.NOT_SHARED;
                 } else {
                     // noinspection ExceptionCaughtLocallyJS
                     throw shareError;
@@ -400,10 +414,16 @@ export const exportService = {
             }).catch((error) => {
                 console.log('No zip file to remove:', error);
             });
+            isExporting = false;
         }
     },
 
     async sendToDevice(projectRef, projectSlug) {
+        //Ignore double taps while an export is already running
+        if (isExporting) {
+            return null;
+        }
+        isExporting = true;
         const rootStore = useRootStore();
         const language = rootStore.language;
         const documentsDirectory = Directory.Documents;
@@ -468,6 +488,7 @@ export const exportService = {
                     // Log the cleanup error, but don't re-throw as the original export failed anyway
                 }
             }
+            isExporting = false;
         }
     }
 };

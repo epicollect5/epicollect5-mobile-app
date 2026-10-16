@@ -182,4 +182,35 @@ describe('exportService.sendToDevice', () => {
 
         expect(mockHide).toHaveBeenCalled();
     });
+
+    it('should ignore a concurrent sendToDevice call while one is already in progress', async () => {
+        let resolveHierarchy;
+        exportService.exportHierarchyEntries.mockImplementationOnce(() => new Promise((resolve) => {
+            resolveHierarchy = resolve;
+        }));
+
+        const firstPromise = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        await flushPromises();
+
+        const secondResult = await exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(secondResult).toBeNull();
+        expect(deleteFileService.removeDirectoryIfExists).toHaveBeenCalledTimes(1);
+
+        resolveHierarchy();
+        vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
+        const firstResult = await firstPromise;
+        expect(firstResult).toBe(MOCK_EXPORT_PATH);
+    });
+
+    it('should allow a new sendToDevice after a failure', async () => {
+        vi.spyOn(exportService, 'exportHierarchyEntries')
+            .mockRejectedValueOnce(new Error('export failed'));
+
+        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
+            .rejects.toThrow('Unknown error');
+
+        const retry = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
+        await expect(retry).resolves.toBe(MOCK_EXPORT_PATH);
+    });
 });

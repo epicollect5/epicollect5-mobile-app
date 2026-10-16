@@ -10,6 +10,7 @@ import {Share} from '@capacitor/share';
 import {utilsService} from '@/services/utilities/utils-service';
 import {projectModel} from '@/models/project-model';
 import {useRootStore} from '@/stores/root-store';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 import {PARAMETERS} from '@/config';
 
 vi.mock('@/stores/root-store');
@@ -227,5 +228,43 @@ describe('exportService.exportEntriesZipArchive', () => {
 
         expect(result).toBe(false);
         expect(notificationService.hideProgressExportModal).toHaveBeenCalled();
+    });
+
+    it('should treat "sharing is in progress" as dismissed, not an error', async () => {
+        Share.share.mockRejectedValueOnce(new Error('Can\'t share while sharing is in progress'));
+
+        const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+
+        expect(result).toBe(PARAMETERS.SHARE_STATUS.NOT_SHARED);
+        expect(notificationService.showAlert).not.toHaveBeenCalled();
+        expect(rollbarService.critical).not.toHaveBeenCalled();
+    });
+
+    it('should ignore a concurrent archive export while one is already in progress', async () => {
+        let resolveShare;
+        Share.share.mockImplementationOnce(() => new Promise((resolve) => {
+            resolveShare = resolve;
+        }));
+
+        const firstPromise = exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        await vi.waitFor(() => expect(Share.share).toHaveBeenCalledTimes(1));
+
+        const secondResult = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(secondResult).toBe(PARAMETERS.SHARE_STATUS.NOT_SHARED);
+        expect(CapacitorZip.zip).toHaveBeenCalledTimes(1);
+
+        resolveShare({});
+        const firstResult = await firstPromise;
+        expect(firstResult).toBe(PARAMETERS.SHARE_STATUS.SHARED);
+    });
+
+    it('should allow a new export after a failed share', async () => {
+        Share.share.mockRejectedValueOnce(new Error('Unexpected error during sharing'));
+
+        const failed = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(failed).toBe(false);
+
+        const retry = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(retry).toBe(PARAMETERS.SHARE_STATUS.SHARED);
     });
 });
