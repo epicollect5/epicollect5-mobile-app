@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 98.5.5 - build 9855
+
+ - The in-app camera now focuses where you tap: tapping the viewfinder re-meters focus and exposure at that point in portrait and landscape, and tapping again re-focuses elsewhere.
+
 # 98.5.4 - build 9854
 
  - The in-app camera now always presents a portrait UI: when the device is held landscape the chrome is counter-rotated 90 degrees via CSS, the native layer goes full-bleed so no status-sized strip is left over, and the header is a transparent floating close button matching the flash and flip buttons.
