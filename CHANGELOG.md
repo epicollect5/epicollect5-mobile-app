@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 98.5.6 - build 9856
+
+ - The Android splash screen now always shows the logo on its white circle in dark mode: the splash icon and its white backing are pinned explicitly on Android 12+, so devices that dropped the icon background (e.g. the Galaxy S25) render the same as the rest.
+
 # 98.5.5 - build 9855
 
  - The in-app camera now focuses where you tap: tapping the viewfinder re-meters focus and exposure at that point in portrait and landscape, and tapping again re-focuses elsewhere.
