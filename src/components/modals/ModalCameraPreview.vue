@@ -25,7 +25,10 @@
 			</ion-icon>
 		</ion-button>
 	</div>
-	<div class="camera-viewport">
+	<div
+		class="camera-viewport"
+		@click="onViewportTap($event)"
+	>
 	</div>
 	<div class="camera-footer">
 		<div class="camera-controls">
@@ -543,6 +546,41 @@ export default {
 				console.log('CameraPreview.setFlashMode failed: ' + error);
 			} finally {
 				flashInProgress = false;
+			}
+		}
+
+		//tap-to-focus: a tap on the viewfinder re-meters AF+AE at that point
+		//(coupled one-shot natively, then back to continuous). Viewport-only
+		//on purpose: the controls live in the topbar/footer siblings, so their
+		//taps never reach this handler and need no extra filtering
+		async function onViewportTap(event) {
+			if (!state.started || state.capturing || state.transitioning || state.handoff || tornDown) {
+				return;
+			}
+			//v1 portrait only: the landscape chrome is counter-rotated, so
+			//screen coords would need inverse-rotation mapping — skip rather
+			//than focus the wrong point
+			if (state.uiLandscapeFix) {
+				return;
+			}
+			if (!event || !event.currentTarget || typeof event.clientX !== 'number' || typeof event.clientY !== 'number') {
+				return;
+			}
+			const rect = event.currentTarget.getBoundingClientRect();
+			if (!rect || rect.width <= 0 || rect.height <= 0) {
+				return;
+			}
+			//the viewport is a middle slice of the full-window native feed (the
+			//footer covers the bottom), so map via the window, not the viewport
+			//rect — the status-bar inset error (~3%) sits inside metering tolerance
+			let x = event.clientX / window.innerWidth;
+			let y = event.clientY / window.innerHeight;
+			x = Math.min(1, Math.max(0, x));
+			y = Math.min(1, Math.max(0, y));
+			try {
+				await CameraPreview.setFocus({ x, y });
+			} catch (error) {
+				console.log('CameraPreview.setFocus failed: ' + error);
 			}
 		}
 
@@ -1397,6 +1435,7 @@ export default {
 			capture,
 			flip,
 			toggleFlash,
+			onViewportTap,
 			dismiss,
 			closeCircleOutline,
 			cameraReverseOutline,

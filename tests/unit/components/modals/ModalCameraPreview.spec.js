@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => {
 		capture: vi.fn(),
 		deleteFile: vi.fn(),
 		flip: vi.fn(),
+		setFocus: vi.fn(),
 		getSupportedFlashModes: vi.fn(),
 		getFlashMode: vi.fn(),
 		setFlashMode: vi.fn(),
@@ -106,6 +107,7 @@ function grantPermissions({ camera = 'granted', microphone = 'granted', flashMod
 	mocks.cameraPreview.capture.mockRejectedValue(new Error('not capturing in this test'));
 	mocks.cameraPreview.deleteFile.mockResolvedValue({ success: true });
 	mocks.cameraPreview.flip.mockResolvedValue();
+	mocks.cameraPreview.setFocus.mockResolvedValue();
 	mocks.cameraPreview.getSupportedFlashModes.mockResolvedValue({ result: flashModes });
 	mocks.cameraPreview.getFlashMode.mockResolvedValue({ flashMode: 'off' });
 	mocks.cameraPreview.setFlashMode.mockResolvedValue();
@@ -431,6 +433,95 @@ describe('ModalCameraPreview component', () => {
 		expect(mocks.cameraPreview.setFlashMode).toHaveBeenCalledTimes(2);
 		expect(mocks.cameraPreview.setFlashMode).toHaveBeenLastCalledWith({ flashMode: 'off' });
 		expect(wrapper.vm.state.flashMode).toBe('off');
+	});
+
+	it('focuses where the viewport is tapped in portrait', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		expect(wrapper.vm.state.started).toBe(true);
+
+		//768x1024 portrait viewport (beforeEach): a centre tap maps to ~0.5/0.5
+		await wrapper.vm.onViewportTap({
+			clientX: 384,
+			clientY: 512,
+			currentTarget: { getBoundingClientRect: () => ({ width: 768, height: 800, left: 0, top: 100 }) }
+		});
+		expect(mocks.cameraPreview.setFocus).toHaveBeenCalledWith({ x: 0.5, y: 0.5 });
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('clamps viewport taps to the normalized 0-1 range', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		await wrapper.vm.onViewportTap({
+			clientX: -50,
+			clientY: 5000,
+			currentTarget: { getBoundingClientRect: () => ({ width: 768, height: 800, left: 0, top: 100 }) }
+		});
+		expect(mocks.cameraPreview.setFocus).toHaveBeenCalledWith({ x: 0, y: 1 });
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('ignores viewport taps while busy, mid-handoff or in landscape', async () => {
+		grantPermissions();
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		const tap = {
+			clientX: 384,
+			clientY: 512,
+			currentTarget: { getBoundingClientRect: () => ({ width: 768, height: 800, left: 0, top: 100 }) }
+		};
+
+		//not started: dropped, never reaches the bridge
+		wrapper.vm.state.started = false;
+		await wrapper.vm.onViewportTap(tap);
+		expect(mocks.cameraPreview.setFocus).not.toHaveBeenCalled();
+
+		//capturing / handoff: dropped (native ignores them anyway)
+		wrapper.vm.state.started = true;
+		wrapper.vm.state.capturing = true;
+		await wrapper.vm.onViewportTap(tap);
+		expect(mocks.cameraPreview.setFocus).not.toHaveBeenCalled();
+		wrapper.vm.state.capturing = false;
+		wrapper.vm.state.handoff = true;
+		await wrapper.vm.onViewportTap(tap);
+		expect(mocks.cameraPreview.setFocus).not.toHaveBeenCalled();
+		wrapper.vm.state.handoff = false;
+
+		//landscape fix: skipped rather than focusing the wrong point
+		wrapper.vm.state.uiLandscapeFix = true;
+		await wrapper.vm.onViewportTap(tap);
+		expect(mocks.cameraPreview.setFocus).not.toHaveBeenCalled();
+
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('swallows a focus failure without touching the shutter state', async () => {
+		grantPermissions();
+		mocks.cameraPreview.setFocus.mockRejectedValue(new Error('no AF unit'));
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+
+		await wrapper.vm.onViewportTap({
+			clientX: 100,
+			clientY: 200,
+			currentTarget: { getBoundingClientRect: () => ({ width: 768, height: 800, left: 0, top: 100 }) }
+		});
+		expect(mocks.cameraPreview.setFocus).toHaveBeenCalled();
+		//fixed-focus devices: no-op, the modal stays usable for capture
+		expect(wrapper.vm.state.started).toBe(true);
+		expect(wrapper.vm.state.capturing).toBe(false);
+
+		wrapper.unmount();
+		await flushPromises();
 	});
 
 	it('ignores a stale rear-camera flash read that lands after a front flip during restart', async () => {
