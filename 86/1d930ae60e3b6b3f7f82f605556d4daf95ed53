@@ -1,0 +1,20 @@
+android/app/src/main/res/values-night-v31/styles.xml
+  h_2231ff2aa93473 6-9,13
+android/app/src/main/res/values-night-v33/styles.xml
+  h_2231ff2aa93473 4,8
+android/app/src/main/res/values-v31/styles.xml
+  h_2231ff2aa93473 7-12
+android/app/src/main/res/values-v33/styles.xml
+  h_2231ff2aa93473 7-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "861d930ae60e3b6b3f7f82f605556d4daf95ed53",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
