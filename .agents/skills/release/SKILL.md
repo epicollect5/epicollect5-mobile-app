@@ -1,12 +1,13 @@
 ---
 name: release
-description: Cut a mobile-app release — bump version across native + web config and prepend changelog release notes
+description: Cut a mobile-app release — bump version across native + web config, prepend changelog release notes, and attach the signed APK to the GitHub Release
 ---
 
 # Release
 
 Cut a new release. Given an optional release number, determine the version, bump it
-across the version files, and prepend release notes to `CHANGELOG.md`.
+across the version files, prepend release notes to `CHANGELOG.md`, then verify the
+production Android bundle and attach the signed APK to the GitHub Release.
 
 ## Inputs
 
@@ -114,6 +115,51 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
    - Ask whether to commit (`chore: release <new> (build <build>)`) and create an
      annotated tag (`<new>`, e.g. `98.2.9`, matching the repo's `X.Y.Z` tag
      history). Do not commit or tag unless confirmed.
+   - The tag must be pushed to origin: the push is what makes
+     `.github/workflows/releases.yml` create the GitHub Release (with the changelog
+     notes) that step 8 attaches the APK to.
+
+8. Build, verify and attach the APK  (after the tag is pushed and the Release exists)
+
+   a. Build the production bundle — it MUST come from `native:prod`:
+
+        npm run native:prod      # VITE_MODE=WEBVIEW VITE_DEBUG= VITE_BYPASS_UNIQUENESS= vite build + cap copy
+        npx cap open android     # open Android Studio (does not rebuild)
+
+      Do NOT use `npm run android:open` or `npm run android:build`: they do not clear
+      `VITE_DEBUG` / `VITE_BYPASS_UNIQUENESS`, so a dev `.env.local` (`VITE_DEBUG=1`)
+      ships debug helpers and a non-production server URL.
+      If Gradle complains that `android/capacitor-cordova-android-plugins/` is missing,
+      run `npx cap sync android` (that dir is gitignored; `cap copy` does not create it).
+
+   b. Gate the bundle — never proceed on failure:
+
+        node scripts/check-release-bundle.js
+
+      It fails when the packaged assets are not a `native:prod` build. Fix by rebuilding
+      with `npm run native:prod`.
+
+   c. Sign in Android Studio: Build -> Generate Signed Bundle / APK -> APK (release)
+      with the release keystore, saving to `android/app/release/<build>.apk`
+      (e.g. `9856.apk`). Rename `app-release.apk` to `<build>.apk` if needed.
+
+   d. Re-run the gate on the assets that were packaged, then check the signature:
+
+        node scripts/check-release-bundle.js
+        apksigner verify --print-certs android/app/release/<build>.apk
+
+   e. Wait for the Release created by `.github/workflows/releases.yml` (retry until it
+      exists):
+
+        gh release view <tag>
+
+   f. With the user's confirmation, upload the APK onto the Release:
+
+        gh release upload <tag> android/app/release/<build>.apk --clobber
+
+   g. Verify the asset is attached:
+
+        gh release view <tag> --json assets
 
 ## Constraints (AGENTS.md)
 
@@ -121,3 +167,6 @@ across the version files, and prepend release notes to `CHANGELOG.md`.
 - Follow existing architecture/conventions.
 - System risk check: Android `versionCode` and iOS `CURRENT_PROJECT_VERSION` must
   stay equal to the same build number; a mismatch breaks store uploads.
+- The release bundle MUST be built with `npm run native:prod`; `android:open` /
+  `android:build` leave the debug flags at the dev `.env.local` value and would ship
+  debug helpers. `scripts/check-release-bundle.js` guards this.

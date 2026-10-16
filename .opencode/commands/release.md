@@ -1,5 +1,5 @@
 ---
-description: Cut a mobile-app release — bump version across native + web config and prepend changelog release notes
+description: Cut a mobile-app release — bump version across native + web config, prepend changelog release notes, and attach the signed APK to the GitHub Release
 agent: build
 ---
 
