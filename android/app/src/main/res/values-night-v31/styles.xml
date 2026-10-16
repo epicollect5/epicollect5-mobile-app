@@ -3,14 +3,14 @@
     <!-- Night variant (API 31+): the system splash uses the background COLOR,
          not the branded PNG, so Android 12+ gets a dark splash in dark mode.
          API 29-30 (Android 10-11) keep the original white branded drawable.
-         The icon is pinned explicitly with a forced white backing: without
-         windowSplashScreenIconBackgroundColor the system may drop the adaptive
-         icon background on some builds (e.g. Galaxy S25 shows the bare logo
-         while an A33 on the same OS keeps the white circle). -->
+         The icon is a dedicated 1024px asset (logo inside the mask safe zone,
+         white background baked in) with a forced white backing: relying on the
+         launcher adaptive icon broke on some builds (e.g. Galaxy S25 showed
+         the bare logo while an A33 on the same OS kept the white circle). -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@color/splash_night</item>
         <item name="android:windowSplashScreenBackground">@color/splash_night</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
         <item name="android:windowSplashScreenIconBackgroundColor">@color/white</item>
     </style>
 </resources>
