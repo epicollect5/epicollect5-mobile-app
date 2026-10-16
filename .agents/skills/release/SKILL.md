@@ -143,10 +143,15 @@ production Android bundle and attach the signed APK to the GitHub Release.
       with the release keystore, saving to `android/app/release/<build>.apk`
       (e.g. `9856.apk`). Rename `app-release.apk` to `<build>.apk` if needed.
 
-   d. Re-run the gate on the assets that were packaged, then check the signature:
+   d. Gate the signed APK itself — this is the check that stops an APK built from a
+      `npm run native:debug` (or `android:open`) copy from being uploaded — then check
+      the signature:
 
-        node scripts/check-release-bundle.js
+        node scripts/check-release-bundle.js android/app/release/<build>.apk
         apksigner verify --print-certs android/app/release/<build>.apk
+
+      Never upload when the gate fails: rebuild with `npm run native:prod`, re-sign and
+      re-gate.
 
    e. Wait for the Release created by `.github/workflows/releases.yml` (retry until it
       exists):
@@ -167,6 +172,7 @@ production Android bundle and attach the signed APK to the GitHub Release.
 - Follow existing architecture/conventions.
 - System risk check: Android `versionCode` and iOS `CURRENT_PROJECT_VERSION` must
   stay equal to the same build number; a mismatch breaks store uploads.
-- The release bundle MUST be built with `npm run native:prod`; `android:open` /
-  `android:build` leave the debug flags at the dev `.env.local` value and would ship
-  debug helpers. `scripts/check-release-bundle.js` guards this.
+- The release bundle MUST be built with `npm run native:prod`; `native:debug`,
+  `android:open` and `android:build` leave the debug flags at the dev `.env.local` value
+  and would ship debug helpers. `scripts/check-release-bundle.js` guards this — run it
+  against the signed APK before uploading.
