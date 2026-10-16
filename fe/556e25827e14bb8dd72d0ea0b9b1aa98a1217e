@@ -1,0 +1,16 @@
+scripts/check-release-bundle.js
+  h_2231ff2aa93473 1-47
+tests/unit/release-build.spec.js
+  h_2231ff2aa93473 1-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fe556e25827e14bb8dd72d0ea0b9b1aa98a1217e",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
