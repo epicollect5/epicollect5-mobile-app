@@ -1,5 +1,9 @@
 ## Release Notes
 
+# 98.5.7 - build 9857
+
+ - The Android splash screen now uses a dedicated high-resolution logo: the icon is a 1024px asset with the mark inside the mask safe zone on a white background, so it renders sharp and identical on every device in light and dark mode.
+
 # 98.5.6 - build 9856
 
  - The Android splash screen now always shows the logo on its white circle in dark mode: the splash icon and its white backing are pinned explicitly on Android 12+, so devices that dropped the icon background (e.g. the Galaxy S25) render the same as the rest.

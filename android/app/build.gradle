@@ -13,8 +13,8 @@ android {
         applicationId "uk.ac.imperial.epicollect.five"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 9856
-        versionName "98.5.6"
+        versionCode 9857
+        versionName "98.5.7"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
