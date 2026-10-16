@@ -469,7 +469,7 @@ describe('ModalCameraPreview component', () => {
 		await flushPromises();
 	});
 
-	it('ignores viewport taps while busy, mid-handoff or in landscape', async () => {
+	it('ignores viewport taps while busy or mid-handoff', async () => {
 		grantPermissions();
 		const wrapper = shallowMount(ModalCameraPreview);
 		await flushPromises();
@@ -495,10 +495,24 @@ describe('ModalCameraPreview component', () => {
 		expect(mocks.cameraPreview.setFocus).not.toHaveBeenCalled();
 		wrapper.vm.state.handoff = false;
 
-		//landscape fix: skipped rather than focusing the wrong point
-		wrapper.vm.state.uiLandscapeFix = true;
-		await wrapper.vm.onViewportTap(tap);
-		expect(mocks.cameraPreview.setFocus).not.toHaveBeenCalled();
+		wrapper.unmount();
+		await flushPromises();
+	});
+
+	it('focuses viewport taps in landscape too (rotation spins chrome, not coords)', async () => {
+		grantPermissions();
+		Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
+		Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
+		const wrapper = shallowMount(ModalCameraPreview);
+		await flushPromises();
+		expect(wrapper.vm.state.uiLandscapeFix).toBe(true);
+
+		await wrapper.vm.onViewportTap({
+			clientX: 512,
+			clientY: 384,
+			currentTarget: { getBoundingClientRect: () => ({ width: 1024, height: 768, left: 0, top: 0 }) }
+		});
+		expect(mocks.cameraPreview.setFocus).toHaveBeenCalledWith({ x: 0.5, y: 0.5 });
 
 		wrapper.unmount();
 		await flushPromises();

@@ -557,12 +557,10 @@ export default {
 			if (!state.started || state.capturing || state.transitioning || state.handoff || tornDown) {
 				return;
 			}
-			//v1 portrait only: the landscape chrome is counter-rotated, so
-			//screen coords would need inverse-rotation mapping — skip rather
-			//than focus the wrong point
-			if (state.uiLandscapeFix) {
-				return;
-			}
+			//no landscape special-casing: the uiLandscapeFix rotation spins the
+			//DOM chrome, not the coordinate space — clientX/clientY stay
+			//viewport-relative and the native layer is full-bleed in both
+			//orientations, so window mapping holds in either grip
 			if (!event || !event.currentTarget || typeof event.clientX !== 'number' || typeof event.clientY !== 'number') {
 				return;
 			}
