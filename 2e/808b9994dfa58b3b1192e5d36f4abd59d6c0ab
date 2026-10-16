@@ -1,0 +1,20 @@
+src/components/globals/RightDrawer.vue
+  h_2231ff2aa93473 369-372
+src/services/export-service.js
+  h_2231ff2aa93473 19-23,303-307,385-388,417,422-426,491
+tests/unit/services/export-service/export-entries.spec.js
+  h_2231ff2aa93473 13,232-269
+tests/unit/services/export-service/send-to-device.spec.js
+  h_2231ff2aa93473 185-215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2e808b9994dfa58b3b1192e5d36f4abd59d6c0ab",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
