@@ -4,6 +4,12 @@
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
         <item name="android:windowSplashScreenBackground">@color/white</item>
+        <!-- Pin the splash icon explicitly: the launcher adaptive icon, with a
+             forced white backing. Without the backing, the system may drop the
+             icon background on some builds (e.g. Galaxy S25 renders the logo
+             with no white circle while an A33 on the same OS keeps it). -->
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/white</item>
         <item name="android:windowSplashScreenBehavior">icon_preferred</item>
     </style>
 </resources>

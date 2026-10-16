@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Night variant for API 33+: keeps the behavior item from values-v33. -->
+    <!-- Night variant for API 33+: keeps the behavior item from values-v33.
+         Icon pinned with a forced white backing, see values-night-v31. -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@color/splash_night</item>
         <item name="android:windowSplashScreenBackground">@color/splash_night</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/white</item>
         <item name="android:windowSplashScreenBehavior">icon_preferred</item>
     </style>
 </resources>
