@@ -542,6 +542,16 @@ export default {
         return scope.ModalBookmarkAdd.present();
       },
       async removeBookmark() {
+        //ask user confirmation
+        const confirmed = await notificationService.confirmSingle(
+            labels.are_you_sure,
+            labels.remove_bookmark
+        );
+
+        if (!confirmed) {
+          return false;
+        }
+
         // Retrieve bookmarkId from current bookmark
         const bookmarkId = bookmarkStore.bookmarkId;
         try {
