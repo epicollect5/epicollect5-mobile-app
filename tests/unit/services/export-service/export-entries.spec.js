@@ -283,6 +283,20 @@ describe('exportService.exportEntriesZipArchive', () => {
         expect(retry).toBe(PARAMETERS.SHARE_STATUS.SHARED);
     });
 
+    it('should release the lock when setup fails before the export starts', async () => {
+        //setup (resolving the export path) throws before any export work runs
+        utilsService.getExportPath.mockImplementationOnce(() => {
+            throw new Error('bad slug');
+        });
+
+        const failed = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(failed).toBe(false);
+
+        //the lock must still be released so later exports are not blocked
+        const retry = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(retry).toBe(PARAMETERS.SHARE_STATUS.SHARED);
+    });
+
     it('should block sendToDevice while an archive export is in progress', async () => {
         let resolveShare;
         Share.share.mockImplementationOnce(() => new Promise((resolve) => {

@@ -251,4 +251,19 @@ describe('exportService.sendToDevice', () => {
         vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
         await expect(retry).resolves.toBe(MOCK_EXPORT_PATH);
     });
+
+    it('should release the lock when setup fails before the export starts', async () => {
+        //setup (resolving the export path) throws before any export work runs
+        utilsService.getExportPath.mockImplementationOnce(() => {
+            throw new Error('bad slug');
+        });
+
+        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
+            .rejects.toThrow('Unknown error');
+
+        //the lock must still be released so later exports are not blocked
+        const retry = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
+        await expect(retry).resolves.toBe(MOCK_EXPORT_PATH);
+    });
 });

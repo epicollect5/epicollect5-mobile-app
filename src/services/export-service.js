@@ -307,13 +307,19 @@ export const exportService = {
         isExporting = true;
         const rootStore = useRootStore();
         const language = rootStore.language;
-        const projectName = projectModel.getProjectName();
-        const archiveDirectory = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
-        const archivePath = utilsService.getExportPath(projectSlug, archiveDirectory); // ← not hardcoded
-        const dateOnly = new Date().toISOString().split('T')[0];
-        const zipFileName = `Epicollect5_${projectSlug}_${dateOnly}.zip`;
+        //cleanup paths: assigned once setup succeeds, so the finally can skip
+        //cleanup for setup that never completed
+        let archiveDirectory = null;
+        let archivePath = null;
+        let zipFileName = null;
 
         try {
+            const projectName = projectModel.getProjectName();
+            archiveDirectory = mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem();
+            archivePath = utilsService.getExportPath(projectSlug, archiveDirectory); // ← not hardcoded
+            const dateOnly = new Date().toISOString().split('T')[0];
+            zipFileName = `Epicollect5_${projectSlug}_${dateOnly}.zip`;
+
             // Get total entries count for progress bar
             const totalEntries = await databaseSelectService.countAllEntries(projectRef);
             const totalBranchEntries = await databaseSelectService.countAllBranchEntries(projectRef);
@@ -405,16 +411,20 @@ export const exportService = {
                 // Always cleanup and ensure the modal flag is reset
                 // (hide is idempotent when the modal was never shown or already hidden)
                 await notificationService.hideProgressExportModal();
-                await deleteFileService.removeDirectoryIfExists(
-                    archivePath,
-                    archiveDirectory
-                );
-                await Filesystem.deleteFile({
-                    path: zipFileName,
-                    directory: Directory.Cache
-                }).catch((error) => {
-                    console.log('No zip file to remove:', error);
-                });
+                if (archivePath !== null) {
+                    await deleteFileService.removeDirectoryIfExists(
+                        archivePath,
+                        archiveDirectory
+                    );
+                }
+                if (zipFileName !== null) {
+                    await Filesystem.deleteFile({
+                        path: zipFileName,
+                        directory: Directory.Cache
+                    }).catch((error) => {
+                        console.log('No zip file to remove:', error);
+                    });
+                }
             } finally {
                 //release the lock even if cleanup fails: a stuck lock would
                 //block both export actions for the rest of the session
@@ -432,10 +442,14 @@ export const exportService = {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const documentsDirectory = Directory.Documents;
-        const deviceExportPath = utilsService.getExportPath(projectSlug, documentsDirectory);
+        //assigned once setup succeeds, so the finally can skip cleanup for
+        //setup that never completed
+        let deviceExportPath = null;
         let success = true; // Assume success unless an error occurs
 
         try {
+            deviceExportPath = utilsService.getExportPath(projectSlug, documentsDirectory);
+
             // Get total entries count for progress bar
             const totalEntries = await databaseSelectService.countAllEntries(projectRef);
             const totalBranchEntries = await databaseSelectService.countAllBranchEntries(projectRef);
@@ -483,7 +497,7 @@ export const exportService = {
             try {
                 // Dismiss the modal
                 await notificationService.hideProgressExportModal();
-                if (!success) {
+                if (!success && deviceExportPath !== null) {
                     try {
                         await deleteFileService.removeDirectoryIfExists(
                             deviceExportPath,
