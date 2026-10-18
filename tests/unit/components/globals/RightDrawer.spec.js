@@ -1330,6 +1330,7 @@ describe('RightDrawer component', () => {
         dbStore.db.transaction = vi.fn();
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         notificationService.showToast = vi.fn().mockResolvedValue(true);
+        notificationService.confirmSingle = vi.fn().mockResolvedValue(true);
 
         bookmarksService.deleteBookmarks = vi.fn();
         bookmarksService.deleteBookmark = vi.fn().mockResolvedValue(true);
@@ -1372,6 +1373,7 @@ describe('RightDrawer component', () => {
         dbStore.db.transaction = vi.fn();
         notificationService.hideProgressDialog = vi.fn().mockReturnValue(true);
         notificationService.showToast = vi.fn().mockResolvedValue(true);
+        notificationService.confirmSingle = vi.fn().mockResolvedValue(true);
 
         bookmarksService.deleteBookmarks = vi.fn();
         bookmarksService.deleteBookmark = vi.fn().mockImplementation(() => {
@@ -1387,5 +1389,45 @@ describe('RightDrawer component', () => {
         expect(notificationService.showAlert).toHaveBeenCalledWith(STRINGS[language].status_codes.ec5_104);
         expect(notificationService.showToast).not.toHaveBeenCalledWith(STRINGS[language].status_codes.ec5_127);
         expect(menuController.close).toHaveBeenCalledOnce();
+    });
+
+    it('should not remove the bookmark when the confirmation is dismissed', async () => {
+
+        const rootStore = useRootStore();
+        const bookmarkStore = useBookmarkStore();
+        const language = rootStore.language;
+        STRINGS[language].status_codes = {
+            ec5_127: '---',
+            ec5_104: '---'
+        };
+        rootStore.device = {
+            platform: PARAMETERS.WEB
+        };
+        const bookmarkId = 1;
+        bookmarkStore.bookmarkId = bookmarkId;//set current page as bookmarked
+        const wrapper = mount(RightDrawer);
+
+        //mocks
+        menuController.close = vi.fn().mockReturnValue(true);
+        projectModel.getProjectRef = vi.fn().mockReturnValue(projectRef);
+        notificationService.showToast = vi.fn().mockResolvedValue(true);
+        notificationService.confirmSingle = vi.fn().mockResolvedValue(false);
+
+        bookmarksService.deleteBookmarks = vi.fn();
+        bookmarksService.deleteBookmark = vi.fn().mockResolvedValue(true);
+        bookmarksService.getBookmarks = vi.fn();
+
+        await flushPromises();
+        await wrapper.get('[data-test="bookmark-remove"]').trigger('click');
+        await flushPromises();
+
+        expect(notificationService.confirmSingle).toHaveBeenCalledWith(
+            STRINGS[language].labels.are_you_sure,
+            STRINGS[language].labels.remove_bookmark
+        );
+        //a dismissed confirmation must not delete or close the drawer
+        expect(bookmarksService.deleteBookmark).not.toHaveBeenCalled();
+        expect(notificationService.showToast).not.toHaveBeenCalled();
+        expect(menuController.close).not.toHaveBeenCalled();
     });
 });
