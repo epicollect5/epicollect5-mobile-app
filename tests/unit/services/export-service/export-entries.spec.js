@@ -267,4 +267,37 @@ describe('exportService.exportEntriesZipArchive', () => {
         const retry = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
         expect(retry).toBe(PARAMETERS.SHARE_STATUS.SHARED);
     });
+
+    it('should release the lock when cleanup fails after a successful export', async () => {
+        //first call wipes the archive dir (try block), second call is the
+        //finally cleanup and fails with a non-missing-folder error
+        deleteFileService.removeDirectoryIfExists
+            .mockResolvedValueOnce(undefined)
+            .mockRejectedValueOnce(new Error('Permission denied'));
+
+        await expect(exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
+            .rejects.toThrow('Permission denied');
+
+        //the lock must still be released so later exports are not blocked
+        const retry = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(retry).toBe(PARAMETERS.SHARE_STATUS.SHARED);
+    });
+
+    it('should block sendToDevice while an archive export is in progress', async () => {
+        let resolveShare;
+        Share.share.mockImplementationOnce(() => new Promise((resolve) => {
+            resolveShare = resolve;
+        }));
+
+        const archivePromise = exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        await vi.waitFor(() => expect(Share.share).toHaveBeenCalledTimes(1));
+
+        const deviceResult = await exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(deviceResult).toBeNull();
+        //sendToDevice must not have started its own work
+        expect(databaseSelectService.countAllEntries).toHaveBeenCalledTimes(1);
+
+        resolveShare({});
+        await archivePromise;
+    });
 });

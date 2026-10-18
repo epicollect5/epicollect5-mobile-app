@@ -401,20 +401,25 @@ export const exportService = {
             await notificationService.showAlert(STRINGS[language].labels.unknown_error);
             return false;
         } finally {
-            // Always cleanup and ensure the modal flag is reset
-            // (hide is idempotent when the modal was never shown or already hidden)
-            await notificationService.hideProgressExportModal();
-            await deleteFileService.removeDirectoryIfExists(
-                archivePath,
-                archiveDirectory
-            );
-            await Filesystem.deleteFile({
-                path: zipFileName,
-                directory: Directory.Cache
-            }).catch((error) => {
-                console.log('No zip file to remove:', error);
-            });
-            isExporting = false;
+            try {
+                // Always cleanup and ensure the modal flag is reset
+                // (hide is idempotent when the modal was never shown or already hidden)
+                await notificationService.hideProgressExportModal();
+                await deleteFileService.removeDirectoryIfExists(
+                    archivePath,
+                    archiveDirectory
+                );
+                await Filesystem.deleteFile({
+                    path: zipFileName,
+                    directory: Directory.Cache
+                }).catch((error) => {
+                    console.log('No zip file to remove:', error);
+                });
+            } finally {
+                //release the lock even if cleanup fails: a stuck lock would
+                //block both export actions for the rest of the session
+                isExporting = false;
+            }
         }
     },
 
@@ -475,20 +480,25 @@ export const exportService = {
             success = false;
             throw new Error(STRINGS[language].labels.unknown_error);
         } finally {
-            // Dismiss the modal
-            await notificationService.hideProgressExportModal();
-            if (!success) {
-                try {
-                    await deleteFileService.removeDirectoryIfExists(
-                        deviceExportPath,
-                        documentsDirectory
-                    );
-                } catch (cleanupError) {
-                    console.log('Cleanup failed:', cleanupError);
-                    // Log the cleanup error, but don't re-throw as the original export failed anyway
+            try {
+                // Dismiss the modal
+                await notificationService.hideProgressExportModal();
+                if (!success) {
+                    try {
+                        await deleteFileService.removeDirectoryIfExists(
+                            deviceExportPath,
+                            documentsDirectory
+                        );
+                    } catch (cleanupError) {
+                        console.log('Cleanup failed:', cleanupError);
+                        // Log the cleanup error, but don't re-throw as the original export failed anyway
+                    }
                 }
+            } finally {
+                //release the lock even if cleanup fails: a stuck lock would
+                //block both export actions for the rest of the session
+                isExporting = false;
             }
-            isExporting = false;
         }
     }
 };

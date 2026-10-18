@@ -30,7 +30,11 @@ vi.mock('@/config', () => ({
         ANDROID: 'android',
         APP_NAME: 'Epicollect5',
         DELAY_LONG: 1000,
-        DEBUG: false }
+        DEBUG: false,
+        SHARE_STATUS: {
+            SHARED: 1,
+            NOT_SHARED: 0
+        } }
 }));
 
 const MOCK_PROJECT_REF = 'project-ref-123';
@@ -210,6 +214,40 @@ describe('exportService.sendToDevice', () => {
             .rejects.toThrow('Unknown error');
 
         const retry = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
+        await expect(retry).resolves.toBe(MOCK_EXPORT_PATH);
+    });
+
+    it('should block an archive export while sendToDevice is in progress', async () => {
+        let resolveHierarchy;
+        exportService.exportHierarchyEntries.mockImplementationOnce(() => new Promise((resolve) => {
+            resolveHierarchy = resolve;
+        }));
+
+        const devicePromise = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        await flushPromises();
+
+        const archiveResult = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(archiveResult).toBe(PARAMETERS.SHARE_STATUS.NOT_SHARED);
+        //the archive export must not have started its own work
+        expect(databaseSelectService.countAllEntries).toHaveBeenCalledTimes(1);
+
+        resolveHierarchy();
+        vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
+        await expect(devicePromise).resolves.toBe(MOCK_EXPORT_PATH);
+    });
+
+    it('should release the lock when the final modal dismissal fails', async () => {
+        notificationService.hideProgressExportModal.mockRejectedValueOnce(new Error('overlay error'));
+
+        const promise = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        await vi.runAllTicks();
+        vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
+        await expect(promise).rejects.toThrow('overlay error');
+
+        //the lock must still be released so later exports are not blocked
+        const retry = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        await vi.runAllTicks();
         vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
         await expect(retry).resolves.toBe(MOCK_EXPORT_PATH);
     });
