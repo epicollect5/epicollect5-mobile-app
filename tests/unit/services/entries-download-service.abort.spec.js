@@ -76,6 +76,18 @@ vi.mock('@/services/errors-service', () => ({
     }
 }));
 
+const keepAwakeMocks = vi.hoisted(() => ({
+    acquire: vi.fn().mockResolvedValue(),
+    release: vi.fn().mockResolvedValue()
+}));
+
+vi.mock('@/services/keep-awake-service', () => ({
+    keepAwakeService: {
+        acquireTransferLock: keepAwakeMocks.acquire,
+        releaseTransferLock: keepAwakeMocks.release
+    }
+}));
+
 vi.mock('@/services/utilities/download-service', () => ({
     downloadService: {
         downloadFormEntries: vi.fn()

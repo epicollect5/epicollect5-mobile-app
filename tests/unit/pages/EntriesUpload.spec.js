@@ -74,6 +74,18 @@ vi.mock('@/services/errors-service', () => ({
     errorsService: { handleWebError: vi.fn() }
 }));
 
+const keepAwakeMocks = vi.hoisted(() => ({
+    acquire: vi.fn().mockResolvedValue(),
+    release: vi.fn().mockResolvedValue()
+}));
+
+vi.mock('@/services/keep-awake-service', () => ({
+    keepAwakeService: {
+        acquireTransferLock: keepAwakeMocks.acquire,
+        releaseTransferLock: keepAwakeMocks.release
+    }
+}));
+
 vi.mock('@/services/upload-data-service', () => ({
     uploadDataService: { execute: vi.fn().mockReturnValue(new Promise(() => {})) }
 }));
@@ -94,9 +106,20 @@ describe('EntriesUpload page', () => {
     beforeEach(() => {
         vi.clearAllMocks();
 
+        keepAwakeMocks.acquire.mockResolvedValue();
+        keepAwakeMocks.release.mockResolvedValue();
+
         setActivePinia(createPinia());
         const rootStore = useRootStore();
         rootStore.language = PARAMETERS.DEFAULT_LANGUAGE;
+        //status codes are injected from JSON at runtime; the upload success paths read them
+        STRINGS[PARAMETERS.DEFAULT_LANGUAGE].status_codes = {
+            ec5_119: 'no entries',
+            ec5_120: 'uploaded',
+            ec5_125: 'some errors',
+            ec5_139: 'incomplete',
+            ec5_123: 'saved'
+        };
 
         //uploads never settle unless a test overrides them
         uploadDataService.execute.mockReturnValue(new Promise(() => {}));
@@ -347,6 +370,76 @@ describe('EntriesUpload page', () => {
         expect(errorsService.handleWebError).not.toHaveBeenCalled();
 
         errorSpy.mockRestore();
+        wrapper.unmount();
+    });
+
+    it('holds the screen on for a data upload and releases it on success', async () => {
+        databaseSelectService.countUnsyncedEntries.mockResolvedValue({
+            rows: {
+                item: () => ({
+                    total_number_of_entries: 1,
+                    total_number_of_entries_unsynced: 1,
+                    total_number_of_entries_with_errors: 0,
+                    total_number_of_incomplete_entries: 0
+                })
+            }
+        });
+        uploadDataService.execute.mockImplementation(() => Promise.resolve(false));
+
+        const wrapper = mountPage();
+        await flushPromises();
+
+        await wrapper.vm.uploadData();
+        await flushPromises();
+
+        expect(keepAwakeMocks.acquire).toHaveBeenCalledTimes(1);
+        expect(keepAwakeMocks.release).toHaveBeenCalledTimes(1);
+
+        wrapper.unmount();
+    });
+
+    it('releases the keep-screen-on lock when the data upload fails', async () => {
+        rejectUploadWith({ data: { errors: [{ code: 'ec5_103' }] } });
+
+        const wrapper = mountPage();
+        await flushPromises();
+
+        await wrapper.vm.uploadData();
+        await flushPromises();
+
+        expect(keepAwakeMocks.acquire).toHaveBeenCalledTimes(1);
+        expect(keepAwakeMocks.release).toHaveBeenCalledTimes(1);
+
+        wrapper.unmount();
+    });
+
+    it('holds the screen on for a media upload and releases it on success', async () => {
+        uploadMediaService.execute.mockImplementation(() => Promise.resolve(false));
+
+        const wrapper = mountPage();
+        await flushPromises();
+
+        await wrapper.vm.uploadMedia(PARAMETERS.QUESTION_TYPES.PHOTO);
+        await flushPromises();
+
+        expect(keepAwakeMocks.acquire).toHaveBeenCalledTimes(1);
+        expect(keepAwakeMocks.release).toHaveBeenCalledTimes(1);
+
+        wrapper.unmount();
+    });
+
+    it('does not take the keep-screen-on lock when an upload bails out early', async () => {
+        //no internet: uploadData returns before the transfer starts
+        utilsService.hasInternetConnection.mockResolvedValue(false);
+
+        const wrapper = mountPage();
+        await flushPromises();
+
+        await wrapper.vm.uploadData();
+        await flushPromises();
+
+        expect(keepAwakeMocks.acquire).not.toHaveBeenCalled();
+
         wrapper.unmount();
     });
 });

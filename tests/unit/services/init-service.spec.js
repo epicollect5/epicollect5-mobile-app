@@ -28,6 +28,7 @@ vi.mock('@/config', () => ({
             IN_APP_CAMERA: 'in_app_camera',
             IN_APP_CAMERA_VIDEO: 'in_app_camera_video',
             COLLECT_ERRORS: 'collect_errors',
+            KEEP_SCREEN_ON_DURING_TRANSFER: 'keep_screen_on_during_transfer',
             THEME: 'theme'
         },
         DEFAULT_THEME: 'light',
@@ -372,6 +373,37 @@ describe('Init Service', () => {
             const result = await initService.getThemePreference();
 
             expect(result).toBe('light');
+        });
+    });
+
+    describe('getKeepScreenOnDuringTransferPreference()', () => {
+        it('resolves false when the settings row is absent', async () => {
+            selectSettingMock.mockResolvedValue({ rows: { length: 0 } });
+
+            const result = await initService.getKeepScreenOnDuringTransferPreference();
+
+            expect(result).toBe(false);
+            expect(selectSettingMock).toHaveBeenCalledWith('keep_screen_on_during_transfer');
+        });
+
+        it('resolves true when the stored value is "true"', async () => {
+            selectSettingMock.mockResolvedValue({
+                rows: { length: 1, item: () => ({ value: 'true' }) }
+            });
+
+            const result = await initService.getKeepScreenOnDuringTransferPreference();
+
+            expect(result).toBe(true);
+        });
+
+        it('resolves false when the stored value is "false"', async () => {
+            selectSettingMock.mockResolvedValue({
+                rows: { length: 1, item: () => ({ value: 'false' }) }
+            });
+
+            const result = await initService.getKeepScreenOnDuringTransferPreference();
+
+            expect(result).toBe(false);
         });
     });
 });
