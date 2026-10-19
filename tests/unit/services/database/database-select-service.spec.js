@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { PARAMETERS } from '@/config';
-import { setupDbTest } from '@/helpers/db-test-setup';
+import { setupDbTest, closeDbTest } from '@/helpers/db-test-setup';
 import {
     PROJECT_REF,
     FORM_REF,
@@ -39,6 +39,8 @@ describe('databaseSelectService', () => {
         vi.clearAllMocks();
         db = await setupDbTest();
     });
+
+    afterEach(closeDbTest);
 
     describe('settings, users and projects', () => {
         it('selectSetting returns the value for a field', async () => {
@@ -276,11 +278,43 @@ describe('databaseSelectService', () => {
             expect(rowsToList(result).map((row) => row.entry_uuid).sort()).toEqual(['committed', 'temporary']);
         });
 
+        it('selectBranchesForQuestion applies title and status across both tables', async () => {
+            seedBranchEntry(db, { entry_uuid: 'c-keep', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', title: 'Keep', synced: PARAMETERS.SYNCED_CODES.INCOMPLETE });
+            seedBranchEntry(db, { entry_uuid: 'c-drop', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', title: 'Drop', synced: PARAMETERS.SYNCED_CODES.INCOMPLETE });
+            seedBranchEntry(db, { entry_uuid: 'c-synced', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', title: 'Keep', synced: PARAMETERS.SYNCED_CODES.SYNCED });
+            seedTempBranchEntry(db, { entry_uuid: 't-keep', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', title: 'Keep', synced: PARAMETERS.SYNCED_CODES.INCOMPLETE });
+
+            const result = await databaseSelectService.selectBranchesForQuestion('owner-1', 'input', null, null, { title: 'Keep' }, PARAMETERS.STATUS.INCOMPLETE);
+
+            expect(rowsToList(result).map((row) => row.entry_uuid).sort()).toEqual(['c-keep', 't-keep']);
+        });
+
         it('countBranchesForQuestion counts distinct branches', async () => {
             seedBranchEntry(db, { entry_uuid: 'committed', owner_entry_uuid: 'owner-1', owner_input_ref: 'input' });
             seedTempBranchEntry(db, { entry_uuid: 'temporary', owner_entry_uuid: 'owner-1', owner_input_ref: 'input' });
 
             const result = await databaseSelectService.countBranchesForQuestion('owner-1', 'input', {}, null);
+
+            expect(result.rows.item(0).total).toBe(2);
+        });
+
+        it('countBranchesForQuestion applies the title filter across both tables', async () => {
+            seedBranchEntry(db, { entry_uuid: 'c-keep', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', title: 'Keep' });
+            seedBranchEntry(db, { entry_uuid: 'c-drop', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', title: 'Drop' });
+            seedTempBranchEntry(db, { entry_uuid: 't-keep', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', title: 'Keep' });
+            seedTempBranchEntry(db, { entry_uuid: 't-drop', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', title: 'Drop' });
+
+            const result = await databaseSelectService.countBranchesForQuestion('owner-1', 'input', { title: 'Keep' }, null);
+
+            expect(result.rows.item(0).total).toBe(2);
+        });
+
+        it('countBranchesForQuestion applies title and status together', async () => {
+            seedBranchEntry(db, { entry_uuid: 'c-keep', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', title: 'Keep', synced: PARAMETERS.SYNCED_CODES.INCOMPLETE });
+            seedBranchEntry(db, { entry_uuid: 'c-synced', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', title: 'Keep', synced: PARAMETERS.SYNCED_CODES.SYNCED });
+            seedTempBranchEntry(db, { entry_uuid: 't-keep', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', title: 'Keep', synced: PARAMETERS.SYNCED_CODES.INCOMPLETE });
+
+            const result = await databaseSelectService.countBranchesForQuestion('owner-1', 'input', { title: 'Keep' }, PARAMETERS.STATUS.INCOMPLETE);
 
             expect(result.rows.item(0).total).toBe(2);
         });

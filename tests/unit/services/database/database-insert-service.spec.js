@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { PARAMETERS } from '@/config';
-import { setupDbTest } from '@/helpers/db-test-setup';
+import { setupDbTest, closeDbTest } from '@/helpers/db-test-setup';
 import { PROJECT_REF, FORM_REF, SERVER_URL, seedMedia, seedTempBranchEntry, seedUniqueAnswer } from '@/helpers/db-fixtures';
 
 vi.mock('@/stores/root-store', () => ({
@@ -53,6 +53,8 @@ describe('databaseInsertService', () => {
         vi.clearAllMocks();
         db = await setupDbTest();
     });
+
+    afterEach(closeDbTest);
 
     it('insertProject writes the project row', async () => {
         await databaseInsertService.insertProject('slug', 'Name', PROJECT_REF, '{}', SERVER_URL, '2026-01-01T00:00:00.000Z', '[]');

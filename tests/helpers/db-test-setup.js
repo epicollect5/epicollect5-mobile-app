@@ -4,6 +4,8 @@ import { createDatabaseService } from '@/services/database/database-create-servi
 import { databaseMigrateService } from '@/services/database/database-migrate-service';
 import { createSqliteHarness } from '@/helpers/sqlite-harness';
 
+let activeDb = null;
+
 /**
  * Give the current test a fresh in-memory SQLite database installed on the real
  * Pinia db-store, with no schema yet.
@@ -13,6 +15,7 @@ export async function createFreshDb() {
     const dbStore = useDBStore();
 
     const { db } = await createSqliteHarness();
+    activeDb = db;
     dbStore.db = db;
 
     return db;
@@ -30,3 +33,20 @@ export async function setupDbTest() {
 
     return db;
 }
+
+/**
+ * Release the current test database's SQLite memory. Call from afterEach so it
+ * runs even when the test (or setup) fails.
+ */
+export function closeDbTest() {
+    if (!activeDb) {
+        return;
+    }
+    try {
+        activeDb.raw.close();
+    } catch (_ignored) {
+        // already closed
+    }
+    activeDb = null;
+}
+

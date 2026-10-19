@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createDatabaseService } from '@/services/database/database-create-service';
 import { MIGRATIONS } from '@/config';
-import { createFreshDb } from '@/helpers/db-test-setup';
+import { createFreshDb, closeDbTest } from '@/helpers/db-test-setup';
 
 const TABLES = [
     'projects',
@@ -30,6 +30,8 @@ describe('createDatabaseService.execute', () => {
     beforeEach(async () => {
         db = await createFreshDb();
     });
+
+    afterEach(closeDbTest);
 
     it('creates every table', async () => {
         await createDatabaseService.execute(db);

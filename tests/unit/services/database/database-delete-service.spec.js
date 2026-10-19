@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
 import { PARAMETERS } from '@/config';
-import { setupDbTest } from '@/helpers/db-test-setup';
+import { setupDbTest, closeDbTest } from '@/helpers/db-test-setup';
 import {
     PROJECT_REF,
     seedProject,
+    seedUser,
     seedEntry,
     seedBranchEntry,
     seedTempBranchEntry,
@@ -33,6 +34,8 @@ describe('databaseDeleteService', () => {
         db = await setupDbTest();
     });
 
+    afterEach(closeDbTest);
+
     it('deleteRowsFromMultipleTables deletes matching rows from every table', async () => {
         seedEntry(db, { entry_uuid: 'entry-a', form_ref: 'form-a' });
         seedEntry(db, { entry_uuid: 'entry-b', form_ref: 'form-b' });
@@ -47,6 +50,37 @@ describe('databaseDeleteService', () => {
 
         expect(db.query('SELECT entry_uuid FROM entries').map((r) => r.entry_uuid)).toEqual(['entry-b']);
         expect(db.query('SELECT file_name FROM media').map((r) => r.file_name)).toEqual(['b.jpg']);
+    });
+
+    it('deleteRowsFromMultipleTables resolves only after the statements complete', async () => {
+        seedEntry(db, { entry_uuid: 'entry-a' });
+        let resolved = false;
+
+        const promise = databaseDeleteService.deleteRowsFromMultipleTables('', {
+            project_ref: PROJECT_REF,
+            form_ref: null,
+            entry_uuid: null
+        }, ['entries']).then(() => {
+            resolved = true;
+        });
+
+        expect(resolved).toBe(false);
+        await promise;
+        expect(resolved).toBe(true);
+    });
+
+    it('deleteRowsFromMultipleTables rejects and rolls back when a later statement fails', async () => {
+        seedEntry(db, { entry_uuid: 'entry-a' });
+
+        await expect(
+            databaseDeleteService.deleteRowsFromMultipleTables('', {
+                project_ref: PROJECT_REF,
+                form_ref: null,
+                entry_uuid: null
+            }, ['entries', 'table_that_does_not_exist'])
+        ).rejects.toThrow(/no such table/i);
+
+        expect(db.query('SELECT entry_uuid FROM entries')).toHaveLength(1);
     });
 
     it('deleteProject removes the project and all its rows', async () => {
@@ -142,6 +176,8 @@ describe('databaseDeleteService', () => {
     });
 
     it('deleteToken clears the users table', async () => {
+        seedUser(db, { jwt: 'jwt', name: 'User', email: 'user@example.com' });
+
         await databaseDeleteService.deleteToken();
 
         expect(db.query('SELECT * FROM users')).toHaveLength(0);

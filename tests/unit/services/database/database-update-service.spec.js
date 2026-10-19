@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { databaseUpdateService } from '@/services/database/database-update-service';
 import { PARAMETERS } from '@/config';
-import { setupDbTest } from '@/helpers/db-test-setup';
+import { setupDbTest, closeDbTest } from '@/helpers/db-test-setup';
 import { PROJECT_REF, seedEntry, seedBranchEntry, seedMedia, seedProject } from '@/helpers/db-fixtures';
 
 function first(db, sql, params) {
@@ -15,6 +15,8 @@ describe('databaseUpdateService', () => {
         vi.clearAllMocks();
         db = await setupDbTest();
     });
+
+    afterEach(closeDbTest);
 
     it('updateSynced updates an entry and stores the serialised error', async () => {
         seedEntry(db, { entry_uuid: 'entry-1', synced: PARAMETERS.SYNCED_CODES.UNSYNCED });

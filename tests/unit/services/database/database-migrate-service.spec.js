@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createDatabaseService } from '@/services/database/database-create-service';
 import { databaseMigrateService } from '@/services/database/database-migrate-service';
 import { MIGRATIONS } from '@/config';
-import { createFreshDb } from '@/helpers/db-test-setup';
+import { createFreshDb, closeDbTest } from '@/helpers/db-test-setup';
 
 function columns(db, table) {
     return db.query('PRAGMA table_info(' + table + ')').map((row) => row.name);
@@ -20,6 +20,8 @@ describe('databaseMigrateService.execute', () => {
         db = await createFreshDb();
         await createDatabaseService.execute(db);
     });
+
+    afterEach(closeDbTest);
 
     it('adds the columns introduced after v1', async () => {
         await databaseMigrateService.execute(1);

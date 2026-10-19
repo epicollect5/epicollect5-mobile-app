@@ -105,6 +105,7 @@ export function wrapWebSql(raw) {
 
     function makeTransaction() {
         const tx = {
+            aborted: null,
             executeSql(sql, params, success, error) {
                 // WebSQL treats an undefined bind value as NULL; sql.js rejects
                 // it outright, so normalise to keep the harness faithful.
@@ -143,10 +144,17 @@ export function wrapWebSql(raw) {
                     }
                     return result;
                 } catch (err) {
-                    if (error) {
-                        return error(tx, err);
+                    // cordova-sqlite-storage aborts the transaction unless the
+                    // statement error callback returns exactly false
+                    // (handleStatementFailure throws otherwise). The abort is
+                    // driven by the plugin, not the JS stack, so record it on the
+                    // transaction instead of throwing (a throw here would be
+                    // swallowed by the surrounding Promise executor).
+                    if (error && error(tx, err) === false) {
+                        return;
                     }
-                    throw err;
+                    tx.aborted = err;
+                    return;
                 }
             }
         };
@@ -163,6 +171,20 @@ export function wrapWebSql(raw) {
                 raw.run('BEGIN');
             }
             work(tx);
+
+            // A statement failed without being handled: discard the whole
+            // transaction, as the real plugin does on abort.
+            if (tx.aborted) {
+                if (!nested) {
+                    raw.run('ROLLBACK');
+                }
+                if (error) {
+                    error(tx, tx.aborted);
+                    return;
+                }
+                throw tx.aborted;
+            }
+
             if (!nested) {
                 raw.run('COMMIT');
             }
