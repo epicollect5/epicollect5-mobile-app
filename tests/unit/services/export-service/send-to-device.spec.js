@@ -7,7 +7,10 @@ import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
 import { Directory } from '@capacitor/filesystem';
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
+import { projectModel } from '@/models/project-model';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 import { PARAMETERS } from '@/config';
+import { STRINGS } from '@/config/strings';
 import { flushPromises } from '@vue/test-utils';
 
 vi.mock('@/stores/root-store');
@@ -31,6 +34,7 @@ vi.mock('@/config', () => ({
         APP_NAME: 'Epicollect5',
         DELAY_LONG: 1000,
         DEBUG: false,
+        PROJECT_VERSION_DOCS_URL: 'https://docs.example/project-version',
         SHARE_STATUS: {
             SHARED: 1,
             NOT_SHARED: 0
@@ -81,6 +85,9 @@ describe('exportService.sendToDevice', () => {
         notificationService.setProgressExport.mockImplementation((p) => {
             mockRootStore.progressExport = p;
         });
+
+        //the project mapping is needed to name the CSV columns on export
+        projectModel.loadMappings([{is_default: true, forms: {}}]);
     });
 
     afterEach(() => {
@@ -262,6 +269,35 @@ describe('exportService.sendToDevice', () => {
             .rejects.toThrow('Unknown error');
 
         //the lock must still be released so later exports are not blocked
+        const retry = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
+        await expect(retry).resolves.toBe(MOCK_EXPORT_PATH);
+    });
+
+    it('should alert the user and bail out when the project has no mapping', async () => {
+        projectModel.loadMappings([]);
+
+        const result = await exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+
+        expect(result).toBeNull();
+        expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
+            STRINGS.en.labels.project_version_incompatible,
+            STRINGS.en.labels.error,
+            PARAMETERS.PROJECT_VERSION_DOCS_URL,
+            STRINGS.en.labels.ok
+        );
+        //no doomed export work, no crash report
+        expect(mockShow).not.toHaveBeenCalled();
+        expect(databaseSelectService.countAllEntries).not.toHaveBeenCalled();
+        expect(rollbarService.critical).not.toHaveBeenCalled();
+    });
+
+    it('should export normally once the project has a mapping again', async () => {
+        projectModel.loadMappings([]);
+        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG)).resolves.toBeNull();
+
+        //the bail out must not leak the export lock
+        projectModel.loadMappings([{is_default: true, forms: {}}]);
         const retry = exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
         vi.advanceTimersByTime(PARAMETERS.DELAY_LONG);
         await expect(retry).resolves.toBe(MOCK_EXPORT_PATH);

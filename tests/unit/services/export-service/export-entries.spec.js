@@ -12,6 +12,7 @@ import {projectModel} from '@/models/project-model';
 import {useRootStore} from '@/stores/root-store';
 import {rollbarService} from '@/services/utilities/rollbar-service';
 import {PARAMETERS} from '@/config';
+import {STRINGS} from '@/config/strings';
 
 vi.mock('@/stores/root-store');
 vi.mock('@/services/utilities/utils-service');
@@ -49,6 +50,7 @@ vi.mock('@/config', () => (
             ANDROID: 'android',
             APP_NAME: 'Epicollect5',
             DEBUG: false,
+            PROJECT_VERSION_DOCS_URL: 'https://docs.example/project-version',
             SHARE_STATUS: {
                 SHARED: 1,
                 NOT_SHARED: 0
@@ -101,6 +103,8 @@ describe('exportService.exportEntriesZipArchive', () => {
 
         // project name
         projectModel.getProjectName.mockReturnValue('My Project');
+        //the project mapping is needed to name the CSV columns on export
+        projectModel.getProjectMappings.mockReturnValue([{is_default: true, forms: {}}]);
 
         // zip & share
         CapacitorZip.zip.mockResolvedValue();
@@ -293,6 +297,36 @@ describe('exportService.exportEntriesZipArchive', () => {
         expect(failed).toBe(false);
 
         //the lock must still be released so later exports are not blocked
+        const retry = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(retry).toBe(PARAMETERS.SHARE_STATUS.SHARED);
+    });
+
+    it('should alert the user and bail out when the project has no mapping', async () => {
+        projectModel.getProjectMappings.mockReturnValue([]);
+
+        const result = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+
+        expect(result).toBe(PARAMETERS.SHARE_STATUS.NOT_SHARED);
+        expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
+            STRINGS.en.labels.project_version_incompatible,
+            STRINGS.en.labels.error,
+            PARAMETERS.PROJECT_VERSION_DOCS_URL,
+            STRINGS.en.labels.ok
+        );
+        //no doomed export work, no crash report
+        expect(notificationService.showProgressExportModal).not.toHaveBeenCalled();
+        expect(databaseSelectService.countAllEntries).not.toHaveBeenCalled();
+        expect(exportHierarchySpy).not.toHaveBeenCalled();
+        expect(rollbarService.critical).not.toHaveBeenCalled();
+    });
+
+    it('should export normally once the project has a mapping again', async () => {
+        projectModel.getProjectMappings.mockReturnValue([]);
+        const blocked = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+        expect(blocked).toBe(PARAMETERS.SHARE_STATUS.NOT_SHARED);
+
+        //the bail out must not leak the export lock
+        projectModel.getProjectMappings.mockReturnValue([{is_default: true, forms: {}}]);
         const retry = await exportService.exportEntriesZipArchive(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
         expect(retry).toBe(PARAMETERS.SHARE_STATUS.SHARED);
     });

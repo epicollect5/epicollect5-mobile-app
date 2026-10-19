@@ -146,6 +146,58 @@ describe('notificationService tests', () => {
         expect(mocks.presentMock).toHaveBeenCalled();
     });
 
+    it('should create a dismiss alert with a learn more link and a custom dismiss label', async () => {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        const openSpy = vi.spyOn(window, 'open').mockImplementation(() => {});
+
+        await notificationService.showDismissAlert(
+            'Test message',
+            'Test title',
+            PARAMETERS.PROJECT_VERSION_DOCS_URL,
+            STRINGS[language].labels.ok
+        );
+
+        expect(alertController.create).toHaveBeenCalledWith({
+            header: 'Test title',
+            message: 'Test message',
+            buttons: [
+                {
+                    text: STRINGS[language].labels.learn_more,
+                    handler: expect.any(Function)
+                },
+                {
+                    text: STRINGS[language].labels.ok,
+                    role: 'cancel'
+                }
+            ]
+        });
+
+        //pressing learn more opens the docs and keeps the alert open
+        const learnMoreButton = alertController.create.mock.calls[0][0].buttons[0];
+        expect(learnMoreButton.handler()).toBe(false);
+        expect(openSpy).toHaveBeenCalledWith(PARAMETERS.PROJECT_VERSION_DOCS_URL, '_system', 'location=yes');
+        expect(mocks.presentMock).toHaveBeenCalled();
+    });
+
+    it('should fall back to the dismiss label and skip the link when no url is given', async () => {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+
+        await notificationService.showDismissAlert('Test message', 'Test title');
+
+        expect(alertController.create).toHaveBeenCalledWith({
+            header: 'Test title',
+            message: 'Test message',
+            buttons: [
+                {
+                    text: STRINGS[language].labels.dismiss,
+                    role: 'cancel'
+                }
+            ]
+        });
+    });
+
     it('should create a confirm alert with dismiss and action buttons and call the action handler', async () => {
         const rootStore = useRootStore();
         const language = rootStore.language;
