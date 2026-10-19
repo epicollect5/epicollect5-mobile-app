@@ -264,6 +264,7 @@ import { errorsService } from '@/services/errors-service';
 import { mediaService } from '@/services/entry/media-service';
 import { uploadMediaService } from '@/services/upload-media-service';
 import { uploadDataService } from '@/services/upload-data-service';
+import { keepAwakeService } from '@/services/keep-awake-service';
 import { logout } from '@/use/auth/logout';
 
 export default {
@@ -363,6 +364,9 @@ export default {
 		}
 
 		async function _handleGeneralError(error) {
+			//release the keep-screen-on lock: this is the single cleanup point for
+			//every upload failure path
+			await keepAwakeService.releaseTransferLock();
 			const projectOutdatedErrors = PARAMETERS.PROJECT_OUTDATED_ERROR_CODES;
 			const authErrors = PARAMETERS.AUTH_ERROR_CODES;
 			// Check the state of the data/media left to upload
@@ -437,8 +441,10 @@ export default {
 					rootStore.attemptedUploadOrErrorFix = true;
 					await _showModalProgressTransfer(labels.uploading_entries, state.totalEntriesUnsynced);
 
+					await keepAwakeService.acquireTransferLock();
 					uploadDataService.execute(state.totalEntriesUnsynced).then(
 						async function (hasEntriesUploadErrors) {
+							await keepAwakeService.releaseTransferLock();
 							// Check the state of the data/media left to upload
 							await _checkData();
 							// Finished!
@@ -502,8 +508,10 @@ export default {
 				}
 				await _showModalProgressTransfer(header, mediaCount);
 
+				await keepAwakeService.acquireTransferLock();
 				uploadMediaService.execute(state[type + 's'], mediaCount, 0).then(
 					async function (errors) {
+						await keepAwakeService.releaseTransferLock();
 						console.log('We have media errors:', JSON.stringify(errors));
 						// Check the state of the data/media left to upload
 						await _checkData();
