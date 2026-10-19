@@ -128,4 +128,42 @@ describe('uploadMediaService.execute()', () => {
         await expect(promise).resolves.toBe(false);
         expect(mockUpload).toHaveBeenCalledTimes(30);
     });
+
+    // The database layer only clears a stale error when the sync status is
+    // SYNCED, and only records an error otherwise: the two are mutually
+    // exclusive. A successful upload must therefore never be reported as
+    // synced *with* an error, otherwise the error would be dropped.
+    it('marks an uploaded file as synced without an error', async () => {
+        const file = { id: 1, file_type: PARAMETERS.QUESTION_TYPES.PHOTO, file_name: 'a.jpg', project_ref: 'p1' };
+
+        const promise = uploadMediaService.execute([file], 1, 0);
+
+        await vi.advanceTimersByTimeAsync(50 * PARAMETERS.DELAY_LONG);
+
+        await expect(promise).resolves.toBe(false);
+        expect(databaseUpdateService.updateFileEntrySynced).toHaveBeenCalledWith(file.id, PARAMETERS.SYNCED_CODES.SYNCED, undefined);
+    });
+
+    it('marks a failed file as unsynced with the error, never as synced', async () => {
+        const file = { id: 1, file_type: PARAMETERS.QUESTION_TYPES.PHOTO, file_name: 'a.jpg', project_ref: 'p1' };
+        const serverError = { errors: [{ code: 'ec5_1' }] };
+
+        mockUpload.mockImplementation((file, url, onSuccess, onError) => {
+            onError({ body: JSON.stringify(serverError) });
+        });
+
+        const promise = uploadMediaService.execute([file], 1, 0);
+        //the upload rejects while the timers run, so attach the handler now
+        const rejection = expect(promise).rejects.toBeDefined();
+
+        await vi.advanceTimersByTimeAsync(50 * PARAMETERS.DELAY_LONG);
+
+        await rejection;
+        expect(databaseUpdateService.updateFileEntrySynced).toHaveBeenCalledWith(file.id, PARAMETERS.SYNCED_CODES.UNSYNCED, serverError);
+
+        //a file is never reported as synced while carrying an error
+        databaseUpdateService.updateFileEntrySynced.mock.calls.forEach((call) => {
+            expect(call[1] === PARAMETERS.SYNCED_CODES.SYNCED && call[2]).toBe(false);
+        });
+    });
 });

@@ -16,7 +16,10 @@ describe('databaseUpdateService', () => {
         db = await setupDbTest();
     });
 
-    afterEach(closeDbTest);
+    afterEach(() => {
+        vi.restoreAllMocks();
+        closeDbTest();
+    });
 
     it('updateSynced updates an entry and stores the serialised error', async () => {
         seedEntry(db, { entry_uuid: 'entry-1', synced: PARAMETERS.SYNCED_CODES.UNSYNCED });
@@ -73,6 +76,37 @@ describe('databaseUpdateService', () => {
         const row = first(db, 'SELECT synced, synced_error FROM media WHERE id = ?', [id]);
         expect(row.synced).toBe(PARAMETERS.SYNCED_CODES.SYNCED);
         expect(row.synced_error).toBe('');
+    });
+
+    // The error branch and the clear-on-sync branch are mutually exclusive, so
+    // synced_error is assigned at most once per UPDATE. Every combination of
+    // sync status and error presence is covered to pin that.
+    it.each([
+        ['unsynced without an error keeps the previous error', PARAMETERS.SYNCED_CODES.UNSYNCED, undefined, PARAMETERS.SYNCED_CODES.UNSYNCED, '{"code":"ec5_old"}'],
+        ['unsynced with an error records the error', PARAMETERS.SYNCED_CODES.UNSYNCED, { code: 'ec5_2' }, PARAMETERS.SYNCED_CODES.UNSYNCED, '{"code":"ec5_2"}'],
+        ['synced without an error clears the previous error', PARAMETERS.SYNCED_CODES.SYNCED, undefined, PARAMETERS.SYNCED_CODES.SYNCED, ''],
+        ['synced with an error records the error', PARAMETERS.SYNCED_CODES.SYNCED, { code: 'ec5_2' }, PARAMETERS.SYNCED_CODES.SYNCED, '{"code":"ec5_2"}'],
+        ['synced with error status and no error keeps the previous error', PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR, undefined, PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR, '{"code":"ec5_old"}'],
+        ['synced with error status and an error records the error', PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR, { code: 'ec5_2' }, PARAMETERS.SYNCED_CODES.SYNCED_WITH_ERROR, '{"code":"ec5_2"}'],
+        ['incomplete without an error keeps the previous error', PARAMETERS.SYNCED_CODES.INCOMPLETE, undefined, PARAMETERS.SYNCED_CODES.INCOMPLETE, '{"code":"ec5_old"}'],
+        ['incomplete with an error records the error', PARAMETERS.SYNCED_CODES.INCOMPLETE, { code: 'ec5_2' }, PARAMETERS.SYNCED_CODES.INCOMPLETE, '{"code":"ec5_2"}'],
+        ['has unsynced children without an error keeps the previous error', PARAMETERS.SYNCED_CODES.HAS_UNSYNCED_CHILD_ENTRIES, undefined, PARAMETERS.SYNCED_CODES.HAS_UNSYNCED_CHILD_ENTRIES, '{"code":"ec5_old"}'],
+        ['has unsynced children with an error records the error', PARAMETERS.SYNCED_CODES.HAS_UNSYNCED_CHILD_ENTRIES, { code: 'ec5_2' }, PARAMETERS.SYNCED_CODES.HAS_UNSYNCED_CHILD_ENTRIES, '{"code":"ec5_2"}']
+    ])('updateFileEntrySynced: %s', async (label, sync, syncedError, expectedSynced, expectedSyncedError) => {
+        seedMedia(db, { file_name: 'photo.jpg', synced: PARAMETERS.SYNCED_CODES.UNSYNCED, synced_error: '{"code":"ec5_old"}' });
+        const { id } = first(db, 'SELECT id FROM media');
+
+        const updateRowsSpy = vi.spyOn(databaseUpdateService, 'updateRows');
+
+        await databaseUpdateService.updateFileEntrySynced(id, sync, syncedError);
+
+        const row = first(db, 'SELECT synced, synced_error FROM media WHERE id = ?', [id]);
+        expect(row.synced).toBe(expectedSynced);
+        expect(row.synced_error).toBe(expectedSyncedError);
+
+        //the same column is never assigned twice in one UPDATE
+        const [query] = updateRowsSpy.mock.calls[0];
+        expect((query.match(/synced_error=/g) || []).length).toBeLessThanOrEqual(1);
     });
 
     it('updateFileEntryIncomplete only touches incomplete media for the entry', async () => {
