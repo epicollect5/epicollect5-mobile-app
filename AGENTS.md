@@ -40,6 +40,14 @@ A behaviour-preserving refactor changes structure while preserving behaviour, co
   without it, tests fail with misleading environment errors. The npm scripts
   (`test:unit`, `vitest`) already set it
 
+## Search Tools
+
+- For any file search or grep in the current git-indexed directory, use the fff
+  MCP tools (`mcp__fff__find_files`, `mcp__fff__grep`, `mcp__fff__multi_grep`)
+  instead of shell grep/ls/sed/find
+- For symbol-level questions (call paths, architecture, "how does X work"), use
+  codegraph first
+
 ## Priority Rules
 
 - docs/CODE-STYLE.md overrides generic Vue best practices
