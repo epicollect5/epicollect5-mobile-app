@@ -19,7 +19,9 @@
       "Shell(git ls-files:*)",
       "Shell(git add:*)",
       "Shell(git commit:*)",
-      "Shell(mkdir:*)"
+      "Shell(mkdir:*)",
+      "mcp__fff__multi_grep",
+      "mcp__fff__grep"
     ],
     "ask": [
       "Shell(git push:*)",
