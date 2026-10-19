@@ -13,6 +13,23 @@
 				<ion-label class="ion-text-nowrap">{{ labels.edit }}</ion-label>
 			</ion-item>
 			<ion-item
+				v-if="isIOS"
+				button
+				:disabled="!hasLatLong"
+				lines="full"
+				@click="viewOnAppleMaps()"
+			>
+				<ion-icon
+					slot="start"
+					:icon="logoApple"
+				></ion-icon>
+				<ion-label class="ion-text-nowrap">{{ labels.view_on }}: <br /> Apple Maps
+					<sup>
+						<small>Beta</small>
+					</sup>
+				</ion-label>
+			</ion-item>
+			<ion-item
 				button
 				:disabled="!hasLatLong"
 				lines="full"
@@ -70,7 +87,7 @@ import { modalController } from '@ionic/vue';
 import { PARAMETERS } from '@/config';
 import { popoverController } from '@ionic/vue';
 import { reactive, computed } from '@vue/reactivity';
-import { trash, shareSocial, create, mapOutline, location, navigateCircleOutline } from 'ionicons/icons';
+import { trash, shareSocial, create, mapOutline, location, navigateCircleOutline, logoApple } from 'ionicons/icons';
 import { useRootStore } from '@/stores/root-store';
 import { STRINGS } from '@/config/strings';
 import ModalLocationEdit from '@/components/modals/ModalLocationEdit.vue';
@@ -173,6 +190,19 @@ export default {
 				const hmURL = PARAMETERS.MAPS_ENDPOINT.HM + latitude + ',' + longitude;
 				popoverController.dismiss(null);
 				window.open(hmURL, '_system', 'location="yes"');
+			},
+			viewOnAppleMaps() {
+				state.visible = false;
+				const latitude = props.parentState.answer.answer.latitude;
+				const longitude = props.parentState.answer.answer.longitude;
+
+				if (!latitude || !longitude) {
+					return false;
+				}
+
+				const amURL = PARAMETERS.MAPS_ENDPOINT.AM + latitude + ',' + longitude;
+				popoverController.dismiss(null);
+				window.open(amURL, '_system', 'location="yes"');
 			}
 
 		};
@@ -185,6 +215,9 @@ export default {
 				const latitude = props.parentState.answer.answer.latitude;
 				const longitude = props.parentState.answer.answer.longitude;
 				return (latitude && longitude);
+			}),
+			isIOS: computed(() => {
+				return rootStore.device.platform === PARAMETERS.IOS;
 			})
 		};
 
@@ -199,7 +232,8 @@ export default {
 			create,
 			mapOutline,
 			location,
-			navigateCircleOutline
+			navigateCircleOutline,
+			logoApple
 		};
 	}
 };
