@@ -3,11 +3,13 @@
         "baseUrl": ".",
         "paths": {
             "@/*": [
-                "src/*"
+                "src/*",
+                "tests/*"
             ]
         }
     },
     "include": [
-        "./src/**/*"
+        "./src/**/*",
+        "./tests/**/*"
     ]
 }

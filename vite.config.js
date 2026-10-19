@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import { viteCommonjs } from '@originjs/vite-plugin-commonjs';
 
 const resolveRoot = fileURLToPath(new URL('./src', import.meta.url));
+const testsRoot = fileURLToPath(new URL('./tests', import.meta.url));
 
 export default defineConfig(({ mode, command }) => {
     const env = loadEnv(mode, process.cwd(), '');
@@ -63,6 +64,9 @@ export default defineConfig(({ mode, command }) => {
                     'an-array-of-german-words': fileURLToPath(new URL('./src/__mocks__/empty-array.js', import.meta.url)),
                     'an-array-of-spanish-words': fileURLToPath(new URL('./src/__mocks__/empty-array.js', import.meta.url))
                 } : {}),
+                // In tests, expose the shared test helpers under '@/helpers/...'
+                // so specs import them the same way they import source modules.
+                ...(isTest ? { '@/helpers': testsRoot + '/helpers' } : {}),
                 '@': resolveRoot
             }
         },
