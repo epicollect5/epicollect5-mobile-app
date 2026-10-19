@@ -18,6 +18,8 @@ export const useRootStore = defineStore('RootStore', {
             collectErrors: true,
             inAppCamera: false,
             inAppCameraVideo: false,
+            //keep the screen on while an upload or download is in progress (opt-in)
+            keepScreenOnDuringTransfer: false,
             continueProjectVersionBackgroundCheck: false,
             user: {
                 jwt: null,
