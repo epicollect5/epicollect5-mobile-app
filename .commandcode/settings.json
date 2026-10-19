@@ -22,6 +22,7 @@
       "Shell(mkdir:*)",
       "Shell(npx lint:*)",
       "Shell(npm run lint:*)",
+      "Shell(greptile review:*)",
       "mcp__fff__multi_grep",
       "mcp__fff__grep"
     ],
