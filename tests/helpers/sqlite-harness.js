@@ -107,6 +107,11 @@ export function wrapWebSql(raw) {
         const tx = {
             aborted: null,
             executeSql(sql, params, success, error) {
+                // Once a statement has failed, cordova-sqlite-storage skips the
+                // callbacks of the remaining statements, so do not run them.
+                if (tx.aborted) {
+                    return;
+                }
                 // WebSQL treats an undefined bind value as NULL; sql.js rejects
                 // it outright, so normalise to keep the harness faithful.
                 const boundParams = (params == null ? [] : params)
@@ -179,7 +184,9 @@ export function wrapWebSql(raw) {
                     raw.run('ROLLBACK');
                 }
                 if (error) {
-                    error(tx, tx.aborted);
+                    // cordova-sqlite-storage calls the transaction error
+                    // callback with a single argument (the SQL error).
+                    error(tx.aborted);
                     return;
                 }
                 throw tx.aborted;
@@ -200,7 +207,7 @@ export function wrapWebSql(raw) {
                 }
             }
             if (error) {
-                error(tx, err);
+                error(err);
                 return;
             }
             throw err;
