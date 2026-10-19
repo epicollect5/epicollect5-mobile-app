@@ -346,6 +346,15 @@ export const app = createApp(App)
             rootStore.inAppCameraVideo = false;
         }
 
+        //keep-screen-on preference (opt-in, default false): a rejected read must not
+        //block boot, so fall back to false for this session only
+        try {
+            rootStore.keepScreenOnDuringTransfer = await initService.getKeepScreenOnDuringTransferPreference();
+        } catch (error) {
+            console.log('Failed to load keep screen on preference: ' + error);
+            rootStore.keepScreenOnDuringTransfer = false;
+        }
+
         //theme preference (light/dark/system): a rejected read must not block
         //boot, so fall back to the default ('light') for this session only
         try {
