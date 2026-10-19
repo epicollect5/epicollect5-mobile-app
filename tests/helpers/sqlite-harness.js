@@ -251,3 +251,48 @@ export async function createSqliteHarness() {
     const raw = new SQL.Database();
     return { db: wrapWebSql(raw), raw };
 }
+
+/**
+ * Withhold the success callback of the statement that targets `table`, so a
+ * test can check that a service keeps its promise pending until every
+ * statement has reported back.
+ *
+ * The statement itself still runs against the real database: only the
+ * callback that signals completion is held back, which is what a slow
+ * statement looks like to the caller.
+ *
+ * Returns { release(), restore() }: release() runs the withheld callback,
+ * restore() puts the original transaction back.
+ */
+export function deferTableStatementCallback(db, table) {
+    const originalTransaction = db.transaction;
+    let withheld = null;
+
+    db.transaction = function (work, error, success) {
+        return originalTransaction.call(db, (tx) => {
+            const executeSql = tx.executeSql.bind(tx);
+            tx.executeSql = (sql, params, onSuccess, onError) => {
+                if (!sql.includes('FROM ' + table)) {
+                    return executeSql(sql, params, onSuccess, onError);
+                }
+                return executeSql(sql, params, (innerTx, result) => {
+                    withheld = () => onSuccess(innerTx, result);
+                }, onError);
+            };
+            work(tx);
+        }, error, success);
+    };
+
+    return {
+        release() {
+            const run = withheld;
+            withheld = null;
+            if (run) {
+                run();
+            }
+        },
+        restore() {
+            db.transaction = originalTransaction;
+        }
+    };
+}

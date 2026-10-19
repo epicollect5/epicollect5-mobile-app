@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import flushPromises from 'flush-promises';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
 import { PARAMETERS } from '@/config';
 import { setupDbTest, closeDbTest } from '@/helpers/db-test-setup';
+import { deferTableStatementCallback } from '@/helpers/sqlite-harness';
 import {
     PROJECT_REF,
     seedProject,
@@ -52,21 +54,36 @@ describe('databaseDeleteService', () => {
         expect(db.query('SELECT file_name FROM media').map((r) => r.file_name)).toEqual(['b.jpg']);
     });
 
-    it('deleteRowsFromMultipleTables resolves only after the statements complete', async () => {
+    it('deleteRowsFromMultipleTables resolves only after every statement completes', async () => {
         seedEntry(db, { entry_uuid: 'entry-a' });
+        seedMedia(db, { entry_uuid: 'entry-a', file_name: 'a.jpg' });
+
+        // The last statement runs against the real database, but its callback
+        // is withheld: the service is left waiting on a statement that has
+        // not reported back yet.
+        const deferred = deferTableStatementCallback(db, 'media');
         let resolved = false;
 
         const promise = databaseDeleteService.deleteRowsFromMultipleTables('', {
             project_ref: PROJECT_REF,
             form_ref: null,
             entry_uuid: null
-        }, ['entries']).then(() => {
+        }, ['entries', 'media']).then(() => {
             resolved = true;
         });
 
+        // The first statement has already reported back, so a service that
+        // reported completion early would have resolved by now.
+        await flushPromises();
         expect(resolved).toBe(false);
+
+        deferred.release();
+        deferred.restore();
+
         await promise;
         expect(resolved).toBe(true);
+        expect(db.query('SELECT * FROM entries')).toHaveLength(0);
+        expect(db.query('SELECT * FROM media')).toHaveLength(0);
     });
 
     it('deleteRowsFromMultipleTables rejects and rolls back when a later statement fails', async () => {
