@@ -581,6 +581,25 @@ export const initService = {
         });
     },
 
+    //Get the keep-screen-on flag for uploads/downloads (opt-in, defaults to false)
+    async getKeepScreenOnDuringTransferPreference() {
+        return new Promise((resolve, reject) => {
+            databaseSelectService.selectSetting(PARAMETERS.SETTINGS_KEYS.KEEP_SCREEN_ON_DURING_TRANSFER).then(function (res) {
+
+                //if not found, the user has left the default (opt-in)
+                if (res.rows.length === 0) {
+                    resolve(false);
+                    return;
+                }
+
+                //if we have a row, user made changes, check status
+                resolve(res.rows.item(0).value === 'true' ? true : false);
+            }, function (error) {
+                reject(error);
+            });
+        });
+    },
+
     //Get the theme preference (light/dark/system, defaults to light)
     async getThemePreference() {
         return new Promise((resolve, reject) => {
