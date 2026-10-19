@@ -19,6 +19,8 @@ PODS:
     - IONCameraLib (~> 1.0.5)
   - CapacitorClipboard (8.0.1):
     - Capacitor
+  - CapacitorCommunityKeepAwake (8.0.1):
+    - Capacitor
   - CapacitorCordova (8.5.0)
   - CapacitorDevice (8.0.3):
     - Capacitor
@@ -123,6 +125,7 @@ DEPENDENCIES:
   - "CapacitorBarcodeScanner (from `../../node_modules/@capacitor/barcode-scanner`)"
   - "CapacitorCamera (from `../../node_modules/@capacitor/camera`)"
   - "CapacitorClipboard (from `../../node_modules/@capacitor/clipboard`)"
+  - "CapacitorCommunityKeepAwake (from `../../node_modules/@capacitor-community/keep-awake`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorDevice (from `../../node_modules/@capacitor/device`)"
   - "CapacitorDialog (from `../../node_modules/@capacitor/dialog`)"
@@ -174,6 +177,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/camera"
   CapacitorClipboard:
     :path: "../../node_modules/@capacitor/clipboard"
+  CapacitorCommunityKeepAwake:
+    :path: "../../node_modules/@capacitor-community/keep-awake"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorDevice:
@@ -229,6 +234,7 @@ SPEC CHECKSUMS:
   CapacitorBarcodeScanner: 2d699fe5b8731cdfa3db03a4062e68b9a75c5c72
   CapacitorCamera: 25827828645de22787c64ed8d1ea555e5b3ea242
   CapacitorClipboard: c75fdaa6e622111119f35e7914ecfc67b05efecb
+  CapacitorCommunityKeepAwake: d41922812644562e94a79acaf7f41e6d9413af8c
   CapacitorCordova: 9d3acbb574048e7167d2af127a0af2123e619f2f
   CapacitorDevice: 708e742b60a61572cd593e44c809592e8f31da14
   CapacitorDialog: 854c5dac405081cae697c177ca43bcaa95ae67bf
@@ -263,6 +269,6 @@ SPEC CHECKSUMS:
   WhiteguruCapacitorPluginVideoEditor: 1a56d775023055c927da6fc08161b2b97b14e5b1
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 
-PODFILE CHECKSUM: 037f660056994908517b3aec51b1d9a7d1e80443
+PODFILE CHECKSUM: 7d6426a107e66f6a947c04f15b0caa6fe2af6079
 
 COCOAPODS: 1.16.2

@@ -38,6 +38,7 @@
 		}
 	},
 	"packageClassList": [
+		"KeepAwakePlugin",
 		"ActionSheetPlugin",
 		"AppPlugin",
 		"CapacitorBarcodeScannerPlugin",
