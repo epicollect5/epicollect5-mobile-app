@@ -91,7 +91,7 @@ describe('mediaService.saveMedia queued deletions', () => {
         );
 
         expect(deleteFileService.removeFiles).toHaveBeenCalledTimes(1);
-        expect(databaseDeleteService.deleteMediaFiles).toHaveBeenCalledWith('project-ref', ['"photo.jpg"']);
+        expect(databaseDeleteService.deleteMediaFiles).toHaveBeenCalledWith('project-ref', ['photo.jpg']);
         expect(store.queueFilesToDelete).toEqual([]);
     });
 

@@ -291,17 +291,31 @@ describe('databaseDeleteService', () => {
         expect(db.query('SELECT file_name FROM media').map((r) => r.file_name)).toEqual(['b.jpg']);
     });
 
-    /*
-     * Known defect (tracked in epicollect5-development-plan#301): file names are
-     * interpolated unquoted into `file_name IN (...)`, so no real media row can
-     * be deleted. it.fails asserts the intended behaviour; it will be reported as
-     * an unexpected pass once the defect is fixed.
-     */
-    it.fails('deleteMediaFiles deletes media rows by file name', async () => {
+    it('deleteMediaFiles deletes media rows by file name', async () => {
         seedMedia(db, { project_ref: PROJECT_REF, file_name: 'photo.jpg' });
+        seedMedia(db, { project_ref: PROJECT_REF, file_name: 'other.jpg' });
+        seedMedia(db, { project_ref: 'other-project', file_name: 'photo.jpg' });
 
         await databaseDeleteService.deleteMediaFiles(PROJECT_REF, ['photo.jpg']);
 
-        expect(db.query('SELECT * FROM media')).toHaveLength(0);
+        expect(db.query('SELECT file_name FROM media').map((r) => r.file_name).sort()).toEqual(['other.jpg', 'photo.jpg']);
+    });
+
+    it('deleteMediaFiles deletes every queued file name only', async () => {
+        seedMedia(db, { project_ref: PROJECT_REF, file_name: 'a.jpg' });
+        seedMedia(db, { project_ref: PROJECT_REF, file_name: 'b.jpg' });
+        seedMedia(db, { project_ref: PROJECT_REF, file_name: 'keep.jpg' });
+
+        await databaseDeleteService.deleteMediaFiles(PROJECT_REF, ['a.jpg', 'b.jpg']);
+
+        expect(db.query('SELECT file_name FROM media').map((r) => r.file_name)).toEqual(['keep.jpg']);
+    });
+
+    it('deleteMediaFiles deletes nothing when the file name list is empty', async () => {
+        seedMedia(db, { project_ref: PROJECT_REF, file_name: 'photo.jpg' });
+
+        await databaseDeleteService.deleteMediaFiles(PROJECT_REF, []);
+
+        expect(db.query('SELECT file_name FROM media').map((r) => r.file_name)).toEqual(['photo.jpg']);
     });
 });

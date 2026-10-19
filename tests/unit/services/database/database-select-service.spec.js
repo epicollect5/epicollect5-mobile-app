@@ -405,6 +405,24 @@ describe('databaseSelectService', () => {
             expect(result.rows.item(0).total).toBe(1);
         });
 
+        it('countCurrentBranchMediaErrors matches every input ref with the branch prefix', async () => {
+            seedMedia(db, { entry_uuid: 'entry-1', input_ref: 'branch-input', file_name: 'bad.jpg', synced_error: '{"code":"ec5_1"}' });
+            seedMedia(db, { entry_uuid: 'entry-2', input_ref: 'branch-input-2', file_name: 'bad2.jpg', synced_error: '{"code":"ec5_1"}' });
+            seedMedia(db, { entry_uuid: 'entry-3', input_ref: 'branch-input', file_name: 'ok.jpg', synced_error: '' });
+
+            const result = await databaseSelectService.countCurrentBranchMediaErrors('branch-input');
+
+            expect(result.rows.item(0).total).toBe(2);
+        });
+
+        it('countCurrentBranchMediaErrors treats the input ref as data', async () => {
+            seedMedia(db, { entry_uuid: 'entry-1', input_ref: 'branch"input', file_name: 'bad.jpg', synced_error: '{"code":"ec5_1"}' });
+
+            const result = await databaseSelectService.countCurrentBranchMediaErrors('branch"input');
+
+            expect(result.rows.item(0).total).toBe(1);
+        });
+
         it('selectProjectMedia groups media by file type', async () => {
             seedMedia(db, { entry_uuid: 'entry-1', input_ref: 'audio-input', file_name: 'a.mp3', file_type: PARAMETERS.QUESTION_TYPES.AUDIO });
             seedMedia(db, { entry_uuid: 'entry-1', input_ref: 'photo-input', file_name: 'p.jpg', file_type: PARAMETERS.QUESTION_TYPES.PHOTO });
@@ -415,6 +433,16 @@ describe('databaseSelectService', () => {
             expect(result.audios.map((row) => row.file_name)).toEqual(['a.mp3']);
             expect(result.photos.map((row) => row.file_name)).toEqual(['p.jpg']);
             expect(result.videos.map((row) => row.file_name)).toEqual(['v.mp4']);
+        });
+
+        it('selectProjectMedia filters by every given entry uuid', async () => {
+            seedMedia(db, { entry_uuid: 'entry-1', file_name: 'a.jpg' });
+            seedMedia(db, { entry_uuid: 'entry-2', file_name: 'b.jpg' });
+            seedMedia(db, { entry_uuid: 'entry-3', file_name: 'c.jpg' });
+
+            const result = await databaseSelectService.selectProjectMedia({ project_ref: PROJECT_REF, synced: null, entry_uuid: ['entry-1', 'entry-2'] });
+
+            expect(result.photos.map((row) => row.file_name)).toEqual(['a.jpg', 'b.jpg']);
         });
 
         it('selectMediaBeforeDownload returns media of remote entries and synced branches', async () => {

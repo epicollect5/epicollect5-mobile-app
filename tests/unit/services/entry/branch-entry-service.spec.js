@@ -193,7 +193,7 @@ describe('branchEntryService.saveEntry persistence scope', () => {
         //phase 2: hierarchy save executes the deferred deletion project-wide
         await actual.mediaService.saveMedia({ isBranch: false, entryUuid: 'parent-1', media: {} }, 1);
         expect(deleteFileService.removeFiles).toHaveBeenCalledTimes(1);
-        expect(databaseDeleteService.deleteMediaFiles).toHaveBeenCalledWith('project-ref', ['"b-photo.jpg"']);
+        expect(databaseDeleteService.deleteMediaFiles).toHaveBeenCalledWith('project-ref', ['b-photo.jpg']);
         expect(store.queueFilesToDelete).toEqual([]);
 
         mediaService.saveMedia.mockReset();
