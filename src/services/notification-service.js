@@ -110,7 +110,9 @@ export const notificationService = {
         });
     },
     //Informational alert that can only be dismissed, with an optional learn more link
-    async showDismissAlert(message, title, learnMoreUrl = null) {
+    //dismissLabel defaults to "Dismiss": callers whose dismissal reads better as
+    //"Ok" (e.g. error alerts) can override it
+    async showDismissAlert(message, title, learnMoreUrl = null, dismissLabel = null) {
         const rootStore = useRootStore();
         const language = rootStore.language;
         const buttons = [];
@@ -126,7 +128,7 @@ export const notificationService = {
         }
 
         buttons.push({
-            text: STRINGS[language].labels.dismiss,
+            text: dismissLabel || STRINGS[language].labels.dismiss,
             role: 'cancel'
         });
 

@@ -1,3 +1,4 @@
+
 export const PARAMETERS = {
     APP_NAME: 'Epicollect5',
     DB_NAME: 'epicollect5.db',
@@ -8,6 +9,7 @@ export const PARAMETERS = {
     UPLOAD_MEDIA_DOCS_URL: 'https://docs.epicollect.net/mobile-application/upload-entries#uploading-media-files',
     DOWNLOAD_ENTRIES_DOCS_URL: 'https://docs.epicollect.net/mobile-application/download-entries',
     UPDATE_PROJECT_DOCS_URL: 'https://docs.epicollect.net/mobile-application/updating-a-project-mobile',
+    PROJECT_VERSION_DOCS_URL: 'https://docs.epicollect.net/mobile-application/export-entries-mobile#project-version-not-compatible',
     NOTIFICATIONS_PERMISSIONS_DOCS_URL: 'https://docs.epicollect.net/mobile-application/mobile-app-permissions#notification-permission',
     IN_APP_CAMERA_DOCS_URL: 'https://docs.epicollect.net/mobile-application/mobile-application#embedded-camera',
     NOTIFICATIONS_PERMISSIONS_DENIED_WARNING_SHOWN: 'notifications_permissions_denied_warning_shown',

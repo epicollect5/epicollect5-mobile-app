@@ -23,20 +23,39 @@ let isExporting = false;
 
 export const exportService = {
 
+    //CSV headers are built from the project mapping: a project row saved on the
+    //device before mappings were stored has none, and cannot be exported
+    hasExportMapping() {
+        const mappings = projectModel.getProjectMappings();
+        return Array.isArray(mappings) && mappings.length > 0;
+    },
+    //Single message/URL for the no-mapping case, shared by both export actions
+    async showMissingMappingAlert() {
+        const rootStore = useRootStore();
+        const labels = STRINGS[rootStore.language].labels;
+        await notificationService.showDismissAlert(
+            labels.project_version_incompatible,
+            labels.error,
+            PARAMETERS.PROJECT_VERSION_DOCS_URL,
+            labels.ok
+        );
+    },
+
     async exportHierarchyEntries(projectRef, directory = Directory.Documents) {
 
         const rootStore = useRootStore();
         const language = rootStore.language;
+
+        //do we have a mapping? If not, bail out (user must update project)
+        if (!this.hasExportMapping()) {
+            return Promise.reject(STRINGS[language].labels.project_version_incompatible);
+        }
+
         const forms = Object.values(projectModel.getForms());
         const mappings = projectModel.getProjectMappings();
         let offset;
         let formIndex = 0;
         const debugLines = [];
-
-        //do we have a mapping? If not, bail out (user must update project)
-        if (Object.entries(mappings).length === 0) {
-            return Promise.reject(STRINGS[language].status_codes.ec5_322);
-        }
 
         return new Promise((resolve, reject) => {
 
@@ -304,9 +323,15 @@ export const exportService = {
         if (isExporting) {
             return PARAMETERS.SHARE_STATUS.NOT_SHARED;
         }
-        isExporting = true;
         const rootStore = useRootStore();
         const language = rootStore.language;
+        //no mapping: nothing to name the CSV columns after, so tell the user to
+        //update the project instead of starting a doomed export
+        if (!this.hasExportMapping()) {
+            await this.showMissingMappingAlert();
+            return PARAMETERS.SHARE_STATUS.NOT_SHARED;
+        }
+        isExporting = true;
         //cleanup paths: assigned once setup succeeds, so the finally can skip
         //cleanup for setup that never completed
         let archiveDirectory = null;
@@ -438,9 +463,15 @@ export const exportService = {
         if (isExporting) {
             return null;
         }
-        isExporting = true;
         const rootStore = useRootStore();
         const language = rootStore.language;
+        //no mapping: nothing to name the CSV columns after, so tell the user to
+        //update the project instead of starting a doomed export
+        if (!this.hasExportMapping()) {
+            await this.showMissingMappingAlert();
+            return null;
+        }
+        isExporting = true;
         const documentsDirectory = Directory.Documents;
         //assigned once setup succeeds, so the finally can skip cleanup for
         //setup that never completed
