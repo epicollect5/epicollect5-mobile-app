@@ -123,7 +123,8 @@ export const PARAMETERS = {
     MAPS_ENDPOINT: {
         OM: 'https://omaps.app/map?v=1&ll=',
         GM: 'https://www.google.com/maps?q=',
-        HM: 'https://share.here.com/l/'
+        HM: 'https://share.here.com/l/',
+        AM: 'https://maps.apple.com/?ll='
     },
 
     PHOTO_EXT: '.jpg',
