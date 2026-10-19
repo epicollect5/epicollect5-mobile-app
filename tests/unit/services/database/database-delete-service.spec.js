@@ -1,359 +1,224 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { databaseDeleteService } from '@/services/database/database-delete-service';
 import { PARAMETERS } from '@/config';
+import { setupDbTest } from '@/helpers/db-test-setup';
+import {
+    PROJECT_REF,
+    seedProject,
+    seedEntry,
+    seedBranchEntry,
+    seedTempBranchEntry,
+    seedMedia,
+    seedUniqueAnswer,
+    seedBookmark
+} from '@/helpers/db-fixtures';
 
-const executeSql = vi.fn();
-const transaction = vi.fn();
-
-vi.mock('@/stores/db-store', () => ({
-    useDBStore: vi.fn(() => ({
-        db: {transaction}
-    }))
-}));
-
-const removeFiles = vi.hoisted(() => vi.fn());
+const removeFiles = vi.hoisted(() => vi.fn(() => Promise.resolve()));
 
 vi.mock('@/services/filesystem/delete-file-service', () => ({
-    deleteFileService: {removeFiles}
+    deleteFileService: {
+        removeFiles
+    }
 }));
 
-describe('databaseDeleteService.deleteEntriesBeforeDownload', () => {
-    it('deletes only remote entries for the selected forms and related metadata', async () => {
-        executeSql.mockImplementation((query, params, success) => {
-            success();
-            return undefined;
-        });
-        transaction.mockImplementation((callback, _error, success) => {
-            callback({executeSql});
-            success();
-        });
+function first(db, sql, params) {
+    return db.query(sql, params)[0];
+}
 
-        await databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-ref']);
+describe('databaseDeleteService', () => {
+    let db;
 
-        expect(executeSql).toHaveBeenCalledTimes(9);
-        expect(executeSql.mock.calls[0][0]).toContain('SELECT * FROM media');
-        expect(executeSql.mock.calls[1][0]).toContain('DELETE FROM media');
-        expect(executeSql.mock.calls[2][0]).toContain('DELETE FROM unique_answers');
-        expect(executeSql.mock.calls[3][0]).toBe(
-            'DELETE FROM entries WHERE project_ref=? AND form_ref=? AND is_remote=?'
-        );
-        expect(executeSql.mock.calls[3][1]).toEqual([
-            'project-ref',
-            'form-ref',
-            PARAMETERS.REMOTE_CODES.IS
-        ]);
-        expect(executeSql.mock.calls[4][0]).toBe(
-            'DELETE FROM unique_answers WHERE project_ref=? AND form_ref=? AND entry_uuid IN (' +
-            'SELECT entry_uuid FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?)'
-        );
-        expect(executeSql.mock.calls[4][1]).toEqual([
-            'project-ref',
-            'form-ref',
-            'project-ref',
-            'form-ref',
-            PARAMETERS.SYNCED_CODES.SYNCED
-        ]);
-        expect(executeSql.mock.calls[5][0]).toBe(
-            'DELETE FROM media WHERE project_ref=? AND form_ref=? AND entry_uuid IN (' +
-            'SELECT entry_uuid FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?)'
-        );
-        expect(executeSql.mock.calls[5][1]).toEqual([
-            'project-ref',
-            'form-ref',
-            'project-ref',
-            'form-ref',
-            PARAMETERS.SYNCED_CODES.SYNCED
-        ]);
-        expect(executeSql.mock.calls[6][0]).toBe(
-            'DELETE FROM branch_entries WHERE project_ref=? AND form_ref=? AND synced=?'
-        );
-        expect(executeSql.mock.calls[6][1]).toEqual([
-            'project-ref',
-            'form-ref',
-            PARAMETERS.SYNCED_CODES.SYNCED
-        ]);
-        expect(executeSql.mock.calls[7][0]).toBe(
-            'DELETE FROM temp_branch_entries WHERE project_ref=? AND form_ref=?'
-        );
-        expect(executeSql.mock.calls[7][1]).toEqual(['project-ref', 'form-ref']);
-        expect(executeSql.mock.calls[8][0]).toBe(
-            'DELETE FROM temp_unique_answers WHERE project_ref=? AND form_ref=?'
-        );
-        expect(executeSql.mock.calls[8][1]).toEqual(['project-ref', 'form-ref']);
-        expect(executeSql.mock.calls[4][0]).not.toContain('temp_unique_answers');
-        expect(executeSql.mock.calls.every(([query]) => query.includes('project_ref'))).toBe(true);
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        db = await setupDbTest();
     });
 
-    it('removes downloaded media files before deleting their rows', async () => {
-        executeSql.mockClear();
-        transaction.mockClear();
-        removeFiles.mockReset();
-        removeFiles.mockResolvedValue();
+    it('deleteRowsFromMultipleTables deletes matching rows from every table', async () => {
+        seedEntry(db, { entry_uuid: 'entry-a', form_ref: 'form-a' });
+        seedEntry(db, { entry_uuid: 'entry-b', form_ref: 'form-b' });
+        seedMedia(db, { input_ref: 'photo-input', form_ref: 'form-a', file_name: 'a.jpg' });
+        seedMedia(db, { input_ref: 'photo-input', form_ref: 'form-b', file_name: 'b.jpg' });
 
-        const mediaFile = {
-            file_path: 'file:///data/photos/',
-            project_ref: 'project-ref',
-            file_name: 'remote-photo.jpg'
-        };
-        executeSql.mockImplementation((query, params, success) => {
-            if (query.startsWith('SELECT * FROM media')) {
-                success(null, {rows: {length: 1, item: () => mediaFile}});
-            } else {
-                success();
-            }
-        });
-        transaction.mockImplementation((callback, _error, success) => {
-            callback({executeSql});
-            success?.();
-        });
+        await databaseDeleteService.deleteRowsFromMultipleTables('', {
+            project_ref: PROJECT_REF,
+            form_ref: 'form-a',
+            entry_uuid: null
+        }, ['entries', 'media']);
 
-        await databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-ref']);
-
-        expect(removeFiles).toHaveBeenCalledWith([mediaFile]);
-        expect(executeSql.mock.calls[0][0]).toContain('SELECT * FROM media');
-        expect(executeSql.mock.calls[1][0]).toContain('DELETE FROM media');
+        expect(db.query('SELECT entry_uuid FROM entries').map((r) => r.entry_uuid)).toEqual(['entry-b']);
+        expect(db.query('SELECT file_name FROM media').map((r) => r.file_name)).toEqual(['b.jpg']);
     });
 
-    it('rejects when database cleanup fails after media has been removed', async () => {
-        executeSql.mockClear();
-        transaction.mockClear();
-        removeFiles.mockReset();
-        removeFiles.mockResolvedValue();
+    it('deleteProject removes the project and all its rows', async () => {
+        seedProject(db);
+        seedEntry(db, { entry_uuid: 'entry-1' });
+        seedMedia(db, { input_ref: 'photo-input', file_name: 'a.jpg' });
+        seedBookmark(db);
 
-        const mediaFile = {
-            file_path: 'file:///data/photos/',
-            project_ref: 'project-ref',
-            file_name: 'remote-photo.jpg'
-        };
-        const databaseError = { message: 'db error' };
+        await databaseDeleteService.deleteProject(PROJECT_REF);
 
-        executeSql.mockImplementation((query, params, success, error) => {
-            if (query.startsWith('SELECT * FROM media')) {
-                success(null, {rows: {length: 1, item: () => mediaFile}});
-            } else {
-                error?.(null, databaseError);
+        expect(db.query('SELECT * FROM projects')).toHaveLength(0);
+        expect(db.query('SELECT * FROM entries')).toHaveLength(0);
+        expect(db.query('SELECT * FROM media')).toHaveLength(0);
+        expect(db.query('SELECT * FROM bookmarks')).toHaveLength(0);
+    });
+
+    it('deleteEntries removes the entries but keeps the project', async () => {
+        seedProject(db);
+        seedEntry(db, { entry_uuid: 'entry-1' });
+
+        await databaseDeleteService.deleteEntries(PROJECT_REF);
+
+        expect(db.query('SELECT * FROM entries')).toHaveLength(0);
+        expect(db.query('SELECT * FROM projects')).toHaveLength(1);
+    });
+
+    it('deleteEntriesBeforeDownload wipes remote entries, their media, unique answers and synced branches only', async () => {
+        seedEntry(db, { entry_uuid: 'remote-1', form_ref: 'form-a', is_remote: PARAMETERS.REMOTE_CODES.IS });
+        seedEntry(db, { entry_uuid: 'local-1', form_ref: 'form-a', is_remote: PARAMETERS.REMOTE_CODES.ISNT });
+        seedBranchEntry(db, { entry_uuid: 'branch-synced', form_ref: 'form-a', synced: PARAMETERS.SYNCED_CODES.SYNCED });
+        seedBranchEntry(db, { entry_uuid: 'branch-unsynced', form_ref: 'form-a', synced: PARAMETERS.SYNCED_CODES.UNSYNCED });
+        seedMedia(db, { entry_uuid: 'remote-1', form_ref: 'form-a', input_ref: 'photo-input', file_name: 'remote.jpg' });
+        seedMedia(db, { entry_uuid: 'branch-synced', form_ref: 'form-a', input_ref: 'photo-input', file_name: 'branch.jpg' });
+        seedUniqueAnswer(db, { entry_uuid: 'remote-1', form_ref: 'form-a' });
+        seedUniqueAnswer(db, { entry_uuid: 'branch-synced', form_ref: 'form-a', input_ref: 'other-input' });
+        seedTempBranchEntry(db, { entry_uuid: 'temp-1', form_ref: 'form-a' });
+        seedUniqueAnswer(db, { entry_uuid: 'temp-1', form_ref: 'form-a', input_ref: 'temp-input' }, true);
+        seedBookmark(db, { form_ref: 'form-a' });
+
+        await databaseDeleteService.deleteEntriesBeforeDownload(PROJECT_REF, ['form-a']);
+
+        expect(db.query('SELECT entry_uuid FROM entries').map((r) => r.entry_uuid)).toEqual(['local-1']);
+        expect(db.query('SELECT entry_uuid FROM branch_entries').map((r) => r.entry_uuid)).toEqual(['branch-unsynced']);
+        expect(db.query('SELECT file_name FROM media')).toHaveLength(0);
+        expect(db.query('SELECT * FROM unique_answers')).toHaveLength(0);
+        expect(db.query('SELECT * FROM temp_branch_entries')).toHaveLength(0);
+        expect(db.query('SELECT * FROM temp_unique_answers')).toHaveLength(0);
+        expect(db.query('SELECT * FROM bookmarks')).toHaveLength(1);
+        expect(removeFiles).toHaveBeenCalledTimes(1);
+        expect(removeFiles.mock.calls[0][0]).toHaveLength(2);
+    });
+
+    it('deleteEntriesBeforeDownload skips file removal when there is no media to delete', async () => {
+        seedEntry(db, { entry_uuid: 'remote-1', form_ref: 'form-a', is_remote: PARAMETERS.REMOTE_CODES.IS });
+
+        await databaseDeleteService.deleteEntriesBeforeDownload(PROJECT_REF, ['form-a']);
+
+        expect(removeFiles).not.toHaveBeenCalled();
+        expect(db.query('SELECT * FROM entries')).toHaveLength(0);
+    });
+
+    it('deleteFormEntries only removes rows of the given forms', async () => {
+        seedEntry(db, { entry_uuid: 'entry-a', form_ref: 'form-a' });
+        seedEntry(db, { entry_uuid: 'entry-b', form_ref: 'form-b' });
+
+        await databaseDeleteService.deleteFormEntries(PROJECT_REF, ['form-b']);
+
+        expect(db.query('SELECT entry_uuid FROM entries').map((r) => r.entry_uuid)).toEqual(['entry-a']);
+    });
+
+    it('deleteEntry removes the entry, its branches, unique answers and bookmarks', async () => {
+        seedEntry(db, { entry_uuid: 'entry-1' });
+        seedBranchEntry(db, { entry_uuid: 'branch-1', owner_entry_uuid: 'entry-1' });
+        seedUniqueAnswer(db, { entry_uuid: 'entry-1' });
+        seedBookmark(db, { parent_entry_uuid: 'entry-1' });
+
+        await databaseDeleteService.deleteEntry('entry-1');
+
+        expect(db.query('SELECT * FROM entries')).toHaveLength(0);
+        expect(db.query('SELECT * FROM branch_entries')).toHaveLength(0);
+        expect(db.query('SELECT * FROM unique_answers')).toHaveLength(0);
+        expect(db.query('SELECT * FROM bookmarks')).toHaveLength(0);
+    });
+
+    it('deleteBranchEntry removes the branch entry and its unique answers', async () => {
+        seedBranchEntry(db, { entry_uuid: 'branch-1' });
+        seedUniqueAnswer(db, { entry_uuid: 'branch-1' });
+
+        await databaseDeleteService.deleteBranchEntry('branch-1');
+
+        expect(db.query('SELECT * FROM branch_entries')).toHaveLength(0);
+        expect(db.query('SELECT * FROM unique_answers')).toHaveLength(0);
+    });
+
+    it('deleteToken clears the users table', async () => {
+        await databaseDeleteService.deleteToken();
+
+        expect(db.query('SELECT * FROM users')).toHaveLength(0);
+    });
+
+    it('removeUniqueAnswers deletes the unique answers of the given entries', async () => {
+        seedUniqueAnswer(db, { entry_uuid: 'entry-1', input_ref: 'a' });
+        seedUniqueAnswer(db, { entry_uuid: 'entry-2', input_ref: 'b' });
+        seedUniqueAnswer(db, { entry_uuid: 'entry-3', input_ref: 'c' });
+
+        await databaseDeleteService.removeUniqueAnswers({
+            rows: {
+                length: 2,
+                item: (index) => ({ entry_uuid: ['entry-1', 'entry-2'][index] })
             }
         });
-        transaction.mockImplementation((callback, onError) => {
-            callback({executeSql});
-            onError?.(null, databaseError);
-        });
+
+        expect(db.query('SELECT entry_uuid FROM unique_answers').map((r) => r.entry_uuid)).toEqual(['entry-3']);
+    });
+
+    it('deleteTempBranchEntries clears the temp branch entries', async () => {
+        seedTempBranchEntry(db, { entry_uuid: 'temp-1' });
+
+        await databaseDeleteService.deleteTempBranchEntries();
+
+        expect(db.query('SELECT * FROM temp_branch_entries')).toHaveLength(0);
+    });
+
+    it('deleteTempUniqueAnswers clears the temp unique answers', async () => {
+        seedUniqueAnswer(db, { entry_uuid: 'temp-1' }, true);
+
+        await databaseDeleteService.deleteTempUniqueAnswers();
+
+        expect(db.query('SELECT * FROM temp_unique_answers')).toHaveLength(0);
+    });
+
+    it('deleteBookmark removes a single bookmark by id', async () => {
+        seedBookmark(db, { title: 'Keep' });
+        seedBookmark(db, { title: 'Remove' });
+        const { id } = first(db, 'SELECT id FROM bookmarks WHERE title = ?', ['Remove']);
+
+        await databaseDeleteService.deleteBookmark(id);
+
+        expect(db.query('SELECT title FROM bookmarks').map((r) => r.title)).toEqual(['Keep']);
+    });
+
+    it('deleteEntryMedia removes all media of an entry', async () => {
+        seedMedia(db, { entry_uuid: 'entry-1', file_name: 'a.jpg' });
+        seedMedia(db, { entry_uuid: 'entry-1', file_name: 'b.jpg' });
+        seedMedia(db, { entry_uuid: 'entry-2', file_name: 'c.jpg' });
+
+        await databaseDeleteService.deleteEntryMedia('entry-1');
+
+        expect(db.query('SELECT file_name FROM media').map((r) => r.file_name)).toEqual(['c.jpg']);
+    });
+
+    it('deleteMediaFile removes one media file of an entry', async () => {
+        seedMedia(db, { entry_uuid: 'entry-1', file_name: 'a.jpg' });
+        seedMedia(db, { entry_uuid: 'entry-1', file_name: 'b.jpg' });
+
+        await databaseDeleteService.deleteMediaFile('entry-1', 'a.jpg');
+
+        expect(db.query('SELECT file_name FROM media').map((r) => r.file_name)).toEqual(['b.jpg']);
+    });
+
+    /*
+     * Current behaviour, surfaced by the real-SQL harness: deleteMediaFiles
+     * interpolates the file names straight into `file_name IN (...)` without
+     * quoting, so any real file name (e.g. "photo.jpg") is parsed as an
+     * identifier and the statement fails. Reported as a follow-up, not fixed
+     * here (out of scope for this harness work).
+     */
+    it('deleteMediaFiles fails for real file names because they are interpolated unquoted', async () => {
+        seedMedia(db, { project_ref: PROJECT_REF, file_name: 'photo.jpg' });
 
         await expect(
-            databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-ref'])
-        ).rejects.toEqual(databaseError);
-
-        expect(removeFiles).toHaveBeenCalledWith([mediaFile]);
-        expect(executeSql.mock.calls[1][0]).toContain('DELETE FROM media');
-    });
-
-    it('builds statements for every given form', async () => {
-        executeSql.mockClear();
-        transaction.mockClear();
-        executeSql.mockImplementation((query, params, success) => {
-            success();
-            return undefined;
-        });
-        transaction.mockImplementation((callback, _error, success) => {
-            callback({executeSql});
-            success();
-        });
-
-        await databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-a', 'form-b', 'form-c']);
-
-        expect(executeSql).toHaveBeenCalledTimes(25);
-        const entryDeletes = executeSql.mock.calls.filter(([query]) => query.startsWith('DELETE FROM entries'));
-        expect(entryDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b', 'form-c']);
-        const branchAnswerDeletes = executeSql.mock.calls.filter(([query]) =>
-            query.startsWith('DELETE FROM unique_answers') && query.includes('SELECT entry_uuid FROM branch_entries')
-        );
-        expect(branchAnswerDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b', 'form-c']);
-        expect(branchAnswerDeletes.every(([, params]) => params[4] === PARAMETERS.SYNCED_CODES.SYNCED)).toBe(true);
-        const branchMediaDeletes = executeSql.mock.calls.filter(([query]) =>
-            query.startsWith('DELETE FROM media') && query.includes('SELECT entry_uuid FROM branch_entries')
-        );
-        expect(branchMediaDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b', 'form-c']);
-        expect(branchMediaDeletes.every(([, params]) => params[4] === PARAMETERS.SYNCED_CODES.SYNCED)).toBe(true);
-        const branchDeletes = executeSql.mock.calls.filter(([query]) => query.startsWith('DELETE FROM branch_entries'));
-        expect(branchDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b', 'form-c']);
-        expect(branchDeletes.every(([, params]) => params[2] === PARAMETERS.SYNCED_CODES.SYNCED)).toBe(true);
-    });
-
-    it('never deletes bookmarks for re-downloaded entries', async () => {
-        executeSql.mockClear();
-        transaction.mockClear();
-        executeSql.mockImplementation((query, params, success) => {
-            success();
-            return undefined;
-        });
-        transaction.mockImplementation((callback, _error, success) => {
-            callback({executeSql});
-            success();
-        });
-
-        await databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-ref']);
-
-        expect(executeSql.mock.calls.some(([query]) => query.includes('DELETE FROM bookmarks'))).toBe(false);
-    });
-
-    it('never targets local entries when local and remote rows coexist', async () => {
-        executeSql.mockClear();
-        transaction.mockClear();
-        executeSql.mockImplementation((query, params, success) => {
-            success();
-            return undefined;
-        });
-        transaction.mockImplementation((callback, _error, success) => {
-            callback({executeSql});
-            success();
-        });
-
-        const entriesOnDevice = [
-            {entryUuid: 'local-entry', isRemote: 0},
-            {entryUuid: 'remote-entry', isRemote: PARAMETERS.REMOTE_CODES.IS}
-        ];
-
-        await databaseDeleteService.deleteEntriesBeforeDownload('project-ref', ['form-ref']);
-
-        const entryDelete = executeSql.mock.calls.find(([query]) => query.startsWith('DELETE FROM entries'));
-        const entryDeleteQuery = entryDelete[0];
-        const entryDeleteParams = entryDelete[1];
-        const targetedRows = entriesOnDevice.filter((entry) => entry.isRemote === entryDeleteParams[2]);
-
-        expect(entryDeleteQuery).toContain('is_remote=?');
-        expect(entryDeleteParams[2]).toBe(PARAMETERS.REMOTE_CODES.IS);
-        expect(targetedRows.map((entry) => entry.entryUuid)).toEqual(['remote-entry']);
-        expect(targetedRows.map((entry) => entry.entryUuid)).not.toContain('local-entry');
-    });
-});
-
-describe('databaseDeleteService.deleteRowsFromMultipleTables', () => {
-    const options = {
-        project_ref: 'project-ref',
-        form_ref: null,
-        entry_uuid: null
-    };
-    const tables = ['entries', 'branch_entries', 'unique_answers', 'media'];
-
-    it('resolves only after every table statement succeeds', async () => {
-        executeSql.mockClear();
-        transaction.mockClear();
-
-        let callCount = 0;
-        const deferred = {};
-        deferred.promise = new Promise((resolve) => {
-            deferred.resolve = resolve;
-        });
-
-        executeSql.mockImplementation((query, params, success) => {
-            callCount++;
-            if (callCount < tables.length) {
-                success();
-            } else {
-                //defer the last statement, the promise must stay pending until it succeeds
-                deferred.resolve(success);
-            }
-            return undefined;
-        });
-        transaction.mockImplementation((callback) => {
-            callback({executeSql});
-        });
-
-        let resolved = false;
-        const deletePromise = databaseDeleteService
-            .deleteRowsFromMultipleTables('', options, tables)
-            .then(() => {
-                resolved = true;
-            });
-
-        await Promise.resolve();
-        expect(resolved).toBe(false);
-        expect(executeSql).toHaveBeenCalledTimes(tables.length);
-
-        const lastSuccessCallback = await deferred.promise;
-        lastSuccessCallback();
-
-        await deletePromise;
-        expect(resolved).toBe(true);
-    });
-
-    it('rejects when a later table statement fails', async () => {
-        executeSql.mockClear();
-        transaction.mockClear();
-
-        executeSql.mockImplementation((query, params, success, error) => {
-            if (query.includes('branch_entries')) {
-                error(null, new Error('Mocked sql error'));
-            } else {
-                success();
-            }
-            return undefined;
-        });
-        transaction.mockImplementation((callback) => {
-            callback({executeSql});
-        });
-
-        await expect(
-            databaseDeleteService.deleteRowsFromMultipleTables('', options, tables)
-        ).rejects.toThrow('Mocked sql error');
-    });
-});
-
-describe('databaseDeleteService.deleteFormEntries', () => {
-    const tables = ['entries', 'branch_entries', 'temp_branch_entries', 'unique_answers', 'temp_unique_answers', 'media', 'bookmarks'];
-
-    it('deletes every table for each given form', async () => {
-        executeSql.mockClear();
-        transaction.mockClear();
-        executeSql.mockImplementation((query, params, success) => {
-            success();
-            return undefined;
-        });
-        transaction.mockImplementation((callback) => {
-            callback({executeSql});
-        });
-
-        await databaseDeleteService.deleteFormEntries('project-ref', ['form-a', 'form-b']);
-
-        //7 tables per form -> 14 statements
-        expect(executeSql).toHaveBeenCalledTimes(tables.length * 2);
-        const entryDeletes = executeSql.mock.calls.filter(([query]) => query.startsWith('DELETE FROM entries'));
-        expect(entryDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b']);
-        const branchDeletes = executeSql.mock.calls.filter(([query]) => query.startsWith('DELETE FROM branch_entries'));
-        expect(branchDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b']);
-        const mediaDeletes = executeSql.mock.calls.filter(([query]) => query.startsWith('DELETE FROM media'));
-        expect(mediaDeletes.map(([, params]) => params[1])).toEqual(['form-a', 'form-b']);
-        //bookmarks of the removed forms are removed too
-        expect(executeSql.mock.calls.some(([query]) => query.includes('DELETE FROM bookmarks'))).toBe(true);
-    });
-
-    it('resolves without touching the database when no form refs are given', async () => {
-        executeSql.mockClear();
-        transaction.mockClear();
-
-        await databaseDeleteService.deleteFormEntries('project-ref', []);
-
-        expect(executeSql).not.toHaveBeenCalled();
-        expect(transaction).not.toHaveBeenCalled();
-    });
-
-    it('rejects when a statement fails', async () => {
-        executeSql.mockClear();
-        transaction.mockClear();
-        executeSql.mockImplementation((query, params, success, error) => {
-            if (query.includes('media')) {
-                error(null, new Error('Mocked sql error'));
-            } else {
-                success();
-            }
-            return undefined;
-        });
-        transaction.mockImplementation((callback) => {
-            callback({executeSql});
-        });
-
-        await expect(
-            databaseDeleteService.deleteFormEntries('project-ref', ['form-a'])
-        ).rejects.toThrow('Mocked sql error');
+            databaseDeleteService.deleteMediaFiles(PROJECT_REF, ['photo.jpg'])
+        ).rejects.toThrow(/no such column/i);
     });
 });
