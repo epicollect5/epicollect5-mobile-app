@@ -845,13 +845,13 @@ export const databaseSelectService = {
     */
     async countCurrentBranchMediaErrors(owner_input_ref) {
 
-        let query = 'SELECT count(*) as total, input_ref, synced_error FROM media WHERE input_ref LIKE "' + owner_input_ref + '%" ';
+        let query = 'SELECT count(*) as total, input_ref, synced_error FROM media WHERE input_ref LIKE ? ';
 
         query += 'AND (ifnull(length(synced_error), 0) > 0)';
 
         //  console.log(query);
 
-        return await this.getRows(query);
+        return await this.getRows(query, [owner_input_ref + '%']);
     },
     // Select all the media files belonging to a project, grouping them by file type i.e. audio, video, photo
     async selectProjectMedia(options) {
@@ -870,8 +870,8 @@ export const databaseSelectService = {
         }
 
         if (options.entry_uuid !== null) {
-            query += 'AND entry_uuid IN (?) ';
-            params.push(options.entry_uuid.join(','));
+            query += 'AND entry_uuid IN (' + options.entry_uuid.map(() => '?').join(',') + ') ';
+            params.push(...options.entry_uuid);
         }
 
         query += 'AND file_type=? ';

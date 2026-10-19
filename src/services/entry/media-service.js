@@ -46,7 +46,7 @@ export const mediaService = {
                     try {
                         //remove files references from media table
                         const filenamesToDelete = rootStore.queueFilesToDelete.map((file) => {
-                            return '"' + file.file_name + '"';
+                            return file.file_name;
                         });
                         await databaseDeleteService.deleteMediaFiles(projectModel.getProjectRef(), filenamesToDelete);
                         //reset delete queue

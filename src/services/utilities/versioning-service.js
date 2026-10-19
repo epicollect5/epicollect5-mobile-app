@@ -214,8 +214,6 @@ export const versioningService = {
 
             // Delete all the media related to these entries
             // (media rows must be fetched before deleting the entries)
-            // Note: selectProjectMedia only works with a single entry_uuid
-            // (multiple uuids get joined into one IN clause value)
             for (const entryUuid of entryUuids) {
                 const mediaFiles = await databaseSelectService.selectProjectMedia({
                     project_ref: projectRef,
