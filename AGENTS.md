@@ -40,6 +40,13 @@ A behaviour-preserving refactor changes structure while preserving behaviour, co
   without it, tests fail with misleading environment errors. The npm scripts
   (`test:unit`, `vitest`) already set it
 
+## Import Paths
+
+- Always import via the `@` alias; do not add relative paths (`../` or `./`)
+- `@/*` resolves to `src/*`
+- In tests, `@/helpers/*` also resolves to `tests/helpers/*` (test-only alias in
+  `vite.config.js`); use it for shared test helpers/harnesses
+
 ## Search Tools
 
 - For any file search or grep in the current git-indexed directory, use the fff
