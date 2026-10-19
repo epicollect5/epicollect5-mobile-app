@@ -70,18 +70,27 @@ export const databaseUpdateService = {
 
         return await this.updateRows(query, params);
     },
+    //Update the sync status of a media row and the error it carries.
+    //The two synced_error assignments are mutually exclusive: a media row is
+    //either in error (the upload failed) or synced (it succeeded), never both,
+    //so the column is written at most once per statement.
+    //A failed upload records the error; a successful upload clears the error
+    //left by a previous attempt, so the entry stops showing a stale failure:
+    //media errors are surfaced by synced_error alone, with no check on synced
+    //(databaseSelectService.selectEntryMediaErrors).
+    //Sole caller: uploadMediaService, which never passes an error together
+    //with the SYNCED status.
     async updateFileEntrySynced(fileId, sync, syncedError) {
 
         let query = 'UPDATE media SET synced=?';
         const params = [sync];
 
         if (syncedError) {
+            //the upload failed: record the error
             query += ', synced_error=?';
             params.push(JSON.stringify(syncedError));
-        }
-
-        //is the synced value is SYNCED (1), clear any previous media error
-        if (sync === PARAMETERS.SYNCED_CODES.SYNCED) {
+        } else if (sync === PARAMETERS.SYNCED_CODES.SYNCED) {
+            //the upload succeeded: clear the error from a previous attempt
             query += ', synced_error=?';
             params.push('');
         }
