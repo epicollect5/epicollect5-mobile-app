@@ -170,13 +170,28 @@ describe('databaseDeleteService', () => {
         expect(db.query('SELECT file_name FROM media')).toHaveLength(1);
     });
 
-    it('deleteFormEntries only removes rows of the given forms', async () => {
-        seedEntry(db, { entry_uuid: 'entry-a', form_ref: 'form-a' });
-        seedEntry(db, { entry_uuid: 'entry-b', form_ref: 'form-b' });
+    it('deleteFormEntries removes rows for every form across all tables', async () => {
+        for (const formRef of ['form-a', 'form-b']) {
+            seedEntry(db, { entry_uuid: 'entry-' + formRef, form_ref: formRef });
+            seedBranchEntry(db, { entry_uuid: 'branch-' + formRef, form_ref: formRef });
+            seedTempBranchEntry(db, { entry_uuid: 'temp-' + formRef, form_ref: formRef });
+            seedUniqueAnswer(db, { entry_uuid: 'unique-' + formRef, form_ref: formRef });
+            seedUniqueAnswer(db, { entry_uuid: 'temp-unique-' + formRef, form_ref: formRef }, true);
+            seedMedia(db, { entry_uuid: 'media-' + formRef, form_ref: formRef, input_ref: 'photo-input', file_name: formRef + '.jpg' });
+            seedBookmark(db, { form_ref: formRef });
+        }
+        seedEntry(db, { entry_uuid: 'entry-form-c', form_ref: 'form-c' });
+        seedBookmark(db, { form_ref: 'form-c' });
 
-        await databaseDeleteService.deleteFormEntries(PROJECT_REF, ['form-b']);
+        await databaseDeleteService.deleteFormEntries(PROJECT_REF, ['form-a', 'form-b']);
 
-        expect(db.query('SELECT entry_uuid FROM entries').map((r) => r.entry_uuid)).toEqual(['entry-a']);
+        expect(db.query('SELECT entry_uuid FROM entries').map((r) => r.entry_uuid)).toEqual(['entry-form-c']);
+        expect(db.query('SELECT * FROM branch_entries')).toHaveLength(0);
+        expect(db.query('SELECT * FROM temp_branch_entries')).toHaveLength(0);
+        expect(db.query('SELECT * FROM unique_answers')).toHaveLength(0);
+        expect(db.query('SELECT * FROM temp_unique_answers')).toHaveLength(0);
+        expect(db.query('SELECT * FROM media')).toHaveLength(0);
+        expect(db.query('SELECT form_ref FROM bookmarks').map((r) => r.form_ref)).toEqual(['form-c']);
     });
 
     it('deleteEntry removes the entry, its branches, unique answers and bookmarks', async () => {

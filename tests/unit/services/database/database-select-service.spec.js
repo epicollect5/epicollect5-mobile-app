@@ -289,6 +289,16 @@ describe('databaseSelectService', () => {
             expect(rowsToList(result).map((row) => row.entry_uuid).sort()).toEqual(['c-keep', 't-keep']);
         });
 
+        it('selectBranchesForQuestion pages with limit and offset', async () => {
+            seedBranchEntry(db, { entry_uuid: 'b1', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', created_at: '2026-01-01T00:00:00.000Z' });
+            seedBranchEntry(db, { entry_uuid: 'b2', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', created_at: '2026-01-02T00:00:00.000Z' });
+            seedBranchEntry(db, { entry_uuid: 'b3', owner_entry_uuid: 'owner-1', owner_input_ref: 'input', created_at: '2026-01-03T00:00:00.000Z' });
+
+            const result = await databaseSelectService.selectBranchesForQuestion('owner-1', 'input', 2, 1, null, null);
+
+            expect(rowsToList(result).map((row) => row.entry_uuid)).toEqual(['b2', 'b1']);
+        });
+
         it('countBranchesForQuestion counts distinct branches', async () => {
             seedBranchEntry(db, { entry_uuid: 'committed', owner_entry_uuid: 'owner-1', owner_input_ref: 'input' });
             seedTempBranchEntry(db, { entry_uuid: 'temporary', owner_entry_uuid: 'owner-1', owner_input_ref: 'input' });
@@ -511,6 +521,24 @@ describe('databaseSelectService', () => {
             const result = await databaseSelectService.countEntries(PROJECT_REF, FORM_REF, '', { title: '100%' }, null);
 
             expect(result.rows.item(0).total).toBe(1);
+        });
+
+        it('selectEntries matches an underscore literally', async () => {
+            seedEntry(db, { entry_uuid: 'target', form_ref: FORM_REF, title: 'a_b' });
+            seedEntry(db, { entry_uuid: 'decoy', form_ref: FORM_REF, title: 'axb' });
+
+            const result = await databaseSelectService.selectEntries(PROJECT_REF, FORM_REF, '', null, null, null, { title: 'a_b' }, null);
+
+            expect(rowsToList(result).map((row) => row.entry_uuid)).toEqual(['target']);
+        });
+
+        it('selectEntries matches a backslash literally', async () => {
+            seedEntry(db, { entry_uuid: 'target', form_ref: FORM_REF, title: 'a\\b' });
+            seedEntry(db, { entry_uuid: 'decoy', form_ref: FORM_REF, title: 'ab' });
+
+            const result = await databaseSelectService.selectEntries(PROJECT_REF, FORM_REF, '', null, null, null, { title: 'a\\b' }, null);
+
+            expect(rowsToList(result).map((row) => row.entry_uuid)).toEqual(['target']);
         });
 
         it('treats a hostile title as data and returns nothing', async () => {
