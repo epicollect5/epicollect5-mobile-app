@@ -20,6 +20,7 @@
       "Shell(git add:*)",
       "Shell(git commit:*)",
       "Shell(mkdir:*)",
+      "Shell(greptile review:*)",
       "mcp__fff__multi_grep",
       "mcp__fff__grep"
     ],
