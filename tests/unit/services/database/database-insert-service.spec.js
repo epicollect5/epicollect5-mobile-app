@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { databaseInsertService } from '@/services/database/database-insert-service';
 import { PARAMETERS } from '@/config';
 import { setupDbTest, closeDbTest } from '@/helpers/db-test-setup';
-import { PROJECT_REF, FORM_REF, SERVER_URL, seedMedia, seedTempBranchEntry, seedUniqueAnswer } from '@/helpers/db-fixtures';
+import { PROJECT_REF, FORM_REF, SERVER_URL, seedEntry, seedMedia, seedTempBranchEntry, seedUniqueAnswer } from '@/helpers/db-fixtures';
 
 vi.mock('@/stores/root-store', () => ({
     useRootStore: vi.fn(() => ({
@@ -85,11 +85,29 @@ describe('databaseInsertService', () => {
     });
 
     it('insertEntries writes every entry in a single transaction', async () => {
+        const transactionSpy = vi.spyOn(db, 'transaction');
+
         await databaseInsertService.insertEntries([makeEntry('entry-1'), makeEntry('entry-2')], PARAMETERS.SYNCED_CODES.SYNCED);
 
+        expect(transactionSpy).toHaveBeenCalledTimes(1);
         const rows = db.query('SELECT entry_uuid FROM entries ORDER BY entry_uuid');
 
         expect(rows.map((row) => row.entry_uuid)).toEqual(['entry-1', 'entry-2']);
+        transactionSpy.mockRestore();
+    });
+
+    it('insertEntries rolls back earlier writes when a later entry fails', async () => {
+        seedEntry(db, { entry_uuid: 'pre-existing' });
+
+        // A non-bindable entry_uuid only throws when the batch reaches that
+        // statement, so the first entry is written before the second fails.
+        const failingEntry = makeEntry('entry-2', { entryUuid: {}, title: 'Entry 2' });
+
+        await expect(
+            databaseInsertService.insertEntries([makeEntry('entry-1'), failingEntry], PARAMETERS.SYNCED_CODES.SYNCED)
+        ).rejects.toThrow();
+
+        expect(db.query('SELECT entry_uuid FROM entries').map((row) => row.entry_uuid)).toEqual(['pre-existing']);
     });
 
     it('insertMedia inserts a new media row when the filename does not exist', async () => {

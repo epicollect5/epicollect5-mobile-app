@@ -142,6 +142,34 @@ describe('databaseDeleteService', () => {
         expect(db.query('SELECT * FROM entries')).toHaveLength(0);
     });
 
+    it('deleteEntriesBeforeDownload wipes remote data for every supplied form', async () => {
+        seedEntry(db, { entry_uuid: 'remote-a', form_ref: 'form-a', is_remote: PARAMETERS.REMOTE_CODES.IS });
+        seedEntry(db, { entry_uuid: 'remote-b', form_ref: 'form-b', is_remote: PARAMETERS.REMOTE_CODES.IS });
+        seedEntry(db, { entry_uuid: 'local-b', form_ref: 'form-b', is_remote: PARAMETERS.REMOTE_CODES.ISNT });
+        seedMedia(db, { entry_uuid: 'remote-a', form_ref: 'form-a', input_ref: 'photo-input', file_name: 'a.jpg' });
+        seedMedia(db, { entry_uuid: 'remote-b', form_ref: 'form-b', input_ref: 'photo-input', file_name: 'b.jpg' });
+
+        await databaseDeleteService.deleteEntriesBeforeDownload(PROJECT_REF, ['form-a', 'form-b']);
+
+        expect(db.query('SELECT entry_uuid FROM entries').map((r) => r.entry_uuid)).toEqual(['local-b']);
+        expect(db.query('SELECT file_name FROM media')).toHaveLength(0);
+        expect(removeFiles).toHaveBeenCalledTimes(1);
+        expect(removeFiles.mock.calls[0][0]).toHaveLength(2);
+    });
+
+    it('deleteEntriesBeforeDownload rejects and deletes nothing when media cleanup fails', async () => {
+        seedEntry(db, { entry_uuid: 'remote-1', form_ref: 'form-a', is_remote: PARAMETERS.REMOTE_CODES.IS });
+        seedMedia(db, { entry_uuid: 'remote-1', form_ref: 'form-a', input_ref: 'photo-input', file_name: 'remote.jpg' });
+        removeFiles.mockRejectedValueOnce(new Error('cleanup failed'));
+
+        await expect(
+            databaseDeleteService.deleteEntriesBeforeDownload(PROJECT_REF, ['form-a'])
+        ).rejects.toThrow('cleanup failed');
+
+        expect(db.query('SELECT entry_uuid FROM entries')).toHaveLength(1);
+        expect(db.query('SELECT file_name FROM media')).toHaveLength(1);
+    });
+
     it('deleteFormEntries only removes rows of the given forms', async () => {
         seedEntry(db, { entry_uuid: 'entry-a', form_ref: 'form-a' });
         seedEntry(db, { entry_uuid: 'entry-b', form_ref: 'form-b' });
