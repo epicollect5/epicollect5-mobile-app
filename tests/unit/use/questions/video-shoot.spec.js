@@ -10,7 +10,8 @@ const nMock = vi.hoisted(() => ({
     stopForegroundService: vi.fn().mockResolvedValue(),
     showAlert: vi.fn(),
     showToast: vi.fn(),
-    setProgressEncoding: vi.fn()
+    setProgressEncoding: vi.fn(),
+    dismissModalSafe: vi.fn().mockResolvedValue()
 }));
 
 const utilsMock = vi.hoisted(() => ({
@@ -116,6 +117,38 @@ describe('videoShoot tests', () => {
             }
         };
         return () => captureErr;
+    }
+
+    //drive the granted + successful capture path and hand back the captureVideo
+    //success callback: the transcode pipeline then runs detached from videoShoot,
+    //so the stubbed window keeps a setTimeout for its progress-reset timer
+    function grantAndCaptureSuccess() {
+        const GRANTED = 'GRANTED';
+        let captureSuccess;
+        global.cordova = {
+            plugins: {
+                diagnostic: {
+                    requestRuntimePermission: vi.fn((success) => {
+                        success(GRANTED);
+                    }),
+                    permissionStatus: { GRANTED },
+                    permission: { CAMERA: 'camera' }
+                }
+            }
+        };
+        global.window = {
+            navigator: {
+                device: {
+                    capture: {
+                        captureVideo: vi.fn((success) => {
+                            captureSuccess = success;
+                        })
+                    }
+                }
+            },
+            setTimeout: vi.fn()
+        };
+        return () => captureSuccess;
     }
 
     it('does not persist a phantom video filename when the user opens settings', async () => {
@@ -327,7 +360,7 @@ describe('videoShoot tests', () => {
         expect(moveFileServiceMock.moveToAppTemporaryDir).toHaveBeenCalledWith('/encoded.mp4', 'video_gen.mp4');
         expect(media[entryUuid]['q1'].cached).toBe('video_gen.mp4');
         expect(state.answer.answer).toBe('video_gen.mp4');
-        expect(modalMock.dismiss).toHaveBeenCalled();
+        expect(nMock.dismissModalSafe).toHaveBeenCalled();
         //the raw plugin recording is discarded after the transcode, so the plugin
         //cache does not accumulate one file per recording
         expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/rec.mp4' });
@@ -416,5 +449,57 @@ describe('videoShoot tests', () => {
 
         expect(rootStore.isVideoCaptureActive).toBe(false);
         expect(media[entryUuid]['q1'].cached).toBe('');
+    });
+
+    it('discards the raw system-camera capture after transcoding', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        const getCaptureSuccess = grantAndCaptureSuccess();
+        const { media, entryUuid, state, filename } = makeArgs();
+
+        await videoShoot({ media, entryUuid, state, filename });
+        getCaptureSuccess()([{ fullPath: 'file:///raw.avi' }]);
+
+        await vi.waitFor(() => {
+            expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: 'file:///raw.avi' });
+        });
+        expect(media[entryUuid]['q1'].cached).toBe('video_gen.mp4');
+    });
+
+    it('still cleans up when stopping the foreground service fails', async () => {
+        setupRootStore();
+        nMock.startForegroundService.mockResolvedValue('granted');
+        nMock.stopForegroundService.mockRejectedValueOnce(new Error('stop boom'));
+        const getCaptureSuccess = grantAndCaptureSuccess();
+        const { media, entryUuid, state, filename } = makeArgs();
+
+        await videoShoot({ media, entryUuid, state, filename });
+        getCaptureSuccess()([{ fullPath: 'file:///raw.avi' }]);
+
+        await vi.waitFor(() => {
+            expect(nMock.dismissModalSafe).toHaveBeenCalled();
+        });
+        //a failing stop must not skip the raw capture cleanup
+        expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: 'file:///raw.avi' });
+        expect(media[entryUuid]['q1'].cached).toBe('video_gen.mp4');
+    });
+
+    it('releases the back guard even when dismissing the encoding modal fails', async () => {
+        setupRootStore(PARAMETERS.ANDROID, { inAppCameraVideo: true });
+        modalMock.modal.onDidDismiss.mockResolvedValue({ data: { videoFilePath: '/rec.mp4' } });
+        nMock.dismissModalSafe.mockRejectedValueOnce(new Error('dismiss boom'));
+        const setTimeoutMock = vi.fn();
+        global.window = { setTimeout: setTimeoutMock };
+        const rootStore = useRootStore();
+        const { media, entryUuid, state, filename } = makeArgs();
+
+        await videoShoot({ media, entryUuid, state, filename });
+
+        //the reset is scheduled before any cleanup await, so a failed dismiss
+        //cannot leave isVideoEncodingModalActive armed (back button blocked)
+        expect(setTimeoutMock).toHaveBeenCalledWith(expect.any(Function), PARAMETERS.DELAY_LONG);
+        setTimeoutMock.mock.calls[0][0]();
+        expect(rootStore.isVideoEncodingModalActive).toBe(false);
+        expect(media[entryUuid]['q1'].cached).toBe('video_gen.mp4');
     });
 });

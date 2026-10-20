@@ -1,3 +1,4 @@
+
 import {useRootStore} from '@/stores/root-store';
 import {PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
@@ -56,10 +57,10 @@ export async function videoShoot({media, entryUuid, state, filename}) {
     //stopService releases the foreground service when the native flow started it
     //(the in-app flow never starts one: the app stays in the foreground the whole
     //time, which is the point of the embedded camera).
-    //deleteCapture removes the raw capture file after transcoding: only the in-app
-    //flow sets it, because only the embedded camera records into the plugin's own
-    //cache (Movies/CameraPreview), which must not accumulate after each recording.
-    async function _processCapturedVideo(videoPath, stopService, deleteCapture) {
+    //both flows record into a cache directory (the embedded camera into the
+    //plugin's own Movies/CameraPreview, the system camera into the app cache as
+    //VID_*.avi), so the raw capture is always deleted after transcoding
+    async function _processCapturedVideo(videoPath, stopService) {
         console.log('SOURCE VIDEO INFO:', videoPath);
         let progressListener = null;
 
@@ -110,30 +111,40 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             await notificationService.showAlert(STRINGS[language].labels.cannot_save_file);
         } finally {
             // 6. Cleanup - This runs on both Success AND Error
-            await notificationService.hideProgressDialog();
-            if (stopService) {
-                await notificationService.stopForegroundService();
-            }
-            if (deleteCapture) {
-                //discard the raw plugin recording (transcoded copy is already in temp);
-                //best-effort: the file may be outside the sandbox on other flows
+            //schedule the reset first: a failing cleanup step below must never leave
+            //isVideoEncodingModalActive armed (the EntriesAdd back handler would stay blocked)
+            window.setTimeout(() => {
+                rootStore.progressEncoding = {done: 0};
+                rootStore.isVideoEncodingModalActive =false;
+            }, PARAMETERS.DELAY_LONG);
+
+            try {
+                await notificationService.hideProgressDialog();
+                if (stopService) {
+                    //best-effort: a failing stop must not leave the progress modal up
+                    try {
+                        await notificationService.stopForegroundService();
+                    } catch (error) {
+                        console.log('Failed to stop foreground service: ' + error);
+                    }
+                }
+                //discard the raw capture (transcoded copy is already in temp);
+                //best-effort: the file may already be gone or outside the sandbox
                 try {
                     await CameraPreview.deleteFile({path: videoPath});
                 } catch (error) {
                     console.log('Failed to delete raw video capture: ' + error);
                 }
-            }
-            await modalController.dismiss();
+                //a modal that was never presented must not turn into an unhandled
+                //rejection from the native capture callback
+                await notificationService.dismissModalSafe();
 
-            if (progressListener) {
-                progressListener.remove();
+                if (progressListener) {
+                    progressListener.remove();
+                }
+            } catch (error) {
+                console.log('videoShoot cleanup failed: ' + error);
             }
-
-            // Reset progress with a slight delay so the user doesn't see the bar snap to 0
-            window.setTimeout(() => {
-                rootStore.progressEncoding = {done: 0};
-                rootStore.isVideoEncodingModalActive =false;
-            }, PARAMETERS.DELAY_LONG);
         }
     }
 
@@ -209,7 +220,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
                 //closing as if they cancelled (back-button dismiss has no data)
                 await notificationService.showAlert(data.startError, labels.error);
             } else if (data && data.videoFilePath) {
-                await _processCapturedVideo(data.videoFilePath, false, true);
+                await _processCapturedVideo(data.videoFilePath, false);
             } else {
                 //dismissed without recording: preserve any existing video so saving
                 //the entry does not drop the original attachment
@@ -253,7 +264,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             function (status) {
                 if (status === cordova.plugins.diagnostic.permissionStatus.GRANTED) {
                     window.navigator.device.capture.captureVideo(
-                        (media_object) => _processCapturedVideo(media_object[0].fullPath, true, false),
+                        (media_object) => _processCapturedVideo(media_object[0].fullPath, true),
                         _onCaptureVideoError,
                         options
                     );
@@ -287,7 +298,7 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             window.cordova.plugins.diagnostic.isCameraAuthorized(
                 function () {
                     window.navigator.device.capture.captureVideo(
-                        (media_object) => _processCapturedVideo(media_object[0].fullPath, true, false),
+                        (media_object) => _processCapturedVideo(media_object[0].fullPath, true),
                         _onCaptureVideoError,
                         options
                     );
