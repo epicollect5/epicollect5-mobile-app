@@ -6,6 +6,7 @@ import {
   collectionRetryDelayMs,
   compareVersions,
   condenseTelemetry,
+  createClient,
   findBrokenReason,
   findRetryReason,
   flagCluster,
@@ -612,6 +613,72 @@ describe('findRetryReason', () => {
       sample: { instances: 240, occurrences: 240 },
       versionEvidence: evidence({ active: 3 })
     })).toBeNull();
+  });
+});
+
+describe('createClient', () => {
+  const okResponse = (body) => ({
+    ok: true,
+    status: 200,
+    headers: new Map([['x-rate-limit-remaining', '49999']]),
+    json: async () => body
+  });
+
+  // The retries really do wait; the tests do not.
+  const noWait = { sleepImpl: async () => {} };
+
+  it('retries a dropped connection instead of ending the run', async () => {
+    let calls = 0;
+    const client = createClient('token', {
+      maxRetries: 4,
+      ...noWait,
+      fetchImpl: async () => {
+        calls += 1;
+        if (calls < 3) {
+          throw new Error('ECONNRESET');
+        }
+        return okResponse({ err: 0, result: { ok: true } });
+      }
+    });
+
+    const result = await client.request('/projects');
+
+    expect(result).toEqual({ ok: true });
+    expect(calls).toBe(3);
+    expect(client.stats.retries).toBe(2);
+  });
+
+  it('gives up on a connection that never comes back', async () => {
+    let calls = 0;
+    const client = createClient('token', {
+      maxRetries: 2,
+      ...noWait,
+      fetchImpl: async () => {
+        calls += 1;
+        throw new Error('ETIMEDOUT');
+      }
+    });
+
+    await expect(client.request('/projects')).rejects.toThrow(/after 3 attempts/);
+    expect(calls).toBe(3);
+  });
+
+  it('still retries a throttled response', async () => {
+    let calls = 0;
+    const client = createClient('token', {
+      maxRetries: 2,
+      ...noWait,
+      fetchImpl: async () => {
+        calls += 1;
+        if (calls < 2) {
+          return { ok: false, status: 429, headers: new Map(), json: async () => ({ err: 1 }) };
+        }
+        return okResponse({ err: 0, result: { ok: true } });
+      }
+    });
+
+    expect(await client.request('/projects')).toEqual({ ok: true });
+    expect(calls).toBe(2);
   });
 });
 

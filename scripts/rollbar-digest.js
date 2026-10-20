@@ -473,19 +473,24 @@ const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 // Rollbar answers a throttled request with either a seconds-to-wait header or
 // the epoch second the limit resets at. Honour both, so a retry does not just
 // run into the same wall.
-const retryDelayMs = (response) => {
-  const reset = Number(response.headers.get('x-rate-limit-reset'));
-  if (Number.isFinite(reset) && reset > 0) {
-    const untilReset = reset * 1000 - Date.now();
-    if (untilReset > 0) {
-      return Math.min(untilReset, 120000);
+const retryDelayMs = (response, attempt = 0) => {
+  if (response) {
+    const reset = Number(response.headers.get('x-rate-limit-reset'));
+    if (Number.isFinite(reset) && reset > 0) {
+      const untilReset = reset * 1000 - Date.now();
+      if (untilReset > 0) {
+        return Math.min(untilReset, 120000);
+      }
     }
+    const seconds = Number(response.headers.get('x-rate-limit-remaining-seconds') ?? response.headers.get('retry-after') ?? 5);
+    return Math.min(Math.max(Number.isFinite(seconds) ? seconds : 5, 1), 60) * 1000;
   }
-  const seconds = Number(response.headers.get('x-rate-limit-remaining-seconds') ?? response.headers.get('retry-after') ?? 5);
-  return Math.min(Math.max(Number.isFinite(seconds) ? seconds : 5, 1), 60) * 1000;
+
+  // No response at all: the connection failed. Back off on its own.
+  return Math.min(5000 * 2 ** attempt, 60000);
 };
 
-const createClient = (token, { maxRetries = 4 } = {}) => {
+export const createClient = (token, { maxRetries = 4, fetchImpl = fetch, sleepImpl = sleep } = {}) => {
   const stats = { requests: 0, minRemaining: null, retries: 0 };
 
   const request = async (path, params = {}) => {
@@ -497,10 +502,22 @@ const createClient = (token, { maxRetries = 4 } = {}) => {
     }
 
     for (let attempt = 0; ; attempt += 1) {
-      const response = await fetch(url, {
-        headers: { 'X-Rollbar-Access-Token': token },
-        signal: AbortSignal.timeout(60000)
-      });
+      let response;
+      try {
+        response = await fetchImpl(url, {
+          headers: { 'X-Rollbar-Access-Token': token },
+          signal: AbortSignal.timeout(60000)
+        });
+      } catch (error) {
+        // A timeout or a dropped connection rejects before there is a status
+        // to inspect, so it has to be retried here or it ends the whole run.
+        if (attempt >= maxRetries) {
+          throw new Error(`${path} -> ${error?.message ?? 'network error'} after ${attempt + 1} attempts`);
+        }
+        stats.retries += 1;
+        await sleepImpl(retryDelayMs(null, attempt));
+        continue;
+      }
 
       stats.requests += 1;
       const remaining = Number(response.headers.get('x-rate-limit-remaining'));
@@ -513,7 +530,7 @@ const createClient = (token, { maxRetries = 4 } = {}) => {
           throw new Error(`${path} -> HTTP ${response.status} after ${attempt + 1} attempts`);
         }
         stats.retries += 1;
-        await sleep(retryDelayMs(response));
+        await sleepImpl(retryDelayMs(response));
         continue;
       }
 
@@ -1138,22 +1155,41 @@ const main = async () => {
 
   // An empty digest is the one output that cannot be told apart from a healthy
   // week, so a collection that looks broken is retried before it is reported.
+  // A collection that failed outright is retried too: one dropped connection
+  // must not end the run.
   const maxAttempts = Math.max(1, config.maxAttempts ?? 3);
-  let collection = await collect();
-  let attempts = 1;
+  let collection = null;
+  let attempts = 0;
   let retryReason = null;
+  let lastError = null;
 
   while (attempts < maxAttempts) {
-    const reason = findRetryReason(collection);
-    if (!reason) {
-      break;
-    }
-    // Keep the first reason: once a retry succeeds the collection is clean
-    // again, and that is the interesting part to report.
-    retryReason = retryReason ?? reason;
-    await sleep(collectionRetryDelayMs(attempts - 1));
-    collection = await collect();
     attempts += 1;
+    try {
+      collection = await collect();
+      lastError = null;
+    } catch (error) {
+      collection = null;
+      lastError = error;
+    }
+
+    if (collection) {
+      const reason = findRetryReason(collection);
+      if (!reason) {
+        break;
+      }
+      // Keep the first reason: once a retry succeeds the collection is clean
+      // again, and that is the interesting part to report.
+      retryReason = retryReason ?? reason;
+    }
+
+    if (attempts < maxAttempts) {
+      await sleep(collectionRetryDelayMs(attempts - 1));
+    }
+  }
+
+  if (!collection) {
+    throw lastError ?? new Error('the Rollbar API could not be read');
   }
 
   // Retrying is not the same as succeeding. If the collection is still
