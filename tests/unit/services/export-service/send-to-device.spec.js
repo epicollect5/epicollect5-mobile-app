@@ -4,7 +4,7 @@ import { deleteFileService } from '@/services/filesystem/delete-file-service';
 import { databaseSelectService } from '@/services/database/database-select-service';
 import { notificationService } from '@/services/notification-service';
 import { mediaDirsService } from '@/services/filesystem/media-dirs-service';
-import { Directory } from '@capacitor/filesystem';
+import { Directory, Filesystem } from '@capacitor/filesystem';
 import { utilsService } from '@/services/utilities/utils-service';
 import { useRootStore } from '@/stores/root-store';
 import { projectModel } from '@/models/project-model';
@@ -15,6 +15,16 @@ import { flushPromises } from '@vue/test-utils';
 
 vi.mock('@/stores/root-store');
 vi.mock('@/services/utilities/utils-service');
+vi.mock('@capacitor/filesystem', () => ({
+    Directory: {
+        Documents: 'DOCUMENTS',
+        Data: 'DATA',
+        Cache: 'CACHE'
+    },
+    Filesystem: {
+        requestPermissions: vi.fn()
+    }
+}));
 vi.mock('@/services/database/database-select-service', () => ({
     databaseSelectService: {
         countAllEntries: vi.fn(),
@@ -82,6 +92,7 @@ describe('exportService.sendToDevice', () => {
         mediaDirsService.getRelativeDataDirectoryForCapacitorFilesystem.mockReturnValue(Directory.Data);
 
         deleteFileService.removeDirectoryIfExists.mockResolvedValue(undefined);
+        Filesystem.requestPermissions.mockResolvedValue({ publicStorage: 'granted' });
         notificationService.setProgressExport.mockImplementation((p) => {
             mockRootStore.progressExport = p;
         });
@@ -160,6 +171,68 @@ describe('exportService.sendToDevice', () => {
         expect(exportService.exportMedia).toHaveBeenCalledWith(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG, Directory.Documents);
     });
 
+    it('should request storage permission before doing any export work', async () => {
+        await exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG);
+
+        expect(Filesystem.requestPermissions).toHaveBeenCalledTimes(1);
+        expect(Filesystem.requestPermissions.mock.invocationCallOrder[0])
+            .toBeLessThan(databaseSelectService.countAllEntries.mock.invocationCallOrder[0]);
+        expect(Filesystem.requestPermissions.mock.invocationCallOrder[0])
+            .toBeLessThan(deleteFileService.removeDirectoryIfExists.mock.invocationCallOrder[0]);
+    });
+
+    it('should show a permission message, skip reporting and release the lock when storage permission is denied', async () => {
+        Filesystem.requestPermissions.mockResolvedValueOnce({ publicStorage: 'denied' });
+
+        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
+            .rejects.toThrow(STRINGS.en.labels.missing_permission);
+
+        expect(rollbarService.critical).not.toHaveBeenCalled();
+        expect(databaseSelectService.countAllEntries).not.toHaveBeenCalled();
+        expect(mockShow).not.toHaveBeenCalled();
+        expect(deleteFileService.removeDirectoryIfExists).not.toHaveBeenCalled();
+
+        //the lock must be released so the user can retry after granting it
+        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
+            .resolves.toBe(MOCK_EXPORT_PATH);
+    });
+
+    it('should map an OS-PLUG-FILE-0007 denial during the export to the permission message', async () => {
+        exportService.exportHierarchyEntries.mockRejectedValueOnce(
+            Object.assign(
+                new Error('Unable to perform file operation, user denied permission request.'),
+                { code: 'OS-PLUG-FILE-0007' }
+            )
+        );
+
+        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
+            .rejects.toThrow(STRINGS.en.labels.missing_permission);
+
+        expect(rollbarService.critical).not.toHaveBeenCalled();
+        //the partially written export is removed
+        expect(deleteFileService.removeDirectoryIfExists).toHaveBeenCalledTimes(2);
+    });
+
+    it('should recognise the legacy denied-permission message without an error code', async () => {
+        exportService.exportHierarchyEntries.mockRejectedValueOnce(
+            new Error('Unable to do file operation, user denied permission request.')
+        );
+
+        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
+            .rejects.toThrow(STRINGS.en.labels.missing_permission);
+
+        expect(rollbarService.critical).not.toHaveBeenCalled();
+    });
+
+    it('should map the missing_permission label thrown by the media export', async () => {
+        exportService.exportMedia.mockRejectedValueOnce(STRINGS.en.labels.missing_permission);
+
+        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
+            .rejects.toThrow(STRINGS.en.labels.missing_permission);
+
+        expect(rollbarService.critical).not.toHaveBeenCalled();
+    });
+
     it('should ignore "does not exist" error when wiping previous export', async () => {
         deleteFileService.removeDirectoryIfExists.mockImplementationOnce(async () => {
             // simulate that it ignores the error internally
@@ -174,6 +247,7 @@ describe('exportService.sendToDevice', () => {
 
         await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
             .rejects.toThrow('Unknown error');
+        expect(rollbarService.critical).toHaveBeenCalled();
     });
 
     it('should always hide modal on failure', async () => {

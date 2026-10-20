@@ -21,6 +21,18 @@ import {deleteFileService} from '@/services/filesystem/delete-file-service';
 //(same zip filename / same output dir) and collide on the native share sheet
 let isExporting = false;
 
+//@capacitor/filesystem rejects with OS-PLUG-FILE-0007 on Android when the user
+//denies the storage permission request; older plugin versions only carry the
+//message. exportMediaService throws the localized missing_permission label.
+function isStoragePermissionDenied(error, missingPermissionMessage) {
+    if (error?.code === 'OS-PLUG-FILE-0007') {
+        return true;
+    }
+    const message = typeof error === 'string' ? error : (error?.message ?? '');
+    return message === missingPermissionMessage
+        || message.toLowerCase().includes('user denied permission');
+}
+
 export const exportService = {
 
     //CSV headers are built from the project mapping: a project row saved on the
@@ -479,6 +491,14 @@ export const exportService = {
         let success = true; // Assume success unless an error occurs
 
         try {
+            //Ask before any work: the plugin would otherwise request the permission
+            //from inside the first file operation, after the modal is shown and the
+            //previous export has been deleted
+            const permission = await Filesystem.requestPermissions();
+            if (permission.publicStorage !== 'granted') {
+                throw new Error(STRINGS[language].labels.missing_permission);
+            }
+
             deviceExportPath = utilsService.getExportPath(projectSlug, documentsDirectory);
 
             // Get total entries count for progress bar
@@ -520,10 +540,16 @@ export const exportService = {
 
             return deviceExportPath; // Return the path to the exported files
         } catch (error) {
+            success = false;
+            const labels = STRINGS[language].labels;
+            //a denied permission is a user choice: tell them what to do and do
+            //not report it as a failure
+            if (isStoragePermissionDenied(error, labels.missing_permission)) {
+                throw new Error(labels.missing_permission);
+            }
             console.error('Send to device failed:', error);
             rollbarService.critical(error);
-            success = false;
-            throw new Error(STRINGS[language].labels.unknown_error);
+            throw new Error(labels.unknown_error);
         } finally {
             try {
                 // Dismiss the modal
