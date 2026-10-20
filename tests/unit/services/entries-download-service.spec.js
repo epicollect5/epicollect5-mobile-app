@@ -111,6 +111,18 @@ vi.mock('@/services/errors-service', () => ({
     }
 }));
 
+const keepAwakeMocks = vi.hoisted(() => ({
+    acquire: vi.fn().mockResolvedValue(),
+    release: vi.fn().mockResolvedValue()
+}));
+
+vi.mock('@/services/keep-awake-service', () => ({
+    keepAwakeService: {
+        acquireTransferLock: keepAwakeMocks.acquire,
+        releaseTransferLock: keepAwakeMocks.release
+    }
+}));
+
 vi.mock('@/services/database/database-delete-service', () => ({
     databaseDeleteService: {
         deleteEntriesBeforeDownload: vi.fn()
@@ -182,6 +194,8 @@ describe('entriesDownloadService project version checks', () => {
     beforeEach(() => {
         vi.useFakeTimers();
         vi.clearAllMocks();
+        keepAwakeMocks.acquire.mockResolvedValue();
+        keepAwakeMocks.release.mockResolvedValue();
         versioningService.checkProjectVersion.mockResolvedValue(true);
         updateProject.mockResolvedValue(true);
         downloadService.downloadFormEntries.mockResolvedValue(true);
@@ -589,5 +603,50 @@ describe('entriesDownloadService project version checks', () => {
         expect(notificationService.showAlert).toHaveBeenCalledWith('Project does not exist');
         expect(state.resumeAvailable['form-a']).toBe(true);
         expect(state.isFetching).toBe(false);
+    });
+
+    it('holds the screen on for the download and releases it on success', async () => {
+        const state = createState();
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
+        expect(keepAwakeMocks.acquire).toHaveBeenCalledTimes(1);
+        expect(keepAwakeMocks.release).toHaveBeenCalledTimes(1);
+        //the lock is taken before the transfer starts
+        expect(keepAwakeMocks.acquire.mock.invocationCallOrder[0])
+            .toBeLessThan(downloadService.downloadFormEntries.mock.invocationCallOrder[0]);
+    });
+
+    it('releases the keep-screen-on lock when the download fails', async () => {
+        const state = createState();
+        downloadService.downloadFormEntries.mockRejectedValue(new Error('network unavailable'));
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
+        expect(keepAwakeMocks.acquire).toHaveBeenCalledTimes(1);
+        expect(keepAwakeMocks.release).toHaveBeenCalledTimes(1);
+    });
+
+    it('releases the keep-screen-on lock when a fresh download is blocked by unsynced entries', async () => {
+        const state = createState();
+        databaseSelectService.countUnsyncedEntries.mockResolvedValue({
+            rows: {
+                item: () => ({
+                    total_number_of_entries_unsynced: 1,
+                    total_number_of_entries_with_errors: 0,
+                    total_number_of_incomplete_entries: 0
+                })
+            }
+        });
+        const downloader = createDownloader(state);
+
+        await downloader.downloadEntries('form-a');
+        await settleDownload();
+
+        expect(keepAwakeMocks.release).toHaveBeenCalledTimes(1);
     });
 });

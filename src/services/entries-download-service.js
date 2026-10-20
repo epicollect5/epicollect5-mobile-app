@@ -12,6 +12,7 @@ import {databaseSelectService} from '@/services/database/database-select-service
 import {versioningService} from '@/services/utilities/versioning-service';
 import {logout} from '@/use/auth/logout';
 import {updateProject} from '@/use/project/update-project';
+import {keepAwakeService} from '@/services/keep-awake-service';
 
 function initDownloader({state, rootStore, labels, language, projectModel}) {
   function resetDownloadButtonState() {
@@ -245,6 +246,9 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
     const startDownload = async (resumeDownload = false) => {
       const formCache = getFormDownloadCache(formRef);
       try {
+        //hold the screen on for the whole download (opt-in). Released in the
+        //finally below on every exit, success or failure
+        await keepAwakeService.acquireTransferLock();
         if (!resumeDownload) {
           const unsyncedCount = await databaseSelectService.countUnsyncedEntries(projectModel.getProjectRef());
           const unsyncedMediaCount = await databaseSelectService.countMediaUnsynced(projectModel.getProjectRef());
@@ -387,6 +391,7 @@ function initDownloader({state, rootStore, labels, language, projectModel}) {
           await errorsService.handleWebError(error);
         }
       } finally {
+        await keepAwakeService.releaseTransferLock();
         state.isFetching = false;
       }
     };

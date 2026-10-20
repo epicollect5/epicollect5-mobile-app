@@ -16,6 +16,7 @@ const rootStoreMock = vi.hoisted(() => ({
     collectErrors: true,
     inAppCamera: false,
     inAppCameraVideo: false,
+    keepScreenOnDuringTransfer: false,
     theme: 'light',
     device: { platform: 'android' },
     app: { name: 'Epicollect5', version: '1.0.0' },
@@ -109,6 +110,7 @@ describe('Settings page', () => {
         rootStoreMock.collectErrors = true;
         rootStoreMock.inAppCamera = false;
         rootStoreMock.inAppCameraVideo = false;
+        rootStoreMock.keepScreenOnDuringTransfer = false;
         rootStoreMock.theme = 'light';
         rootStoreMock.nextRoute = 'projects';
         rootStoreMock.routeParams = {};
@@ -307,5 +309,59 @@ describe('Settings page', () => {
         expect(routerReplace).toHaveBeenCalledWith({
             name: PARAMETERS.ROUTES.PROJECTS
         });
+    });
+
+    it('keeps the keep-screen-on toggle local until the save succeeds', async () => {
+        const wrapper = mountSettings();
+
+        wrapper.vm.updateKeepScreenOnDuringTransfer({ detail: { checked: true } });
+
+        expect(wrapper.vm.state.keepScreenOnDuringTransfer).toBe(true);
+        expect(rootStoreMock.keepScreenOnDuringTransfer).toBe(false);
+
+        await wrapper.vm.saveSettings();
+        await flushPromises();
+
+        expect(databaseInsertService.insertSetting).toHaveBeenCalledWith(
+            PARAMETERS.SETTINGS_KEYS.KEEP_SCREEN_ON_DURING_TRANSFER,
+            'true'
+        );
+        expect(rootStoreMock.keepScreenOnDuringTransfer).toBe(true);
+    });
+
+    it('reports an error and never reaches the store when the keep-screen-on write fails', async () => {
+        databaseInsertService.insertSetting.mockImplementation((key) => {
+            if (key === PARAMETERS.SETTINGS_KEYS.KEEP_SCREEN_ON_DURING_TRANSFER) {
+                return Promise.reject(new Error('db locked'));
+            }
+            return Promise.resolve();
+        });
+        const wrapper = mountSettings();
+        wrapper.vm.state.keepScreenOnDuringTransfer = true;
+
+        await wrapper.vm.saveSettings();
+        await flushPromises();
+
+        expect(notificationService.showAlert).toHaveBeenCalled();
+        expect(rootStoreMock.keepScreenOnDuringTransfer).toBe(false);
+    });
+
+    it('points the keep-screen-on Learn more action at the published docs', async () => {
+        expect(PARAMETERS.KEEP_SCREEN_ON_DOCS_URL).toBe(
+            'https://docs.epicollect.net/mobile-application/keep-screen-on'
+        );
+
+        const wrapper = mountSettings();
+        const openSpy = vi.spyOn(window, 'open').mockImplementation(() => {});
+
+        wrapper.vm.openKeepScreenOnDocs();
+
+        expect(openSpy).toHaveBeenCalledWith(
+            'https://docs.epicollect.net/mobile-application/keep-screen-on',
+            '_system',
+            'location=yes'
+        );
+
+        openSpy.mockRestore();
     });
 });

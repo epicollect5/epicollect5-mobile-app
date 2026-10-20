@@ -243,6 +243,45 @@
 				</ion-card>
 
 
+			<ion-card>
+				<ion-card-header class="settings-label">
+					<ion-card-title
+						data-translate="keep_screen_on"
+						class="ion-text-center ion-text-uppercase"
+					>
+						{{ labels.keep_screen_on }}
+					</ion-card-title>
+				</ion-card-header>
+				<ion-card-content class="ion-text-left ion-no-padding">
+					<ion-item
+						lines="none"
+						class="ion-text-left"
+					>
+						<ion-toggle
+							data-translate="keep_screen_on_during_transfers"
+							@ionChange="updateKeepScreenOnDuringTransfer($event)"
+							class="ion-text-wrap"
+							color="secondary"
+							:checked="state.keepScreenOnDuringTransfer"
+						>
+							<ion-label class="ion-text-wrap">{{ labels.keep_screen_on_during_transfers }}</ion-label>
+						</ion-toggle>
+					</ion-item>
+					<ion-card-content class="ion-text-center">
+						<ion-button
+							color="warning"
+							@click="openKeepScreenOnDocs()"
+						>
+							<ion-icon
+								slot="start"
+								:icon="openOutline"
+							></ion-icon>
+							{{ labels.learn_more }}
+						</ion-button>
+					</ion-card-content>
+				</ion-card-content>
+			</ion-card>
+
 			<ion-card v-if="isDebug || hasEasterEggProject">
 				<ion-card-header class="settings-label">
 					<ion-card-title class="ion-text-center ion-text-uppercase">
@@ -295,6 +334,7 @@ export default {
 			collectErrors: rootStore.collectErrors,
 			inAppCamera: rootStore.inAppCamera,
 			inAppCameraVideo: rootStore.inAppCameraVideo,
+			keepScreenOnDuringTransfer: rootStore.keepScreenOnDuringTransfer,
 			theme: rootStore.theme,
 			isSaving: false
 		});
@@ -380,6 +420,16 @@ export default {
 							failed = true;
 						}
 						break;
+					case PARAMETERS.SETTINGS_KEYS.KEEP_SCREEN_ON_DURING_TRANSFER:
+
+						try {
+							await databaseInsertService.insertSetting(key, state.keepScreenOnDuringTransfer ? 'true' : 'false');
+							rootStore.keepScreenOnDuringTransfer = state.keepScreenOnDuringTransfer;
+						} catch (error) {
+							console.log(error);
+							failed = true;
+						}
+						break;
 					case PARAMETERS.SETTINGS_KEYS.THEME:
 
 						try {
@@ -432,6 +482,9 @@ export default {
 			updateInAppCameraVideo(e) {
 				state.inAppCameraVideo = e.detail.checked;
 			},
+			updateKeepScreenOnDuringTransfer(e) {
+				state.keepScreenOnDuringTransfer = e.detail.checked;
+			},
 			async openThemeSelector() {
 				const sheet = await actionSheetController.create({
 					header: labels.theme,
@@ -467,6 +520,9 @@ export default {
 			},
 			openInAppCameraDocs() {
 				window.open(PARAMETERS.IN_APP_CAMERA_DOCS_URL, '_system', 'location=yes');
+			},
+			openKeepScreenOnDocs() {
+				window.open(PARAMETERS.KEEP_SCREEN_ON_DOCS_URL, '_system', 'location=yes');
 			}
 		};
 

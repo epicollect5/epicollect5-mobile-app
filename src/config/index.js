@@ -12,6 +12,7 @@ export const PARAMETERS = {
     PROJECT_VERSION_DOCS_URL: 'https://docs.epicollect.net/mobile-application/export-entries-mobile#project-version-not-compatible',
     NOTIFICATIONS_PERMISSIONS_DOCS_URL: 'https://docs.epicollect.net/mobile-application/mobile-app-permissions#notification-permission',
     IN_APP_CAMERA_DOCS_URL: 'https://docs.epicollect.net/mobile-application/mobile-application#embedded-camera',
+    KEEP_SCREEN_ON_DOCS_URL: 'https://docs.epicollect.net/mobile-application/keep-screen-on',
     NOTIFICATIONS_PERMISSIONS_DENIED_WARNING_SHOWN: 'notifications_permissions_denied_warning_shown',
     DEBUG: import.meta.env.VITE_DEBUG,
     IS_LOCALHOST: import.meta.env.PROD ? 0 : 1, //for debugging outside of Laravel(production), it is set to 1
@@ -360,6 +361,7 @@ export const PARAMETERS = {
         COLLECT_ERRORS: 'collect_errors',
         IN_APP_CAMERA: 'in_app_camera',
         IN_APP_CAMERA_VIDEO: 'in_app_camera_video',
+        KEEP_SCREEN_ON_DURING_TRANSFER: 'keep_screen_on_during_transfer',
         THEME: 'theme'
     },
     DEFAULT_THEME: 'light',
