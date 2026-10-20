@@ -365,9 +365,12 @@ describe('collectDigest', () => {
     last_occurrence_timestamp: Math.floor((NOW - DAY) / 1000)
   });
 
-  const stubClient = ({ occurrences = [], items = [] } = {}) => ({
+  const stubClient = ({ occurrences = [], items = [], resolvedItems = [] } = {}) => ({
     listInstances: async ({ page }) => (page === 1 ? { instances: occurrences } : { instances: [] }),
-    listItems: async () => ({ items, total_count: items.length })
+    listItems: async ({ status } = {}) => {
+      const batch = status === 'resolved' ? resolvedItems : items;
+      return { items: batch, total_count: batch.length };
+    }
   });
 
   it('returns a collection the retry decision can read', async () => {
@@ -462,51 +465,114 @@ describe('collectDigest', () => {
     expect(collection.items).toHaveLength(1);
     expect(collection.items[0].platform).toBe('android');
   });
+
+  it('does not call a resolved week a broken collection', async () => {
+    // The issues were resolved: their occurrences are still in the sample,
+    // but there is nothing active left to report. That is a quiet week.
+    const many = Array.from({ length: 25 }, () => occurrence('98.3.1', 'android 12 - pixel - webview 155'));
+    const client = stubClient({
+      occurrences: many,
+      items: [],
+      resolvedItems: [item(9, '98.3.1', 'android 12 - pixel - webview 155')]
+    });
+
+    const collection = await collectDigest(client, {
+      projectId: 1,
+      now: NOW,
+      days: 14,
+      linesBehind: 2,
+      pageSize: 100,
+      maxSamplePages: 4,
+      maxPagesPerVersion: 2
+    });
+
+    expect(findBrokenReason(collection)).toBeNull();
+    expect(collection.versionEvidence[0]).toMatchObject({ sampled: 25, active: 0, resolved: 1 });
+  });
+
+  it('keeps every build an item was seen on', async () => {
+    const client = stubClient({
+      occurrences: [
+        occurrence('98.5.1', 'android 12 - pixel - webview 155'),
+        occurrence('98.3.1', 'android 12 - pixel - webview 155')
+      ],
+      // The same item comes back from both version queries.
+      items: [item(1, '98.3.1', 'android 12 - pixel - webview 155')]
+    });
+
+    const collection = await collectDigest(client, {
+      projectId: 1,
+      now: NOW,
+      days: 14,
+      linesBehind: 2,
+      pageSize: 100,
+      maxSamplePages: 4,
+      maxPagesPerVersion: 2
+    });
+
+    expect(collection.items).toHaveLength(1);
+    expect([...collection.items[0].versions].sort()).toEqual(['98.3.1', '98.5.1']);
+
+    const clusters = clusterItems(collection.items);
+    expect(clusters[0].versions.sort()).toEqual(['98.3.1', '98.5.1']);
+    expect(clusters[0].occurrences).toBe(1);
+  });
 });
 
 describe('findBrokenReason', () => {
-  const platformWith = (occurrences) => ({
-    name: 'android',
-    selected: [{ version: '98.3.1', occurrences, lastSeen: NOW }]
+  const evidence = (overrides = {}) => [{
+    version: '98.3.1',
+    sampled: 240,
+    active: 0,
+    resolved: 0,
+    ...overrides
+  }];
+
+  it('calls a stream of occurrences with no items at all a broken collection', () => {
+    expect(findBrokenReason({ versionEvidence: evidence() }))
+      .toMatch(/no active or resolved items came back/);
   });
 
-  it('calls a stream of occurrences with no items a broken collection', () => {
-    expect(findBrokenReason({
-      platforms: [platformWith(240)],
-      items: []
-    })).toMatch(/no items came back/);
+  it('does not call a resolved week broken', () => {
+    // The issues were resolved: their occurrences are still in the sample,
+    // but there is nothing active left to report.
+    expect(findBrokenReason({ versionEvidence: evidence({ resolved: 12 }) })).toBeNull();
   });
 
-  it('does not call a resolved-away issue broken', () => {
-    expect(findBrokenReason({
-      platforms: [platformWith(4)],
-      items: []
-    })).toBeNull();
+  it('does not call a week with active items broken', () => {
+    expect(findBrokenReason({ versionEvidence: evidence({ active: 3 }) })).toBeNull();
   });
 
   it('does not call a quiet week broken', () => {
-    expect(findBrokenReason({ platforms: [], items: [] })).toBeNull();
+    expect(findBrokenReason({ versionEvidence: [] })).toBeNull();
   });
 
   it('is the part of the retry reason that survives a successful retry', () => {
-    const broken = { sample: { instances: 240, occurrences: 240 }, platforms: [platformWith(240)], items: [] };
+    expect(findRetryReason({
+      sample: { instances: 240, occurrences: 240 },
+      versionEvidence: evidence()
+    })).toMatch(/no active or resolved items came back/);
 
-    expect(findRetryReason(broken)).toMatch(/no items came back/);
-    expect(findRetryReason({ sample: { instances: 0 }, platforms: [], items: [] })).toMatch(/sample came back empty/);
+    expect(findRetryReason({
+      sample: { instances: 0, occurrences: 0 },
+      versionEvidence: []
+    })).toMatch(/sample came back empty/);
   });
 });
 
 describe('findRetryReason', () => {
-  const platformWith = (occurrences) => ({
-    name: 'android',
-    selected: [{ version: '98.3.1', occurrences, lastSeen: NOW }]
-  });
+  const evidence = (overrides = {}) => [{
+    version: '98.3.1',
+    sampled: 240,
+    active: 0,
+    resolved: 0,
+    ...overrides
+  }];
 
   it('retries when the occurrence sample came back empty', () => {
     const reason = findRetryReason({
       sample: { instances: 0, occurrences: 0 },
-      platforms: [],
-      items: []
+      versionEvidence: []
     });
 
     expect(reason).toMatch(/sample came back empty/);
@@ -515,41 +581,36 @@ describe('findRetryReason', () => {
   it('retries when errors were sampled but no items came back', () => {
     const reason = findRetryReason({
       sample: { instances: 240, occurrences: 240 },
-      platforms: [platformWith(240)],
-      items: []
+      versionEvidence: evidence()
     });
 
-    expect(reason).toMatch(/no items came back/);
+    expect(reason).toMatch(/no active or resolved items came back/);
   });
 
   it('does not retry a genuinely quiet week', () => {
     expect(findRetryReason({
       sample: { instances: 0, occurrences: 0 },
-      platforms: [],
-      items: []
+      versionEvidence: []
     })).toBeTruthy();
 
     // A quiet week still has boot errors: they arrive without a version.
     expect(findRetryReason({
       sample: { instances: 12, occurrences: 0 },
-      platforms: [],
-      items: []
+      versionEvidence: []
     })).toBeNull();
   });
 
-  it('does not retry when a small number of items was resolved away', () => {
+  it('does not retry a week whose issues were all resolved', () => {
     expect(findRetryReason({
-      sample: { instances: 4, occurrences: 4 },
-      platforms: [platformWith(4)],
-      items: []
+      sample: { instances: 240, occurrences: 240 },
+      versionEvidence: evidence({ resolved: 4 })
     })).toBeNull();
   });
 
   it('does not retry a healthy collection', () => {
     expect(findRetryReason({
       sample: { instances: 240, occurrences: 240 },
-      platforms: [platformWith(240)],
-      items: [{ id: '1' }]
+      versionEvidence: evidence({ active: 3 })
     })).toBeNull();
   });
 });

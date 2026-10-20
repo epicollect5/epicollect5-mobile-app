@@ -220,6 +220,10 @@ export const toItem = (raw, version = null) => {
     projectId: raw.project_id,
     projectSlug: raw.project_slug ?? null,
     version,
+    // An item can be returned by more than one version query, because it was
+    // seen on more than one build. The first version is the primary one;
+    // `versions` keeps the full list.
+    versions: version ? [version] : [],
     environment: String(raw.environment ?? 'unknown'),
     platform: platformOf(raw.environment),
     title: String(raw.title ?? ''),
@@ -259,8 +263,8 @@ export const clusterItems = (items = []) => {
     cluster.titles.set(item.title, (cluster.titles.get(item.title) ?? 0) + 1);
     cluster.environments.add(item.environment);
     cluster.platforms[item.platform] = (cluster.platforms[item.platform] ?? 0) + 1;
-    if (item.version) {
-      cluster.versions.add(item.version);
+    for (const version of item.versions ?? (item.version ? [item.version] : [])) {
+      cluster.versions.add(version);
     }
     cluster.occurrences += item.occurrences;
     if (item.firstSeen) {
@@ -325,27 +329,26 @@ export const flagCluster = (cluster, options) => {
 // healthy week, so a collection that looks broken is retried before it is
 // reported. These are the shapes that mean the API misbehaved, not the app
 // being quiet.
-export const findRetryReason = ({ sample, platforms, items }) => {
+export const findRetryReason = ({ sample, versionEvidence } = {}) => {
   // The occurrence sample came back empty. The app cannot have zero errors
   // and zero sampled occurrences at the same time.
-  if (!sample.instances) {
+  if (!sample?.instances) {
     return 'the occurrence sample came back empty';
   }
 
-  return findBrokenReason({ platforms, items });
+  return findBrokenReason({ versionEvidence });
 };
 
-// The subset of the above that cannot be a quiet week: errors were sampled
-// for the versions in scope, yet their item query returned nothing. A couple
-// of resolved items explain a couple of occurrences, not a stream of them.
-// A collection in this state is not a report about the app — it is a broken
-// API contract, and publishing it would call the failure a quiet week.
-export const findBrokenReason = ({ platforms, items }) => {
-  const sampled = (platforms ?? [])
-    .filter((platform) => platform.selected.length)
-    .reduce((total, platform) => total + platform.selected.reduce((sum, entry) => sum + entry.occurrences, 0), 0);
-  if (sampled >= 20 && !(items ?? []).length) {
-    return `${sampled} occurrences were sampled for the versions in scope but no items came back`;
+// The subset of the above that cannot be a quiet week: a version had a stream
+// of occurrences, yet its item query returned nothing at all — neither active
+// nor resolved. A collection in this state is not a report about the app, it
+// is a broken API contract, and publishing it would call the failure a quiet
+// week.
+export const findBrokenReason = ({ versionEvidence = [] } = {}) => {
+  for (const entry of versionEvidence) {
+    if (entry.sampled >= 20 && entry.active === 0 && entry.resolved === 0) {
+      return `${entry.sampled} occurrences were sampled for version ${entry.version} but no active or resolved items came back`;
+    }
   }
 
   return null;
@@ -435,6 +438,7 @@ const toJsonItem = (item) => ({
   id: item.id,
   counter: item.counter,
   version: item.version,
+  versions: item.versions ?? (item.version ? [item.version] : []),
   environment: item.environment,
   platform: item.platform,
   title: redact(item.title),
@@ -625,12 +629,12 @@ const sampleOccurrences = async (client, { projectId, now, days, pageSize, maxPa
   return { byPlatform, stats };
 };
 
-const fetchItems = async (client, { projectId, version, maxPages }) => {
+const fetchItems = async (client, { projectId, version, maxPages, status = 'active' }) => {
   const items = [];
 
   for (let page = 1; page <= maxPages; page += 1) {
     const result = await client.listItems({
-      status: 'active',
+      status,
       query: version ? `code_version:"${version}"` : undefined,
       environment: version ? undefined : 'unknown',
       limit: ITEMS_PAGE_SIZE,
@@ -679,16 +683,65 @@ export const collectDigest = async (client, {
     });
 
   const selectedVersions = [...new Set(platforms.flatMap((platform) => platform.selected.map((entry) => entry.version)))];
-  const itemBatches = await Promise.all(selectedVersions.map((version) => {
-    return fetchItems(client, { projectId, version, maxPages: maxPagesPerVersion });
+
+  // How many occurrences the sample saw for each watched version.
+  const sampledByVersion = new Map();
+  for (const platform of platforms) {
+    for (const entry of platform.selected) {
+      sampledByVersion.set(entry.version, (sampledByVersion.get(entry.version) ?? 0) + entry.occurrences);
+    }
+  }
+
+  const activeByVersion = new Map();
+  const itemBatches = await Promise.all(selectedVersions.map(async (version) => {
+    const batch = await fetchItems(client, { projectId, version, maxPages: maxPagesPerVersion });
+    activeByVersion.set(version, batch.length);
+    return batch;
+  }));
+
+  // A version can have occurrences and no active items because its issues
+  // were resolved. That is a quiet week, not a broken query, so ask again
+  // before treating the absence as a failure.
+  const resolvedByVersion = new Map();
+  await Promise.all(selectedVersions.map(async (version) => {
+    if (activeByVersion.get(version) > 0 || !(sampledByVersion.get(version) > 0)) {
+      resolvedByVersion.set(version, 0);
+      return;
+    }
+    const batch = await fetchItems(client, {
+      projectId,
+      version,
+      maxPages: maxPagesPerVersion,
+      status: 'resolved'
+    });
+    resolvedByVersion.set(version, batch.length);
+  }));
+
+  const versionEvidence = selectedVersions.map((version) => ({
+    version,
+    sampled: sampledByVersion.get(version) ?? 0,
+    active: activeByVersion.get(version) ?? 0,
+    resolved: resolvedByVersion.get(version) ?? 0
   }));
 
   const byId = new Map();
   for (const batch of itemBatches) {
     for (const item of batch) {
-      if (!byId.has(item.id)) {
-        byId.set(item.id, item);
+      const existing = byId.get(item.id);
+      if (!existing) {
+        byId.set(item.id, { ...item, versions: item.versions ?? (item.version ? [item.version] : []) });
+        continue;
       }
+      // The same item can come back from more than one version query: it was
+      // seen on more than one build. Keep every build it was seen on, but
+      // count its occurrences once.
+      const versions = existing.versions ?? (existing.version ? [existing.version] : []);
+      for (const version of item.versions ?? (item.version ? [item.version] : [])) {
+        if (!versions.includes(version)) {
+          versions.push(version);
+        }
+      }
+      existing.versions = versions;
     }
   }
   // An item query names a version, not a platform, so a version both
@@ -705,7 +758,7 @@ export const collectDigest = async (client, {
     maxPages: maxPagesPerVersion
   })).filter((item) => !isNoise(item.title, noisePatterns));
 
-  return { sample: sample.stats, platforms, items, unversionedItems };
+  return { sample: sample.stats, platforms, items, unversionedItems, versionEvidence };
 };
 
 // ---------------------------------------------------------------------------
