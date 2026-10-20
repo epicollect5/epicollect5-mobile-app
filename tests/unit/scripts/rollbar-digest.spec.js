@@ -6,13 +6,16 @@ import {
   collectionRetryDelayMs,
   compareVersions,
   condenseTelemetry,
+  findBrokenReason,
   findRetryReason,
   flagCluster,
   isNoise,
+  isSensitiveKey,
   normalizeTitle,
   parseVersion,
   platformOf,
   redact,
+  redactException,
   renderDigest,
   selectVersionsForPlatform,
   toItem
@@ -267,11 +270,43 @@ describe('redact', () => {
   });
 
   it('redacts bearer headers, jwt, emails and long opaque blobs', () => {
-    expect(redact('Authorization: Bearer abcdef1234567890')).toBe('Authorization=Bearer <redacted>');
+    expect(redact('Authorization: Bearer abcdef1234567890')).toBe('Authorization: Bearer <redacted>');
     expect(redact('eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.abcdefghijkl')).toBe('<redacted-jwt>');
     expect(redact('user@example.com')).toBe('<redacted-email>');
     expect(redact('blob ' + 'a'.repeat(45))).toBe('blob <redacted-blob>');
     expect(redact('password=hunter2')).toBe('password=<redacted>');
+  });
+
+  it('masks a short secret behind a quoted JSON key', () => {
+    expect(redact('{"password":"hunter2"}')).toBe('{"password":"<redacted>"}');
+    expect(redact('{"apiKey":"abc123","ok":"fine"}')).toBe('{"apiKey":"<redacted>","ok":"fine"}');
+  });
+
+  it('masks a sensitive property of an object', () => {
+    const redacted = redact({ password: 'hunter2', note: 'ok', credentials: { user: 'x' } });
+
+    expect(redacted.password).toBe('<redacted>');
+    expect(redacted.note).toBe('ok');
+    expect(redacted.credentials).toBe('<redacted>');
+  });
+
+  it('does not mask a word that merely ends in a sensitive one', () => {
+    expect(redact('{"monkey":"banana"}')).toBe('{"monkey":"banana"}');
+    expect(isSensitiveKey('monkey')).toBe(false);
+    expect(isSensitiveKey('password')).toBe(true);
+    expect(isSensitiveKey('apiKey')).toBe(true);
+    expect(isSensitiveKey('api_key')).toBe(true);
+    expect(isSensitiveKey('context')).toBe(false);
+  });
+
+  it('masks an exception message', () => {
+    const redacted = redactException({
+      class: 'TypeError',
+      message: 'failed for user@example.com'
+    });
+
+    expect(redacted.message).toBe('failed for <redacted-email>');
+    expect(redacted.class).toBe('TypeError');
   });
 
   it('leaves ordinary diagnostic text alone', () => {
@@ -287,8 +322,9 @@ describe('redact', () => {
       list: ['someone@example.com']
     });
 
-    expect(redacted.credentials.accessToken).not.toContain('ya29.');
-    expect(redacted.credentials.email).toBe('<redacted-email>');
+    // A sensitive property is masked whole, so a secret under an innocent
+    // name inside it cannot survive either.
+    expect(redacted.credentials).toBe('<redacted>');
     expect(redacted.list[0]).toBe('<redacted-email>');
     expect(redacted.context).toBe('login');
   });
@@ -373,6 +409,90 @@ describe('collectDigest', () => {
     });
 
     expect(findRetryReason(collection)).toMatch(/sample came back empty/);
+  });
+
+  it('leaves occurrences older than the window out of the counts', async () => {
+    const inside = occurrence('98.3.1', 'android 12 - pixel - webview 155');
+    const outside = { ...occurrence('98.0.0', 'android 10 - other - webview 150') };
+    outside.timestamp = Math.floor((NOW - 20 * DAY) / 1000);
+
+    const client = stubClient({
+      occurrences: [inside, outside],
+      items: [item(1, '98.3.1', 'android 12 - pixel - webview 155')]
+    });
+
+    const collection = await collectDigest(client, {
+      projectId: 1,
+      now: NOW,
+      days: 14,
+      linesBehind: 2,
+      pageSize: 100,
+      maxSamplePages: 4,
+      maxPagesPerVersion: 2
+    });
+
+    // The old record must not select its version or inflate a count.
+    expect(collection.sample.instances).toBe(1);
+    expect(collection.platforms[0].selected.map((entry) => entry.version)).toEqual(['98.3.1']);
+  });
+
+  it('keeps the other platform out when a platform was asked for', async () => {
+    const client = stubClient({
+      occurrences: [
+        occurrence('98.3.1', 'android 12 - pixel - webview 155'),
+        { ...occurrence('98.3.1', 'ios 26.5 - iphone17,2 - webview 26.5.2') }
+      ],
+      items: [
+        item(1, '98.3.1', 'android 12 - pixel - webview 155'),
+        { ...item(2, '98.3.1', 'ios 26.5 - iphone17,2 - webview 26.5.2'), platform: 'ios' }
+      ]
+    });
+
+    const collection = await collectDigest(client, {
+      projectId: 1,
+      now: NOW,
+      days: 14,
+      linesBehind: 2,
+      onlyPlatforms: ['android'],
+      pageSize: 100,
+      maxSamplePages: 4,
+      maxPagesPerVersion: 2
+    });
+
+    expect(collection.items).toHaveLength(1);
+    expect(collection.items[0].platform).toBe('android');
+  });
+});
+
+describe('findBrokenReason', () => {
+  const platformWith = (occurrences) => ({
+    name: 'android',
+    selected: [{ version: '98.3.1', occurrences, lastSeen: NOW }]
+  });
+
+  it('calls a stream of occurrences with no items a broken collection', () => {
+    expect(findBrokenReason({
+      platforms: [platformWith(240)],
+      items: []
+    })).toMatch(/no items came back/);
+  });
+
+  it('does not call a resolved-away issue broken', () => {
+    expect(findBrokenReason({
+      platforms: [platformWith(4)],
+      items: []
+    })).toBeNull();
+  });
+
+  it('does not call a quiet week broken', () => {
+    expect(findBrokenReason({ platforms: [], items: [] })).toBeNull();
+  });
+
+  it('is the part of the retry reason that survives a successful retry', () => {
+    const broken = { sample: { instances: 240, occurrences: 240 }, platforms: [platformWith(240)], items: [] };
+
+    expect(findRetryReason(broken)).toMatch(/no items came back/);
+    expect(findRetryReason({ sample: { instances: 0 }, platforms: [], items: [] })).toMatch(/sample came back empty/);
   });
 });
 

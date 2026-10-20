@@ -114,7 +114,31 @@ export const normalizeTitle = (title) => {
 // app had in memory: a real Google access token and idToken turned up in a
 // login log, next to the user's email. Everything this script prints or hands
 // to a model goes through here first.
-const SENSITIVE_ASSIGNMENT = /((?:access|auth|id|refresh|session|api)?[_-]?(?:token|key|secret|password|passwd|pwd|authorization|otp|pin|credential)s?)\s*[:=]\s*("[^"]*"|'[^']*'|Bearer\s+[A-Za-z0-9._~+/=-]+|[^\s"',}\]]+)/gi;
+//
+// Two shapes have to be masked: a key/value pair in free text ("password":"x",
+// password=x) and a property of an object. The pair pattern also has to match
+// a quoted JSON key, and it must not fire on a word that merely ends in a
+// sensitive one ("monkey"), so the key starts on a non-word boundary.
+const SENSITIVE_KEY_NAMES = new Set([
+  'key', 'token', 'accesstoken', 'refreshtoken', 'idtoken', 'authtoken',
+  'sessiontoken', 'apikey', 'secret', 'clientsecret', 'password', 'passwd',
+  'pwd', 'authorization', 'otp', 'pin', 'credential', 'credentials', 'privatekey'
+]);
+
+const normalizeKey = (key) => String(key ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+export const isSensitiveKey = (key) => SENSITIVE_KEY_NAMES.has(normalizeKey(key));
+
+// An exception carries its message in plain text, and that message can hold
+// whatever the app was working on when it threw.
+export const redactException = (exception) => {
+  if (!exception || typeof exception !== 'object') {
+    return exception;
+  }
+  return { ...exception, message: redact(exception.message) };
+};
+
+const SENSITIVE_ASSIGNMENT = /(?<![A-Za-z0-9])((?:access|auth|id|refresh|session|api)?[_-]?(?:token|key|secret|password|passwd|pwd|authorization|otp|pin|credential)s?)("?\s*[:=]\s*)("[^"]*"|'[^']*'|Bearer\s+[A-Za-z0-9._~+/=-]+|[^\s"',}\]]+)/gi;
 const BEARER = /\bBearer\s+[A-Za-z0-9._~+/=-]{8,}/gi;
 const JWT = /\beyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]*/g;
 const GOOGLE_TOKEN = /\bya29\.[A-Za-z0-9._-]{10,}/g;
@@ -129,14 +153,21 @@ export const redact = (value) => {
     return value.map(redact);
   }
   if (typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, redact(entry)]));
+    // A sensitive property is masked whole: recursing into it would keep any
+    // secret sitting under an innocent-looking name.
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [
+      key,
+      isSensitiveKey(key) ? '<redacted>' : redact(entry)
+    ]));
   }
   return String(value)
     .replace(JWT, '<redacted-jwt>')
     .replace(GOOGLE_TOKEN, '<redacted-token>')
-    .replace(SENSITIVE_ASSIGNMENT, (_match, key, secret) => {
-      const kind = /^Bearer\b/i.test(secret) ? 'Bearer <redacted>' : '<redacted>';
-      return `${key}=${kind}`;
+    .replace(SENSITIVE_ASSIGNMENT, (_match, key, separator, secret) => {
+      const quote = secret.startsWith('"') ? '"' : (secret.startsWith('\'') ? '\'' : '');
+      const body = quote ? secret.slice(1, -1) : secret;
+      const kind = /^Bearer\b/i.test(body) ? 'Bearer <redacted>' : '<redacted>';
+      return `${key}${separator}${quote}${kind}${quote}`;
     })
     .replace(BEARER, 'Bearer <redacted>')
     .replace(EMAIL, '<redacted-email>')
@@ -301,9 +332,15 @@ export const findRetryReason = ({ sample, platforms, items }) => {
     return 'the occurrence sample came back empty';
   }
 
-  // Errors were sampled for the versions in scope, yet their item query
-  // returned nothing. A couple of resolved items explain a couple of
-  // occurrences, not a stream of them.
+  return findBrokenReason({ platforms, items });
+};
+
+// The subset of the above that cannot be a quiet week: errors were sampled
+// for the versions in scope, yet their item query returned nothing. A couple
+// of resolved items explain a couple of occurrences, not a stream of them.
+// A collection in this state is not a report about the app — it is a broken
+// API contract, and publishing it would call the failure a quiet week.
+export const findBrokenReason = ({ platforms, items }) => {
   const sampled = (platforms ?? [])
     .filter((platform) => platform.selected.length)
     .reduce((total, platform) => total + platform.selected.reduce((sum, entry) => sum + entry.occurrences, 0), 0);
@@ -409,7 +446,7 @@ const toJsonItem = (item) => ({
 });
 
 const toJsonCluster = (cluster) => ({
-  key: cluster.key,
+  key: redact(cluster.key),
   title: redact(cluster.title),
   context: redact(cluster.context),
   flags: cluster.flags,
@@ -536,13 +573,21 @@ const sampleOccurrences = async (client, { projectId, now, days, pageSize, maxPa
 
     for (const instance of batch) {
       const data = instance.data ?? {};
-      stats.instances += 1;
       const timestamp = Number(instance.timestamp ?? 0) * 1000;
       if (timestamp) {
         stats.oldest = stats.oldest === null ? timestamp : Math.min(stats.oldest, timestamp);
         stats.newest = stats.newest === null ? timestamp : Math.max(stats.newest, timestamp);
         oldestInBatch = Math.min(oldestInBatch, timestamp);
       }
+
+      // A page can straddle the cutoff. Those records still stop the
+      // pagination, but they must not select a version or inflate a count:
+      // the report covers the window, not everything Rollbar still holds.
+      if (timestamp && timestamp < floor) {
+        continue;
+      }
+
+      stats.instances += 1;
 
       // The SDK drops errors beyond itemsPerMinute (1 in this app) and reports
       // this message instead, so occurrence counts are a lower bound.
@@ -646,7 +691,13 @@ export const collectDigest = async (client, {
       }
     }
   }
-  const items = [...byId.values()];
+  // An item query names a version, not a platform, so a version both
+  // platforms run comes back with the other platform's items on it. The
+  // platform filter has to be applied to the items too, or "--platform
+  // android" still reports the iOS half of a shared version.
+  const items = [...byId.values()].filter((item) => {
+    return !onlyPlatforms.length || onlyPlatforms.includes(item.platform);
+  });
 
   const unversionedItems = (await fetchItems(client, {
     projectId,
@@ -676,7 +727,8 @@ export const renderDigest = (digest, config) => {
   lines.push('');
 
   if (digest.sample.occurrences === 0) {
-    lines.push('**No versioned occurrences in the sample window.** Nothing to watch — this is not ' +
+    const confirmed = digest.attempts > 1 ? `, confirmed across ${plural(digest.attempts, 'attempt')}` : '';
+    lines.push(`**No versioned occurrences in the sample window${confirmed}.** Nothing to watch — this is not ` +
       'proof that the app is healthy: check that the app is reporting at all before concluding anything.');
     lines.push('');
   } else {
@@ -690,7 +742,7 @@ export const renderDigest = (digest, config) => {
 
   if (digest.attempts > 1) {
     lines.push(`> Collected ${plural(digest.attempts, 'time')}: ${digest.retryReason ??
-      'the first collection looked broken'}. The API answered, so this is a hiccup rather than a quiet week.`);
+      'the first collection looked broken'}. The digest below is the last attempt's result.`);
     lines.push('');
   }
 
@@ -729,7 +781,9 @@ export const renderDigest = (digest, config) => {
   lines.push(`## Needs attention (${attention.length})`);
   lines.push('');
   if (!attention.length) {
-    lines.push('Nothing crossed the thresholds. The active issues are listed below.');
+    lines.push(digest.sample.occurrences === 0
+      ? 'There is nothing to triage: no occurrences were found at all (see above).'
+      : 'Nothing crossed the thresholds. The active issues are listed below.');
     lines.push('');
   }
   attention.forEach((cluster, index) => {
@@ -832,7 +886,7 @@ const renderEvidence = (item, instance, config) => {
     lines.push(`url: ${url}`);
   }
   if (item.hash) {
-    lines.push(`hash: \`${item.hash}\``);
+    lines.push(`hash: \`${redact(item.hash)}\``);
   }
   lines.push('');
 
@@ -978,14 +1032,20 @@ const main = async () => {
 
     if (values.json) {
       console.log(JSON.stringify(packs.map(({ item, instance }) => ({
-        item,
+        // The JSON output is as public as the Markdown one: the item title,
+        // its hash and the exception message can all carry user data.
+        item: {
+          ...item,
+          title: redact(item.title),
+          hash: redact(item.hash)
+        },
         occurrence: instance
           ? {
             id: instance.id,
             timestamp: new Date(Number(instance.timestamp) * 1000).toISOString(),
-            exception: instance.data?.body?.trace?.exception
+            exception: redactException(instance.data?.body?.trace?.exception
               ?? instance.data?.body?.trace_chain?.[0]?.exception
-              ?? null,
+              ?? null),
             frames: (instance.data?.body?.trace?.frames
               ?? instance.data?.body?.trace_chain?.[0]?.frames
               ?? []).slice(-6).reverse().map(shortFrame),
@@ -1041,6 +1101,16 @@ const main = async () => {
     await sleep(collectionRetryDelayMs(attempts - 1));
     collection = await collect();
     attempts += 1;
+  }
+
+  // Retrying is not the same as succeeding. If the collection is still
+  // inconsistent, this is a broken API contract and not a report about the
+  // app: publishing it would say "nothing needs attention" about a failure.
+  // Fail loudly so the scheduled task can report it instead of posting an
+  // empty digest.
+  const broken = findBrokenReason(collection);
+  if (broken) {
+    throw new Error(`the Rollbar API returned an inconsistent result after ${attempts} attempt${attempts === 1 ? '' : 's'}: ${broken}`);
   }
 
   const { sample, platforms, items, unversionedItems } = collection;
