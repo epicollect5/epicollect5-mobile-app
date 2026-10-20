@@ -1,23 +1,23 @@
 # Weekly Rollbar digest — triage instructions
 
 `REPO` is the repository root. The task prompt sets it to this repository's
-absolute path; the scheduled run works in a chat directory that is not the
-repository, so every path below goes through it.
+absolute path, so every path below goes through it.
 
 ## How this is scheduled
 
 Two OpenChamber scheduled tasks read this file and post into one chat, the
-"Rollbar digest" chat in OpenChamber's global Chats area:
+top-level "Rollbar digest" chat of this repository:
 
 | Task | When | Model |
 | --- | --- | --- |
-| `Rollbar weekly digest` | Monday 11:00 Europe/Rome | `opencode/big-pickle` |
-| `Rollbar weekly digest (backstop)` | Monday 17:00 Europe/Rome | `opencode/mimo-v2.6-flash-free` |
+| `Rollbar weekly digest` | Monday 11:00 Europe/Rome | `openrouter/minimax/minimax-m3.1-flash:free` |
+| `Rollbar weekly digest (backstop)` | Monday 17:00 Europe/Rome | `openrouter/minimax/minimax-m3` |
 
 The backstop has its own extra rule in
-`scripts/rollbar-digest-backstop.prompt.md`. Both tasks use a free model, so
-both can be refused on a provider quota; the backstop exists for that, and for
-the case where the first task's run died before it posted anything.
+`scripts/rollbar-digest-backstop.prompt.md`. The two tasks use different
+models on purpose: the first is free, and the backstop is the one that still
+works when the free tier is exhausted or the morning run died before it
+posted anything.
 
 ## 1. Produce the digest
 

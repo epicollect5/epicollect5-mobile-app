@@ -874,8 +874,11 @@ export const renderDigest = (digest, config) => {
     for (const item of cluster.items.slice(0, 5)) {
       const url = itemUrl(config, item);
       const link = url ? `[${item.counter}](${url})` : `#${item.counter}`;
+      // The link carries the counter, but --evidence wants the item id.
+      // Spelling the command out per item removes the guesswork.
       lines.push(`- ${link} · ${item.platform} · ${item.environment} · ${plural(item.occurrences, 'occ')} · ` +
-        `last ${formatDate(item.lastSeen, timezone)} · id \`${item.id}\``);
+        `last ${formatDate(item.lastSeen, timezone)} · id \`${item.id}\` · ` +
+        `\`node scripts/rollbar-digest.js --evidence ${item.id}\``);
     }
     if (cluster.items.length > 5) {
       lines.push(`- … ${cluster.items.length - 5} more items on the same title`);
