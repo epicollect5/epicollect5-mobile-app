@@ -111,13 +111,6 @@ export async function videoShoot({media, entryUuid, state, filename}) {
             await notificationService.showAlert(STRINGS[language].labels.cannot_save_file);
         } finally {
             // 6. Cleanup - This runs on both Success AND Error
-            //schedule the reset first: a failing cleanup step below must never leave
-            //isVideoEncodingModalActive armed (the EntriesAdd back handler would stay blocked)
-            window.setTimeout(() => {
-                rootStore.progressEncoding = {done: 0};
-                rootStore.isVideoEncodingModalActive =false;
-            }, PARAMETERS.DELAY_LONG);
-
             try {
                 await notificationService.hideProgressDialog();
                 if (stopService) {
@@ -144,6 +137,16 @@ export async function videoShoot({media, entryUuid, state, filename}) {
                 }
             } catch (error) {
                 console.log('videoShoot cleanup failed: ' + error);
+            } finally {
+                //reset only once cleanup is done: the progress bar must never snap
+                //back to 0 while the encoding modal is still visible, and a failed
+                //cleanup step must not leave isVideoEncodingModalActive armed (the
+                //EntriesAdd back handler would stay blocked). The slight delay hides
+                //the reset from the user
+                window.setTimeout(() => {
+                    rootStore.progressEncoding = {done: 0};
+                    rootStore.isVideoEncodingModalActive =false;
+                }, PARAMETERS.DELAY_LONG);
             }
         }
     }

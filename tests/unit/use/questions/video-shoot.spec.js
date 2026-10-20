@@ -361,6 +361,10 @@ describe('videoShoot tests', () => {
         expect(media[entryUuid]['q1'].cached).toBe('video_gen.mp4');
         expect(state.answer.answer).toBe('video_gen.mp4');
         expect(nMock.dismissModalSafe).toHaveBeenCalled();
+        //the progress reset is only scheduled once cleanup is done, so the bar can
+        //never snap back to 0 while the encoding modal is still visible
+        expect(global.window.setTimeout.mock.invocationCallOrder[0])
+            .toBeGreaterThan(nMock.dismissModalSafe.mock.invocationCallOrder[0]);
         //the raw plugin recording is discarded after the transcode, so the plugin
         //cache does not accumulate one file per recording
         expect(cameraPreviewMock.deleteFile).toHaveBeenCalledWith({ path: '/rec.mp4' });
