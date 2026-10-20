@@ -35,6 +35,7 @@
     "pwa:debug": "node scripts/check-node-version.js && VITE_MODE=PWA VITE_DEBUG=1 vite build",
     "prerollbar": "npm run native:prod",
     "rollbar": "./rollbar-upload.sh",
+    "rollbar:digest": "node scripts/rollbar-digest.js",
     "cmd": "bash -c 'source \"$HOME/.nvm/nvm.sh\" && nvm use 22 && exec cmd'"
   },
   "dependencies": {
