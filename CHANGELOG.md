@@ -1,5 +1,16 @@
 ## Release Notes
 
+# 98.5.8 - build 9858
+
+ - Uploads and downloads can now keep the screen on: a new "Keep the screen on during uploads and downloads" setting (off by default) holds the display awake for the whole transfer so it cannot sleep mid-upload.
+ - Location answers can now be opened in Apple Maps on iOS, next to Google Maps and HERE.
+ - Recording a video no longer leaves the raw capture behind: the original file is deleted after encoding in both the embedded and the system camera, so the app cache no longer grows with every recording. A failed cleanup no longer leaves the encoding modal up with back navigation blocked, and the progress bar no longer snaps to zero while the modal is still visible.
+ - Exporting entries no longer crashes when the project has no export mapping: an alert explains that the project version is not compatible and asks to update the project and try again.
+ - A second tap while an export is running is ignored, and the export lock is always released even when setup or cleanup fails, so a failed export can no longer block the next one.
+ - Removing a bookmark now asks for confirmation, like the other destructive actions in the drawer.
+ - A successful media upload now clears the error left by a previous failed attempt, and a failed upload no longer writes both the error and the synced status in the same update.
+ - Database service tests now run against a real SQLite engine, covering aborted batches, paging, LIKE escaping and cleanup.
+
 # 98.5.7 - build 9857
 
  - The Android splash screen now uses a dedicated high-resolution logo: the icon is a 1024px asset with the mark inside the mask safe zone on a white background, so it renders sharp and identical on every device in light and dark mode.
