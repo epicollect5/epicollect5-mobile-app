@@ -1,5 +1,10 @@
 ## Release Notes
 
+# 98.5.9 - build 9859
+
+ - Exporting entries now detects an unwritable destination folder (EACCES) and shows actionable guidance instead of a generic error.
+ - Rollbar bumped to 4.1.0 with an improved weekly digest: camera activity errors are treated as noise, dropped connections are retried, item queries are scoped per project, and recent item versions are preserved.
+
 # 98.5.8 - build 9858
 
  - Uploads and downloads can now keep the screen on: a new "Keep the screen on during uploads and downloads" setting (off by default) holds the display awake for the whole transfer so it cannot sleep mid-upload.
