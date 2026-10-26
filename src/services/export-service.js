@@ -21,6 +21,11 @@ import {deleteFileService} from '@/services/filesystem/delete-file-service';
 //(same zip filename / same output dir) and collide on the native share sheet
 let isExporting = false;
 
+function isExportFolderNotWritableError(error) {
+    return error?.code === 'EACCES' ||
+        String(error?.message || '').includes('EACCES');
+}
+
 export const exportService = {
 
     //CSV headers are built from the project mapping: a project row saved on the
@@ -523,7 +528,14 @@ export const exportService = {
             console.error('Send to device failed:', error);
             rollbarService.critical(error);
             success = false;
-            throw new Error(STRINGS[language].labels.unknown_error);
+            const message = isExportFolderNotWritableError(error)
+                ? STRINGS[language].labels.export_folder_not_writable
+                : STRINGS[language].labels.unknown_error;
+            const exportError = new Error(message);
+            if (isExportFolderNotWritableError(error)) {
+                exportError.code = PARAMETERS.EXPORT_FOLDER_NOT_WRITABLE;
+            }
+            throw exportError;
         } finally {
             try {
                 // Dismiss the modal
