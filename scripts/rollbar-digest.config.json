@@ -29,6 +29,7 @@
     "user denied",
     "user cancelled photos app",
     "camera permission denied",
+    "unable to resolve camera activity",
     "camerapreview.start failed: camera permission denied",
     "unable to do file operation, user denied permission request",
     "item per minute limit reached"
