@@ -19,7 +19,10 @@ const IGNORED_MESSAGES = [
     // @capacitor/camera: permission refusal ("User denied access to camera" / "photos")
     'user denied',
     // @capgo/camera-preview, and our own _ensurePermission() throw
-    'camera permission denied'
+    'camera permission denied',
+    // @capacitor/camera: no app handles the capture intent (emulators, tablets
+    // with the camera app disabled) — environment limitation, not a code defect
+    'unable to resolve camera activity'
 ];
 
 const rollbar = new Rollbar({
