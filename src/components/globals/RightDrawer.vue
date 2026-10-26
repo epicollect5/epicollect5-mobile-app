@@ -389,7 +389,27 @@ export default {
           }
         } catch (error) {
           console.log(error);
-          await notificationService.showAlert(error.message || error);
+          if (error?.code === PARAMETERS.EXPORT_FOLDER_NOT_WRITABLE) {
+            const folderPath = [
+              utilsService.getPlatformDocumentsFolder(),
+              PARAMETERS.APP_NAME,
+              projectSlug
+            ].join(' > ').replace(/[&<>"']/g, (character) => ({
+              '&': '&amp;',
+              '<': '&lt;',
+              '>': '&gt;',
+              '"': '&quot;',
+              "'": '&#39;'
+            })[character]);
+            await notificationService.showDismissAlert(
+                `${error.message}<br><br><strong>${folderPath}</strong>`,
+                labels.export_failed,
+                PARAMETERS.EXPORT_FOLDER_DOCS_URL,
+                labels.ok
+            );
+          } else {
+            await notificationService.showAlert(error.message || error);
+          }
         } finally {
           menuController.close();
         }
