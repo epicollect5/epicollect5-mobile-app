@@ -41,8 +41,14 @@ quiet week.
 
 ## 2. Triage the attention items
 
-Triage only the items under "Needs attention", at most 5, most recent first.
-For each one:
+The digest still reports every error: never narrow it. Triage only the newest
+reported build of each platform — the "Newest reported" column of "Versions in
+scope", one per platform, which moves as builds ship. An item is in scope when
+its versions include that build.
+
+Triage the in-scope items under "Needs attention", at most 5, most recent first.
+An item carried only by older builds is update-pending: count it in one line with
+the older versions, do not triage it. For each in-scope item:
 
 - `node $REPO/scripts/rollbar-digest.js --evidence <item id>` returns the
   occurrence: source-mapped frames, the app's `custom.context`, the request URL
@@ -72,7 +78,8 @@ in Rollbar. A scheduled run must never change code unattended.
 Report only the items that need attention, each with its verdict, the
 file:line, and the commit that fixed it or that would have to fix it. Keep
 "NOISE" and "FIXED AFTER BUILD" out of the main list, but count them in one
-line so the volume is visible.
+line so the volume is visible. Count the update-pending items in that same line,
+with their older versions, so nothing is dropped silently.
 
 Then add two or three lines of judgement: what changed since last week, and
 whether anything needs the user's attention now. If the top item points at
