@@ -750,4 +750,34 @@ describe('renderDigest', () => {
     expect(output).toContain('Collected 2 times');
     expect(output).toContain('the occurrence sample came back empty');
   });
+
+  it('prints every attention item newest first with its affected versions', () => {
+    const items = Array.from({length: 6}, (_, index) => makeItem({
+      id: `android-${index}`,
+      counter: index + 1,
+      version: '98.5.1',
+      versions: ['98.5.1'],
+      lastSeen: NOW - (index + 1) * 1000
+    }));
+    items.push(makeItem({
+      id: 'newest-ios',
+      counter: 7,
+      version: '98.3.2',
+      versions: ['98.3.2'],
+      environment: 'ios 26 - iphone - webview 26',
+      platform: 'ios',
+      lastSeen: NOW
+    }));
+    const cluster = {
+      ...clusterItems(items)[0],
+      flags: ['new'],
+      noise: false
+    };
+    const output = renderDigest(makeDigest({clusters: [cluster]}), makeConfig());
+
+    expect(output).toContain('id `newest-ios`');
+    expect(output).toContain('ios 26 - iphone - webview 26 · versions 98.3.2');
+    expect(output.indexOf('id `newest-ios`')).toBeLessThan(output.indexOf('id `android-0`'));
+    expect(output).toContain('id `android-5`');
+  });
 });

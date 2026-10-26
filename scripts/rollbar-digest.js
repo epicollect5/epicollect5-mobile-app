@@ -871,17 +871,18 @@ export const renderDigest = (digest, config) => {
       lines.push(`Context: \`${redact(cluster.context)}\``);
     }
     lines.push('');
-    for (const item of cluster.items.slice(0, 5)) {
+    const sortedItems = [...cluster.items].sort((left, right) => {
+      return right.lastSeen - left.lastSeen || String(left.id).localeCompare(String(right.id));
+    });
+    for (const item of sortedItems) {
       const url = itemUrl(config, item);
       const link = url ? `[${item.counter}](${url})` : `#${item.counter}`;
+      const versions = item.versions ?? (item.version ? [item.version] : []);
       // The link carries the counter, but --evidence wants the item id.
       // Spelling the command out per item removes the guesswork.
-      lines.push(`- ${link} · ${item.platform} · ${item.environment} · ${plural(item.occurrences, 'occ')} · ` +
-        `last ${formatDate(item.lastSeen, timezone)} · id \`${item.id}\` · ` +
+      lines.push(`- ${link} · ${item.platform} · ${item.environment} · versions ${versions.join(', ') || 'n/a'} · ` +
+        `${plural(item.occurrences, 'occ')} · last ${formatDate(item.lastSeen, timezone)} · id \`${item.id}\` · ` +
         `\`node scripts/rollbar-digest.js --evidence ${item.id}\``);
-    }
-    if (cluster.items.length > 5) {
-      lines.push(`- … ${cluster.items.length - 5} more items on the same title`);
     }
     lines.push('');
   });

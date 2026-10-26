@@ -183,6 +183,18 @@ describe('exportService.sendToDevice', () => {
             });
     });
 
+    it('should recognize an EACCES error thrown as a string', async () => {
+        exportService.exportHierarchyEntries.mockRejectedValueOnce(
+            "'writeFile' failed: open failed: EACCES (Permission denied)"
+        );
+
+        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
+            .rejects.toMatchObject({
+                code: PARAMETERS.EXPORT_FOLDER_NOT_WRITABLE,
+                message: STRINGS.en.labels.export_folder_not_writable
+            });
+    });
+
     it('should keep unrelated export failures generic', async () => {
         deleteFileService.removeDirectoryIfExists.mockRejectedValueOnce(new Error('Database failed'));
 

@@ -22,8 +22,8 @@ import {deleteFileService} from '@/services/filesystem/delete-file-service';
 let isExporting = false;
 
 function isExportFolderNotWritableError(error) {
-    return error?.code === 'EACCES' ||
-        String(error?.message || '').includes('EACCES');
+    const message = typeof error === 'string' ? error : error?.message;
+    return error?.code === 'EACCES' || String(message || '').includes('EACCES');
 }
 
 export const exportService = {
