@@ -102,7 +102,8 @@ describe('rollbarService ignoredMessages', () => {
         expect(rollbarCtorOptions.value.ignoredMessages).toEqual([
             'user cancelled photos app',
             'user denied',
-            'camera permission denied'
+            'camera permission denied',
+            'unable to resolve camera activity'
         ]);
     });
 
@@ -115,6 +116,7 @@ describe('rollbarService ignoredMessages', () => {
         //the native capgo message our own throw mirrors
         expect(sdkDrops('CameraPreview.start failed: camera permission denied. enable camera access in Settings.')).toBe(true);
         expect(sdkDrops('photoTake capture failed: User cancelled photos app')).toBe(true);
+        expect(sdkDrops('photoTake capture failed: Unable to resolve camera activity')).toBe(true);
     });
 
     it('never drops genuine failures', () => {
