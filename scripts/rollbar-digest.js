@@ -651,6 +651,7 @@ const fetchItems = async (client, { projectId, version, maxPages, status = 'acti
 
   for (let page = 1; page <= maxPages; page += 1) {
     const result = await client.listItems({
+      project_ids: projectId,
       status,
       query: version ? `code_version:"${version}"` : undefined,
       environment: version ? undefined : 'unknown',

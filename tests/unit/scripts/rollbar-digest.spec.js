@@ -366,13 +366,19 @@ describe('collectDigest', () => {
     last_occurrence_timestamp: Math.floor((NOW - DAY) / 1000)
   });
 
-  const stubClient = ({ occurrences = [], items = [], resolvedItems = [] } = {}) => ({
-    listInstances: async ({ page }) => (page === 1 ? { instances: occurrences } : { instances: [] }),
-    listItems: async ({ status } = {}) => {
-      const batch = status === 'resolved' ? resolvedItems : items;
-      return { items: batch, total_count: batch.length };
-    }
-  });
+  const stubClient = ({ occurrences = [], items = [], resolvedItems = [] } = {}) => {
+    const listItemsCalls = [];
+    return {
+      listItemsCalls,
+      listInstances: async ({ page }) => (page === 1 ? { instances: occurrences } : { instances: [] }),
+      listItems: async (params = {}) => {
+        listItemsCalls.push(params);
+        const { status } = params;
+        const batch = status === 'resolved' ? resolvedItems : items;
+        return { items: batch, total_count: batch.length };
+      }
+    };
+  };
 
   it('returns a collection the retry decision can read', async () => {
     const client = stubClient({
@@ -396,6 +402,8 @@ describe('collectDigest', () => {
     expect(collection.sample.occurrences).toBe(1);
     expect(collection.platforms.map((platform) => platform.name)).toEqual(['android']);
     expect(collection.items).toHaveLength(1);
+    expect(client.listItemsCalls.length).toBeGreaterThan(0);
+    expect(client.listItemsCalls.every((params) => params.project_ids === 1)).toBe(true);
     expect(findRetryReason(collection)).toBeNull();
   });
 
