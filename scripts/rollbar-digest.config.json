@@ -1,0 +1,37 @@
+{
+  "project": "epicollect5-mobile-app",
+  "dashboardBaseUrl": "https://app.rollbar.com/a/cgps-group/fix/item/epicollect5-mobile-app",
+  "timezone": "Europe/Rome",
+  "minorLinesBehind": 2,
+  "sampleDays": 14,
+  "samplePageSize": 100,
+  "maxSamplePages": 16,
+  "maxPagesPerVersion": 5,
+  "maxAttempts": 3,
+  "maxTriaged": 5,
+  "attention": {
+    "newSinceDays": 7,
+    "minEnvironments": 2,
+    "minOccurrences": 5,
+    "integrityKeywords": [
+      "migratedb",
+      "sqlite",
+      "migration",
+      "save media",
+      "savemedia",
+      "export",
+      "upload",
+      "sync",
+      "video"
+    ]
+  },
+  "noisePatterns": [
+    "user denied",
+    "user cancelled photos app",
+    "camera permission denied",
+    "unable to resolve camera activity",
+    "camerapreview.start failed: camera permission denied",
+    "unable to do file operation, user denied permission request",
+    "item per minute limit reached"
+  ]
+}

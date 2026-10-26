@@ -35,6 +35,7 @@
     "pwa:debug": "node scripts/check-node-version.js && VITE_MODE=PWA VITE_DEBUG=1 vite build",
     "prerollbar": "npm run native:prod",
     "rollbar": "./rollbar-upload.sh",
+    "rollbar:digest": "node scripts/rollbar-digest.js",
     "cmd": "bash -c 'source \"$HOME/.nvm/nvm.sh\" && nvm use 22 && exec cmd'"
   },
   "dependencies": {
@@ -100,7 +101,7 @@
     "pinia-logger": "^1.3.12",
     "proj4": "^2.8.0",
     "randexp": "^0.5.3",
-    "rollbar": "3.0.0-beta.5",
+    "rollbar": "4.1.0",
     "signature_pad": "^5.1.4",
     "slugify": "^1.6.5",
     "swiper": "^12.1.2",

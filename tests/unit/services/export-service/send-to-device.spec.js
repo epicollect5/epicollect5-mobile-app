@@ -45,6 +45,8 @@ vi.mock('@/config', () => ({
         DELAY_LONG: 1000,
         DEBUG: false,
         PROJECT_VERSION_DOCS_URL: 'https://docs.example/project-version',
+        EXPORT_FOLDER_DOCS_URL: 'https://docs.example/export-folder',
+        EXPORT_FOLDER_NOT_WRITABLE: 'export_folder_not_writable',
         SHARE_STATUS: {
             SHARED: 1,
             NOT_SHARED: 0
@@ -242,8 +244,32 @@ describe('exportService.sendToDevice', () => {
         expect(result).toBe(MOCK_EXPORT_PATH);
     });
 
-    it('should report the error and throw a generic message when removeDirectoryIfExists throws', async () => {
-        deleteFileService.removeDirectoryIfExists.mockRejectedValueOnce(new Error('Permission denied'));
+    it('should report an unwritable previous export folder', async () => {
+        exportService.exportHierarchyEntries.mockRejectedValueOnce(new Error(
+            "'writeFile' failed with: /storage/emulated/0/Documents/Epicollect5/ec5-demo-project/data/form-1__form-1.csv: open failed: EACCES (Permission denied)"
+        ));
+
+        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
+            .rejects.toMatchObject({
+                code: PARAMETERS.EXPORT_FOLDER_NOT_WRITABLE,
+                message: STRINGS.en.labels.export_folder_not_writable
+            });
+    });
+
+    it('should recognize an EACCES error thrown as a string', async () => {
+        exportService.exportHierarchyEntries.mockRejectedValueOnce(
+            "'writeFile' failed: open failed: EACCES (Permission denied)"
+        );
+
+        await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
+            .rejects.toMatchObject({
+                code: PARAMETERS.EXPORT_FOLDER_NOT_WRITABLE,
+                message: STRINGS.en.labels.export_folder_not_writable
+            });
+    });
+
+    it('should keep unrelated export failures generic', async () => {
+        deleteFileService.removeDirectoryIfExists.mockRejectedValueOnce(new Error('Database failed'));
 
         await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
             .rejects.toThrow('Unknown error');

@@ -162,7 +162,9 @@ export async function videoShoot({media, entryUuid, state, filename}) {
         //a failed retake must not drop the existing video (fresh captures restore ''
         //as before, so the entry save never points at a missing file)
         if (error.code !== 3) {
-            rollbarService.criticalWithContext('videoShoot capture failed', error);
+            if (error.code !== 4) {
+                rollbarService.criticalWithContext('videoShoot capture failed', error);
+            }
             media[entryUuid][state.inputDetails.ref].cached = previousCached;
             // Reset answer
             state.answer.answer = previousAnswer;

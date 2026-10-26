@@ -33,6 +33,11 @@ function isStoragePermissionDenied(error, missingPermissionMessage) {
         || message.toLowerCase().includes('user denied permission');
 }
 
+function isExportFolderNotWritableError(error) {
+    const message = typeof error === 'string' ? error : error?.message;
+    return error?.code === 'EACCES' || String(message || '').includes('EACCES');
+}
+
 export const exportService = {
 
     //CSV headers are built from the project mapping: a project row saved on the
@@ -549,7 +554,14 @@ export const exportService = {
             }
             console.error('Send to device failed:', error);
             rollbarService.critical(error);
-            throw new Error(labels.unknown_error);
+            const message = isExportFolderNotWritableError(error)
+                ? STRINGS[language].labels.export_folder_not_writable
+                : labels.unknown_error;
+            const exportError = new Error(message);
+            if (isExportFolderNotWritableError(error)) {
+                exportError.code = PARAMETERS.EXPORT_FOLDER_NOT_WRITABLE;
+            }
+            throw exportError;
         } finally {
             try {
                 // Dismiss the modal
