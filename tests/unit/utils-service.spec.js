@@ -466,6 +466,15 @@ describe('getSanitisedAnswer', () => {
         // Assert that Unicode characters are not affected
         expect(result).toBe(unicodeValue);
     });
+    it('should return empty string for nullish values instead of throwing', () => {
+        expect(utilsService.getSanitisedAnswer(undefined)).toBe('');
+        expect(utilsService.getSanitisedAnswer(null)).toBe('');
+    });
+    it('should coerce non-string values instead of throwing', () => {
+        expect(utilsService.getSanitisedAnswer(42)).toBe('42');
+        expect(utilsService.getSanitisedAnswer(true)).toBe('true');
+        expect(utilsService.getSanitisedAnswer('  <a>  ')).toBe('\ufe64a\ufe65');
+    });
 });
 
 describe('getStepPrecision', () => {

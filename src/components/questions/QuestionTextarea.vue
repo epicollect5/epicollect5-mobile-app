@@ -168,8 +168,8 @@ export default {
 				});
 
 				scope.ModalSavedAnswers.onWillDismiss().then((response) => {
-					console.log('is', response.data);
-					if (response.data !== '') {
+					console.log('is', response?.data);
+					if (response?.data !== undefined && response?.data !== null && response?.data !== '') {
 						state.answer.answer = response.data;
 					}
 				});
@@ -181,11 +181,11 @@ export default {
 				);
 			},
 			onInputValueChange(event) {
-				const value = event.target.value;
+				const value = event?.target?.value ?? '';
 				state.answer.answer = utilsService.getSanitisedAnswer(value);
 			},
 			onInputValueChangeConfirm(event) {
-				const value = event.target.value;
+				const value = event?.target?.value ?? '';
 				state.confirmAnswer.answer = utilsService.getSanitisedAnswer(value);
 			}
 		};

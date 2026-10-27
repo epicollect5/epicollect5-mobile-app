@@ -669,6 +669,12 @@ export const utilsService = {
         return Math.floor(Math.random() * max);
     },
     getSanitisedAnswer(value) {
+        if (value == null) {
+            return '';
+        }
+        if (typeof value !== 'string') {
+            return this.getSanitisedAnswer(String(value));
+        }
         let answer = value.trim();
         //sanitise < and > replacing by Unicode
         answer = answer.replaceAll('>', '\ufe65');
