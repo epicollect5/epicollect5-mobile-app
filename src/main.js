@@ -11,6 +11,7 @@ import {projectModel} from '@/models/project-model.js';
 import {setupPWAEntry} from '@/use/entry/setup-pwa-entry';
 import {STRINGS} from '@/config/strings';
 import {commonValidate} from '@/services/validation/common-validate';
+import {projectValidate} from '@/services/validation/project-validate';
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
 import {notificationService} from '@/services/notification-service';
@@ -149,6 +150,20 @@ export const app = createApp(App)
                 const response = await webService.getProjectPWA(projectSlug);
                 projectModel.initialisePWA((response));
 
+                // Reject a structure this app cannot evaluate, otherwise every
+                // answer to an affected question would fail validation
+                const invalidRegexes = await projectValidate.findInvalidRegexes(response.json_extra);
+                if (invalidRegexes.length > 0) {
+                    throw {
+                        isInvalidRegexError: true,
+                        invalidRegexes,
+                        project: {
+                            slug: projectModel.getSlug(),
+                            ref: projectModel.getProjectRef()
+                        }
+                    };
+                }
+
                 // Set up a new entry or edit the existing one
                 let formRef = '';
                 let isBranch = false;
@@ -210,7 +225,10 @@ export const app = createApp(App)
                 }
             } catch (error) {
                 console.log(error);
-                if (error) {
+                if (error?.isInvalidRegexError) {
+                    // Project definition uses a pattern JavaScript cannot compile
+                    await projectValidate.showInvalidRegexAlert(error.invalidRegexes, error.project);
+                } else if (error) {
                    await notificationService
                         .showAlert(error.statusText, error.status);
                 } else {
