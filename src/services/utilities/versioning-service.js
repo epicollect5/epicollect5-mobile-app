@@ -11,6 +11,7 @@ import { projectModel } from '@/models/project-model.js';
 import { PARAMETERS } from '@/config';
 import { STRINGS } from '@/config/strings';
 import { answerService } from '@/services/entry/answer-service';
+import { projectValidate } from '@/services/validation/project-validate';
 
 
 export const versioningService = {
@@ -85,6 +86,20 @@ export const versioningService = {
                         source: '',
                         title: STRINGS[language].status_codes.ec5_116
                     }]
+                }
+            };
+        }
+
+        // Reject a structure the app cannot evaluate before it touches the model,
+        // the entries or the database: the current structure stays intact
+        const invalidRegexes = await projectValidate.findInvalidRegexes(response.data.meta.project_extra);
+        if (invalidRegexes.length > 0) {
+            throw {
+                isInvalidRegexError: true,
+                invalidRegexes,
+                project: {
+                    slug: projectModel.getSlug(),
+                    ref: projectModel.getProjectRef()
                 }
             };
         }

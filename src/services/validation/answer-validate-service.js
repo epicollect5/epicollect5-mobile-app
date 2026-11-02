@@ -64,7 +64,7 @@ export const answerValidateService = {
         const confirmAnswer = params.confirmAnswer?.answer;
 
         return new Promise((resolve, reject) => {
-            self.isUnique(entry, params.input_details, answer).then(function (response) {
+            self.isUnique(entry, params.input_details, answer).then(async function (response) {
 
                 self.inputRef = params.input_details.ref;
 
@@ -97,7 +97,7 @@ export const answerValidateService = {
 
                 // If we have a regex field, check
                 if (answer !== '' && answer !== null && typeof answer !== 'undefined') {
-                    if (!commonValidate.checkRegex(params.input_details, answer)) {
+                    if (!(await commonValidate.checkRegex(params.input_details, answer))) {
                         // Assign errors from the answer validator helper
                         self.errors = commonValidate.getErrors();
                         reject();
@@ -118,7 +118,7 @@ export const answerValidateService = {
             }, function (error) {
                 // If we hit here, probably had db access issues
                 reject(error);
-            });
+            }).catch(reject);
         });
 
     },

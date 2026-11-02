@@ -1,4 +1,10 @@
 import { PARAMETERS } from '@/config';
+import { regexService } from '@/services/validation/regex-service';
+
+// Warn once per pattern, as the same pattern is checked for every answer to
+// the question. Used for patterns or answers the engine cannot evaluate, and
+// for the JavaScript fallback on devices without WASM
+const warnedUnusableRegexes = new Set();
 
 export const commonValidate = {
 
@@ -87,16 +93,44 @@ export const commonValidate = {
     },
 
     //Check the regular expression
-    checkRegex (inputDetails, answer) {
+    async checkRegex (inputDetails, answer) {
         // Check regex is met
         if (inputDetails.regex !== null && inputDetails.regex !== '') {
-            const re = new RegExp(inputDetails.regex);
-            if (re.test(answer) === false) {
-                this.errors[inputDetails.ref] = ['ec5_23'];
-                return false;
+            // Patterns come from the project definition, authored for PHP/PCRE
+            const engineAvailable = await regexService.isAvailable();
+
+            if (engineAvailable) {
+                let matched;
+                try {
+                    matched = await regexService.test(inputDetails.regex, answer);
+                } catch (error) {
+                    // The pattern cannot be evaluated here (malformed definition,
+                    // or a match limit was hit): never block the answer over it
+                    this.warnUnusableRegex(inputDetails, error.message);
+                    return true;
+                }
+                if (matched === false) {
+                    this.errors[inputDetails.ref] = ['ec5_23'];
+                    return false;
+                }
+                return true;
             }
+
+            // WASM unavailable (unsupported WebView): JavaScript cannot stand in
+            // for PCRE, so the constraint is skipped rather than enforced
+            // against text the pattern was never written for
+            this.warnUnusableRegex(inputDetails, 'PCRE2 engine unavailable');
+            return true;
         }
         return true;
+    },
+
+    warnUnusableRegex (inputDetails, message) {
+        if (warnedUnusableRegexes.has(inputDetails.regex)) {
+            return;
+        }
+        warnedUnusableRegexes.add(inputDetails.regex);
+        console.warn('Ignoring unusable regex for input ' + inputDetails.ref + ': ' + inputDetails.regex + ' (' + message + ')');
     },
     // Check confirmed field
     checkConfirmed (inputDetails, answer, confirmAnswer) {
