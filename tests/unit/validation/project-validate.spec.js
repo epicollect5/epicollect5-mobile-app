@@ -113,9 +113,9 @@ describe('projectValidate.findInvalidRegexes()', () => {
         await expect(projectValidate.findInvalidRegexes(projectExtra)).resolves.toEqual([]);
     });
 
-    it('does not load the PCRE2 engine when no question has a regex', async () => {
+    it('does not touch the PCRE2 engine when no question has a regex', async () => {
         //loading the WASM engine costs far more than the check itself
-        const isAvailableSpy = vi.spyOn(regexService, 'isAvailable');
+        const validatePatternSpy = vi.spyOn(regexService, 'validatePattern');
 
         await projectValidate.findInvalidRegexes({
             inputs: {
@@ -124,24 +124,46 @@ describe('projectValidate.findInvalidRegexes()', () => {
             }
         });
 
-        expect(isAvailableSpy).not.toHaveBeenCalled();
+        expect(validatePatternSpy).not.toHaveBeenCalled();
 
-        isAvailableSpy.mockRestore();
+        validatePatternSpy.mockRestore();
     });
 
-    it('resolves engine availability once for a project with regexes', async () => {
-        const isAvailableSpy = vi.spyOn(regexService, 'isAvailable');
+    it('reports every pattern as unverifiable when the engine cannot be loaded', async () => {
+        const validatePatternSpy = vi.spyOn(regexService, 'validatePattern')
+            .mockRejectedValue(new Error('WASM module failed to instantiate'));
 
-        await projectValidate.findInvalidRegexes({
+        //a PCRE-only pattern and one JavaScript could compile: neither may be
+        //judged by JavaScript, so the whole definition is refused as unverified
+        const projectExtra = {
             inputs: {
-                first: { data: { ref: 'first', question: 'A', regex: '^[0-9]{3}$' } },
-                second: { data: { ref: 'second', question: 'B', regex: '^[a-z]+$' } }
+                pcre_only: { data: { ref: 'pcre_only', question: 'Possessive', regex: '^[0-9]{3}+$' } },
+                js_plain: { data: { ref: 'js_plain', question: 'Plain', regex: '^[0-9]{3}$' } }
             }
-        });
+        };
 
-        expect(isAvailableSpy).toHaveBeenCalledTimes(1);
+        const invalidRegexes = await projectValidate.findInvalidRegexes(projectExtra);
 
-        isAvailableSpy.mockRestore();
+        expect(invalidRegexes).toEqual([
+            {
+                ref: 'pcre_only',
+                question: 'Possessive',
+                regex: '^[0-9]{3}+$',
+                //the cause travels in the payload reported to Rollbar
+                message: 'PCRE2 engine could not verify this pattern: WASM module failed to instantiate',
+                reason: 'engine-unavailable'
+            },
+            {
+                ref: 'js_plain',
+                question: 'Plain',
+                regex: '^[0-9]{3}$',
+                //the cause travels in the payload reported to Rollbar
+                message: 'PCRE2 engine could not verify this pattern: WASM module failed to instantiate',
+                reason: 'engine-unavailable'
+            }
+        ]);
+
+        validatePatternSpy.mockRestore();
     });
 
     it('returns an empty list when the project has no inputs', async () => {
@@ -214,7 +236,7 @@ describe('projectValidate.showInvalidRegexAlert()', () => {
                 ref: 'input_1',
                 question: 'How many?',
                 regex: '^[0-9]{3}+$',
-                message: 'JavaScript cannot compile this pattern',
+                message: 'PCRE2 engine could not verify this pattern: WASM module failed to instantiate',
                 reason: 'engine-unavailable'
             }
         ];
