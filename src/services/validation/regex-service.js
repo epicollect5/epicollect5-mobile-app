@@ -13,11 +13,6 @@ const MATCH_OPTIONS = { matchLimit: 1000000, depthLimit: 500 };
 //(a project rarely has more distinct answer patterns than this)
 export const MAX_COMPILED_PATTERNS = 50;
 
-//Escapes PCRE defines but JavaScript reads as the literal character (or, for
-//\p and POSIX classes, as something else entirely): a pattern using them
-//cannot be evaluated by the JavaScript fallback without changing its meaning
-const PCRE_ONLY_SYNTAX = /\\[AzZGKRXChHNVepPgEQ]|\\x\{|\[\[[:.=]/;
-
 let enginePromise = null;
 let engineUnavailable = false;
 //insertion order doubles as recency: the oldest key is evicted first
@@ -79,13 +74,6 @@ export const regexService = {
         } catch (error) {
             return false;
         }
-    },
-
-    // True when only PCRE understands the pattern: JavaScript reads part of it
-    // as literal characters. Import validation uses it to refuse definitions
-    // the app could never evaluate without this engine
-    usesPcreOnlySyntax (pattern) {
-        return PCRE_ONLY_SYNTAX.test(String(pattern));
     },
 
     // Compile-only check, used when a project structure is imported

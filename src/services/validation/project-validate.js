@@ -16,31 +16,12 @@ function escapeHtml (value) {
     })[character]);
 }
 
-function isCompilableByJavaScript (pattern) {
-    try {
-        new RegExp(pattern);
-        return true;
-    } catch (error) {
-        return false;
-    }
-}
-
-//fallback for devices without WASM: the JavaScript engine is all we have there,
-//but it must not be used for patterns it compiles with a different meaning
-function fallbackRejectionMessage (pattern) {
-    if (!isCompilableByJavaScript(pattern)) {
-        return 'JavaScript cannot compile this pattern';
-    }
-    //it compiles, but JavaScript would read some of it as literal characters
-    if (regexService.usesPcreOnlySyntax(pattern)) {
-        return 'PCRE-only syntax JavaScript would read differently';
-    }
-    return null;
-}
-
 //entries rejected without the PCRE2 engine carry this reason, so the alert
 //and the Rollbar report blame the device, not the project definition
 const ENGINE_UNAVAILABLE_REASON = 'engine-unavailable';
+//the cause is appended at the call site: it travels in the Rollbar payload, so
+//an unexpected engine error is diagnosable without a second report
+const ENGINE_UNAVAILABLE_MESSAGE = 'PCRE2 engine could not verify this pattern';
 
 export const projectValidate = {
 
@@ -64,10 +45,6 @@ export const projectValidate = {
             });
         };
 
-        //resolved on the first regex: most projects have none, and loading the
-        //WASM engine costs far more than this check
-        let engineAvailable = null;
-
         for (const inputRef of Object.keys(inputs)) {
             const inputDetails = inputs[inputRef].data;
 
@@ -75,28 +52,19 @@ export const projectValidate = {
                 continue;
             }
 
-            if (engineAvailable === null) {
-                engineAvailable = await regexService.isAvailable();
-            }
-
-            if (engineAvailable) {
-                try {
-                    const result = await regexService.validatePattern(inputDetails.regex);
-                    if (!result.valid) {
-                        addInvalid(inputRef, inputDetails, result.message);
-                    }
-                } catch (error) {
-                    //engine failed mid-import: fall back to the JavaScript check
-                    const message = fallbackRejectionMessage(inputDetails.regex);
-                    if (message) {
-                        addInvalid(inputRef, inputDetails, message, ENGINE_UNAVAILABLE_REASON);
-                    }
+            try {
+                const result = await regexService.validatePattern(inputDetails.regex);
+                if (!result.valid) {
+                    addInvalid(inputRef, inputDetails, result.message);
                 }
-            } else {
-                const message = fallbackRejectionMessage(inputDetails.regex);
-                if (message) {
-                    addInvalid(inputRef, inputDetails, message, ENGINE_UNAVAILABLE_REASON);
-                }
+            } catch (error) {
+                //The engine is required, not optional: on the supported matrix a
+                //failure here is a defect, never a device class. JavaScript is not
+                //a stand-in for PCRE, so the pattern is refused as unverifiable
+                //rather than judged by it. Loading failures are also reported by
+                //the engine itself; the alert below reports the project and now
+                //carries the cause of an unexpected post-load failure too.
+                addInvalid(inputRef, inputDetails, ENGINE_UNAVAILABLE_MESSAGE + ': ' + error.message, ENGINE_UNAVAILABLE_REASON);
             }
         }
 
