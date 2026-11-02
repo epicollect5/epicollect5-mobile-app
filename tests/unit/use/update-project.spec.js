@@ -23,7 +23,8 @@ vi.mock('@/services/utilities/versioning-service', () => ({
 
 vi.mock('@/services/notification-service', () => ({
     notificationService: {
-        showAlert: vi.fn()
+        showAlert: vi.fn(),
+        showDismissAlert: vi.fn()
     }
 }));
 
@@ -36,6 +37,9 @@ vi.mock('@/use/auth/show-modal-login', () => ({ showModalLogin: vi.fn() }));
 vi.mock('@/services/errors-service', () => ({
     errorsService: { handleWebError: vi.fn() }
 }));
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: { criticalWithContext: vi.fn() }
+}));
 vi.mock('@/use/project/confirm-project-update.js', () => ({
     confirmProjectUpdate: vi.fn()
 }));
@@ -43,7 +47,8 @@ vi.mock('@/use/project/confirm-project-update.js', () => ({
 vi.mock('@/config', () => ({
     PARAMETERS: {
         AUTH_ERROR_CODES: ['ec5_70', 'ec5_71', 'ec5_77', 'ec5_78', 'ec5_50', 'ec5_51'],
-        DELAY_LONG: 1
+        DELAY_LONG: 1,
+        PROJECT_REGEX_DOCS_URL: 'https://docs.epicollect.net/formbuilder/add-inputs#regex'
     }
 }));
 
@@ -53,10 +58,12 @@ vi.mock('@/config/strings', () => ({
             labels: {
                 updating_project_title: 'Updating project',
                 stale_cleanup_failed: 'stale cleanup failed',
-                error: 'Error'
+                error: 'Error',
+                ok: 'OK'
             },
             status_codes: {
-                ec5_70: 'Please log in'
+                ec5_70: 'Please log in',
+                ec5_392: 'The regular expression is invalid or malformed.'
             }
         }
     }
@@ -275,5 +282,38 @@ describe('updateProject()', () => {
         expect(errorsService.handleWebError).not.toHaveBeenCalled();
         expect(rootStore.isProjectUpdating).toBe(false);
         expect(result).toBe(false);
+    });
+
+    it('shows the invalid regex alert when the updated structure is malformed', async () => {
+        const rootStore = useRootStore();
+        const modal = mockModal();
+        versioningService.updateProject.mockRejectedValue({
+            isInvalidRegexError: true,
+            project: { slug: 'test-project', ref: 'test-ref' },
+            invalidRegexes: [
+                {
+                    ref: 'input_1',
+                    question: 'How many?',
+                    regex: '(',
+                    message: 'Invalid regular expression'
+                }
+            ]
+        });
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const result = await updateProject();
+
+        expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
+            'The regular expression is invalid or malformed.<br><br>"How many?" (()',
+            'Error',
+            'https://docs.epicollect.net/formbuilder/add-inputs#regex',
+            'OK'
+        );
+        expect(errorsService.handleWebError).not.toHaveBeenCalled();
+        expect(modal.dismiss).toHaveBeenCalledTimes(1);
+        expect(rootStore.isProjectUpdating).toBe(false);
+        expect(result).toBe(false);
+
+        consoleWarnSpy.mockRestore();
     });
 });

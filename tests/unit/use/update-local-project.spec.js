@@ -23,6 +23,7 @@ vi.mock('@/services/notification-service', () => ({
         showProgressDialog: vi.fn(),
         hideProgressDialog: vi.fn(),
         showAlert: vi.fn(),
+        showDismissAlert: vi.fn(),
         showToast: vi.fn(),
         confirmSingle: vi.fn()
     }
@@ -32,10 +33,15 @@ vi.mock('@/services/errors-service', () => ({
     errorsService: { handleWebError: vi.fn() }
 }));
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: { criticalWithContext: vi.fn() }
+}));
+
 vi.mock('@/config', () => ({
     PARAMETERS: {
         AUTH_ERROR_CODES: ['ec5_70', 'ec5_71', 'ec5_77', 'ec5_78', 'ec5_50', 'ec5_51'],
-        UPDATE_PROJECT_DOCS_URL: 'https://docs.epicollect.net/mobile-application/updating-a-project-mobile'
+        UPDATE_PROJECT_DOCS_URL: 'https://docs.epicollect.net/mobile-application/updating-a-project-mobile',
+        PROJECT_REGEX_DOCS_URL: 'https://docs.epicollect.net/formbuilder/add-inputs#regex'
     }
 }));
 
@@ -60,7 +66,8 @@ vi.mock('@/config/strings', () => ({
                 ec5_77: 'Private project',
                 ec5_78: 'Access denied',
                 ec5_50: 'JWT Error',
-                ec5_51: 'JWT Invalid'
+                ec5_51: 'JWT Invalid',
+                ec5_392: 'The regular expression is invalid or malformed.'
             }
         }
     }
@@ -244,6 +251,37 @@ describe('updateLocalProject()', () => {
             STRINGS.en.labels.error
         );
         expect(errorsService.handleWebError).not.toHaveBeenCalled();
+    });
+
+    it('shows the invalid regex alert when the updated structure is malformed', async () => {
+        versioningService.checkProjectVersion.mockResolvedValue(false);
+        mockConfirm(true);
+        versioningService.updateProject.mockRejectedValue({
+            isInvalidRegexError: true,
+            project: { slug: 'test-project', ref: 'test-ref' },
+            invalidRegexes: [
+                {
+                    ref: 'input_1',
+                    question: 'How many?',
+                    regex: '(',
+                    message: 'Invalid regular expression'
+                }
+            ]
+        });
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const result = await updateLocalProject();
+
+        expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
+            STRINGS.en.status_codes.ec5_392 + '<br><br>"How many?" (()',
+            STRINGS.en.labels.error,
+            PARAMETERS.PROJECT_REGEX_DOCS_URL,
+            STRINGS.en.labels.ok
+        );
+        expect(errorsService.handleWebError).not.toHaveBeenCalled();
+        expect(result).toBe(false);
+
+        consoleWarnSpy.mockRestore();
     });
 
     it('locks navigation while the update is in flight and releases it on success', async () => {

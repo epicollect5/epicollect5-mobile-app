@@ -61,6 +61,7 @@ vi.mock('@/config', () => ({
         DEFAULT_SERVER_URL: '',
         PRODUCTION_SERVER_URL: 'https://prod.server.com',
         DEFAULT_THEME: 'light',
+        PROJECT_REGEX_DOCS_URL: 'https://docs.epicollect.net/formbuilder/add-inputs#regex',
         THEMES: {
             LIGHT: 'light',
             DARK: 'dark',
@@ -146,8 +147,12 @@ vi.mock('@/services/utilities/utils-service', () => ({
         stripTrailingSlash: vi.fn((s) => s)
     }
 }));
-vi.mock('@/services/utilities/rollbar-service', () => ({rollbarService: {init: vi.fn()}}));
-vi.mock('@/services/notification-service', () => ({notificationService: {showAlert: vi.fn()}}));
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {init: vi.fn(), criticalWithContext: vi.fn()}
+}));
+vi.mock('@/services/notification-service', () => ({
+    notificationService: {showAlert: vi.fn(), showDismissAlert: vi.fn()}
+}));
 vi.mock('@/services/database/database-create-service', () => ({createDatabaseService: {execute: vi.fn()}}));
 vi.mock('@capacitor/splash-screen', () => ({SplashScreen: {hide: vi.fn()}}));
 vi.mock('@/services/utilities/bookmarks-service', () => ({bookmarksService: {getBookmarks: vi.fn()}}));
@@ -156,7 +161,13 @@ vi.mock('@/services/filesystem/temp-dirs-service', () => ({
     tempDirsService: {createTemporaryDir: vi.fn(), clearTemporaryDir: vi.fn()}
 }));
 vi.mock('@/services/filesystem/persistent-dirs-service', () => ({persistentDirsService: {execute: vi.fn()}}));
-vi.mock('@/models/project-model.js', () => ({projectModel: {initialisePWA: vi.fn()}}));
+vi.mock('@/models/project-model.js', () => ({
+    projectModel: {
+        initialisePWA: vi.fn(),
+        getSlug: vi.fn(() => 'my-project'),
+        getProjectRef: vi.fn(() => 'project-ref')
+    }
+}));
 vi.mock('@/use/entry/setup-pwa-entry', () => ({setupPWAEntry: vi.fn()}));
 
 describe('Main.js Architecture', () => {
@@ -606,6 +617,67 @@ describe('Main.js Architecture', () => {
 
         const {useRootStore} = await import('@/stores/root-store');
         expect(useRootStore().notFound).toBe(true);
+    });
+    it('PWA: rejects a project whose question regex is malformed', async () => {
+        const {initService} = await import('@/services/init-service');
+        const {webService} = await import('@/services/web-service');
+        const {notificationService} = await import('@/services/notification-service');
+        const {rollbarService} = await import('@/services/utilities/rollbar-service');
+        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
+        const {STRINGS} = await import('@/config/strings');
+
+        //the status codes are normally loaded at boot from the language files
+        STRINGS.en.status_codes = {ec5_392: 'The regular expression is invalid or malformed.'};
+        initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
+        webService.getProjectPWA.mockResolvedValue({
+            json_extra: {
+                project: {
+                    details: {slug: 'my-project', ref: 'project-ref', name: 'My Project'},
+                    forms: []
+                },
+                forms: {},
+                inputs: {
+                    input_1: {
+                        data: {
+                            ref: 'input_1',
+                            question: 'How many?',
+                            //malformed in both engines
+                            regex: '('
+                        }
+                    }
+                }
+            },
+            mapping: {}
+        });
+        window.location.pathname = '/my-project/add-entry';
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        await import('@/main');
+
+        //the PCRE2 engine initialises lazily on first use
+        await vi.waitFor(() => {
+            expect(notificationService.showDismissAlert).toHaveBeenCalled();
+        }, { timeout: 5000 });
+
+        expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
+            'The regular expression is invalid or malformed.<br><br>"How many?" (()',
+            STRINGS.en.labels.error,
+            PARAMETERS.PROJECT_REGEX_DOCS_URL,
+            STRINGS.en.labels.ok
+        );
+        expect(rollbarService.criticalWithContext).toHaveBeenCalledWith(
+            'project import: invalid regex pattern',
+            expect.objectContaining({
+                project: {slug: 'my-project', ref: 'project-ref'}
+            })
+        );
+        expect(setupPWAEntry).not.toHaveBeenCalled();
+        expect(notificationService.showAlert).not.toHaveBeenCalled();
+
+        const {useRootStore} = await import('@/stores/root-store');
+        expect(useRootStore().notFound).toBe(true);
+
+        consoleWarnSpy.mockRestore();
     });
     it('Native: covers native-only filesystem logic', async () => {
         const {initService} = await import('@/services/init-service');

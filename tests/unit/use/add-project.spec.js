@@ -10,6 +10,7 @@ import { projectModel } from '@/models/project-model.js';
 import { logout } from '@/use/auth/logout';
 import { showModalLogin } from '@/use/auth/show-modal-login';
 import { addProject } from '@/use/project/add-project';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 vi.mock('@/services/web-service', () => ({
     webService: { getProject: vi.fn() }
@@ -20,6 +21,7 @@ vi.mock('@/services/notification-service', () => ({
         showProgressDialog: vi.fn(),
         hideProgressDialog: vi.fn(),
         showAlert: vi.fn(),
+        showDismissAlert: vi.fn(),
         showToast: vi.fn(),
         confirmSingle: vi.fn()
     }
@@ -45,6 +47,12 @@ vi.mock('@/models/project-model.js', () => ({
     }
 }));
 
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        criticalWithContext: vi.fn()
+    }
+}));
+
 vi.mock('@/use/auth/logout', () => ({ logout: vi.fn() }));
 vi.mock('@/use/auth/show-modal-login', () => ({ showModalLogin: vi.fn() }));
 
@@ -52,7 +60,8 @@ vi.mock('@/config', () => ({
     PARAMETERS: {
         AUTH_ERROR_CODES: ['ec5_70', 'ec5_71', 'ec5_77', 'ec5_78', 'ec5_50', 'ec5_51'],
         ROUTES: { PROJECTS: 'projects' },
-        DELAY_MEDIUM: 0
+        DELAY_MEDIUM: 0,
+        PROJECT_REGEX_DOCS_URL: 'https://docs.epicollect.net/formbuilder/add-inputs#regex'
     },
     DB_ERRORS: {
         0: 'ec5_109'
@@ -71,7 +80,8 @@ vi.mock('@/config/strings', () => ({
                 ec5_133: 'This project has no inputs',
                 ec5_135: 'No internet connection',
                 ec5_109: 'Database error',
-                ec5_111: 'Project already exists'
+                ec5_111: 'Project already exists',
+                ec5_392: 'The regular expression is invalid or malformed.'
             }
         }
     }
@@ -185,6 +195,60 @@ describe('addProject()', () => {
         expect(databaseInsertService.insertProject).not.toHaveBeenCalled();
         expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
         expect(pending).not.toBeNull();
+    });
+
+    it('does not add a project whose question regex is malformed', async () => {
+        const invalidStructure = {
+            data: {
+                meta: {
+                    project_extra: {
+                        type: 'structure',
+                        inputs: {
+                            input_1: {
+                                data: {
+                                    ref: 'input_1',
+                                    question: 'How many?',
+                                    //malformed in both engines
+                                    regex: '('
+                                }
+                            }
+                        }
+                    },
+                    project_stats: { structure_last_updated: '2024-01-01' },
+                    project_mapping: {}
+                }
+            }
+        };
+        webService.getProject.mockResolvedValue(invalidStructure);
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        await expect(addProject(project, router)).resolves.toBeUndefined();
+
+        expect(notificationService.hideProgressDialog).toHaveBeenCalled();
+        expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
+            'The regular expression is invalid or malformed.<br><br>"How many?" (()',
+            'Error',
+            'https://docs.epicollect.net/formbuilder/add-inputs#regex',
+            'OK'
+        );
+        expect(databaseInsertService.insertProject).not.toHaveBeenCalled();
+        expect(router.replace).not.toHaveBeenCalled();
+        expect(rollbarService.criticalWithContext).toHaveBeenCalledWith(
+            'project import: invalid regex pattern',
+            {
+                project,
+                invalidRegexes: [
+                    {
+                        ref: 'input_1',
+                        question: 'How many?',
+                        regex: '(',
+                        message: expect.any(String)
+                    }
+                ]
+            }
+        );
+
+        consoleWarnSpy.mockRestore();
     });
 
     it('adds a project and navigates to the projects list on success', async () => {
