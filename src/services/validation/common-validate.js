@@ -2,8 +2,7 @@ import { PARAMETERS } from '@/config';
 import { regexService } from '@/services/validation/regex-service';
 
 // Warn once per pattern, as the same pattern is checked for every answer to
-// the question. Used for patterns or answers the engine cannot evaluate, and
-// for the JavaScript fallback on devices without WASM
+// the question. Used for patterns or answers the engine cannot evaluate
 const warnedUnusableRegexes = new Set();
 
 export const commonValidate = {
@@ -116,8 +115,10 @@ export const commonValidate = {
                 return true;
             }
 
-            // WASM unavailable (unsupported WebView): JavaScript cannot stand in
-            // for PCRE, so the constraint is skipped rather than enforced
+            // The engine could not load: on this matrix that is a defect (a CSP
+            // or policy forbidding WebAssembly compilation, memory pressure, an
+            // engine bug), never an unsupported device. JavaScript cannot stand
+            // in for PCRE, so the constraint is skipped rather than enforced
             // against text the pattern was never written for
             this.warnUnusableRegex(inputDetails, 'PCRE2 engine unavailable');
             return true;
