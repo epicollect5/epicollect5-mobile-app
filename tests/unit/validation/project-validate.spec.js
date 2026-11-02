@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { projectValidate } from '@/services/validation/project-validate';
+import { regexService } from '@/services/validation/regex-service';
 import { notificationService } from '@/services/notification-service';
 import { rollbarService } from '@/services/utilities/rollbar-service';
 import { useRootStore } from '@/stores/root-store';
@@ -32,7 +33,11 @@ vi.mock('@/config', () => ({
 vi.mock('@/config/strings', () => ({
     STRINGS: {
         en: {
-            labels: { error: 'Error', ok: 'OK' },
+            labels: {
+                error: 'Error',
+                ok: 'OK',
+                regex_unverifiable: 'This project cannot be added because its regular expressions could not be checked on this device. Please retry, or try another device.'
+            },
             status_codes: {
                 ec5_392: 'The regular expression is invalid or malformed.'
             }
@@ -90,7 +95,8 @@ describe('projectValidate.findInvalidRegexes()', () => {
                 ref: 'input_1',
                 question: 'Code?',
                 regex: pattern,
-                message: expect.any(String)
+                message: expect.any(String),
+                reason: null
             }
         ]);
     });
@@ -105,6 +111,37 @@ describe('projectValidate.findInvalidRegexes()', () => {
         };
 
         await expect(projectValidate.findInvalidRegexes(projectExtra)).resolves.toEqual([]);
+    });
+
+    it('does not load the PCRE2 engine when no question has a regex', async () => {
+        //loading the WASM engine costs far more than the check itself
+        const isAvailableSpy = vi.spyOn(regexService, 'isAvailable');
+
+        await projectValidate.findInvalidRegexes({
+            inputs: {
+                text: { data: { ref: 'text', question: 'Name', regex: null } },
+                empty: { data: { ref: 'empty', question: 'Code', regex: '' } }
+            }
+        });
+
+        expect(isAvailableSpy).not.toHaveBeenCalled();
+
+        isAvailableSpy.mockRestore();
+    });
+
+    it('resolves engine availability once for a project with regexes', async () => {
+        const isAvailableSpy = vi.spyOn(regexService, 'isAvailable');
+
+        await projectValidate.findInvalidRegexes({
+            inputs: {
+                first: { data: { ref: 'first', question: 'A', regex: '^[0-9]{3}$' } },
+                second: { data: { ref: 'second', question: 'B', regex: '^[a-z]+$' } }
+            }
+        });
+
+        expect(isAvailableSpy).toHaveBeenCalledTimes(1);
+
+        isAvailableSpy.mockRestore();
     });
 
     it('returns an empty list when the project has no inputs', async () => {
@@ -145,7 +182,8 @@ describe('projectValidate.showInvalidRegexAlert()', () => {
                 ref: 'input_1',
                 question: 'How many?',
                 regex: '(',
-                message: 'PCRE2 compile error at offset 1: missing closing parenthesis'
+                message: 'PCRE2 compile error at offset 1: missing closing parenthesis',
+                reason: null
             }
         ];
 
@@ -168,6 +206,38 @@ describe('projectValidate.showInvalidRegexAlert()', () => {
         consoleWarnSpy.mockRestore();
     });
 
+    it('blames the device, not the project, when the engine was unavailable', async () => {
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const project = { slug: 'water12', ref: 'water12' };
+        const invalidRegexes = [
+            {
+                ref: 'input_1',
+                question: 'How many?',
+                regex: '^[0-9]{3}+$',
+                message: 'JavaScript cannot compile this pattern',
+                reason: 'engine-unavailable'
+            }
+        ];
+
+        await projectValidate.showInvalidRegexAlert(invalidRegexes, project);
+
+        expect(rollbarService.criticalWithContext).toHaveBeenCalledWith(
+            'project import: pattern unverifiable without PCRE2',
+            { project, invalidRegexes }
+        );
+
+        expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
+            'This project cannot be added because its regular expressions could not be checked on this device. Please retry, or try another device.<br><br>"How many?" (^[0-9]{3}+$)',
+            'Error',
+            null,
+            'OK'
+        );
+        expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+        expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('Unverifiable regex'));
+
+        consoleWarnSpy.mockRestore();
+    });
+
     it('lists every affected question and escapes project text', async () => {
         const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -176,13 +246,15 @@ describe('projectValidate.showInvalidRegexAlert()', () => {
                 ref: 'input_1',
                 question: 'How many?',
                 regex: '(',
-                message: 'PCRE2 compile error'
+                message: 'PCRE2 compile error',
+                reason: null
             },
             {
                 ref: 'input_2',
                 question: '<b>Code?</b>',
                 regex: '[a-',
-                message: 'PCRE2 compile error'
+                message: 'PCRE2 compile error',
+                reason: null
             }
         ], { slug: 'water12', ref: 'water12' });
 

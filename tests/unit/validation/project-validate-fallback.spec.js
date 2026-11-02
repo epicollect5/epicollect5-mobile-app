@@ -36,7 +36,11 @@ vi.mock('@/config', () => ({
 vi.mock('@/config/strings', () => ({
     STRINGS: {
         en: {
-            labels: { error: 'Error', ok: 'OK' },
+            labels: {
+                error: 'Error',
+                ok: 'OK',
+                regex_unverifiable: 'This project cannot be added because its regular expressions could not be checked on this device. Please retry, or try another device.'
+            },
             status_codes: { ec5_392: 'The regular expression is invalid or malformed.' }
         }
     }
@@ -67,7 +71,8 @@ describe('projectValidate.findInvalidRegexes() without PCRE2', () => {
                 ref: 'input_1',
                 question: 'Code?',
                 regex: pattern,
-                message: CANNOT_COMPILE
+                message: CANNOT_COMPILE,
+                reason: 'engine-unavailable'
             }
         ]);
     });
@@ -78,7 +83,8 @@ describe('projectValidate.findInvalidRegexes() without PCRE2', () => {
                 ref: 'input_1',
                 question: 'Code?',
                 regex: pattern,
-                message: CANNOT_COMPILE
+                message: CANNOT_COMPILE,
+                reason: 'engine-unavailable'
             }
         ]);
     });
@@ -90,7 +96,8 @@ describe('projectValidate.findInvalidRegexes() without PCRE2', () => {
                 ref: 'input_1',
                 question: 'Code?',
                 regex: pattern,
-                message: DIFFERENT_MEANING
+                message: DIFFERENT_MEANING,
+                reason: 'engine-unavailable'
             }
         ]);
     });
