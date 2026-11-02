@@ -548,6 +548,7 @@ export const createClient = (token, { maxRetries = 4, fetchImpl = fetch, sleepIm
     stats,
     request,
     listProjects: () => request('/projects'),
+    getProject: () => request('/project'),
     listItems: (params) => request('/items', params),
     listInstances: (params) => request('/instances', params),
     getItem: (itemId, projectId) => request(`/item/${itemId}`, { project_id: projectId }),
@@ -560,10 +561,28 @@ export const createClient = (token, { maxRetries = 4, fetchImpl = fetch, sleepIm
 // ---------------------------------------------------------------------------
 
 const resolveProject = async (client, projectName) => {
-  const projects = await client.listProjects();
-  const project = (projects ?? []).find((entry) => entry.name === projectName);
-  if (!project) {
-    throw new Error(`project "${projectName}" not visible to this token`);
+  // Account-level tokens can list every project; project-level read tokens
+  // cannot, so fall back to the single project the token is scoped to.
+  let projects = null;
+  try {
+    projects = await client.listProjects();
+  } catch (error) {
+    if (!/403/.test(String(error?.message ?? ''))) {
+      throw error;
+    }
+  }
+
+  if (Array.isArray(projects)) {
+    const project = projects.find((entry) => entry.name === projectName);
+    if (!project) {
+      throw new Error(`project "${projectName}" not visible to this token`);
+    }
+    return project;
+  }
+
+  const project = await client.getProject();
+  if (projectName && project?.name && project.name !== projectName) {
+    throw new Error(`token is scoped to project "${project.name}", not "${projectName}"`);
   }
   return project;
 };
