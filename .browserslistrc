@@ -1,6 +1,7 @@
 Chrome >=89
 ChromeAndroid >=89
-Firefox >=75
+# pcre2-wasm (Emscripten) requires Chrome >=85, Firefox >=79, Safari >=15
+Firefox >=79
 Edge >=89
 Safari >=16
 iOS >=16
