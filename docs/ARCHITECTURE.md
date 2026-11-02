@@ -29,13 +29,13 @@ Both targets run on a current, deliberately narrow device matrix. Code may rely 
 | --- | --- | --- |
 | Android (native) | Android 10, API 29 | `minSdkVersion = 29` in `android/variables.gradle` |
 | iOS (native) | iOS 16.0 | `IPHONEOS_DEPLOYMENT_TARGET = 16.0` in `ios/App/App.xcodeproj/project.pbxproj`, `platform :ios, '16.0'` in `ios/App/Podfile` |
-| PWA | Chrome/ChromeAndroid/Edge 89+, Firefox 75+, Safari 16+, iOS 16+ | `.browserslistrc` |
+| PWA | Chrome/ChromeAndroid/Edge 89+, Firefox 79+, Safari 16+, iOS 16+ | `.browserslistrc` |
 
 Consequences of that floor:
 
 - **OS floor vs browser floor.** `minSdkVersion = 29` is the oldest OS the app installs on; `.browserslistrc` is the browser the code is written for. On Android they diverge: an Android 10 device's own WebView is Chromium 74, and Play Store updates are what bring it to the ChromeAndroid 89 target. A device stuck below that runs something we do not support. On iOS the floors coincide (`iOS 16` = Safari 16).
 - **Build baseline.** The bundle is built with `target: 'es2020'` (`vite.config.js`), so ES2020 syntax is assumed everywhere: optional chaining, nullish coalescing, `BigInt`, `Promise.allSettled`, plus ES2019 features such as `Array.prototype.flat`.
-- **WebAssembly** is available (Chromium 57+, Safari 11+), which is what allows PCRE2 to run in-app (see *Answer Regex Evaluation*).
+- **WebAssembly** is available (Chromium 57+, Safari 11+), which is what allows PCRE2 to run in-app (see *Answer Regex Evaluation*). The bundled engine raises that floor further — pcre2-wasm (Emscripten) requires Chrome 85, Firefox 79 and Safari 15 — which is why `.browserslistrc` names Firefox 79 rather than the older 75. All three dependency minimums sit inside the declared matrix.
 - **`.browserslistrc` is a policy, not an enforcement point.** Vite builds against `build.target`, esbuild does not consult browserslist, and no `autoprefixer`, `babel` or `lightningcss` is installed, so nothing currently consumes the file. It remains the declared bound for scoping a bug report and the targets a future post-processor would read.
 - **The syntax floor is lower than the support floor.** The emitted bundle parses on Chromium 80, Safari 13.1 and Firefox 74, so a browser between those and `.browserslistrc` may well run the app but is out of scope. Below ES2020 syntax it fails to parse `app.js` outright — the intended failure mode, not a case to degrade around.
 - `Intl` and modern DOM APIs available to both WebViews are fair game.
@@ -501,6 +501,17 @@ Alternatives that were considered and rejected:
 - **Bounded compiled-pattern cache.** Compiled patterns allocate WASM memory, which is only released by `destroy()`. The cache keeps the 50 most recently used patterns and destroys evicted handles; an evicted pattern simply recompiles.
 - **Import validation.** `projectValidate.findInvalidRegexes()` calls `patternInfo()` (compile only, no subject) so PCRE-only syntax is accepted, while genuinely malformed patterns are rejected with `ec5_392`, the docs link and a Rollbar report carrying the project and offending inputs.
 - **No-WASM fallback.** The supported matrix always has WebAssembly (see *Supported Platforms*), so this path is insurance against an instantiation failure — memory pressure, a damaged bundle, or a host CSP on the PWA — rather than a supported mode. If the engine cannot load, the Regex constraint is skipped for every pattern, with one warning per pattern, and the initialisation failure is reported to Rollbar as `regex: PCRE2 engine init failed` — once per session, because on this matrix it can only mean a defect. JavaScript is never used as a stand-in, because reading a PCRE pattern with it is what produced both the false rejections and the silent false acceptances of the original bug. A definition the device cannot verify is refused at import instead, so the skip only ever applies to projects that device accepted. Re-adding `new RegExp(projectPattern)` to the answer path would reintroduce the bug.
+
+### Build-time notice for `node:module`
+
+Both `vite dev` and `vite build` print:
+
+```
+Module "node:module" has been externalized for browser compatibility,
+imported by "node_modules/pcre2-wasm/dist/pcre2.js"
+```
+
+This is expected. The Emscripten runtime imports `node:module` only inside its Node branch (`ENVIRONMENT_IS_NODE`, derived from `globalThis.process?.versions?.node`), which is false in every target we ship. The build substitutes Vite's browser-external stub, and the emitted `app.js` contains no reference to `node:module` at all. Do not "fix" it by shimming Node builtins or aliasing `node:module`: the branch is dead code in the browser, and a shim would only make a genuine Node/browser mix-up harder to see.
 
 ### Cost and known limits
 

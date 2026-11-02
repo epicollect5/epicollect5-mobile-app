@@ -69,7 +69,7 @@ generic web advice, or from memory.
 - Android (native): `minSdkVersion = 29` — **Android 10** (`android/variables.gradle`)
 - iOS (native): `IPHONEOS_DEPLOYMENT_TARGET = 16.0` — **iOS 16**
   (`ios/App/App.xcodeproj/project.pbxproj`, `ios/App/Podfile`)
-- PWA: **Chrome/ChromeAndroid/Edge 89+, Firefox 75+, Safari 16+, iOS 16+** —
+- PWA: **Chrome/ChromeAndroid/Edge 89+, Firefox 79+, Safari 16+, iOS 16+** —
   declared in `.browserslistrc` (a support policy: `build.target` is what the
   build actually enforces)
 - Build baseline: `target: 'es2020'` (`vite.config.js`) — the code is compiled
