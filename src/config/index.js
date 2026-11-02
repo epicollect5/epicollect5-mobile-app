@@ -10,6 +10,7 @@ export const PARAMETERS = {
     DOWNLOAD_ENTRIES_DOCS_URL: 'https://docs.epicollect.net/mobile-application/download-entries',
     UPDATE_PROJECT_DOCS_URL: 'https://docs.epicollect.net/mobile-application/updating-a-project-mobile',
     PROJECT_VERSION_DOCS_URL: 'https://docs.epicollect.net/mobile-application/export-entries-mobile#project-version-not-compatible',
+    PROJECT_REGEX_DOCS_URL: 'https://docs.epicollect.net/formbuilder/add-inputs#regex',
     EXPORT_FOLDER_DOCS_URL: 'https://docs.epicollect.net/mobile-application/export-entries-mobile#export-folder-left-by-a-previous-installation',
     EXPORT_FOLDER_NOT_WRITABLE: 'export_folder_not_writable',
     NOTIFICATIONS_PERMISSIONS_DOCS_URL: 'https://docs.epicollect.net/mobile-application/mobile-app-permissions#notification-permission',
