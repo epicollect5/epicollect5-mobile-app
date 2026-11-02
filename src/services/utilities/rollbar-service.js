@@ -27,7 +27,7 @@ const IGNORED_MESSAGES = [
 
 const rollbar = new Rollbar({
     enabled: true,
-    accessToken: import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN,
+    accessToken: import.meta.env.VITE_ROLLBAR_POST_TOKEN,
     captureUncaught: true,
     captureUnhandledRejections: true,
     reportLevel: 'error',
