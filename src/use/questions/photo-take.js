@@ -2,6 +2,7 @@ import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
 import {STRINGS} from '@/config/strings.js';
 import {Camera, CameraResultType, CameraSource} from '@capacitor/camera';
+import {Filesystem} from '@capacitor/filesystem';
 import {CameraPreview} from '@capgo/camera-preview';
 import {Capacitor} from '@capacitor/core';
 import {modalController} from '@ionic/vue';
@@ -178,7 +179,6 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                 let previousData = null;
                 if (isRetake) {
                     try {
-                        const { Filesystem } = await import('@capacitor/filesystem');
                         const read = await Filesystem.readFile({ path: tempDir + filename });
                         previousData = read && read.data ? read.data : null;
                     } catch (backupError) {
@@ -210,7 +210,6 @@ export async function photoTake({media, entryUuid, state, filename, action}) {
                     //partial file that self-heals via clearTemporaryDir())
                     if (previousData !== null) {
                         try {
-                            const { Filesystem } = await import('@capacitor/filesystem');
                             await Filesystem.writeFile({
                                 path: tempDir + filename,
                                 data: previousData,
