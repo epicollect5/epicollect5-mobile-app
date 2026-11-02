@@ -3,6 +3,24 @@ import { PARAMETERS } from '@/config';
 import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
 import { answerService } from '@/services/entry/answer-service';
+import { regexService } from '@/services/validation/regex-service';
+
+let regexEngineWarmed = false;
+
+//the WASM engine costs ~100-300 ms to instantiate: start it while the user
+//reads the first question, so the first regex answer validates without a
+//perceptible pause in the Next/save handler
+export function warmRegexEngine (inputsExtra) {
+    if (regexEngineWarmed) {
+        return;
+    }
+    const hasRegex = Object.values(inputsExtra || {}).some((input) => input?.data?.regex);
+    if (!hasRegex) {
+        return;
+    }
+    regexEngineWarmed = true;
+    regexService.isAvailable().catch(() => {});
+}
 
 // Initial set up for each question
 export async function initialSetup (state, scope) {
@@ -87,6 +105,7 @@ export async function initialSetup (state, scope) {
     if (state.questionParams.currentInputRef !== null) {
         setUpQuestion();
         setUpAnswer();
+        warmRegexEngine(state.inputsExtra);
     }
     // Progress percentage
     state.progress = Math.round(
