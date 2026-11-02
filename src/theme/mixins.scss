@@ -788,11 +788,9 @@
         margin-top: 50px;
     }
 
-    &::part(content) {
-        .item-radio-checked,
-        .item-checkbox-checked {
-            --background: var(--ion-color-secondary-tint);
-        }
+    .item-radio-checked,
+    .item-checkbox-checked {
+        --background: var(--ion-color-secondary-tint);
     }
 }
 
@@ -1069,7 +1067,7 @@
 @mixin leaflet-map-base {
     height: 200px;
     outline: none;
-    &::focus {
+    &:focus {
         outline: none;
     }
 }
