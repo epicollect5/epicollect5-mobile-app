@@ -38,6 +38,12 @@ Findings that look like defects but are by design. The review workflow (`docs/wo
 
   Why it is by design: every entry that is actually written is version-checked server-side (`EntriesUploadService::isProjectVersionValid()`, called before the create/update fork, unconditional in all branches). A non-editable entry is never sent — there is nothing the user may change — so it is skipped and only re-marked synced locally once its branches finish. The guard therefore covers all real writes; what looks like a bypass is an entry that was never in scope. `database-update-service.unsyncAllEntries()` has no `can_edit` filter and unsyncs every row with `synced < INCOMPLETE`, which is what puts these rows into the pending set in the first place. See the Native Upload section of `docs/ARCHITECTURE.md`.
 
+- **The PCRE2 no-engine path being unreachable on supported devices is by design, not an unhandled degradation** (`src/services/validation/regex-service.js`, `isAvailable()` branch)
+
+  Reported as: "the app can run without the regex engine, so project patterns are silently not enforced on old WebViews; reject those projects or keep a JavaScript fallback."
+
+  Why it is by design: the supported matrix is Android 10 (`minSdkVersion = 29`) and iOS 16, whose WebViews all support WebAssembly (Chromium 57+, Safari 11+), and Android's WebView updates through Play Store. Any capability the matrix provides must be assumed present: a failure is a defect (memory pressure, damaged bundle, a host CSP on the PWA), not a device class, and it is reported to Rollbar as `regex: PCRE2 engine init failed`. Answers are deliberately left unchecked in that state rather than judged by JavaScript, because JavaScript reads PCRE-only patterns differently — the failure mode that made project `30686` unable to save any answer. See *Supported Platforms* and *Answer Regex Evaluation* in `docs/ARCHITECTURE.md`.
+
 - **The picker-icon attribute comparison in DateTimeField.spec.js is meaningful, not a serialized-object mismatch** (`tests/unit/components/DateTimeField.spec.js`, picker icon attribute comparison)
 
   Reported as: "This compares serialized attributes on plain custom elements, so both SVG icon objects stringify identically and the assertion fails instead of verifying the icons differ. Compare the component's `pickerIcon` values or stub `ion-icon` and inspect its prop."

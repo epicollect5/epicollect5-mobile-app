@@ -21,6 +21,27 @@ Build-time effects of `VITE_MODE=PWA`:
 
 Both targets emit stable, unhashed filenames for self-managed versioning: `app.js`, `vendor-vue.js`, `vendor-ionic.js`, `vendor-capacitor.js`, `vendor-common.js`.
 
+## Supported Platforms
+
+Both targets run on a current, deliberately narrow device matrix. Code may rely on any capability this matrix provides; anything outside it is not supported and must not shape the app.
+
+| Target | Minimum | Defined in |
+| --- | --- | --- |
+| Android (native) | Android 10, API 29 | `minSdkVersion = 29` in `android/variables.gradle` |
+| iOS (native) | iOS 16.0 | `IPHONEOS_DEPLOYMENT_TARGET = 16.0` in `ios/App/App.xcodeproj/project.pbxproj`, `platform :ios, '16.0'` in `ios/App/Podfile` |
+| PWA | Chrome/ChromeAndroid/Edge 89+, Firefox 75+, Safari 16+, iOS 16+ | `.browserslistrc` |
+
+Consequences of that floor:
+
+- **OS floor vs browser floor.** `minSdkVersion = 29` is the oldest OS the app installs on; `.browserslistrc` is the browser the code is written for. On Android they diverge: an Android 10 device's own WebView is Chromium 74, and Play Store updates are what bring it to the ChromeAndroid 89 target. A device stuck below that runs something we do not support. On iOS the floors coincide (`iOS 16` = Safari 16).
+- **Build baseline.** The bundle is built with `target: 'es2020'` (`vite.config.js`), so ES2020 syntax is assumed everywhere: optional chaining, nullish coalescing, `BigInt`, `Promise.allSettled`, plus ES2019 features such as `Array.prototype.flat`.
+- **WebAssembly** is available (Chromium 57+, Safari 11+), which is what allows PCRE2 to run in-app (see *Answer Regex Evaluation*).
+- **`.browserslistrc` is a policy, not an enforcement point.** Vite builds against `build.target`, esbuild does not consult browserslist, and no `autoprefixer`, `babel` or `lightningcss` is installed, so nothing currently consumes the file. It remains the declared bound for scoping a bug report and the targets a future post-processor would read.
+- **The syntax floor is lower than the support floor.** The emitted bundle parses on Chromium 80, Safari 13.1 and Firefox 74, so a browser between those and `.browserslistrc` may well run the app but is out of scope. Below ES2020 syntax it fails to parse `app.js` outright — the intended failure mode, not a case to degrade around.
+- `Intl` and modern DOM APIs available to both WebViews are fair game.
+
+Treat the PWA bound as real: a report from a browser below it is out of scope, and a failure inside it is a defect. Because these are guarantees rather than hopes, a capability from this list cannot be "missing" on a supported device. When one fails there, treat it as a defect in our code, packaging or policy — report it and let it fail visibly, instead of building a silent fallback that hides it for months. If a genuine lower bound is ever needed (older Android, an embedded browser), it must be added to this table first, with the version that motivated it.
+
 ## High-Level Architecture
 
 ```mermaid
@@ -452,6 +473,40 @@ Supporting services:
 - Group and branch structure lookup
 - Project metadata lookup
 - Media-question discovery
+
+## Answer Regex Evaluation (PCRE2 in WASM)
+
+Question `regex` values are authored and validated server-side with PHP's **PCRE** engine (the Laravel API accepts a project definition only if `preg_match` compiles it). The app must therefore judge answers with the same engine, not with JavaScript's `RegExp`.
+
+### Why `pcre2-wasm`
+
+JavaScript's engine disagrees with PCRE in two ways, both of which were observed in production:
+
+- **It refuses patterns PHP accepts.** Possessive quantifiers (`^[0-9]{3}+$`), atomic groups, inline modifiers (`(?i)`), `(?P<name>)`, conditionals, branch resets, recursion/subroutines (`(?R)`, `(?1)`, `(?&name)`, `(?P>name)`), `(?(DEFINE))`, backtracking control verbs (`(*SKIP)(*FAIL)`), callouts (`(?C)`) and `\g{name}` all throw a `SyntaxError`. Project `30686` (`^[0-9]{3}+$` on Android 98.5.7) made every answer to that question unvalidatable, so the entry could not be saved.
+- **It silently reinterprets patterns it does accept.** `\A`, `\z`, `\Z`, `\G`, `\K`, `\R`, `\h`, `\H`, `\N`, `\V`, `\X`, `\C`, `\e`, `\p{...}`, `\P{...}`, `\Q...\E`, `\g`, `\x{...}` and POSIX classes (`[[:alpha:]]`) are identity escapes or plain characters in JavaScript. Such a pattern compiles and then matches the wrong text, which is worse than failing.
+
+Alternatives that were considered and rejected:
+
+- **Translate PCRE to JavaScript.** Lossy and unbounded: possessive/atomic semantics, recursion and branch reset have no faithful JavaScript equivalent.
+- **Restrict definitions server-side to the JavaScript subset.** Breaks existing projects, and cannot stop a definition authored outside the API (third-party tools, hand-written JSON) from reaching the client.
+- **Reject at import only.** Devices already holding an affected project keep failing until the project is re-published and re-downloaded.
+
+### How it is wired
+
+`src/services/validation/regex-service.js` is the only module that touches the engine; every other caller goes through it.
+
+- **Lazy singleton init.** The WASM module is created on first use (~100–300 ms), not at boot, and `isAvailable()` reports `false` on devices where it cannot load.
+- **`FLAGS.UTF` only.** Multi-byte answers are matched as characters, and `\d`/`\w`/`\s` stay ASCII, mirroring PHP without the `u` modifier. Do not add `FLAGS.UCP` without changing how projects are validated server-side.
+- **Backtracking limits.** `matchLimit: 1000000` / `depthLimit: 500` on every match, so a pathological definition throws (`PCRE2MatchError`) instead of hanging the UI.
+- **Bounded compiled-pattern cache.** Compiled patterns allocate WASM memory, which is only released by `destroy()`. The cache keeps the 50 most recently used patterns and destroys evicted handles; an evicted pattern simply recompiles.
+- **Import validation.** `projectValidate.findInvalidRegexes()` calls `patternInfo()` (compile only, no subject) so PCRE-only syntax is accepted, while genuinely malformed patterns are rejected with `ec5_392`, the docs link and a Rollbar report carrying the project and offending inputs.
+- **No-WASM fallback.** The supported matrix always has WebAssembly (see *Supported Platforms*), so this path is insurance against an instantiation failure — memory pressure, a damaged bundle, or a host CSP on the PWA — rather than a supported mode. If the engine cannot load, the Regex constraint is skipped for every pattern, with one warning per pattern, and the initialisation failure is reported to Rollbar as `regex: PCRE2 engine init failed` — once per session, because on this matrix it can only mean a defect. JavaScript is never used as a stand-in, because reading a PCRE pattern with it is what produced both the false rejections and the silent false acceptances of the original bug. A definition the device cannot verify is refused at import instead, so the skip only ever applies to projects that device accepted. Re-adding `new RegExp(projectPattern)` to the answer path would reintroduce the bug.
+
+### Cost and known limits
+
+The WASM binary is inlined in `app.js`: **+117 kB gzip** (~+634 kB raw) on every load of the PWA and native bundles. Serving it as a separately fetched asset is the next lever if that matters.
+
+Even with PCRE2 there are deliberate differences from the old JavaScript path: PCRE's `$` also matches before a trailing newline, so `^abc$` accepts `"abc\n"` (asserted in `tests/unit/validation/answer-validate-service/text.spec.js`), and `\p{...}` and case folding follow PCRE defaults rather than JavaScript's. These are intended: the goal is to judge answers the way PHP does, not the way the previous JavaScript path did.
 
 ## Entry Editing Architecture
 

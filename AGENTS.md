@@ -60,6 +60,41 @@ A behaviour-preserving refactor changes structure while preserving behaviour, co
 - docs/CODE-STYLE.md overrides generic Vue best practices
 - Always follow existing patterns in the codebase over external examples
 
+## Supported Platforms
+
+Before calling anything a device limitation, a compatibility risk, or a reason
+for a fallback, check this matrix. Do NOT reason from a library's caveat, from
+generic web advice, or from memory.
+
+- Android (native): `minSdkVersion = 29` — **Android 10** (`android/variables.gradle`)
+- iOS (native): `IPHONEOS_DEPLOYMENT_TARGET = 16.0` — **iOS 16**
+  (`ios/App/App.xcodeproj/project.pbxproj`, `ios/App/Podfile`)
+- PWA: **Chrome/ChromeAndroid/Edge 89+, Firefox 75+, Safari 16+, iOS 16+** —
+  declared in `.browserslistrc` (a support policy: `build.target` is what the
+  build actually enforces)
+- Build baseline: `target: 'es2020'` (`vite.config.js`) — the code is compiled
+  for ES2020 and nothing older
+- WebView: Android 10 ships Chromium 74 and WebView updates through Play Store
+  toward the `ChromeAndroid 89` target in `.browserslistrc`; iOS 16 ships
+  Safari 16
+
+Rules:
+
+* Do NOT add a fallback, polyfill, feature detection or "old device" branch for
+  a capability every version in this matrix has. WebAssembly, ES2020 syntax,
+  modules, async/await, BigInt, `Intl` and modern array methods are all present,
+  on the PWA as much as in the native WebViews.
+* Before writing "unsupported device", "some WebViews may not support X", or a
+  degradation path, name the exact version that lacks the feature **and** a
+  source for its availability. If no version inside the matrix lacks it, do not
+  write the fallback and do not raise it as a risk.
+* When such a capability does fail on a supported device, that is a **defect**
+  (memory pressure, damaged bundle, a policy blocking it), not a device class:
+  report it (Rollbar) and let it fail loudly. A silent fallback hides the defect
+  for months.
+* State a matrix fact, not a device story: "Android 10+ has WebAssembly" beats
+  "some older devices may not support the regex engine".
+
 ## System Risks Check (MANDATORY for new features)
 
 Applies to: **new features, new data flows, new persistence/state, and new external integrations.**
@@ -74,6 +109,8 @@ You MUST:
 * Consider failures: network, partial execution, concurrency
 * Identify anything cached/stored and when it becomes invalid
 * Consider side effects on other parts of the system
+* Verify every device or capability assumption against **Supported Platforms**
+  before listing it as a risk
 
 List at least three concrete risks specific to the new behaviour.
 If none, justify why for each point.

@@ -7,7 +7,7 @@ This is a review-only task.
 - **git diff** against base branch (primary source of truth).
 - **Full file context** when needed to understand surrounding code.
 - **Code comments** — read the comments in every changed file before raising any candidate finding. Comments may state invariants or design decisions (e.g., why cleanup is intentionally skipped) that the diff alone cannot show. Do not raise a finding that a comment in the changed code explicitly addresses.
-- **`docs/architecture.md`** — read the whole file before raising any candidate finding. It is the source of truth for system design. Cross-check any candidate against the whole document before raising it; if it matches, drop it.
+- **`docs/ARCHITECTURE.md`** — read the whole file before raising any candidate finding. It is the source of truth for system design. Cross-check any candidate against the whole document before raising it; if it matches, drop it.
 - **`docs/known-review-false-positives.md`** — read the whole file before raising any candidate finding. It lists findings that look like defects but are by design. If a candidate matches an entry (or is the same defect on a different path), drop it. Read the architecture document too: an entry may reference the section where the design is explained.
 
 ## Responsibilities
@@ -38,6 +38,7 @@ Review changes for:
 - **Security vulnerabilities**: injection risks, missing authorization checks, exposed secrets.
 - **Missing edge cases**: unvalidated input at trust boundaries (user input, network/API responses, external/plugin/SDK responses, or persisted data whose schema cannot be assumed), missing checks on genuinely optional values, unchecked error paths from external calls.
 - **Missing tests**: features or fixes that should have corresponding automated tests.
+- **Platform assumptions**: a finding that a supported device supposedly lacks a capability (WebView/browser feature, API, codec, WASM) must name the version in `docs/ARCHITECTURE.md` → *Supported Platforms* that lacks it. If every version in the matrix has it, a failure there is a defect — not a reason to demand a fallback.
 
 ## Explicitly Ignore
 
