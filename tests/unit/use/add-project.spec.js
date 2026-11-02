@@ -242,7 +242,9 @@ describe('addProject()', () => {
                         ref: 'input_1',
                         question: 'How many?',
                         regex: '(',
-                        message: expect.any(String)
+                        message: expect.any(String),
+                        //a broken pattern is the definition's fault, not a missing engine
+                        reason: null
                     }
                 ]
             }
