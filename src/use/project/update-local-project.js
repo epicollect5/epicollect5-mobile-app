@@ -1,6 +1,7 @@
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 import { versioningService } from '@/services/utilities/versioning-service';
+import { projectValidate } from '@/services/validation/project-validate';
 import { notificationService } from '@/services/notification-service';
 import { STRINGS } from '@/config/strings';
 import { errorsService } from '@/services/errors-service';
@@ -80,6 +81,9 @@ export async function updateLocalProject() {
                 STRINGS[language].labels.stale_cleanup_failed,
                 STRINGS[language].labels.error
             );
+        } else if (capturedError?.isInvalidRegexError) {
+            // The updated structure uses a pattern JavaScript cannot compile
+            await projectValidate.showInvalidRegexAlert(capturedError.invalidRegexes, capturedError.project);
         } else if (authErrors.indexOf(code) >= 0) {
             await notificationService.showAlert(STRINGS[language].status_codes[code]);
         } else {

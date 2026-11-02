@@ -5,6 +5,7 @@ import { showModalLogin } from '@/use/auth/show-modal-login';
 import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
 import { versioningService } from '@/services/utilities/versioning-service';
+import { projectValidate } from '@/services/validation/project-validate';
 import { utilsService } from '@/services/utilities/utils-service';
 import { logout } from '@/use/auth/logout';
 import { projectModel } from '@/models/project-model';
@@ -100,6 +101,9 @@ export async function updateProject () {
                 labels.stale_cleanup_failed,
                 labels.error
             );
+        } else if (capturedError?.isInvalidRegexError) {
+            // The updated structure uses a pattern JavaScript cannot compile
+            await projectValidate.showInvalidRegexAlert(capturedError.invalidRegexes, capturedError.project);
         } else {
             // Other error
             await errorsService.handleWebError(capturedError);

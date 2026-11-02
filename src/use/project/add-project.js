@@ -7,6 +7,7 @@ import { databaseInsertService } from '@/services/database/database-insert-servi
 import { notificationService } from '@/services/notification-service';
 import { errorsService } from '@/services/errors-service';
 import { downloadFileService } from '@/services/download-file-service';
+import { projectValidate } from '@/services/validation/project-validate';
 import { webService } from '@/services/web-service';
 import { logout } from '@/use/auth/logout';
 
@@ -33,6 +34,8 @@ export async function addProject(project, router) {
                     projectModel.loadExtraStructure(data.meta.project_extra);
                     // Get number of inputs for this project
                     noInputs = projectModel.getExtraInputs().length === 0;
+                    // Check every question pattern can be compiled by JavaScript
+                    const invalidRegexes = await projectValidate.findInvalidRegexes(data.meta.project_extra);
                     // Remove project model
                     projectModel.destroy();
 
@@ -42,6 +45,12 @@ export async function addProject(project, router) {
                         await notificationService.showAlert(
                             STRINGS[rootStore.language].status_codes.ec5_133
                         );
+                        resolve();
+                    } else if (invalidRegexes.length > 0) {
+                        // A pattern valid server-side may not be valid here: reject
+                        // the project instead of breaking the affected question later
+                        notificationService.hideProgressDialog();
+                        await projectValidate.showInvalidRegexAlert(invalidRegexes, project);
                         resolve();
                     } else {
                         try {
