@@ -226,7 +226,7 @@ export const app = createApp(App)
             } catch (error) {
                 console.log(error);
                 if (error?.isInvalidRegexError) {
-                    // Project definition uses a pattern JavaScript cannot compile
+                    // Project definition has a pattern the app cannot evaluate
                     await projectValidate.showInvalidRegexAlert(error.invalidRegexes, error.project);
                 } else if (error) {
                    await notificationService

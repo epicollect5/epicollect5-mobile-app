@@ -82,7 +82,7 @@ export async function updateLocalProject() {
                 STRINGS[language].labels.error
             );
         } else if (capturedError?.isInvalidRegexError) {
-            // The updated structure uses a pattern JavaScript cannot compile
+            // The updated structure has a pattern the app cannot evaluate
             await projectValidate.showInvalidRegexAlert(capturedError.invalidRegexes, capturedError.project);
         } else if (authErrors.indexOf(code) >= 0) {
             await notificationService.showAlert(STRINGS[language].status_codes[code]);

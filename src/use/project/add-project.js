@@ -34,7 +34,7 @@ export async function addProject(project, router) {
                     projectModel.loadExtraStructure(data.meta.project_extra);
                     // Get number of inputs for this project
                     noInputs = projectModel.getExtraInputs().length === 0;
-                    // Check every question pattern can be compiled by JavaScript
+                    // Check every question pattern can be compiled by the PCRE2 engine
                     const invalidRegexes = await projectValidate.findInvalidRegexes(data.meta.project_extra);
                     // Remove project model
                     projectModel.destroy();
