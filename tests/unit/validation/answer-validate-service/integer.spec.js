@@ -127,6 +127,24 @@ describe('answerValidateService', () => {
             [inputRef]: ['ec5_23']
         });
     });
+    it('INTEGER answer is validated with PCRE2', async () => {
+
+        //valid in PHP/PCRE (possessive quantifier), invalid in JavaScript
+        params.input_details.regex = '^[0-9]{3}+$';
+
+        params.answer.answer = 123;
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+
+        params.answer.answer = 12;
+        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({
+            //"ec5_23": "Regex format not matched."
+            [inputRef]: ['ec5_23']
+        });
+
+        params.input_details.regex = '';
+    });
     it('INTEGER answer required but missing', async () => {
 
         params.answer.answer = '';

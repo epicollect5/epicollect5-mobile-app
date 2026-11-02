@@ -3,6 +3,7 @@ import { databaseSelectService } from '@/services/database/database-select-servi
 import { vi } from 'vitest';
 import { PARAMETERS } from '@/config';
 import { setActivePinia, createPinia } from 'pinia';
+import { PHP_ONLY_REGEX_PATTERNS } from '@/helpers/php-only-regex-patterns';
 
 
 const inputRef = '70dcdb0b606843989674d3851c544f23_62fa24c5161be_62fa24caa1b10';
@@ -127,6 +128,23 @@ describe('answerValidateService', () => {
             //"ec5_23": "Regex format not matched."
             [inputRef]: ['ec5_23']
         });
+        params.input_details.regex = '';
+    });
+    it.each(PHP_ONLY_REGEX_PATTERNS)('PHONE answer enforces the $description', async ({ pattern, matches, rejects }) => {
+
+        params.input_details.regex = pattern;
+
+        params.answer.answer = matches;
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+
+        params.answer.answer = rejects;
+        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({
+            //"ec5_23": "Regex format not matched."
+            [inputRef]: ['ec5_23']
+        });
+
         params.input_details.regex = '';
     });
     it('PHONE answer required but missing', async () => {

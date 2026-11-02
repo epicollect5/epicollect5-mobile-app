@@ -136,6 +136,54 @@ describe('versioningService.updateProject()', () => {
         expect(downloadFileService.downloadProjectLogo).toHaveBeenCalledWith('test-project', 'test-ref');
     });
 
+    it('rejects a structure whose question regex is malformed', async () => {
+        const currentStructure = {
+            project: {
+                details: { slug: 'test-project', ref: 'test-ref' },
+                forms: []
+            },
+            forms: {},
+            inputs: {}
+        };
+        projectModel.loadExtraStructure(currentStructure);
+
+        webService.getProject.mockResolvedValue({
+            data: {
+                meta: {
+                    project_extra: {
+                        project: {
+                            details: { slug: 'test-project', ref: 'test-ref' },
+                            forms: []
+                        },
+                        forms: {},
+                        inputs: {
+                            input_1: {
+                                data: {
+                                    ref: 'input_1',
+                                    question: 'How many?',
+                                    //malformed in both engines
+                                    regex: '('
+                                }
+                            }
+                        }
+                    },
+                    project_mapping: {},
+                    project_stats: { structure_last_updated: '2024-01-01' }
+                }
+            }
+        });
+
+        await expect(versioningService.updateProject()).rejects.toMatchObject({
+            isInvalidRegexError: true,
+            project: { slug: 'test-project', ref: 'test-ref' }
+        });
+
+        expect(databaseUpdateService.updateProject).not.toHaveBeenCalled();
+        expect(downloadFileService.downloadProjectLogo).not.toHaveBeenCalled();
+        //the in-memory structure is left untouched
+        expect(projectModel.getProjectExtra()).toEqual(currentStructure);
+    });
+
     it('keeps the in-memory mapping in sync with the updated structure', async () => {
         projectModel.loadExtraStructure({
             project: {

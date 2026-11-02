@@ -3,6 +3,7 @@ import { databaseSelectService } from '@/services/database/database-select-servi
 import { vi } from 'vitest';
 import { PARAMETERS } from '@/config';
 import { setActivePinia, createPinia } from 'pinia';
+import { PHP_ONLY_REGEX_PATTERNS } from '@/helpers/php-only-regex-patterns';
 
 
 const inputRef = '70dcdb0b606843989674d3851c544f23_62fa24c5161be_62fa24caa1b10';
@@ -125,6 +126,86 @@ describe('answerValidateService', () => {
             //"ec5_23": "Regex format not matched."
             [inputRef]: ['ec5_23']
         });
+    });
+    it('TEXT answer is validated with PCRE2', async () => {
+
+        //valid in PHP/PCRE (possessive quantifier), invalid in JavaScript
+        params.input_details.regex = '^[0-9]{3}+$';
+
+        params.answer.answer = '123';
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+
+        params.answer.answer = '12';
+        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({
+            //"ec5_23": "Regex format not matched."
+            [inputRef]: ['ec5_23']
+        });
+
+        params.input_details.regex = null;
+    });
+    it.each(PHP_ONLY_REGEX_PATTERNS)('TEXT answer enforces the $description', async ({ pattern, matches, rejects }) => {
+
+        params.input_details.regex = pattern;
+
+        params.answer.answer = matches;
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+
+        params.answer.answer = rejects;
+        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({
+            //"ec5_23": "Regex format not matched."
+            [inputRef]: ['ec5_23']
+        });
+
+        params.input_details.regex = null;
+    });
+    it('TEXT answer still enforces a valid regex after a PCRE-only one', async () => {
+
+        params.input_details.regex = '^(?>a+)b$';
+        params.answer.answer = 'aab';
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+
+        params.input_details.regex = '^[0-9]+$';
+        params.answer.answer = 'Mirko';
+        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({
+            //"ec5_23": "Regex format not matched."
+            [inputRef]: ['ec5_23']
+        });
+
+        params.input_details.regex = null;
+    });
+    it('TEXT answer with a malformed project pattern is accepted and warned once', async () => {
+
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        params.input_details.regex = '(';
+        params.answer.answer = 'Mirko';
+
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+
+        params.answer.answer = 'Toni';
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+
+        //warn once per pattern, not once per answer
+        expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+
+        consoleWarnSpy.mockRestore();
+        params.input_details.regex = null;
+    });
+    it('TEXT answer follows PCRE end-of-subject semantics', async () => {
+
+        //PCRE's $ also matches before a trailing newline, JavaScript's does not
+        params.input_details.regex = '^abc$';
+        params.answer.answer = 'abc\n';
+
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+
+        params.input_details.regex = null;
     });
     it('TEXT answer required but missing', async () => {
 

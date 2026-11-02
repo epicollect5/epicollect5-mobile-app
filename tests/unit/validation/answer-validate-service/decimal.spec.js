@@ -67,6 +67,14 @@ vi.mock('@/services/database/database-select-service', () => {
     return { databaseSelectService };
 });
 
+//PCRE-only patterns whose sample answers are valid decimals, so the regex is
+//the only thing under test here
+const numericPcreOnlyPatterns = [
+    { pattern: '^[0-9]{3}+$', description: 'possessive counted quantifier', matches: '123', rejects: '12' },
+    { pattern: '^(?P<code>[0-9]{3})$', description: 'Python-style named group', matches: '123', rejects: '12a' },
+    { pattern: '^\\Q2.5\\E$', description: 'quoted literal', matches: '2.5', rejects: 'Q2x5E' }
+];
+
 describe('answerValidateService', () => {
     beforeEach(() => {
         setActivePinia(createPinia());
@@ -127,6 +135,23 @@ describe('answerValidateService', () => {
             //"ec5_23": "Regex format not matched."
             [inputRef]: ['ec5_23']
         });
+        params.input_details.regex = '';
+    });
+    it.each(numericPcreOnlyPatterns)('DECIMAL answer enforces the $description', async ({ pattern, matches, rejects }) => {
+
+        params.input_details.regex = pattern;
+
+        params.answer.answer = matches;
+        await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({});
+
+        params.answer.answer = rejects;
+        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({
+            //"ec5_23": "Regex format not matched."
+            [inputRef]: ['ec5_23']
+        });
+
         params.input_details.regex = '';
     });
     it('DECIMAL answer required but missing', async () => {
