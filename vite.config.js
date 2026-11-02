@@ -21,6 +21,7 @@ export default defineConfig(({ mode, command }) => {
             emptyOutDir: true,
             sourcemap: true,
             minify: isDebug ? false : 'esbuild',
+            cssMinify: isDebug ? false : 'esbuild',
             esbuild: {
                 // strip noisy logs in prod but keep console.error for observability
                 pure: isDebug ? [] : ['console.log', 'console.warn']
