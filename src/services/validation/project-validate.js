@@ -38,6 +38,10 @@ function fallbackRejectionMessage (pattern) {
     return null;
 }
 
+//entries rejected without the PCRE2 engine carry this reason, so the alert
+//and the Rollbar report blame the device, not the project definition
+const ENGINE_UNAVAILABLE_REASON = 'engine-unavailable';
+
 export const projectValidate = {
 
     // Patterns are authored for PHP/PCRE: validate them with a PCRE2 engine, so
@@ -50,22 +54,29 @@ export const projectValidate = {
             return invalidRegexes;
         }
 
-        const addInvalid = (inputRef, inputDetails, message) => {
+        const addInvalid = (inputRef, inputDetails, message, reason = null) => {
             invalidRegexes.push({
                 ref: inputRef,
                 question: inputDetails.question,
                 regex: inputDetails.regex,
-                message
+                message,
+                reason
             });
         };
 
-        const engineAvailable = await regexService.isAvailable();
+        //resolved on the first regex: most projects have none, and loading the
+        //WASM engine costs far more than this check
+        let engineAvailable = null;
 
         for (const inputRef of Object.keys(inputs)) {
             const inputDetails = inputs[inputRef].data;
 
             if (!inputDetails || !inputDetails.regex) {
                 continue;
+            }
+
+            if (engineAvailable === null) {
+                engineAvailable = await regexService.isAvailable();
             }
 
             if (engineAvailable) {
@@ -78,13 +89,13 @@ export const projectValidate = {
                     //engine failed mid-import: fall back to the JavaScript check
                     const message = fallbackRejectionMessage(inputDetails.regex);
                     if (message) {
-                        addInvalid(inputRef, inputDetails, message);
+                        addInvalid(inputRef, inputDetails, message, ENGINE_UNAVAILABLE_REASON);
                     }
                 }
             } else {
                 const message = fallbackRejectionMessage(inputDetails.regex);
                 if (message) {
-                    addInvalid(inputRef, inputDetails, message);
+                    addInvalid(inputRef, inputDetails, message, ENGINE_UNAVAILABLE_REASON);
                 }
             }
         }
@@ -93,15 +104,35 @@ export const projectValidate = {
     },
 
     // Standard error alert (Learn More | OK), pointing at the docs
+    // Entries rejected without the PCRE2 engine get a distinct alert: the
+    // patterns are unverified, not broken, so the device is at fault
     async showInvalidRegexAlert (invalidRegexes, project) {
         const rootStore = useRootStore();
         const language = rootStore.language;
+        const labels = STRINGS[language] ? STRINGS[language].labels : STRINGS.en.labels;
+        const withoutEngine = invalidRegexes.filter((invalidRegex) => invalidRegex.reason === ENGINE_UNAVAILABLE_REASON);
 
         //name the affected questions and patterns in the alert, log the input ref too
         const details = invalidRegexes.map((invalidRegex) => {
-            console.warn('Invalid regex in project definition for question "' + invalidRegex.question + '" (' + invalidRegex.ref + '): ' + invalidRegex.regex + ' (' + invalidRegex.message + ')');
+            const prefix = invalidRegex.reason === ENGINE_UNAVAILABLE_REASON ? 'Unverifiable regex' : 'Invalid regex';
+            console.warn(prefix + ' in project definition for question "' + invalidRegex.question + '" (' + invalidRegex.ref + '): ' + invalidRegex.regex + ' (' + invalidRegex.message + ')');
             return '"' + escapeHtml(invalidRegex.question) + '" (' + escapeHtml(invalidRegex.regex) + ')';
         }).join('<br>');
+
+        if (withoutEngine.length > 0) {
+            rollbarService.criticalWithContext('project import: pattern unverifiable without PCRE2', {
+                project,
+                invalidRegexes
+            });
+
+            await notificationService.showDismissAlert(
+                labels.regex_unverifiable + '<br><br>' + details,
+                labels.error,
+                null,
+                labels.ok
+            );
+            return;
+        }
 
         //surface the rejected project definition so it can be corrected server-side
         rollbarService.criticalWithContext('project import: invalid regex pattern', {
@@ -111,9 +142,9 @@ export const projectValidate = {
 
         await notificationService.showDismissAlert(
             STRINGS[language].status_codes.ec5_392 + '<br><br>' + details,
-            STRINGS[language].labels.error,
+            labels.error,
             PARAMETERS.PROJECT_REGEX_DOCS_URL,
-            STRINGS[language].labels.ok
+            labels.ok
         );
     }
 };
