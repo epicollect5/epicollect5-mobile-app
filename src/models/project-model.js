@@ -94,31 +94,44 @@ export const projectModel = {
         return (this.project_extra.project?.forms?.[0]) ? this.project_extra.project.forms[0] : '';
     },
     getLastFormRef() {
-        return (this.project_extra.project.forms[this.project_extra.project.forms.length - 1]) ? this.project_extra.project.forms[this.project_extra.project.forms.length - 1] : '';
+        const forms = this.project_extra.project?.forms;
+        return (forms?.[forms.length - 1]) ? forms[forms.length - 1] : '';
     },
     getNextFormRef(formRef) {
+        const forms = this.project_extra.project?.forms;
+        if (!forms) {
+            return '';
+        }
         // Loop round forms to get position of current form
-        for (let i = 0; i < this.project_extra.project.forms.length; i++) {
+        for (let i = 0; i < forms.length; i++) {
             // Return next form in the array
-            if (formRef === this.project_extra.project.forms[i]) {
-                return (this.project_extra.project.forms[i + 1]) ? this.project_extra.project.forms[i + 1] : '';
+            if (formRef === forms[i]) {
+                return (forms[i + 1]) ? forms[i + 1] : '';
             }
         }
     },
     getParentFormRef(formRef) {
+        const forms = this.project_extra.project?.forms;
+        if (!forms) {
+            return '';
+        }
         // Loop round forms to get position of current form
-        for (let i = 0; i < this.project_extra.project.forms.length; i++) {
+        for (let i = 0; i < forms.length; i++) {
             // return next form in the array
-            if (formRef === this.project_extra.project.forms[i]) {
-                return (this.project_extra.project.forms[i - 1]) ? this.project_extra.project.forms[i - 1] : '';
+            if (formRef === forms[i]) {
+                return (forms[i - 1]) ? forms[i - 1] : '';
             }
         }
     },
     getFormIndex(formRef) {
+        const forms = this.project_extra.project?.forms;
+        if (!forms) {
+            return 0;
+        }
         // loop round forms to get position of current form
-        for (let i = 0; i < this.project_extra.project.forms.length; i++) {
+        for (let i = 0; i < forms.length; i++) {
             // return next form in the array
-            if (formRef === this.project_extra.project.forms[i]) {
+            if (formRef === forms[i]) {
                 return i;
             }
         }
