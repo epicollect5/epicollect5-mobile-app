@@ -51,6 +51,17 @@ describe('parseCsv()', () => {
         expect(row[4]).toBe('line1\nline2');
         expect(row[5]).toBe('^x$');
     });
+    it('rejects a quote inside an unquoted field instead of swallowing it', () => {
+        expect(() => parseCsv('a,b\nab"cd,e')).toThrow(/quote inside an unquoted field/);
+    });
+
+    it('rejects content after the closing quote of a field', () => {
+        expect(() => parseCsv('a,b\n"ab"cd,e')).toThrow(/after the closing quote/);
+    });
+
+    it('rejects input that ends inside a quoted field', () => {
+        expect(() => parseCsv('a,b\n"never closed,e')).toThrow(/ends inside a quoted field/);
+    });
 });
 
 describe('toRecords()', () => {
@@ -74,8 +85,19 @@ describe('toRecords()', () => {
         expect(first.regex).toBe('^a$');
     });
 
+    it('rejects a header whose normalized column names repeat', () => {
+        expect(() => toRecords('regex, Regex\n^a$,^b$')).toThrow(/duplicate column "regex"/);
+    });
+
     it('rejects an export without a regex column', () => {
         expect(() => toRecords('project_ref,question\nwater12,How many?\n')).toThrow(/missing "regex" column/);
+    });
+
+    it('rejects a row shorter than the header instead of dropping its pattern', () => {
+        //cut off before the regex column: padding it with '' would audit nothing
+        const truncated = HEADER + '\nwater12,water-quality,input_1,text,How many?\n';
+
+        expect(() => toRecords(truncated)).toThrow(/the export is truncated/);
     });
 
     it('rejects a mis-quoted row instead of reporting a truncated pattern', () => {
