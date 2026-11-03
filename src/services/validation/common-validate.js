@@ -1,5 +1,6 @@
 import { PARAMETERS } from '@/config';
 import { regexService } from '@/services/validation/regex-service';
+import { rollbarService } from '@/services/utilities/rollbar-service';
 
 // Warn once per pattern, as the same pattern is checked for every answer to
 // the question. Used for patterns or answers the engine cannot evaluate
@@ -103,9 +104,30 @@ export const commonValidate = {
                 try {
                     matched = await regexService.test(inputDetails.regex, answer);
                 } catch (error) {
-                    // The pattern cannot be evaluated here (malformed definition,
-                    // or a match limit was hit): never block the answer over it
-                    this.warnUnusableRegex(inputDetails, error.message);
+                    // The engine loaded, so the pattern is at fault, not the
+                    // device. Neither case may block the answer, but they are not
+                    // the same failure and must not be reported as one:
+                    // - match limit reached: the pattern compiled and the engine
+                    //   could not decide THIS answer. Accepted, because rejecting
+                    //   would block a user over a definition defect (the project
+                    //   30686 failure mode) and a partial match is not a verdict
+                    // - anything else: the pattern could not be evaluated at all,
+                    //   and JavaScript is never a stand-in for PCRE
+                    // Warned and reported once per pattern: a release build strips
+                    // console.warn, so otherwise a rule silently stops applying
+                    const matchLimitHit = regexService.isMatchLimitError(error);
+                    const reason = matchLimitHit
+                        ? 'match limit reached, the answer could not be evaluated'
+                        : error.message;
+                    if (!warnedUnusableRegexes.has(inputDetails.regex)) {
+                        this.warnUnusableRegex(inputDetails, reason);
+                        rollbarService.criticalWithContext('regex: answer accepted without evaluation', {
+                            ref: inputDetails.ref,
+                            regex: inputDetails.regex,
+                            reason,
+                            matchLimitHit
+                        });
+                    }
                     return true;
                 }
                 if (matched === false) {

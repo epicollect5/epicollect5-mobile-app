@@ -1,4 +1,4 @@
-import { createPCRE2, FLAGS, PCRE2CompileError } from 'pcre2-wasm';
+import { createPCRE2, FLAGS, PCRE2MatchError } from 'pcre2-wasm';
 import { rollbarService } from '@/services/utilities/rollbar-service';
 
 // Project definitions are authored and validated with PHP's PCRE engine, so the
@@ -12,8 +12,14 @@ const MATCH_OPTIONS = { matchLimit: 1000000, depthLimit: 500 };
 //compiled patterns hold WASM memory: keep the working set bounded
 //(a project rarely has more distinct answer patterns than this)
 export const MAX_COMPILED_PATTERNS = 50;
+//one transient init failure (memory pressure at boot is the realistic case) must
+//not cost the whole session, but retries are bounded: createPCRE2 costs 100-300ms
+//and every attempt is reported, so retrying on each answer would be a flood on a
+//device where compilation is really blocked
+const MAX_ENGINE_ATTEMPTS = 2;
 
 let enginePromise = null;
+let engineAttempts = 0;
 let engineUnavailable = false;
 //insertion order doubles as recency: the oldest key is evicted first
 const compiledPatterns = new Map();
@@ -47,10 +53,31 @@ function getCompiledPattern (pcre2, pattern) {
     return compiledPattern;
 }
 
+//Thrown when the engine itself could not be loaded. Callers must treat it as a
+//device-side failure, and must not confuse it with a pattern the engine loaded
+//fine and then rejected: that one is a defect in the project definition
+export class RegexEngineUnavailableError extends Error {
+    constructor (cause) {
+        super(cause?.message ?? String(cause));
+        this.name = 'RegexEngineUnavailableError';
+        this.cause = cause;
+    }
+}
+
 function getEngine () {
+    if (engineUnavailable) {
+        //attempts are spent: reject without touching the module again, so a device
+        //where compilation is really blocked cannot retry (and re-report) on every
+        //call. The init failure was already reported with its cause
+        return Promise.reject(new Error('PCRE2 engine unavailable'));
+    }
     if (!enginePromise) {
+        engineAttempts++;
         enginePromise = createPCRE2().catch((error) => {
-            engineUnavailable = true;
+            //drop the rejected promise, so the next request can retry; only latch
+            //once the attempts are spent
+            enginePromise = null;
+            engineUnavailable = (engineAttempts >= MAX_ENGINE_ATTEMPTS);
             console.warn('PCRE2 engine unavailable, regex validation is skipped: ' + error.message);
             //every supported device (Android 10+, iOS 16+) has WebAssembly, so a
             //failure here is a defect, not a device limitation: always report it
@@ -76,9 +103,34 @@ export const regexService = {
         }
     },
 
-    // Compile-only check, used when a project structure is imported
+    // True when a match failed because the pattern blew the backtracking limits:
+    // the engine loaded and compiled it, but could not decide this answer. Very
+    // different from the engine being unavailable, and the caller must not treat
+    // the two the same
+    isMatchLimitError (error) {
+        return error instanceof PCRE2MatchError;
+    },
+
+    // Compile-only check, used when a project structure is imported.
+    // Returns {valid, message} for every pattern it could inspect, however
+    // malformed (including a non-string value); throws
+    // RegexEngineUnavailableError only when the engine could not be loaded
     async validatePattern (pattern) {
-        const pcre2 = await getEngine();
+        if (typeof pattern !== 'string') {
+            //a truthy non-string is a malformed definition, not a device failure
+            return {
+                valid: false,
+                message: 'regex is not a string'
+            };
+        }
+
+        let pcre2;
+        try {
+            pcre2 = await getEngine();
+        } catch (error) {
+            throw new RegexEngineUnavailableError(error);
+        }
+
         try {
             pcre2.patternInfo(pattern, PATTERN_FLAGS);
             return {
@@ -86,13 +138,12 @@ export const regexService = {
                 message: ''
             };
         } catch (error) {
-            if (error instanceof PCRE2CompileError) {
-                return {
-                    valid: false,
-                    message: error.message
-                };
-            }
-            throw error;
+            //the engine loaded but could not inspect this pattern: the definition
+            //is at fault, so it must not be reported as a device problem
+            return {
+                valid: false,
+                message: error.message
+            };
         }
     },
 
