@@ -399,7 +399,7 @@ export default {
               '<': '&lt;',
               '>': '&gt;',
               '"': '&quot;',
-              "'": '&#39;'
+              '\'': '&#39;'
             })[character]);
             await notificationService.showDismissAlert(
                 `${error.message}<br><br><strong>${folderPath}</strong>`,
@@ -473,7 +473,7 @@ export default {
             await notificationService.showAlert(error);
           }
         } finally {
-          notificationService.hideProgressDialog();
+          await notificationService.hideProgressDialog();
         }
       },
       async showProjectInfo() {
