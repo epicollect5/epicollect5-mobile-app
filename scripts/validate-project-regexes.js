@@ -63,12 +63,16 @@ const usage = () => [
 
 // RFC 4180: quoted fields, "" for an embedded quote, newlines allowed inside
 // quotes. A backslash is never an escape, so patterns survive untouched.
+// Malformed quoting is refused rather than repaired: a swallowed quote would
+// silently shorten the pattern, and the audit would then judge the wrong value.
 export function parseCsv (text) {
     const clean = text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text;
     const rows = [];
     let row = [];
     let field = '';
     let inQuotes = false;
+    let closedQuote = false;
+    const malformed = (index, reason) => new Error('malformed CSV at character ' + index + ': ' + reason);
 
     for (let index = 0; index < clean.length; index++) {
         const char = clean[index];
@@ -79,28 +83,41 @@ export function parseCsv (text) {
                     index++;
                 } else {
                     inQuotes = false;
+                    closedQuote = true;
                 }
             } else {
                 field += char;
             }
             continue;
         }
+        if (closedQuote && char !== ',' && char !== '\n' && char !== '\r') {
+            throw malformed(index, 'content after the closing quote of a field');
+        }
         if (char === '"') {
+            if (field !== '') {
+                throw malformed(index, 'quote inside an unquoted field');
+            }
             inQuotes = true;
         } else if (char === ',') {
             row.push(field);
             field = '';
+            closedQuote = false;
         } else if (char === '\n') {
             row.push(field);
             rows.push(row);
             row = [];
             field = '';
+            closedQuote = false;
         } else if (char !== '\r') {
             field += char;
         }
     }
 
-    if (field !== '' || row.length > 0) {
+    if (inQuotes) {
+        throw malformed(clean.length, 'input ends inside a quoted field');
+    }
+
+    if (field !== '' || row.length > 0 || closedQuote) {
         row.push(field);
         rows.push(row);
     }
@@ -115,11 +132,24 @@ export function toRecords (text) {
     }
 
     const header = rows[0].map((name) => name.trim().toLowerCase());
+    //a repeated name would let the later column silently win over the earlier one
+    const duplicate = header.find((name, column) => header.indexOf(name) !== column);
+    if (duplicate !== undefined) {
+        throw new Error('duplicate column "' + duplicate + '" in the header; expected: ' + EXPECTED_HEADER);
+    }
     if (!header.includes('regex')) {
         throw new Error('missing "regex" column; expected header: ' + EXPECTED_HEADER);
     }
 
     return rows.slice(1).map((row, index) => {
+        //a short row is a truncated export: padding the missing cells with ''
+        //would drop that question from the audit and still report a clean run
+        if (row.length < header.length) {
+            throw new Error(
+                'row ' + (index + 2) + ' has ' + row.length + ' of ' + header.length
+                + ' fields: the export is truncated'
+            );
+        }
         //a mis-quoted pattern containing a comma lands here as extra fields:
         //failing loudly beats reporting a truncated pattern as broken
         if (row.length > header.length) {
@@ -333,8 +363,14 @@ export async function main (argv = process.argv.slice(2)) {
     }
 
     if (options.out) {
-        console.log('');
-        console.log('report written to ' + options.out);
+        //--json promises one JSON object per line on stdout, so the notice must
+        //not land there: stderr keeps it visible without breaking the stream
+        if (options.json) {
+            console.error('report written to ' + options.out);
+        } else {
+            console.log('');
+            console.log('report written to ' + options.out);
+        }
     }
 
     return failed > 0 ? 1 : 0;
