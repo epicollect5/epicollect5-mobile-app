@@ -53,4 +53,8 @@ git-commits.csv
 .vscode
 deploy-pwa.sh
 scripts/projects
+scripts/*.csv
 docs/QA-*
+
+# Generated regex audit data
+scripts/regexes.csv
