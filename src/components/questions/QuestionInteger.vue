@@ -13,10 +13,10 @@
 			>
 				<div
 					v-if="hasPattern"
-					class="ion-text-right ion-padding"
+					class="ion-text-right"
 				>
 					{{ labels.pattern }}:
-					<span>&nbsp;{{state.pattern}}</span>
+					<span>&nbsp;{{state.pattern}}&nbsp;&nbsp;</span>
 				</div>
 				<span v-if="hasMin">
 					{{labels.min}}:&nbsp;

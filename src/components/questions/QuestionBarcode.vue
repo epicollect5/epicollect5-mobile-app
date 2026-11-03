@@ -9,10 +9,10 @@
       </ion-card-title>
       <ion-card-subtitle
         v-if="hasPattern"
-        class="question-properties ion-text-right ion-padding"
+        class="question-properties ion-text-right"
       >
         {{ labels.pattern }}:
-        <span> &nbsp;{{ state.pattern }} </span>
+        <span> &nbsp;{{ state.pattern }}&nbsp;&nbsp; </span>
       </ion-card-subtitle>
     </ion-card-header>
     <ion-card-content

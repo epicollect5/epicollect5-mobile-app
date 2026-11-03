@@ -15,11 +15,11 @@
 			</ion-card-title>
 			<ion-card-subtitle
 				v-if="hasPattern"
-				class="ion-text-right ion-padding"
+				class="ion-text-right"
 			>
 				{{ labels.pattern }}:
 				<span>
-					&nbsp;{{ state.pattern }}
+					&nbsp;{{ state.pattern }}&nbsp;&nbsp;
 				</span>
 				>
 			</ion-card-subtitle>

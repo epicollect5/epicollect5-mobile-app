@@ -13,7 +13,7 @@
 			>
 				<div v-if="hasPattern">
 					{{ labels.pattern }}:
-					<span>&nbsp;{{state.pattern}}</span>
+  <span>&nbsp;{{state.pattern}}&nbsp;&nbsp;</span>
 				</div>
 				<span v-if="hasMin">
 					{{labels.min}}:&nbsp;
