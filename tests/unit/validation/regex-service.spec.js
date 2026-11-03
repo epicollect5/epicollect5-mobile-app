@@ -34,7 +34,12 @@ const { compiledHandles, engineState, createPCRE2Mock, rollbarCritical } = vi.ho
 
 vi.mock('pcre2-wasm', () => ({
     FLAGS: { UTF: 0x00080000 },
-    PCRE2MatchError: class PCRE2MatchError extends Error {},
+    PCRE2MatchError: class PCRE2MatchError extends Error {
+        constructor (message, code) {
+            super(message);
+            this.code = code;
+        }
+    },
     createPCRE2: createPCRE2Mock
 }));
 
@@ -147,11 +152,13 @@ describe('regexService pattern cache', () => {
         consoleWarnSpy.mockRestore();
     });
 
-    it('classifies a backtracking limit hit as a match error', async () => {
+    it('classifies only the match-limit code as a match error', async () => {
         const { regexService } = await loadService();
         const { PCRE2MatchError } = await import('pcre2-wasm');
 
-        expect(regexService.isMatchLimitError(new PCRE2MatchError('match limit exceeded'))).toBe(true);
+        expect(regexService.isMatchLimitError(new PCRE2MatchError('match limit exceeded', -47))).toBe(true);
+        //a depth-limit hit carries the same class but a different defect
+        expect(regexService.isMatchLimitError(new PCRE2MatchError('match depth limit exceeded', -53))).toBe(false);
         expect(regexService.isMatchLimitError(new Error('something else'))).toBe(false);
     });
 
