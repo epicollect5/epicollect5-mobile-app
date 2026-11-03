@@ -9,6 +9,9 @@ import { rollbarService } from '@/services/utilities/rollbar-service';
 const PATTERN_FLAGS = FLAGS.UTF; //multi-byte answers are matched as characters
 //backtracking limits: a pathological pattern must never hang the UI
 const MATCH_OPTIONS = { matchLimit: 1000000, depthLimit: 500 };
+//PCRE2_ERROR_MATCHLIMIT: the step limit. A depth-limit hit (-53) is also a
+//PCRE2MatchError but a different defect, and must not be reported as this one
+const MATCH_LIMIT_ERROR_CODE = -47;
 //compiled patterns hold WASM memory: keep the working set bounded
 //(a project rarely has more distinct answer patterns than this)
 export const MAX_COMPILED_PATTERNS = 50;
@@ -108,7 +111,7 @@ export const regexService = {
     // different from the engine being unavailable, and the caller must not treat
     // the two the same
     isMatchLimitError (error) {
-        return error instanceof PCRE2MatchError;
+        return error instanceof PCRE2MatchError && error.code === MATCH_LIMIT_ERROR_CODE;
     },
 
     // Compile-only check, used when a project structure is imported.
