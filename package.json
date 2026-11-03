@@ -36,6 +36,7 @@
     "prerollbar": "npm run native:prod",
     "rollbar": "./rollbar-upload.sh",
     "rollbar:digest": "node scripts/rollbar-digest.js",
+    "regex:audit": "node scripts/validate-project-regexes.js",
     "cmd": "bash -c 'source \"$HOME/.nvm/nvm.sh\" && nvm use 22 && exec cmd'"
   },
   "dependencies": {
