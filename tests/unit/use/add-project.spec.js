@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
 import { webService } from '@/services/web-service';
@@ -11,6 +11,7 @@ import { logout } from '@/use/auth/logout';
 import { showModalLogin } from '@/use/auth/show-modal-login';
 import { addProject } from '@/use/project/add-project';
 import { rollbarService } from '@/services/utilities/rollbar-service';
+import { projectValidate } from '@/services/validation/project-validate';
 
 vi.mock('@/services/web-service', () => ({
     webService: { getProject: vi.fn() }
@@ -114,6 +115,12 @@ describe('addProject()', () => {
         databaseInsertService.insertProject.mockResolvedValue();
         downloadFileService.downloadProjectLogo.mockResolvedValue();
         notificationService.confirmSingle.mockResolvedValue(false);
+    });
+
+    afterEach(() => {
+        //a failed expectation must not leave a spy (e.g. on findInvalidRegexes)
+        //in place for the next test
+        vi.restoreAllMocks();
     });
 
     it('does not throw and handles a network error when getProject rejects with undefined', async () => {
@@ -251,6 +258,19 @@ describe('addProject()', () => {
         );
 
         consoleWarnSpy.mockRestore();
+    });
+
+    it('rejects before the structure reaches the project model when the check throws', async () => {
+        const findInvalidRegexesSpy = vi.spyOn(projectValidate, 'findInvalidRegexes')
+            .mockRejectedValue(new Error('validation blew up'));
+        webService.getProject.mockResolvedValue(successResponse);
+
+        await expect(addProject(project, router)).resolves.toBeUndefined();
+
+        //the check runs before the load, so a throw leaves nothing to clean up
+        expect(projectModel.loadExtraStructure).not.toHaveBeenCalled();
+        expect(projectModel.destroy).not.toHaveBeenCalled();
+        expect(databaseInsertService.insertProject).not.toHaveBeenCalled();
     });
 
     it('adds a project and navigates to the projects list on success', async () => {

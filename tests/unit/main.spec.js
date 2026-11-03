@@ -148,7 +148,7 @@ vi.mock('@/services/utilities/utils-service', () => ({
     }
 }));
 vi.mock('@/services/utilities/rollbar-service', () => ({
-    rollbarService: {init: vi.fn(), criticalWithContext: vi.fn()}
+    rollbarService: {init: vi.fn(), criticalWithContext: vi.fn(), configure: vi.fn()}
 }));
 vi.mock('@/services/notification-service', () => ({
     notificationService: {showAlert: vi.fn(), showDismissAlert: vi.fn()}
@@ -222,6 +222,8 @@ describe('Main.js Architecture', () => {
     });
 
     afterEach(() => {
+        //a failing expectation must not leave console.warn or a platform spy mocked
+        vi.restoreAllMocks();
         vi.unstubAllEnvs();
         delete window.location;
         window.location = originalLocation;
@@ -671,6 +673,11 @@ describe('Main.js Architecture', () => {
                 project: {slug: 'my-project', ref: 'project-ref'}
             })
         );
+        //the PWA reporting policy is applied before this startup path can submit,
+        //not at mount: init() runs after the project has been fetched and checked
+        expect(rollbarService.configure).toHaveBeenCalledWith({ enabled: false });
+        expect(rollbarService.configure.mock.invocationCallOrder[0])
+            .toBeLessThan(rollbarService.criticalWithContext.mock.invocationCallOrder[0]);
         expect(setupPWAEntry).not.toHaveBeenCalled();
         expect(notificationService.showAlert).not.toHaveBeenCalled();
 

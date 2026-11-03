@@ -20,6 +20,10 @@ vi.mock('@/services/entry/branch-entry-service', () => ({
     branchEntryService: { branchInputs: [] }
 }));
 
+vi.mock('@/services/validation/regex-service', () => ({
+    regexService: { isAvailable: vi.fn().mockResolvedValue(true) }
+}));
+
 const GROUP_REF = 'form1_group1';
 const CHILD_TEXT = 'form1_group1_text';
 const CHILD_INTEGER = 'form1_group1_integer';
@@ -167,5 +171,55 @@ describe('initialSetup - GROUP with stale stored answers', () => {
 
         expect(state.answers).toMatchObject(before);
         expect(state.confirmAnswer[CHILD_INTEGER].answer).toBe(40);
+    });
+});
+
+//the module owns a once-only flag, so each case re-imports a fresh copy
+describe('warmRegexEngine()', () => {
+
+    async function loadWarmRegexEngine () {
+        vi.resetModules();
+        const { regexService } = await import('@/services/validation/regex-service');
+        const { warmRegexEngine } = await import('@/use/questions/initial-setup');
+        regexService.isAvailable.mockClear();
+        return { warmRegexEngine, regexService };
+    }
+
+    it('does nothing when no question in the project has a pattern', async () => {
+        const { warmRegexEngine, regexService } = await loadWarmRegexEngine();
+
+        warmRegexEngine(makeInputsExtra());
+
+        expect(regexService.isAvailable).not.toHaveBeenCalled();
+    });
+
+    it('warms the engine once when a question has a pattern', async () => {
+        const { warmRegexEngine, regexService } = await loadWarmRegexEngine();
+        const inputs = makeInputsExtra({
+            [CHILD_TEXT]: {
+                data: {
+                    ref: CHILD_TEXT,
+                    type: PARAMETERS.QUESTION_TYPES.TEXT,
+                    verify: false,
+                    default: '',
+                    regex: '^[0-9]{3}$'
+                }
+            }
+        });
+
+        warmRegexEngine(inputs);
+        expect(regexService.isAvailable).toHaveBeenCalledTimes(1);
+
+        //every form mount calls this: the guard keeps it to one instantiation
+        warmRegexEngine(inputs);
+        expect(regexService.isAvailable).toHaveBeenCalledTimes(1);
+    });
+
+    it('tolerates a missing or empty input set', async () => {
+        const { warmRegexEngine, regexService } = await loadWarmRegexEngine();
+
+        expect(() => warmRegexEngine(undefined)).not.toThrow();
+        expect(() => warmRegexEngine({})).not.toThrow();
+        expect(regexService.isAvailable).not.toHaveBeenCalled();
     });
 });

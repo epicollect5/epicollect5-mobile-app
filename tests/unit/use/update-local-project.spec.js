@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
@@ -120,6 +120,11 @@ describe('updateLocalProject()', () => {
             onDidDismiss: vi.fn().mockResolvedValue(),
             dismiss: vi.fn().mockResolvedValue()
         });
+    });
+
+    afterEach(() => {
+        //a failing expectation must not leave console.warn mocked for this file
+        vi.restoreAllMocks();
     });
 
     it('returns UP_TO_DATE immediately if project is up to date', async () => {
