@@ -30,13 +30,17 @@ export async function addProject(project, router) {
                 const data = response.data;
                 // Check we have project
                 if (data.meta.project_extra) {
+                    // Check every question pattern can be compiled by the PCRE2 engine
+                    // before the structure touches the shared model: the check awaits
+                    // the WASM engine, and a rejection must not leave the downloaded
+                    // structure loaded (same order as versioningService.updateProject)
+                    const invalidRegexes = await projectValidate.findInvalidRegexes(data.meta.project_extra);
+
                     // Load project extra structure into project model
                     projectModel.loadExtraStructure(data.meta.project_extra);
                     // Get number of inputs for this project
                     noInputs = projectModel.getExtraInputs().length === 0;
-                    // Check every question pattern can be compiled by the PCRE2 engine
-                    const invalidRegexes = await projectValidate.findInvalidRegexes(data.meta.project_extra);
-                    // Remove project model
+                    // Remove project model (nothing awaits between the load and here)
                     projectModel.destroy();
 
                     // If no inputs, do not allow user to add this project

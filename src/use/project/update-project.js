@@ -103,7 +103,7 @@ export async function updateProject () {
             );
         } else if (capturedError?.isInvalidRegexError) {
             // The updated structure has a pattern the app cannot evaluate
-            await projectValidate.showInvalidRegexAlert(capturedError.invalidRegexes, capturedError.project);
+            await projectValidate.showInvalidRegexAlert(capturedError.invalidRegexes, capturedError.project, 'update');
         } else {
             // Other error
             await errorsService.handleWebError(capturedError);

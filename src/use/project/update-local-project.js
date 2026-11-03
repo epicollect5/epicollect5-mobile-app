@@ -83,7 +83,7 @@ export async function updateLocalProject() {
             );
         } else if (capturedError?.isInvalidRegexError) {
             // The updated structure has a pattern the app cannot evaluate
-            await projectValidate.showInvalidRegexAlert(capturedError.invalidRegexes, capturedError.project);
+            await projectValidate.showInvalidRegexAlert(capturedError.invalidRegexes, capturedError.project, 'update');
         } else if (authErrors.indexOf(code) >= 0) {
             await notificationService.showAlert(STRINGS[language].status_codes[code]);
         } else {
