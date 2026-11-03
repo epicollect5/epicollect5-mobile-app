@@ -48,6 +48,33 @@ export const authLoginService = {
         });
     },
 
+    //Run the action parked for after a successful login (if any) and clear it.
+    //Every login flow (google, apple, passwordless, confirm email, local) ends
+    //here, so the parked action has exactly one consumer
+    async runAfterLoginAction (rootStore) {
+        const {callback, params} = rootStore.afterUserIsLoggedIn;
+
+        if (!callback) {
+            await notificationService.hideProgressDialog();
+            return false;
+        }
+
+        try {
+            if (params) {
+                await callback(...params);
+            } else {
+                //callback will be async updateLocalProject()
+                await callback();
+            }
+        } finally {
+            //always clear: a callback that rejects must not leave a stale action
+            //behind to run on an unrelated later login
+            rootStore.afterUserIsLoggedIn = {callback: null, params: null};
+        }
+
+        return true;
+    },
+
     async onAuthSuccess(response, language, rootStore) {
         try {
             await authLoginService.loginUser(response);
@@ -55,24 +82,10 @@ export const authLoginService = {
             notificationService.showToast(STRINGS[language].status_codes.ec5_115);
 
             //any extra action to perform? (like addProject()...)
-            // noinspection DuplicatedCode
-            if (rootStore.afterUserIsLoggedIn.callback !== null) {
-                const callback = rootStore.afterUserIsLoggedIn.callback;
-                const params = rootStore.afterUserIsLoggedIn.params;
-                if (params) {
-                    await callback(...params);
-                } else {
-                    //callback will be async updateLocalProject()
-                    await callback();
-                }
-                //reset callback
-                rootStore.afterUserIsLoggedIn = {callback: null, params: null};
-            } else {
-                notificationService.hideProgressDialog();
-            }
+            await authLoginService.runAfterLoginAction(rootStore);
         } catch (errorCode) {
             await notificationService.showAlert(STRINGS[language].status_codes.ec5_103);
-            notificationService.hideProgressDialog();
+            await notificationService.hideProgressDialog();
         }
     }
 };

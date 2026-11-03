@@ -104,28 +104,14 @@ export default {
 					await modalsHandlerService.dismissAll();
 
 					//any extra action to perform? (like addProject()...)
-					if (rootStore.afterUserIsLoggedIn.callback !== null) {
-						const callback = rootStore.afterUserIsLoggedIn.callback;
-						const params = rootStore.afterUserIsLoggedIn.params;
-						if (params) {
-							//async addProject()
-							await callback(...params);
-						} else {
-							//async updateLocalProject()
-							await callback();
-						}
-						//reset callback
-						rootStore.afterUserIsLoggedIn = { callback: null, params: null };
-					} else {
-						notificationService.hideProgressDialog();
-					}
+					await authLoginService.runAfterLoginAction(rootStore);
 
 					//show notification
 					notificationService.showToast(STRINGS[language].status_codes.ec5_115);
 				} catch (errorCode) {
 					//show error to user
-					notificationService.hideProgressDialog();
-					notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
+					await notificationService.hideProgressDialog();
+					await notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
 				}
 			}
 		};
