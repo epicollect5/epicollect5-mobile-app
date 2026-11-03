@@ -1,7 +1,7 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { projectValidate } from '@/services/validation/project-validate';
-import { regexService } from '@/services/validation/regex-service';
+import { regexService, RegexEngineUnavailableError } from '@/services/validation/regex-service';
 import { notificationService } from '@/services/notification-service';
 import { rollbarService } from '@/services/utilities/rollbar-service';
 import { useRootStore } from '@/stores/root-store';
@@ -36,7 +36,9 @@ vi.mock('@/config/strings', () => ({
             labels: {
                 error: 'Error',
                 ok: 'OK',
-                regex_unverifiable: 'This project cannot be added because its regular expressions could not be checked on this device. Please retry, or try another device.'
+                regex_unverifiable: 'This project cannot be added because its regular expressions could not be checked on this device. Please retry, or try another device.',
+                regex_unverifiable_update: 'This project cannot be updated because its regular expressions could not be checked on this device. Please retry, or try another device.',
+                regex_unverifiable_open: 'This project cannot be opened because its regular expressions could not be checked on this device. Please retry, or try another device.'
             },
             status_codes: {
                 ec5_392: 'The regular expression is invalid or malformed.'
@@ -60,6 +62,15 @@ function projectWithPattern (pattern) {
         }
     };
 }
+
+//a failed expectation must not leak a spy into the next test
+beforeEach(() => {
+    vi.clearAllMocks();
+});
+
+afterEach(() => {
+    vi.restoreAllMocks();
+});
 
 describe('projectValidate.findInvalidRegexes()', () => {
 
@@ -131,7 +142,7 @@ describe('projectValidate.findInvalidRegexes()', () => {
 
     it('reports every pattern as unverifiable when the engine cannot be loaded', async () => {
         const validatePatternSpy = vi.spyOn(regexService, 'validatePattern')
-            .mockRejectedValue(new Error('WASM module failed to instantiate'));
+            .mockRejectedValue(new RegexEngineUnavailableError(new Error('WASM module failed to instantiate')));
 
         //a PCRE-only pattern and one JavaScript could compile: neither may be
         //judged by JavaScript, so the whole definition is refused as unverified
@@ -160,6 +171,39 @@ describe('projectValidate.findInvalidRegexes()', () => {
                 //the cause travels in the payload reported to Rollbar
                 message: 'PCRE2 engine could not verify this pattern: WASM module failed to instantiate',
                 reason: 'engine-unavailable'
+            }
+        ]);
+
+        validatePatternSpy.mockRestore();
+    });
+
+    it('skips a null input record and still validates the rest', async () => {
+        const projectExtra = {
+            inputs: {
+                broken_record: null,
+                malformed: { data: { ref: 'malformed', question: 'Malformed', regex: '(' } }
+            }
+        };
+
+        const invalidRegexes = await projectValidate.findInvalidRegexes(projectExtra);
+
+        expect(invalidRegexes.map((invalidRegex) => invalidRegex.ref)).toEqual(['malformed']);
+    });
+
+    it('does not blame the device for an unexpected inspection failure', async () => {
+        //only a failure to load the engine is a device-side failure
+        const validatePatternSpy = vi.spyOn(regexService, 'validatePattern')
+            .mockRejectedValue(new Error('unexpected inspection failure'));
+
+        const invalidRegexes = await projectValidate.findInvalidRegexes(projectWithPattern('^[0-9]{3}$'));
+
+        expect(invalidRegexes).toEqual([
+            {
+                ref: 'input_1',
+                question: 'Code?',
+                regex: '^[0-9]{3}$',
+                message: 'unexpected inspection failure',
+                reason: null
             }
         ]);
 
@@ -256,6 +300,80 @@ describe('projectValidate.showInvalidRegexAlert()', () => {
         );
         expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
         expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('Unverifiable regex'));
+
+        consoleWarnSpy.mockRestore();
+    });
+
+    it('shows the malformed-pattern alert when a project also has an unverifiable pattern', async () => {
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const project = { slug: 'water12', ref: 'water12' };
+
+        await projectValidate.showInvalidRegexAlert([
+            {
+                ref: 'input_1',
+                question: 'Unverified?',
+                regex: '^[0-9]{3}+$',
+                message: 'PCRE2 engine could not verify this pattern: WASM module failed to instantiate',
+                reason: 'engine-unavailable'
+            },
+            {
+                ref: 'input_2',
+                question: 'Broken?',
+                regex: '(',
+                message: 'PCRE2 compile error',
+                reason: null
+            }
+        ], project);
+
+        //retrying on another device cannot fix a broken pattern, so that alert wins
+        expect(rollbarService.criticalWithContext).toHaveBeenCalledWith(
+            'project import: invalid regex pattern',
+            expect.objectContaining({ project })
+        );
+        expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
+            'The regular expression is invalid or malformed.<br><br>"Broken?" (()',
+            'Error',
+            docsUrl,
+            'OK'
+        );
+        //both are still logged, each with its own prefix
+        expect(consoleWarnSpy).toHaveBeenCalledTimes(2);
+        expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('Unverifiable regex'));
+
+        consoleWarnSpy.mockRestore();
+    });
+
+    it('names the action that failed, not always an addition', async () => {
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const project = { slug: 'water12', ref: 'water12' };
+        const invalidRegexes = [
+            {
+                ref: 'input_1',
+                question: 'How many?',
+                regex: '^[0-9]{3}+$',
+                message: 'PCRE2 engine could not verify this pattern: WASM module failed to instantiate',
+                reason: 'engine-unavailable'
+            }
+        ];
+
+        await projectValidate.showInvalidRegexAlert(invalidRegexes, project, 'update');
+
+        expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
+            'This project cannot be updated because its regular expressions could not be checked on this device. Please retry, or try another device.<br><br>"How many?" (^[0-9]{3}+$)',
+            'Error',
+            null,
+            'OK'
+        );
+
+        //the PWA opens a hosted project: neither "added" nor "updated" is right
+        await projectValidate.showInvalidRegexAlert(invalidRegexes, project, 'open');
+
+        expect(notificationService.showDismissAlert).toHaveBeenLastCalledWith(
+            'This project cannot be opened because its regular expressions could not be checked on this device. Please retry, or try another device.<br><br>"How many?" (^[0-9]{3}+$)',
+            'Error',
+            null,
+            'OK'
+        );
 
         consoleWarnSpy.mockRestore();
     });

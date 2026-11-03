@@ -175,7 +175,10 @@ describe('versioningService.updateProject()', () => {
 
         await expect(versioningService.updateProject()).rejects.toMatchObject({
             isInvalidRegexError: true,
-            project: { slug: 'test-project', ref: 'test-ref' }
+            project: { slug: 'test-project', ref: 'test-ref' },
+            //the pattern itself is malformed, not merely unverifiable here: without
+            //the reason this would also pass on the engine-unavailable path
+            invalidRegexes: [expect.objectContaining({ regex: '(', reason: null })]
         });
 
         expect(databaseUpdateService.updateProject).not.toHaveBeenCalled();

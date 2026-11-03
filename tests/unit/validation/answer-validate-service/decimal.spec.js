@@ -3,6 +3,7 @@ import { databaseSelectService } from '@/services/database/database-select-servi
 import { vi } from 'vitest';
 import { PARAMETERS } from '@/config';
 import { setActivePinia, createPinia } from 'pinia';
+import { PHP_ONLY_REGEX_PATTERNS } from '@/helpers/php-only-regex-patterns';
 
 const inputRef = '70dcdb0b606843989674d3851c544f23_62fa24c5161be_62fba82ca1b11';
 const entry = {
@@ -68,10 +69,12 @@ vi.mock('@/services/database/database-select-service', () => {
 });
 
 //PCRE-only patterns whose sample answers are valid decimals, so the regex is
-//the only thing under test here
+//the only thing under test here. The shared table owns the pattern definitions
 const numericPcreOnlyPatterns = [
-    { pattern: '^[0-9]{3}+$', description: 'possessive counted quantifier', matches: '123', rejects: '12' },
-    { pattern: '^(?P<code>[0-9]{3})$', description: 'Python-style named group', matches: '123', rejects: '12a' },
+    ...PHP_ONLY_REGEX_PATTERNS.filter(({ pattern }) => (
+        pattern === '^[0-9]{3}+$' || pattern === '^(?P<code>[0-9]{3})$'
+    )),
+    //only meaningful as a decimal answer, so it stays local
     { pattern: '^\\Q2.5\\E$', description: 'quoted literal', matches: '2.5', rejects: 'Q2x5E' }
 ];
 
@@ -80,7 +83,10 @@ describe('answerValidateService', () => {
         setActivePinia(createPinia());
     });
     afterEach(() => {
-        // vi.restoreAllMocks();
+        //params is shared module state: a failed assertion must not leak a pattern
+        //or a uniqueness setting into the next test
+        params.input_details.regex = null;
+        params.input_details.uniqueness = 'none';
     });
     it('DECIMAL answer too long', async () => {
 

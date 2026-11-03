@@ -82,7 +82,7 @@ describe('answerValidateService without PCRE2', () => {
         params.answer.answer = 'Mirko';
 
         await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
-        expect(answerValidateService.getErrors()).toMatchObject({});
+        expect(answerValidateService.getErrors()).toEqual({});
         expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
 
         consoleWarnSpy.mockRestore();
@@ -97,11 +97,11 @@ describe('answerValidateService without PCRE2', () => {
 
         params.answer.answer = '12';
         await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
-        expect(answerValidateService.getErrors()).toMatchObject({});
+        expect(answerValidateService.getErrors()).toEqual({});
 
         params.answer.answer = '123';
         await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
-        expect(answerValidateService.getErrors()).toMatchObject({});
+        expect(answerValidateService.getErrors()).toEqual({});
 
         //warned once for the pattern, not once per answer
         expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
@@ -113,13 +113,14 @@ describe('answerValidateService without PCRE2', () => {
     it('does not enforce patterns through their JavaScript reading', async () => {
         const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-        //\A and \z anchor in PCRE, but JavaScript would read them as literal
-        //characters and match "Aabcz": nothing may be matched here either way
+        //\A and \z anchor in PCRE, so "abc" is a match there; JavaScript reads
+        //them as literal characters and would reject it. Only the skip can accept
+        //this answer, so a JavaScript fallback cannot pass this test
         params.input_details.regex = '^\\Aabc\\z$';
-        params.answer.answer = 'Aabcz';
+        params.answer.answer = 'abc';
 
         await expect(answerValidateService.validate(entry, params)).resolves.toEqual();
-        expect(answerValidateService.getErrors()).toMatchObject({});
+        expect(answerValidateService.getErrors()).toEqual({});
         expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
 
         consoleWarnSpy.mockRestore();

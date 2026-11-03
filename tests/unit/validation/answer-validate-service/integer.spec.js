@@ -73,7 +73,10 @@ describe('answerValidateService', () => {
         setActivePinia(createPinia());
     });
     afterEach(() => {
-        // vi.restoreAllMocks();
+        //params is shared module state: a failed assertion must not leak a pattern
+        //or a uniqueness setting into the next test
+        params.input_details.regex = null;
+        params.input_details.uniqueness = 'none';
     });
     it('INTEGER answer too long', async () => {
 

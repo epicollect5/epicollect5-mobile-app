@@ -4,8 +4,9 @@ import { vi, describe, it, expect } from 'vitest';
 //can all be observed
 const { compiledHandles, engineState, createPCRE2Mock, rollbarCritical } = vi.hoisted(() => {
     const compiledHandles = [];
-    const engineState = { fail: false };
+    const engineState = { fail: false, attempts: 0 };
     const createPCRE2Mock = async () => {
+        engineState.attempts++;
         if (engineState.fail) {
             throw new Error('WebAssembly.instantiate failed');
         }
@@ -19,7 +20,13 @@ const { compiledHandles, engineState, createPCRE2Mock, rollbarCritical } = vi.ho
                 compiledHandles.push(handle);
                 return handle;
             },
-            patternInfo: () => ({})
+            patternInfo: (pattern) => {
+                //stands in for the engine's compile error on a malformed pattern
+                if (pattern === '(') {
+                    throw new Error('PCRE2 compile error: missing closing parenthesis');
+                }
+                return {};
+            }
         };
     };
     return { compiledHandles, engineState, createPCRE2Mock, rollbarCritical: vi.fn() };
@@ -27,7 +34,7 @@ const { compiledHandles, engineState, createPCRE2Mock, rollbarCritical } = vi.ho
 
 vi.mock('pcre2-wasm', () => ({
     FLAGS: { UTF: 0x00080000 },
-    PCRE2CompileError: class PCRE2CompileError extends Error {},
+    PCRE2MatchError: class PCRE2MatchError extends Error {},
     createPCRE2: createPCRE2Mock
 }));
 
@@ -40,6 +47,7 @@ async function loadService () {
     vi.resetModules();
     compiledHandles.length = 0;
     engineState.fail = false;
+    engineState.attempts = 0;
     rollbarCritical.mockClear();
     return import('@/services/validation/regex-service');
 }
@@ -98,18 +106,86 @@ describe('regexService pattern cache', () => {
         expect(compiledHandles[1].destroy).toHaveBeenCalledTimes(1);
     });
 
-    it('reports an initialisation failure to Rollbar, once per session', async () => {
+    it('recovers when a retry of the initialisation succeeds', async () => {
         const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
         const { regexService } = await loadService();
+        engineState.fail = true;
+
+        await expect(regexService.isAvailable()).resolves.toBe(false);
+
+        //transient failure (e.g. memory pressure at boot): the rejected promise
+        //must not be cached for the rest of the session
+        engineState.fail = false;
+        await expect(regexService.isAvailable()).resolves.toBe(true);
+
+        consoleWarnSpy.mockRestore();
+    });
+
+    it('reports an initialisation failure to Rollbar and stops retrying once spent', async () => {
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const { regexService, RegexEngineUnavailableError } = await loadService();
         engineState.fail = true;
 
         //supported devices all have WebAssembly: a failure is a defect to page on
         await expect(regexService.isAvailable()).resolves.toBe(false);
         await expect(regexService.isAvailable()).resolves.toBe(false);
 
-        expect(rollbarCritical).toHaveBeenCalledTimes(1);
+        expect(rollbarCritical).toHaveBeenCalledTimes(2);
         expect(rollbarCritical).toHaveBeenCalledWith('regex: PCRE2 engine init failed', expect.any(Error));
         expect(rollbarCritical.mock.calls[0][1].message).toBe('WebAssembly.instantiate failed');
+
+        //attempts are spent: a device where compilation is really blocked must not
+        //re-run createPCRE2 (and re-report) on every answer
+        await expect(regexService.isAvailable()).resolves.toBe(false);
+        expect(engineState.attempts).toBe(2);
+        expect(rollbarCritical).toHaveBeenCalledTimes(2);
+
+        //the import path calls the engine directly: it must not retry either
+        await expect(regexService.validatePattern('^[0-9]{3}$')).rejects.toBeInstanceOf(RegexEngineUnavailableError);
+        expect(engineState.attempts).toBe(2);
+
+        consoleWarnSpy.mockRestore();
+    });
+
+    it('classifies a backtracking limit hit as a match error', async () => {
+        const { regexService } = await loadService();
+        const { PCRE2MatchError } = await import('pcre2-wasm');
+
+        expect(regexService.isMatchLimitError(new PCRE2MatchError('match limit exceeded'))).toBe(true);
+        expect(regexService.isMatchLimitError(new Error('something else'))).toBe(false);
+    });
+
+    it('accepts a compilable pattern', async () => {
+        const { regexService } = await loadService();
+
+        await expect(regexService.validatePattern('^[0-9]{3}$')).resolves.toEqual({ valid: true, message: '' });
+    });
+
+    it('reports an inspection failure as an invalid pattern, not an engine failure', async () => {
+        const { regexService } = await loadService();
+
+        //the engine loaded and inspected it, so the definition is at fault
+        await expect(regexService.validatePattern('(')).resolves.toEqual({
+            valid: false,
+            message: 'PCRE2 compile error: missing closing parenthesis'
+        });
+    });
+
+    it('treats a non-string pattern as a malformed definition, not a device failure', async () => {
+        const { regexService } = await loadService();
+
+        await expect(regexService.validatePattern({})).resolves.toEqual({ valid: false, message: 'regex is not a string' });
+        await expect(regexService.validatePattern(123)).resolves.toEqual({ valid: false, message: 'regex is not a string' });
+    });
+
+    it('throws a typed error when the engine cannot be loaded', async () => {
+        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const { regexService, RegexEngineUnavailableError } = await loadService();
+        engineState.fail = true;
+
+        //the caller must be able to tell a device-side failure from a bad pattern
+        await expect(regexService.validatePattern('^[0-9]{3}$')).rejects.toBeInstanceOf(RegexEngineUnavailableError);
+        await expect(regexService.validatePattern('^[0-9]{3}$')).rejects.toThrow('WebAssembly.instantiate failed');
 
         consoleWarnSpy.mockRestore();
     });

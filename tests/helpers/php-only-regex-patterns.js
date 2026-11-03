@@ -38,8 +38,9 @@ export const PHP_ONLY_REGEX_PATTERNS = [
 ];
 
 /**
- * Patterns both engines compile and read the same way: the import check must
- * accept them, with or without the PCRE2 engine.
+ * Patterns both engines compile and read the same way: import validation accepts
+ * them only when the PCRE2 engine is available. Without it they are refused as
+ * unverifiable, like every other pattern.
  */
 export const JS_VALID_REGEX_PATTERNS = [
     { pattern: '^[0-9]{3}$', description: 'counted repetition' },
@@ -52,8 +53,9 @@ export const JS_VALID_REGEX_PATTERNS = [
  * Patterns JavaScript compiles without complaint but reads differently: \A and
  * \z, \Q...\E, \h, \R, \p{...}, \x{...} and POSIX classes are identity
  * escapes or plain characters there. They are valid PCRE, so only PCRE2 may
- * enforce them; the JavaScript fallback must reject them rather than match
- * different text.
+ * enforce them: there is no JavaScript fallback, and import validation refuses
+ * them as unverifiable when the engine cannot load rather than having
+ * JavaScript read them as different text.
  */
 export const PCRE_ONLY_ESCAPE_PATTERNS = [
     { pattern: '^\\Aabc\\z$', description: 'PCRE string anchors \\A and \\z' },
