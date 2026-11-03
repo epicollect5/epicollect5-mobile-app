@@ -1,5 +1,16 @@
 ## Release Notes
 
+# 98.6.0 - build 9860
+
+ - Project regex patterns are now validated with PCRE2 (WebAssembly), rejecting invalid patterns on project add, update, and app boot, with user-facing alerts and documentation.
+ - Regex evaluation handles unverifiable patterns, lazy engine loading, and warmed engine during initial setup for faster validation.
+ - Rollbar integration hardened: project-scoped post tokens, a token check script, and an improved weekly digest with camera noise filtering and retry of dropped connections.
+ - Auth login flow consolidated: parked post-login actions are handled consistently across local and modal logins.
+ - Form reference access is guarded against missing projects.
+ - CSV parsing and JSON output hardened in the regex audit tool, with match-limit enforcement.
+ - iOS text input sanitisation hardened.
+ - Test coverage expanded across regex validation, auth login, form refs, CSV parsing, and edge-to-edge.
+
 # 98.5.9 - build 9859
 
  - Exporting entries now detects an unwritable destination folder (EACCES) and shows actionable guidance instead of a generic error.
