@@ -17,7 +17,7 @@
 				size-lg="1"
 				size-xl="1"
 			>
-				<div class="question-label-button ion-activatable ripple-parent ion-text-center">
+				<div class="question-label-button ion-activatable ripple-parent ion-text-right">
 					<ion-icon
 						:icon="filter"
 						@click="openModalPossibleAnswers()"

@@ -7,7 +7,7 @@
 			<ion-card-title>
 				{{state.question}}
 			</ion-card-title>
-			<ion-card-subtitle class="ion-text-right">
+			<ion-card-subtitle class="question-properties">
 				{{labels.format}}:&nbsp;{{state.inputDetails.datetime_format}}</ion-card-subtitle>
 		</ion-card-header>
 		<ion-card-content

@@ -19,7 +19,7 @@
       >
         <div
             v-if="!isPWA || action === 'help'"
-            class="question-label-button ion-activatable ripple-parent ion-text-center"
+            class="question-label-button ion-activatable ripple-parent ion-text-right"
             @click="onLabelButtonClick($event)"
         >
           <ion-icon

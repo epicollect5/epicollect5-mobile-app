@@ -9,12 +9,9 @@
 			</ion-card-title>
 			<ion-card-subtitle
 				v-if="hasPattern"
-				class="ion-text-right ion-padding"
+				class="question-properties"
 			>
-				{{ labels.pattern }}:
-				<span>
-					&nbsp;{{state.pattern}}
-				</span>
+				{{ labels.pattern }}:&nbsp;{{state.pattern}}
 			</ion-card-subtitle>
 		</ion-card-header>
 		<ion-card-content :class="{'ion-margin' : isGroupInput}">

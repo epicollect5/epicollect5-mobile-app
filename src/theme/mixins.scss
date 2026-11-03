@@ -39,6 +39,9 @@
         font-size: 14px;
         color: #fff;
     }
+    .question-properties {
+        text-align: right;
+    }
     .has-popover {
         span {
             width: 80%;
@@ -55,7 +58,7 @@
         }
     }
     .question-label-grid {
-        padding: 16px 8px 16px 13px;
+        padding: 16px;
     }
 }
 

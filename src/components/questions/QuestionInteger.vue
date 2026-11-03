@@ -8,24 +8,17 @@
 				{{state.question}}
 			</ion-card-title>
 			<ion-card-subtitle
-				class="question-properties ion-text-right"
-				v-if="hasPattern || hasMin || hasMax"
+				class="question-properties"
+				v-if="hasPattern"
 			>
-				<div
-					v-if="hasPattern"
-					class="ion-text-right"
-				>
-					{{ labels.pattern }}:
-					<span>&nbsp;{{state.pattern}}&nbsp;&nbsp;</span>
-				</div>
-				<span v-if="hasMin">
-					{{labels.min}}:&nbsp;
-					<span>{{state.inputDetails.min}}&nbsp;&nbsp;</span>
-				</span>
-				<span v-if="hasMax">
-					{{labels.max}}:&nbsp;
-					<span>{{state.inputDetails.max}}&nbsp;&nbsp;</span>
-				</span>
+				{{ labels.pattern }}:&nbsp;{{state.pattern}}
+			</ion-card-subtitle>
+			<ion-card-subtitle
+				class="question-properties"
+				v-if="hasMin || hasMax"
+			>
+				<span v-if="hasMin">{{labels.min}}:&nbsp;{{state.inputDetails.min}}&nbsp;&nbsp;</span>
+				<span v-if="hasMax">{{labels.max}}:&nbsp;{{state.inputDetails.max}}</span>
 			</ion-card-subtitle>
 		</ion-card-header>
 		<ion-card-content
