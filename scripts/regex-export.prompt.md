@@ -82,9 +82,26 @@ Run these and include the numbers with the file:
    (project `30686`) has a possessive quantifier. Confirm its row's `regex`
    field is exactly `^[0-9]{3}+$` — character for character, no doubled
    backslashes, no surrounding quotes left in the value.
-3. No accidental escaping: `grep -c '\\\\' export.csv` should only match
-   patterns that genuinely contain two consecutive backslashes, not every
-   pattern with one.
+3. No accidental escaping: parse the file as CSV and count the rows whose
+   `regex` column contains two consecutive backslashes, then the same for
+   `input_name`:
+
+   ```bash
+   python3 - <<'PY'
+   import csv
+
+   rows = list(csv.DictReader(open('export.csv', newline='', encoding='utf-8')))
+
+   print('rows:', len(rows))
+   print('regex doubled:', sum('\\\\' in row['regex'] for row in rows))
+   print('input_name doubled:', sum('\\\\' in row['input_name'] for row in rows))
+   PY
+   ```
+
+   Do not grep the raw lines: `input_name` can contain backslashes, and a raw
+   hit cannot tell a doubled pattern from a name. A few `regex` hits are
+   expected - a pattern matching a literal backslash is written with two - while
+   a count close to the row count means every backslash was doubled on export.
 4. A pattern containing a comma or a quote round-trips: pick one, open it in a
    CSV parser (Python `csv` module is fine) and confirm the parsed value equals
    the value stored in the database.
