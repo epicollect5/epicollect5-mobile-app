@@ -81,9 +81,13 @@ generic web advice, or from memory.
 Rules:
 
 * Do NOT add a fallback, polyfill, feature detection or "old device" branch for
-  a capability every version in this matrix has. WebAssembly, ES2020 syntax,
-  modules, async/await, BigInt, `Intl` and modern array methods are all present,
-  on the PWA as much as in the native WebViews.
+  a capability every version in this matrix has. WebAssembly (Chromium 57+,
+  Safari 11+), ES2020 syntax (Chromium 80+, Safari 13.1+, e.g. optional chaining
+  and nullish coalescing), modules, async/await, BigInt, `Intl` and modern array
+  methods are all present on the PWA, and in every native WebView at or above
+  the `.browserslistrc` floor (Chromium 89, Safari 16). Android 10's stock WebView
+  is Chromium 74, below that floor until Play Store updates it: a device stuck
+  there is out of scope, not a case to degrade around.
 * Before writing "unsupported device", "some WebViews may not support X", or a
   degradation path, name the exact version that lacks the feature **and** a
   source for its availability. If no version inside the matrix lacks it, do not

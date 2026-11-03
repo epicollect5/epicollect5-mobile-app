@@ -38,7 +38,7 @@ Review changes for:
 - **Security vulnerabilities**: injection risks, missing authorization checks, exposed secrets.
 - **Missing edge cases**: unvalidated input at trust boundaries (user input, network/API responses, external/plugin/SDK responses, or persisted data whose schema cannot be assumed), missing checks on genuinely optional values, unchecked error paths from external calls.
 - **Missing tests**: features or fixes that should have corresponding automated tests.
-- **Platform assumptions**: a finding that a supported device supposedly lacks a capability (WebView/browser feature, API, codec, WASM) must name the version in `docs/ARCHITECTURE.md` → *Supported Platforms* that lacks it. If every version in the matrix has it, a failure there is a defect — not a reason to demand a fallback.
+- **Platform assumptions**: a finding that a supported device supposedly lacks a capability (WebView/browser feature, API, codec, WASM) must name the version in `docs/ARCHITECTURE.md` → *Supported Platforms* that lacks it. On Android the deciding row is the **WebView engine**, not the API level: the table records Android 10 as the install floor, and *Consequences of that floor* states the WebView that ships with it is Chromium 74, below the Chromium 89 target `.browserslistrc` declares. So "Android 10 does not support X" is only a valid claim when X is missing from both Chromium 74 and the Chromium 89 floor; a capability present at 89 but not at 74 is a device that is out of scope until Play Store updates it, not a fallback to build. If every version in the matrix has it, a failure there is a defect.
 
 ## Explicitly Ignore
 
