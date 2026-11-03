@@ -3,6 +3,7 @@ import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { notificationService } from '@/services/notification-service';
 import { authLocalService } from '@/services/auth/auth-local-service';
+import { authLoginService } from '@/services/auth/auth-login-service';
 import { modalsHandlerService } from '@/services/modals/modals-handler-service';
 
 export async function loginLocal (credentials) {
@@ -21,24 +22,11 @@ export async function loginLocal (credentials) {
         await modalsHandlerService.dismissAll();
 
         //any extra action to perform? (like addProject()...)
-        if (rootStore.afterUserIsLoggedIn.callback !== null) {
-            const callback = rootStore.afterUserIsLoggedIn.callback;
-            const params = rootStore.afterUserIsLoggedIn.params;
-            if (params) {
-                await callback(...params);
-            } else {
-                await callback();
-            }
-            //reset callback
-            rootStore.afterUserIsLoggedIn = { callback: null, params: null };
-        }
-        else {
-            notificationService.hideProgressDialog();
-        }
+        await authLoginService.runAfterLoginAction(rootStore);
     } catch (errorCode) {
         //show error to user
-        notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
-        notificationService.hideProgressDialog();
+        await notificationService.showAlert(STRINGS[language].status_codes[errorCode]);
+        await notificationService.hideProgressDialog();
     }
-    notificationService.hideProgressDialog();
+    await notificationService.hideProgressDialog();
 }
