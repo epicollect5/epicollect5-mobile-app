@@ -1,0 +1,3 @@
+reviews:
+  profile: assertive
+  enable_prompt_for_ai_agents: true
