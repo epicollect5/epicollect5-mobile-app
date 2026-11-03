@@ -111,6 +111,12 @@ export const app = createApp(App)
     rootStore.isPWA = (rootStore.device.platform === PARAMETERS.PWA);
 
     if (rootStore.isPWA) {
+        //the PWA never reports: apply that policy here, as soon as the platform is
+        //known, because the startup path below can submit (a project refused for an
+        //unusable regex does), and init() only runs at mount with the default
+        //enabled:true still in place
+        rollbarService.configure({ enabled: false });
+
         const searchParams = new URLSearchParams(window.location.search);
         rootStore.searchParams = searchParams;
         const urlSegments = window.location.pathname.split('/');
@@ -150,8 +156,8 @@ export const app = createApp(App)
                 const response = await webService.getProjectPWA(projectSlug);
                 projectModel.initialisePWA((response));
 
-                // Reject a structure this app cannot evaluate, otherwise every
-                // answer to an affected question would fail validation
+                // Reject a structure whose patterns cannot be evaluated, otherwise
+                // the Regex constraint for that question would silently never apply
                 const invalidRegexes = await projectValidate.findInvalidRegexes(response.json_extra);
                 if (invalidRegexes.length > 0) {
                     throw {
@@ -227,7 +233,7 @@ export const app = createApp(App)
                 console.log(error);
                 if (error?.isInvalidRegexError) {
                     // Project definition has a pattern the app cannot evaluate
-                    await projectValidate.showInvalidRegexAlert(error.invalidRegexes, error.project);
+                    await projectValidate.showInvalidRegexAlert(error.invalidRegexes, error.project, 'open');
                 } else if (error) {
                    await notificationService
                         .showAlert(error.statusText, error.status);
