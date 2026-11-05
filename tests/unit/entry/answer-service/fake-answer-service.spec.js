@@ -62,6 +62,14 @@ describe('fakeAnswerService Coverage Suite', () => {
             expect(res.answer).not.toContain('<');
             expect(res.answer).not.toContain('>');
         });
+
+        it('generates a valid answer for a PCRE inline modifier', async () => {
+            const { regexService } = await import('@/services/validation/regex-service');
+            const input = { type: 'text', regex: '(?i)^abc$', possible_answers: [] };
+            const res = await fakeAnswerService.createFakeAnswer(input, baseEntry, '1');
+            expect(res.answer).not.toBe('');
+            expect(await regexService.test(input.regex, res.answer)).toBe(true);
+        });
     });
 
     // --- NUMERIC TYPES ---
@@ -77,6 +85,12 @@ describe('fakeAnswerService Coverage Suite', () => {
             const input = { type: 'phone', regex: '99[0-9]{5}', possible_answers: [] };
             const res = await fakeAnswerService.createFakeAnswer(input, baseEntry, '1');
             expect(res.answer).toMatch(/^99\d{5}$/);
+        });
+
+        it('leaves phone empty for unsupported PCRE-only regex', async () => {
+            const input = { type: 'phone', regex: '^(a)?(?(1)1|2)$', possible_answers: [] };
+            const res = await fakeAnswerService.createFakeAnswer(input, baseEntry, '1');
+            expect(res.answer).toBe('');
         });
 
         it('covers decimal random range', async () => {
