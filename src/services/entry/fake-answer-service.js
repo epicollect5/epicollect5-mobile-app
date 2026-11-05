@@ -9,18 +9,144 @@ import wordsSpanish from 'an-array-of-spanish-words';
 import wordsEnglish from 'an-array-of-english-words';
 import wordsGerman from 'an-array-of-german-words';
 import RandExp from 'randexp';
+import { regexService } from '@/services/validation/regex-service';
+
+function escapeRegExp (value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function translatePcrePatternForRandExp (pattern) {
+    if (typeof pattern !== 'string') {
+        return null;
+    }
+    if (/\(\?(\(|[0-9]|&|P[=>]|C)/.test(pattern) || /\(\?(R|DEFINE)/.test(pattern) || /\(\?\([0-9<]/.test(pattern) || /\(\?\|/.test(pattern) || /\(\*[A-Z]/.test(pattern) || /\\g[{<]/.test(pattern)) {
+        return null;
+    }
+    let flags = '';
+    let jsPattern = pattern;
+    jsPattern = jsPattern.replace(/\(\?([imsx]+):/g, (match, groupFlags) => {
+        flags += groupFlags;
+        return '(?:';
+    });
+    jsPattern = jsPattern.replace(/\(\?([imsx-]+)\)/g, (match, groupFlags) => {
+        flags += groupFlags.replace(/-/g, '');
+        return '';
+    });
+    jsPattern = jsPattern.replace(/\(\?P<[^>]+>/g, '(?:');
+    jsPattern = jsPattern.replace(/\(\?<([A-Za-z_][A-Za-z0-9_]*)>/g, '(?:');
+    jsPattern = jsPattern.replace(/\(\?>/g, '(?:');
+    jsPattern = jsPattern.replace(/\{(\d+(?:,\d*)?)\}\+/g, '{$1}');
+    jsPattern = jsPattern.replace(/([*+?])\+/g, '$1');
+    jsPattern = jsPattern.replace(/\\A/g, '^');
+    jsPattern = jsPattern.replace(/\\G/g, '^');
+    jsPattern = jsPattern.replace(/\\z/g, '$');
+    jsPattern = jsPattern.replace(/\\Z/g, '$');
+    jsPattern = jsPattern.replace(/\\K/g, '');
+    jsPattern = jsPattern.replace(/\\Q([\s\S]*?)\\E/g, (match, quoted) => escapeRegExp(quoted));
+    jsPattern = jsPattern.replace(/\\Q([\s\S]*)$/, (match, quoted) => escapeRegExp(quoted));
+    jsPattern = jsPattern.replace(/\\h/g, '[ \\t]');
+    jsPattern = jsPattern.replace(/\\H/g, '[^ \\t]');
+    jsPattern = jsPattern.replace(/\\R/g, '\\n');
+    jsPattern = jsPattern.replace(/\\p\{L\}/g, '[A-Za-z]');
+    jsPattern = jsPattern.replace(/\\p\{N\}/g, '[0-9]');
+    jsPattern = jsPattern.replace(/\[\[:alpha:\]\]/g, '[A-Za-z]');
+    jsPattern = jsPattern.replace(/\[\[:digit:\]\]/g, '[0-9]');
+    jsPattern = jsPattern.replace(/\[\[:alnum:\]\]/g, '[A-Za-z0-9]');
+    jsPattern = jsPattern.replace(/\[\[:space:\]\]/g, '[\\s]');
+    if (/\\p\{/.test(jsPattern) || /\\x\{/.test(jsPattern) || /\(\?/.test(jsPattern)) {
+        return null;
+    }
+    const randexpFlags = (flags.indexOf('i') !== -1 ? 'i' : '') + (flags.indexOf('m') !== -1 ? 'm' : '');
+    return { jsPattern, flags: randexpFlags };
+}
+
+async function generateFromRegex (originalPattern, digitOnly) {
+    const translated = translatePcrePatternForRandExp(originalPattern);
+    if (!translated) {
+        return null;
+    }
+    let randexp;
+    try {
+        randexp = new RandExp(translated.jsPattern, translated.flags);
+    } catch (error) {
+        return null;
+    }
+    if (digitOnly) {
+        randexp.defaultRange.subtract(32, 126);
+        randexp.defaultRange.add(48, 57);
+    } else {
+        //remove invalid chars (for epicollect5 validation)
+        randexp.defaultRange.subtract(60, 62); // -> <, >, =
+    }
+    for (let attempt = 0; attempt < 10; attempt++) {
+        let candidate;
+        try {
+            candidate = randexp.gen();
+        } catch (error) {
+            return null;
+        }
+        try {
+            if (await regexService.test(originalPattern, candidate)) {
+                return candidate;
+            }
+        } catch (error) {
+            //unverifiable (bad pattern, limit hit, engine unavailable):
+            //no verified candidate, leave the question empty
+            return null;
+        }
+    }
+    return null;
+}
 
 export const fakeAnswerService = {
 
-    generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex) {
+    failedRegexPatterns: [],
+
+    hasUnescapedSlash (pattern) {
+        for (let i = 0; i < pattern.length; i++) {
+            if (pattern[i] === '\\') {
+                i++;
+            } else if (pattern[i] === '/') {
+                return true;
+            }
+        }
+        return false;
+    },
+
+    recordFailedRegex (inputDetails) {
+        if (!fakeAnswerService.failedRegexPatterns.some((failed) => failed.ref === inputDetails.ref)) {
+            fakeAnswerService.failedRegexPatterns.push({
+                ref: inputDetails.ref,
+                question: inputDetails.question,
+                regex: inputDetails.regex,
+                required: inputDetails.is_required,
+                //the server wraps patterns in /.../ delimiters, so an
+                //unescaped slash breaks evaluation for every client
+                serverIncompatible: fakeAnswerService.hasUnescapedSlash(inputDetails.regex)
+            });
+        }
+    },
+
+    async generateFromRegex (originalPattern, digitOnly) {
+        return generateFromRegex(originalPattern, digitOnly);
+    },
+
+    async generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex) {
         if (inputDetails.regex) {
-            // if there is a regex, generate string that matches it
-            const randexp = new RandExp(inputDetails.regex);
-            //remove invalid chars (for epicollect5 validation)
-            randexp.defaultRange.subtract(60, 62); // -> <, >, =
-            answer.answer = randexp.gen();
-            console.log('answer matching regex ->', answer.answer, inputDetails.regex);
-        } else {
+            const generated = await generateFromRegex(inputDetails.regex, false);
+            if (generated !== null) {
+                answer.answer = generated;
+                console.log('answer matching regex ->', answer.answer, inputDetails.regex);
+                return true;
+            }
+            //no verified candidate: leave the question empty so it saves
+            //locally and skips the server regex check. Only a required
+            //question can still fail, on upload (ec5_102/103/115)
+            console.warn('regex not supported for fake generation, leaving empty -> ' + inputDetails.regex);
+            fakeAnswerService.recordFailedRegex(inputDetails);
+            answer.answer = '';
+            return false;
+        }
 
             const numberOfWords = utilsService.getRandomInt(10);
             let randomPhrase = '';
@@ -39,9 +165,10 @@ export const fakeAnswerService = {
             //"\ufe64 \ufe65", < >
 
             answer.answer = (entryIndex + randomPhrase).trim();
-        }
-    }, async createFakeAnswer(inputDetails, entry, entryIndex) {
+    },
+    async createFakeAnswer(inputDetails, entry, entryIndex) {
         return new Promise((resolve) => {
+            (async () => {
             const rootStore = useRootStore();
             const answer = { was_jumped: false };
             let random_idx;
@@ -69,13 +196,13 @@ export const fakeAnswerService = {
 
             switch (inputDetails.type) {
                 case 'text':
-                    fakeAnswerService.generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex);
+                    await fakeAnswerService.generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex);
                     //imp: truncate to 255 as per epicollect limits
                     answer.answer = utilsService.trunc(answer.answer, 255, false);
                     resolve(answer);
                     break;
                 case 'textarea':
-                    fakeAnswerService.generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex);
+                    await fakeAnswerService.generateTextAnswer(inputDetails, answer, languagesArrays, symbolsArray, entryIndex);
                     resolve(answer);
                     break;
                 case 'integer':
@@ -92,11 +219,17 @@ export const fakeAnswerService = {
                             if (inputDetails.regex) {
                                 //allow to pick only from digits
                                 //see https://github.com/fent/randexp.js#default-range
-                                const randexp = new RandExp(inputDetails.regex);
-                                randexp.defaultRange.subtract(32, 126);
-                                randexp.defaultRange.add(48, 57);
-                                answer.answer = randexp.gen();
-                                console.log('regex integer/phone ->', answer.answer, inputDetails.regex);
+                                const generated = await generateFromRegex(inputDetails.regex, true);
+                                if (generated !== null) {
+                                    answer.answer = generated;
+                                    console.log('regex integer/phone ->', answer.answer, inputDetails.regex);
+                                } else {
+                                    //no verified candidate: leave empty so it
+                                    //saves locally and skips the server check
+                                    console.warn('regex not supported for fake generation, leaving empty -> ' + inputDetails.regex);
+                                    fakeAnswerService.recordFailedRegex(inputDetails);
+                                    answer.answer = '';
+                                }
                             }
                             else {
 
@@ -257,6 +390,7 @@ export const fakeAnswerService = {
                     answer.answer = '';
                     resolve(answer);
             }
+            })();
         });
     }
 };

@@ -8,6 +8,26 @@ import { entryCommonService } from '@/services/entry/entry-common-service';
 import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
 import { utilsService } from '@/services/utilities/utils-service';
+import { fakeAnswerService } from '@/services/entry/fake-answer-service';
+
+export async function showFakeRegexWarningIfNeeded () {
+    if (!PARAMETERS.DEBUG) {
+        return;
+    }
+    if (fakeAnswerService.failedRegexPatterns.length === 0) {
+        return;
+    }
+    const details = fakeAnswerService.failedRegexPatterns
+        .map((failed) => '"' + failed.question + '" (' + failed.regex + ')'
+            + (failed.required ? ' [required]' : '')
+            + (failed.serverIncompatible ? ' [breaks server validation]' : ''))
+        .join('<br>');
+    const requiredCount = fakeAnswerService.failedRegexPatterns.filter((failed) => failed.required).length;
+    const message = requiredCount > 0
+        ? 'Fake answers could not be generated for ' + fakeAnswerService.failedRegexPatterns.length + ' regex question(s) (left empty). Upload may fail for the ' + requiredCount + ' required one(s):<br><br>' + details
+        : 'Fake answers could not be generated for ' + fakeAnswerService.failedRegexPatterns.length + ' regex question(s) (left empty):<br><br>' + details;
+    await notificationService.showAlert(message, 'Fake regex answers skipped');
+}
 
 export async function addFakeEntries (params) {
     return new Promise((resolve, reject) => {
@@ -21,6 +41,7 @@ export async function addFakeEntries (params) {
             // Show loader
             await notificationService.showProgressDialog(labels.wait);
             console.log('Fake entries run started - heap: ' + utilsService.getHeapMemoryUsage());
+            fakeAnswerService.failedRegexPatterns.length = 0;
 
             //todo add a popup to ask how many so we do not recompile ;)
             const howManyEntries = PARAMETERS.HOW_MANY_ENTRIES;
@@ -126,15 +147,16 @@ export async function addFakeEntries (params) {
                                 //Save the whole entry
                                 entryService
                                     .saveEntry(PARAMETERS.SYNCED_CODES.UNSYNCED)
-                                    .then(function () {
+                                    .then(async function () {
                                         console.log(i + '. - fake entry saved - heap: ' + utilsService.getHeapMemoryUsage());
                                         if (i < howManyEntries) {
                                             i++;
                                             _addFakeHierarchyEntry(i);
                                         } else {
                                             // hide loader
-                                            notificationService.hideProgressDialog();
+                                            await notificationService.hideProgressDialog();
                                             console.log('Fake entries run completed - heap: ' + utilsService.getHeapMemoryUsage());
+                                            await showFakeRegexWarningIfNeeded();
                                             resolve();
                                         }
                                     });
