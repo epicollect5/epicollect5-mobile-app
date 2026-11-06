@@ -1,5 +1,12 @@
 ## Release Notes
 
+# 98.6.1 - build 9861
+
+ - Adding fake entries now generates answers that match the question's regex pattern for text, textarea, integer and phone questions, and verifies each candidate against the project pattern before saving it.
+ - When a regex cannot produce a valid answer, the fake answer is left empty instead of saving an invalid one; debug builds list the affected questions and flag the required ones that may fail on upload.
+ - Question subtitles are aligned consistently: pattern, minimum/maximum and date/time format labels now sit right-aligned, and integer and decimal questions show the pattern on its own line above the range.
+ - Question label spacing and markup are tidied.
+
 # 98.6.0 - build 9860
 
  - Project regex patterns are now validated with PCRE2 (WebAssembly), rejecting invalid patterns on project add, update, and app boot, with user-facing alerts and documentation.
