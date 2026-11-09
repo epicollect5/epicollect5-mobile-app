@@ -6,7 +6,7 @@ import { rollbarService } from '@/services/utilities/rollbar-service';
 // JavaScript cannot compile PCRE-only syntax (possessive quantifiers, recursion,
 // ...) and silently reinterprets escapes such as \A, \Q, \h and \R.
 // See docs/ARCHITECTURE.md, "Answer Regex Evaluation", for the trade-offs.
-const PATTERN_FLAGS =  (        rgeefwfeww); //multi-byte answers are matched as characters
+const PATTERN_FLAGS = FLAGS.UTF; //multi-byte answers are matched as characters
 //backtracking limits: a pathological pattern must never hang the UI
 const MATCH_OPTIONS = { matchLimit: 1000000, depthLimit: 500 };
 //PCRE2_ERROR_MATCHLIMIT: the step limit. A depth-limit hit (-53) is also a
