@@ -93,8 +93,8 @@
 							:max="zoomLevels"
 							step="1"
 							debounce="500"
-							snaps="true"
-							ticks="true"
+							snaps
+							ticks
 							:value="state.selectedTextSize"
 							@ionChange="updateSelectedTextSize($event)"
 						>
@@ -115,7 +115,7 @@
 					<ion-item
 						lines="none"
 						button
-						detail
+						detail="true"
 						@click="openThemeSelector()"
 					>
 						<ion-label>{{ labels.theme }}</ion-label>
@@ -444,10 +444,10 @@ export default {
 				}
 			}
 
-			notificationService.hideProgressDialog();
+			await notificationService.hideProgressDialog();
 				state.isSaving = false;
 				if (failed) {
-					notificationService.showAlert(labels.unknown_error, labels.error);
+					await notificationService.showAlert(labels.unknown_error, labels.error);
 				} else {
 					notificationService.showToast(STRINGS[language].status_codes.ec5_123);
 				}
