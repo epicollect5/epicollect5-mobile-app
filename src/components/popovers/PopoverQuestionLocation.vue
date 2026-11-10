@@ -200,7 +200,7 @@ export default {
 					return false;
 				}
 
-				const amURL = PARAMETERS.MAPS_ENDPOINT.AM + latitude + ',' + longitude;
+				const amURL = PARAMETERS.MAPS_ENDPOINT.AM + latitude + ',' + longitude + '&q=' + latitude + ',' + longitude;
 				popoverController.dismiss(null);
 				window.open(amURL, '_system', 'location="yes"');
 			}
