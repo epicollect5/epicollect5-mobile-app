@@ -8,7 +8,7 @@
 				size-lg="11"
 				size-xl="11"
 			>
-				<div class="">{{questionText}}</div>
+				<div class="question-label-text">{{questionText}}</div>
 			</ion-col>
 			<ion-col
 				size-xs="2"
@@ -17,11 +17,11 @@
 				size-lg="1"
 				size-xl="1"
 			>
-				<div class="question-label-button ion-activatable ripple-parent ion-text-right">
-					<ion-icon
-						:icon="filter"
-						@click="openModalPossibleAnswers()"
-					></ion-icon>
+				<div
+					class="question-label-button ion-activatable ripple-parent"
+					@click="openModalPossibleAnswers()"
+				>
+					<ion-icon :icon="filter"></ion-icon>
 					<ion-ripple-effect
 						class="question-label-button-ripple"
 						type="unbounded"

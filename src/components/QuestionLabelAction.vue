@@ -8,7 +8,7 @@
           size-lg="11"
           size-xl="11"
       >
-        <div class="">{{ questionText }}</div>
+        <div class="question-label-text">{{ questionText }}</div>
       </ion-col>
       <ion-col
           size-xs="2"
@@ -19,7 +19,7 @@
       >
         <div
             v-if="!isPWA || action === 'help'"
-            class="question-label-button ion-activatable ripple-parent ion-text-right"
+            class="question-label-button ion-activatable ripple-parent"
             @click="onLabelButtonClick($event)"
         >
           <ion-icon
