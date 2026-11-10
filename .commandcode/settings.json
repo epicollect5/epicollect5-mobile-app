@@ -24,7 +24,7 @@
       "Shell(npm run lint:*)",
       "Shell(greptile review:*)",
       "mcp__fff__*",
-      "mcp__codegraph__codegraph_explore"
+      "mcp__codegraph__*"
     ],
     "ask": [
       "Shell(git push:*)",
