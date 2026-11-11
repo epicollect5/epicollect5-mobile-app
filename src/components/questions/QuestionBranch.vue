@@ -34,7 +34,7 @@
 		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title>
 				<question-label-action
-					:disabled="isPWA"
+					:disabled="isPWA || state.isFetching"
 					action="filter"
 					:questionText="state.question"
 					answer=" "
@@ -268,7 +268,7 @@ import ModalEntriesBranchFilter from '@/components/modals/ModalEntriesBranchFilt
 import ToolbarEntriesFilters from '@/components/ToolbarEntriesFilters';
 import IconEntry from '@/components/IconEntry';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
-import { databaseSelectService } from '@/services/database/database-select-service';
+import { branchEntriesFilterService } from '@/services/entry/branch-entries-filter-service';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
@@ -344,56 +344,23 @@ export default {
 		});
 
 		function _updateEntriesFilterBranchByDates() {
-			let oldestDateISO;
-			let newestDateISO;
-
 			return new Promise((resolve) => {
 				(async () => {
 					const ownerEntryUuid = entriesAddScope.entryService.entry.entryUuid;
 					//get count without filters to have the total reference in the UI
 					//i.e "Found 6/50 entries"
 					//imp: not the most optimised solution, for now it will do
-					const resultWithoutFilters = await databaseSelectService.countBranchesForQuestion(
+					const counts = await branchEntriesFilterService.getBranchFilterCounts(
 						ownerEntryUuid,
 						inputRef,
-						PARAMETERS.FILTERS_DEFAULT,
-						PARAMETERS.STATUS.ALL
+						state.filters
 					);
 
-					//set entries counter without any filter
-					state.countNoFilters = resultWithoutFilters.rows.item(0).total;
-
-					const result = await databaseSelectService.countBranchesForQuestion(
-						ownerEntryUuid,
-						inputRef,
-						state.filters,
-						state.filters.status
-					);
-
-					if (result.rows.length > 0) {
-						//any entries found?
-						if (result.rows.item(0).total > 0) {
-							//update entries counter with filters
-							state.countWithFilters = result.rows.item(0).total;
-
-							//oldest and newest values here are filtered,
-							oldestDateISO = result.rows.item(0).oldest.split('T')[0];
-							newestDateISO = result.rows.item(0).newest.split('T')[0];
-
-							//we save the oldest and newest on the first run only to reset
-							//dates if needed
-							if (state.filters.oldest === null && state.filters.newest === null) {
-								state.filters.oldest = oldestDateISO;
-								state.filters.newest = newestDateISO;
-								//set from and to on first run.
-								state.filters.from = oldestDateISO;
-								state.filters.to = newestDateISO;
-							}
-						} else {
-							state.countWithFilters = 0;
-						}
-					}
-					resolve(result.rows.item(0).total);
+					//set entries counters and seeded filters
+					state.countNoFilters = counts.countNoFilters;
+					state.countWithFilters = counts.countWithFilters;
+					state.filters = counts.filters;
+					resolve(counts.countWithFilters);
 				})();
 			});
 		}
@@ -469,6 +436,9 @@ export default {
 				});
 			},
 			async openModalEntriesBranchFilter() {
+				if (state.isFetching) {
+					return;
+				}
 				//clone reactive properties we do not want to modify in the modal
 				const countWithFilters = state.countWithFilters;
 				const countNoFilters = state.countNoFilters;
