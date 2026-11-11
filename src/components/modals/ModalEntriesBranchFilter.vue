@@ -49,9 +49,10 @@
 		</ion-item>
 
 		<ion-toolbar class="filter-by-date-from">
-			<ion-title class="ion-text-end">
-				<div>
-					<ion-label>{{ labels.from }}</ion-label>
+			<ion-title class="ion-text-start">
+
+				<div class="filter-date-row">
+					<ion-label class="filter-date-label">{{ labels.from }}</ion-label>
 					<date-time-field
 						type="date"
 						:answer="state.filters.from"
@@ -65,9 +66,9 @@
 		</ion-toolbar>
 
 		<ion-toolbar class="filter-by-date-to">
-			<ion-title class="ion-text-end">
-				<div>
-					<ion-label>{{ labels.to }}</ion-label>
+			<ion-title class="ion-text-start">
+				<div class="filter-date-row">
+					<ion-label class="filter-date-label">{{ labels.to }}</ion-label>
 					<date-time-field
 						type="date"
 						:answer="state.filters.to"
