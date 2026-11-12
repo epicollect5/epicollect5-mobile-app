@@ -1,5 +1,5 @@
-EC5 Angle Brackets (small-form-variants.woff2)
-==============================================
+EC5 Angle Brackets (small-angle-brackets.woff2)
+===============================================
 
 This font file is a modified subset of Noto Sans CJK SC Regular
 (https://github.com/notofonts/noto-cjk), created for Epicollect5 to
@@ -9,7 +9,7 @@ Modifications: subset to the two code points U+FE64/U+FE65, remapped
 to the family's ASCII < > glyph outlines, vertical metrics normalized,
 family renamed to "EC5 Angle Brackets".
 
-Rebuild: scripts/fonts/build-small-form-variants.py (fonttools + brotli).
+Rebuild: scripts/fonts/build-small-angle-brackets.py (fonttools + brotli).
 
 Copyright 2014-2021 Adobe (http://www.adobe.com/)
 

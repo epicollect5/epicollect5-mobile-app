@@ -1,4 +1,4 @@
-"""Build public/assets/fonts/small-form-variants.woff2 for EC5.
+"""Build public/assets/fonts/small-angle-brackets.woff2 for EC5.
 
 One-off tool, run manually when the subset needs regenerating; not wired
 into npm scripts or CI.
@@ -12,7 +12,7 @@ Requirements (run inside a venv):
   pip install fonttools brotli
 
 Usage:
-  python build-small-form-variants.py <source-otf> <output-woff2>
+  python build-small-angle-brackets.py <source-otf> <output-woff2>
 
 What it does:
 - remaps U+FE64/U+FE65 to the family's own ASCII < > glyph outlines
@@ -25,17 +25,12 @@ What it does:
   it explicit) while keeping the copyright/license records required
   for OFL redistribution.
 
-Reproducibility: output is byte-stable across runs. The script re-execs
-itself with PYTHONHASHSEED=0 because fontTools' woff2 encoder iterates
-hash-ordered collections, which would otherwise vary per process.
+Reproducibility: output is byte-stable across runs. TTFont.save() would
+otherwise stamp the build time into head.modified (recalcTimestamp
+defaults to True), so the source font is loaded with recalcTimestamp=False
+and the original source timestamp is preserved.
 """
-import os
 import sys
-
-# re-exec with a fixed hash seed (see "Reproducibility" above)
-if os.environ.get('PYTHONHASHSEED') != '0':
-    os.execve(sys.executable, [sys.executable] + sys.argv,
-              dict(os.environ, PYTHONHASHSEED='0'))
 
 from fontTools import subset
 from fontTools.ttLib import TTFont
@@ -55,7 +50,7 @@ PS_NAME = 'EC5AngleBrackets'
 ASCENT = 928
 DESCENT = 244
 
-font = TTFont(SRC)
+font = TTFont(SRC, recalcTimestamp=False)
 
 # 1. remap FE64/FE65 to the ASCII < > outlines of the same family
 for table in font['cmap'].tables:
