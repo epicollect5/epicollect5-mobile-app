@@ -33,7 +33,6 @@
 			</div>
 
 			<ion-chip
-				mode="ios"
 				outline
 				color="dark"
 				class="chip-numeric"
@@ -81,7 +80,6 @@
 			</div>
 			<ion-chip
 				v-if="state.confirmAnswer.verify"
-				mode="ios"
 				outline
 				color="dark"
 				class="chip-numeric"

@@ -34,7 +34,6 @@
 
 			<ion-chip
 				class="chip-numeric"
-				mode="ios"
 				outline
 				color="dark"
 			>
@@ -72,7 +71,6 @@
 
 				<ion-chip
 					class="chip-numeric"
-					mode="ios"
 					outline
 					color="dark"
 				>
