@@ -8,7 +8,8 @@ Subset of Noto Sans CJK SC Regular (© 2014-2021 Adobe, SIL OFL 1.1,
 https://github.com/notofonts/noto-cjk), built with pyftsubset to exactly
 U+FE64-FE65, remapped to the family's ASCII < > outlines (the native small
 form variants render tiny with fullwidth advance) and Latin-typical vertical
-metrics. License/copyright records are kept in the woff2 name table. */
+metrics. License/copyright records are kept in the woff2 name table.
+Rebuild with scripts/fonts/build-small-form-variants.py. */
 @font-face {
   font-family: 'EC5AngleBrackets';
   src: url('/assets/fonts/small-form-variants.woff2') format('woff2');

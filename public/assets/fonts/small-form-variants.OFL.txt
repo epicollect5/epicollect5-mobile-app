@@ -9,6 +9,8 @@ Modifications: subset to the two code points U+FE64/U+FE65, remapped
 to the family's ASCII < > glyph outlines, vertical metrics normalized,
 family renamed to "EC5 Angle Brackets".
 
+Rebuild: scripts/fonts/build-small-form-variants.py (fonttools + brotli).
+
 Copyright 2014-2021 Adobe (http://www.adobe.com/)
 
 This Font Software is licensed under the SIL Open Font License,
