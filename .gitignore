@@ -60,3 +60,4 @@ docs/QA-*
 
 # Generated regex audit data
 scripts/regexes.csv
+.zcode
