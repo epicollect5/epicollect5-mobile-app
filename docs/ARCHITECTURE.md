@@ -520,6 +520,51 @@ The WASM binary is inlined in `app.js`: **+117 kB gzip** (~+634 kB raw) on every
 
 Even with PCRE2 there are deliberate differences from the old JavaScript path: PCRE's `$` also matches before a trailing newline, so `^abc$` accepts `"abc\n"` (asserted in `tests/unit/validation/answer-validate-service/text.spec.js`), and `\p{...}` and case folding follow PCRE defaults rather than JavaScript's. These are intended: the goal is to judge answers the way PHP does, not the way the previous JavaScript path did.
 
+## Small Angle Brackets Font Subset (U+FE64/U+FE65)
+
+Stored answers may contain `﹤`/`﹥` (U+FE64/U+FE65, *Small Form Variants* angle brackets that `getSanitisedAnswer` in `src/services/utilities/utils-service.js` stores in place of literal `<`/`>` for tag safety). They must render legibly with **zero data change**: the stored form is never transformed, and there is no sanitizer retarget, no display transform, no migration. The fix is a bundled, two-glyph font subset wired in through CSS only.
+
+### Assets and wiring
+
+| File | Role |
+| --- | --- |
+| `public/assets/fonts/small-angle-brackets.woff2` | The subset font (~1 kB, 2 glyphs), family name `EC5 Angle Brackets` |
+| `public/assets/fonts/small-angle-brackets.OFL.txt` | Full OFL 1.1 text + provenance, ships in every bundle |
+| `src/theme/variables.css` | `@font-face` with `unicode-range: U+FE64-FE65` and the `--ion-font-family` prepend |
+| `scripts/fonts/build-small-angle-brackets.py` | Regeneration script (Python + fontTools) |
+
+The `@font-face` declares `unicode-range: U+FE64-FE65` with `font-display: swap`, and `:root` prepends the family to Ionic's font variable: `--ion-font-family: 'EC5AngleBrackets', var(--ion-default-font)`. That single variable covers every surface on every platform: Ionic shadow components resolve `var(--ion-font-family, inherit)`, and light-DOM text inherits it because the app disables the iOS dynamic font (`--ion-dynamic-font: initial` in the same file), so `html`'s font resolves through the same stack. For all other code points the subset supplies no glyphs, so rendering is byte-for-byte the platform default; the two brackets alone come from the subset. There are deliberately no per-component rules, no font-size overrides and no JS involvement, and `public/` files are copied verbatim into `dist/` and the native bundles, so offline rendering needs no service worker (the PWA target has none — see *Build Targets*).
+
+### Why a subset with remapped glyphs
+
+No font ships body-proportioned glyphs for these code points — the *Small Form Variants* block is designed small in every font that covers it. Measured against a 1000-unit em in Noto Sans CJK SC Regular: the native U+FE64 ink is 35.7% em tall with a **1 em fullwidth advance** (which is exactly the "tiny, floating in a wide gap" rendering the subset replaces); ASCII `<` in the same family is 45% tall at 55.5% advance; Droid Sans Fallback's is smaller still (29.7%). Noto Sans Symbols 2 does not cover the code points at all. The subset therefore remaps U+FE64/U+FE65 onto the family's own ASCII `<`/`>` outlines, giving brackets that sit in running Latin text exactly like the ASCII characters, and normalizes vertical metrics to Latin-typical values (hhea + OS/2, ≈ Roboto/SF proportions) so lines containing the glyphs do not grow line boxes in mixed runs.
+
+The source is Noto Sans CJK SC Regular (© 2014-2021 Adobe, SIL OFL 1.1, `github.com/notofonts/noto-cjk`, `Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf`). The derivative is renamed `EC5 Angle Brackets` because a modified version must not carry the source family name (OFL condition 3; the source declares no Reserved Font Names — the rename makes that explicit), while the copyright and license records stay in the name table and the full license text ships alongside the font (OFL condition 2). OFL governs the font files only: the MIT license of this codebase is unaffected, and the font must not be relabeled MIT.
+
+### When to run the script
+
+Only when the glyph set changes (a new code point), the source font is updated, or the name/license records need a fix. It is a manual tool, never part of normal development, and is deliberately not wired into npm scripts or CI.
+
+### How to run the script
+
+```bash
+# one-time environment (Python 3 + venv; fonttools + brotli only)
+python3 -m venv venv && ./venv/bin/pip install fonttools brotli
+
+# download the source font (not bundled in the repo)
+curl -L -o NotoSansCJKsc-Regular.otf \
+  https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf
+
+# rebuild and verify byte-identical output
+./venv/bin/python scripts/fonts/build-small-angle-brackets.py \
+  NotoSansCJKsc-Regular.otf small-angle-brackets.woff2
+cmp small-angle-brackets.woff2 public/assets/fonts/small-angle-brackets.woff2
+```
+
+Output is byte-stable across runs: the script loads the source with `recalcTimestamp=False` because `TTFont.save()` would otherwise stamp the build time into `head.modified` (the default is `True`). A rebuilt font that is not byte-identical to the committed one is a defect in the script, not something to eyeball away. After a rebuild, the only files to touch are the woff2 itself plus the OFL header/comment if glyph design or source version changed; the CSS never changes unless the family name or code point range does.
+
+A Node-side wrapper exists (`@web-alchemy/fonttools`, real fontTools under Pyodide) but is not used: it exposes only subsetting/instancing/TTX, while this pipeline is mostly table surgery (cmap remap, metric normalization, rename), which that API cannot express. Revisit only if it matures or font regeneration becomes frequent.
+
 ## Entry Editing Architecture
 
 The entry editor is a question-driven workflow centered on:
