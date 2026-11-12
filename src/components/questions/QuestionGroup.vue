@@ -51,6 +51,8 @@
 					:type="groupInput.type"
 					:inputRef="groupInput.ref"
 					v-if="groupInput.type==='group'"
+					:parentEntryName="parentEntryName"
+					:currentFormName="currentFormName"
 				></question-group>
 				<question-photo
 					:isGroupInput="isGroupInput"
@@ -105,6 +107,8 @@
 					:type="groupInput.type"
 					:inputRef="groupInput.ref"
 					v-if="groupInput.type==='branch'"
+					:parentEntryName="parentEntryName"
+					:currentFormName="currentFormName"
 				></question-branch>
 				<question-textarea
 					:isGroupInput="isGroupInput"
@@ -203,6 +207,14 @@ export default {
 			required: true
 		},
 		type: {
+			type: String,
+			required: true
+		},
+		parentEntryName: {
+			type: String,
+			required: true
+		},
+		currentFormName: {
 			type: String,
 			required: true
 		}

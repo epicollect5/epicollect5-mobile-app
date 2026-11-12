@@ -135,6 +135,8 @@
 									:inputRef="state.questionParams.currentInputRef"
 									v-if="state.questionParams.type === 'group'"
 									@question-mounted="onQuestionMounted"
+									:parentEntryName="parentEntryName"
+									:currentFormName="currentFormName"
 								></question-group>
 								<question-photo
 									:type="state.questionParams.type"

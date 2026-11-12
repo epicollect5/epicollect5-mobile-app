@@ -3,8 +3,6 @@ description: Create Conventional Commits from changes, splitting by type and sco
 agent: build
 ---
 
-Execute the `commit` skill defined in `.agents/skills/commit/SKILL.md` exactly as written.
-
-Forward the arguments below verbatim to the skill as-is, without parsing, restructuring, or interpreting them:
+Run the `commit` skill exactly as written. Load it with the `skill` tool using id `commit`; its instructions are in `.agents/skills/commit/SKILL.md`. The skill works from the repository state, so no arguments are needed — anything the user adds is appended at the end.
 
 $ARGUMENTS

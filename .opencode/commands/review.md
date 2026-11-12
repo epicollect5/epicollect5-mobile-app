@@ -2,8 +2,6 @@
 description: Review local changes against the repository base branch
 ---
 
-Execute the `review` skill defined in `.agents/skills/review/SKILL.md` exactly as written.
-
-Forward the arguments below verbatim to the skill as-is, without parsing, restructuring, or interpreting them:
+Run the `review` skill exactly as written. Load it with the `skill` tool using id `review`; its instructions are in `.agents/skills/review/SKILL.md`. The skill works from the repository state, so no arguments are needed — anything the user adds is appended at the end.
 
 $ARGUMENTS
