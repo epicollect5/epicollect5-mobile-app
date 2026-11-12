@@ -9,6 +9,10 @@
  - The branch entry name shown above a branch question no longer wraps onto multiple lines.
  - The incomplete entries upload message is shorter and clearer in every language.
  - Settings now wait for the progress dialog to close before showing the success toast or the error alert.
+ - Settings cards are reordered with Help us improve and Version at the bottom, and the text-size slider and the theme row render their controls correctly again.
+ - Confirmation alerts on iOS now lay their buttons out in a row like Android and the web, instead of stacking them.
+ - On Android, toolbars, question chips and the possible-answers action sheet now use the native Material styling instead of the iOS-styled overrides.
+ - The branch filter icon is disabled on a branch with no entries, so tapping it no longer opens an empty filter modal.
  - Branch filter counting is extracted into a dedicated service, with new unit coverage for the counts and the filters toolbar.
  - Rollbar sourcemap uploads use the environment write token.
 
