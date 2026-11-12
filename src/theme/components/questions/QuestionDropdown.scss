@@ -8,10 +8,6 @@
     @include question-label-base;
 }
 
-.md .question-dropdown-action-sheet {
-    @include question-dropdown-action-sheet-base;
-}
-
 .possible-answers-list,
 .saved-answers-list {
     .possible-answer-item,
