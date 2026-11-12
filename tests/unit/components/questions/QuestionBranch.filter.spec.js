@@ -142,6 +142,13 @@ describe('QuestionBranch branch filter guard', () => {
         expect(modalController.create).not.toHaveBeenCalled();
     });
 
+    it('does not open the filter modal when there are no branches', async () => {
+        const wrapper = await factory();
+        wrapper.vm.state.countNoFilters = 0;
+        await wrapper.vm.openModalEntriesBranchFilter();
+        expect(modalController.create).not.toHaveBeenCalled();
+    });
+
     it('opens the filter modal once fetching completes', async () => {
         modalController.create.mockResolvedValue({
             present: vi.fn(() => Promise.resolve()),
@@ -185,6 +192,10 @@ describe('QuestionBranch branch filter guard', () => {
         //the vnode to verify the template wiring
         expect(action.element.__vnode.props.disabled).toBe(false);
         wrapper.vm.state.isFetching = true;
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('question-label-action').element.__vnode.props.disabled).toBe(true);
+        wrapper.vm.state.isFetching = false;
+        wrapper.vm.state.countNoFilters = 0;
         await wrapper.vm.$nextTick();
         expect(wrapper.find('question-label-action').element.__vnode.props.disabled).toBe(true);
     });

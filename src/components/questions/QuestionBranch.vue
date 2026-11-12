@@ -34,7 +34,7 @@
 		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title>
 				<question-label-action
-					:disabled="isPWA || state.isFetching"
+					:disabled="isPWA || state.isFetching || state.countNoFilters === 0"
 					action="filter"
 					:questionText="state.question"
 					answer=" "
@@ -436,7 +436,7 @@ export default {
 				});
 			},
 			async openModalEntriesBranchFilter() {
-				if (state.isFetching) {
+				if (state.isFetching || state.countNoFilters === 0) {
 					return;
 				}
 				//clone reactive properties we do not want to modify in the modal
