@@ -6,7 +6,6 @@
 		<template #content>
 			<ion-toolbar
 				color="danger"
-				mode="ios"
 				class="animate__animated animate__fadeIn"
 			>
 				<div class="center-item-content-wrapper">

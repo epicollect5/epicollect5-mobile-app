@@ -58,7 +58,6 @@
       <ion-toolbar
           v-if="state.isDebug && !state.isFetching"
           color="tertiary"
-          mode="ios"
           class="animate__animated animate__fadeIn ion-no-margin ion-no-padding ion-text-center"
       >
         <ion-button
