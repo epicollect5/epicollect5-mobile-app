@@ -10,7 +10,7 @@ U+FE64-FE65, remapped to the family's ASCII < > outlines (the native small
 form variants render tiny with fullwidth advance) and Latin-typical vertical
 metrics. License/copyright records are kept in the woff2 name table. */
 @font-face {
-  font-family: 'EC5SmallForms';
+  font-family: 'EC5AngleBrackets';
   src: url('/assets/fonts/small-form-variants.woff2') format('woff2');
   unicode-range: U+FE64-FE65;
   font-display: swap;
@@ -22,7 +22,7 @@ metrics. License/copyright records are kept in the woff2 name table. */
   --ion-dynamic-font: initial;
    /* prepend the two-glyph subset above: U+FE64/U+FE65 render at body
       proportion, every other codepoint falls through to the platform stack */
-  --ion-font-family: 'EC5SmallForms', var(--ion-default-font);
+  --ion-font-family: 'EC5AngleBrackets', var(--ion-default-font);
   --ion-color-primary: #673C90;
   --ion-color-primary-rgb: 103,60,144;
   --ion-color-primary-contrast: #ffffff;
