@@ -112,7 +112,6 @@ export default {
 		//set up question
 		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
-		const mode = rootStore.device.platform === PARAMETERS.IOS ? 'ios' : 'md';
 		const hashMap = utilsService.buildPossibleAnswersHashMap(state.inputDetails.possible_answers);
 
 		//set up array with the selected answer to make modals and child componets work
@@ -121,10 +120,6 @@ export default {
 		}
 
 		const computedScope = {
-			dropdownActionSheetOptions: {
-				cssClass: 'question-dropdown-action-sheet',
-				mode
-			},
 			hasError: computed(() => {
 				return utilsService.hasQuestionError(state);
 			}),
