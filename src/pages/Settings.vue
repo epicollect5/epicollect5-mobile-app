@@ -1,587 +1,589 @@
 <template>
-	<base-layout title="">
+  <base-layout title="">
 
-		<template #actions-start>
-			<ion-menu-button></ion-menu-button>
-		</template>
+    <template #actions-start>
+      <ion-menu-button></ion-menu-button>
+    </template>
 
-		<template #actions-end>
-			<ion-button
-				fill="clear"
-				@click="saveSettings()"
-			>
-				<ion-icon
-					slot="start"
-					:icon="checkmark"
-				></ion-icon>
-				{{ labels.save }}
-			</ion-button>
-		</template>
+    <template #actions-end>
+      <ion-button
+          fill="clear"
+          @click="saveSettings()"
+      >
+        <ion-icon
+            slot="start"
+            :icon="checkmark"
+        ></ion-icon>
+        {{ labels.save }}
+      </ion-button>
+    </template>
 
-		<template #subheader>
-			<ion-toolbar color="dark">
-				<ion-buttons slot="start">
-					<ion-button @click="goBack()">
-						<ion-icon
-							slot="start"
-							:icon="chevronBackOutline"
-						>
-						</ion-icon>
-						{{ labels.back }}
-					</ion-button>
-				</ion-buttons>
-				<ion-buttons
-					class="toolbar-spacer"
-					slot="end"
-				>
-					<ion-button>
-						<ion-icon
-							slot="end"
-							:icon="chevronBackOutline"
-						>
-						</ion-icon>
-						{{ labels.back }}
-					</ion-button>
-				</ion-buttons>
-			</ion-toolbar>
-		</template>
+    <template #subheader>
+      <ion-toolbar color="dark">
+        <ion-buttons slot="start">
+          <ion-button @click="goBack()">
+            <ion-icon
+                slot="start"
+                :icon="chevronBackOutline"
+            >
+            </ion-icon>
+            {{ labels.back }}
+          </ion-button>
+        </ion-buttons>
+        <ion-buttons
+            class="toolbar-spacer"
+            slot="end"
+        >
+          <ion-button>
+            <ion-icon
+                slot="end"
+                :icon="chevronBackOutline"
+            >
+            </ion-icon>
+            {{ labels.back }}
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </template>
 
-		<template #content>
-			<ion-toolbar
-				color="light"
-				mode="ios"
-				class="animate__animated animate__fadeIn"
-			>
-				<div class="center-item-content-wrapper">
-					<ion-label class="ion-text-center ion-text-uppercase ">
-						{{ labels.settings }}
-					</ion-label>
-				</div>
-			</ion-toolbar>
-			<ion-card>
-				<ion-card-header class="settings-label">
-					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{ labels.accessibility }}
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item
-						lines="none"
-						class="ion-text-left"
-					>
-						<ion-label>{{ labels.text_size }}</ion-label>
-					</ion-item>
-					<ion-item
-						lines="none"
-						class="zoom-stepper-row"
-					>
-						<ion-button
-							fill="clear"
-							class="zoom-stepper-btn"
-							aria-label="Decrease text size"
-							:disabled="isMinZoom"
-							@click="decreaseTextSize()"
-						>
-							<ion-icon
-								slot="icon-only"
-								:icon="remove"
-							></ion-icon>
-						</ion-button>
-						<ion-range
-							class="zoom-slider"
-							min="0"
-							:max="zoomLevels"
-							step="1"
-							debounce="500"
-							snaps
-							ticks
-							:value="state.selectedTextSize"
-							@ionChange="updateSelectedTextSize($event)"
-						>
-						</ion-range>
-						<ion-button
-							fill="clear"
-							class="zoom-stepper-btn"
-							aria-label="Increase text size"
-							:disabled="isMaxZoom"
-							@click="increaseTextSize()"
-						>
-							<ion-icon
-								slot="icon-only"
-								:icon="add"
-							></ion-icon>
-						</ion-button>
-					</ion-item>
-					<ion-item
-						lines="none"
-						button
-						detail="true"
-						@click="openThemeSelector()"
-					>
-						<ion-label>{{ labels.theme }}</ion-label>
-						<ion-note slot="end" class="settings-theme-value">{{ themeLabel }}</ion-note>
-					</ion-item>
-				</ion-card-content>
-			</ion-card>
-
-			<ion-card>
-				<ion-card-header class="settings-label">
-					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{ labels.version }}
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item
-						lines="none"
-						class="ion-text-left"
-					>
-						<ion-label>{{ appVersion }}</ion-label>
-					</ion-item>
-				</ion-card-content>
-			</ion-card>
-
-			<ion-card>
-				<ion-card-header class="settings-label">
-					<ion-card-title
-						data-translate="help_us_improve"
-						class="ion-text-center ion-text-uppercase"
-					>
-						{{ labels.help_us_improve }}
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item
-						lines="none"
-						class="ion-text-left"
-					>
-						<ion-toggle
-							data-translate="collect_errors"
-							@ionChange="updateCollectErrors($event)"
-							class="ion-text-wrap"
-							color="secondary"
-							:checked="state.collectErrors"
-						>
-							{{ labels.collect_errors }}
-						</ion-toggle>
-					</ion-item>
-				</ion-card-content>
-			</ion-card>
-
-			<ion-card v-if="isAndroid">
-				<ion-card-header class="settings-label">
-					<ion-card-title
-						data-translate="photo_card_title"
-						class="ion-text-center ion-text-uppercase"
-					>
-						{{ labels.photo_card_title }}
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item
-						lines="none"
-						class="ion-text-left"
-					>
-						<ion-toggle
-							data-translate="use_in_app_camera"
-							@ionChange="updateInAppCamera($event)"
-							color="secondary"
-							:checked="state.inAppCamera"
-						>
-							<ion-label class="ion-text-wrap">{{ labels.use_in_app_camera }}</ion-label>
-						</ion-toggle>
-					</ion-item>
-					<ion-card-content class="ion-text-center">
-						<ion-button
-							color="warning"
-							@click="openInAppCameraDocs()"
-						>
-							<ion-icon
-								slot="start"
-								:icon="openOutline"
-							></ion-icon>
-							{{ labels.learn_more }}
-						</ion-button>
-					</ion-card-content>
-				</ion-card-content>
-			</ion-card>
-
-			<ion-card v-if="isAndroid">
-				<ion-card-header class="settings-label">
-					<ion-card-title
-						data-translate="video_card_title"
-						class="ion-text-center ion-text-uppercase"
-					>
-						{{ labels.video_card_title }}
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item
-						lines="none"
-						class="ion-text-left"
-					>
-						<ion-toggle
-							data-translate="use_in_app_camera_video"
-							@ionChange="updateInAppCameraVideo($event)"
-							color="secondary"
-							:checked="state.inAppCameraVideo"
-						>
-							<ion-label class="ion-text-wrap">{{ labels.use_in_app_camera_video }}</ion-label>
-						</ion-toggle>
-					</ion-item>					<ion-card-content class="ion-text-center">
-						<ion-button
-							color="warning"
-							@click="openInAppCameraDocs()"
-						>
-							<ion-icon
-								slot="start"
-								:icon="openOutline"
-							></ion-icon>
-							{{ labels.learn_more }}
-						</ion-button>
-					</ion-card-content>
-					</ion-card-content>
-				</ion-card>
+    <template #content>
+      <ion-toolbar
+          color="light"
+          mode="ios"
+          class="animate__animated animate__fadeIn"
+      >
+        <div class="center-item-content-wrapper">
+          <ion-label class="ion-text-center ion-text-uppercase ">
+            {{ labels.settings }}
+          </ion-label>
+        </div>
+      </ion-toolbar>
+      <ion-card>
+        <ion-card-header class="settings-label">
+          <ion-card-title class="ion-text-center ion-text-uppercase">
+            {{ labels.accessibility }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="ion-text-left ion-no-padding">
+          <ion-item
+              lines="none"
+              class="ion-text-left"
+          >
+            <ion-label>{{ labels.text_size }}</ion-label>
+          </ion-item>
+          <ion-item
+              lines="none"
+              class="zoom-stepper-row"
+          >
+            <ion-button
+                fill="clear"
+                class="zoom-stepper-btn"
+                aria-label="Decrease text size"
+                :disabled="isMinZoom"
+                @click="decreaseTextSize()"
+            >
+              <ion-icon
+                  slot="icon-only"
+                  :icon="remove"
+              ></ion-icon>
+            </ion-button>
+            <ion-range
+                class="zoom-slider"
+                min="0"
+                :max="zoomLevels"
+                step="1"
+                debounce="500"
+                :snaps="true"
+                :ticks="true"
+                :value="state.selectedTextSize"
+                @ionChange="updateSelectedTextSize($event)"
+            >
+            </ion-range>
+            <ion-button
+                fill="clear"
+                class="zoom-stepper-btn"
+                aria-label="Increase text size"
+                :disabled="isMaxZoom"
+                @click="increaseTextSize()"
+            >
+              <ion-icon
+                  slot="icon-only"
+                  :icon="add"
+              ></ion-icon>
+            </ion-button>
+          </ion-item>
+          <ion-item
+              lines="none"
+              button
+              :detail="true"
+              @click="openThemeSelector()"
+          >
+            <ion-label>{{ labels.theme }}</ion-label>
+            <ion-note slot="end" class="settings-theme-value">{{ themeLabel }}</ion-note>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
 
 
-			<ion-card>
-				<ion-card-header class="settings-label">
-					<ion-card-title
-						data-translate="keep_screen_on"
-						class="ion-text-center ion-text-uppercase"
-					>
-						{{ labels.keep_screen_on }}
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-left ion-no-padding">
-					<ion-item
-						lines="none"
-						class="ion-text-left"
-					>
-						<ion-toggle
-							data-translate="keep_screen_on_during_transfers"
-							@ionChange="updateKeepScreenOnDuringTransfer($event)"
-							class="ion-text-wrap"
-							color="secondary"
-							:checked="state.keepScreenOnDuringTransfer"
-						>
-							<ion-label class="ion-text-wrap">{{ labels.keep_screen_on_during_transfers }}</ion-label>
-						</ion-toggle>
-					</ion-item>
-					<ion-card-content class="ion-text-center">
-						<ion-button
-							color="warning"
-							@click="openKeepScreenOnDocs()"
-						>
-							<ion-icon
-								slot="start"
-								:icon="openOutline"
-							></ion-icon>
-							{{ labels.learn_more }}
-						</ion-button>
-					</ion-card-content>
-				</ion-card-content>
-			</ion-card>
+      <ion-card v-if="isAndroid">
+        <ion-card-header class="settings-label">
+          <ion-card-title
+              data-translate="photo_card_title"
+              class="ion-text-center ion-text-uppercase"
+          >
+            {{ labels.photo_card_title }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="ion-text-left ion-no-padding">
+          <ion-item
+              lines="none"
+              class="ion-text-left"
+          >
+            <ion-toggle
+                data-translate="use_in_app_camera"
+                @ionChange="updateInAppCamera($event)"
+                color="secondary"
+                :checked="state.inAppCamera"
+            >
+              <ion-label class="ion-text-wrap">{{ labels.use_in_app_camera }}</ion-label>
+            </ion-toggle>
+          </ion-item>
+          <ion-card-content class="ion-text-center">
+            <ion-button
+                color="warning"
+                @click="openInAppCameraDocs()"
+            >
+              <ion-icon
+                  slot="start"
+                  :icon="openOutline"
+              ></ion-icon>
+              {{ labels.learn_more }}
+            </ion-button>
+          </ion-card-content>
+        </ion-card-content>
+      </ion-card>
 
-			<ion-card v-if="isDebug || hasEasterEggProject">
-				<ion-card-header class="settings-label">
-					<ion-card-title class="ion-text-center ion-text-uppercase">
-						{{ labels.advanced_settings }}
-					</ion-card-title>
-				</ion-card-header>
-				<ion-card-content class="ion-text-center ion-no-padding">
-					<ion-item>
-						<ion-label color="dark">{{ labels.server_url }}
-						</ion-label>
-					</ion-item>
-					<ion-item lines="none">
-						<input
-							class="full-width"
-							type="text"
-							v-model="state.serverUrl"
-						/>
-					</ion-item>
-				</ion-card-content>
-			</ion-card>
+      <ion-card v-if="isAndroid">
+        <ion-card-header class="settings-label">
+          <ion-card-title
+              data-translate="video_card_title"
+              class="ion-text-center ion-text-uppercase"
+          >
+            {{ labels.video_card_title }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="ion-text-left ion-no-padding">
+          <ion-item
+              lines="none"
+              class="ion-text-left"
+          >
+            <ion-toggle
+                data-translate="use_in_app_camera_video"
+                @ionChange="updateInAppCameraVideo($event)"
+                color="secondary"
+                :checked="state.inAppCameraVideo"
+            >
+              <ion-label class="ion-text-wrap">{{ labels.use_in_app_camera_video }}</ion-label>
+            </ion-toggle>
+          </ion-item>
+          <ion-card-content class="ion-text-center">
+            <ion-button
+                color="warning"
+                @click="openInAppCameraDocs()"
+            >
+              <ion-icon
+                  slot="start"
+                  :icon="openOutline"
+              ></ion-icon>
+              {{ labels.learn_more }}
+            </ion-button>
+          </ion-card-content>
+        </ion-card-content>
+      </ion-card>
 
-		</template>
-	</base-layout>
+
+      <ion-card>
+        <ion-card-header class="settings-label">
+          <ion-card-title
+              data-translate="keep_screen_on"
+              class="ion-text-center ion-text-uppercase"
+          >
+            {{ labels.keep_screen_on }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="ion-text-left ion-no-padding">
+          <ion-item
+              lines="none"
+              class="ion-text-left"
+          >
+            <ion-toggle
+                data-translate="keep_screen_on_during_transfers"
+                @ionChange="updateKeepScreenOnDuringTransfer($event)"
+                class="ion-text-wrap"
+                color="secondary"
+                :checked="state.keepScreenOnDuringTransfer"
+            >
+              <ion-label class="ion-text-wrap">{{ labels.keep_screen_on_during_transfers }}</ion-label>
+            </ion-toggle>
+          </ion-item>
+          <ion-card-content class="ion-text-center">
+            <ion-button
+                color="warning"
+                @click="openKeepScreenOnDocs()"
+            >
+              <ion-icon
+                  slot="start"
+                  :icon="openOutline"
+              ></ion-icon>
+              {{ labels.learn_more }}
+            </ion-button>
+          </ion-card-content>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header class="settings-label">
+          <ion-card-title
+              data-translate="help_us_improve"
+              class="ion-text-center ion-text-uppercase"
+          >
+            {{ labels.help_us_improve }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="ion-text-left ion-no-padding">
+          <ion-item
+              lines="none"
+              class="ion-text-left"
+          >
+            <ion-toggle
+                data-translate="collect_errors"
+                @ionChange="updateCollectErrors($event)"
+                class="ion-text-wrap"
+                color="secondary"
+                :checked="state.collectErrors"
+            >
+              {{ labels.collect_errors }}
+            </ion-toggle>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header class="settings-label">
+          <ion-card-title class="ion-text-center ion-text-uppercase">
+            {{ labels.version }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="ion-text-left ion-no-padding">
+          <ion-item
+              lines="none"
+              class="ion-text-left"
+          >
+            <ion-label>{{ appVersion }}</ion-label>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card v-if="isDebug || hasEasterEggProject">
+        <ion-card-header class="settings-label">
+          <ion-card-title class="ion-text-center ion-text-uppercase">
+            {{ labels.advanced_settings }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="ion-text-center ion-no-padding">
+          <ion-item>
+            <ion-label color="dark">{{ labels.server_url }}
+            </ion-label>
+          </ion-item>
+          <ion-item lines="none">
+            <input
+                class="full-width"
+                type="text"
+                v-model="state.serverUrl"
+            />
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+    </template>
+  </base-layout>
 </template>
 
 <script>
-import { chevronBackOutline, add, remove, checkmark, openOutline, sunny, moon, contrast } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
-import { onMounted } from 'vue';
-import { STRINGS } from '@/config/strings';
-import { useRootStore } from '@/stores/root-store';
-import { useRouter } from 'vue-router';
-import { PARAMETERS } from '@/config';
-import { useBackButton, actionSheetController } from '@ionic/vue';
-import { databaseInsertService } from '@/services/database/database-insert-service';
-import { notificationService } from '@/services/notification-service';
-import { rollbarService } from '@/services/utilities/rollbar-service';
-import { themeService } from '@/services/theme-service';
+import {chevronBackOutline, add, remove, checkmark, openOutline, sunny, moon, contrast} from 'ionicons/icons';
+import {reactive, computed} from '@vue/reactivity';
+import {onMounted} from 'vue';
+import {STRINGS} from '@/config/strings';
+import {useRootStore} from '@/stores/root-store';
+import {useRouter} from 'vue-router';
+import {PARAMETERS} from '@/config';
+import {useBackButton, actionSheetController} from '@ionic/vue';
+import {databaseInsertService} from '@/services/database/database-insert-service';
+import {notificationService} from '@/services/notification-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
+import {themeService} from '@/services/theme-service';
 
 export default {
-	components: {},
-	setup() {
-		const rootStore = useRootStore();
-		const language = rootStore.language;
-		const labels = STRINGS[language].labels;
-		const router = useRouter();
-		const state = reactive({
-			serverUrl: rootStore.serverUrl,
-			selectedTextSize: rootStore.selectedTextSize,
-			collectErrors: rootStore.collectErrors,
-			inAppCamera: rootStore.inAppCamera,
-			inAppCameraVideo: rootStore.inAppCameraVideo,
-			keepScreenOnDuringTransfer: rootStore.keepScreenOnDuringTransfer,
-			theme: rootStore.theme,
-			isSaving: false
-		});
-		const zoomLevels = PARAMETERS.ZOOM_LEVELS;
+  components: {},
+  setup() {
+    const rootStore = useRootStore();
+    const language = rootStore.language;
+    const labels = STRINGS[language].labels;
+    const router = useRouter();
+    const state = reactive({
+      serverUrl: rootStore.serverUrl,
+      selectedTextSize: rootStore.selectedTextSize,
+      collectErrors: rootStore.collectErrors,
+      inAppCamera: rootStore.inAppCamera,
+      inAppCameraVideo: rootStore.inAppCameraVideo,
+      keepScreenOnDuringTransfer: rootStore.keepScreenOnDuringTransfer,
+      theme: rootStore.theme,
+      isSaving: false
+    });
+    const zoomLevels = PARAMETERS.ZOOM_LEVELS;
 
-		const methods = {
-			goBack() {
-				if (rootStore.nextRoute) {
-					router.replace({
-						name: rootStore.nextRoute,
-						query: { ...rootStore.routeParams }
-					});
-				} else {
-					router.replace({
-						name: PARAMETERS.ROUTES.PROJECTS
-					});
-				}
-			},
-			async saveSettings() {
-				let failed = false;
-				await notificationService.showProgressDialog();
-				state.isSaving = true;
-				//change zoom level
-				//remove any zoom class
-				for (let i = 0; i <= zoomLevels; i++) {
-					document.body.classList.remove('zoom-' + i);
-				}
-				//add selected zoom level class
-				document.body.classList.add('zoom-' + state.selectedTextSize);
+    const methods = {
+      goBack() {
+        if (rootStore.nextRoute) {
+          router.replace({
+            name: rootStore.nextRoute,
+            query: {...rootStore.routeParams}
+          });
+        } else {
+          router.replace({
+            name: PARAMETERS.ROUTES.PROJECTS
+          });
+        }
+      },
+      async saveSettings() {
+        let failed = false;
+        await notificationService.showProgressDialog();
+        state.isSaving = true;
+        //change zoom level
+        //remove any zoom class
+        for (let i = 0; i <= zoomLevels; i++) {
+          document.body.classList.remove('zoom-' + i);
+        }
+        //add selected zoom level class
+        document.body.classList.add('zoom-' + state.selectedTextSize);
 
-			//update db (sequential: each write must settle before reporting success)
-			for (const key of Object.values(PARAMETERS.SETTINGS_KEYS)) {
-					console.log(key);
+        //update db (sequential: each write must settle before reporting success)
+        for (const key of Object.values(PARAMETERS.SETTINGS_KEYS)) {
+          console.log(key);
 
-					switch (key) {
-						case PARAMETERS.SETTINGS_KEYS.SERVER_URL:
-							try {
-								// Remove trailing slash
-								const trimmedUrl = state.serverUrl.replace(/\/$/, '');
-								await databaseInsertService.insertSetting(key, trimmedUrl);
-								rootStore.serverUrl = trimmedUrl;
-							} catch (error) {
-								console.log(error);
-								failed = true;
-							}
-							break;
-						case PARAMETERS.SETTINGS_KEYS.SELECTED_TEXT_SIZE:
-							try {
-								await databaseInsertService.insertSetting(key, state.selectedTextSize);
-								rootStore.selectedTextSize = state.selectedTextSize;
-							} catch (error) {
-								console.log(error);
-								failed = true;
-							}
-							break;
-						case PARAMETERS.SETTINGS_KEYS.COLLECT_ERRORS:
+          switch (key) {
+            case PARAMETERS.SETTINGS_KEYS.SERVER_URL:
+              try {
+                // Remove trailing slash
+                const trimmedUrl = state.serverUrl.replace(/\/$/, '');
+                await databaseInsertService.insertSetting(key, trimmedUrl);
+                rootStore.serverUrl = trimmedUrl;
+              } catch (error) {
+                console.log(error);
+                failed = true;
+              }
+              break;
+            case PARAMETERS.SETTINGS_KEYS.SELECTED_TEXT_SIZE:
+              try {
+                await databaseInsertService.insertSetting(key, state.selectedTextSize);
+                rootStore.selectedTextSize = state.selectedTextSize;
+              } catch (error) {
+                console.log(error);
+                failed = true;
+              }
+              break;
+            case PARAMETERS.SETTINGS_KEYS.COLLECT_ERRORS:
 
-							try {
-								await databaseInsertService.insertSetting(key, state.collectErrors ? 'true' : 'false');
-								rootStore.collectErrors = state.collectErrors;
-							} catch (error) {
-								console.log(error);
-								failed = true;
-							}
-							break;
-						case PARAMETERS.SETTINGS_KEYS.IN_APP_CAMERA:
+              try {
+                await databaseInsertService.insertSetting(key, state.collectErrors ? 'true' : 'false');
+                rootStore.collectErrors = state.collectErrors;
+              } catch (error) {
+                console.log(error);
+                failed = true;
+              }
+              break;
+            case PARAMETERS.SETTINGS_KEYS.IN_APP_CAMERA:
 
-							try {
-								await databaseInsertService.insertSetting(key, state.inAppCamera ? 'true' : 'false');
-								rootStore.inAppCamera = state.inAppCamera;
-							} catch (error) {
-								console.log(error);
-								failed = true;
-							}
-							break;
-					case PARAMETERS.SETTINGS_KEYS.IN_APP_CAMERA_VIDEO:
+              try {
+                await databaseInsertService.insertSetting(key, state.inAppCamera ? 'true' : 'false');
+                rootStore.inAppCamera = state.inAppCamera;
+              } catch (error) {
+                console.log(error);
+                failed = true;
+              }
+              break;
+            case PARAMETERS.SETTINGS_KEYS.IN_APP_CAMERA_VIDEO:
 
-						try {
-							await databaseInsertService.insertSetting(key, state.inAppCameraVideo ? 'true' : 'false');
-							rootStore.inAppCameraVideo = state.inAppCameraVideo;
-						} catch (error) {
-							console.log(error);
-							failed = true;
-						}
-						break;
-					case PARAMETERS.SETTINGS_KEYS.KEEP_SCREEN_ON_DURING_TRANSFER:
+              try {
+                await databaseInsertService.insertSetting(key, state.inAppCameraVideo ? 'true' : 'false');
+                rootStore.inAppCameraVideo = state.inAppCameraVideo;
+              } catch (error) {
+                console.log(error);
+                failed = true;
+              }
+              break;
+            case PARAMETERS.SETTINGS_KEYS.KEEP_SCREEN_ON_DURING_TRANSFER:
 
-						try {
-							await databaseInsertService.insertSetting(key, state.keepScreenOnDuringTransfer ? 'true' : 'false');
-							rootStore.keepScreenOnDuringTransfer = state.keepScreenOnDuringTransfer;
-						} catch (error) {
-							console.log(error);
-							failed = true;
-						}
-						break;
-					case PARAMETERS.SETTINGS_KEYS.THEME:
+              try {
+                await databaseInsertService.insertSetting(key, state.keepScreenOnDuringTransfer ? 'true' : 'false');
+                rootStore.keepScreenOnDuringTransfer = state.keepScreenOnDuringTransfer;
+              } catch (error) {
+                console.log(error);
+                failed = true;
+              }
+              break;
+            case PARAMETERS.SETTINGS_KEYS.THEME:
 
-						try {
-							await databaseInsertService.insertSetting(key, state.theme);
-							rootStore.theme = state.theme;
-							themeService.applyTheme(state.theme);
-						} catch (error) {
-							console.log(error);
-							failed = true;
-						}
-						break;
-				}
-			}
+              try {
+                await databaseInsertService.insertSetting(key, state.theme);
+                rootStore.theme = state.theme;
+                themeService.applyTheme(state.theme);
+              } catch (error) {
+                console.log(error);
+                failed = true;
+              }
+              break;
+          }
+        }
 
-			await notificationService.hideProgressDialog();
-				state.isSaving = false;
-				if (failed) {
-					await notificationService.showAlert(labels.unknown_error, labels.error);
-				} else {
-					notificationService.showToast(STRINGS[language].status_codes.ec5_123);
-				}
-			},
-			updateSelectedTextSize(e) {
-				state.selectedTextSize = e.detail.value;
-				rootStore.selectedTextSize = state.selectedTextSize;
-			},
-			decreaseTextSize() {
-				const current = parseInt(state.selectedTextSize, 10) || 0;
-				if (current > 0) {
-					state.selectedTextSize = current - 1;
-					rootStore.selectedTextSize = state.selectedTextSize;
-				}
-			},
-			increaseTextSize() {
-				const current = parseInt(state.selectedTextSize, 10) || 0;
-				if (current < zoomLevels) {
-					state.selectedTextSize = current + 1;
-					rootStore.selectedTextSize = state.selectedTextSize;
-				}
-			},
-			updateCollectErrors(e) {
-				state.collectErrors = e.detail.checked;
-				rootStore.collectErrors = state.collectErrors;
-				console.log('Rollbar reporting ->', rootStore.collectErrors);
-				rollbarService.configure({ enabled: Boolean(rootStore.collectErrors) });
-			},
-			updateInAppCamera(e) {
-				state.inAppCamera = e.detail.checked;
-			},
-			updateInAppCameraVideo(e) {
-				state.inAppCameraVideo = e.detail.checked;
-			},
-			updateKeepScreenOnDuringTransfer(e) {
-				state.keepScreenOnDuringTransfer = e.detail.checked;
-			},
-			async openThemeSelector() {
-				const sheet = await actionSheetController.create({
-					header: labels.theme,
-					cssClass: 'theme-action-sheet',
-					buttons: [
-						{
-							text: labels.theme_light,
-							icon: sunny,
-							role: state.theme === PARAMETERS.THEMES.LIGHT ? 'selected' : undefined,
-							handler: () => {
-								state.theme = PARAMETERS.THEMES.LIGHT;
-							}
-						},
-						{
-							text: labels.theme_dark,
-							icon: moon,
-							role: state.theme === PARAMETERS.THEMES.DARK ? 'selected' : undefined,
-							handler: () => {
-								state.theme = PARAMETERS.THEMES.DARK;
-							}
-						},
-						{
-							text: labels.theme_system,
-							icon: contrast,
-							role: state.theme === PARAMETERS.THEMES.SYSTEM ? 'selected' : undefined,
-							handler: () => {
-								state.theme = PARAMETERS.THEMES.SYSTEM;
-							}
-						}
-					]
-				});
-				await sheet.present();
-			},
-			openInAppCameraDocs() {
-				window.open(PARAMETERS.IN_APP_CAMERA_DOCS_URL, '_system', 'location=yes');
-			},
-			openKeepScreenOnDocs() {
-				window.open(PARAMETERS.KEEP_SCREEN_ON_DOCS_URL, '_system', 'location=yes');
-			}
-		};
+        await notificationService.hideProgressDialog();
+        state.isSaving = false;
+        if (failed) {
+          await notificationService.showAlert(labels.unknown_error, labels.error);
+        } else {
+          notificationService.showToast(STRINGS[language].status_codes.ec5_123);
+        }
+      },
+      updateSelectedTextSize(e) {
+        state.selectedTextSize = e.detail.value;
+        rootStore.selectedTextSize = state.selectedTextSize;
+      },
+      decreaseTextSize() {
+        const current = parseInt(state.selectedTextSize, 10) || 0;
+        if (current > 0) {
+          state.selectedTextSize = current - 1;
+          rootStore.selectedTextSize = state.selectedTextSize;
+        }
+      },
+      increaseTextSize() {
+        const current = parseInt(state.selectedTextSize, 10) || 0;
+        if (current < zoomLevels) {
+          state.selectedTextSize = current + 1;
+          rootStore.selectedTextSize = state.selectedTextSize;
+        }
+      },
+      updateCollectErrors(e) {
+        state.collectErrors = e.detail.checked;
+        rootStore.collectErrors = state.collectErrors;
+        console.log('Rollbar reporting ->', rootStore.collectErrors);
+        rollbarService.configure({enabled: Boolean(rootStore.collectErrors)});
+      },
+      updateInAppCamera(e) {
+        state.inAppCamera = e.detail.checked;
+      },
+      updateInAppCameraVideo(e) {
+        state.inAppCameraVideo = e.detail.checked;
+      },
+      updateKeepScreenOnDuringTransfer(e) {
+        state.keepScreenOnDuringTransfer = e.detail.checked;
+      },
+      async openThemeSelector() {
+        const sheet = await actionSheetController.create({
+          header: labels.theme,
+          cssClass: 'theme-action-sheet',
+          buttons: [
+            {
+              text: labels.theme_light,
+              icon: sunny,
+              role: state.theme === PARAMETERS.THEMES.LIGHT ? 'selected' : undefined,
+              handler: () => {
+                state.theme = PARAMETERS.THEMES.LIGHT;
+              }
+            },
+            {
+              text: labels.theme_dark,
+              icon: moon,
+              role: state.theme === PARAMETERS.THEMES.DARK ? 'selected' : undefined,
+              handler: () => {
+                state.theme = PARAMETERS.THEMES.DARK;
+              }
+            },
+            {
+              text: labels.theme_system,
+              icon: contrast,
+              role: state.theme === PARAMETERS.THEMES.SYSTEM ? 'selected' : undefined,
+              handler: () => {
+                state.theme = PARAMETERS.THEMES.SYSTEM;
+              }
+            }
+          ]
+        });
+        await sheet.present();
+      },
+      openInAppCameraDocs() {
+        window.open(PARAMETERS.IN_APP_CAMERA_DOCS_URL, '_system', 'location=yes');
+      },
+      openKeepScreenOnDocs() {
+        window.open(PARAMETERS.KEEP_SCREEN_ON_DOCS_URL, '_system', 'location=yes');
+      }
+    };
 
-		const computedScope = {
-			appVersion: computed(() => {
-				return rootStore.app.name + ' v ' + rootStore.app.version;
-			}),
-			isDebug: computed(() => {
-				return PARAMETERS.DEBUG;
-			}),
-			isAndroid: computed(() => {
-				return rootStore.device.platform === PARAMETERS.ANDROID;
-			}),
-			hasEasterEggProject: computed(() => {
-				return rootStore.easterEgg;
-			}),
-			themeLabel: computed(() => {
-				if (state.theme === PARAMETERS.THEMES.DARK) {
-					return labels.theme_dark;
-				}
-				if (state.theme === PARAMETERS.THEMES.SYSTEM) {
-					return labels.theme_system;
-				}
-				return labels.theme_light;
-			}),
-			isMinZoom: computed(() => {
-				return (parseInt(state.selectedTextSize, 10) || 0) <= 0;
-			}),
-			isMaxZoom: computed(() => {
-				return (parseInt(state.selectedTextSize, 10) || 0) >= zoomLevels;
-			})
-		};
+    const computedScope = {
+      appVersion: computed(() => {
+        return rootStore.app.name + ' v ' + rootStore.app.version;
+      }),
+      isDebug: computed(() => {
+        return PARAMETERS.DEBUG;
+      }),
+      isAndroid: computed(() => {
+        return rootStore.device.platform === PARAMETERS.ANDROID;
+      }),
+      hasEasterEggProject: computed(() => {
+        return rootStore.easterEgg;
+      }),
+      themeLabel: computed(() => {
+        if (state.theme === PARAMETERS.THEMES.DARK) {
+          return labels.theme_dark;
+        }
+        if (state.theme === PARAMETERS.THEMES.SYSTEM) {
+          return labels.theme_system;
+        }
+        return labels.theme_light;
+      }),
+      isMinZoom: computed(() => {
+        return (parseInt(state.selectedTextSize, 10) || 0) <= 0;
+      }),
+      isMaxZoom: computed(() => {
+        return (parseInt(state.selectedTextSize, 10) || 0) >= zoomLevels;
+      })
+    };
 
-		onMounted(() => {
-			console.log('Component Settings is mounted!');
-		});
+    onMounted(() => {
+      console.log('Component Settings is mounted!');
+    });
 
-		//back to projects list with back button (Android)
-		useBackButton(10, () => {
-			console.log(window.history);
-			if (!state.isSaving) {
-				methods.goBack();
-			}
-		});
+    //back to projects list with back button (Android)
+    useBackButton(10, () => {
+      console.log(window.history);
+      if (!state.isSaving) {
+        methods.goBack();
+      }
+    });
 
-		return {
-			labels,
-			...methods,
-			...computedScope,
-			state,
-			zoomLevels,
-			//icons
-			chevronBackOutline,
-			add,
-			remove,
-			checkmark,
-			openOutline
-		};
-	}
+    return {
+      labels,
+      ...methods,
+      ...computedScope,
+      state,
+      zoomLevels,
+      //icons
+      chevronBackOutline,
+      add,
+      remove,
+      checkmark,
+      openOutline
+    };
+  }
 };
 </script>
 

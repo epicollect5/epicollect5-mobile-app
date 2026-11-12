@@ -145,7 +145,7 @@ export const notificationService = {
 
         const rootStore = useRootStore();
         const platform = (rootStore.device.platform).toLowerCase();
-        const mode = platform === 'ios' ? 'ios' : 'md';
+        const mode = 'md';
         const confirmYesAction = yesAction || PARAMETERS.ACTIONS.ENTRY_SAVE;
         const confirmNoAction = noAction || PARAMETERS.ACTIONS.ENTRY_QUIT;
 

@@ -194,7 +194,8 @@ ion-chip {
     opacity: 0.3;
 }
 .alert-confirm-multiple-android,
-.alert-confirm-multiple-web {
+.alert-confirm-multiple-web,
+.alert-confirm-multiple-ios {
     .alert-button-group {
         flex-direction: row !important;
     }
