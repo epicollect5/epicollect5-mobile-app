@@ -7,11 +7,11 @@ Analyze all changes and create one or more Conventional Commits, grouped by type
 
 Steps:
 
-1. Inspect: run `git status --short`, `git diff --cached --name-only`, and `git diff --name-only`. If nothing is staged, stage all tracked modifications with `git add -u` (untracked files stay untouched and are reported at the end).
-2. Classify: read the diff of every changed file (`git diff --cached` or `git diff`) to determine its type (feat, fix, refactor, perf, docs, test, build, ci, chore, style, revert) and scope. Map directories to scopes: `src/services/**` -> services, `src/components/**` -> components, `src/stores/**` -> stores, `src/models/**` -> models, `src/pages/**` -> pages, `src/router/**` -> router, `src/config/**` -> config, `docs/**` -> docs. Test files take the scope of the code under test. Root, leaflet, theme and use files get no scope.
+1. Inspect: run `git status --short`, `git diff --cached --name-only`, and `git diff --name-only`. Stage everything — tracked modifications, deletions, and untracked files — with `git add -A` (gitignored files are not added), then confirm with `git status --short` that nothing is left unstaged or untracked.
+2. Classify: read the diff of every changed file with `git diff --cached` (new files show their full contents) to determine its type (feat, fix, refactor, perf, docs, test, build, ci, chore, style, revert) and scope. Map directories to scopes: `src/services/**` -> services, `src/components/**` -> components, `src/stores/**` -> stores, `src/models/**` -> models, `src/pages/**` -> pages, `src/router/**` -> router, `src/config/**` -> config, `docs/**` -> docs. Test files take the scope of the code under test. Root, leaflet, theme and use files get no scope.
 3. Decide the structure: a single commit is fine when all changes share one type and one scope, or when the change is small and cohesive (one logical change). Otherwise split by type + scope: one commit per group, never mixing types or unrelated areas in a commit. Commit order should read logically: code before its tests, docs and chore last.
-4. Execute: for each group, commit only the files belonging to it with `git commit <paths> -m "<message>"`. Verify each commit succeeded before moving on; if one fails, stop and report. Leave unstaged and untracked files untouched, except for the `git add -u` in step 1.
-5. Report: list the commits created with `git log --oneline -N`, and mention any untracked files that were skipped.
+4. Execute: for each group, commit only the files belonging to it with `git commit <paths> -m "<message>"`. Verify each commit succeeded before moving on; if one fails, stop and report. Every change must end up in a commit: after the last group, run `git status --short` and it must be empty.
+5. Report: list the commits created with `git log --oneline -N`. If `git status --short` is not empty afterwards, list the remaining files and explain why they were not committed.
 
 Message requirements:
 
