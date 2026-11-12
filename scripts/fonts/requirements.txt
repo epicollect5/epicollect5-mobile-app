@@ -1,0 +1,4 @@
+# exact tool pins the committed small-angle-brackets.woff2 was built with;
+# see docs/ARCHITECTURE.md ("Small Angle Brackets Font Subset")
+fonttools==4.68.0
+brotli==1.2.1

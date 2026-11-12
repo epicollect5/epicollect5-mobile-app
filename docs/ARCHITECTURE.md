@@ -548,12 +548,16 @@ Only when the glyph set changes (a new code point), the source font is updated, 
 ### How to run the script
 
 ```bash
-# one-time environment (Python 3 + venv; fonttools + brotli only)
-python3 -m venv venv && ./venv/bin/pip install fonttools brotli
+# one-time environment (Python 3; exact tool pins in scripts/fonts/requirements.txt)
+python3 -m venv venv && ./venv/bin/pip install -r scripts/fonts/requirements.txt
 
-# download the source font (not bundled in the repo)
+# download the source font at the pinned revision (not bundled in the repo)
 curl -L -o NotoSansCJKsc-Regular.otf \
-  https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf
+  https://raw.githubusercontent.com/notofonts/noto-cjk/165c01b46ea533872e002e0785ff17e44f6d97d8/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf
+
+# verify the source against the checksum the committed asset was built from
+shasum -a 256 NotoSansCJKsc-Regular.otf
+# 2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b
 
 # rebuild and verify byte-identical output
 ./venv/bin/python scripts/fonts/build-small-angle-brackets.py \
@@ -561,7 +565,7 @@ curl -L -o NotoSansCJKsc-Regular.otf \
 cmp small-angle-brackets.woff2 public/assets/fonts/small-angle-brackets.woff2
 ```
 
-Output is byte-stable across runs: the script loads the source with `recalcTimestamp=False` because `TTFont.save()` would otherwise stamp the build time into `head.modified` (the default is `True`). A rebuilt font that is not byte-identical to the committed one is a defect in the script, not something to eyeball away. After a rebuild, the only files to touch are the woff2 itself plus the OFL header/comment if glyph design or source version changed; the CSS never changes unless the family name or code point range does.
+Output is byte-stable across runs: the script loads the source with `recalcTimestamp=False` because `TTFont.save()` would otherwise stamp the build time into `head.modified` (the default is `True`). Byte-stability is defined against the pins above — rebuilding with the pinned source checksum and tool versions (`fonttools` 4.68.0, `brotli` 1.2.1) and getting anything other than the committed bytes is a defect in the script, not something to eyeball away. Building against a newer source revision or tool version legitimately produces different bytes; that is an asset update, not a defect — re-verify rendering, then update the committed font, the pins and the checksums together. After a rebuild, the only files to touch are the woff2 itself plus the OFL header/comment if glyph design or source version changed; the CSS never changes unless the family name or code point range does.
 
 A Node-side wrapper exists (`@web-alchemy/fonttools`, real fontTools under Pyodide) but is not used: it exposes only subsetting/instancing/TTX, while this pipeline is mostly table surgery (cmap remap, metric normalization, rename), which that API cannot express. Revisit only if it matures or font regeneration becomes frequent.
 

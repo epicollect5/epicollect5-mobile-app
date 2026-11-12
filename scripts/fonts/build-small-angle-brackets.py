@@ -7,9 +7,13 @@ Source font (downloaded separately, NOT bundled in this repo):
   Noto Sans CJK SC Regular (OFL 1.1)
   https://github.com/notofonts/noto-cjk
   Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf
+  committed asset built from (pins, see also docs/ARCHITECTURE.md):
+    sha256 2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b
+    noto-cjk commit 165c01b46ea533872e002e0785ff17e44f6d97d8 (2021-04-30)
+    fonttools 4.68.0 / brotli 1.2.1 (scripts/fonts/requirements.txt)
 
 Requirements (run inside a venv):
-  pip install fonttools brotli
+  pip install -r scripts/fonts/requirements.txt
 
 Usage:
   python build-small-angle-brackets.py <source-otf> <output-woff2>
