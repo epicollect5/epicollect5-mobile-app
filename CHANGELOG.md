@@ -1,5 +1,17 @@
 ## Release Notes
 
+# 98.6.2 - build 9862
+
+ - Restoring the question regex pattern flags: an accidental edit had broken the flags expression, so answers with multi-byte characters (e.g. accented text) could be matched incorrectly; UTF-aware pattern matching is back.
+ - Opening a location answer in Apple Maps now drops a pin at the recorded coordinates instead of showing an empty map.
+ - The branch filter modal aligns the From and To labels with their date fields.
+ - Question label layout improved: the title is vertically centred next to the action icon, and the icon has a comfortable 48px tap target on every question type.
+ - The branch entry name shown above a branch question no longer wraps onto multiple lines.
+ - The incomplete entries upload message is shorter and clearer in every language.
+ - Settings now wait for the progress dialog to close before showing the success toast or the error alert.
+ - Branch filter counting is extracted into a dedicated service, with new unit coverage for the counts and the filters toolbar.
+ - Rollbar sourcemap uploads use the environment write token.
+
 # 98.6.1 - build 9861
 
  - Adding fake entries now generates answers that match the question's regex pattern for text, textarea, integer and phone questions, and verifies each candidate against the project pattern before saving it.
