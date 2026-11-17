@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Free and easy-to-use mobile data-gathering platform",
   "engines": {
-    "node": "22.x"
+    "node": "24.x"
   },
   "scripts": {
     "postinstall": "jetifier",
@@ -37,7 +37,7 @@
     "rollbar": "./rollbar-upload.sh",
     "rollbar:digest": "node scripts/rollbar-digest.js",
     "regex:audit": "node scripts/validate-project-regexes.js",
-    "cmd": "bash -c 'source \"$HOME/.nvm/nvm.sh\" && nvm use 22 && exec cmd'"
+    "cmd": "bash -c 'source \"$HOME/.nvm/nvm.sh\" && nvm use 24 && exec cmd'"
   },
   "dependencies": {
     "@awesome-cordova-plugins/wheel-selector": "^5.44.0",

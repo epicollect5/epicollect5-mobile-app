@@ -8,7 +8,7 @@
 
 ### Prerequisites
 
-- Node.js 22.x (see `engines` in package.json)
+- Node.js 24.x (see `engines` in package.json)
 - npm or yarn package manager
 
 ### Installation
