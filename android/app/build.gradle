@@ -49,6 +49,19 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
+tasks.register('verifyReleaseWebBundle', Exec) {
+    def nodeExec = ['/usr/local/bin/node', '/opt/homebrew/bin/node'].find { new File(it).exists() } ?: 'node'
+    workingDir rootProject.projectDir.parentFile
+    commandLine nodeExec, 'scripts/check-release-bundle.js', 'android/app/src/main/assets/public/assets'
+}
+
+// Fail release builds (including signed APK/AAB packaging) if the copied web bundle is not a native:prod build.
+tasks.matching { task ->
+    task.name ==~ /^(assemble|bundle|package|lintVital|merge.*Assets).*Release$/
+}.configureEach {
+    dependsOn tasks.named('verifyReleaseWebBundle')
+}
+
 try {
     def servicesJSON = file('google-services.json')
     if (servicesJSON.text) {

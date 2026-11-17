@@ -69,12 +69,17 @@ if (!source.includes('BYPASS_UNIQUENESS:""')) {
 }
 
 if (problems.length) {
-  console.error(`check-release-bundle: FAILED - not a native:prod build (${target})`);
+  console.error('');
+  console.error('This build is not production-ready.');
+  console.error('The packaged web bundle was not built with `npm run native:prod` (VITE_DEBUG must be cleared).');
+  console.error(`Target: ${target}`);
+  console.error('');
+  console.error('Problems:');
   problems.forEach((problem) => {
     console.error(`  - ${problem}`);
   });
   console.error('');
-  console.error('Build the release bundle with: npm run native:prod');
+  console.error('Fix: run `npm run native:prod` (and copy/sync assets), then rebuild the release.');
   process.exit(1);
 }
 
