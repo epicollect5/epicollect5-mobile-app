@@ -419,6 +419,80 @@ describe('isValidDecimalDegreesString', () => {
         coords = '56..,89.';
         expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
     });
+
+    it('Apple Maps cardinal directions coords', () => {
+
+        //N/E are positive
+        let coords = '45.4642° N, 9.1900° E';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+
+        //no spaces after the degree symbol
+        coords = '45.4642°N, 9.19°E';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+
+        //W is negative longitude
+        coords = '51.509865° N, 0.118092° W';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+
+        //S is negative latitude, decimal commas locale
+        coords = '45,4642° S, 9,1900° W';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(true);
+    });
+
+    it('Invalid Apple Maps cardinal directions coords', () => {
+
+        //cardinals swapped (E first): not a lat, long pair
+        let coords = '9.1900° E, 45.4642° N';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        //out of range
+        coords = '99.4642° N, 190.19° E';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+
+        //DMS format is not supported
+        coords = '45°27\'51.1" N, 9°11\'4" E';
+        expect(utilsService.isValidDecimalDegreesString(coords)).toBe(false);
+    });
+});
+
+describe('extractCoordinates', () => {
+    beforeEach(() => {
+        setActivePinia(createPinia());
+    });
+
+    it('Plain decimal degrees', () => {
+        expect(utilsService.extractCoordinates('-77.508333, 164.754167')).toEqual({
+            latitude: '-77.508333',
+            longitude: '164.754167'
+        });
+    });
+
+    it('Apple Maps cardinal directions', () => {
+        expect(utilsService.extractCoordinates('45.4642° N, 9.1900° E')).toEqual({
+            latitude: '45.464200',
+            longitude: '9.190000'
+        });
+
+        expect(utilsService.extractCoordinates('51.509865° N, 0.118092° W')).toEqual({
+            latitude: '51.509865',
+            longitude: '-0.118092'
+        });
+
+        expect(utilsService.extractCoordinates('45,4642° S, 9,1900° W')).toEqual({
+            latitude: '-45.464200',
+            longitude: '-9.190000'
+        });
+
+        expect(utilsService.extractCoordinates('45.4642°N,9.19°E')).toEqual({
+            latitude: '45.464200',
+            longitude: '9.190000'
+        });
+    });
+
+    it('Unsupported formats return null', () => {
+        expect(utilsService.extractCoordinates('9.1900° E, 45.4642° N')).toBeNull();
+        expect(utilsService.extractCoordinates('45°27\'51.1" N, 9°11\'4" E')).toBeNull();
+    });
 });
 
 describe('getSanitisedAnswer', () => {

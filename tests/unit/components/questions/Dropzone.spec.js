@@ -1,9 +1,12 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import flushPromises from 'flush-promises';
 import Dropzone from '@/components/Dropzone.vue';
 import { useRootStore } from '@/stores/root-store';
+import { useWaitOverlayStore } from '@/stores/wait-overlay-store';
 import { projectModel } from '@/models/project-model';
+import { webService } from '@/services/web-service';
 import { PARAMETERS } from '@/config';
 import { utilsService } from '@/services/utilities/utils-service';
 
@@ -263,12 +266,59 @@ describe('Dropzone - getMediaUrlPWA Logic', () => {
         expect(url).toContain('format=entry_original');
     });
 
-    it('correctly appends the timestamp for cache busting', () => {
-        const wrapper = factory();
-        const url = wrapper.vm.state.filesource;
+    it('keeps the preview url stable across mounts (no cache bust on navigation)', () => {
+        const first = factory({filename: 'stable.jpg', filestate: PARAMETERS.PWA_FILE_STATE.CACHED});
+        const second = factory({filename: 'stable.jpg', filestate: PARAMETERS.PWA_FILE_STATE.CACHED});
 
-        // Regex to check if timestamp param exists and has a value
-        expect(url).toMatch(/&timestamp=\d+/);
+        //prev/next remounts the question: the same file must resolve to the
+        //same url, so the browser serves it from its own cache
+        expect(first.vm.state.filesource).toBe(second.vm.state.filesource);
+        expect(first.vm.state.filesource).not.toContain('timestamp=');
+    });
+
+    it('busts the cached copy only when the file is replaced', async () => {
+        webService.uploadFilePWA.mockResolvedValue({data: {}});
+        const wrapper = factory({
+            filename: 'replace.jpg',
+            filestate: PARAMETERS.PWA_FILE_STATE.CACHED
+        });
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.state.filesource).not.toContain('timestamp=');
+
+        //drive a replacement through the hidden input change handler that
+        //vue3-dropzone wires to the component's onDrop
+        const file = new File(['replacement'], 'replacement.jpg', {type: 'image/jpeg'});
+        const input = wrapper.find('input[type="file"]');
+        Object.defineProperty(input.element, 'files', {value: [file], configurable: true});
+        await input.trigger('change');
+        await flushPromises();
+
+        //the same filename now points at new bytes: the url must change
+        expect(wrapper.vm.state.filesource).toMatch(/&timestamp=\d+/);
+    });
+
+    it('never cache busts stored media (the server versions it)', async () => {
+        webService.uploadFilePWA.mockResolvedValue({data: {}});
+        const replacing = factory({
+            filename: 'stored-replace.jpg',
+            filestate: PARAMETERS.PWA_FILE_STATE.STORED
+        });
+        await replacing.vm.$nextTick();
+
+        const file = new File(['replacement'], 'stored-replace.jpg', {type: 'image/jpeg'});
+        const input = replacing.find('input[type="file"]');
+        Object.defineProperty(input.element, 'files', {value: [file], configurable: true});
+        await input.trigger('change');
+        await flushPromises();
+
+        //the upload registered a version for this filename, but /media is
+        //served immutable with the server's own version (v=updated_at): a
+        //client side buster would only defeat that cache
+        const stored = factory({
+            filename: 'stored-replace.jpg',
+            filestate: PARAMETERS.PWA_FILE_STATE.STORED
+        });
+        expect(stored.vm.state.filesource).not.toContain('timestamp=');
     });
 
     it('handles the default case for unknown types (no format param)', () => {
@@ -394,3 +444,58 @@ describe('Media format query parameter', () => {
     );
 });
 
+
+describe('Dropzone upload overlay hand-off', () => {
+
+    beforeEach(() => {
+        setActivePinia(createPinia());
+        vi.clearAllMocks();
+        projectModel.getFirstFormRef.mockReturnValue('form_1');
+        projectModel.getSlug.mockReturnValue('test-project');
+        projectModel.getLastUpdated.mockReturnValue('2023-01-01');
+
+        const rootStore = useRootStore();
+        rootStore.language = 'en';
+        rootStore.serverUrl = 'https://test.com';
+        rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
+    });
+
+    it('dismisses the upload overlay when the pending preview loads', async () => {
+        const waitOverlayStore = useWaitOverlayStore();
+        waitOverlayStore.show();
+        //key of the file this instance shows (see buildPreviewKey in Dropzone)
+        waitOverlayStore.setPendingKey(
+            PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|photo|loaded.jpg'
+        );
+
+        const wrapper = factory({
+            filename: 'loaded.jpg',
+            filestate: PARAMETERS.PWA_FILE_STATE.CACHED
+        });
+        await wrapper.vm.$nextTick();
+        expect(waitOverlayStore.isUploading).toBe(true);
+
+        await wrapper.find('img').trigger('load');
+        await flushPromises();
+        expect(waitOverlayStore.isUploading).toBe(false);
+    });
+
+    it('leaves the overlay up while another file is pending', async () => {
+        const waitOverlayStore = useWaitOverlayStore();
+        waitOverlayStore.show();
+        waitOverlayStore.setPendingKey(
+            PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|photo|other.jpg'
+        );
+
+        const wrapper = factory({
+            filename: 'loaded.jpg',
+            filestate: PARAMETERS.PWA_FILE_STATE.CACHED
+        });
+        await wrapper.vm.$nextTick();
+        //this instance does not own the pending upload: a sibling preview
+        //finishing its own load must not release another question's upload
+        await wrapper.find('img').trigger('load');
+        await flushPromises();
+        expect(waitOverlayStore.isUploading).toBe(true);
+    });
+});
