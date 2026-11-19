@@ -472,6 +472,20 @@ export default {
 					error: {}
 				};
 
+				//the queued local branches were uploaded with the previous entry: a
+				//new entry re-uses the same form (same input refs) and
+				//fetch-branch-entries prefers the queue over the server list, so
+				//the stale entries would show as the new entry's branches
+				rootStore.queueTempBranchEntriesPWA = {};
+
+				//reset the per-question validation errors: the question components
+				//read this object by reference (questionCommonService) and the new
+				//entry re-uses the same input refs, so leftovers from the previous
+				//entry would re-render on the new questions
+				state.error = {
+					errors: {}
+				};
+
 				//hack: fake answer (to re-use prev() method)
 				//no worries about question type, it is just
 				//to make other functions work
