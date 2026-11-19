@@ -54,6 +54,11 @@ vi.mock('@/config', () => ({
         PWA_EDIT_ENTRY: 'edit-entry',
         PWA_BRANCH_LOCAL: 'branch-local',
         PWA_BRANCH_REMOTE: 'branch-remote',
+        PWA_ERROR_REPORTING_CONSENT: {
+            STORAGE_KEY: 'epicollect5-rollbar-consent',
+            GRANTED: 'granted',
+            DECLINED: 'declined'
+        },
         DEFAULT_LANGUAGE: 'en',
         DEBUG: 0,
         DELAY_EXTRA_LONG: 1,
@@ -696,14 +701,15 @@ describe('Main.js Architecture', () => {
                 project: {slug: 'my-project', ref: 'project-ref'}
             })
         );
-        //the PWA reports this startup failure: bootPWA enables reporting as
-        //soon as it starts, before the startup path can submit (main.js
-        //configures reporting off first, so the enabling call is the one
-        //with enabled: true)
-        expect(rollbarService.configure).toHaveBeenCalledWith({ enabled: true });
-        const enabledCallIndex = rollbarService.configure.mock.calls
-            .findIndex(([params]) => params.enabled === true);
-        expect(rollbarService.configure.mock.invocationCallOrder[enabledCallIndex])
+        //no consent is stored in the test browser: bootPWA gates reporting
+        //off (cookie-consent semantics — nothing is reported until the user
+        //answers the consent toast) before the startup path can submit. The
+        //critical report is still routed through the reporter, the disabled
+        //SDK drops it
+        expect(rollbarService.configure).toHaveBeenCalledWith({ enabled: false });
+        const offCallIndex = rollbarService.configure.mock.calls
+            .findIndex(([params]) => params.enabled === false);
+        expect(rollbarService.configure.mock.invocationCallOrder[offCallIndex])
             .toBeLessThan(rollbarService.criticalWithContext.mock.invocationCallOrder[0]);
         expect(setupPWAEntry).not.toHaveBeenCalled();
         expect(notificationService.showAlert).not.toHaveBeenCalled();
