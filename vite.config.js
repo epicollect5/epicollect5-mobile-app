@@ -133,7 +133,7 @@ export default defineConfig(({ mode, command }) => {
                         // that specs must mount or reach via findComponent
                         // (e.g. wrapper-dispatched variants like audio-native)
                         isCustomElement: (tag) => tag.includes('-') &&
-                            !['base-layout', 'grid-question-narrow', 'grid-question-wide', 'sign-in-with-google-button', 'sign-in-with-apple-button', 'date-time-field', 'media-pwa', 'audio-native', 'location-pwa', 'location-native', 'video-native', 'photo-native', 'branch-pwa', 'branch-native', 'barcode-pwa', 'barcode-native'].includes(tag)
+                            !['base-layout', 'grid-question-narrow', 'grid-question-wide', 'sign-in-with-google-button', 'sign-in-with-apple-button', 'date-time-field', 'media-pwa', 'audio-native', 'location-pwa', 'location-native', 'video-native', 'photo-native', 'branch-pwa', 'branch-native', 'barcode-pwa', 'barcode-native', 'question-saved'].includes(tag)
                     }
                 }
             } : {}),
