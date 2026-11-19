@@ -25,6 +25,11 @@ const IGNORED_MESSAGES = [
     'unable to resolve camera activity'
 ];
 
+//the PWA build is known at bundle time (VITE_MODE is baked in): its payloads
+//are tagged from construction, so reports fired before init() (the startup
+//path can submit) already carry the pwa environment and the package version
+const isPwaBuild = import.meta.env.VITE_MODE === 'PWA';
+
 const rollbar = new Rollbar({
     enabled: true,
     accessToken: import.meta.env.VITE_ROLLBAR_POST_TOKEN,
@@ -37,12 +42,12 @@ const rollbar = new Rollbar({
     maxRetries: 3,
     ignoredMessages: IGNORED_MESSAGES,
     payload: {
-        environment: '',//to be set at run time,
+        environment: isPwaBuild ? 'pwa' : '',//native: set at run time, see init() below
         source_map_enabled: true,
         guess_uncaught_frames: true,
         client: {
             javascript: {
-                code_version: ''//defined at run time, see init() below
+                code_version: isPwaBuild ? import.meta.env.VITE_APP_VERSION : ''//native: defined at run time, see init() below
             }
         }
     },
@@ -181,9 +186,13 @@ export const rollbarService = {
     },
     init(app) {
         const rootStore = useRootStore();
-        let environment = rootStore.device.operatingSystem + ' ' + rootStore.device.osVersion;
-        environment += ' - ' + rootStore.device.model;
-        environment += ' - WebView ' + rootStore.device.webViewVersion;
+        //the PWA reports as its own environment: same project, filterable in the
+        //Rollbar UI, and never mixed into the per-device native environments
+        let environment = rootStore.isPWA ? 'pwa' : rootStore.device.operatingSystem + ' ' + rootStore.device.osVersion;
+        if (!rootStore.isPWA) {
+            environment += ' - ' + rootStore.device.model;
+            environment += ' - WebView ' + rootStore.device.webViewVersion;
+        }
         console.log('Environment -> ', environment);
 
         //set rollbar version & environment for payloads; fingerprint by
@@ -209,7 +218,12 @@ export const rollbarService = {
             }
             payload.client = {
                 javascript: {
-                    code_version: rootStore.app.version
+                    //native: the app version from the device bundle; PWA: the
+                    //package version baked at build time (rootStore.app is not
+                    //populated on the PWA boot path)
+                    code_version: rootStore.isPWA
+                        ? import.meta.env.VITE_APP_VERSION
+                        : rootStore.app.version
                 }
             };
             payload.environment = environment;
@@ -225,11 +239,20 @@ export const rollbarService = {
 
         rollbar.configure({ transform: transformer });
 
-        if (!Capacitor.DEBUG && Capacitor.isNativePlatform()) {
+        if (rootStore.isPWA) {
+            //the PWA reports unconditionally: payloads are anonymous technical
+            //data (captureIp is false, no person tracking, no device fields),
+            //and there is no settings surface to hang an opt-out on
+            console.log('Rollbar reporting enabled');
+            app.use(rollbar);
+            rollbar.configure({ enabled: true });
+        }
+        else if (!Capacitor.DEBUG && Capacitor.isNativePlatform()) {
             //if user did not opt out, inject rollbar in release builds
             if (rootStore.collectErrors) {
                 console.log('Rollbar reporting enabled');
                 app.use(rollbar);
+                rollbar.configure({ enabled: true });
             }
             else {
                 console.log('Rollbar reporting disabled');

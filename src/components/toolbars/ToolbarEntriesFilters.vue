@@ -29,8 +29,8 @@
 </template>
 
 <script>
-import { useRootStore } from '@/stores/root-store';
-import { STRINGS } from '@/config/strings';
+import { useRootStore } from '@/stores/root-store.js';
+import { STRINGS } from '@/config/strings.js';
 import { close } from 'ionicons/icons';
 
 export default {

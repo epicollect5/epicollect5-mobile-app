@@ -59,9 +59,9 @@
 
 <script>
 import { STRINGS } from '@/config/strings.js';
-import { useRootStore } from '@/stores/root-store';
+import { useRootStore } from '@/stores/root-store.js';
 import { reactive, toRefs } from '@vue/reactivity';
-import { PARAMETERS } from '@/config';
+import { PARAMETERS } from '@/config/index.js';
 export default {
 	props: {
 		savedAnswers: {

@@ -21,7 +21,10 @@ const mocks = vi.hoisted(() => {
         stopForegroundServiceMock: vi.fn().mockResolvedValue(),
         nativeSettingsOpenMock: vi.fn(),
         selectSettingMock: vi.fn().mockResolvedValue({rows: {length: 0, item: () => ({})}}),
-        insertSettingMock: vi.fn().mockResolvedValue()
+        insertSettingMock: vi.fn().mockResolvedValue(),
+        nativeLoaderShowMock: vi.fn().mockResolvedValue({id: 'loader'}),
+        nativeLoaderHideAllMock: vi.fn().mockResolvedValue(),
+        isNativePlatformMock: vi.fn()
     };
 });
 
@@ -61,6 +64,26 @@ vi.mock('@capawesome-team/capacitor-android-foreground-service', () => ({
     },
     Importance: {Low: 'low'}
 }));
+
+vi.mock('@epicollect5/capacitor-native-loader', () => ({
+    NativeLoader: {
+        show: mocks.nativeLoaderShowMock,
+        hideAll: mocks.nativeLoaderHideAllMock
+    }
+}));
+
+//keep the real Capacitor exports (registerPlugin is used by the other
+//capacitor modules in the import graph) and only control isNativePlatform
+vi.mock('@capacitor/core', async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        Capacitor: {
+            ...actual.Capacitor,
+            isNativePlatform: mocks.isNativePlatformMock
+        }
+    };
+});
 
 vi.mock('@ionic/vue', () => {
     const alertController = vi.fn();
@@ -636,6 +659,140 @@ describe('notificationService tests', () => {
             expect(rootStore.ec5LoadingDialog).toStrictEqual(newDialog);
             expect(newDialog.present).toHaveBeenCalled();
             expect(oldDialog.dismiss).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('native loader', () => {
+        beforeEach(() => {
+            mocks.isNativePlatformMock.mockReturnValue(true);
+        });
+
+        it('is not shown on web builds', async () => {
+            mocks.isNativePlatformMock.mockReturnValue(false);
+
+            await notificationService.showNativeLoader();
+            await notificationService.hideNativeLoader();
+
+            expect(mocks.nativeLoaderShowMock).not.toHaveBeenCalled();
+            expect(mocks.nativeLoaderHideAllMock).not.toHaveBeenCalled();
+        });
+
+        it('shows a ring with at least 2 colours (the native SweepGradient crashes otherwise)', async () => {
+            await notificationService.showNativeLoader();
+
+            expect(mocks.nativeLoaderShowMock).toHaveBeenCalledTimes(1);
+            const options = mocks.nativeLoaderShowMock.mock.calls[0][0];
+            //the colours are rgba() strings because Android reads 8-digit hex
+            //as #AARRGGBB while iOS reads it as #RRGGBBAA. The stops are
+            //identical on purpose: the CSS crescent has no gradient, so the
+            //native ring must be uniform too
+            expect(options).toMatchObject({
+                style: 'ring',
+                placement: 'fullscreen',
+                interactionMode: 'block',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+                reducedMotion: 'ignore'
+            });
+            //regression guard: Android's SweepGradient throws on 1 colour
+            expect(Array.isArray(options.colors)).toBe(true);
+            expect(options.colors.length).toBeGreaterThanOrEqual(2);
+            expect(options.colors.every((color) => typeof color === 'string' && color.length > 0)).toBe(true);
+            //no scrim: the overlay stays fully transparent
+            expect(options.scrimColor).toBeUndefined();
+            //size/thickness are hand-tuned visual knobs: only guard that they
+            //stay sane numbers, so tuning them cannot break the suite
+            expect(options.size).toBeGreaterThanOrEqual(16);
+            expect(options.thickness).toBeGreaterThanOrEqual(1);
+        });
+
+        it('switches the ring to light greys on the dark theme', async () => {
+            //themeService toggles body.theme-dark, the loader must follow it
+            document.body.classList.add('theme-dark');
+
+            await notificationService.showNativeLoader();
+
+            expect(mocks.nativeLoaderShowMock.mock.calls[0][0].colors).toEqual(['#E6E6E6', '#E6E6E6']);
+
+            document.body.classList.remove('theme-dark');
+        });
+
+        it('hides the loader only after the WebView has painted, without fade-out', async () => {
+            //drive the paint wait deterministically: two rAF ticks
+            let rafCount = 0;
+            const rafStub = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+                rafCount += 1;
+                return setTimeout(() => callback(performance.now()), 0);
+            });
+
+            await notificationService.showNativeLoader();
+            const promise = notificationService.hideNativeLoader();
+            //the hide is deferred until the paint wait completes, not immediate
+            expect(mocks.nativeLoaderHideAllMock).not.toHaveBeenCalled();
+
+            await promise;
+
+            expect(rafCount).toBe(2);
+            expect(mocks.nativeLoaderHideAllMock).toHaveBeenCalledTimes(1);
+            //no fade-out: the ring disappears the moment content is visible
+            expect(mocks.nativeLoaderHideAllMock).toHaveBeenCalledWith({animated: false});
+
+            rafStub.mockRestore();
+        });
+
+        it('resolves when the native show rejects (navigation must survive)', async () => {
+            mocks.isNativePlatformMock.mockReturnValue(true);
+            mocks.nativeLoaderShowMock.mockRejectedValueOnce(new Error('bridge failed'));
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {
+            });
+
+            //a rejected show must never leak a rejection into handleNext/
+            //handlePrev: the question still mounts behind a missing ring
+            await expect(notificationService.showNativeLoader()).resolves.toBeUndefined();
+
+            consoleSpy.mockRestore();
+        });
+
+        it('unblocks navigation when the native show stays pending', async () => {
+            mocks.isNativePlatformMock.mockReturnValue(true);
+            //the app backgrounding can latch the native show indefinitely
+            mocks.nativeLoaderShowMock.mockReturnValue(new Promise(() => {
+            }));
+
+            const started = Date.now();
+            await notificationService.showNativeLoader();
+            const elapsed = Date.now() - started;
+
+            //navigation unblocks via the timeout race, not via the show
+            expect(elapsed).toBeGreaterThanOrEqual(PARAMETERS.DELAY_LONG - 50);
+            expect(elapsed).toBeLessThan(PARAMETERS.DELAY_LONG + 500);
+            expect(mocks.nativeLoaderHideAllMock).not.toHaveBeenCalled();
+        });
+
+        it('hides a late-arriving ring when the loader was already dismissed', async () => {
+            mocks.isNativePlatformMock.mockReturnValue(true);
+            const rafStub = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+                return setTimeout(() => callback(performance.now()), 0);
+            });
+            let resolveShow;
+            mocks.nativeLoaderShowMock.mockImplementation(() => new Promise((resolve) => {
+                resolveShow = resolve;
+            }));
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {
+            });
+
+            const showPromise = notificationService.showNativeLoader();
+            //the question loads and the loader is dismissed before the native
+            //show settles (e.g. the app was backgrounded during navigation)
+            await notificationService.hideNativeLoader();
+            resolveShow({id: 'late'});
+            await showPromise;
+
+            //the late-arriving ring is hidden immediately instead of
+            //lingering over the already-loaded question
+            expect(mocks.nativeLoaderHideAllMock).toHaveBeenCalledTimes(2);
+
+            rafStub.mockRestore();
+            consoleSpy.mockRestore();
         });
     });
 });

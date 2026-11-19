@@ -23,8 +23,20 @@ export async function saveEntryPWA(state, quit) {
 
     //if the project has media to upload, warn about it in the progress dialog
 
+    //the media object seeds a filenamePWA bucket for every media input of the
+    //form even when unanswered (mediaService.getEntryStoredMediaPWA), so key
+    //count says nothing: only a cached file counts, as files are uploaded at
+    //pick time and stored ones are already saved
+    function hasMediaFiles(media) {
+        return Object.values(media).some((inputMedia) => {
+            return Object.values(inputMedia).some((mediaFile) => {
+                return mediaFile.filenamePWA.cached !== '';
+            });
+        });
+    }
+
     const media = rootStore.entriesAddScope.entryService.entry?.media ?? {};
-    if (Object.keys(media).length > 0) {
+    if (hasMediaFiles(media)) {
         await notificationService.showProgressDialog(
             labels.saving_with_encoding,
             labels.wait

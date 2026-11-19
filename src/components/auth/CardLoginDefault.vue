@@ -58,16 +58,16 @@
 <script>
 import { reactive, computed } from '@vue/reactivity';
 import { mailOutline } from 'ionicons/icons';
-import { STRINGS } from '@/config/strings';
-import { useRootStore } from '@/stores/root-store';
+import { STRINGS } from '@/config/strings.js';
+import { useRootStore } from '@/stores/root-store.js';
 import { modalController } from '@ionic/vue';
-import { PARAMETERS } from '@/config';
+import { PARAMETERS } from '@/config/index.js';
 import ModalPasswordlessSend from '@/components/modals/ModalPasswordlessSend.vue';
-import SignInWithGoogleButton from '@/components/SignInWithGoogleButton.vue';
-import SignInWithAppleButton from '@/components/SignInWithAppleButton.vue';
-import { authGoogleService } from '@/services/auth/auth-google-service';
-import { authAppleService } from '@/services/auth/auth-apple-service';
-import { modalsHandlerService } from '@/services/modals/modals-handler-service';
+import SignInWithGoogleButton from '@/components/auth/SignInWithGoogleButton.vue';
+import SignInWithAppleButton from '@/components/auth/SignInWithAppleButton.vue';
+import { authGoogleService } from '@/services/auth/auth-google-service.js';
+import { authAppleService } from '@/services/auth/auth-apple-service.js';
+import { modalsHandlerService } from '@/services/modals/modals-handler-service.js';
 
 export default {
 	components: { SignInWithGoogleButton, SignInWithAppleButton },

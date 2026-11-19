@@ -5,6 +5,15 @@ textarea:focus,
 input:focus {
     outline-color: var(--ion-color-primary) !important;
 }
+//sticky top warning toast used by notification-service.showWarningToast:
+//IonToast paints at z-index 60000+ inside ion-app, above the upload wait
+//overlay (z-index 9999, also inside ion-app); message centered
+.upload-warning-toast {
+    --width: 100%;
+}
+.upload-warning-toast::part(message) {
+    text-align: center;
+}
 .fade-enter-active,
 .fade-leave-active {
     transition: opacity 0.5s ease;

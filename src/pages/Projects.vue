@@ -84,7 +84,7 @@
 </template>
 
 <script>
-import ListItemProjects from '@/components/ListItemProjects';
+import ListItemProjects from '@/components/lists/ListItemProjects.vue';
 import {add, openOutline} from 'ionicons/icons';
 import {reactive, computed} from '@vue/reactivity';
 import {onMounted, onActivated, watch, onRenderTriggered} from 'vue';

@@ -96,12 +96,12 @@
 import { eye, create } from 'ionicons/icons';
 import { reactive, computed, readonly } from '@vue/reactivity';
 import { useRouter } from 'vue-router';
-import { PARAMETERS } from '@/config';
-import { useRootStore } from '@/stores/root-store';
-import { STRINGS } from '@/config/strings';
-import { notificationService } from '@/services/notification-service';
-import { entryService } from '@/services/entry/entry-service';
-import { branchEntryService } from '@/services/entry/branch-entry-service';
+import { PARAMETERS } from '@/config/index.js';
+import { useRootStore } from '@/stores/root-store.js';
+import { STRINGS } from '@/config/strings.js';
+import { notificationService } from '@/services/notification-service.js';
+import { entryService } from '@/services/entry/entry-service.js';
+import { branchEntryService } from '@/services/entry/branch-entry-service.js';
 
 export default {
 	name: 'ListAnswers',
@@ -195,8 +195,15 @@ export default {
 					isBranch: true
 				};
 
+				//keep the address bar on the entry url (see QuestionBranch addBranch)
+				const currentUrl = window.location.pathname + window.location.search;
+
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
+				}).then(() => {
+					if (rootStore.isPWA) {
+						window.history.replaceState(window.history.state, '', currentUrl);
+					}
 				});
 			},
 			loadItemsChunk(scrollEvent) {

@@ -50,10 +50,10 @@
 <script>
 import { eye } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
-import { STRINGS } from '@/config/strings';
-import { PARAMETERS } from '@/config';
+import { STRINGS } from '@/config/strings.js';
+import { PARAMETERS } from '@/config/index.js';
 
-import { useRootStore } from '@/stores/root-store';
+import { useRootStore } from '@/stores/root-store.js';
 export default {
 	setup() {
 		const rootStore = useRootStore();

@@ -94,18 +94,18 @@
 </template>
 
 <script>
-import { useRootStore } from '@/stores/root-store';
+import { useRootStore } from '@/stores/root-store.js';
 import { onMounted } from 'vue';
-import { STRINGS } from '@/config/strings';
+import { STRINGS } from '@/config/strings.js';
 import { chevronForward, enter } from 'ionicons/icons';
 import { reactive, computed, readonly, toRefs, inject } from 'vue';
-import { PARAMETERS } from '@/config';
+import { PARAMETERS } from '@/config/index.js';
 import { useRouter } from 'vue-router';
 import { format } from 'date-fns';
 import { fetchEntries } from '@/use/entries/fetch-entries.js';
 import { projectModel } from '@/models/project-model.js';
-import ToolbarEntriesFilters from '@/components/ToolbarEntriesFilters';
-import IconEntry from '@/components/IconEntry';
+import ToolbarEntriesFilters from '@/components/toolbars/ToolbarEntriesFilters.vue';
+import IconEntry from '@/components/IconEntry.vue';
 
 export default {
 	components: { ToolbarEntriesFilters, IconEntry },

@@ -94,8 +94,8 @@ vi.mock('@/App.vue', () => ({default: {name: 'App', render: () => null}}));
 vi.mock('@/components/globals/BaseLayout.vue', () => ({default: {}}));
 vi.mock('@/components/globals/LeftDrawer.vue', () => ({default: {}}));
 vi.mock('@/components/globals/RightDrawer.vue', () => ({default: {}}));
-vi.mock('@/components/ListAnswers.vue', () => ({default: {}}));
-vi.mock('@/components/ListItemAnswer.vue', () => ({default: {}}));
+vi.mock('@/components/lists/ListAnswers.vue', () => ({default: {}}));
+vi.mock('@/components/lists/ListItemAnswer.vue', () => ({default: {}}));
 vi.mock('@/theme/variables.css', () => ({}));
 vi.mock('@/theme/dark.scss', () => ({}));
 vi.mock('@/theme/core.scss', () => ({}));
@@ -620,6 +620,29 @@ describe('Main.js Architecture', () => {
         const {useRootStore} = await import('@/stores/root-store');
         expect(useRootStore().notFound).toBe(true);
     });
+    it('PWA: mounts and shows not found when entry setup fails', async () => {
+        const {initService} = await import('@/services/init-service');
+        const {webService} = await import('@/services/web-service');
+        const {rollbarService} = await import('@/services/utilities/rollbar-service');
+        const {setupPWAEntry} = await import('@/use/entry/setup-pwa-entry');
+
+        initService.getDeviceInfo.mockResolvedValue({platform: 'web'});
+        webService.getProjectPWA.mockResolvedValue({data: {}});
+        //a failed entry setup must not skip the mount: the notFound flag
+        //renders the NotFound view instead of leaving a blank page
+        setupPWAEntry.mockRejectedValueOnce(new Error('setup boom'));
+
+        window.location.pathname = '/project/add-entry';
+
+        await import('@/main');
+        await flushPromises();
+
+        const {useRootStore} = await import('@/stores/root-store');
+        expect(useRootStore().notFound).toBe(true);
+        //rollbarService.init runs immediately before app.mount, so it
+        //proves the boot reached the mount block
+        expect(rollbarService.init).toHaveBeenCalled();
+    });
     it('PWA: rejects a project whose question regex is malformed', async () => {
         const {initService} = await import('@/services/init-service');
         const {webService} = await import('@/services/web-service');
@@ -673,9 +696,9 @@ describe('Main.js Architecture', () => {
                 project: {slug: 'my-project', ref: 'project-ref'}
             })
         );
-        //the PWA reporting policy is applied before this startup path can submit,
-        //not at mount: init() runs after the project has been fetched and checked
-        expect(rollbarService.configure).toHaveBeenCalledWith({ enabled: false });
+        //the PWA reports this startup failure: reporting is enabled as soon as
+        //the platform is known, before the startup path can submit
+        expect(rollbarService.configure).toHaveBeenCalledWith({ enabled: true });
         expect(rollbarService.configure.mock.invocationCallOrder[0])
             .toBeLessThan(rollbarService.criticalWithContext.mock.invocationCallOrder[0]);
         expect(setupPWAEntry).not.toHaveBeenCalled();

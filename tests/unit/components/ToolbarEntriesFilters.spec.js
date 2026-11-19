@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import ToolbarEntriesFilters from '@/components/ToolbarEntriesFilters.vue';
+import ToolbarEntriesFilters from '@/components/toolbars/ToolbarEntriesFilters.vue';
 
 describe('ToolbarEntriesFilters', () => {
     beforeEach(() => {

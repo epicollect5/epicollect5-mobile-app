@@ -37,7 +37,7 @@
 
 <script>
 import { reactive } from '@vue/reactivity';
-import { PARAMETERS } from '@/config';
+import { PARAMETERS } from '@/config/index.js';
 import { computed, readonly } from '@vue/reactivity';
 export default {
 	props: {

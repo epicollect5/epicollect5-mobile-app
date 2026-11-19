@@ -57,11 +57,11 @@
 <script>
 import { eye, eyeOff } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
-import { STRINGS } from '@/config/strings';
-import { useRootStore } from '@/stores/root-store';
+import { STRINGS } from '@/config/strings.js';
+import { useRootStore } from '@/stores/root-store.js';
 import { menuController } from '@ionic/vue';
-import { PARAMETERS } from '@/config';
-import { loginLocal } from '@/use/auth/login-local';
+import { PARAMETERS } from '@/config/index.js';
+import { loginLocal } from '@/use/auth/login-local.js';
 
 export default {
 	setup(props) {

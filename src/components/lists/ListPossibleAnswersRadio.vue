@@ -10,10 +10,10 @@
 			:class="state.currentSelectedAnswers.indexOf(possibleAnswer.answer_ref) > -1 ? 'checkbox-checked' : ''"
 		>
 			<ion-grid
-				class="half-padding checkbox-padding"
-				@click="toggleCheckbox(possibleAnswer.answer_ref)"
+				class="half-padding-start radio-padding"
+				@click="toggleRadio(possibleAnswer.answer_ref)"
 			>
-				<ion-row class="ion-align-items-start">
+				<ion-row class="ion-align-items-center">
 					<ion-col
 						size-xs="10"
 						size-sm="11"
@@ -34,14 +34,13 @@
 					>
 						<div>
 							<input
-								class="possible-answer-checkbox"
+								class="possible-answer-radio"
 								type="checkbox"
 								:checked="isChecked(possibleAnswer.answer_ref)"
 							/>
 						</div>
 					</ion-col>
 				</ion-row>
-
 			</ion-grid>
 		</div>
 	</ion-list>
@@ -62,12 +61,11 @@
 </template>
 
 <script>
+import { watch } from 'vue';
 import { STRINGS } from '@/config/strings.js';
-import { onMounted, onUpdated } from 'vue';
-import { useRootStore } from '@/stores/root-store';
+import { useRootStore } from '@/stores/root-store.js';
 import { reactive, readonly, toRefs, computed } from '@vue/reactivity';
-import { PARAMETERS } from '@/config';
-
+import { PARAMETERS } from '@/config/index.js';
 export default {
 	props: {
 		possibleAnswers: {
@@ -98,11 +96,12 @@ export default {
 		const labels = STRINGS[language].labels;
 		const { possibleAnswers, isGroupInput, isModal } = readonly(props);
 		const { selectedAnswers } = toRefs(props);
+
 		const state = reactive({
 			currentSelectedAnswers: selectedAnswers.value,
-			possibleAnswersChunk: []
+			possibleAnswersChunk: [],
+			isFetching: false
 		});
-		const publicPath = import.meta.env.BASE_URL;
 
 		//do not use lazy loading for checkboxes within a GROUP
 		//imp: ONLY when NOT loading list in a modal (SEARCH or filtering)
@@ -116,45 +115,34 @@ export default {
 				state.possibleAnswersChunk = possibleAnswers.slice(0, PARAMETERS.POSSIBLE_ANSWERS_PER_PAGE);
 			}
 		}
-		if (isGroupInput) {
-			state.possibleAnswersChunk = possibleAnswers.slice(0);
-		} else {
-			state.possibleAnswersChunk = possibleAnswers.slice(0, PARAMETERS.POSSIBLE_ANSWERS_PER_PAGE);
-		}
-
-		const computedScope = {
-			showInfiniteLoader: computed(() => {
-				return state.possibleAnswersChunk.length < possibleAnswers.length;
-			}),
-			disableInfiniteLoader: computed(() => {
-				if (isModal) {
-					return false;
-				}
-				return isGroupInput || possibleAnswers.length <= PARAMETERS.POSSIBLE_ANSWERS_LAZY_THRESHOLD;
-			})
-		};
 
 		const methods = {
-			onChange() {
-				console.log('onChange called');
-			},
 			isChecked(answerRef) {
 				return state.currentSelectedAnswers.indexOf(answerRef) > -1;
 			},
-			toggleCheckbox(answerRef) {
+			toggleRadio(answerRef) {
 				const idx = state.currentSelectedAnswers.indexOf(answerRef);
-				// Is currently selected
+				// If currently selected
 				if (idx > -1) {
+					//deselect radio
 					state.currentSelectedAnswers.splice(idx, 1);
 				}
 				// Is newly selected
 				else {
-					state.currentSelectedAnswers.push(answerRef);
+					//replace selected radio
+					//imp: splice works
+					state.currentSelectedAnswers.splice(0, 1, answerRef);
+
+					//imp: this does not, lose reactivity
+					//imp: radio does NOT get de-selected
+					//state.currentSelectedAnswers =[];
+					//state.currentSelectedAnswers.push(answerRef);
 				}
 				//emit to parent
 				context.emit('on-selected-answers', state.currentSelectedAnswers);
 			},
 			loadPossibleAnswersChunk(ev) {
+				state.isFetching = true;
 				function pushPossibleAnswersChunk() {
 					const offset = PARAMETERS.POSSIBLE_ANSWERS_PER_PAGE;
 					const max = state.possibleAnswersChunk.length + offset;
@@ -178,8 +166,21 @@ export default {
 					if (state.possibleAnswersChunk.length === limit) {
 						ev.target.disabled = true;
 					}
+					state.isFetching = false;
 				}, PARAMETERS.DELAY_MEDIUM);
 			}
+		};
+
+		const computedScope = {
+			showInfiniteLoader: computed(() => {
+				return state.possibleAnswersChunk.length < possibleAnswers.length;
+			}),
+			disableInfiniteLoader: computed(() => {
+				if (isModal) {
+					return false;
+				}
+				return isGroupInput || possibleAnswers.length <= PARAMETERS.POSSIBLE_ANSWERS_LAZY_THRESHOLD;
+			})
 		};
 
 		//do not use lazy loading for checkboxes within a GROUP
@@ -187,23 +188,19 @@ export default {
 			methods.loadPossibleAnswersChunk();
 		}
 
-		onMounted(() => {
-			console.log('the component is now mounted.');
-		});
-
-		onUpdated(() => {
-			console.log('the component is now updated.');
+		watch(selectedAnswers, () => {
+			console.log('selectedAnswers is-> ', selectedAnswers.value);
 		});
 
 		return {
 			labels,
 			state,
+			...props,
 			...methods,
-			...computedScope,
-			publicPath
+			...computedScope
 		};
 	}
 };
 </script>
 
-<style src="@/theme/components/lists/ListPossibleAnswersCheckbox.scss" lang="scss"></style>
+<style src="@/theme/components/lists/ListPossibleAnswersRadio.scss" lang="scss" scoped></style>

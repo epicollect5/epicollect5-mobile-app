@@ -16,8 +16,8 @@
 
 <script>
 import { closeOutline } from 'ionicons/icons';
-import { STRINGS } from '@/config/strings';
-import { useRootStore } from '@/stores/root-store';
+import { STRINGS } from '@/config/strings.js';
+import { useRootStore } from '@/stores/root-store.js';
 export default {
 	emit: ['on-dismiss'],
 	setup (props, context) {

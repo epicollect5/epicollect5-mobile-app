@@ -281,9 +281,11 @@
 
 <script>
 import { useRootStore } from '@/stores/root-store';
+import { useWaitOverlayStore } from '@/stores/wait-overlay-store';
 import { closeOutline, power, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
+import { Capacitor } from '@capacitor/core';
 import { useRouter } from 'vue-router';
 import { reactive, computed } from '@vue/reactivity';
 import { formModel } from '@/models/form-model.js';
@@ -324,7 +326,7 @@ import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
 import ItemDividerError from '@/components/ItemDividerError.vue';
 import { questionCommonService } from '@/services/entry/question-common-service';
-import ToolbarEntriesAddNavigation from '@/components/ToolbarEntriesAddNavigation.vue';
+import ToolbarEntriesAddNavigation from '@/components/toolbars/ToolbarEntriesAddNavigation.vue';
 import {saveEntryPWA} from '@/services/entry/save-entry-pwa';
 import {saveEntryNative} from '@/services/entry/save-entry-native';
 
@@ -357,6 +359,7 @@ export default {
 	},
 	setup() {
 		const rootStore = useRootStore();
+		const waitOverlayStore = useWaitOverlayStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
 		const router = useRouter();
@@ -598,6 +601,14 @@ export default {
 				}
 			},
 			prev() {
+				//PWA only, native has no dropzone: an upload is in flight or its
+				//preview has not loaded yet. The wait overlay blocks pointer input,
+				//but the hardware back button still reaches prev() and would
+				//unmount the question before file-dropped records the filename,
+				//losing the attachment
+				if (rootStore.isPWA && waitOverlayStore.isUploading) {
+					return;
+				}
 				state.showSaved = false;
 				//if the user is on the first question, ask whether to quit the current entry
 				//if the user is on any other question, go back by one question
@@ -611,9 +622,18 @@ export default {
 			 * Go to next question/save entry (depending on where you are in the form)
 			 */
 			async next() {
+				//same back button bypass as prev(): the question must stay mounted
+				//until the upload lands and its preview is recorded. PWA only,
+				//native has no dropzone
+				if (rootStore.isPWA && waitOverlayStore.isUploading) {
+					return;
+				}
 				await handleNext(state, rootStore.entriesAddScope);
 			},
 			onQuestionMounted() {
+				//hide the native loader first, so it animates out as the
+				//question is revealed
+				notificationService.hideNativeLoader();
 				state.isFetching = false;
 				notificationService.hideProgressDialog();
 			}
@@ -818,6 +838,7 @@ export default {
 		return {
 			labels,
 			state,
+			isNative: Capacitor.isNativePlatform(),
       onQuestionMounted: methods.onQuestionMounted,
       addEntryPWA: methods.addEntryPWA,
 			...methods,
