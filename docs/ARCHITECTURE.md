@@ -452,6 +452,21 @@ Query params carry operational context such as:
 - `branch_ref`
 - `branch_owner_uuid`
 
+### Media Preview Loading (and the Discarded Blob Cache)
+
+Media questions render through a single `Dropzone.vue` instance per question, and the one-live-question model remounts it on every prev/next navigation. Each remount rebuilds the media tag, which re-requests the file. The server sends proper cache headers (photos hourly, or immutable when versioned; the streamed audio/video responses carry the same policy — `ToMediaStreamLocalMacro`/`ToMediaStreamS3Macro` in the server repo), and a per-filename `timestamp` buster is appended only when an actual replacement upload lands, so a same-name replacement can never replay old bytes. Preview URLs are otherwise stable across mounts: no per-navigation cache busting.
+
+Despite that, browsers do not reliably reuse the responses across navigations: the media stack probes with a `Range` request and audio/video come back as **206 partial responses, which Chromium does not consistently serve from cache on a later mount** — empirically a back pass can hit the cache and the very next pass re-download everything. Browser DevTools' "Disable cache" option defeats the whole layer during QA and makes every navigation re-download by design; that is expected, not a defect.
+
+An in-session **blob preview cache** was built to close that gap (module-level bounded LRU of 6 object URLs, shared in-flight downloads, generation counters invalidating a replaced file's cached and stored keys) and was discarded twice — once when the refetch turned out to be DevTools-driven, once as a deliberate trade-off. The reasons, for the record:
+
+- **One-way navigation.** The dominant flow is fill → next → save. The cache pays its cost on every view (on a cache miss the media tag streams the endpoint URL *and* a background `fetch` warms the blob — a double download of the same file), while the benefit only appears on back-navigation.
+- **Blob-only first view would trade streaming for memory.** Serving the tag from a blob URL requires the whole file in memory first: a 25 MB video on a field network would show a spinner until fully downloaded instead of streaming progressively.
+- **Memory bound.** Worst case 6 × 25 MB of blob storage. Chromium pages large blobs to disk rather than pinning the heap, but the session still accumulates disk-backed temp files that only `revokeObjectURL` releases.
+- **Keeping the component mounted (KeepAlive) was rejected as the structural alternative.** The one-live-question model — jumps rewriting the flow, `onQuestionMounted` driving the loader/dialog/introspection, navigation guards — depends on real mount/unmount. Keeping N question trees alive would need activation-time re-sync in every question component and pin more memory (component trees plus media buffers) than the blobs ever would.
+
+Decision: rely on the browser cache plus stable, busted-only-on-replacement URLs, and accept a re-download when the browser declines to reuse the response. Re-introducing the blob cache is a contained change if navigation patterns ever shift toward heavy back-and-forth (the removed implementation is recoverable from git history), and the first dial to try then is a type-aware cap rather than a fixed entry count.
+
 ## Project Structure Lifecycle
 
 Project structure is normalized into the in-memory `projectModel`, which the rest of the app treats as the canonical schema for form traversal.
