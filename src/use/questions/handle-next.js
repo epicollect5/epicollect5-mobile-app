@@ -1,6 +1,7 @@
 import { PARAMETERS } from '@/config';
 import { initialSetup } from '@/use/questions/initial-setup';
 import { errorsService } from '@/services/errors-service';
+import { notificationService } from '@/services/notification-service';
 
 // Initial set up for each question
 export async function handleNext (state, scope) {
@@ -15,6 +16,11 @@ export async function handleNext (state, scope) {
     // Remove flag that helps to handle back button when user is just dismissing barcode scanner
     //todo: put this in vuex
     window.localStorage.removeItem('is_dismissing_barcode');
+
+    // Native builds: the screen is now cleared, so show the native loader
+    // before the next question mounts and blocks the WebView. It replaces
+    // the CSS spinner and keeps spinning through the render.
+    await notificationService.showNativeLoader();
 
     // Validate and save answer
     // Pass in custom object with relevant params
