@@ -56,7 +56,7 @@
 
       <!-- fake entries toolbar -->
       <ion-toolbar
-          v-if="state.isDebug && !state.isPWA && !state.isFetching"
+          v-if="showFakeEntriesToolbar"
           color="tertiary"
           class="animate__animated animate__fadeIn ion-no-margin ion-no-padding ion-text-center"
       >
@@ -152,7 +152,7 @@ import {
   chevronBackOutline,
   ellipsisVertical
 } from 'ionicons/icons';
-import {reactive} from '@vue/reactivity';
+import {computed, reactive} from '@vue/reactivity';
 import {PARAMETERS} from '@/config';
 import {projectModel} from '@/models/project-model.js';
 import {formModel} from '@/models/form-model.js';
@@ -511,7 +511,13 @@ export default {
       methods.goBack();
     });
 
-    const computedScope = {};
+    const computedScope = {
+      //debug fake-data toolbar: native debug builds only, and never while the
+      //list is fetching
+      showFakeEntriesToolbar: computed(() => {
+        return state.isDebug && !state.isPWA && !state.isFetching;
+      })
+    };
 
     return {
       labels,
