@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => {
         selectSettingMock: vi.fn().mockResolvedValue({rows: {length: 0, item: () => ({})}}),
         insertSettingMock: vi.fn().mockResolvedValue(),
         nativeLoaderShowMock: vi.fn().mockResolvedValue({id: 'loader'}),
+        toastCreateMock: vi.fn(async () => ({present: mocks.presentMock})),
         nativeLoaderHideAllMock: vi.fn().mockResolvedValue(),
         rollbarCriticalWithContextMock: vi.fn(),
         isNativePlatformMock: vi.fn()
@@ -99,7 +100,8 @@ vi.mock('@ionic/vue', () => {
     });
     const loadingController = { create: mocks.loadingCreateMock };
     const modalController = { dismiss: mocks.modalDismissMock };
-    return { alertController, loadingController, modalController };
+    const toastController = { create: mocks.toastCreateMock };
+    return { alertController, loadingController, modalController, toastController };
 });
 
 describe('notificationService tests', () => {
@@ -124,6 +126,33 @@ describe('notificationService tests', () => {
             header: header,
             message: message,
             buttons: [STRINGS[language].labels.ok]
+        });
+
+        expect(mocks.presentMock).toHaveBeenCalled();
+    });
+
+    it('shows a top success toast that auto dismisses', async () => {
+        await notificationService.showSuccessToast('Entry successfully uploaded.');
+
+        expect(mocks.toastCreateMock).toHaveBeenCalledWith({
+            message: 'Entry successfully uploaded.',
+            position: 'top',
+            color: 'success',
+            duration: 2000
+        });
+
+        expect(mocks.presentMock).toHaveBeenCalled();
+    });
+
+    it('shows a sticky top error toast with a dismiss button', async () => {
+        await notificationService.showErrorToast('Entry cannot be uploaded.');
+
+        expect(mocks.toastCreateMock).toHaveBeenCalledWith({
+            message: 'Entry cannot be uploaded.',
+            position: 'top',
+            color: 'danger',
+            duration: 0,
+            buttons: [{text: STRINGS.en.labels.dismiss, role: 'cancel'}]
         });
 
         expect(mocks.presentMock).toHaveBeenCalled();

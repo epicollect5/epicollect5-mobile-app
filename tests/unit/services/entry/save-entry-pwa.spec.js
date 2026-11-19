@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { saveEntryPWA } from '@/services/entry/save-entry-pwa';
 import { notificationService } from '@/services/notification-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
+import { errorsService } from '@/services/errors-service';
 import { useRootStore } from '@/stores/root-store';
 import { PARAMETERS } from '@/config';
 
@@ -13,7 +14,9 @@ vi.mock('@/services/notification-service', () => ({
     notificationService: {
         showProgressDialog: vi.fn().mockResolvedValue(),
         hideProgressDialog: vi.fn().mockResolvedValue(),
-        showAlert: vi.fn().mockResolvedValue()
+        showAlert: vi.fn().mockResolvedValue(),
+        showSuccessToast: vi.fn().mockResolvedValue(),
+        showErrorToast: vi.fn().mockResolvedValue()
     }
 }));
 
@@ -63,7 +66,13 @@ describe('saveEntryPWA progress dialog', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        saveEntryMock.mockResolvedValue();
+        //the response shape the upload endpoint returns on success
+        //(Response::apiSuccessCode): the toast reads the title from it
+        saveEntryMock.mockResolvedValue({
+            data: {
+                data: {code: 'ec5_237', title: 'Entry successfully uploaded.'}
+            }
+        });
         state = {
             entrySavedPWA: false,
             entryFailedPWA: false,
@@ -160,6 +169,32 @@ describe('saveEntryPWA progress dialog', () => {
         expect(state.entryFailedPWA).toBe(false);
         expect(state.showSaved).toBe(true);
         expect(quit).not.toHaveBeenCalled();
+        //the server response title is shown verbatim (the PWA is english only)
+        expect(notificationService.showSuccessToast).toHaveBeenCalledWith('Entry successfully uploaded.');
+        expect(notificationService.hideProgressDialog).toHaveBeenCalled();
+    });
+
+    it('shows the server error titles in a dismissible toast on failure', async () => {
+        entryService.entry.media = {};
+        saveEntryMock.mockRejectedValue({
+            data: {
+                errors: [
+                    {source: 'web upload', code: 'ec5_231', title: 'Sorry, this entry cannot be uploaded.'},
+                    {source: 'input_ref_1', code: 'ec5_83', title: 'Answer is required.'}
+                ]
+            }
+        });
+
+        await saveEntryPWA(state, quit);
+
+        expect(state.entrySavedPWA).toBe(false);
+        expect(state.entryFailedPWA).toBe(true);
+        //the server error titles are shown verbatim, joined for the toast,
+        //instead of the alert from handleWebError
+        expect(notificationService.showErrorToast).toHaveBeenCalledWith(
+            'Sorry, this entry cannot be uploaded.<br>Answer is required.'
+        );
+        expect(errorsService.handleWebError).not.toHaveBeenCalled();
         expect(notificationService.hideProgressDialog).toHaveBeenCalled();
     });
 });
