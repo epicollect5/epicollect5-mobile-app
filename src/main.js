@@ -96,6 +96,13 @@ export const app = createApp(App)
     //detect if we are running a PWA or not
     rootStore.isPWA = (rootStore.device.platform === PARAMETERS.PWA);
 
+    //reporting starts off: bootPWA turns it on immediately (the PWA reports
+    //errors and exceptions, never user data), while a native boot failure
+    //must not submit before the collectErrors preference is read (it lives
+    //in the settings table, so it cannot be read until the DB is open) —
+    //bootNative holds its failures and flushes them once it is known
+    rollbarService.configure({ enabled: false });
+
     //boot the platform, then mount. Only a native openDB failure aborts the
     //boot (bootNative returns false): the splash stays up instead of a dead UI
     const booted = rootStore.isPWA ? await bootPWA() : await bootNative();

@@ -43,6 +43,8 @@
             size="default"
             color="secondary"
             slot="end"
+            :aria-label="labels.update_location"
+            :title="labels.update_location"
             @click="updateLocation(true)"
         >
           <ion-icon :icon="locate"></ion-icon>
@@ -102,6 +104,8 @@
             color="secondary"
             slot="end"
             size="default"
+            :aria-label="labels.search"
+            :title="labels.search"
             @click="geocodeAddress"
         >
           <ion-icon :icon="search"></ion-icon>
@@ -171,6 +175,10 @@ export default {
     const zoom = 1;
     let map = null;
     let marker = null;
+    //set on unmount: a pending geolocation fix, geocode or init timer must not
+    //write state, the map or the progress overlay after the question is gone
+    let destroyed = false;
+    let initTimeout = null;
 
     const state = reactive({
       address: ''
@@ -218,6 +226,11 @@ export default {
           parentState.answer.answer.latitude = coords.latitude;
           parentState.answer.answer.longitude = coords.longitude;
           parentState.answer.answer.accuracy = coords.accuracy;
+
+          //the question may have unmounted while the geocode was pending
+          if (destroyed) {
+            return;
+          }
 
           updateMarker(false);
         } catch (error) {
@@ -269,23 +282,35 @@ export default {
       }
     };
 
-    //keep the three fields consistent while typing: locationValidate requires
-    //latitude, longitude and accuracy to be either all set or all empty, so a
-    //cleared location must drop its accuracy (otherwise it cannot be removed)
-    //and fully typed coordinates get the default one (no GPS fix available
-    //for manual entry)
+    //typed coordinates describe a different point than the last GPS fix, so that
+    //fix's accuracy no longer applies: manual coordinates get the default one
+    //(locationValidate requires the three fields to be either all set or all
+    //empty). Clearing both fields also drops the marker, or the stale pin stays
+    //on the map and dragging it would refill the fields the user just cleared
     function _syncAccuracyWithCoords() {
       const answer = parentState.answer.answer;
-      if (answer.latitude === '' && answer.longitude === '') {
+      const hasBothCoords = answer.latitude !== '' && answer.longitude !== '';
+      const hasNoCoords = answer.latitude === '' && answer.longitude === '';
+
+      if (hasNoCoords) {
         answer.accuracy = '';
+        if (marker && map) {
+          map.removeLayer(marker);
+          marker = null;
+        }
         return;
       }
-      if (answer.latitude !== '' && answer.longitude !== '' && answer.accuracy === '') {
+
+      if (hasBothCoords) {
         answer.accuracy = PARAMETERS.GEOLOCATION_DEFAULT_ACCURACY;
       }
     }
 
     function addMarker(showProgressDialog) {
+      //a pending fix can land after unmount, when the map is already gone
+      if (!map) {
+        return;
+      }
       if (showProgressDialog) {
         notificationService.showProgressDialog(
             STRINGS[language].labels.acquiring_position,
@@ -323,6 +348,9 @@ export default {
       if (showProgressDialog) {
         notificationService.showToast(labels.location_acquired);
         setTimeout(() => {
+          if (destroyed) {
+            return;
+          }
           notificationService.hideProgressDialog();
         }, PARAMETERS.DELAY_MEDIUM);
       }
@@ -344,6 +372,9 @@ export default {
       if (showProgressDialog) {
         notificationService.showToast(labels.location_acquired);
         setTimeout(() => {
+          if (destroyed) {
+            return;
+          }
           notificationService.hideProgressDialog();
         }, PARAMETERS.DELAY_MEDIUM);
       }
@@ -364,6 +395,12 @@ export default {
         /* geolocation is available */
         navigator.geolocation.getCurrentPosition(
             (position) => {
+              //the question may have unmounted while the fix was pending: writing
+              //the answer, the marker or the map now targets a removed map
+              if (destroyed) {
+                notificationService.hideProgressDialog();
+                return;
+              }
               // Add current location to state
               parentState.answer.answer.longitude = position.coords.longitude.toFixed(6);
               parentState.answer.answer.latitude = position.coords.latitude.toFixed(6);
@@ -445,7 +482,13 @@ export default {
       //build locate user control
       L.Control.Locate = L.Control.extend({
         onAdd() {
-          const btn = L.DomUtil.create('a', 'leaflet-control-locate-me leaflet-bar');
+          //a real button, named for assistive tech: a bare anchor has no button
+          //role and is not announced, and Enter/Space activate a button natively,
+          //so the click handler below is all it needs
+          const btn = L.DomUtil.create('button', 'leaflet-control-locate-me leaflet-bar');
+          btn.type = 'button';
+          btn.setAttribute('aria-label', labels.update_location);
+          btn.title = labels.update_location;
 
           L.DomEvent.on(btn, 'click', (ev) => {
             L.DomEvent.stopPropagation(ev);
@@ -475,7 +518,11 @@ export default {
           })
       );
 
-      setTimeout(() => {
+      initTimeout = setTimeout(() => {
+        //unmounted before the map was laid out
+        if (destroyed || !map) {
+          return;
+        }
         map.invalidateSize();
         if (parentState.answer.answer.latitude !== '' && parentState.answer.answer.longitude !== '') {
           methods.updateLocation(false);
@@ -484,8 +531,13 @@ export default {
     });
 
     onBeforeUnmount(() => {
+      destroyed = true;
+      if (initTimeout) {
+        clearTimeout(initTimeout);
+      }
       if (map) {
         map.remove();
+        map = null;
       }
     });
 

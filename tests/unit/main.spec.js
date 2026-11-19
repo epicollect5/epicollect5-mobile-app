@@ -696,10 +696,14 @@ describe('Main.js Architecture', () => {
                 project: {slug: 'my-project', ref: 'project-ref'}
             })
         );
-        //the PWA reports this startup failure: reporting is enabled as soon as
-        //the platform is known, before the startup path can submit
+        //the PWA reports this startup failure: bootPWA enables reporting as
+        //soon as it starts, before the startup path can submit (main.js
+        //configures reporting off first, so the enabling call is the one
+        //with enabled: true)
         expect(rollbarService.configure).toHaveBeenCalledWith({ enabled: true });
-        expect(rollbarService.configure.mock.invocationCallOrder[0])
+        const enabledCallIndex = rollbarService.configure.mock.calls
+            .findIndex(([params]) => params.enabled === true);
+        expect(rollbarService.configure.mock.invocationCallOrder[enabledCallIndex])
             .toBeLessThan(rollbarService.criticalWithContext.mock.invocationCallOrder[0]);
         expect(setupPWAEntry).not.toHaveBeenCalled();
         expect(notificationService.showAlert).not.toHaveBeenCalled();

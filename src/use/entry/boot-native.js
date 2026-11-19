@@ -42,12 +42,18 @@ export async function bootNative() {
 
     //open db
     let db = {};
+    //a boot failure reported before the collectErrors preference is read:
+    //held here and submitted (or dropped) as soon as it is known
+    const heldBootReports = [];
     try {
         db = await initService.openDB(rootStore.device.platform);
     } catch (error) {
         console.log(error);
-        rollbarService.criticalWithContext('boot: openDB failed', error);
+        heldBootReports.push(['boot: openDB failed', error]);
         await notificationService.showAlert(error, STRINGS[rootStore.language].labels.unknown_error);
+        //the preference lives in the DB that just failed to open, so it cannot
+        //be honoured here: the failure stays in the console rather than risk
+        //reporting for a user who opted out
         return false;
     }
     //create db tables if needed
@@ -63,7 +69,7 @@ export async function bootNative() {
         console.log('Database version migrated to ->  ', dbStore.dbVersion);
     } catch (error) {
         console.log(error);
-        rollbarService.criticalWithContext('boot: migrateDB failed', error);
+        heldBootReports.push(['boot: migrateDB failed', error]);
         await notificationService.showAlert(JSON.stringify(error));
     }
 
@@ -125,6 +131,16 @@ export async function bootNative() {
 
     //collect errors preferences
     rootStore.collectErrors = await initService.getCollectErrorsPreference();
+    //the preference is finally known: apply it, then flush the boot failures
+    //held above. An opt-out drops them; an opt-in still gets them reported,
+    //just at this point rather than the moment they happened
+    rollbarService.configure({ enabled: rootStore.collectErrors });
+    heldBootReports.forEach(([reportContext, reportError]) => {
+        if (rootStore.collectErrors) {
+            rollbarService.criticalWithContext(reportContext, reportError);
+        }
+    });
+    heldBootReports.length = 0;
 
     //in-app camera preferences (opt-in, default false): a rejected read must
     //not block boot, jwt retrieval, or app mount. false here is a deliberate
