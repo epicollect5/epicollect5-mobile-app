@@ -12,10 +12,6 @@ export async function handlePrev (state, scope) {
     // Nullify type to remove current directive
     state.questionParams.type = null;
 
-    // Remove flag that helps to handle back button when user is just dismissing barcode scanner
-    //todo: to vuex
-    //todo:window.localStorage.removeItem('is_dismissing_barcode');
-
     // Native builds: the screen is now cleared, so show the native loader
     // before the previous question mounts and blocks the WebView. It replaces
     // the CSS spinner and keeps spinning through the render.
