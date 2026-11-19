@@ -15,8 +15,6 @@ export const questionCommonService = {
         // Current input ref
         state.currentInputRef = inputRef;
         // Check if any errors
-        console.log({ 'entriesAddState.error': entriesAddState.error });
-        console.log(JSON.stringify(entriesAddState.error));
         state.error = entriesAddState.error;
         // Required
         state.required = state.inputDetails.is_required;
