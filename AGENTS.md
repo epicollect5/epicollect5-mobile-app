@@ -44,13 +44,15 @@ A behaviour-preserving refactor changes structure while preserving behaviour, co
 - Always prefix test runs with `NODE_ENV=test` (e.g. `NODE_ENV=test npx vitest run <file>`);
   without it, tests fail with misleading environment errors. The npm scripts
   (`test:unit`, `vitest`) already set it
-- In test mode, the vue plugin compiles EVERY hyphenated tag as a native custom
-  element, except an explicit whitelist in `vite.config.js` (`isCustomElement`).
-  A hyphenated component missing from that whitelist silently renders as a plain
-  tag in tests: it never mounts, and `findComponent` cannot reach it (the app
-  build is unaffected). When adding a hyphenated component that specs must mount
-  or reach via `findComponent` — e.g. wrapper-dispatched variants like
-  `audio-native` or `location-pwa` — add its tag to that whitelist
+- Specs compile hyphenated tags exactly like the app build: every hyphenated
+  tag resolves as a component; only `ion-*` is a raw custom element in tests
+  (IonicVue is not installed in jsdom). A spec mounting a globally-registered
+  component (`base-layout`, `list-item-answer`, ...) must register or stub it
+  via mount's `global.components`; an unresolved one fails immediately with
+  `Failed to resolve component: <tag>` (tests/setup-vue-warns.js). Never
+  widen `isCustomElement` in `vite.config.js` — that rendered unresolved tags
+  as silent raw elements (content skipped, invisible to `findComponent`) and
+  needed a per-component exception whitelist
 
 ## Import Paths
 
