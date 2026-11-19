@@ -61,6 +61,13 @@ export const notificationService = {
     //the caller decides when the operation is visually done
     async showWarningToast(message) {
         const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+        //a sticky toast has no auto-dismiss and no buttons: a second show must
+        //not overwrite the only handle to the one already on screen
+        try {
+            await this.dismissWarningToast();
+        } catch (error) {
+            console.log('previous upload toast dismiss failed: ' + error);
+        }
         const toast = await toastController.create({
             message: messageStr,
             position: 'top',
@@ -72,9 +79,12 @@ export const notificationService = {
         await toast.present();
     },
     async dismissWarningToast() {
-        if (warningToast) {
-            await warningToast.dismiss();
-            warningToast = null;
+        //clear the handle before awaiting: a rejected dismiss (the overlay may
+        //already be gone) must not leave a stale handle behind
+        const toast = warningToast;
+        warningToast = null;
+        if (toast) {
+            await toast.dismiss();
         }
     },
     async showAlert(message, header) {
