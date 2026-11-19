@@ -1,8 +1,16 @@
 <template>
-	<ion-card class="question-card animate__animated animate__fadeIn">
-		<ion-card-header class="question-label">
+	<ion-card
+		class="question-card"
+		:class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
+	>
+		<ion-card-header class="question-label force-no-padding">
 			<ion-card-title>
-				{{ state.question }}
+				<question-label-action
+					:disabled="false"
+					action="location"
+					:questionText="state.question"
+					@on-label-button-click="openPopover"
+				></question-label-action>
 			</ion-card-title>
 		</ion-card-header>
 		<ion-card-content
@@ -30,36 +38,36 @@
 				<ion-row class="ion-align-items-center border-bottom">
 					<ion-col>
 						<div class="ion-text-end">
-							<strong>{{ labels.latitude }}</strong>
+							<strong>{{ labels.latitude }}&nbsp;</strong>
 						</div>
 					</ion-col>
 					<ion-col>
 						<div class="ion-text-start">
-							{{ latitude }}
+							&nbsp;{{ latitude }}
 						</div>
 					</ion-col>
 				</ion-row>
 				<ion-row class="ion-align-items-center border-bottom">
 					<ion-col>
 						<div class="ion-text-end">
-							<strong>{{ labels.longitude }}</strong>
+							<strong>{{ labels.longitude }}&nbsp;</strong>
 						</div>
 					</ion-col>
 					<ion-col>
 						<div class="ion-text-start">
-							{{ longitude }}
+							&nbsp;{{ longitude }}
 						</div>
 					</ion-col>
 				</ion-row>
 				<ion-row class="ion-align-items-center border-bottom">
 					<ion-col>
 						<div class="ion-text-end">
-							<strong>{{ labels.accuracy }}</strong>
+							<strong>{{ labels.accuracy }}&nbsp;</strong>
 						</div>
 					</ion-col>
 					<ion-col>
 						<div class="ion-text-start">
-							{{ accuracy }}
+							&nbsp;{{ accuracy }}
 						</div>
 					</ion-col>
 				</ion-row>
@@ -76,31 +84,30 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
 import { locate } from 'ionicons/icons';
-import { reactive, computed } from '@vue/reactivity';
-import { inject } from 'vue';
+import { computed } from '@vue/reactivity';
 import GridQuestionWide from '@/components/GridQuestionWide';
-import { Geolocation } from '@capacitor/geolocation';
+import QuestionLabelAction from '@/components/QuestionLabelAction';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
 import { locationService } from '@/services/utilities/location-cordova-service';
-import { questionCommonService } from '@/services/entry/question-common-service';
+import { popoverLocationHandler } from '@/use/questions/popover-location-handler';
 
+/**
+ * imp: we use Cordova implementation (basically Geolocatiom API https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API)
+ * imp: since using Capacitor, it never times out when it is not able to get a lock
+ */
 export default {
 	components: {
-		GridQuestionWide
+		GridQuestionWide,
+		QuestionLabelAction
 	},
 	props: {
-		inputRef: {
-			type: String,
-			required: true
-		},
-		type: {
-			type: String,
+		parentState: {
+			type: Object,
 			required: true
 		},
 		isGroupInput: {
@@ -108,34 +115,11 @@ export default {
 			required: true
 		}
 	},
-	emits: ['question-mounted'],
-	setup(props, context) {
+	setup(props) {
 		const rootStore = useRootStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
-		const questionType = props.type.toUpperCase();
-		const entriesAddState = inject('entriesAddState');
-		const state = reactive({
-			inputDetails: {},
-			currentInputRef: null,
-			error: {
-				errors: []
-			},
-			required: false,
-			question: '',
-			pattern: null,
-			answer: {
-				answer: '',
-				was_jumped: false
-			},
-			confirmAnswer: {
-				verify: false,
-				answer: ''
-			}
-		});
-
-		//set up question
-		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		const state = props.parentState;
 
 		const computedScope = {
 			hasError: computed(() => {
@@ -180,51 +164,46 @@ export default {
 			})
 		};
 
-		onMounted(async () => {
-			console.log('Component Question is mounted, type ->', questionType);
-			//emit event to parent
-			context.emit('question-mounted');
-		});
-
 		function _getCoords() {
-			console.log('TIMEOUT SHOULD BE -> ', locationService.getWatchTimeout());
-
-			const interval_ID = setInterval(async function () {
+			const interval_ID = setInterval(function () {
 				// did we timeout/errors??
 				if (rootStore.deviceGeolocation.error) {
 					//deal with error
 					clearInterval(interval_ID);
 
 					//try a getCurrentPosition
-					try {
-						const geoResult = await Geolocation.getCurrentPosition(
-							// function(position) {
-							// 	rootStore.deviceGeolocation = {
-							// 		...rootStore.deviceGeolocation,
-							// 		...{ position: position.coords }
-							// 	};
+					navigator.geolocation.getCurrentPosition(
+						function (position) {
+							rootStore.deviceGeolocation = {
+								...rootStore.deviceGeolocation,
+								...{ position: position.coords }
+							};
+							//same answer fill as the poll loop below: the interval is
+							//already stopped when the watch errored, so this callback is
+							//the only chance to move the recovered coords into the answer
+							state.answer.answer.latitude = rootStore.deviceGeolocation.position.latitude.toFixed(6);
+							state.answer.answer.longitude =
+								rootStore.deviceGeolocation.position.longitude.toFixed(6);
+							state.answer.answer.accuracy = Math.round(
+								rootStore.deviceGeolocation.position.accuracy
+							);
+							notificationService.hideProgressDialog();
+							rootStore.isLocationModalActive = false;
+						},
+						function (error) {
+							//timeout
 
-							// 	notificationService.hideProgressDialog();
-							// },
-
-							{
-								maximumAge: 0,
-								timeout: locationService.getWatchTimeout(),
-								enableHighAccuracy: false
-							}
-						);
-
-						console.log(geoResult);
-
-						rootStore.deviceGeolocation = {
-							...rootStore.deviceGeolocation,
-							...{ position: geoResult.coords }
-						};
-					} catch (error) {
-						console.log(error);
-						notificationService.hideProgressDialog();
-						notificationService.showAlert(STRINGS[language].labels.location_fail, error.message);
-					}
+							console.log(error);
+							notificationService.hideProgressDialog();
+							rootStore.isLocationModalActive = false;
+							notificationService.showAlert(STRINGS[language].labels.location_fail, error.message);
+						},
+						{
+							maximumAge: 0,
+							timeout: locationService.getWatchTimeout(),
+							enableHighAccuracy: false
+						}
+					);
 				} else {
 					//check whether we have a value yet
 					if (rootStore.deviceGeolocation.position) {
@@ -238,8 +217,8 @@ export default {
 
 						clearInterval(interval_ID);
 						notificationService.hideProgressDialog();
+						rootStore.isLocationModalActive = false;
 					}
-					console.log('cannot get location yet');
 				}
 			}, PARAMETERS.DELAY_MEDIUM);
 		}
@@ -253,7 +232,7 @@ export default {
 
 				if (rootStore.device.platform === PARAMETERS.WEB && PARAMETERS.DEBUG) {
 					//running function until we get a position, then refresh UI
-					notificationService.showAlert('Not availble on web debug.');
+					await notificationService.showAlert('Not availble on web debug.');
 					return;
 				}
 
@@ -264,6 +243,7 @@ export default {
 							STRINGS[language].labels.acquiring_position,
 							STRINGS[language].labels.wait
 						);
+						rootStore.isLocationModalActive = true;
 						_getCoords();
 						return;
 					}
@@ -277,13 +257,14 @@ export default {
 									STRINGS[language].labels.acquiring_position,
 									STRINGS[language].labels.wait
 								);
+								rootStore.isLocationModalActive = true;
 								_getCoords();
 							} else {
 								rootStore.geolocationPermission = false;
-								notificationService.showAlert(
-									STRINGS[language].labels.location_not_available,
-									STRINGS[language].labels.error
-								);
+								await notificationService.showAlert(
+                    STRINGS[language].labels.location_not_available,
+                    STRINGS[language].labels.error
+                );
 							}
 						},
 						function (error) {
@@ -329,6 +310,11 @@ export default {
 						);
 					}
 				}
+			},
+			openPopover() {
+				popoverLocationHandler({
+					state
+				});
 			}
 		};
 
@@ -345,4 +331,4 @@ export default {
 };
 </script>
 
-<style src="@/theme/components/questions/QuestionLocationCapacitor.scss" lang="scss"></style>
+<style src="@/theme/components/platform/LocationNative.scss" lang="scss" scoped></style>

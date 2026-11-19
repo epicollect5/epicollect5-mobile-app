@@ -50,7 +50,7 @@ import { useRootStore } from '@/stores/root-store';
 import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject } from 'vue';
 import QuestionLabelPossibleAnswers from '@/components/QuestionLabelPossibleAnswers';
-import ListPossibleAnswersCheckbox from '@/components/ListPossibleAnswersCheckbox';
+import ListPossibleAnswersCheckbox from '@/components/lists/ListPossibleAnswersCheckbox.vue';
 import { utilsService } from '@/services/utilities/utils-service';
 import { questionCommonService } from '@/services/entry/question-common-service';
 export default {

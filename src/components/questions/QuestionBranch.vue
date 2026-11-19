@@ -79,173 +79,20 @@
 					</ion-col>
 				</ion-row>
 
-				<ion-row v-if="isPWA">
-					<ion-col
-						size-xs="10"
-						offset-xs="1"
-						size-sm="8"
-						offset-sm="2"
-						size-md="6"
-						offset-md="3"
-						size-lg="6"
-						offset-lg="3"
-						class="ion-align-self-center"
-					>
-						<ion-spinner
-							v-if="state.isFetching"
-							class="ion-margin"
-							name="crescent"
-						></ion-spinner>
-						<div
-							v-if="!state.isFetching && state.branchEntries.length > 0"
-							class="list-entries-branch"
-						>
-							<ion-list
-								class="animate__animated animate__fadeIn"
-								lines="none"
-								mode="md"
-							>
-								<ion-item
-									lines="full"
-									class="list-entries-item"
-									v-for="entry in state.branchEntries"
-									:key="entry.id"
-								>
-									<ion-icon
-										class="icon-primary"
-										:icon="create"
-										slot="start"
-										@click="editBranchPWA(entry.id)"
-									></ion-icon>
+				<branch-pwa
+					v-if="isPWA"
+					:parentState="state"
+					:inputRef="inputRef"
+					@load-entries-chunk="loadEntriesChunk($event)"
+				></branch-pwa>
 
-									<ion-label
-										v-if="hasPWABranchUploadError(entry.id)"
-										color="danger"
-									>
-										<ion-icon
-											class="icon-danger pwa-branch-upload-error"
-											:icon="alertCircle"
-										></ion-icon>
-										{{ entry.branch_entry.title }}
-									</ion-label>
-									<ion-label v-else>
-										{{ entry.branch_entry.title }}
-									</ion-label>
-									<ion-icon
-										class="icon-primary"
-										:icon="trash"
-										slot="end"
-										@click="removeBranchPWA(entry.id)"
-									></ion-icon>
-								</ion-item>
-							</ion-list>
-
-							<ion-infinite-scroll
-								:disabled="state.branchEntries.length <= PARAMETERS.ENTRIES_PER_PAGE"
-								v-show="state.branchEntries.length > 0"
-								@ionInfinite="loadEntriesChunk($event)"
-								threshold="100px"
-								class="ion-padding-top"
-							>
-								<ion-infinite-scroll-content
-									loading-spinner="crescent"
-									:loading-text="labels.loading"
-								>
-								</ion-infinite-scroll-content>
-							</ion-infinite-scroll>
-						</div>
-
-					</ion-col>
-				</ion-row>
-
-				<ion-row v-if="!isPWA">
-					<ion-col>
-						<ion-spinner
-							v-if="state.isFetching"
-							class="ion-margin"
-							name="crescent"
-						></ion-spinner>
-						<div
-							v-if="!state.isFetching && state.countNoFilters > 0"
-							class="list-entries-branch"
-						>
-							<ion-list
-								class="animate__animated animate__fadeIn"
-								lines="full"
-								mode="md"
-							>
-
-								<toolbar-entries-filters
-									:countWithFilters="state.countWithFilters"
-									:countNoFilters="state.countNoFilters"
-									@filters-clear="filtersClear()"
-								>
-								</toolbar-entries-filters>
-								<ion-item
-									class="list-entries-item"
-									v-for="entry in state.branchEntries"
-									:key="entry.uuid"
-									@click="viewBranch(entry.entry_uuid)"
-								>
-									<ion-grid>
-										<ion-row>
-											<ion-col>
-												<ion-label>
-													<icon-entry :entry="entry"></icon-entry>
-													{{ entry.title }}
-												</ion-label>
-											</ion-col>
-
-										</ion-row>
-										<ion-row>
-											<ion-col>
-												<small class="text-left collected-on">
-													{{ labels.collected_on + utcToLocal(entry.created_at) }}
-												</small>
-											</ion-col>
-										</ion-row>
-									</ion-grid>
-								</ion-item>
-							</ion-list>
-
-							<ion-infinite-scroll
-								:disabled="state.countNoFilters <= PARAMETERS.ENTRIES_PER_PAGE"
-								v-show="state.countWithFilters > 0"
-								@ionInfinite="loadEntriesChunk($event)"
-								threshold="100px"
-								class="ion-padding-top"
-							>
-								<ion-infinite-scroll-content
-									loading-spinner="crescent"
-									:loading-text="labels.loading"
-								>
-								</ion-infinite-scroll-content>
-							</ion-infinite-scroll>
-						</div>
-
-					</ion-col>
-				</ion-row>
-				<ion-row v-if="!isPWA && !state.isFetching && state.branchEntries.length === 0">
-					<ion-col
-						size-xs="10"
-						offset-xs="1"
-						size-sm="8"
-						offset-sm="2"
-						size-md="6"
-						offset-md="3"
-						size-lg="6"
-						offset-lg="3"
-						class="ion-align-self-center"
-					>
-						<ion-item
-							class="ion-text-center ion-margin-bottom"
-							lines="none"
-						>
-							<ion-label>{{ labels.no_entries_found }}</ion-label>
-						</ion-item>
-
-					</ion-col>
-				</ion-row>
+				<branch-native
+					v-else
+					:parentState="state"
+					:inputRef="inputRef"
+					@load-entries-chunk="loadEntriesChunk($event)"
+					@filters-clear="filtersClear()"
+				></branch-native>
 			</ion-grid>
 		</ion-card-content>
 	</ion-card>
@@ -256,18 +103,17 @@ import { onMounted } from 'vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import { trash, cloudUpload, create, add, archive, cloudy, alertCircle } from 'ionicons/icons';
+import { add, archive } from 'ionicons/icons';
 import { reactive, computed, readonly } from '@vue/reactivity';
 import { inject, watch } from 'vue';
 import { modalController } from '@ionic/vue';
 import { useRouter, useRoute } from 'vue-router';
 import { projectModel } from '@/models/project-model.js';
-import { format } from 'date-fns';
 import { fetchBranchEntries } from '@/use/entries/fetch-branch-entries';
 import ModalEntriesBranchFilter from '@/components/modals/ModalEntriesBranchFilter';
-import ToolbarEntriesFilters from '@/components/ToolbarEntriesFilters';
-import IconEntry from '@/components/IconEntry';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
+import BranchPwa from '@/components/platform/BranchPwa';
+import BranchNative from '@/components/platform/BranchNative';
 import { branchEntriesFilterService } from '@/services/entry/branch-entries-filter-service';
 import { notificationService } from '@/services/notification-service';
 import { utilsService } from '@/services/utilities/utils-service';
@@ -277,8 +123,8 @@ import { questionCommonService } from '@/services/entry/question-common-service'
 export default {
 	components: {
 		QuestionLabelAction,
-		ToolbarEntriesFilters,
-		IconEntry
+		BranchPwa,
+		BranchNative
 	},
 	props: {
 		inputRef: {
@@ -334,8 +180,6 @@ export default {
 		//set up question
 		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
-		console.log(state.answer.answer);
-
 		onMounted(async () => {
 			console.log('Component Question is mounted, type ->', questionType);
 
@@ -377,16 +221,6 @@ export default {
 			isPWA: computed(() => {
 				return rootStore.isPWA;
 			}),
-			hasPWABranchUploadError(branchUuid) {
-				//check the branch uuid only, as we can have errors
-				//in any branch question
-				//One error will flag the whole branch as invalid
-				return Object.values(rootStore.queueBranchUploadErrorsPWA).some((errors) => {
-					return errors.some((error) => {
-						return error.uuid === branchUuid;
-					});
-				});
-			},
 			pwaEntryEditWarning: computed(() => {
 				return STRINGS[language].labels.editing_branches_pwa;
 			})
@@ -411,29 +245,21 @@ export default {
 					error: {}
 				};
 
+				//keep the owner url: on the PWA the address bar stays on the
+				//hierarchy entry, so a refresh boots a fresh entry flow instead
+				//of landing on the unmatched /branch path
+				const ownerUrl = router.currentRoute.value.fullPath;
+
 				router.replace({
 					name: PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
+				}).then(() => {
+					if (rootStore.isPWA) {
+						window.history.replaceState(window.history.state, '', ownerUrl);
+					}
 				});
-			},
-			utcToLocal(utcDateString) {
-				return format(new Date(utcDateString), 'dd MMM, yyyy @ h:mma');
 			},
 			saveBranchEntry() {
 				context.emit('save-branch-entry');
-			},
-			viewBranch(entryUuid) {
-				rootStore.routeParams = {
-					projectRef,
-					formRef: entriesAddScope.entryService.entry.formRef,
-					ownerInputRef: inputRef,
-					ownerEntryUuid: entriesAddScope.entryService.entry.entryUuid,
-					entryUuid: entryUuid
-				};
-
-				//todo: push or replace?
-				router.replace({
-					name: PARAMETERS.ROUTES.ENTRIES_VIEW_BRANCH
-				});
 			},
 			async openModalEntriesBranchFilter() {
 				if (state.isFetching || state.countNoFilters === 0) {
@@ -553,66 +379,6 @@ export default {
 						ev.target.disabled = true;
 					}
 				}, PARAMETERS.DELAY_MEDIUM);
-			},
-			async removeBranchPWA(id) {
-				//ask delete confirmation
-				const confirmed = await notificationService.confirmSingle(
-					labels.are_you_sure,
-					labels.delete
-				);
-
-				if (confirmed) {
-					//remove branch from store
-					//const result = words.filter(word => word.length > 6);
-					state.branchEntries = state.branchEntries.filter((entry) => {
-						return entry.id !== id;
-					});
-
-					if (state.branchEntries.length > 0) {
-						rootStore.queueTempBranchEntriesPWA[props.inputRef] = state.branchEntries;
-					} else {
-						//remove branch key when no branch entries
-						delete rootStore.queueTempBranchEntriesPWA[props.inputRef];
-					}
-				}
-			},
-			async editBranchPWA(id) {
-				const formRef = entriesAddScope.entryService.entry.formRef;
-				const entry = state.branchEntries.find((entry) => {
-					return entry.id === id;
-				});
-				const branchEntry = {
-					entryUuid: entry.id,
-					ownerEntryUuid: entry.relationships.branch.data.owner_entry_uuid,
-					ownerInputRef: entry.relationships.branch.data.owner_input_ref,
-					isRemote: 0,
-					synced: 0,
-					canEdit: 1,
-					createdAt: entry.branch_entry.created_at,
-					title: entry.branch_entry.title,
-					formRef,
-					projectRef,
-					media: {},
-					uniqueAnswers: {},
-					syncedError: '',
-					isBranch: true,
-					answers: entry.branch_entry.answers
-				};
-				// Show loader
-				await notificationService.showProgressDialog(STRINGS[language].labels.wait);
-				//edit on PWA always start from first question
-				await branchEntryService.setUpExisting(branchEntry);
-				rootStore.routeParams = {
-					formRef,
-					inputRef: '',
-					inputIndex: 0,
-					error: state.error,
-					isBranch: true,
-					branchEntryUuid: id // -> pass this to avoid errors on ALL the branches ;)
-				};
-				router.replace({
-					name: PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
-				});
 			}
 		};
 
@@ -631,7 +397,6 @@ export default {
 			//get the first branch entries chuck for this branch question
 			fetchBranchEntries(fetchParams).then((result) => {
 				state.branchEntries = result.branchEntries;
-				console.log(JSON.stringify(state.branchEntries));
 				state.hasUnsavedBranches = result.hasUnsavedBranches;
 				state.isFetching = false;
 				// hide loader (progress dialog) with a bit of delay for UX
@@ -690,15 +455,9 @@ export default {
 			entriesAddState,
 			...computedScope,
 			...methods,
-			PARAMETERS,
 			//icons
-			trash,
-			cloudUpload,
-			create,
 			add,
-			archive,
-			cloudy,
-			alertCircle
+			archive
 		};
 	}
 };

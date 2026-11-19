@@ -3,6 +3,7 @@ import {mount} from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import {setActivePinia, createPinia} from 'pinia';
 import QuestionPhoto from '@/components/questions/QuestionPhoto.vue';
+import PhotoNative from '@/components/platform/PhotoNative.vue';
 import ModalDraw from '@/components/modals/ModalDraw.vue';
 import {useRootStore} from '@/stores/root-store';
 import {modalController} from '@ionic/vue';
@@ -10,6 +11,7 @@ import {Capacitor} from '@capacitor/core';
 import {utilsService} from '@/services/utilities/utils-service';
 import {notificationService} from '@/services/notification-service';
 import {saveBlobToTempDir} from '@/services/filesystem/save-blob-to-temp-service';
+import {photoTake} from '@/use/questions/photo-take';
 import {popoverMediaHandler} from '@/use/questions/popover-media-handler';
 import {rollbarService} from '@/services/utilities/rollbar-service';
 import {PARAMETERS} from '@/config';
@@ -85,7 +87,7 @@ vi.mock('@ionic/vue', () => ({
     }
 }));
 
-//ModalDraw is imported by QuestionPhoto; its padding library must be mocked
+//ModalDraw is imported by PhotoNative; its padding library must be mocked
 //in jsdom just like the ModalDraw spec does
 vi.mock('signature_pad', () => {
     class MockSignaturePad {
@@ -175,6 +177,12 @@ function mediaFile() {
     return useRootStore().entriesAddScope.entryService.entry.media['entry-uuid-1']['test_ref'];
 }
 
+//the popover/draw logic lives in the native variant; the wrapper only seeds
+//the shared question state and dispatches on isPWA
+function nativeVm(wrapper) {
+    return wrapper.findComponent(PhotoNative).vm;
+}
+
 describe('QuestionPhoto component', () => {
 
     it('opens the draw pad from the media popover Draw action', async () => {
@@ -185,7 +193,7 @@ describe('QuestionPhoto component', () => {
             blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
         })));
 
-        await wrapper.vm.openPopover({});
+        await nativeVm(wrapper).openPopover({});
         await flushPromises();
 
         //the popover handler gets the photo type and the action callback
@@ -214,7 +222,7 @@ describe('QuestionPhoto component', () => {
         useRootStore().device.platform = 'web';
         const wrapper = await factory();
 
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
 
         expect(modalController.create).not.toHaveBeenCalled();
         expect(useRootStore().isDrawModalActive).toBe(false);
@@ -236,7 +244,7 @@ describe('QuestionPhoto component', () => {
             }
         });
 
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
 
         //the modal was not created: user cannot accidentally replace the photo
@@ -266,7 +274,7 @@ describe('QuestionPhoto component', () => {
             }
         });
 
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
 
         expect(modalController.create).not.toHaveBeenCalled();
@@ -283,7 +291,7 @@ describe('QuestionPhoto component', () => {
             blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
         })));
 
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
 
         expect(Capacitor.convertFileSrc).toHaveBeenCalledWith('temp/drawing.jpg');
@@ -307,7 +315,7 @@ describe('QuestionPhoto component', () => {
         vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
             blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
         })));
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
 
         //draw modal dismissed with the rasterized drawing
@@ -338,12 +346,12 @@ describe('QuestionPhoto component', () => {
         })));
 
         //first open runs to the pending fetch and claims the lock
-        const first = wrapper.vm.openDrawPad();
+        const first = nativeVm(wrapper).openDrawPad();
         await flushPromises();
         expect(useRootStore().isDrawModalActive).toBe(true);
 
         //second open overlaps the pending fetch: refused, no second modal
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
         expect(modalController.create).not.toHaveBeenCalled();
 
@@ -363,7 +371,7 @@ describe('QuestionPhoto component', () => {
         vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
             blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
         })));
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
         expect(modalController.create).toHaveBeenCalledTimes(1);
 
@@ -378,7 +386,7 @@ describe('QuestionPhoto component', () => {
         //save pending: workflow still locked, reopen refused (no second
         //modal, no second save sharing the .tmp/.bak staging files)
         expect(useRootStore().isDrawModalActive).toBe(true);
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
         expect(modalController.create).toHaveBeenCalledTimes(1);
         expect(saveBlobToTempDir).toHaveBeenCalledTimes(1);
@@ -391,10 +399,49 @@ describe('QuestionPhoto component', () => {
         vi.unstubAllGlobals();
     });
 
+    it('refuses capture and popover while a draw save is in flight', async () => {
+        const wrapper = await factory();
+        mediaFile().cached = 'drawing.jpg';
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+            blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
+        })));
+        await nativeVm(wrapper).openDrawPad();
+        await flushPromises();
+
+        //dismiss with a drawing but hold the save open
+        let resolveSave;
+        saveBlobToTempDir.mockReturnValueOnce(new Promise((resolve) => {
+            resolveSave = resolve;
+        }));
+        modalDismissResolvers[0]({data: {dataURL: 'data:image/jpeg;base64,AAAA'}});
+        await flushPromises();
+        expect(useRootStore().isDrawModalActive).toBe(true);
+
+        //save pending (the pad is already dismissed): capture and popover are
+        //refused, their changes would be overwritten when the save settles
+        await nativeVm(wrapper).takePicture('camera');
+        await flushPromises();
+        expect(photoTake).not.toHaveBeenCalled();
+        await nativeVm(wrapper).openPopover();
+        await flushPromises();
+        expect(popoverMediaHandler).not.toHaveBeenCalled();
+
+        //save settles: both entry points work again
+        resolveSave('drawing.jpg');
+        await flushPromises();
+        await nativeVm(wrapper).takePicture('camera');
+        await flushPromises();
+        expect(photoTake).toHaveBeenCalledTimes(1);
+        await nativeVm(wrapper).openPopover();
+        await flushPromises();
+        expect(popoverMediaHandler).toHaveBeenCalledTimes(1);
+        vi.unstubAllGlobals();
+    });
+
     it('generates a fresh filename when the drawing has no cached or stored file', async () => {
         vi.spyOn(utilsService, 'generateMediaFilename').mockReturnValue('new-drawing.jpg');
         const wrapper = await factory();
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
 
         modalDismissResolvers[0]({data: {dataURL: 'data:image/jpeg;base64,AAAA'}});
@@ -421,7 +468,7 @@ describe('QuestionPhoto component', () => {
         vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
             blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
         })));
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
 
         saveBlobToTempDir.mockRejectedValueOnce(new Error('disk full'));
@@ -453,7 +500,7 @@ describe('QuestionPhoto component', () => {
         vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
             blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
         })));
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
 
         saveBlobToTempDir.mockRejectedValueOnce(new Error('disk full'));
@@ -479,7 +526,7 @@ describe('QuestionPhoto component', () => {
         vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
             blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
         })));
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
 
         //service signals that the original lives at old.jpg.bak now
@@ -506,7 +553,7 @@ describe('QuestionPhoto component', () => {
             blob: () => Promise.resolve(new Blob(['fake-jpeg'], {type: 'image/jpeg'}))
         })));
 
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
 
         //the stored path is resolved via persistentDir
@@ -539,7 +586,7 @@ describe('QuestionPhoto component', () => {
                 return modal;
             });
 
-            await expect(wrapper.vm.openDrawPad()).rejects.toThrow('present failed');
+            await expect(nativeVm(wrapper).openDrawPad()).rejects.toThrow('present failed');
             await flushPromises();
 
             expect(useRootStore().isDrawModalActive).toBe(false);
@@ -562,7 +609,7 @@ describe('QuestionPhoto component', () => {
         try {
             modalController.create = vi.fn(() => Promise.reject(new Error('create failed')));
 
-            await expect(wrapper.vm.openDrawPad()).rejects.toThrow('create failed');
+            await expect(nativeVm(wrapper).openDrawPad()).rejects.toThrow('create failed');
             await flushPromises();
 
             expect(useRootStore().isDrawModalActive).toBe(false);
@@ -574,7 +621,7 @@ describe('QuestionPhoto component', () => {
 
     it('ignores a dismissal without a drawing (cancel)', async () => {
         const wrapper = await factory();
-        await wrapper.vm.openDrawPad();
+        await nativeVm(wrapper).openDrawPad();
         await flushPromises();
 
         modalDismissResolvers[0]({data: null});

@@ -3,6 +3,7 @@ import {mount} from '@vue/test-utils';
 import flushPromises from 'flush-promises';
 import {setActivePinia, createPinia} from 'pinia';
 import QuestionAudio from '@/components/questions/QuestionAudio.vue';
+import AudioNative from '@/components/platform/AudioNative.vue';
 import ModalAudioPlay from '@/components/modals/ModalAudioPlay.vue';
 import ModalAudioRecord from '@/components/modals/ModalAudioRecord.vue';
 import {useRootStore} from '@/stores/root-store';
@@ -163,6 +164,12 @@ function dismissModal(index, data) {
     modalDismissResolvers[index]({data});
 }
 
+//the record/play logic lives in the native variant; the wrapper only seeds
+//the shared question state and dispatches on isPWA
+function nativeVm(wrapper) {
+    return wrapper.findComponent(AudioNative).vm;
+}
+
 describe('QuestionAudio component', () => {
 
     it('ignores a second record tap while the recorder is open', async () => {
@@ -170,19 +177,19 @@ describe('QuestionAudio component', () => {
         const wrapper = await factory();
 
         //the first tap holds the recorder open (its dismissal never resolves yet)
-        wrapper.vm.record();
+        nativeVm(wrapper).record();
         await flushPromises();
         expect(modalController.create).toHaveBeenCalledTimes(1);
         expect(useRootStore().isAudioModalActive).toBe(true);
 
         //second tap of the double-tap: inside the debounce window, dropped,
         //never a second recorder
-        wrapper.vm.record();
+        nativeVm(wrapper).record();
         await flushPromises();
         expect(modalController.create).toHaveBeenCalledTimes(1);
 
         //play shares the window: no player stacked on an in-flight recorder
-        await wrapper.vm.play();
+        await nativeVm(wrapper).play();
         expect(modalController.create).toHaveBeenCalledTimes(1);
 
         dismissModal(0, 'audio_1.mp3');
@@ -194,7 +201,7 @@ describe('QuestionAudio component', () => {
         mockAndroidPermission();
         const wrapper = await factory();
 
-        wrapper.vm.record();
+        nativeVm(wrapper).record();
         await flushPromises();
         //present() resolving is not the end of the flow: the recorder is still
         //open, so the overlay gate must still be held
@@ -217,7 +224,7 @@ describe('QuestionAudio component', () => {
         mediaFile().cached = 'old.mp3';
         wrapper.vm.state.answer.answer = 'old.mp3';
 
-        wrapper.vm.record();
+        nativeVm(wrapper).record();
         await flushPromises();
 
         dismissModal(0, undefined);
@@ -237,7 +244,7 @@ describe('QuestionAudio component', () => {
         }));
         const wrapper = await factory();
 
-        wrapper.vm.record();
+        nativeVm(wrapper).record();
         await flushPromises();
         await flushPromises();
 
@@ -252,7 +259,7 @@ describe('QuestionAudio component', () => {
         mockAndroidPermission(false);
         const wrapper = await factory();
 
-        wrapper.vm.record();
+        nativeVm(wrapper).record();
         await flushPromises();
 
         expect(modalController.create).not.toHaveBeenCalled();
@@ -267,14 +274,14 @@ describe('QuestionAudio component', () => {
     it('ignores a second play tap while the player is open', async () => {
         const wrapper = await factory();
 
-        const firstPlay = wrapper.vm.play();
+        const firstPlay = nativeVm(wrapper).play();
         await flushPromises();
         expect(modalController.create).toHaveBeenCalledTimes(1);
         expect(modalController.create).toHaveBeenCalledWith(expect.objectContaining({
             component: ModalAudioPlay
         }));
 
-        await wrapper.vm.play();
+        await nativeVm(wrapper).play();
         expect(modalController.create).toHaveBeenCalledTimes(1);
 
         dismissModal(0);
@@ -290,7 +297,7 @@ describe('QuestionAudio component', () => {
         }));
         const wrapper = await factory();
 
-        await wrapper.vm.play();
+        await nativeVm(wrapper).play();
 
         expect(useRootStore().isAudioModalActive).toBe(false);
         expect(notificationService.showAlert).toHaveBeenCalledWith('play present boom');
@@ -301,7 +308,7 @@ describe('QuestionAudio component', () => {
         mockAndroidPermission();
         const wrapper = await factory();
 
-        wrapper.vm.record();
+        nativeVm(wrapper).record();
         await flushPromises();
 
         expect(modalController.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -326,7 +333,7 @@ describe('QuestionAudio component', () => {
         });
         const wrapper = await factory();
 
-        wrapper.vm.record();
+        nativeVm(wrapper).record();
         await flushPromises();
 
         //no latch strands and the flag the EntriesAdd back handler reads
@@ -337,7 +344,7 @@ describe('QuestionAudio component', () => {
 
         //a later tap lands inside the debounce window and is dropped
         //(past the window it simply re-asks, same as the first tap)
-        wrapper.vm.record();
+        nativeVm(wrapper).record();
         expect(modalController.create).not.toHaveBeenCalled();
     });
 
@@ -345,7 +352,7 @@ describe('QuestionAudio component', () => {
         mockAndroidPermission();
         const wrapper = await factory();
 
-        const firstPlay = wrapper.vm.play();
+        const firstPlay = nativeVm(wrapper).play();
         await flushPromises();
         expect(useRootStore().isAudioModalActive).toBe(true);
 
@@ -353,7 +360,7 @@ describe('QuestionAudio component', () => {
         //overlay check still drops it, never a recorder over the player
         const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + PARAMETERS.DELAY_LONG + 1);
         try {
-            wrapper.vm.record();
+            nativeVm(wrapper).record();
             await flushPromises();
         } finally {
             nowSpy.mockRestore();
@@ -370,14 +377,14 @@ describe('QuestionAudio component', () => {
         const first = await factory();
         const second = await factory();
 
-        first.vm.record();
+        nativeVm(first).record();
         await flushPromises();
         expect(modalController.create).toHaveBeenCalledTimes(1);
 
         //past the debounce window, so only the shared pending guard can drop it
         const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + PARAMETERS.DELAY_LONG + 1);
         try {
-            second.vm.record();
+            nativeVm(second).record();
             await flushPromises();
         } finally {
             nowSpy.mockRestore();
