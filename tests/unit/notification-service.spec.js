@@ -793,14 +793,27 @@ describe('notificationService tests', () => {
             mocks.nativeLoaderShowMock.mockReturnValue(new Promise(() => {
             }));
 
-            const started = Date.now();
-            await notificationService.showNativeLoader();
-            const elapsed = Date.now() - started;
+            //fake timers: the race timeout is what unblocks navigation, and a
+            //wall-clock assertion is flaky on a loaded CI runner
+            vi.useFakeTimers();
+            try {
+                let settled = false;
+                const pending = notificationService.showNativeLoader().then(() => {
+                    settled = true;
+                });
 
-            //navigation unblocks via the timeout race, not via the show
-            expect(elapsed).toBeGreaterThanOrEqual(PARAMETERS.DELAY_LONG - 50);
-            expect(elapsed).toBeLessThan(PARAMETERS.DELAY_LONG + 500);
-            expect(mocks.nativeLoaderHideAllMock).not.toHaveBeenCalled();
+                //navigation waits for the ring until the race timeout fires
+                await vi.advanceTimersByTimeAsync(PARAMETERS.DELAY_LONG - 1);
+                expect(settled).toBe(false);
+
+                //and settles at DELAY_LONG without touching the ring
+                await vi.advanceTimersByTimeAsync(1);
+                await pending;
+                expect(settled).toBe(true);
+                expect(mocks.nativeLoaderHideAllMock).not.toHaveBeenCalled();
+            } finally {
+                vi.useRealTimers();
+            }
         });
 
         it('hides a late-arriving ring when the loader was already dismissed', async () => {
