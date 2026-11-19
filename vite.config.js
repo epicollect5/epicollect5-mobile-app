@@ -120,20 +120,20 @@ export default defineConfig(({ mode, command }) => {
             vue(isTest ? {
                 template: {
                     compilerOptions: {
-                        // tests render ion-* and other hyphenated tags as
-                        // plain custom elements (no IonicVue context needed),
-                        // matching the previous vitest.config behaviour.
-                        // real components stay real: a hyphenated custom
-                        // element with <template #content> slots would break
-                        // the SFC compiler ("Codegen node is missing")
-                        // GOTCHA: a hyphenated tag missing from this list is
-                        // invisible to findComponent in specs (it mounts as a
-                        // plain custom element, never as a component) while the
-                        // app build is unaffected. Add any hyphenated component
-                        // that specs must mount or reach via findComponent
-                        // (e.g. wrapper-dispatched variants like audio-native)
-                        isCustomElement: (tag) => tag.includes('-') &&
-                            !['base-layout', 'grid-question-narrow', 'grid-question-wide', 'sign-in-with-google-button', 'sign-in-with-apple-button', 'date-time-field', 'media-pwa', 'audio-native', 'location-pwa', 'location-native', 'video-native', 'photo-native', 'branch-pwa', 'branch-native', 'barcode-pwa', 'barcode-native', 'question-saved'].includes(tag)
+                        //tests compile templates exactly like the app build (the
+                        //app sets no isCustomElement at all): every hyphenated tag
+                        //resolves as a component, so a spec must register or stub
+                        //the global ones (base-layout etc.) it does not want real.
+                        //Only ion-* stays a raw custom element, because IonicVue
+                        //is not installed in jsdom. A new hyphenated component
+                        //therefore needs no entry here; a spec forgetting to
+                        //register one fails loudly with "Failed to resolve
+                        //component" via tests/setup-vue-warns.js. Do NOT widen
+                        //this predicate to all hyphenated tags: unresolved tags
+                        //would render as silent raw elements (content skipped,
+                        //invisible to findComponent), which is what forced the
+                        //per-component exception whitelist this replaces
+                        isCustomElement: (tag) => tag.startsWith('ion-')
                     }
                 }
             } : {}),
@@ -151,6 +151,7 @@ export default defineConfig(({ mode, command }) => {
             environment: 'jsdom', // to make "import" work
             reporters: 'verbose',
             silent: true,
+            setupFiles: ['tests/setup-vue-warns.js'],
             coverage: {
                 provider: 'v8'
             }

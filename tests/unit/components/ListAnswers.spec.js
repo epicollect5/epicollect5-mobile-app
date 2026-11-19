@@ -42,6 +42,11 @@ const factory = () => {
             areBranchAnswers: false
         },
         global: {
+            //list-item-answer is registered globally in main.js, not imported:
+            //the spec must provide a definition for it or the render throws
+            components: {
+                'list-item-answer': { render: () => null }
+            },
             stubs: {
                 'ion-list': true,
                 'ion-item': true,
