@@ -439,6 +439,10 @@ buttons
             await NativeLoader.hideAll({animated: false});
         } catch (error) {
             console.log('native loader hide failed: ' + error);
+            //same as a failed show: the bridge is present on every supported
+            //device, and a ring that will not go away is user visible, so the
+            //failure is reported rather than swallowed in the console
+            rollbarService.criticalWithContext('nativeLoader: hide failed', error);
         }
     },
     /**

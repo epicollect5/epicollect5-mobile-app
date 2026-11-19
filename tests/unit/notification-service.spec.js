@@ -746,6 +746,27 @@ describe('notificationService tests', () => {
             rafStub.mockRestore();
         });
 
+        it('reports a failed hide to Rollbar instead of only logging it', async () => {
+            const rafStub = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+                return setTimeout(() => callback(performance.now()), 0);
+            });
+            mocks.nativeLoaderHideAllMock.mockRejectedValueOnce(new Error('bridge failed'));
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {
+            });
+
+            //a ring that cannot be removed is user visible: hiding must never
+            //reject, and the bridge failure must reach Rollbar
+            await expect(notificationService.hideNativeLoader()).resolves.toBeUndefined();
+
+            expect(mocks.rollbarCriticalWithContextMock).toHaveBeenCalledWith(
+                'nativeLoader: hide failed',
+                expect.objectContaining({message: 'bridge failed'})
+            );
+
+            consoleSpy.mockRestore();
+            rafStub.mockRestore();
+        });
+
         it('resolves when the native show rejects (navigation must survive)', async () => {
             mocks.isNativePlatformMock.mockReturnValue(true);
             mocks.nativeLoaderShowMock.mockRejectedValueOnce(new Error('bridge failed'));
