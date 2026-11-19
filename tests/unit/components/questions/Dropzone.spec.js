@@ -311,6 +311,12 @@ describe('Dropzone - getMediaUrlPWA Logic', () => {
         await input.trigger('change');
         await flushPromises();
 
+        //the instance that received the replacement now shows the new bytes from
+        //temp media, and that copy IS busted on purpose: the filename is unchanged
+        //while the bytes are not. Only the stored /media url stays unbusted
+        expect(replacing.vm.state.filesource).toContain('/temp-media/');
+        expect(replacing.vm.state.filesource).toContain('timestamp=');
+
         //the upload registered a version for this filename, but /media is
         //served immutable with the server's own version (v=updated_at): a
         //client side buster would only defeat that cache
