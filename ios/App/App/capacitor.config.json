@@ -60,6 +60,7 @@
 		"DatetimePickerPlugin",
 		"CameraPreview",
 		"CapacitorZipPlugin",
+		"NativeLoaderPlugin",
 		"ThemePlugin",
 		"VideoEditorPlugin",
 		"NativeSettingsPlugin",
