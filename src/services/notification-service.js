@@ -8,6 +8,7 @@ import {PushNotifications} from '@capacitor/push-notifications';
 import {NativeSettings, AndroidSettings} from 'capacitor-native-settings';
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {databaseInsertService} from '@/services/database/database-insert-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 import {Toast} from '@capacitor/toast';
 import {Capacitor} from '@capacitor/core';
 import {useToast} from '@/use/toast';
@@ -405,6 +406,10 @@ buttons
             }
         }, (error) => {
             console.log('native loader show failed: ' + error);
+            //every supported device has the bridge, so a failed show is a defect
+            //(memory pressure, a lifecycle error, a broken plugin), not a device
+            //class: report it rather than swallowing it in the console
+            rollbarService.criticalWithContext('nativeLoader: show failed', error);
         });
         //never block navigation on a bridge call that may stay pending
         await Promise.race([

@@ -24,6 +24,7 @@ const mocks = vi.hoisted(() => {
         insertSettingMock: vi.fn().mockResolvedValue(),
         nativeLoaderShowMock: vi.fn().mockResolvedValue({id: 'loader'}),
         nativeLoaderHideAllMock: vi.fn().mockResolvedValue(),
+        rollbarCriticalWithContextMock: vi.fn(),
         isNativePlatformMock: vi.fn()
     };
 });
@@ -53,6 +54,12 @@ vi.mock('@/services/database/database-select-service', () => ({
 vi.mock('@/services/database/database-insert-service', () => ({
     databaseInsertService: {
         insertSetting: mocks.insertSettingMock
+    }
+}));
+
+vi.mock('@/services/utilities/rollbar-service', () => ({
+    rollbarService: {
+        criticalWithContext: mocks.rollbarCriticalWithContextMock
     }
 }));
 
@@ -748,6 +755,13 @@ describe('notificationService tests', () => {
             //a rejected show must never leak a rejection into handleNext/
             //handlePrev: the question still mounts behind a missing ring
             await expect(notificationService.showNativeLoader()).resolves.toBeUndefined();
+
+            //and the bridge failure must reach Rollbar: on a supported device
+            //it is a defect, not a device limitation to swallow
+            expect(mocks.rollbarCriticalWithContextMock).toHaveBeenCalledWith(
+                'nativeLoader: show failed',
+                expect.objectContaining({message: 'bridge failed'})
+            );
 
             consoleSpy.mockRestore();
         });
