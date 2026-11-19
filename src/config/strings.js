@@ -2201,7 +2201,7 @@ export const STRINGS = {
             cannot_save_file: 'Datoteke ni mogoče shraniti! Prosimo, poskusite znova.',
             file_available: 'Datoteka je na voljo.',
             uploading: 'Prenos',
-            uploading_file_wait: 'Pranos datoteke, prosimo počakajte...',
+            uploading_file_wait: 'Nalaganje datoteke, prosimo počakajte...',
             uploading_entries: 'Prenašanje vnosov',
             loading_project: 'Nalaganje projekta',
             loading_entries: 'Nalaganje vnosov',
