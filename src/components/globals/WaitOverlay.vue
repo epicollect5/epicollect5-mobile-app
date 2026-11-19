@@ -25,4 +25,4 @@ export default {
 };
 </script>
 
-<style src="@/theme/components/pwa/WaitOverlay.scss" lang="scss" scoped></style>
+<style src="@/theme/components/globals/WaitOverlay.scss" lang="scss" scoped></style>
