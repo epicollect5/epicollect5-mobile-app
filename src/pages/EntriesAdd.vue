@@ -456,13 +456,6 @@ export default {
 				const entryService = rootStore.entriesAddScope.entryService;
 				const isBranch = entryService.entry.isBranch;
 				const formRef = await setupPWAEntry(PARAMETERS.PWA_ADD_ENTRY, isBranch);
-				//get first form question input ref
-				let firstInputRef = projectModel.getInputs(formRef)[0];
-
-				if (isBranch) {
-					const ownerInputRef = entryService.entry.ownerInputRef;
-					firstInputRef = projectModel.getBranches(formRef, ownerInputRef)[0];
-				}
 
 				rootStore.routeParams = {
 					formRef,
@@ -486,14 +479,14 @@ export default {
 					errors: {}
 				};
 
-				//hack: fake answer (to re-use prev() method)
-				//no worries about question type, it is just
-				//to make other functions work
+				//hack: re-use prev() to restart from the first question. The first
+				//input's answer slot is deliberately left undefined:
+				//processJumpsPrevious treats a missing answer as not-jumped, so
+				//prev() lands on index 0, and the question setup then creates the
+				//answer typed for the question (answer-service createDefaultAnswer).
+				//Seeding a flat answer: '' here starves that lazy factory and a
+				//location question receives a string where it writes latitude
 				state.questionParams.currentInputIndex = 1;
-				entryService.entry.answers[firstInputRef] = {
-					answer: '',
-					was_jumped: false
-				};
 
 				//reset UI
 				state.entrySavedPWA = false;

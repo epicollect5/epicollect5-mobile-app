@@ -150,13 +150,16 @@ describe('EntriesAdd - add another entry (PWA)', () => {
         //re-render on the new entry's questions
         expect(wrapper.vm.state.error.errors).toEqual({});
 
-        //the flow restarts from the first question with a fake answer
+        //the flow restarts from the first question via prev()
         expect(handlePrev).toHaveBeenCalledTimes(1);
         expect(handlePrev.mock.calls[0][0]).toBe(wrapper.vm.state);
-        expect(rootStore.entriesAddScope.entryService.entry.answers['first_ref']).toEqual({
-            answer: '',
-            was_jumped: false
-        });
+        //the first input's answer slot must stay undefined: the question setup
+        //creates it typed for the question (createDefaultAnswer, e.g. the
+        //latitude/longitude object for location). A flat fake answer seeded
+        //here starves that lazy factory and a location question receives a
+        //string where it writes latitude (Cannot create property 'longitude'
+        //on string '')
+        expect(rootStore.entriesAddScope.entryService.entry.answers['first_ref']).toBeUndefined();
         expect(wrapper.vm.state.entrySavedPWA).toBe(false);
         expect(wrapper.vm.state.showSaved).toBe(false);
         expect(wrapper.vm.state.disablePrevious).toBe(true);
