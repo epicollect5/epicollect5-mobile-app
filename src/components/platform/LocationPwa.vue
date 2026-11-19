@@ -26,7 +26,7 @@
             placeholder="###.######"
             :maxlength="PWA_MAX_LATLONG_LENGTH"
             :value="parentState.answer.answer.latitude"
-            @keyup="onLatValueChange($event)"
+            @ionInput="onLatValueChange($event)"
         ></ion-input>
         <ion-input
             label="Long:"
@@ -36,7 +36,7 @@
             placeholder="###.######"
             :maxlength="PWA_MAX_LATLONG_LENGTH"
             :value="parentState.answer.answer.longitude"
-            @keyup="onLongValueChange($event)"
+            @ionInput="onLongValueChange($event)"
         ></ion-input>
         <ion-button
             class="ion-text-nowrap"
@@ -57,7 +57,7 @@
             placeholder="###.######"
             :maxlength="PWA_MAX_LATLONG_LENGTH"
             :value="parentState.answer.answer.latitude"
-            @keyup="onLatValueChange($event)"
+            @ionInput="onLatValueChange($event)"
         ></ion-input>
         <ion-input
             label="Long:"
@@ -67,7 +67,7 @@
             placeholder="###.######"
             :maxlength="PWA_MAX_LATLONG_LENGTH"
             :value="parentState.answer.answer.longitude"
-            @keyup="onLongValueChange($event)"
+            @ionInput="onLongValueChange($event)"
         ></ion-input>
         <ion-button
             class="ion-text-nowrap"
@@ -228,7 +228,6 @@ export default {
         }
       },
       updateLocation(showAlert) {
-        console.log({lat: parentState.answer.answer.latitude, long: parentState.answer.answer.longitude});
 
         //if no location is set, just provide user location
         if (parentState.answer.answer.latitude === '' && parentState.answer.answer.longitude === '') {
@@ -370,7 +369,6 @@ export default {
               parentState.answer.answer.latitude = position.coords.latitude.toFixed(6);
               parentState.answer.answer.accuracy = Math.round(position.coords.accuracy);
               notificationService.hideProgressDialog();
-              console.log(parentState.answer.answer.longitude, parentState.answer.answer.latitude, parentState.answer.answer.accuracy);
 
               //add marker to map
               updateMarker(false);
