@@ -171,8 +171,10 @@ export const initService = {
 
             // D. Perform the move (Copy first for safety)
             await Filesystem.copy({
-                from: dbName, directory: Directory.Documents,
-                to: `${targetFolder}/${dbName}`, toDirectory: Directory.Library
+                from: dbName,
+                directory: Directory.Documents,
+                to: `${targetFolder}/${dbName}`,
+                toDirectory: Directory.Library
             });
 
             // E. Verify the health of the new copy
