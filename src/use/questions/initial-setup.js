@@ -4,6 +4,7 @@ import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
 import { answerService } from '@/services/entry/answer-service';
 import { regexService } from '@/services/validation/regex-service';
+import { notificationService } from '@/services/notification-service';
 
 let regexEngineWarmed = false;
 
@@ -115,6 +116,9 @@ export async function initialSetup (state, scope) {
     state.showSave = state.questionParams.currentInputRef === null;
     if (state.showSave) {
         state.isFetching = false;
+        //the save screen replaces the question, so no question-mounted event
+        //fires: dismiss the native loader here instead
+        notificationService.hideNativeLoader();
     }
     // Set delay for showing next/previous buttons, to deal with double clicks, for example
     window.setTimeout(function () {

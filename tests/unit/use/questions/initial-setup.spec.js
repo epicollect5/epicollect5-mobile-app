@@ -2,6 +2,7 @@ import { vi } from 'vitest';
 import { PARAMETERS } from '@/config';
 import { projectModel } from '@/models/project-model';
 import { entryService } from '@/services/entry/entry-service';
+import { notificationService } from '@/services/notification-service';
 import { initialSetup } from '@/use/questions/initial-setup';
 
 vi.mock('@/models/project-model', () => ({
@@ -22,6 +23,12 @@ vi.mock('@/services/entry/branch-entry-service', () => ({
 
 vi.mock('@/services/validation/regex-service', () => ({
     regexService: { isAvailable: vi.fn().mockResolvedValue(true) }
+}));
+
+vi.mock('@/services/notification-service', () => ({
+    notificationService: {
+        hideNativeLoader: vi.fn().mockResolvedValue()
+    }
 }));
 
 const GROUP_REF = 'form1_group1';
@@ -171,6 +178,32 @@ describe('initialSetup - GROUP with stale stored answers', () => {
 
         expect(state.answers).toMatchObject(before);
         expect(state.confirmAnswer[CHILD_INTEGER].answer).toBe(40);
+    });
+});
+
+//the save screen replaces the question, so no question-mounted event fires:
+//this is the only place that can dismiss the native loader on that path
+describe('initialSetup - save screen', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        entryService.entry = { canEdit: 1 };
+    });
+
+    it('dismisses the native loader when the entry reaches the save screen', async () => {
+        projectModel.getExtraInputs.mockReturnValue(makeInputsExtra());
+        const answers = { [GROUP_REF]: makeAnswer('') };
+        const scope = setupScope({ answers, groupChildren: [CHILD_TEXT] });
+
+        const state = setupState();
+        //no current input ref: the entry is at the end -> save screen
+        state.questionParams.currentInputRef = null;
+        state.questionParams.currentInputIndex = 3;
+
+        await initialSetup(state, scope);
+
+        expect(state.showSave).toBe(true);
+        expect(state.isFetching).toBe(false);
+        expect(notificationService.hideNativeLoader).toHaveBeenCalledTimes(1);
     });
 });
 

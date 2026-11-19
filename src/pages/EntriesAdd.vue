@@ -81,7 +81,7 @@
 				</ion-item-divider>
 
 				<div
-					v-if="state.isFetching"
+					v-if="state.isFetching && !isNative"
 					class="text-center"
 				>
 					<ion-spinner
