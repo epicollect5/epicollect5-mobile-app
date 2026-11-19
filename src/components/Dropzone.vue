@@ -148,6 +148,14 @@ export default {
       state.previewLoaded = true;
     }
 
+    //key identifying the file whose preview this instance shows: the endpoint
+    //choice depends on filestate and branch edit type, so both are part of it.
+    //Compared with waitOverlayStore.pendingKey so only the instance showing an
+    //uploaded file may dismiss its upload overlay
+    function buildPreviewKey (filenameArg, filestateArg) {
+      return filestateArg + '|' + rootStore.branchEditType + '|' + props.type + '|' + filenameArg;
+    }
+
     const dropzoneOptions = {
       onDrop: async function (acceptFiles, rejectReasons) {
         console.log(acceptFiles);
@@ -204,16 +212,17 @@ export default {
                   (response) => {
                     console.log(response);
 
-                    //the upload landed: release the screen now. The media tag
-                    //cannot be the release signal: an audio or video element is
-                    //only fetched once it is visible, so its loadeddata event may
-                    //never fire at all (see rendersAsPlayer above)
-                    releaseUploadUi();
-
                     //the upload replaced the bytes behind this filename (a
                     //replacement keeps the name): bump its preview version so
                     //every mount from now on bypasses the cached copy
                     mediaPreviewVersions.set(filename, Date.now());
+
+                    //the overlay stays up until the media tag has loaded the
+                    //uploaded file: the remounted (or refreshed) instance owns
+                    //the dismissal through its load event (see dismissUploadUi)
+                    waitOverlayStore.setPendingKey(
+                        buildPreviewKey(filename, PARAMETERS.PWA_FILE_STATE.CACHED)
+                    );
 
                     //only refresh inline when no remount is coming: the answer
                     //(and the component :key) keeps the same filename, which also
@@ -263,10 +272,12 @@ export default {
 
     const methods = {
       onImageLoaded() {
+        dismissUploadUi();
         state.previewLoaded = true;
         context.emit('file-loaded', filename);
       },
       onError(error) {
+        dismissUploadUi();
         state.previewLoaded = true;
         state.loadingError = true;
         console.log(error);
@@ -276,22 +287,36 @@ export default {
         context.emit('photo-clicked', state.filesource);
       },
       onAudioLoaded() {
+        dismissUploadUi();
         state.previewLoaded = true;
         context.emit('file-loaded', filename);
       },
       onVideoLoaded() {
+        dismissUploadUi();
         console.log(filename);
         state.previewLoaded = true;
         context.emit('file-loaded', filename);
       }
     };
 
-    //the upload UI (full screen overlay + top warning toast) belongs to the
-    //upload request alone: it goes up when the file is dropped and comes down
-    //when the request settles, for every media type
+    //release the upload UI unconditionally: a failed upload has no preview
+    //load event, so nothing else can dismiss it
     function releaseUploadUi() {
       waitOverlayStore.dismiss();
       notificationService.dismissWarningToast();
+    }
+
+    //the upload UI (full screen overlay + top warning toast) goes away only
+    //when the media tag has actually loaded the file (or errored): it lives
+    //in the app-level store, so the remount hand-off cannot drop it early.
+    //While an upload is pending, only the instance showing its preview may
+    //release the shared blocker: a sibling preview finishing its own load
+    //must not dismiss another question's upload
+    function dismissUploadUi() {
+      if (waitOverlayStore.isUploading && waitOverlayStore.pendingKey !== buildPreviewKey(props.filename, props.filestate)) {
+        return;
+      }
+      releaseUploadUi();
     }
 
     function getMediaUrlPWA(filename, type, filestate) {

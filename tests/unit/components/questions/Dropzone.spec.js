@@ -473,7 +473,7 @@ describe('Dropzone upload overlay', () => {
         await flushPromises();
     };
 
-    it('releases the overlay when the upload settles, without any loadeddata', async () => {
+    it('keeps the overlay up until the loaded preview claims the dismissal', async () => {
         let resolveUpload;
         webService.uploadFilePWA.mockReturnValue(new Promise((resolve) => {
             resolveUpload = resolve;
@@ -482,7 +482,7 @@ describe('Dropzone upload overlay', () => {
         const wrapper = factory({
             type: PARAMETERS.QUESTION_TYPES.AUDIO,
             filename: 'clip.mp4',
-            filestate: PARAMETERS.PWA_FILE_STATE.STORED
+            filestate: PARAMETERS.PWA_FILE_STATE.CACHED
         });
         await wrapper.vm.$nextTick();
 
@@ -490,12 +490,63 @@ describe('Dropzone upload overlay', () => {
         //the request is in flight: the screen is blocked
         expect(waitOverlayStore.isUploading).toBe(true);
 
+        //a replacement keeps the same name, so no remount is coming: the settled
+        //request alone must NOT release the screen, or the user would see the
+        //question before its preview is loaded
         resolveUpload({data: {}});
         await flushPromises();
+        expect(waitOverlayStore.isUploading).toBe(true);
+        expect(waitOverlayStore.pendingKey).toBe(
+            PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|' + PARAMETERS.QUESTION_TYPES.AUDIO + '|clip.mp4'
+        );
 
-        //an audio element only loads once it is visible, so loadeddata cannot be
-        //the release signal: the settled request is
+        //the media tag loaded the uploaded file: only now the screen is released
+        wrapper.vm.onAudioLoaded();
         expect(waitOverlayStore.isUploading).toBe(false);
+        expect(waitOverlayStore.pendingKey).toBe(null);
+    });
+
+    it('a sibling preview load cannot dismiss another question upload', async () => {
+        const waitOverlayStore = useWaitOverlayStore();
+        const wrapper = factory({
+            type: PARAMETERS.QUESTION_TYPES.PHOTO,
+            filename: 'other.jpg',
+            filestate: PARAMETERS.PWA_FILE_STATE.CACHED
+        });
+        await wrapper.vm.$nextTick();
+
+        //an upload is pending for a different file: the instance that remounted
+        //elsewhere owns the dismissal
+        waitOverlayStore.isUploading = true;
+        waitOverlayStore.setPendingKey(
+            PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|' + PARAMETERS.QUESTION_TYPES.PHOTO + '|uploaded.jpg'
+        );
+
+        wrapper.vm.onImageLoaded();
+
+        //this instance shows a different file: its load must not release the screen
+        expect(waitOverlayStore.isUploading).toBe(true);
+        expect(waitOverlayStore.pendingKey).toBe(
+            PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|' + PARAMETERS.QUESTION_TYPES.PHOTO + '|uploaded.jpg'
+        );
+        waitOverlayStore.dismiss();
+    });
+
+    it('releases the overlay unconditionally when the upload fails', async () => {
+        webService.uploadFilePWA.mockRejectedValue({statusText: 'boom', status: 500});
+        const waitOverlayStore = useWaitOverlayStore();
+        const wrapper = factory({
+            type: PARAMETERS.QUESTION_TYPES.PHOTO,
+            filename: '',
+            filestate: PARAMETERS.PWA_FILE_STATE.STORED
+        });
+        await wrapper.vm.$nextTick();
+
+        await dropFile(wrapper, new File(['photo'], 'new.jpg', {type: 'image/jpeg'}));
+
+        //no preview load will ever claim the dismissal: the failed request is the signal
+        expect(waitOverlayStore.isUploading).toBe(false);
+        expect(waitOverlayStore.pendingKey).toBe(null);
     });
 
     it('shows an audio or video preview as soon as its url is known', () => {
