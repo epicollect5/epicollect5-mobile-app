@@ -445,7 +445,7 @@ describe('Media format query parameter', () => {
 });
 
 
-describe('Dropzone upload overlay hand-off', () => {
+describe('Dropzone upload overlay', () => {
 
     beforeEach(() => {
         setActivePinia(createPinia());
@@ -460,42 +460,90 @@ describe('Dropzone upload overlay hand-off', () => {
         rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
     });
 
-    it('dismisses the upload overlay when the pending preview loads', async () => {
-        const waitOverlayStore = useWaitOverlayStore();
-        waitOverlayStore.show();
-        //key of the file this instance shows (see buildPreviewKey in Dropzone)
-        waitOverlayStore.setPendingKey(
-            PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|photo|loaded.jpg'
-        );
+    const dropFile = async (wrapper, file) => {
+        const input = wrapper.find('input[type="file"]');
+        Object.defineProperty(input.element, 'files', {value: [file], configurable: true});
+        await input.trigger('change');
+        await flushPromises();
+    };
 
+    it('releases the overlay when the upload settles, without any loadeddata', async () => {
+        let resolveUpload;
+        webService.uploadFilePWA.mockReturnValue(new Promise((resolve) => {
+            resolveUpload = resolve;
+        }));
+        const waitOverlayStore = useWaitOverlayStore();
         const wrapper = factory({
-            filename: 'loaded.jpg',
-            filestate: PARAMETERS.PWA_FILE_STATE.CACHED
+            type: PARAMETERS.QUESTION_TYPES.AUDIO,
+            filename: 'clip.mp4',
+            filestate: PARAMETERS.PWA_FILE_STATE.STORED
         });
         await wrapper.vm.$nextTick();
+
+        await dropFile(wrapper, new File(['audio'], 'clip.mp4', {type: 'audio/mp4'}));
+        //the request is in flight: the screen is blocked
         expect(waitOverlayStore.isUploading).toBe(true);
 
-        await wrapper.find('img').trigger('load');
+        resolveUpload({data: {}});
         await flushPromises();
+
+        //an audio element only loads once it is visible, so loadeddata cannot be
+        //the release signal: the settled request is
         expect(waitOverlayStore.isUploading).toBe(false);
     });
 
-    it('leaves the overlay up while another file is pending', async () => {
-        const waitOverlayStore = useWaitOverlayStore();
-        waitOverlayStore.show();
-        waitOverlayStore.setPendingKey(
-            PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|photo|other.jpg'
-        );
+    it('shows an audio or video preview as soon as its url is known', () => {
+        const audio = factory({
+            type: PARAMETERS.QUESTION_TYPES.AUDIO,
+            filename: 'clip.mp4',
+            filestate: PARAMETERS.PWA_FILE_STATE.CACHED
+        });
+        const video = factory({
+            type: PARAMETERS.QUESTION_TYPES.VIDEO,
+            filename: 'clip.mp4',
+            filestate: PARAMETERS.PWA_FILE_STATE.CACHED
+        });
 
+        //a player is its own feedback: it is not hidden behind the spinner, which
+        //would keep it display:none and therefore out of the browser's load path
+        expect(audio.vm.state.previewLoaded).toBe(true);
+        expect(audio.find('ion-spinner').isVisible()).toBe(false);
+        expect(video.vm.state.previewLoaded).toBe(true);
+        expect(video.find('ion-spinner').isVisible()).toBe(false);
+    });
+
+    it('keeps a replaced video visible while the new bytes load', async () => {
+        webService.uploadFilePWA.mockResolvedValue({data: {}});
         const wrapper = factory({
-            filename: 'loaded.jpg',
+            type: PARAMETERS.QUESTION_TYPES.VIDEO,
+            filename: 'clip.mp4',
+            filestate: PARAMETERS.PWA_FILE_STATE.STORED
+        });
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.state.previewLoaded).toBe(true);
+
+        await dropFile(wrapper, new File(['video'], 'clip.mp4', {type: 'video/mp4'}));
+
+        //the replacement must not hide the player again: a hidden player is not
+        //fetched, so nothing would ever bring it back
+        expect(wrapper.vm.state.previewLoaded).toBe(true);
+        expect(wrapper.find('video').isVisible()).toBe(true);
+    });
+
+    it('still hides a replaced photo behind the spinner until it decodes', async () => {
+        webService.uploadFilePWA.mockResolvedValue({data: {}});
+        const wrapper = factory({
+            type: PARAMETERS.QUESTION_TYPES.PHOTO,
+            filename: 'replace.jpg',
             filestate: PARAMETERS.PWA_FILE_STATE.CACHED
         });
         await wrapper.vm.$nextTick();
-        //this instance does not own the pending upload: a sibling preview
-        //finishing its own load must not release another question's upload
+
+        await dropFile(wrapper, new File(['photo'], 'replacement.jpg', {type: 'image/jpeg'}));
+
+        //a photo does need a decode before it is shown, and @load still drives it
+        expect(wrapper.vm.state.previewLoaded).toBe(false);
         await wrapper.find('img').trigger('load');
-        await flushPromises();
-        expect(waitOverlayStore.isUploading).toBe(true);
+        expect(wrapper.vm.state.previewLoaded).toBe(true);
     });
 });

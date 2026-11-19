@@ -1,18 +1,17 @@
 import { defineStore } from 'pinia';
 
-//Shared state for the media upload wait overlay (WaitOverlay.vue): a Dropzone
-//instance is REPLACED when its uploaded file lands (the answer changes, and so
-//does the component :key), so the overlay state cannot live in the component:
-//an app-level store hands it over to the remounted instance seamlessly
+//Shared state for the media upload wait overlay (WaitOverlay.vue): the overlay
+//outlives the Dropzone instance that started the upload (the answer changes when
+//the file lands, so the component is replaced), so the flag lives at app level
+//and is owned by the upload request, never by a preview load event: an audio or
+//video element only loads once it is visible, so its loadeddata can never be the
+//signal that releases the screen
 export const useWaitOverlayStore = defineStore('WaitOverlayStore', {
     state: () => {
         return {
-            //true while an upload is in flight or the uploaded file preview has
-            //not loaded yet: the overlay blocks the whole screen
-            isUploading: false,
-            //preview key of the uploaded file (see Dropzone.vue): the remounted
-            //instance that loads this preview owns the dismissal
-            pendingKey: null
+            //true while an upload request is in flight: the overlay blocks the
+            //whole screen
+            isUploading: false
         };
     },
     getters: {},
@@ -20,14 +19,9 @@ export const useWaitOverlayStore = defineStore('WaitOverlayStore', {
     actions: {
         show() {
             this.isUploading = true;
-            this.pendingKey = null;
-        },
-        setPendingKey(key) {
-            this.pendingKey = key;
         },
         dismiss() {
             this.isUploading = false;
-            this.pendingKey = null;
         }
     }
 });
