@@ -11,6 +11,10 @@
 
 .leaflet-control-locate-me {
     @include leaflet-control-locate-me-base;
+
+    //the control is a real button now, so drop the user agent's border and padding
+    border: 0;
+    padding: 0;
 }
 
 .leaflet-control-layers-list {
