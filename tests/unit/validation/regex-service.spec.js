@@ -154,6 +154,10 @@ describe('regexService pattern cache', () => {
 
     it('classifies only the match-limit code as a match error', async () => {
         const { regexService } = await loadService();
+
+        //classification is only reachable after the engine has loaded: the lazy
+        //module supplies PCRE2MatchError at load time
+        await regexService.isAvailable();
         const { PCRE2MatchError } = await import('pcre2-wasm');
 
         expect(regexService.isMatchLimitError(new PCRE2MatchError('match limit exceeded', -47))).toBe(true);

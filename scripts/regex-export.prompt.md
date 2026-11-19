@@ -6,7 +6,7 @@ production server. It produces the input file for
 
 ---
 
-You are working on the EpiCollect5 server (Laravel, PHP, production database).
+You are working on the Epicollect5 server (Laravel, PHP, production database).
 I need a read-only export of every question regular expression in every
 published project, as a CSV file that a Node audit script will consume. The
 exact byte sequence of each pattern matters.
