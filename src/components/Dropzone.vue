@@ -140,8 +140,10 @@ export default {
 
     //audio and video previews are players, not images: they need no decode to be
     //usable, and a display:none media element is not fetched at all, so they are
-    //rendered as soon as their url is known. A photo does have to decode, and
-    //stays behind the spinner until its @load fires
+    //rendered as soon as their url is known — which also keeps the screen
+    //release independent of loadeddata (browsers may defer media data without
+    //firing an error). A photo does have to decode, and stays behind the
+    //spinner until its @load fires
     const rendersAsPlayer = state.type === PARAMETERS.QUESTION_TYPES.AUDIO
         || state.type === PARAMETERS.QUESTION_TYPES.VIDEO;
     if (rendersAsPlayer && state.filesource !== '') {
@@ -217,12 +219,31 @@ export default {
                     //every mount from now on bypasses the cached copy
                     mediaPreviewVersions.set(filename, Date.now());
 
-                    //the overlay stays up until the media tag has loaded the
-                    //uploaded file: the remounted (or refreshed) instance owns
-                    //the dismissal through its load event (see dismissUploadUi)
-                    waitOverlayStore.setPendingKey(
-                        buildPreviewKey(filename, PARAMETERS.PWA_FILE_STATE.CACHED)
-                    );
+                    if (rendersAsPlayer) {
+                        //a player renders visible immediately (see
+                        //rendersAsPlayer) and shows its own buffering state, so
+                        //the screen releases with the request: loadeddata is not
+                        //guaranteed (iOS defers media without a gesture; mobile
+                        //data saver does the same) and must never gate navigation
+                        releaseUploadUi();
+                    } else {
+                        //a photo preview is invisible until it decodes, so the
+                        //overlay stays up until the media tag has loaded the
+                        //uploaded file: an img always fires load or error, and
+                        //the remounted (or refreshed) instance owns the dismissal
+                        //(see dismissUploadUi)
+                        const previewKey = buildPreviewKey(filename, PARAMETERS.PWA_FILE_STATE.CACHED);
+                        waitOverlayStore.setPendingKey(previewKey);
+                        //safety: if no instance ever claims the pending preview
+                        //(e.g. the answer update did not remount the component),
+                        //release the screen after a grace period instead of
+                        //blocking forever
+                        setTimeout(() => {
+                            if (waitOverlayStore.isUploading && waitOverlayStore.pendingKey === previewKey) {
+                                releaseUploadUi();
+                            }
+                        }, 30000);
+                    }
 
                     //only refresh inline when no remount is coming: the answer
                     //(and the component :key) keeps the same filename, which also

@@ -473,7 +473,39 @@ describe('Dropzone upload overlay', () => {
         await flushPromises();
     };
 
-    it('keeps the overlay up until the loaded preview claims the dismissal', async () => {
+    it('keeps the overlay up until the photo preview claims the dismissal', async () => {
+        let resolveUpload;
+        webService.uploadFilePWA.mockReturnValue(new Promise((resolve) => {
+            resolveUpload = resolve;
+        }));
+        const waitOverlayStore = useWaitOverlayStore();
+        const wrapper = factory({
+            type: PARAMETERS.QUESTION_TYPES.PHOTO,
+            filename: 'photo.jpg',
+            filestate: PARAMETERS.PWA_FILE_STATE.CACHED
+        });
+        await wrapper.vm.$nextTick();
+
+        await dropFile(wrapper, new File(['photo'], 'photo.jpg', {type: 'image/jpeg'}));
+        expect(waitOverlayStore.isUploading).toBe(true);
+
+        //a replacement keeps the same name, so no remount is coming: the settled
+        //request alone must NOT release the screen, or the user would see the
+        //question before its thumbnail is loaded
+        resolveUpload({data: {}});
+        await flushPromises();
+        expect(waitOverlayStore.isUploading).toBe(true);
+        expect(waitOverlayStore.pendingKey).toBe(
+            PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|' + PARAMETERS.QUESTION_TYPES.PHOTO + '|photo.jpg'
+        );
+
+        //an img always fires load or error: the loaded tag is the release signal
+        wrapper.vm.onImageLoaded();
+        expect(waitOverlayStore.isUploading).toBe(false);
+        expect(waitOverlayStore.pendingKey).toBe(null);
+    });
+
+    it('releases the overlay when a player upload settles, without waiting for loadeddata', async () => {
         let resolveUpload;
         webService.uploadFilePWA.mockReturnValue(new Promise((resolve) => {
             resolveUpload = resolve;
@@ -487,21 +519,13 @@ describe('Dropzone upload overlay', () => {
         await wrapper.vm.$nextTick();
 
         await dropFile(wrapper, new File(['audio'], 'clip.mp4', {type: 'audio/mp4'}));
-        //the request is in flight: the screen is blocked
         expect(waitOverlayStore.isUploading).toBe(true);
 
-        //a replacement keeps the same name, so no remount is coming: the settled
-        //request alone must NOT release the screen, or the user would see the
-        //question before its preview is loaded
+        //the player renders visible and shows its own buffering state: the
+        //settled request is the release signal, loadeddata may never fire
+        //(iOS defers media without a gesture; data saver defers on mobile)
         resolveUpload({data: {}});
         await flushPromises();
-        expect(waitOverlayStore.isUploading).toBe(true);
-        expect(waitOverlayStore.pendingKey).toBe(
-            PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|' + PARAMETERS.QUESTION_TYPES.AUDIO + '|clip.mp4'
-        );
-
-        //the media tag loaded the uploaded file: only now the screen is released
-        wrapper.vm.onAudioLoaded();
         expect(waitOverlayStore.isUploading).toBe(false);
         expect(waitOverlayStore.pendingKey).toBe(null);
     });
