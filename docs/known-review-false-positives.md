@@ -49,3 +49,9 @@ Findings that look like defects but are by design. The review workflow (`docs/wo
   Reported as: "This compares serialized attributes on plain custom elements, so both SVG icon objects stringify identically and the assertion fails instead of verifying the icons differ. Compare the component's `pickerIcon` values or stub `ion-icon` and inspect its prop."
 
   Why it is by design: `ionicons/icons` exports each icon as a full SVG data-URI **string** (`typeof timeOutline === 'string'`, e.g. `data:image/svg+xml;utf8,<svg …>`), not an object. The `:icon` binding therefore renders a distinct `icon` attribute per picker type, so `expect(timeIcon.attributes('icon')).not.toBe(pickerIcon.attributes('icon'))` compares two genuinely different values — it passes today and still fails if both picker types rendered the same icon, which is exactly what it guards.
+
+- **Keyboard focus can reach Exit and Next under the upload wait overlay** (`src/components/globals/WaitOverlay.vue`, `waitOverlayStore.isUploading`)
+
+  Reported as: "the overlay blocks pointer events but not tab focus, so a keyboard user can activate Exit and confirm Quit during an upload; the branch question then unmounts and the app-wide blocker is never dismissed."
+
+  Why it is accepted as-is: the app has no keyboard-driven actions — the only key listeners in `src/` are the two `@keyup` handlers on the latitude and longitude inputs in `src/components/platform/LocationPwa.vue` — and every supported target is a touch surface, so tab focus does not reach the toolbar in normal use. Leaving an entry mid-upload is the user's own choice behind a confirm dialog (`quitEntry()` asks `are_you_sure` first), and it discards unsaved answers by design: a reload clears the overlay with everything else, exactly as abandoning any unsaved form mid-write does. Guarding `quitEntry()` was rejected because it would couple the exit path to upload state for a condition the UI cannot be driven into by touch.
