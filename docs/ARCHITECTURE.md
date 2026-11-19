@@ -875,7 +875,8 @@ Error reporting is layered:
 - UI alerts and progress dialogs via `notificationService`
 - field-level validation errors via `errorsService`
 - server validation errors mapped back to input refs
-- Rollbar initialization after router readiness
+- Rollbar initialization after router readiness; the PWA reports under the `pwa` environment gated by the stored error reporting consent (cookie-consent semantics: a static toast on first boot, nothing reported until it is answered, re-asked only when browser data is cleared), native builds follow the collect-errors preference
+- Rollbar payloads are anonymous technical data — errors and exceptions, never user data: `captureIp` is false, no person tracking, and console telemetry capture is disabled (`autoInstrument: { log: false }`) because logs can carry collected entry data (answers, GPS fixes) on dev and staging builds, where console calls are not stripped as they are in prod bundles. The structural telemetry stays (network urls and status codes, DOM selectors); the SDK has no keyboard/input capture
 
 Operational patterns:
 
