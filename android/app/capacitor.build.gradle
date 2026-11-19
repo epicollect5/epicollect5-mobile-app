@@ -32,6 +32,7 @@ dependencies {
     implementation project(':capawesome-team-capacitor-datetime-picker')
     implementation project(':capawesome-capacitor-android-edge-to-edge-support')
     implementation project(':capgo-camera-preview')
+    implementation project(':epicollect5-capacitor-native-loader')
     implementation project(':capgo-capacitor-zip')
     implementation project(':epicollect5-capacitor-plugin-theme')
     implementation project(':whiteguru-capacitor-plugin-video-editor')

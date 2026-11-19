@@ -1,12 +1,17 @@
-import { createPCRE2, FLAGS, PCRE2MatchError } from 'pcre2-wasm';
 import { rollbarService } from '@/services/utilities/rollbar-service';
+//aliased per build flavour: PWA loads the engine lazily, native bundles it statically
+import { loadPcre2Module } from '@/services/validation/pcre2-module';
 
 // Project definitions are authored and validated with PHP's PCRE engine, so the
 // app evaluates their patterns with PCRE2 instead of JavaScript's engine.
 // JavaScript cannot compile PCRE-only syntax (possessive quantifiers, recursion,
 // ...) and silently reinterprets escapes such as \A, \Q, \h and \R.
 // See docs/ARCHITECTURE.md, "Answer Regex Evaluation", for the trade-offs.
-const PATTERN_FLAGS = FLAGS.UTF; //multi-byte answers are matched as characters
+//the pcre2 module is loaded through loadPcre2Module (see getEngine): its
+//Emscripten file embeds the WASM binary and dominates the bundle. PATTERN_FLAGS
+//and PCRE2MatchError are populated at load time; every consumer below awaits
+//getEngine() before touching them
+let PATTERN_FLAGS = null; //multi-byte answers are matched as characters
 //backtracking limits: a pathological pattern must never hang the UI
 const MATCH_OPTIONS = { matchLimit: 1000000, depthLimit: 500 };
 //PCRE2_ERROR_MATCHLIMIT: the step limit. A depth-limit hit (-53) is also a
@@ -24,6 +29,9 @@ const MAX_ENGINE_ATTEMPTS = 2;
 let enginePromise = null;
 let engineAttempts = 0;
 let engineUnavailable = false;
+//set once the pcre2-wasm module has loaded; isMatchLimitError is only called
+//after test() threw, so the module is guaranteed to be there
+let PCRE2MatchError = null;
 //insertion order doubles as recency: the oldest key is evicted first
 const compiledPatterns = new Map();
 
@@ -76,7 +84,11 @@ function getEngine () {
     }
     if (!enginePromise) {
         engineAttempts++;
-        enginePromise = createPCRE2().catch((error) => {
+        enginePromise = loadPcre2Module().then(({ createPCRE2, FLAGS, PCRE2MatchError: matchError }) => {
+            PATTERN_FLAGS = FLAGS.UTF;
+            PCRE2MatchError = matchError;
+            return createPCRE2();
+        }).catch((error) => {
             //drop the rejected promise, so the next request can retry; only latch
             //once the attempts are spent
             enginePromise = null;
@@ -111,7 +123,11 @@ export const regexService = {
     // different from the engine being unavailable, and the caller must not treat
     // the two the same
     isMatchLimitError (error) {
-        return error instanceof PCRE2MatchError && error.code === MATCH_LIMIT_ERROR_CODE;
+        //PCRE2MatchError is null when the module itself failed to load: not a
+        //match-limit verdict, and instanceof null would throw
+        return PCRE2MatchError !== null
+            && error instanceof PCRE2MatchError
+            && error.code === MATCH_LIMIT_ERROR_CODE;
     },
 
     // Compile-only check, used when a project structure is imported.

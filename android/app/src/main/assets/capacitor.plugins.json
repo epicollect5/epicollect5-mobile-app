@@ -92,6 +92,10 @@
 		"classpath": "app.capgo.capacitor.camera.preview.CameraPreview"
 	},
 	{
+		"pkg": "@epicollect5/capacitor-native-loader",
+		"classpath": "app.capgo.nativeloader.NativeLoaderPlugin"
+	},
+	{
 		"pkg": "@capgo/capacitor-zip",
 		"classpath": "ee.forgr.plugin.capacitor_zip.CapacitorZipPlugin"
 	},
