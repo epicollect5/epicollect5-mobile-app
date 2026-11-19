@@ -141,6 +141,17 @@ const router = createRouter({
     },
     routes
 });
+if (VITE_MODE === PARAMETERS.PWA.toLowerCase()) {
+    //imp: PWA-only: keep the address bar on add-entry/edit-entry when entering
+    //a local branch, so a refresh boots the hierarchy instead of a 404
+    //(branch state lives in rootStore.routeParams, not the URL)
+    router.afterEach((to, from) => {
+        if (to.name !== PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD) {
+            return;
+        }
+        utilsService.rewriteBranchUrl(from.query, from.path);
+    });
+}
 //if (!import.meta.env.PROD) {
 if (VITE_MODE !== PARAMETERS.PWA.toLowerCase()) {
     router.beforeEach((to, from) => {
