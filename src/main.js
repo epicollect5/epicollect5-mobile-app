@@ -96,11 +96,11 @@ export const app = createApp(App)
     //detect if we are running a PWA or not
     rootStore.isPWA = (rootStore.device.platform === PARAMETERS.PWA);
 
-    //reporting starts off: bootPWA turns it on immediately (the PWA reports
-    //errors and exceptions, never user data), while a native boot failure
-    //must not submit before the collectErrors preference is read (it lives
-    //in the settings table, so it cannot be read until the DB is open) —
-    //bootNative holds its failures and flushes them once it is known
+    //reporting starts off: bootPWA applies the stored error reporting consent
+    //(without a stored answer the consent toast keeps it off), while a native
+    //boot failure must not submit before the collectErrors preference is read
+    //(it lives in the settings table, so it cannot be read until the DB is
+    //open) — bootNative holds its failures and flushes them once it is known
     rollbarService.configure({ enabled: false });
 
     //boot the platform, then mount. Only a native openDB failure aborts the

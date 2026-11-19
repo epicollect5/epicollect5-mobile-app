@@ -37,6 +37,16 @@ const rollbar = new Rollbar({
     captureUnhandledRejections: true,
     reportLevel: 'error',
     captureIp: false,
+    //rollbar telemetry defaults capture console output into payloads; logs
+    //routinely carry collected entry data (answers, GPS fixes) on dev and
+    //staging builds (only prod builds strip console calls), and the app
+    //reports errors and exceptions, never user data. The structural
+    //telemetry stays: network requests (urls and status codes only, the SDK
+    //captures no headers or bodies by default) and DOM selectors (v4 has no
+    //keyboard/input capture at all)
+    autoInstrument: {
+        log: false
+    },
     itemsPerMinute: 1,
     timeout: 3000,
     maxRetries: 3,
@@ -240,12 +250,11 @@ export const rollbarService = {
         rollbar.configure({ transform: transformer });
 
         if (rootStore.isPWA) {
-            //the PWA reports unconditionally: payloads are anonymous technical
-            //data (captureIp is false, no person tracking, no device fields),
-            //and there is no settings surface to hang an opt-out on
-            console.log('Rollbar reporting enabled');
+            //reporting was gated at boot by the error reporting consent (see
+            //error-reporting-consent.js): an unanswered consent toast keeps
+            //it off. Payloads are anonymous technical data (captureIp is
+            //false, no person tracking, no device fields)
             app.use(rollbar);
-            rollbar.configure({ enabled: true });
         }
         else if (!Capacitor.DEBUG && Capacitor.isNativePlatform()) {
             //if user did not opt out, inject rollbar in release builds

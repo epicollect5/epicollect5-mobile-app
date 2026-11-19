@@ -9,19 +9,20 @@ import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {initService} from '@/services/init-service';
 import {webService} from '@/services/web-service';
-import {rollbarService} from '@/services/utilities/rollbar-service';
+import {applyErrorReportingConsent} from '@/use/entry/error-reporting-consent';
 
-//PWA boot: report from the earliest moment, parse the entry URL, fetch the
+//PWA boot: apply the error reporting consent, parse the entry URL, fetch the
 //project and set up a new or existing entry. The app mounts afterwards in
 //main.js, so a failure here lands on the notFound view, never a blank page
 export async function bootPWA() {
     const rootStore = useRootStore();
 
-    //the PWA reports from the earliest moment (the startup path below can
-    //submit: a project refused for an unusable regex does). Payloads are
-    //tagged 'pwa' at build time, so even pre-mount reports are separable;
-    //init() at mount adds the Vue error handler and the fingerprinting
-    rollbarService.configure({ enabled: true });
+    //error reporting follows the stored consent (cookie-consent semantics):
+    //an existing answer gates reporting immediately; without one, nothing is
+    //reported and the consent toast asks once the app is mounted. Payloads
+    //are tagged 'pwa' at build time either way; init() at mount adds the Vue
+    //error handler and the fingerprinting
+    applyErrorReportingConsent();
 
     const searchParams = new URLSearchParams(window.location.search);
     rootStore.searchParams = searchParams;

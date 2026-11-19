@@ -406,6 +406,14 @@ export const PARAMETERS = {
     },
     PWA_MAX_LATLONG_LENGTH: 10,
     PWA_LANGUAGE_FILES_ENDPOINT: '/pwa/assets/ec5-status-codes/',
+    //error reporting consent (PWA): cookie-consent semantics — a stored answer
+    //gates reporting; without one, nothing is reported until the user answers
+    //the consent toast, and only clearing the browser data asks again
+    PWA_ERROR_REPORTING_CONSENT: {
+        STORAGE_KEY: 'epicollect5-rollbar-consent',
+        GRANTED: 'granted',
+        DECLINED: 'declined'
+    },
 
     //ESRI satellite -> https://wiki.openstreetmap.org/wiki/Esri#Legal_permissions
     ESRI_TILES_PROVIDER_SATELLITE: 'https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=' + import.meta.env.VITE_ESRI_API_TOKEN,
