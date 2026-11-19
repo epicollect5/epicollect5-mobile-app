@@ -87,6 +87,39 @@ export const notificationService = {
             await toast.dismiss();
         }
     },
+    //Top success toast for completed operations (e.g. a saved entry): unlike
+    //the warning toast it is transient, so an explicit duration is required —
+    //the toast default (0) shows until dismissed
+    async showSuccessToast(message) {
+        const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+        const toast = await toastController.create({
+            message: messageStr,
+            position: 'top',
+            color: 'success',
+            duration: 2000
+        });
+        await toast.present();
+    },
+    //Top error toast for failed operations (e.g. a rejected entry upload):
+    //sticky (the toast default duration 0) and dismissed manually via its
+    //button, the user must acknowledge what went wrong
+    async showErrorToast(message) {
+        const rootStore = useRootStore();
+        const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+        const toast = await toastController.create({
+            message: messageStr,
+            position: 'top',
+            color: 'danger',
+            duration: 0,
+            buttons: [
+                {
+                    text: STRINGS[rootStore.language].labels.dismiss,
+                    role: 'cancel'
+                }
+            ]
+        });
+        await toast.present();
+    },
     async showAlert(message, header) {
         const rootStore = useRootStore();
         const language = rootStore.language;
