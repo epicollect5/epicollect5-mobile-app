@@ -89,7 +89,7 @@ export async function bootNative() {
             await tempDirsService.clearTemporaryDir();
         } catch (error) {
             await notificationService.showAlert(
-                STRINGS[rootStore.language].label.temp_deletion_error,
+                STRINGS[rootStore.language].labels.temp_deletion_error,
                 STRINGS[rootStore.language].status_codes.ec5_103
             );
         }
