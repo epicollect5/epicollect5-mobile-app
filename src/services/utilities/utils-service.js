@@ -848,6 +848,10 @@ export const utilsService = {
         //the branch route path is always .../add-entry/branch: when the
         //navigation came from an edit, the fallback path restores the
         //edit-entry segment the boot reads to restore edit mode
+        //direct load of a /branch url: there is no in-app navigation, so the
+        //fallback is the router start location ('/'), not the hierarchy entry
+        //url. Cosmetic only: the boot never ran on that path (notFound), so
+        //the bar sits on an already-dead page
         url.pathname = fallbackPath || rewritten;
         if (!url.search && fallbackQuery && Object.keys(fallbackQuery).length > 0) {
             url.search = new URLSearchParams(fallbackQuery).toString();
