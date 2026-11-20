@@ -344,33 +344,18 @@ export default {
       const version = filestate === PARAMETERS.PWA_FILE_STATE.CACHED
           ? mediaPreviewVersions.get(filename)
           : undefined;
-      const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
-      const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
+      const apiEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
       let mediaUrl = rootStore.serverUrl;
 
-      if (PARAMETERS.DEBUG) {
-        //use debug endpoint (no csrf)
-        if (filestate === PARAMETERS.PWA_FILE_STATE.CACHED) {
-          mediaUrl += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA_DEBUG + projectSlug;
-        } else {
-          //if a branch and local, get the file from temp media
-          if (rootStore.branchEditType === PARAMETERS.PWA_BRANCH_LOCAL) {
-            mediaUrl += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA_DEBUG + projectSlug;
-          } else {
-            //if a branch but remote, the stored file is in media
-            mediaUrl += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.MEDIA_DEBUG + projectSlug;
-          }
-        }
+      if (filestate === PARAMETERS.PWA_FILE_STATE.CACHED) {
+        mediaUrl += apiEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
       } else {
-        if (filestate === PARAMETERS.PWA_FILE_STATE.CACHED) {
-          mediaUrl += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
+        //if a branch and local, get the file from temp media
+        if (rootStore.branchEditType === PARAMETERS.PWA_BRANCH_LOCAL) {
+          mediaUrl += apiEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
         } else {
-          //if a branch and local, get the file from temp media
-          if (rootStore.branchEditType === PARAMETERS.PWA_BRANCH_LOCAL) {
-            mediaUrl += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA + projectSlug;
-          } else {
-            mediaUrl += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.MEDIA + projectSlug;
-          }
+          //if a branch but remote, the stored file is in media
+          mediaUrl += apiEndpoint + PARAMETERS.API.ROUTES.PWA.MEDIA + projectSlug;
         }
       }
 

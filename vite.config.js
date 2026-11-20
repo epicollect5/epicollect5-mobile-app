@@ -17,6 +17,12 @@ export default defineConfig(({ mode, command }) => {
     const isTest = !!process.env.VITEST;
 
     return {
+        //dev server: the project.pwa blade on the laravel origin loads the dev
+        //bundle and the vite client from here while the hot file exists (see
+        //scripts/pwa-dev.js), so module requests are cross-origin and need cors
+        server: {
+            cors: true
+        },
         //PWA: relative base - the preload helper builds dependency URLs from
         //this base, and a root-absolute '/' 404s on any subpath deployment
         //(the local userdir server, production /pwa/). The hashed chunk

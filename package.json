@@ -29,7 +29,7 @@
     "coverage": "NODE_ENV=test vitest --coverage",
     "vitest-ui": "NODE_ENV=test vitest --ui",
     "vitest": "NODE_ENV=test vitest",
-    "pwa:browser": "rm -rf dist && VITE_MODE=PWA VITE_DEBUG=1 vite --port 1234 --host",
+    "pwa:browser": "node scripts/check-node-version.js && VITE_MODE=PWA VITE_DEBUG=1 node scripts/pwa-dev.js --port 1234 --host",
     "prepwa:prod": "node scripts/check-node-version.js && NODE_ENV=test vitest --run --silent",
     "pwa:prod": "node scripts/check-node-version.js && node scripts/check-rollbar-token.js && VITE_MODE=PWA VITE_DEBUG= vite build",
     "pwa:deploy": "npm run pwa:prod && node scripts/deploy-pwa.js",

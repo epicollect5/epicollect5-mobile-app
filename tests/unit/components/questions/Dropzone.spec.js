@@ -149,37 +149,6 @@ describe('Dropzone - getMediaUrlPWA Logic', () => {
         expect(url).toContain('name=photo.jpg');
     });
 
-    it('uses /api/pwa/temp-media-debug for adding a remote photo (Debug)', () => {
-        PARAMETERS.DEBUG = 1;
-        const wrapper = factory({
-            type: PARAMETERS.QUESTION_TYPES.PHOTO,
-            filename: 'photo.jpg',
-            filestate: PARAMETERS.PWA_FILE_STATE.CACHED
-        });
-
-        const url = wrapper.vm.state.filesource;
-        expect(url).toContain('https://api.epicollect.net');
-        expect(url).toContain('/api/pwa/temp-media-debug/my-project'); // Prod Media Route
-        expect(url).toContain('format=entry_original');
-        expect(url).toContain('name=photo.jpg');
-    });
-
-    it('uses /api/pwa/media-debug for editing a remote photo (Debug)', () => {
-        PARAMETERS.DEBUG = 1;
-        rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
-        const wrapper = factory({
-            type: PARAMETERS.QUESTION_TYPES.PHOTO,
-            filename: 'photo.jpg',
-            filestate: PARAMETERS.PWA_FILE_STATE.STORED
-        });
-
-        const url = wrapper.vm.state.filesource;
-        expect(url).toContain('https://api.epicollect.net');
-        expect(url).toContain('/api/pwa/media-debug/my-project'); // Prod Media Route
-        expect(url).toContain('format=entry_original');
-        expect(url).toContain('name=photo.jpg');
-    });
-
     it('uses /api/internal/temp-media for adding a remote photo (Production)', () => {
         PARAMETERS.DEBUG = 0;
         const wrapper = factory({
@@ -210,34 +179,6 @@ describe('Dropzone - getMediaUrlPWA Logic', () => {
         expect(url).toContain('/api/internal/media/my-project'); // Prod Media Route
         expect(url).toContain('format=entry_original');
         expect(url).toContain('name=photo.jpg');
-    });
-
-    it('uses api/pwa/temp-media-debug when editing a local branch (Debug)', () => {
-        PARAMETERS.DEBUG = 1;
-        rootStore.branchEditType = PARAMETERS.PWA_BRANCH_LOCAL;
-        const wrapper = factory({
-            type: PARAMETERS.QUESTION_TYPES.AUDIO,
-            filename: 'audio.mp4',
-            filestate: PARAMETERS.PWA_FILE_STATE.STORED
-        });
-
-        const url = wrapper.vm.state.filesource;
-        expect(url).toContain('/api/pwa/temp-media-debug/');
-        expect(url).toContain('format=audio');
-    });
-
-    it('uses api/pwa/media-debug when editing a remote branch (Debug)', () => {
-        PARAMETERS.DEBUG = 1;
-        rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
-        const wrapper = factory({
-            type: PARAMETERS.QUESTION_TYPES.AUDIO,
-            filename: 'audio.mp4',
-            filestate: PARAMETERS.PWA_FILE_STATE.STORED
-        });
-
-        const url = wrapper.vm.state.filesource;
-        expect(url).toContain('/api/pwa/media-debug/');
-        expect(url).toContain('format=audio');
     });
 
     it('uses api/internal/temp-media when editing a local branch (Production)', () => {
@@ -411,39 +352,6 @@ describe('Media format query parameter', () => {
             });
             const url = wrapper.vm.state.filesource;
             expect(url).toContain('/api/internal/media/my-project');
-            expect(url).toContain(`format=${expectedFormat}`);
-            expect(url).toContain(`name=${filename}`);
-        }
-    );
-
-    it.each(formatCases)(
-        'uses correct format param for $label in Debug (CACHED)',
-        ({ type, filename, expectedFormat }) => {
-            PARAMETERS.DEBUG = 1;
-            const wrapper = factory({
-                type,
-                filename,
-                filestate: PARAMETERS.PWA_FILE_STATE.CACHED
-            });
-            const url = wrapper.vm.state.filesource;
-            expect(url).toContain('/api/pwa/temp-media-debug/my-project');
-            expect(url).toContain(`format=${expectedFormat}`);
-            expect(url).toContain(`name=${filename}`);
-        }
-    );
-
-    it.each(formatCases)(
-        'uses correct format param for $label in Debug (STORED)',
-        ({ type, filename, expectedFormat }) => {
-            PARAMETERS.DEBUG = 1;
-            rootStore.branchEditType = PARAMETERS.PWA_BRANCH_REMOTE;
-            const wrapper = factory({
-                type,
-                filename,
-                filestate: PARAMETERS.PWA_FILE_STATE.STORED
-            });
-            const url = wrapper.vm.state.filesource;
-            expect(url).toContain('/api/pwa/media-debug/my-project');
             expect(url).toContain(`format=${expectedFormat}`);
             expect(url).toContain(`name=${filename}`);
         }

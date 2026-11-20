@@ -100,28 +100,17 @@ export const PARAMETERS = {
             ACCOUNT_DELETION: '/profile/account-deletion-request',
             PWA: {
                 ROOT: '/api/internal',
-                ROOT_DEBUG: '/api/pwa',
                 UPLOAD: '/web-upload/', //same as bulk upload from dataviewer
-                UPLOAD_DEBUG: '/upload-debug/',//for debugging
                 PROJECT: '/project/',
-                PROJECT_DEBUG: '/project-debug/',
                 ENTRIES: '/entries/',
-                ENTRIES_DEBUG: '/entries-debug/',
                 MEDIA: '/media/',
-                MEDIA_DEBUG: '/media-debug/',
                 UPLOAD_FILE: '/web-upload-file/',
-                UPLOAD_FILE_DEBUG: '/upload-file-debug/',//for debugging
                 TEMP_MEDIA: '/temp-media/',
-                TEMP_MEDIA_DEBUG: '/temp-media-debug/',
                 TEMP_MEDIA_DELETE: '/temp-media-delete/',
-                TEMP_MEDIA_DELETE_DEBUG: '/temp-media-delete-debug/',
                 UNIQUE_ANSWER: '/unique-answer/',
-                UNIQUE_ANSWER_DEBUG: '/unique-answer-debug/',//for debugging
                 DATA_VIEWER: '/data',
                 OPENCAGE: '/proxies/opencage/',
-                OPENCAGE_DEBUG: '/proxies/opencage-debug/',
-                ANSWERS: '/answers/',
-                ANSWERS_DEBUG: '/answers-debug/'
+                ANSWERS: '/answers/'
             }
         },
         PARAMS: {

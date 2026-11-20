@@ -191,7 +191,6 @@ describe('Main.js Architecture', () => {
 
         // 2. Fix: Ensure ENV variables are set BEFORE import
         vi.stubEnv('PROD', false);
-        vi.stubEnv('VITE_PWA_DEVELOPMENT_SERVER', 'https://dev.server.com/');
 
         delete window.location;
         window.location = {

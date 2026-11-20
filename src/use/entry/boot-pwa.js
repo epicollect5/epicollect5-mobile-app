@@ -39,12 +39,11 @@ export async function bootPWA() {
     }
 
     //start PWA by getting the server URL for vue router and internal API requests
-    if (import.meta.env.PROD) {
-        const url = new URL(window.location.href);
-        rootStore.serverUrl = url.origin + utilsService.getBasepath();
-    } else {
-        rootStore.serverUrl = utilsService.stripTrailingSlash(import.meta.env.VITE_PWA_DEVELOPMENT_SERVER);
-    }
+    //always same-origin: production and the dev bundle (loaded into the laravel
+    //page via the blade hot-file support) are both served by laravel, so the
+    //current URL minus the entry segment is the API base in both cases
+    const url = new URL(window.location.href);
+    rootStore.serverUrl = url.origin + utilsService.getBasepath();
     console.log('Server URL -> ', rootStore.serverUrl);
 
     //set en as language (PWA can get translated by browser tools)

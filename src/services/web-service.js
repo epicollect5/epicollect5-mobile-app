@@ -145,16 +145,12 @@ export const webService = {
 
         return new Promise((resolve, reject) => {
 
-            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
-            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
-            let postURL = self.getServerUrl();
+            let postURL = self.getServerUrl() + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.UPLOAD + slug;
 
+            //xdebug session param for php breakpoints when debugging
             if (PARAMETERS.DEBUG) {
-                //use debug endpoint (no csrf), also add xdebug session
-                postURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_DEBUG + slug + '?XDEBUG_SESSION_START=phpstorm';
+                postURL += '?XDEBUG_SESSION_START=phpstorm';
                 console.log('post data', JSON.stringify(payload));
-            } else {
-                postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD + slug;
             }
 
             axios({
@@ -176,16 +172,7 @@ export const webService = {
 
         return new Promise((resolve, reject) => {
 
-            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
-            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
-            let getURL = self.getServerUrl();
-
-            if (PARAMETERS.DEBUG) {
-                //use debug endpoint (no csrf)
-                getURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.ENTRIES_DEBUG + slug;
-            } else {
-                getURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.ENTRIES + slug;
-            }
+            let getURL = self.getServerUrl() + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.ENTRIES + slug;
 
             const query = new URLSearchParams({
                 form_ref: formRef ?? '',
@@ -218,16 +205,7 @@ export const webService = {
 
         return new Promise((resolve, reject) => {
 
-            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
-            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
-            let getURL = self.getServerUrl();
-
-            if (PARAMETERS.DEBUG) {
-                //use debug endpoint (no csrf)
-                getURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.ANSWERS_DEBUG + slug;
-            } else {
-                getURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.ANSWERS + slug;
-            }
+            let getURL = self.getServerUrl() + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.ANSWERS + slug;
 
             getURL += '?form_ref=' + formRef;
             getURL += '&input_ref=' + inputRef;
@@ -256,16 +234,10 @@ export const webService = {
 
         return new Promise((resolve, reject) => {
 
-            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
-            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
-            let postURL = self.getServerUrl();
+            const postURL = self.getServerUrl() + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.UPLOAD_FILE + slug;
 
             if (PARAMETERS.DEBUG) {
-                //use debug endpoint (no csrf)
-                postURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_FILE_DEBUG + slug;
                 console.log('post data', JSON.stringify(formData));
-            } else {
-                postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.UPLOAD_FILE + slug;
             }
 
             //todo: check -> data: formData
@@ -295,16 +267,9 @@ export const webService = {
                 }
             };
 
-            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
-            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
-            let postURL = projectModel.getServerUrl();
+            const postURL = projectModel.getServerUrl() + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA_DELETE + projectSlug;
             if (PARAMETERS.DEBUG) {
-                //use debug endpoint (no csrf)
-                postURL +=
-                    apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA_DELETE_DEBUG + projectSlug;
                 console.log('post data', JSON.stringify(payload));
-            } else {
-                postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.TEMP_MEDIA_DELETE + projectSlug;
             }
 
             //post request to remove temp file from server
@@ -330,15 +295,9 @@ export const webService = {
 
         return new Promise((resolve, reject) => {
 
-            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
-            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
-            let postURL = self.getServerUrl();
+            const postURL = self.getServerUrl() + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.UNIQUE_ANSWER + slug;
             if (PARAMETERS.DEBUG) {
-                //use debug endpoint (no csrf)
-                postURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.UNIQUE_ANSWER_DEBUG + slug;
                 console.log('post data', JSON.stringify(data));
-            } else {
-                postURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.UNIQUE_ANSWER + slug;
             }
             axios({
                 method: 'POST',
@@ -380,17 +339,13 @@ export const webService = {
 
         return new Promise((resolve, reject) => {
 
-            const apiProdEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT;
-            const apiDebugEndpoint = PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG;
-            let getURL = self.getServerUrl();
-
             const encodedAddress = encodeURIComponent(address);
 
+            let getURL = self.getServerUrl() + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.OPENCAGE + encodedAddress;
+
+            //xdebug session param for php breakpoints when debugging
             if (PARAMETERS.DEBUG) {
-                //use debug endpoint (no csrf)
-                getURL += apiDebugEndpoint + PARAMETERS.API.ROUTES.PWA.OPENCAGE_DEBUG + encodedAddress + '?XDEBUG_SESSION_START=phpstorm';
-            } else {
-                getURL += apiProdEndpoint + PARAMETERS.API.ROUTES.PWA.OPENCAGE + encodedAddress;
+                getURL += '?XDEBUG_SESSION_START=phpstorm';
             }
 
             axios({

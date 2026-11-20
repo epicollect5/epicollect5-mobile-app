@@ -52,8 +52,6 @@ Create a `.env.local` file based on `.env-example.local`:
   - Set to empty string `""` to disable (production builds)
   - Note: Environment variables are cast to strings, so use `1` or empty value
 
-- **`VITE_PWA_DEVELOPMENT_SERVER`** - Local development server URL for PWA debugging (e.g., `http://localhost/`)
-
 - **`VITE_BYPASS_UNIQUENESS`** - Bypass uniqueness validation checks for testing
   - Set to `1` to bypass
   - Set to empty string for production
@@ -97,18 +95,27 @@ Create a `.env.local` file based on `.env-example.local`:
 
 ### PWA (Progressive Web App)
 
-- **`npm run pwa:browser`** - Run PWA locally in development mode
+- **`npm run pwa:browser`** - Run the PWA with hot reload for debugging
   - Sets `VITE_MODE=PWA` and `VITE_DEBUG=1`
-  - Runs on `http://localhost:1234`
-  - Use format: `http://localhost:1234/{project-slug}/add-entry` to add an entry
+  - Starts the vite dev server on `http://localhost:1234` and writes the hot
+    file into the deployed PWA location (`VITE_DEPLOY_PWA`, the server repo
+    `public/pwa/` directory)
+  - Open the real Laravel page while logged in: `http://localhost/~user/epicollect5-server/public/project/{project-slug}/add-entry`
+    - the page loads the dev bundle from the dev server (hot reload on save)
+    - same origin as production: session, CSRF and the `/api/internal` endpoints
+      behave exactly like the deployed app, private projects included
+  - Stop the dev server (Ctrl-C) to remove the hot file: the page falls back
+    to the built bundle. A `pwa:deploy` run also wipes it.
 
 - **`npm run pwa:prod`** - Build PWA for production
   - Sets `VITE_MODE=PWA`
   - Disables debug mode and uniqueness bypass
   - Runs tests before building (`prepwa:prod`)
-  - Generates bundle analysis report
 
-- **`npm run pwa:debug`** - Build PWA with debug features enabled
+- **`npm run pwa:deploy`** - Build for production and copy into the server
+  repo location (`VITE_DEPLOY_PWA`)
+
+- **`npm run pwa:debug`** - Build PWA unminified (debug features in builds only)
 
 ### Testing
 
