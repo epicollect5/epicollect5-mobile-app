@@ -1,8 +1,22 @@
 import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest';
 import {setActivePinia, createPinia} from 'pinia';
-import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
 import {rollbarService} from '@/services/utilities/rollbar-service';
+
+//Mock the config before importing the module under test
+vi.mock('@/config', async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        PARAMETERS: {
+            ...actual.PARAMETERS,
+            ROLLBAR_CONSENT_PWA: '1', // Default to enabled for existing tests
+            PWA_ERROR_REPORTING_CONSENT: actual.PARAMETERS.PWA_ERROR_REPORTING_CONSENT
+        }
+    };
+});
+
+import {PARAMETERS} from '@/config';
 import {
     applyErrorReportingConsent,
     answerErrorReportingConsent
