@@ -34,20 +34,16 @@ export const webService = {
             });
         });
     },
-    //session auth (private projects only within laravel, checking cookie)
+    //public projects need no auth (ProjectPermissions middleware); private ones
+    //rely on the Laravel session cookie, which only flows when the app is
+    //served by Laravel itself (same-origin), as the editor always is
     getProjectPWA(slug) {
 
         const rootStore = useRootStore();
 
         return new Promise((resolve, reject) => {
 
-            let url;
-            if (import.meta.env.PROD) {
-                url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
-            } else {
-                //in development mode use open endpoint
-                url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT_DEBUG + PARAMETERS.API.ROUTES.PWA.PROJECT_DEBUG + slug;
-            }
+            const url = rootStore.serverUrl + PARAMETERS.API.ROUTES.PWA.ROOT + PARAMETERS.API.ROUTES.PWA.PROJECT + slug;
 
             axios({
                 method: 'GET',

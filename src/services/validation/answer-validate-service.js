@@ -64,36 +64,34 @@ export const answerValidateService = {
         const confirmAnswer = params.confirmAnswer?.answer;
 
         return new Promise((resolve, reject) => {
-            self.isUnique(entry, params.input_details, answer).then(async function (response) {
 
-                self.inputRef = params.input_details.ref;
+            self.inputRef = params.input_details.ref;
 
-                if (!response) {
-                    // Assign error for non-uniqueness
-                    self.errors[self.inputRef] = ['ec5_22'];
-                    reject();
-                    return;
-                }
+            // Local checks run first, so the uniqueness check, which performs
+            // a server request on PWA, is only reached when the answer is valid
+            // locally. Uniqueness is always the last check, consistent with native
 
-                // If we have a confirmation field, check
-                if (params.input_details.verify) {
-                    if (answer !== null && confirmAnswer !== null) {
-                        if (!commonValidate.checkConfirmed(params.input_details, answer, confirmAnswer)) {
-                            // Assign errors from the answer validator helper
-                            self.errors = commonValidate.getErrors();
-                            reject();
-                            return;
-                        }
+            // If we have a confirmation field, check
+            if (params.input_details.verify) {
+                if (answer !== null && confirmAnswer !== null) {
+                    if (!commonValidate.checkConfirmed(params.input_details, answer, confirmAnswer)) {
+                        // Assign errors from the answer validator helper
+                        self.errors = commonValidate.getErrors();
+                        reject();
+                        return;
                     }
                 }
+            }
 
-                // If we have a required field, check
-                if (!commonValidate.checkRequired(params.input_details, answer)) {
-                    // Assign errors from the answer validator helper
-                    self.errors = commonValidate.getErrors();
-                    reject();
-                    return;
-                }
+            // If we have a required field, check
+            if (!commonValidate.checkRequired(params.input_details, answer)) {
+                // Assign errors from the answer validator helper
+                self.errors = commonValidate.getErrors();
+                reject();
+                return;
+            }
+
+            const runChecks = async function () {
 
                 // If we have a regex field, check
                 if (answer !== '' && answer !== null && typeof answer !== 'undefined') {
@@ -113,12 +111,20 @@ export const answerValidateService = {
                     return;
                 }
 
-                resolve();
+                // Check uniqueness last: on PWA it performs a server request
+                const response = await self.isUnique(entry, params.input_details, answer);
+                if (!response) {
+                    // Assign error for non-uniqueness
+                    self.errors[self.inputRef] = ['ec5_22'];
+                    reject();
+                    return;
+                }
 
-            }, function (error) {
-                // If we hit here, probably had db access issues
-                reject(error);
-            }).catch(reject);
+                resolve();
+            };
+
+            // If we hit here, probably had db access issues
+            runChecks().catch(reject);
         });
 
     },
@@ -143,6 +149,7 @@ export const answerValidateService = {
      */
     isUnique (entry, inputDetails, answer) {
 
+        const self = this;
         const rootStore = useRootStore();
         let checkUnique = true;
 
@@ -216,9 +223,16 @@ export const answerValidateService = {
                                     resolve(false);
                                 }
                             }, (error) => {
+                                const errorCode = error.data?.errors[0]?.code;
                                 //ec5_22 answer NOT unique
-                                if (error.data?.errors[0]?.code === 'ec5_22') {
+                                if (errorCode === 'ec5_22') {
                                     resolve(false);
+                                }
+                                else if (errorCode === 'ec5_202') {
+                                    //project locked: the server cannot validate the answer,
+                                    //surface the locked message on the question, not an unknown error
+                                    self.errors[inputDetails.ref] = ['ec5_202'];
+                                    reject();
                                 }
                                 else {
                                     console.log(error);
