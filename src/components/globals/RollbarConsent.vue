@@ -3,15 +3,19 @@
 </template>
 
 <script>
-import {onMounted} from 'vue';
+import {onMounted, computed} from 'vue';
 import {toastController} from '@ionic/vue';
 import {STRINGS} from '@/config/strings';
 import {useRootStore} from '@/stores/root-store';
+import {PARAMETERS} from '@/config';
 import {answerErrorReportingConsent} from '@/use/entry/error-reporting-consent';
 
 //the consent toast (PWA): static, no auto-dismiss, no swipe — only yes|no
 //hide it; the stored answer then gates reporting from the next boot on
 //and immediately after the answer (see error-reporting-consent.js)
+//
+//If VITE_ROLLBAR_CONSENT_PWA is not set or empty, the toast is never shown.
+//If set to 1, the toast is shown based on showErrorReportingConsentPWA.
 export default {
   name: 'RollbarConsent',
   setup() {
@@ -19,12 +23,17 @@ export default {
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
 
+    const consentFlagEnabled = computed(() => {
+        return PARAMETERS.ROLLBAR_CONSENT_PWA === '1';
+    });
+
     onMounted(async () => {
-      if (!rootStore.showErrorReportingConsentPWA) {
+      //Skip if consent flag is not enabled
+      if (!consentFlagEnabled.value || !rootStore.showErrorReportingConsentPWA) {
         return;
       }
       const toast = await toastController.create({
-        message: labels.error_reporting_consent,
+        message: labels.help_us_improve + '. ' + labels.collect_errors + '?',
         position: 'bottom',
         swipeGesture: false,
         //md styles non-cancel buttons with the primary color, unreadable on

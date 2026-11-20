@@ -26,6 +26,7 @@ export const PARAMETERS = {
     DEBUG: import.meta.env.VITE_DEBUG,
     IS_LOCALHOST: import.meta.env.PROD ? 0 : 1, //for debugging outside of Laravel(production), it is set to 1
     BYPASS_UNIQUENESS: import.meta.env.VITE_BYPASS_UNIQUENESS,
+    ROLLBAR_CONSENT_PWA: import.meta.env.VITE_ROLLBAR_CONSENT_PWA,
     // url production
     DEFAULT_SERVER_URL: 'https://five.epicollect.net',
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',

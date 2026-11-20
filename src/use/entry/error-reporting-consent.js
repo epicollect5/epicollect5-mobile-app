@@ -8,8 +8,24 @@ import {rollbarService} from '@/services/utilities/rollbar-service';
 //database); without a stored answer nothing is reported and the consent
 //toast asks once the app is mounted. Only yes|no hide it: to be asked
 //again, the browser data must be cleared
+//
+//If VITE_ROLLBAR_CONSENT_PWA is not set or empty, Rollbar reporting is
+//always enabled by default and the consent toast is not shown. If set to
+//1, the consent flow is used.
 export function applyErrorReportingConsent() {
     const rootStore = useRootStore();
+    
+    //Check if the consent flag is enabled
+    const consentFlagEnabled = PARAMETERS.ROLLBAR_CONSENT_PWA === '1';
+    
+    if (!consentFlagEnabled) {
+        //Flag not set or empty: enable Rollbar by default, no consent toast
+        rollbarService.configure({enabled: true});
+        rootStore.showErrorReportingConsentPWA = false;
+        return;
+    }
+    
+    //Consent flow is enabled: check stored consent
     const consent = readStoredConsent();
     if (consent === PARAMETERS.PWA_ERROR_REPORTING_CONSENT.GRANTED) {
         rollbarService.configure({enabled: true});
