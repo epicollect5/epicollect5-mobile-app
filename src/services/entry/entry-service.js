@@ -344,7 +344,7 @@ export const entryService = {
                         reject({ data: { errors: branchUploadErrors } });
                     }
                     else {
-                        resolve();
+                        resolve(response);
                         rootStore.queueTempBranchEntriesPWA = {};
                     }
                 }
