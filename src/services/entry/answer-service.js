@@ -319,6 +319,14 @@ export const answerService = {
             parseAnswerForViewing = this.parseAnswerForViewing;
         }
 
+        // The project model singleton can be destroyed while an entry is still
+        // open (leaving the entries page), so the entry's form is no longer in
+        // project_extra.forms and the caller passes no inputs: no titles rather
+        // than failing the save, which then titles the entry with its uuid
+        if (!Array.isArray(inputs)) {
+            return [];
+        }
+
         const titles = [];
         let answer;
         let groupInputRef;
