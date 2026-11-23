@@ -15,13 +15,21 @@ export default defineConfig(({ mode, command }) => {
     const isDebug = (process.env.VITE_DEBUG ?? env.VITE_DEBUG) === '1';
     const isBuild = command === 'build';
     const isTest = !!process.env.VITEST;
+    //pwa:browser dev: the Laravel page (port 80) loads the bundle from this
+    //server, so root-relative asset URLs (/src/...) in injected CSS and JS
+    //image imports would resolve against the page origin and 404. pwa-dev.js
+    //sets VITE_DEV_ORIGIN to the dev server URL, and Vite prefixes generated
+    //dev asset URLs with it (absolute http://localhost:PORT/...), so they
+    //load cross-origin from here instead
+    const devOrigin = (process.env.VITE_DEV_ORIGIN || '').replace(/\/+$/, '');
 
     return {
         //dev server: the project.pwa blade on the laravel origin loads the dev
         //bundle and the vite client from here while the hot file exists (see
         //scripts/pwa-dev.js), so module requests are cross-origin and need cors
         server: {
-            cors: true
+            cors: true,
+            ...(devOrigin ? { origin: devOrigin } : {})
         },
         //PWA: relative base - the preload helper builds dependency URLs from
         //this base, and a root-absolute '/' 404s on any subpath deployment

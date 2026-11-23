@@ -99,7 +99,14 @@ const main = () => {
     //stdio inherit keeps the vite CLI output (shortcuts, HMR logs) as-is;
     //SIGINT reaches the whole process group, so the vite child dies on its own
     //while this wrapper removes the hot file on the way out
-    const child = spawn(viteBin, args, { stdio: 'inherit', env: process.env });
+    //VITE_DEV_ORIGIN makes vite prefix generated dev asset URLs with the dev
+    //server URL (see vite.config.js): the Laravel page lives on another
+    //origin, so root-relative /src/... URLs in injected CSS/JS would
+    //otherwise resolve against the page and 404
+    const child = spawn(viteBin, args, {
+        stdio: 'inherit',
+        env: { ...process.env, VITE_DEV_ORIGIN: devServerUrl + '/' }
+    });
 
     //forward the signal to the vite child: a signal delivered to this wrapper
     //alone (e.g. pkill) would otherwise orphan the dev server holding the port
