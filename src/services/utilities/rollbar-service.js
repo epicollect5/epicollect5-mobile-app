@@ -254,13 +254,13 @@ export const rollbarService = {
             //error-reporting-consent.js): an unanswered consent toast keeps
             //it off. Payloads are anonymous technical data (captureIp is
             //false, no person tracking, no device fields)
-            app.use(rollbar);
+            app.use(rollbarService);
         }
         else if (!Capacitor.DEBUG && Capacitor.isNativePlatform()) {
             //if user did not opt out, inject rollbar in release builds
             if (rootStore.collectErrors) {
                 console.log('Rollbar reporting enabled');
-                app.use(rollbar);
+                app.use(rollbarService);
                 rollbar.configure({ enabled: true });
             }
             else {
