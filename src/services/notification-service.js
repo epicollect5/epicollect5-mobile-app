@@ -177,6 +177,9 @@ export const notificationService = {
                     header: title,
                     message,
                     buttons,
+                    //a backdrop tap runs no button handler, so the promise
+                    //below would never settle
+                    backdropDismiss: false,
                     cssClass: 'alert-confirm-single-vertical-' + platform
                 };
 
@@ -260,6 +263,9 @@ export const notificationService = {
                     .create({
                         mode,
                         cssClass: 'alert-confirm-multiple-' + platform,
+                        //a backdrop tap runs no button handler, so the promise
+                        //below would never settle
+                        backdropDismiss: false,
                         header: title,
                         message,
 buttons
@@ -301,6 +307,9 @@ buttons
                     .create({
                         header: title,
                         message,
+                        //a backdrop tap runs no button handler, so the promise
+                        //below would never settle
+                        backdropDismiss: false,
                         buttons: confirmButtons
                     });
                 await alert.present();

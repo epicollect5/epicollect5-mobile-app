@@ -257,6 +257,23 @@ describe('notificationService tests', () => {
         });
     });
 
+    it('should settle a single confirm alert only from its buttons', async () => {
+        const rootStore = useRootStore();
+        rootStore.device.platform = PARAMETERS.ANDROID;
+
+        const cancelled = notificationService.confirmSingle('Test confirmation message', 'Test title');
+
+        //a dismissed alert runs no handler, so the caller's await would hang:
+        //the answer must come from a button
+        expect(alertController.create.mock.calls[0][0].backdropDismiss).toBe(false);
+        alertController.create.mock.calls[0][0].buttons[0].handler();
+        expect(await cancelled).toBe(false);
+
+        const accepted = notificationService.confirmSingle('Test confirmation message', 'Test title');
+        alertController.create.mock.calls[1][0].buttons[1].handler();
+        expect(await accepted).toBe(true);
+    });
+
     it('should create a confirm alert with dismiss and action buttons and call the action handler', async () => {
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -320,6 +337,7 @@ describe('notificationService tests', () => {
         expect(alertController.create).toHaveBeenCalledWith({
             header: title,
             message: message,
+            backdropDismiss: false,
             buttons: [
                 {
                     text: STRINGS[language].labels.dismiss,
@@ -329,6 +347,27 @@ describe('notificationService tests', () => {
             ]
         });
         expect(mocks.presentMock).toHaveBeenCalled();
+    });
+
+    it('should settle a multiple-choice confirm alert only from its buttons', async () => {
+        const rootStore = useRootStore();
+        const language = rootStore.language;
+        rootStore.device.platform = PARAMETERS.ANDROID;
+
+        const promise = notificationService.confirmMultiple(
+            'Test confirmation message',
+            'Test title',
+            STRINGS[language].labels.save,
+            STRINGS[language].labels.quit
+        );
+
+        //a dismissed alert runs no handler, so the caller's await would hang:
+        //the choice must come from a button
+        expect(alertController.create.mock.calls[0][0].backdropDismiss).toBe(false);
+
+        alertController.create.mock.calls[0][0].buttons[2].handler();
+
+        expect(await promise).toBe(PARAMETERS.ACTIONS.ENTRY_SAVE);
     });
 
     it('should propagate foreground service startup errors', async () => {
