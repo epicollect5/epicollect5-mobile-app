@@ -1,14 +1,17 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { useBackButton } from '@ionic/vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { h } from 'vue';
 import flushPromises from 'flush-promises';
 import { PARAMETERS } from '@/config';
+import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import EntriesAdd from '@/pages/EntriesAdd.vue';
 import QuestionSaved from '@/components/questions/QuestionSaved.vue';
 import { setupPWAEntry } from '@/use/entry/setup-pwa-entry';
 import { handlePrev } from '@/use/questions/handle-prev';
+import { notificationService } from '@/services/notification-service';
 import { projectModel } from '@/models/project-model.js';
 import { formModel } from '@/models/form-model.js';
 
@@ -164,5 +167,64 @@ describe('EntriesAdd - add another entry (PWA)', () => {
         expect(wrapper.vm.state.showSaved).toBe(false);
         expect(wrapper.vm.state.disablePrevious).toBe(true);
         wrapper.unmount();
+    });
+
+    const getBackHandler = () => useBackButton.mock.calls[0][1];
+
+    it('ignores the hardware back button while the entry is being saved or quit', () => {
+        const wrapper = mountPage();
+        //a successful save keeps isSavingEntry latched until the deferred
+        //navigation; isQuitting covers the quit progress overlay and that same
+        //window, where a quit dialog would outlive the page and its save would
+        //then run against the destroyed project model
+        wrapper.vm.state.isSavingEntry = true;
+        expect(getBackHandler()()).toBe(false);
+
+        wrapper.vm.state.isSavingEntry = false;
+        wrapper.vm.state.isQuitting = true;
+        expect(getBackHandler()()).toBe(false);
+
+        expect(handlePrev).not.toHaveBeenCalled();
+        wrapper.unmount();
+    });
+
+    it('ignores the hardware back button while the quit prompt is open', async () => {
+        const wrapper = mountPage();
+        //status codes are injected at runtime by initService.getLanguage() (from
+        //the bundled assets or the server); a unit mount runs no init, and
+        //quitEntry reads ec5_100 before it can build the PWA quit message. The
+        //shared module value is put back below so it cannot leak into other specs
+        const originalStatusCodes = STRINGS.en.status_codes;
+        STRINGS.en.status_codes = {ec5_100: 'Are you sure you want to quit?'};
+
+        try {
+            let closePrompt;
+            notificationService.confirmMultiple.mockReturnValue(
+                new Promise((resolve) => {
+                    closePrompt = resolve;
+                })
+            );
+
+            const pending = wrapper.vm.quitEntry();
+
+            //the prompt is created with backdropDismiss: false, so it consumes
+            //neither the backdrop tap nor the back press: without the latch every
+            //press opened another prompt on top of the ones already waiting
+            expect(wrapper.vm.state.isQuitPromptOpen).toBe(true);
+            expect(getBackHandler()()).toBe(false);
+
+            closePrompt(false);
+            await pending;
+
+            //a button is the only way to close the prompt, so the latch always clears
+            expect(wrapper.vm.state.isQuitPromptOpen).toBe(false);
+        } finally {
+            if (originalStatusCodes === undefined) {
+                delete STRINGS.en.status_codes;
+            } else {
+                STRINGS.en.status_codes = originalStatusCodes;
+            }
+            wrapper.unmount();
+        }
     });
 });
