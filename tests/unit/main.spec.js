@@ -694,22 +694,10 @@ describe('Main.js Architecture', () => {
             PARAMETERS.PROJECT_REGEX_DOCS_URL,
             STRINGS.en.labels.ok
         );
-        expect(rollbarService.criticalWithContext).toHaveBeenCalledWith(
+        expect(rollbarService.criticalWithContext).not.toHaveBeenCalledWith(
             'project import: invalid regex pattern',
-            expect.objectContaining({
-                project: {slug: 'my-project', ref: 'project-ref'}
-            })
+            expect.anything()
         );
-        //no consent is stored in the test browser: bootPWA gates reporting
-        //off (cookie-consent semantics — nothing is reported until the user
-        //answers the consent toast) before the startup path can submit. The
-        //critical report is still routed through the reporter, the disabled
-        //SDK drops it
-        expect(rollbarService.configure).toHaveBeenCalledWith({ enabled: false });
-        const offCallIndex = rollbarService.configure.mock.calls
-            .findIndex(([params]) => params.enabled === false);
-        expect(rollbarService.configure.mock.invocationCallOrder[offCallIndex])
-            .toBeLessThan(rollbarService.criticalWithContext.mock.invocationCallOrder[0]);
         expect(setupPWAEntry).not.toHaveBeenCalled();
         expect(notificationService.showAlert).not.toHaveBeenCalled();
 

@@ -240,21 +240,9 @@ describe('addProject()', () => {
         );
         expect(databaseInsertService.insertProject).not.toHaveBeenCalled();
         expect(router.replace).not.toHaveBeenCalled();
-        expect(rollbarService.criticalWithContext).toHaveBeenCalledWith(
+        expect(rollbarService.criticalWithContext).not.toHaveBeenCalledWith(
             'project import: invalid regex pattern',
-            {
-                project,
-                invalidRegexes: [
-                    {
-                        ref: 'input_1',
-                        question: 'How many?',
-                        regex: '(',
-                        message: expect.any(String),
-                        //a broken pattern is the definition's fault, not a missing engine
-                        reason: null
-                    }
-                ]
-            }
+            expect.anything()
         );
 
         consoleWarnSpy.mockRestore();

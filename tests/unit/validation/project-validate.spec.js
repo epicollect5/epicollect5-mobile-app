@@ -255,12 +255,6 @@ describe('projectValidate.showInvalidRegexAlert()', () => {
 
         await projectValidate.showInvalidRegexAlert(invalidRegexes, project);
 
-        //reported so the project definition can be found and fixed
-        expect(rollbarService.criticalWithContext).toHaveBeenCalledWith(
-            'project import: invalid regex pattern',
-            { project, invalidRegexes }
-        );
-
         expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
             'The regular expression is invalid or malformed.<br><br>"How many?" (()',
             'Error',
@@ -326,10 +320,6 @@ describe('projectValidate.showInvalidRegexAlert()', () => {
         ], project);
 
         //retrying on another device cannot fix a broken pattern, so that alert wins
-        expect(rollbarService.criticalWithContext).toHaveBeenCalledWith(
-            'project import: invalid regex pattern',
-            expect.objectContaining({ project })
-        );
         expect(notificationService.showDismissAlert).toHaveBeenCalledWith(
             'The regular expression is invalid or malformed.<br><br>"Broken?" (()',
             'Error',

@@ -129,12 +129,6 @@ export const projectValidate = {
             return;
         }
 
-        //surface the rejected project definition so it can be corrected server-side
-        rollbarService.criticalWithContext('project import: invalid regex pattern', {
-            project,
-            invalidRegexes
-        });
-
         await notificationService.showDismissAlert(
             STRINGS[language].status_codes.ec5_392 + '<br><br>' + details,
             labels.error,
