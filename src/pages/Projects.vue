@@ -110,7 +110,10 @@ export default {
     const state = reactive({
       isFetching: true,
       show: true,
-      projects: []
+      projects: [],
+      //latch while the exit prompt is open: the prompt registers no
+      //ionBackButton handler (backdropDismiss: false), so back falls through
+      isExitPromptOpen: false
     });
 
     //get local projects async
@@ -162,10 +165,15 @@ export default {
 
     //exit app when pressing back button (Android)
     useBackButton(10, async () => {
+      if (state.isExitPromptOpen) {
+        return false;
+      }
+      state.isExitPromptOpen = true;
       const confirmed = await notificationService.confirmSingle(
           labels.are_you_sure,
           labels.close + ' App'
       );
+      state.isExitPromptOpen = false;
       if (confirmed) {
         App.exitApp();
       }

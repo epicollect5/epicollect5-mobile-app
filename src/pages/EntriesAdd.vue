@@ -403,7 +403,13 @@ export default {
 			isSavingEntry: false,
 			//entry the latch was set for: same-component navigation
 			//(e.g. branch save back to the hierarchy editor) must stay usable
-			savingEntryUuid: ''
+			savingEntryUuid: '',
+			//latch while the quit prompt is open: the prompt registers no
+			//ionBackButton handler (backdropDismiss: false), so back falls through
+			isQuitPromptOpen: false,
+			//latch once the user chooses quit, until the deferred navigation;
+			//reset only if quitting fails
+			isQuitting: false
 		});
 
 		const lastNavIndex = rootStore.hierarchyNavigation.length - 1;
@@ -509,15 +515,19 @@ export default {
 					quitMessage = labels.are_you_sure;
 				}
 
+				state.isQuitPromptOpen = true;
 				const action = await notificationService.confirmMultiple(
 					quitMessage,
 					labels.quit,
 					labels.save,
 					labels.quit
 				);
+				//the prompt can only be closed by a button, so this always settles
+				state.isQuitPromptOpen = false;
 
 				switch (action) {
 					case PARAMETERS.ACTIONS.ENTRY_QUIT:
+						state.isQuitting = true;
 						await notificationService.showProgressDialog(labels.wait, labels.quitting);
 						// Remove any temp answers/entries
 						try {
@@ -534,6 +544,8 @@ export default {
 							);
 						} catch (error) {
 							console.log(error);
+							//the entry never leaves the page: re-allow the back button
+							state.isQuitting = false;
 							//todo: handle this
 						}
 						break;
@@ -813,6 +825,13 @@ export default {
 
       //ignore back button while fetching
 			if (state.isFetching) {
+				return false;
+			}
+
+			//ignore back while the entry is being saved, quit, or has the quit prompt
+			//open: a prompt opened in those windows outlives the page (alerts live on
+			//ion-app), and its save then runs against the destroyed project model
+			if (state.isSavingEntry || state.isQuitting || state.isQuitPromptOpen) {
 				return false;
 			}
 
