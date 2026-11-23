@@ -1,4 +1,4 @@
-// Copies the built PWA (dist/) into the server repo location defined by
+// Copies the built PWA (dist/pwa/) into the server repo location defined by
 // VITE_DEPLOY_PWA (environment, or .env.local as a fallback). The target's
 // contents are wiped before the copy, so files from a previous deploy (old
 // chunks, stale sourcemaps from debug builds) cannot linger next to the new
@@ -30,7 +30,7 @@ const loadDeployTarget = (env = process.env) => {
 };
 
 //true when the two paths are equal or either one is an ancestor of the other:
-//the deploy wipes the target before copying, so a target overlapping dist
+//the deploy wipes the target before copying, so a target overlapping dist/pwa
 //(same dir, its parent or one of its children) would destroy the build or
 //the whole repo before the copy has a chance to fail
 export const hasDeployPathOverlap = (distDir, targetDir) => {
@@ -92,9 +92,9 @@ const main = () => {
         process.exit(1);
     }
 
-    const distDir = join(ROOT, 'dist');
+    const distDir = join(ROOT, 'dist', 'pwa');
     if (!existsSync(join(distDir, 'index.html'))) {
-        console.error('No build found in dist/: run npm run pwa:prod first');
+        console.error('No build found in dist/pwa/: run npm run pwa:prod first');
         process.exit(1);
     }
 

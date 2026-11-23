@@ -34,7 +34,9 @@ export default defineConfig(({ mode, command }) => {
         },
         build: {
             target: 'es2020',
-            outDir: 'dist',
+            //separate outputs per target: each build only wipes its own
+            //directory, so a native and a PWA build coexist side by side
+            outDir: isPWA ? 'dist/pwa' : 'dist/native',
             emptyOutDir: true,
             //PWA: emit .vite/manifest.json so the server shell can reference the
             //hashed entry; native has no manifest consumer
@@ -58,36 +60,52 @@ export default defineConfig(({ mode, command }) => {
                     entryFileNames: isPWA ? 'assets/[name]-[hash].js' : 'assets/[name].js',
                     chunkFileNames: isPWA ? 'assets/[name]-[hash].js' : 'assets/[name].js',
                     assetFileNames: isPWA ? 'assets/[name]-[hash][extname]' : 'assets/[name][extname]',
-                    manualChunks(id) {
-                        if (id.includes('node_modules')) {
-                            //pcre2-wasm embeds the WASM engine: PWA builds import it
-                            //dynamically (via pcre2-module-lazy), so it stays in its own
-                            //chunk fetched only when a regex pattern is first evaluated.
-                            //Native builds import it statically, reaching the generic
-                            //vendor-common routing below, as they always did
-                            if (isPWA && id.includes('pcre2-wasm')) {return 'vendor-pcre2';}
-                        //group every Capacitor-family package (scoped @capacitor/*,
-                            //@capgo/* such as camera-preview, and unscoped capacitor-* plugins
-                            //such as capacitor-native-settings) into vendor-capacitor to avoid
-                            //cross-chunk cycles with vendor-common
-                            if (id.includes('@capgo')) {return 'vendor-capacitor';}
-                            if (id.includes('capacitor')) {return 'vendor-capacitor';}
-                            if (id.includes('@vue')) {return 'vendor-vue';}
-                            if (id.includes('@ionic')) {return 'vendor-ionic';}
-                            return 'vendor-common';
+                    //PWA: no manualChunks - Rolldown splits the app code
+                    //automatically into multiple smaller hashed chunks (size
+                    //capped, no stable/named chunks: the server shell resolves
+                    //everything through the manifest). Modules outside src/
+                    //(node_modules, dynamic imports like pcre2-module-lazy)
+                    //use default automatic chunking. Native keeps its
+                    //manualChunks exactly as before (single app chunk: the web
+                    //bundle ships inside the app package and is replaced
+                    //atomically with it)
+                    ...(isPWA ? {
+                        codeSplitting: {
+                            groups: [
+                                {
+                                    name: 'app',
+                                    test: /[\\/]src[\\/]/,
+                                    maxSize: 300 * 1024
+                                }
+                            ]
                         }
-                        //vite's preload helper is a virtual module (\0vite/preload-helper.js)
-                        //imported by any chunk with dynamic imports; Rollup otherwise parks it on
-                        //whichever chunk imports it first, dragging vendor-common and
-                        //vendor-capacitor into a cycle with vendor-ionic
-                        if (id.includes('vite/preload-helper')) {return 'vendor-common';}
-                        //ModalPhoto (and the swiper library it pulls in) loads on
-                        //demand: routing it to vendor-common keeps it in the same
-                        //dynamic chunk as the other lazy vendor code, instead of a
-                        //pointless ~2 kB chunk of its own
-                        if (id.includes('ModalPhoto.vue')) {return 'vendor-common';}
-                        if (id.includes('/src/')) {return 'app';}
-                    }
+                    } : {
+                        manualChunks(id) {
+                            if (id.includes('node_modules')) {
+                            //group every Capacitor-family package (scoped @capacitor/*,
+                                //@capgo/* such as camera-preview, and unscoped capacitor-* plugins
+                                //such as capacitor-native-settings) into vendor-capacitor to avoid
+                                //cross-chunk cycles with vendor-common
+                                if (id.includes('@capgo')) {return 'vendor-capacitor';}
+                                if (id.includes('capacitor')) {return 'vendor-capacitor';}
+                                if (id.includes('@vue')) {return 'vendor-vue';}
+                                if (id.includes('@ionic')) {return 'vendor-ionic';}
+                                return 'vendor-common';
+                            }
+                            //vite's preload helper is a virtual module (\0vite/preload-helper.js)
+                            //imported by any chunk with dynamic imports; Rollup otherwise parks it on
+                            //whichever chunk imports it first, dragging vendor-common and
+                            //vendor-capacitor into a cycle with vendor-ionic
+                            if (id.includes('vite/preload-helper')) {return 'vendor-common';}
+                            //ModalPhoto (and the swiper library it pulls in) loads on
+                            //demand: routing it to vendor-common keeps it in the same
+                            //dynamic chunk as the other lazy vendor code, instead of a
+                            //pointless ~2 kB chunk of its own
+                            if (id.includes('ModalPhoto.vue')) {return 'vendor-common';}
+                            //single app chunk as before
+                            if (id.includes('/src/')) {return 'app';}
+                        }
+                    })
                 }
             }
         },

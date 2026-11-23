@@ -30,4 +30,4 @@ code_version=$(node -p "require('./package.json').version")
 # server), so payload frames resolve against that prefix
 url_prefix="https://five.epicollect.net/pwa/"
 
-rollbar-cli upload-sourcemaps ./dist --verbose --access-token="$ROLLBAR_WRITE_TOKEN" --verbose --url-prefix "$url_prefix" --code-version "$code_version"
+rollbar-cli upload-sourcemaps ./dist/pwa --verbose --access-token="$ROLLBAR_WRITE_TOKEN" --verbose --url-prefix "$url_prefix" --code-version "$code_version"
