@@ -120,6 +120,7 @@ export const notificationService = {
         });
         await toast.present();
     },
+
     async showAlert(message, header) {
         const rootStore = useRootStore();
         const language = rootStore.language;

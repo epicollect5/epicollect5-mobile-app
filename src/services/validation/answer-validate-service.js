@@ -65,33 +65,33 @@ export const answerValidateService = {
 
         return new Promise((resolve, reject) => {
 
-            self.inputRef = params.input_details.ref;
+            const runChecks = async function () {
 
-            // Local checks run first, so the uniqueness check, which performs
-            // a server request on PWA, is only reached when the answer is valid
-            // locally. Uniqueness is always the last check, consistent with native
+                self.inputRef = params.input_details.ref;
 
-            // If we have a confirmation field, check
-            if (params.input_details.verify) {
-                if (answer !== null && confirmAnswer !== null) {
-                    if (!commonValidate.checkConfirmed(params.input_details, answer, confirmAnswer)) {
-                        // Assign errors from the answer validator helper
-                        self.errors = commonValidate.getErrors();
-                        reject();
-                        return;
+                // Local checks run first, so the uniqueness check, which performs
+                // a server request on PWA, is only reached when the answer is valid
+                // locally. Uniqueness is always the last check, consistent with native
+
+                // If we have a confirmation field, check
+                if (params.input_details.verify) {
+                    if (answer !== null && confirmAnswer !== null) {
+                        if (!commonValidate.checkConfirmed(params.input_details, answer, confirmAnswer)) {
+                            // Assign errors from the answer validator helper
+                            self.errors = commonValidate.getErrors();
+                            reject();
+                            return;
+                        }
                     }
                 }
-            }
 
-            // If we have a required field, check
-            if (!commonValidate.checkRequired(params.input_details, answer)) {
-                // Assign errors from the answer validator helper
-                self.errors = commonValidate.getErrors();
-                reject();
-                return;
-            }
-
-            const runChecks = async function () {
+                // If we have a required field, check
+                if (!commonValidate.checkRequired(params.input_details, answer)) {
+                    // Assign errors from the answer validator helper
+                    self.errors = commonValidate.getErrors();
+                    reject();
+                    return;
+                }
 
                 // If we have a regex field, check
                 if (answer !== '' && answer !== null && typeof answer !== 'undefined') {
@@ -123,8 +123,13 @@ export const answerValidateService = {
                 resolve();
             };
 
-            // If we hit here, probably had db access issues
-            runChecks().catch(reject);
+            // Run the checks in a microtask, the timing the pre-refactor flow had
+            // via isUnique().then(): a group question validates its inputs and the
+            // main input through concurrent validate() calls that each reset the
+            // shared errors object. A check run synchronously here would be wiped
+            // by the next sibling's reset before the rejection is read, leaving the
+            // user stuck on the question with no visible error.
+            Promise.resolve().then(runChecks).catch(reject);
         });
 
     },
@@ -183,7 +188,7 @@ export const answerValidateService = {
                     let tempAnswerFound = false;
                     //bypass uniqueness check for debugging locally
                     if (PARAMETERS.BYPASS_UNIQUENESS && PARAMETERS.IS_LOCALHOST) {
-                        notificationService.showToast('bypassed uniqueness check!', 0, 'top');
+                        notificationService.showToast('bypassed uniqueness check!', 0, 'bottom');
                         resolve(true);
                     }
                     else {
