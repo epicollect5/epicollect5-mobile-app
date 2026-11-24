@@ -1,0 +1,16 @@
+docs/known-review-false-positives.md
+  h_2231ff2aa93473 93-99
+scripts/deploy-pwa.js
+  h_2231ff2aa93473 65-68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "868620608b27d353be5a77f08140c00f34ecdd89",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
