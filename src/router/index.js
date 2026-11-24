@@ -14,7 +14,7 @@ import Settings from '@/pages/Settings.vue';
 import EntriesDownload from '@/pages/EntriesDownload.vue';
 import {utilsService} from '@/services/utilities/utils-service';
 
-let routes = [];
+let routes;
 
 //safe default: VITE_MODE may be unset (generic serve/build, CI, tests)
 const VITE_MODE = (import.meta.env.VITE_MODE || PARAMETERS.WEBVIEW).toLowerCase();
@@ -120,7 +120,7 @@ if (VITE_MODE === PARAMETERS.PWA.toLowerCase()) {
     ];
 }
 
-//console.log(routes);
+console.info('%cEpicollect5 version: ' + import.meta.env.VITE_APP_VERSION + (import.meta.env.DEV ? ' (dev, ' + VITE_MODE + ')' : ' (prod, ' + VITE_MODE + ')'), 'background: #673C90; color: #ffffff; font-weight: bold; padding: 4px 8px; font-size: 14px;');
 console.log({base_url: import.meta.env.BASE_URL});
 
 const router = createRouter({
