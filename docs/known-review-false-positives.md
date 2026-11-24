@@ -91,3 +91,9 @@ Findings that look like defects but are by design. The review workflow (`docs/wo
   Reported as: "the Mapbox and Stamen tile and attribution constants were deleted, so a surviving consumer, or a persisted basemap choice, resolves to `undefined` and that basemap renders blank or throws."
 
   Why it is correct: no consumer was ever written against them. The tile layers are built from the ESRI, OpenTopoMap, CARTO and OSM constants that remain, and a search of `src/` and `tests/` for the removed names finds nothing. There is also no stored basemap selector to migrate: `grep` for `basemap` in `src/` returns only the constant definitions and their comments, so no persisted choice can resolve to a removed constant.
+
+- **Failed deploys remove working files before copying the replacement** (`scripts/deploy-pwa.js`, `deploy()` wipe-then-copy)
+
+  Reported as: "`deploy()` deletes the working deployment before copying its replacement. If copying fails because of permissions, disk space, or an interrupted process, the server has no working bundle or local rollback. The PWA stays offline until someone repairs or repeats the deployment."
+
+  Why it is accepted as-is: this script is run locally by the developer, not in an automated production deployment. If the copy fails, the operator can simply re-run the deploy; the temporary loss of the target contents is an acceptable operational risk in that workflow, so a staged-copy/switch is unnecessary complexity here.

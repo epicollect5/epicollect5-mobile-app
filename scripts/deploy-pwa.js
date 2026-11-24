@@ -62,6 +62,10 @@ const isExcludedFromDeploy = (relativePath) => {
     return false;
 };
 
+/*
+ * False positive (review): failed deploy wipes target before copy completes — by design. See docs/known-review-false-positives.md
+ * (`scripts/deploy-pwa.js`, `deploy()` wipe-then-copy).
+ */
 const deploy = (distDir, targetDir) => {
     //wipe the target's contents, keeping the directory itself
     for (const entry of readdirSync(targetDir)) {
