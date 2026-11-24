@@ -5,6 +5,8 @@ import flushPromises from 'flush-promises';
 import {PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
 import {useRootStore} from '@/stores/root-store';
+import {useWaitOverlayStore} from '@/stores/wait-overlay-store';
+import {webService} from '@/services/web-service';
 import LocationPwa from '@/components/platform/LocationPwa.vue';
 
 //leaflet draws into a real DOM node and needs a layout engine: everything the
@@ -42,12 +44,21 @@ const leaflet = vi.hoisted(() => {
 });
 
 vi.mock('leaflet', () => {
+    //a real constructor: a geocode updates an existing marker, and L.marker's
+    //setLatLng path builds one with `new`
+    class LatLng {
+        constructor(lat, lng) {
+            this.lat = lat;
+            this.lng = lng;
+        }
+    }
+
     const L = {
         map: leaflet.mapFn,
         tileLayer: vi.fn(() => ({addTo: vi.fn()})),
         icon: vi.fn(() => ({})),
         marker: leaflet.markerFn,
-        LatLng: vi.fn((lat, lng) => ({lat, lng})),
+        LatLng,
         Control: {extend: leaflet.extend},
         control: {layers: vi.fn(() => ({addTo: vi.fn()}))},
         DomUtil: {
@@ -74,6 +85,14 @@ vi.mock('@/services/notification-service', () => ({
         showProgressDialog: vi.fn(() => Promise.resolve()),
         hideProgressDialog: vi.fn(),
         showAlert: vi.fn()
+    }
+}));
+
+//geocoding is the one web call this component makes: the resolved coordinates
+//are asserted against
+vi.mock('@/services/web-service', () => ({
+    webService: {
+        geocodeAddressPWA: vi.fn()
     }
 }));
 
@@ -183,5 +202,77 @@ describe('LocationPwa', () => {
         expect(labels).toContain(STRINGS.en.labels.update_location);
         expect(labels).toContain(STRINGS.en.labels.search);
         wrapper.unmount();
+    });
+
+    it('fences navigation while the geocode is pending and releases it once the answer lands', async () => {
+        let resolveGeocode;
+        webService.geocodeAddressPWA.mockReturnValue(new Promise((resolve) => {
+            resolveGeocode = resolve;
+        }));
+        const waitOverlayStore = useWaitOverlayStore();
+        const wrapper = mountWith();
+        wrapper.vm.state.address = 'London';
+
+        wrapper.vm.geocodeAddress();
+        await wrapper.vm.$nextTick();
+
+        //the blocker is up (visible overlay + back-button fence) for the whole
+        //request, at the light geocode opacity, so the question cannot be
+        //unmounted mid geocode
+        expect(waitOverlayStore.isBlocking).toBe(true);
+        expect(waitOverlayStore.overlayOpacity).toBe(0.2);
+
+        resolveGeocode({latitude: '51.500000', longitude: '-0.120000', accuracy: PARAMETERS.GEOLOCATION_DEFAULT_ACCURACY});
+        await flushPromises();
+
+        expect(wrapper.vm.parentState.answer.answer).toEqual({
+            latitude: '51.500000',
+            longitude: '-0.120000',
+            accuracy: PARAMETERS.GEOLOCATION_DEFAULT_ACCURACY
+        });
+        expect(waitOverlayStore.isBlocking).toBe(false);
+        wrapper.unmount();
+    });
+
+    it('releases the guard even when the progress dialog fails to present', async () => {
+        //a reload or navigation can interrupt the dialog's present, which rejects:
+        //the guard must never be left set, or the app-wide overlay/back fence
+        //sticks for the rest of the session
+        const {notificationService} = await import('@/services/notification-service');
+        notificationService.showProgressDialog.mockRejectedValueOnce(new Error('dialog interrupted'));
+        const waitOverlayStore = useWaitOverlayStore();
+        const wrapper = mountWith();
+        wrapper.vm.state.address = 'London';
+
+        await wrapper.vm.geocodeAddress();
+        await flushPromises();
+
+        expect(waitOverlayStore.isBlocking).toBe(false);
+        wrapper.unmount();
+    });
+
+    it('does not write coordinates or leave the guard up when a geocode lands after unmount', async () => {
+        let resolveGeocode;
+        webService.geocodeAddressPWA.mockReturnValue(new Promise((resolve) => {
+            resolveGeocode = resolve;
+        }));
+        const waitOverlayStore = useWaitOverlayStore();
+        const wrapper = mountWith({latitude: '', longitude: '', accuracy: 0});
+        wrapper.vm.state.address = 'London';
+
+        wrapper.vm.geocodeAddress();
+        await wrapper.vm.$nextTick();
+        expect(waitOverlayStore.isBlocking).toBe(true);
+
+        //a reload is outside the guard's reach: the question is gone before the
+        //response arrives
+        wrapper.unmount();
+
+        resolveGeocode({latitude: '51.500000', longitude: '-0.120000', accuracy: 3});
+        await flushPromises();
+
+        //the late response must not resurrect the answer, and the shared guard must not pin
+        expect(wrapper.vm.parentState.answer.answer).toEqual({latitude: '', longitude: '', accuracy: 0});
+        expect(waitOverlayStore.isBlocking).toBe(false);
     });
 });

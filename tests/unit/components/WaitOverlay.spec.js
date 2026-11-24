@@ -34,12 +34,12 @@ describe('WaitOverlay.vue', () => {
         }
     });
 
-    it('renders nothing while no upload is in flight', () => {
+    it('renders nothing while no operation is in flight', () => {
         wrapper = factory();
         expect(wrapper.find('.wait-overlay--shown').exists()).toBe(false);
     });
 
-    it('shows the full screen overlay while an upload is in flight', async () => {
+    it('shows the full screen overlay while an operation is in flight', async () => {
         factory();
 
         store.show();
@@ -47,6 +47,20 @@ describe('WaitOverlay.vue', () => {
 
         expect(wrapper.find('.wait-overlay--shown').exists()).toBe(true);
         expect(wrapper.find('.wait-overlay').exists()).toBe(true);
+    });
+
+    it('paints the veil at the opacity the caller asked for', async () => {
+        factory();
+
+        //a geocode asks for a light veil, an upload leaves it at the default
+        store.show(0.2);
+        await nextTick();
+        expect(wrapper.find('.wait-overlay').attributes('style')).toContain('rgba(255, 255, 255, 0.2)');
+
+        store.dismiss();
+        store.show();
+        await nextTick();
+        expect(wrapper.find('.wait-overlay').attributes('style')).toContain('rgba(255, 255, 255, 0.5)');
     });
 
     it('hides the overlay again on dismiss', async () => {

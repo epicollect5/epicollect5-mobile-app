@@ -621,11 +621,12 @@ export default {
 			},
 			prev() {
 				//PWA only, native has no dropzone: an upload is in flight or its
-				//preview has not loaded yet. The wait overlay blocks pointer input,
-				//but the hardware back button still reaches prev() and would
-				//unmount the question before file-dropped records the filename,
-				//losing the attachment
-				if (rootStore.isPWA && waitOverlayStore.isUploading) {
+				//preview has not loaded yet, or a location geocode is pending. The
+				//visible wait UI blocks pointer input, but the hardware back button
+				//still reaches prev() and would unmount the question before the
+				//operation lands, losing the attachment or leaving a stale
+				//location answer
+				if (rootStore.isPWA && waitOverlayStore.isBlocking) {
 					return;
 				}
 				state.showSaved = false;
@@ -641,10 +642,9 @@ export default {
 			 * Go to next question/save entry (depending on where you are in the form)
 			 */
 			async next() {
-				//same back button bypass as prev(): the question must stay mounted
-				//until the upload lands and its preview is recorded. PWA only,
-				//native has no dropzone
-				if (rootStore.isPWA && waitOverlayStore.isUploading) {
+				//same back button bypass as prev(): an upload or geocode must land
+				//before the question unmounts. PWA only, native has no dropzone
+				if (rootStore.isPWA && waitOverlayStore.isBlocking) {
 					return;
 				}
 				await handleNext(state, rootStore.entriesAddScope);

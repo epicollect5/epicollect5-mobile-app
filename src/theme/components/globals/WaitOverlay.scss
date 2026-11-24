@@ -1,12 +1,13 @@
-//full screen block shown while a file is uploading: hidden by default, shown
-//via the --shown modifier (v-show cannot override the base display:none)
+//full screen block shown while a blocking operation runs: hidden by default,
+//shown via the --shown modifier (v-show cannot override the base display:none).
+//Its white veil and opacity come from the component (inline background), so a
+//caller can pick a lighter or heavier dimming
 .wait-overlay {
     display: none;
     cursor: wait;
     position: fixed;
     height: 100vh;
     width: 100vw;
-    background: rgba(255, 255, 255, .5);
     z-index: 9999;
     top: 0;
 }

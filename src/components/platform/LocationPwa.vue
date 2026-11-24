@@ -131,6 +131,7 @@ import {onMounted, onBeforeUnmount, reactive, computed} from 'vue';
 import {STRINGS} from '@/config/strings.js';
 import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
+import {useWaitOverlayStore} from '@/stores/wait-overlay-store';
 import {search, locate} from 'ionicons/icons';
 import markerIcon from '@/leaflet/images/marker-icon@2x.png';
 import markerShadow from '@/leaflet/images/marker-shadow.png';
@@ -164,6 +165,7 @@ export default {
   },
   setup(props) {
     const rootStore = useRootStore();
+    const waitOverlayStore = useWaitOverlayStore();
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
     const parentState = props.parentState;
@@ -171,10 +173,13 @@ export default {
     const closeUpZoom = 10;
     //wider zoom
     const zoom = 1;
+    //veil for the geocode wait overlay: a light dimming, the same WaitOverlay
+    //an upload uses heavier
+    const GEOCODE_OVERLAY_OPACITY = 0.2;
     let map = null;
     let marker = null;
     //set on unmount: a pending geolocation fix, geocode or init timer must not
-    //write state, the map or the progress overlay after the question is gone
+    //write state, the map or the wait overlay after the question is gone
     let destroyed = false;
     let initTimeout = null;
 
@@ -208,28 +213,40 @@ export default {
           await notificationService.showAlert(labels.no_hits_found);
           return;
         }
-        await notificationService.showProgressDialog(
-            STRINGS[language].labels.acquiring_position,
-            STRINGS[language].labels.wait
-        );
-
+        //block the screen and fence the hardware back button for the duration of
+        //the request: the geocode is quick, so it uses a lighter veil than an
+        //upload. Both the fence and the dialog start INSIDE the try:
+        //showProgressDialog can reject (a reload or navigation interrupts its
+        //present) and the blocker must never be left set
         try {
+          waitOverlayStore.show(GEOCODE_OVERLAY_OPACITY);
+          await notificationService.showProgressDialog(
+              STRINGS[language].labels.acquiring_position,
+              STRINGS[language].labels.wait
+          );
+
           const coords = await webService.geocodeAddressPWA(state.address);
+
+          //the question may have unmounted while the geocode was pending (the
+          //screen is blocked above, but a reload is outside its reach): writing
+          //the answer or the map marker now targets a gone map, so leave the
+          //stale fix out
+          if (destroyed) {
+            return;
+          }
 
           parentState.answer.answer.latitude = coords.latitude;
           parentState.answer.answer.longitude = coords.longitude;
           parentState.answer.answer.accuracy = coords.accuracy;
-
-          //the question may have unmounted while the geocode was pending
-          if (destroyed) {
-            return;
-          }
 
           updateMarker(false);
         } catch (error) {
           //handle error
           await notificationService.showAlert(labels.location_fail);
         } finally {
+          //release the blocker on every path, or a failed or stale geocode would
+          //pin the screen for the rest of the session
+          waitOverlayStore.dismiss();
           await notificationService.hideProgressDialog();
         }
       },

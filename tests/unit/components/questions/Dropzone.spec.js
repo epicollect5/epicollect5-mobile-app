@@ -395,21 +395,21 @@ describe('Dropzone upload overlay', () => {
         await wrapper.vm.$nextTick();
 
         await dropFile(wrapper, new File(['photo'], 'photo.jpg', {type: 'image/jpeg'}));
-        expect(waitOverlayStore.isUploading).toBe(true);
+        expect(waitOverlayStore.isBlocking).toBe(true);
 
         //a replacement keeps the same name, so no remount is coming: the settled
         //request alone must NOT release the screen, or the user would see the
         //question before its thumbnail is loaded
         resolveUpload({data: {}});
         await flushPromises();
-        expect(waitOverlayStore.isUploading).toBe(true);
+        expect(waitOverlayStore.isBlocking).toBe(true);
         expect(waitOverlayStore.pendingKey).toBe(
             PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|' + PARAMETERS.QUESTION_TYPES.PHOTO + '|photo.jpg'
         );
 
         //an img always fires load or error: the loaded tag is the release signal
         wrapper.vm.onImageLoaded();
-        expect(waitOverlayStore.isUploading).toBe(false);
+        expect(waitOverlayStore.isBlocking).toBe(false);
         expect(waitOverlayStore.pendingKey).toBe(null);
     });
 
@@ -427,14 +427,14 @@ describe('Dropzone upload overlay', () => {
         await wrapper.vm.$nextTick();
 
         await dropFile(wrapper, new File(['audio'], 'clip.mp4', {type: 'audio/mp4'}));
-        expect(waitOverlayStore.isUploading).toBe(true);
+        expect(waitOverlayStore.isBlocking).toBe(true);
 
         //the player renders visible and shows its own buffering state: the
         //settled request is the release signal, loadeddata may never fire
         //(iOS defers media without a gesture; data saver defers on mobile)
         resolveUpload({data: {}});
         await flushPromises();
-        expect(waitOverlayStore.isUploading).toBe(false);
+        expect(waitOverlayStore.isBlocking).toBe(false);
         expect(waitOverlayStore.pendingKey).toBe(null);
     });
 
@@ -449,7 +449,7 @@ describe('Dropzone upload overlay', () => {
 
         //an upload is pending for a different file: the instance that remounted
         //elsewhere owns the dismissal
-        waitOverlayStore.isUploading = true;
+        waitOverlayStore.show();
         waitOverlayStore.setPendingKey(
             PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|' + PARAMETERS.QUESTION_TYPES.PHOTO + '|uploaded.jpg'
         );
@@ -457,7 +457,7 @@ describe('Dropzone upload overlay', () => {
         wrapper.vm.onImageLoaded();
 
         //this instance shows a different file: its load must not release the screen
-        expect(waitOverlayStore.isUploading).toBe(true);
+        expect(waitOverlayStore.isBlocking).toBe(true);
         expect(waitOverlayStore.pendingKey).toBe(
             PARAMETERS.PWA_FILE_STATE.CACHED + '|' + PARAMETERS.PWA_BRANCH_REMOTE + '|' + PARAMETERS.QUESTION_TYPES.PHOTO + '|uploaded.jpg'
         );
@@ -477,7 +477,7 @@ describe('Dropzone upload overlay', () => {
         await dropFile(wrapper, new File(['photo'], 'new.jpg', {type: 'image/jpeg'}));
 
         //no preview load will ever claim the dismissal: the failed request is the signal
-        expect(waitOverlayStore.isUploading).toBe(false);
+        expect(waitOverlayStore.isBlocking).toBe(false);
         expect(waitOverlayStore.pendingKey).toBe(null);
     });
 

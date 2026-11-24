@@ -174,7 +174,7 @@ export default {
           const file = acceptFiles[0];
 
           //the overlay goes up BEFORE any await below: the entry navigation
-          //guards check isUploading, so the question must stay mounted from
+          //guards check isBlocking, so the question must stay mounted from
           //here until the upload lands or fails
           waitOverlayStore.show();
 
@@ -239,7 +239,7 @@ export default {
                         //release the screen after a grace period instead of
                         //blocking forever
                         setTimeout(() => {
-                            if (waitOverlayStore.isUploading && waitOverlayStore.pendingKey === previewKey) {
+                            if (waitOverlayStore.isBlocking && waitOverlayStore.pendingKey === previewKey) {
                                 releaseUploadUi();
                             }
                         }, 30000);
@@ -334,7 +334,7 @@ export default {
     //release the shared blocker: a sibling preview finishing its own load
     //must not dismiss another question's upload
     function dismissUploadUi() {
-      if (waitOverlayStore.isUploading && waitOverlayStore.pendingKey !== buildPreviewKey(props.filename, props.filestate)) {
+      if (waitOverlayStore.isBlocking && waitOverlayStore.pendingKey !== buildPreviewKey(props.filename, props.filestate)) {
         return;
       }
       releaseUploadUi();
