@@ -68,23 +68,53 @@ export default defineConfig(({ mode, command }) => {
                     entryFileNames: isPWA ? 'assets/[name]-[hash].js' : 'assets/[name].js',
                     chunkFileNames: isPWA ? 'assets/[name]-[hash].js' : 'assets/[name].js',
                     assetFileNames: isPWA ? 'assets/[name]-[hash][extname]' : 'assets/[name][extname]',
-                    //PWA: no manualChunks - Rolldown splits the app code
-                    //automatically into multiple smaller hashed chunks (size
-                    //capped, no stable/named chunks: the server shell resolves
-                    //everything through the manifest). Modules outside src/
-                    //(node_modules, dynamic imports like pcre2-module-lazy)
-                    //use default automatic chunking. Native keeps its
-                    //manualChunks exactly as before (single app chunk: the web
-                    //bundle ships inside the app package and is replaced
-                    //atomically with it)
+                    //PWA: Rolldown's native codeSplitting groups - one named chunk
+                    //per vendor family plus the app chunk, each carrying a content
+                    //hash so the server shell cache-busts through the manifest.
+                    //manualChunks is a compatibility shim that Rolldown migrates to
+                    //a single name-only group, which silently folds @vue/vue-router
+                    //and most of @ionic/core into app (no vendor-vue chunk at all):
+                    //an explicit test per group is what actually produces named
+                    //chunks. Native keeps manualChunks as before - stable unhashed
+                    //names, its web bundle ships inside the app package and is
+                    //replaced atomically with it
                     ...(isPWA ? {
                         codeSplitting: {
                             groups: [
-                                {
-                                    name: 'app',
-                                    test: /[\\/]src[\\/]/,
-                                    maxSize: 300 * 1024
-                                }
+                                //pcre2-wasm embeds the WASM engine and is imported
+                                //dynamically (via pcre2-module-lazy), so it stays in
+                                //its own chunk fetched on first regex evaluation; a
+                                //project without regex questions never downloads it
+                                { name: 'vendor-pcre2', test: /pcre2-wasm/, priority: 50 },
+                                //every Capacitor-family package (scoped @capacitor/*,
+                                //@capgo/* such as camera-preview, @capawesome* plugins
+                                //such as the datetime picker, and unscoped capacitor-*
+                                //plugins such as capacitor-native-settings) into
+                                //vendor-capacitor to avoid cross-chunk cycles with
+                                //vendor-common
+                                { name: 'vendor-capacitor', test: /[\\/]node_modules[\\/](@capacitor|@capgo|@capawesome|capacitor)/, priority: 40 },
+                                { name: 'vendor-vue', test: /[\\/]node_modules[\\/]@vue[\\/]/, priority: 30 },
+                                //Ionic JS goes to vendor-ionic, but NOT the global
+                                //stylesheets under @ionic/vue/css (the lookahead):
+                                //those must stay in app.css, see the app group
+                                { name: 'vendor-ionic', test: /[\\/]node_modules[\\/]@ionic[\\/](?!vue[\\/]css[\\/])/, priority: 30 },
+                                //vite's preload helper is a virtual module imported
+                                //by any chunk with dynamic imports; ModalPhoto (and
+                                //the swiper it pulls in) loads on demand - both join
+                                //vendor-common so neither drags a cycle out of it.
+                                //@ionic/vue/css is excluded so it falls through to the
+                                //app group below
+                                { name: 'vendor-common', test: /([\\/]node_modules[\\/](?!@ionic[\\/]vue[\\/]css[\\/])|vite[\\/]preload-helper|ModalPhoto\.vue)/, priority: 10 },
+                                //Ionic's global stylesheets and the app code share app.css:
+                                //theme/variables.css sets the brand :root override after
+                                //Ionic's own defaults in the same file, so the brand purple
+                                //wins. Split into vendor-ionic they load on their own
+                                //<link> and the server shell emits stylesheets in manifest
+                                //order (app.css before vendor-ionic.css), letting Ionic's
+                                //default --ion-color-primary (#0054e9) override the brand.
+                                //ModalPhoto.vue is kept out (vendor-common above): it is
+                                //async loaded and must not land in the eager app chunk
+                                { name: 'app', test: /([\\/]src[\\/]|node_modules[\\/]@ionic[\\/]vue[\\/]css[\\/])/, priority: 1 }
                             ]
                         }
                     } : {

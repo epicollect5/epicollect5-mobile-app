@@ -56,7 +56,13 @@ Create a `.env.local` file based on `.env-example.local`:
   - Set to `1` to bypass
   - Set to empty string for production
 
-- **`VITE_DEPLOY`** - Deployment configuration (optional)
+- **`VITE_DEPLOY_PWA`** - Absolute path of the server repo location the PWA is
+  deployed to (used by `pwa:deploy` and the `pwa:browser` dev loop)
+
+The full set of environment variables is in `.env-example.local`. Those baked in
+at build time include `VITE_ROLLBAR_POST_TOKEN` (required by the prod builds),
+`VITE_CARTO_API_KEY`, `VITE_ESRI_API_TOKEN` and the `VITE_GOOGLE_*` sign-in keys;
+`ROLLBAR_WRITE_TOKEN` is used only by the sourcemap uploads.
 
 ## Build Scripts
 
@@ -119,7 +125,7 @@ Create a `.env.local` file based on `.env-example.local`:
 
 ### Testing
 
-- **`npm run test:unit`** - Run unit tests with Vue CLI
+- **`npm run test:unit`** - Run unit tests with Vitest
 - **`npm run vitest`** - Run tests with Vitest
 - **`npm run vitest-ui`** - Run Vitest with UI
 - **`npm run britest`** - Run browser tests with Chrome
@@ -137,15 +143,17 @@ Create a `.env.local` file based on `.env-example.local`:
 The build process is configured in `vite.config.js` and behaves differently based on `VITE_MODE`:
 
 ### WEBVIEW Mode (Native Apps)
+- Writes to `dist/native/` (the PWA build writes to `dist/pwa/`, so both coexist)
+- Stable, unhashed filenames for self-managed versioning: `app.js`, `vendor-capacitor.js`, `vendor-common.js`, `vendor-ionic.js`
 - Generates source maps for debugging
-- Splits code into optimized chunks (app, vendor-capacitor, vendor-vue, vendor-ionic, vendor-common)
 - Optimized for native mobile performance
 
 ### PWA Mode
-- Limits chunks to 5 for optimal web performance
-- Removes console logs and debugger statements in production
-- Generates bundle analysis report (when `VITE_DEBUG` is not `1`)
-- Ignores test-related dependencies in production builds
+- Writes to `dist/pwa/` and emits `.vite/manifest.json`, which the server shell reads
+- Content-hashed filenames (`app-<hash>.js`, `vendor-vue-<hash>.js`, ...), resolved through the manifest so the shell can cache-bust without a query string
+- Chunks: `app`, `vendor-capacitor`, `vendor-common`, `vendor-ionic`, `vendor-vue`, `vendor-pcre2`
+- Removes `console.log` and `console.warn` in production (keeps `console.error`)
+- Alias-stubs the demo fake-answer and word-list modules out of the bundle
 
 ## Configuration
  - iOS needs a xcconfig file with the REVERSED_CLIENT_ID for Google Sign In.

@@ -12,14 +12,18 @@ The architecture is intentionally split early at boot. After platform detection,
 The app is built with Vite into two deployment artifacts selected by the `VITE_MODE` environment variable:
 
 - **`WEBVIEW`** (native scripts: `native:*`, `android:*`, `ios:*`): a web bundle copied into the Capacitor native shell via `npx cap copy`, producing the mobile app.
-- **`PWA`** (website scripts: `pwa:*`): a plain **static** web bundle deployed to the project website. Despite the name, this target ships **no service worker, manifest, or offline support** — the label is historical. Do not add `serviceWorker` / `workbox` / `manifest` behavior unless explicitly requested.
+- **`PWA`** (website scripts: `pwa:*`): a plain **static** web bundle deployed to the project website. Despite the name, this target ships **no service worker, web app manifest, or offline support** — the label is historical. Do not add `serviceWorker` / `workbox` / `manifest` behavior unless explicitly requested.
 
 Build-time effects of `VITE_MODE=PWA`:
 
 - Alias stubs replace `src/services/entry/fake-answer-service` and the `an-array-of-*` word-list packages with empty modules, keeping the public web bundle lean (the in-app demo/fake-answer generator is disabled on web).
 - `VITE_MODE` also drives runtime branching in `src/router/index.js` and `src/services/init-service.js` (URL-driven web flow vs native flow).
 
-Both targets emit stable, unhashed filenames for self-managed versioning: `app.js`, `vendor-vue.js`, `vendor-ionic.js`, `vendor-capacitor.js`, `vendor-common.js`.
+Both targets split the bundle into an `app` chunk plus vendor chunks named by family. Native keeps stable, unhashed filenames for self-managed versioning (`app.js`, `vendor-common.js`, ...); the PWA names its chunks with a content hash (`app-<hash>.js`, `vendor-vue-<hash>.js`, ...) and resolves them through the build manifest, so the server shell can cache-bust without a query string.
+
+That divergence is deliberate. The native bundle is loaded from the local WebView inside the app package and replaced atomically whenever the app is installed or updated, so it has no shared HTTP cache to bust: stable names are enough, and a new build never collides with a cached one. The PWA is fetched over the web from a cache-hitting origin, which is what its content hashes and manifest exist for. Native is therefore intentionally left on `manualChunks` rather than moved onto the PWA's `codeSplitting` groups — its chunks don't need to be named or hashed for caching, and the stylesheet-ordering constraint below only affects the web target.
+
+Each target writes to its own output directory (`dist/native`, `dist/pwa`), so the two builds coexist. Only the PWA emits `.vite/manifest.json`; the server shell reads it and links the hashed entry plus every stylesheet in the manifest's chunk order. That order is why Ionic's global CSS (`@ionic/vue/css/*`) is kept in the `app` chunk, ahead of the brand `:root` overrides in `src/theme/variables.css`: split into `vendor-ionic` it loads on its own later `<link>` and Ionic's default `--ion-color-primary` (#0054e9) overrides the brand purple.
 
 ## Supported Platforms
 
@@ -531,7 +535,7 @@ This is expected. The Emscripten runtime imports `node:module` only inside its N
 
 ### Cost and known limits
 
-The WASM binary is inlined in `app.js`: **+117 kB gzip** (~+634 kB raw) on every load of the PWA and native bundles. Serving it as a separately fetched asset is the next lever if that matters.
+The WASM binary adds **+117 kB gzip** (~+634 kB raw) to the chunk that carries the engine. Native inlines it in `app.js`, so every native load pays it; the PWA ships it in the lazily fetched `vendor-pcre2.js` (see *Lazy singleton init*), so a web project without regex questions never downloads it. Serving it as a separately fetched asset in native builds too is the next lever if that matters.
 
 Even with PCRE2 there are deliberate differences from the old JavaScript path: PCRE's `$` also matches before a trailing newline, so `^abc$` accepts `"abc\n"` (asserted in `tests/unit/validation/answer-validate-service/text.spec.js`), and `\p{...}` and case folding follow PCRE defaults rather than JavaScript's. These are intended: the goal is to judge answers the way PHP does, not the way the previous JavaScript path did.
 
@@ -548,7 +552,7 @@ Stored answers may contain `﹤`/`﹥` (U+FE64/U+FE65, *Small Form Variants* ang
 | `src/theme/variables.css` | `@font-face` with `unicode-range: U+FE64-FE65` and the `--ion-font-family` prepend |
 | `scripts/fonts/build-small-angle-brackets.py` | Regeneration script (Python + fontTools) |
 
-The `@font-face` declares `unicode-range: U+FE64-FE65` with `font-display: swap`, and `:root` prepends the family to Ionic's font variable: `--ion-font-family: 'EC5AngleBrackets', var(--ion-default-font)`. That single variable covers every surface on every platform: Ionic shadow components resolve `var(--ion-font-family, inherit)`, and light-DOM text inherits it because the app disables the iOS dynamic font (`--ion-dynamic-font: initial` in the same file), so `html`'s font resolves through the same stack. For all other code points the subset supplies no glyphs, so rendering is byte-for-byte the platform default; the two brackets alone come from the subset. There are deliberately no per-component rules, no font-size overrides and no JS involvement, and `public/` files are copied verbatim into `dist/` and the native bundles, so offline rendering needs no service worker (the PWA target has none — see *Build Targets*).
+The `@font-face` declares `unicode-range: U+FE64-FE65` with `font-display: swap`, and `:root` prepends the family to Ionic's font variable: `--ion-font-family: 'EC5AngleBrackets', var(--ion-default-font)`. That single variable covers every surface on every platform: Ionic shadow components resolve `var(--ion-font-family, inherit)`, and light-DOM text inherits it because the app disables the iOS dynamic font (`--ion-dynamic-font: initial` in the same file), so `html`'s font resolves through the same stack. For all other code points the subset supplies no glyphs, so rendering is byte-for-byte the platform default; the two brackets alone come from the subset. There are deliberately no per-component rules, no font-size overrides and no JS involvement, and `public/` files are copied verbatim into each build's output directory (`dist/pwa/`, `dist/native/`), so offline rendering needs no service worker (the PWA target has none — see *Build Targets*).
 
 ### Why a subset with remapped glyphs
 

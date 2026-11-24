@@ -31,7 +31,7 @@
     "vitest": "NODE_ENV=test vitest",
     "pwa:browser": "node scripts/check-node-version.js && VITE_MODE=PWA VITE_DEBUG=1 node scripts/pwa-dev.js --port 1234 --host",
     "prepwa:prod": "node scripts/check-node-version.js && NODE_ENV=test vitest --run --silent",
-    "pwa:prod": "node scripts/check-node-version.js && node scripts/check-rollbar-token.js && VITE_MODE=PWA VITE_DEBUG= vite build",
+    "pwa:prod": "node scripts/check-node-version.js && node scripts/check-rollbar-token.js && VITE_MODE=PWA VITE_DEBUG= VITE_BYPASS_UNIQUENESS= vite build",
     "pwa:deploy": "npm run pwa:prod && node scripts/deploy-pwa.js",
     "pwa:debug": "node scripts/check-node-version.js && VITE_MODE=PWA VITE_DEBUG=1 vite build",
     "prerollbar": "npm run native:prod",
