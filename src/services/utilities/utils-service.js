@@ -467,12 +467,24 @@ export const utilsService = {
         return new Promise((resolve) => {
             (async function () {
                 const rootStore = useRootStore();
-                if (rootStore.device.platform === PARAMETERS.WEB) {
+                //the PWA runs in the browser: navigator.onLine is the
+                //connectivity signal there, same as plain web. Only native
+                //builds go through the Capacitor Network plugin
+                if (rootStore.device.platform === PARAMETERS.WEB
+                    || rootStore.device.platform === PARAMETERS.PWA) {
                     resolve(window.navigator.onLine);
                 } else {
-                    const networkState = await Network.getStatus();
-                    console.log('Network connection type: ', networkState.connectionType);
-                    resolve(networkState.connected);
+                    try {
+                        const networkState = await Network.getStatus();
+                        console.log('Network connection type: ', networkState.connectionType);
+                        resolve(networkState.connected);
+                    } catch (error) {
+                        //a failing status check must not hang callers
+                        //(handleWebError awaits this): fall back to the
+                        //browser signal instead of leaving the promise pending
+                        console.log('Network status check failed: ' + error);
+                        resolve(window.navigator.onLine);
+                    }
                 }
             }());
         });
