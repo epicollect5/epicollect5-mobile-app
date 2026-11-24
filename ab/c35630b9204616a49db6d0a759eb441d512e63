@@ -1,0 +1,30 @@
+src/components/Dropzone.vue
+  h_2231ff2aa93473 177,242,337
+src/components/globals/WaitOverlay.vue
+  h_2231ff2aa93473 2-5,11-12,17,20-22,27-32,35-36
+src/components/platform/LocationPwa.vue
+  h_2231ff2aa93473 134,168,176-178,182,216-220,222-226,228,230-233,238-241,247-249
+src/pages/EntriesAdd.vue
+  h_2231ff2aa93473 624-629,645-647
+src/stores/wait-overlay-store.js
+  h_2231ff2aa93473 3-10,14-20,29-32,39-40
+src/theme/components/globals/WaitOverlay.scss
+  h_2231ff2aa93473 1-4
+tests/unit/components/WaitOverlay.spec.js
+  h_2231ff2aa93473 37,42,52-65
+tests/unit/components/platform/LocationPwa.spec.js
+  h_2231ff2aa93473 8-9,47-55,61,91-98,206-277
+tests/unit/components/questions/Dropzone.spec.js
+  h_2231ff2aa93473 398,405,412,430,437,452,460,480
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "abc35630b9204616a49db6d0a759eb441d512e63",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
