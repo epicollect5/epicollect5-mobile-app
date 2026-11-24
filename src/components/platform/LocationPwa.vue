@@ -9,7 +9,7 @@
             :disabled="false"
             action="help"
             :questionText="parentState.question"
-            @on-label-button-click="openModalLocationHelp"
+            @on-label-button-click="openLocationDocs"
         ></question-label-action>
       </ion-card-title>
     </ion-card-header>
@@ -132,14 +132,12 @@ import {STRINGS} from '@/config/strings.js';
 import {PARAMETERS} from '@/config';
 import {useRootStore} from '@/stores/root-store';
 import {search, locate} from 'ionicons/icons';
-import {modalController} from '@ionic/vue';
 import markerIcon from '@/leaflet/images/marker-icon@2x.png';
 import markerShadow from '@/leaflet/images/marker-shadow.png';
 import markerIcon1x from 'leaflet/dist/images/marker-icon.png';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';
 import {webService} from '@/services/web-service';
-import ModalLocationHelp from '@/components/modals/ModalLocationHelp.vue';
 import QuestionLabelAction from '@/components/QuestionLabelAction';
 import {FullScreen} from 'leaflet.fullscreen';
 import 'leaflet.fullscreen/dist/Control.FullScreen.css';
@@ -183,7 +181,6 @@ export default {
     const state = reactive({
       address: ''
     });
-    const scope = {};
 
     const computedScope = {
       hasError: computed(() => {
@@ -199,16 +196,12 @@ export default {
     };
 
     const methods = {
-      async openModalLocationHelp() {
-        scope.ModalLocationHelp = await modalController.create({
-          cssClass: 'modal-location-help',
-          component: ModalLocationHelp,
-          showBackdrop: true,
-          backdropDismiss: true,
-          componentProps: {}
-        });
-
-        return scope.ModalLocationHelp.present();
+      openLocationDocs() {
+        window.open(
+          'https://docs.epicollect.net/mobile-application/location-questions#web-application',
+          '_blank',
+          'noopener,noreferrer'
+        );
       },
       async geocodeAddress() {
         if (state.address === '') {
