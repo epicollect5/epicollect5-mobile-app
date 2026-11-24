@@ -697,15 +697,10 @@ export default {
 				//let's check if we are quitting from the PWA
 				if (rootStore.isPWA) {
 					if (response.routeName === PARAMETERS.ROUTES.PWA_QUIT) {
-						if (import.meta.env.PROD) {
-							//redirect to dataviewer URL ()
-							console.log(utilsService.getDataViewerURL(projectSlug));
-							window.location.href = utilsService.getDataViewerURL(projectSlug);
-						} else {
-							console.log(utilsService.getDataViewerURL(projectSlug));
-							notificationService.showAlert('Should go back to dataviewer :)');
-							notificationService.hideProgressDialog();
-						}
+						//redirect to dataviewer URL (dev too: the dev page is served
+						//by Laravel, so the dataviewer route exists there as in prod)
+						console.log(utilsService.getDataViewerURL(projectSlug));
+						window.location.href = utilsService.getDataViewerURL(projectSlug);
 						return false;
 					}
 
