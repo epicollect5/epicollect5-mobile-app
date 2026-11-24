@@ -38,7 +38,7 @@ export const STRINGS = {
             profile: 'Profile',
             address: 'Address',
             exit: 'Exit',
-            editing_branches_pwa: 'Please note: to edit existing branch entries you must use the Epicollect5 Data Viewer.',
+            editing_branches_pwa: 'To edit existing branch entries you need to open each branch entry directly.',
             format: 'Format',
             clear_filters: 'Clear Filters',
             invalid_value: 'Invalid value',

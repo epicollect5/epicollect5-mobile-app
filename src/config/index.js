@@ -12,6 +12,7 @@ export const PARAMETERS = {
     COMMUNITY_SUPPORT_URL: 'https://community.epicollect.net',
     PRODUCTION_SERVER_URL: 'https://five.epicollect.net',
     ADD_PROJECTS_DOCS_URL: 'https://docs.epicollect.net/mobile-application/add-projects',
+    EDIT_BRANCH_ENTRIES_DOCS_URL: 'https://docs.epicollect.net/web-application/adding-data#add-or-edit-branch-entries',
     UPLOAD_MEDIA_DOCS_URL: 'https://docs.epicollect.net/mobile-application/upload-entries#uploading-media-files',
     DOWNLOAD_ENTRIES_DOCS_URL: 'https://docs.epicollect.net/mobile-application/download-entries',
     UPDATE_PROJECT_DOCS_URL: 'https://docs.epicollect.net/mobile-application/updating-a-project-mobile',

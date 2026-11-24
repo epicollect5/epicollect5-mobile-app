@@ -47,8 +47,13 @@
 				<ion-row v-if="isPWA && isPWAEntryEdit">
 					<ion-col>
 						<ion-item color="warning">
-							<ion-label class="item-divider-label-centered ion-text-wrap">{{ pwaEntryEditWarning
-								}}</ion-label>
+							<ion-label class="item-divider-label-centered ion-text-wrap">{{ pwaEntryEditWarning }}
+								<button
+									type="button"
+									class="pwa-branch-edit-warning-link"
+									@click="openBranchEntriesDocs()"
+								>{{ labels.learn_more }}</button>
+							</ion-label>
 						</ion-item>
 					</ion-col>
 				</ion-row>
@@ -260,6 +265,9 @@ export default {
 			},
 			saveBranchEntry() {
 				context.emit('save-branch-entry');
+			},
+			openBranchEntriesDocs() {
+				window.open(PARAMETERS.EDIT_BRANCH_ENTRIES_DOCS_URL);
 			},
 			async openModalEntriesBranchFilter() {
 				if (state.isFetching || state.countNoFilters === 0) {
