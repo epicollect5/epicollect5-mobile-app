@@ -26,7 +26,6 @@ import { PARAMETERS } from '@/config';
 export const answerValidateService = {
 
     errors: {},
-    inputRef: '',
 
     /**
      * Validate answer against input details
@@ -66,8 +65,6 @@ export const answerValidateService = {
         return new Promise((resolve, reject) => {
 
             const runChecks = async function () {
-
-                self.inputRef = params.input_details.ref;
 
                 // Local checks run first, so the uniqueness check, which performs
                 // a server request on PWA, is only reached when the answer is valid
@@ -114,8 +111,11 @@ export const answerValidateService = {
                 // Check uniqueness last: on PWA it performs a server request
                 const response = await self.isUnique(entry, params.input_details, answer);
                 if (!response) {
-                    // Assign error for non-uniqueness
-                    self.errors[self.inputRef] = ['ec5_22'];
+                    // Assign error for non-uniqueness against this call's own
+                    // input: a group's child checks run concurrently with the
+                    // group check, so shared state would be overwritten before
+                    // the awaited uniqueness response arrives
+                    self.errors[params.input_details.ref] = ['ec5_22'];
                     reject();
                     return;
                 }
