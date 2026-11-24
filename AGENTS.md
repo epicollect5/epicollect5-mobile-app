@@ -153,4 +153,4 @@ Commit messages follow Conventional Commits:
 - Code style → docs/CODE-STYLE.md
 - Database → docs/DATABASE-SCHEMA.md
 - JSON schemas → src/schemas/*
-- Custom agent commands → .agents/skills/*/SKILL.md (canonical; wrappers in .opencode/commands/)
+- Custom agent commands → .agents/skills/*/SKILL.md (canonical; optional local OpenCode wrappers in `.opencode/commands/`, gitignored)
