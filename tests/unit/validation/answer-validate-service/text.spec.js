@@ -297,6 +297,22 @@ describe('answerValidateService', () => {
         expect(answerValidateService.getErrors()).toMatchObject({});
         params.input_details.uniqueness = 'none';
     });
+    it('TEXT answer failing regex skips the uniqueness check', async () => {
+
+        params.answer.answer = '5Mirko5';
+        params.input_details.regex = '^[0-9]+$';
+        params.input_details.uniqueness = 'form';
+        //even a duplicate answer must not reach the uniqueness check
+        databaseSelectService.isUnique.mockResolvedValue({ rows: [1, 2, 3] });
+        databaseSelectService.isUnique.mockClear();
+
+        await expect(answerValidateService.validate(entry, params)).rejects.toEqual();
+        expect(answerValidateService.getErrors()).toMatchObject({
+            //"ec5_23": "Regex format not matched."
+            [inputRef]: ['ec5_23']
+        });
+        expect(databaseSelectService.isUnique).not.toHaveBeenCalled();
+    });
     it('TEXT answer double entry verification missing', async () => {
 
         params.answer.answer = 'Mirko';

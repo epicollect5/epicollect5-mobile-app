@@ -45,8 +45,9 @@ export default {
 		const rootStore = useRootStore();
 		const route = useRoute();
 		const methods = {
-			//emit event to exit app and go back to dataviewer
-			// PWA in production only
+			//emit event to exit app and go back to dataviewer (dev and prod:
+			//the dev page is served by Laravel, so the dataviewer route exists
+			//there as in prod)
 			exitApp (e) {
 				const allowedRoutes = [
 					PARAMETERS.ROUTES.NOT_FOUND,
@@ -55,7 +56,7 @@ export default {
 					PARAMETERS.ROUTES.ENTRIES_BRANCH_ADD
 				];
 				console.log('should exit app...');
-				if (rootStore.isPWA && import.meta.env.PROD) {
+				if (rootStore.isPWA) {
 					//only the project logo is clickable
 					if (e.target.className === 'project-logo' && e.target.localName === 'img') {
 						//emit only on PWA routes

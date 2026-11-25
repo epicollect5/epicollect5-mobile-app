@@ -3,6 +3,8 @@
     <left-drawer v-if="needsDrawers"></left-drawer>
     <right-drawer v-if="needsDrawers"></right-drawer>
     <ion-router-outlet id="main"/>
+    <wait-overlay/>
+    <rollbar-consent/>
   </ion-app>
 </template>
 
@@ -19,12 +21,16 @@ import {utilsService} from '@/services/utilities/utils-service';
 import {webService} from '@/services/web-service';
 import {notificationService} from '@/services/notification-service';
 import {errorsService} from '@/services/errors-service';
+import WaitOverlay from '@/components/globals/WaitOverlay.vue';
+import RollbarConsent from '@/components/globals/RollbarConsent.vue';
 
 export default {
   name: 'App',
   components: {
     IonApp,
-    IonRouterOutlet
+    IonRouterOutlet,
+    WaitOverlay,
+    RollbarConsent
   },
   setup() {
     const rootStore = useRootStore();

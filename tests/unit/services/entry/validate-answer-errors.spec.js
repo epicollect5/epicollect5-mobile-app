@@ -1,7 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { entryCommonService } from '@/services/entry/entry-common-service';
 import { errorsService } from '@/services/errors-service';
 import { STRINGS } from '@/config/strings';
+import { PARAMETERS } from '@/config';
+import { projectModel } from '@/models/project-model.js';
+import { databaseSelectService } from '@/services/database/database-select-service';
 
 vi.mock('@/stores/root-store', () => ({
     useRootStore: vi.fn(() => ({ language: 'en' }))
@@ -9,7 +12,10 @@ vi.mock('@/stores/root-store', () => ({
 
 vi.mock('@/models/project-model.js', () => ({
     projectModel: {
-        getExtraInputs: vi.fn(() => ({}))
+        getExtraInputs: vi.fn(() => ({})),
+        getFormGroups: vi.fn(),
+        getLastUpdated: vi.fn(),
+        getSlug: vi.fn()
     }
 }));
 
@@ -42,7 +48,9 @@ vi.mock('@/services/utilities/rollbar-service', () => ({
 }));
 
 vi.mock('@/services/database/database-select-service', () => ({
-    databaseSelectService: {}
+    databaseSelectService: {
+        isUnique: vi.fn()
+    }
 }));
 
 vi.mock('@/services/web-service', () => ({
@@ -117,5 +125,71 @@ describe('date error lifecycle across failed and successful submits', () => {
         //...and the stale error is gone, so remounting cannot resurrect it
         expect(params.error.errors.date1.message).toBe('');
         expect(params.error.hasError).toBe(false);
+    });
+});
+
+describe('a duplicated group answer is reported on its own input', () => {
+    const GROUP_REF = 'group1';
+    const CHILD_REF = 'text1';
+
+    const groupDetails = {
+        ref: GROUP_REF,
+        type: PARAMETERS.QUESTION_TYPES.GROUP,
+        is_required: false,
+        uniqueness: 'none',
+        verify: false,
+        regex: null
+    };
+    const childDetails = {
+        ref: CHILD_REF,
+        type: PARAMETERS.QUESTION_TYPES.TEXT,
+        is_required: true,
+        uniqueness: 'form',
+        verify: false,
+        regex: null,
+        min: '',
+        max: '',
+        default: null,
+        possible_answers: [],
+        datetime_format: null
+    };
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        STRINGS.en.status_codes = { ec5_22: 'Answer is not unique' };
+    });
+
+    it('does not fold the child uniqueness error into the group ref', async () => {
+        //a group validates its child inputs and the group input through
+        //concurrent validate() calls that share the service state; the child's
+        //uniqueness request resolves after the group's own check has started
+        projectModel.getExtraInputs.mockReturnValue({
+            [GROUP_REF]: { data: groupDetails },
+            [CHILD_REF]: { data: childDetails }
+        });
+        projectModel.getFormGroups.mockReturnValue({ [GROUP_REF]: [CHILD_REF] });
+        databaseSelectService.isUnique.mockResolvedValue({ rows: [1, 2, 3] });
+
+        const answers = {
+            [GROUP_REF]: { answer: '', was_jumped: false },
+            [CHILD_REF]: { answer: 'Mirko', was_jumped: false }
+        };
+        const entry = { formRef: 'form1', isBranch: false, answers, uniqueAnswers: {} };
+        const params = {
+            answers,
+            confirmAnswer: {},
+            mainInputDetails: groupDetails,
+            error: {
+                hasError: false,
+                errors: {}
+            }
+        };
+
+        const rejection = await entryCommonService.validateAnswer(entry, params).catch((error) => error);
+
+        //text answers are lowercased before the comparison
+        expect(databaseSelectService.isUnique).toHaveBeenCalledWith(entry, childDetails, 'mirko');
+        expect(rejection.error[CHILD_REF]).toEqual({ message: 'Answer is not unique' });
+        expect(rejection.error[GROUP_REF]).toBeUndefined();
     });
 });

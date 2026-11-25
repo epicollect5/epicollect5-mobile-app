@@ -16,7 +16,10 @@ $RECYCLE.BIN/
 *.log
 log.txt
 npm-debug.log*
-
+/.openchamber
+/.opencode
+/.codegraph
+/.aiassistant
 /.cloud-attachments
 /.commandcode
 /.freebuff

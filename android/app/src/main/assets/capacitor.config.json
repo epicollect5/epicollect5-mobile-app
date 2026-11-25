@@ -2,7 +2,7 @@
 	"appId": "uk.ac.imperial.epicollect.five",
 	"appName": "Epicollect5",
 	"npmClient": "npm",
-	"webDir": "dist",
+	"webDir": "dist/native",
 	"plugins": {
 		"StatusBar": {
 			"style": "DARK"

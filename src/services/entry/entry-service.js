@@ -81,7 +81,6 @@ export const entryService = {
 
     // Initial function to set up the entry from an existing stored entry
     setUpExisting (entry) {
-        console.log(JSON.stringify(entry));
 
         const self = this;
         const rootStore = useRootStore();
@@ -257,7 +256,6 @@ export const entryService = {
                         resolve(uploadErrors);
                     }
                 }, (error) => {
-                    console.log({ branchEntry });
                     console.log('branch entry upload error', error);
                     console.log(error);
 
@@ -304,8 +302,6 @@ export const entryService = {
                 false
             );
 
-            console.log(JSON.stringify(self.entry));
-
             //convert self.entry to an object identical to the one we save to the DB,
             //so we can re-use all the functions
             const parsedEntry = {
@@ -335,7 +331,6 @@ export const entryService = {
                     const branchEntries = [];
                     Object.values(allBranchEntries).forEach((questionBranchEntries) => {
                         questionBranchEntries.forEach(async (branchEntry) => {
-                            console.log({ branchEntry });
                             branchEntries.push(branchEntry);
                         });
                     });
@@ -349,7 +344,7 @@ export const entryService = {
                         reject({ data: { errors: branchUploadErrors } });
                     }
                     else {
-                        resolve();
+                        resolve(response);
                         rootStore.queueTempBranchEntriesPWA = {};
                     }
                 }

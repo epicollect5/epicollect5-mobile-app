@@ -1,17 +1,30 @@
 import {PARAMETERS} from '@/config';
 import {STRINGS} from '@/config/strings';
 import {useRootStore} from '@/stores/root-store';
-import {loadingController, alertController} from '@ionic/vue';
+import {loadingController, alertController, toastController} from '@ionic/vue';
+import {nextTick} from 'vue';
+import {NativeLoader} from '@epicollect5/capacitor-native-loader';
 import {PushNotifications} from '@capacitor/push-notifications';
 import {NativeSettings, AndroidSettings} from 'capacitor-native-settings';
 import {databaseSelectService} from '@/services/database/database-select-service';
 import {databaseInsertService} from '@/services/database/database-insert-service';
+import {rollbarService} from '@/services/utilities/rollbar-service';
 import {Toast} from '@capacitor/toast';
 import {Capacitor} from '@capacitor/core';
 import {useToast} from '@/use/toast';
 import {modalController} from '@ionic/vue';
 import {ForegroundService, Importance} from '@capawesome-team/capacitor-android-foreground-service';
 import ModalProgressExport from '@/components/modals/ModalProgressExport.vue';
+
+//dismissal flag for the native loader: set by hideNativeLoader, checked by
+//a native show that settles late (e.g. after the app was backgrounded and
+//the bridge call stayed pending) so a stale ring cannot linger on an
+//already-loaded question
+let nativeLoaderDismissed = false;
+
+//current sticky warning toast: shown by showWarningToast, dismissed by
+//dismissWarningToast when the caller's operation is visually done
+let warningToast = null;
 
 export const notificationService = {
 
@@ -43,6 +56,71 @@ export const notificationService = {
             }
         }, setDelay);
     },
+    //Sticky top warning toast for long, UI-blocking operations (e.g. media
+    //uploads in Dropzone): stays up until dismissWarningToast() is called,
+    //the caller decides when the operation is visually done
+    async showWarningToast(message) {
+        const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+        //a sticky toast has no auto-dismiss and no buttons: a second show must
+        //not overwrite the only handle to the one already on screen
+        try {
+            await this.dismissWarningToast();
+        } catch (error) {
+            console.log('previous upload toast dismiss failed: ' + error);
+        }
+        const toast = await toastController.create({
+            message: messageStr,
+            position: 'top',
+            color: 'warning',
+            duration: 0,
+            cssClass: 'upload-warning-toast'
+        });
+        warningToast = toast;
+        await toast.present();
+    },
+    async dismissWarningToast() {
+        //clear the handle before awaiting: a rejected dismiss (the overlay may
+        //already be gone) must not leave a stale handle behind
+        const toast = warningToast;
+        warningToast = null;
+        if (toast) {
+            await toast.dismiss();
+        }
+    },
+    //Top success toast for completed operations (e.g. a saved entry): unlike
+    //the warning toast it is transient, so an explicit duration is required —
+    //the toast default (0) shows until dismissed
+    async showSuccessToast(message) {
+        const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+        const toast = await toastController.create({
+            message: messageStr,
+            position: 'top',
+            color: 'success',
+            duration: 2000
+        });
+        await toast.present();
+    },
+    //Top error toast for failed operations (e.g. a rejected entry upload):
+    //sticky (the toast default duration 0) and dismissed manually via its
+    //button, the user must acknowledge what went wrong
+    async showErrorToast(message) {
+        const rootStore = useRootStore();
+        const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+        const toast = await toastController.create({
+            message: messageStr,
+            position: 'top',
+            color: 'danger',
+            duration: 0,
+            buttons: [
+                {
+                    text: STRINGS[rootStore.language].labels.dismiss,
+                    role: 'cancel'
+                }
+            ]
+        });
+        await toast.present();
+    },
+
     async showAlert(message, header) {
         const rootStore = useRootStore();
         const language = rootStore.language;
@@ -100,6 +178,9 @@ export const notificationService = {
                     header: title,
                     message,
                     buttons,
+                    //a backdrop tap runs no button handler, so the promise
+                    //below would never settle
+                    backdropDismiss: false,
                     cssClass: 'alert-confirm-single-vertical-' + platform
                 };
 
@@ -183,6 +264,9 @@ export const notificationService = {
                     .create({
                         mode,
                         cssClass: 'alert-confirm-multiple-' + platform,
+                        //a backdrop tap runs no button handler, so the promise
+                        //below would never settle
+                        backdropDismiss: false,
                         header: title,
                         message,
 buttons
@@ -224,6 +308,9 @@ buttons
                     .create({
                         header: title,
                         message,
+                        //a backdrop tap runs no button handler, so the promise
+                        //below would never settle
+                        backdropDismiss: false,
                         buttons: confirmButtons
                     });
                 await alert.present();
@@ -328,6 +415,88 @@ buttons
                 }
             }, set_delay);
         });
+    },
+    /**
+     * Show the native fullscreen loader (native builds only).
+     * Drawn outside the WebView: it keeps animating while the next
+     * question render blocks the WebView thread, unlike the CSS spinner.
+     * Await it before starting work that blocks the WebView. Never rejects
+     * and never blocks past DELAY_LONG: a backgrounded app can leave the
+     * native show pending indefinitely (the Android show latches the main
+     * thread) and can reject on lifecycle errors — navigation must survive
+     * both.
+     */
+    async showNativeLoader() {
+        if (!Capacitor.isNativePlatform()) {
+            return;
+        }
+        //match the CSS crescent spinner: a single-colour arc that contrasts
+        //with the theme. Identical stops keep the native ring free of its
+        //gradient. body.theme-dark is what themeService toggles, so it is the
+        //authoritative mode signal. rgba() is the only colour format both
+        //platforms parse the same way (Android reads 8-digit hex as
+        //#AARRGGBB, iOS as #RRGGBBAA). reducedMotion must be 'ignore': with
+        //the default 'system' a device with Reduce Motion enabled freezes
+        //the ring (reads as a hang).
+        const darkTheme = document.body.classList.contains('theme-dark');
+        const colors = darkTheme ? ['#E6E6E6', '#E6E6E6'] : ['#333333', '#333333'];
+        nativeLoaderDismissed = false;
+        const showPromise = NativeLoader.show({
+            style: 'ring',
+            placement: 'fullscreen',
+            size: 28,
+            thickness: 2,
+            colors,
+            backgroundColor: 'rgba(0, 0, 0, 0)',
+            interactionMode: 'block',
+            reducedMotion: 'ignore'
+        });
+        //a show that settles after hideNativeLoader (a superseded navigation)
+        //must hide itself instead of lingering over already-loaded content
+        showPromise.then(() => {
+            if (nativeLoaderDismissed) {
+                NativeLoader.hideAll({animated: false});
+            }
+        }, (error) => {
+            console.log('native loader show failed: ' + error);
+            //every supported device has the bridge, so a failed show is a defect
+            //(memory pressure, a lifecycle error, a broken plugin), not a device
+            //class: report it rather than swallowing it in the console
+            rollbarService.criticalWithContext('nativeLoader: show failed', error);
+        });
+        //never block navigation on a bridge call that may stay pending
+        await Promise.race([
+            showPromise.catch(() => {}),
+            new Promise((resolve) => setTimeout(resolve, PARAMETERS.DELAY_LONG))
+        ]);
+    },
+    /**
+     * Hide the native fullscreen loader (native builds only).
+     * Safe to call when no loader is showing.
+     */
+    async hideNativeLoader() {
+        if (!Capacitor.isNativePlatform()) {
+            return;
+        }
+        //mark dismissed before waiting: a native show that settles after
+        //this point is a late arrival and must hide itself
+        nativeLoaderDismissed = true;
+        //hide the ring when the question content is on screen: a rAF callback
+        //runs before its frame is painted, so one rAF still fires while the
+        //new question is being laid out (a heavy group paints seconds after
+        //its mount event) — the frame after it is the one to hide on
+        await nextTick();
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        try {
+            await NativeLoader.hideAll({animated: false});
+        } catch (error) {
+            console.log('native loader hide failed: ' + error);
+            //same as a failed show: the bridge is present on every supported
+            //device, and a ring that will not go away is user visible, so the
+            //failure is reported rather than swallowed in the console
+            rollbarService.criticalWithContext('nativeLoader: hide failed', error);
+        }
     },
     /**
      * Dismiss the topmost modal, swallowing "overlay does not exist".

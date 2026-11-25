@@ -246,7 +246,7 @@ describe('exportService.sendToDevice', () => {
 
     it('should report an unwritable previous export folder', async () => {
         exportService.exportHierarchyEntries.mockRejectedValueOnce(new Error(
-            "'writeFile' failed with: /storage/emulated/0/Documents/Epicollect5/ec5-demo-project/data/form-1__form-1.csv: open failed: EACCES (Permission denied)"
+            '\'writeFile\' failed with: /storage/emulated/0/Documents/Epicollect5/ec5-demo-project/data/form-1__form-1.csv: open failed: EACCES (Permission denied)'
         ));
 
         await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))
@@ -258,7 +258,7 @@ describe('exportService.sendToDevice', () => {
 
     it('should recognize an EACCES error thrown as a string', async () => {
         exportService.exportHierarchyEntries.mockRejectedValueOnce(
-            "'writeFile' failed: open failed: EACCES (Permission denied)"
+            '\'writeFile\' failed: open failed: EACCES (Permission denied)'
         );
 
         await expect(exportService.sendToDevice(MOCK_PROJECT_REF, MOCK_PROJECT_SLUG))

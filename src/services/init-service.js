@@ -171,8 +171,10 @@ export const initService = {
 
             // D. Perform the move (Copy first for safety)
             await Filesystem.copy({
-                from: dbName, directory: Directory.Documents,
-                to: `${targetFolder}/${dbName}`, toDirectory: Directory.Library
+                from: dbName,
+                directory: Directory.Documents,
+                to: `${targetFolder}/${dbName}`,
+                toDirectory: Directory.Library
             });
 
             // E. Verify the health of the new copy
@@ -388,15 +390,10 @@ export const initService = {
         let url = '/';
 
         return new Promise((resolve, reject) => {
-            if (import.meta.env.PROD) {
-                //get the language files from data-editor folder in laravel
-                const endpoint = PARAMETERS.PWA_LANGUAGE_FILES_ENDPOINT;
-                url = serverUrl + endpoint + language + '.json';
-            } else {
-                //development i.e. debugging pwa in the browser
-                //get language file from local assets
-                url = './assets/ec5-status-codes/' + language + '.json';
-            }
+            //the status codes are served by laravel next to the deployed bundle:
+            //same origin when the app is served by laravel, dev bundle included
+            const endpoint = PARAMETERS.PWA_LANGUAGE_FILES_ENDPOINT;
+            url = serverUrl + endpoint + language + '.json';
 
             axios(url)
                 .then((data) => {

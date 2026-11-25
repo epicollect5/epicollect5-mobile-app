@@ -11,20 +11,36 @@ export async function saveEntryPWA(state, quit) {
     const language = rootStore.language;
     const labels = STRINGS[language].labels;
 
-    function showEntrySavedSuccessScreen() {
+    function showEntrySavedSuccessScreen(response) {
         state.entrySavedPWA = true;
         state.entryFailedPWA = false;
         state.showSave = false;
         state.showSaved = true;
         state.disablePrevious = true;
         state.disableNext = true;
+        //the server response carries the message (the PWA is english only,
+        //no lookup needed): a transient top confirmation while the saved
+        //screen takes over below
+        notificationService.showSuccessToast(response.data.data.title);
         notificationService.hideProgressDialog();
     }
 
     //if the project has media to upload, warn about it in the progress dialog
 
+    //the media object seeds a filenamePWA bucket for every media input of the
+    //form even when unanswered (mediaService.getEntryStoredMediaPWA), so key
+    //count says nothing: only a cached file counts, as files are uploaded at
+    //pick time and stored ones are already saved
+    function hasMediaFiles(media) {
+        return Object.values(media).some((inputMedia) => {
+            return Object.values(inputMedia).some((mediaFile) => {
+                return mediaFile.filenamePWA.cached !== '';
+            });
+        });
+    }
+
     const media = rootStore.entriesAddScope.entryService.entry?.media ?? {};
-    if (Object.keys(media).length > 0) {
+    if (hasMediaFiles(media)) {
         await notificationService.showProgressDialog(
             labels.saving_with_encoding,
             labels.wait
@@ -40,12 +56,12 @@ export async function saveEntryPWA(state, quit) {
     state.action = rootStore.entriesAddScope.entryService.action;
 
     try {
-        await rootStore.entriesAddScope.entryService.saveEntryPWA();
+        const response = await rootStore.entriesAddScope.entryService.saveEntryPWA();
         //if a branch, go back to branch question and update branches list
         if (rootStore.entriesAddScope.entryService.type === PARAMETERS.BRANCH_ENTRY) {
             //if dealing with a remote branch entry, just show the success screen
             if (rootStore.branchEditType === PARAMETERS.PWA_BRANCH_REMOTE) {
-                showEntrySavedSuccessScreen();
+                showEntrySavedSuccessScreen(response);
             } else {
                 quit(
                     questionCommonService.getNavigationParams(
@@ -55,7 +71,7 @@ export async function saveEntryPWA(state, quit) {
             }
         } else {
             //this is a hierarchy entry:
-            showEntrySavedSuccessScreen();
+            showEntrySavedSuccessScreen(response);
         }
     } catch (errorResponse) {
         //random server errors bail out
@@ -100,8 +116,11 @@ export async function saveEntryPWA(state, quit) {
         state.disablePrevious = false;
         state.disableNext = true;
 
-        //handle error, users can go back to check for errors
+        //surface the server response as a dismissible top toast: every error
+        //carries its (english) title, no lookup needed on the pwa
+        const errorTitles = errorResponse.data.errors
+            .map((error) => error.title ?? error.code);
+        notificationService.showErrorToast(errorTitles.join('<br>'));
         notificationService.hideProgressDialog();
-        await errorsService.handleWebError(errorResponse);
     }
 }

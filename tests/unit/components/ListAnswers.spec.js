@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import ListAnswers from '@/components/ListAnswers.vue';
+import ListAnswers from '@/components/lists/ListAnswers.vue';
 import { useRootStore } from '@/stores/root-store';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
 
@@ -26,7 +26,8 @@ vi.mock('@/services/entry/branch-entry-service', () => ({
 
 vi.mock('vue-router', () => ({
     useRouter: () => ({
-        replace: vi.fn()
+        //vue-router 4 replace() resolves a promise (the component chains .then)
+        replace: vi.fn(() => Promise.resolve())
     })
 }));
 
@@ -41,6 +42,11 @@ const factory = () => {
             areBranchAnswers: false
         },
         global: {
+            //list-item-answer is registered globally in main.js, not imported:
+            //the spec must provide a definition for it or the render throws
+            components: {
+                'list-item-answer': { render: () => null }
+            },
             stubs: {
                 'ion-list': true,
                 'ion-item': true,

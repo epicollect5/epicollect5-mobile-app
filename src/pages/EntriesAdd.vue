@@ -81,7 +81,7 @@
 				</ion-item-divider>
 
 				<div
-					v-if="state.isFetching"
+					v-if="state.isFetching && !isNative"
 					class="text-center"
 				>
 					<ion-spinner
@@ -281,9 +281,11 @@
 
 <script>
 import { useRootStore } from '@/stores/root-store';
+import { useWaitOverlayStore } from '@/stores/wait-overlay-store';
 import { closeOutline, power, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
+import { Capacitor } from '@capacitor/core';
 import { useRouter } from 'vue-router';
 import { reactive, computed } from '@vue/reactivity';
 import { formModel } from '@/models/form-model.js';
@@ -324,7 +326,7 @@ import { entryService } from '@/services/entry/entry-service';
 import { branchEntryService } from '@/services/entry/branch-entry-service';
 import ItemDividerError from '@/components/ItemDividerError.vue';
 import { questionCommonService } from '@/services/entry/question-common-service';
-import ToolbarEntriesAddNavigation from '@/components/ToolbarEntriesAddNavigation.vue';
+import ToolbarEntriesAddNavigation from '@/components/toolbars/ToolbarEntriesAddNavigation.vue';
 import {saveEntryPWA} from '@/services/entry/save-entry-pwa';
 import {saveEntryNative} from '@/services/entry/save-entry-native';
 
@@ -357,6 +359,7 @@ export default {
 	},
 	setup() {
 		const rootStore = useRootStore();
+		const waitOverlayStore = useWaitOverlayStore();
 		const language = rootStore.language;
 		const labels = STRINGS[language].labels;
 		const router = useRouter();
@@ -400,7 +403,13 @@ export default {
 			isSavingEntry: false,
 			//entry the latch was set for: same-component navigation
 			//(e.g. branch save back to the hierarchy editor) must stay usable
-			savingEntryUuid: ''
+			savingEntryUuid: '',
+			//latch while the quit prompt is open: the prompt registers no
+			//ionBackButton handler (backdropDismiss: false), so back falls through
+			isQuitPromptOpen: false,
+			//latch once the user chooses quit, until the deferred navigation;
+			//reset only if quitting fails
+			isQuitting: false
 		});
 
 		const lastNavIndex = rootStore.hierarchyNavigation.length - 1;
@@ -453,13 +462,6 @@ export default {
 				const entryService = rootStore.entriesAddScope.entryService;
 				const isBranch = entryService.entry.isBranch;
 				const formRef = await setupPWAEntry(PARAMETERS.PWA_ADD_ENTRY, isBranch);
-				//get first form question input ref
-				let firstInputRef = projectModel.getInputs(formRef)[0];
-
-				if (isBranch) {
-					const ownerInputRef = entryService.entry.ownerInputRef;
-					firstInputRef = projectModel.getBranches(formRef, ownerInputRef)[0];
-				}
 
 				rootStore.routeParams = {
 					formRef,
@@ -469,14 +471,28 @@ export default {
 					error: {}
 				};
 
-				//hack: fake answer (to re-use prev() method)
-				//no worries about question type, it is just
-				//to make other functions work
-				state.questionParams.currentInputIndex = 1;
-				entryService.entry.answers[firstInputRef] = {
-					answer: '',
-					was_jumped: false
+				//the queued local branches were uploaded with the previous entry: a
+				//new entry re-uses the same form (same input refs) and
+				//fetch-branch-entries prefers the queue over the server list, so
+				//the stale entries would show as the new entry's branches
+				rootStore.queueTempBranchEntriesPWA = {};
+
+				//reset the per-question validation errors: the question components
+				//read this object by reference (questionCommonService) and the new
+				//entry re-uses the same input refs, so leftovers from the previous
+				//entry would re-render on the new questions
+				state.error = {
+					errors: {}
 				};
+
+				//hack: re-use prev() to restart from the first question. The first
+				//input's answer slot is deliberately left undefined:
+				//processJumpsPrevious treats a missing answer as not-jumped, so
+				//prev() lands on index 0, and the question setup then creates the
+				//answer typed for the question (answer-service createDefaultAnswer).
+				//Seeding a flat answer: '' here starves that lazy factory and a
+				//location question receives a string where it writes latitude
+				state.questionParams.currentInputIndex = 1;
 
 				//reset UI
 				state.entrySavedPWA = false;
@@ -499,15 +515,19 @@ export default {
 					quitMessage = labels.are_you_sure;
 				}
 
+				state.isQuitPromptOpen = true;
 				const action = await notificationService.confirmMultiple(
 					quitMessage,
 					labels.quit,
 					labels.save,
 					labels.quit
 				);
+				//the prompt can only be closed by a button, so this always settles
+				state.isQuitPromptOpen = false;
 
 				switch (action) {
 					case PARAMETERS.ACTIONS.ENTRY_QUIT:
+						state.isQuitting = true;
 						await notificationService.showProgressDialog(labels.wait, labels.quitting);
 						// Remove any temp answers/entries
 						try {
@@ -524,6 +544,8 @@ export default {
 							);
 						} catch (error) {
 							console.log(error);
+							//the entry never leaves the page: re-allow the back button
+							state.isQuitting = false;
 							//todo: handle this
 						}
 						break;
@@ -598,6 +620,15 @@ export default {
 				}
 			},
 			prev() {
+				//PWA only, native has no dropzone: an upload is in flight or its
+				//preview has not loaded yet, or a location geocode is pending. The
+				//visible wait UI blocks pointer input, but the hardware back button
+				//still reaches prev() and would unmount the question before the
+				//operation lands, losing the attachment or leaving a stale
+				//location answer
+				if (rootStore.isPWA && waitOverlayStore.isBlocking) {
+					return;
+				}
 				state.showSaved = false;
 				//if the user is on the first question, ask whether to quit the current entry
 				//if the user is on any other question, go back by one question
@@ -611,9 +642,17 @@ export default {
 			 * Go to next question/save entry (depending on where you are in the form)
 			 */
 			async next() {
+				//same back button bypass as prev(): an upload or geocode must land
+				//before the question unmounts. PWA only, native has no dropzone
+				if (rootStore.isPWA && waitOverlayStore.isBlocking) {
+					return;
+				}
 				await handleNext(state, rootStore.entriesAddScope);
 			},
 			onQuestionMounted() {
+				//hide the native loader first, so it animates out as the
+				//question is revealed
+				notificationService.hideNativeLoader();
 				state.isFetching = false;
 				notificationService.hideProgressDialog();
 			}
@@ -658,15 +697,10 @@ export default {
 				//let's check if we are quitting from the PWA
 				if (rootStore.isPWA) {
 					if (response.routeName === PARAMETERS.ROUTES.PWA_QUIT) {
-						if (import.meta.env.PROD) {
-							//redirect to dataviewer URL ()
-							console.log(utilsService.getDataViewerURL(projectSlug));
-							window.location.href = utilsService.getDataViewerURL(projectSlug);
-						} else {
-							console.log(utilsService.getDataViewerURL(projectSlug));
-							notificationService.showAlert('Should go back to dataviewer :)');
-							notificationService.hideProgressDialog();
-						}
+						//redirect to dataviewer URL (dev too: the dev page is served
+						//by Laravel, so the dataviewer route exists there as in prod)
+						console.log(utilsService.getDataViewerURL(projectSlug));
+						window.location.href = utilsService.getDataViewerURL(projectSlug);
 						return false;
 					}
 
@@ -789,6 +823,13 @@ export default {
 				return false;
 			}
 
+			//ignore back while the entry is being saved, quit, or has the quit prompt
+			//open: a prompt opened in those windows outlives the page (alerts live on
+			//ion-app), and its save then runs against the destroyed project model
+			if (state.isSavingEntry || state.isQuitting || state.isQuitPromptOpen) {
+				return false;
+			}
+
       //ignore back button while recording audio
       if (rootStore.isAudioModalActive) {
         return false;
@@ -818,6 +859,7 @@ export default {
 		return {
 			labels,
 			state,
+			isNative: Capacitor.isNativePlatform(),
       onQuestionMounted: methods.onQuestionMounted,
       addEntryPWA: methods.addEntryPWA,
 			...methods,

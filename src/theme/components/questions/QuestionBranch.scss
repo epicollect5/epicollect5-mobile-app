@@ -16,3 +16,17 @@
 .question-branch {
     @include question-group-branch-base;
 }
+
+//inline docs link inside the PWA branch-edit warning: plain text link, no
+//button chrome, inherits the surrounding warning label style, uppercase to
+//match the other inline labels (unsaved_branch_entries etc.)
+.pwa-branch-edit-warning-link {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-decoration: underline;
+    text-transform: uppercase;
+    cursor: pointer;
+}

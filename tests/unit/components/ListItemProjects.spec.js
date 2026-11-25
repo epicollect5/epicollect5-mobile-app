@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
-import ListItemProjects from '@/components/ListItemProjects.vue';
+import ListItemProjects from '@/components/lists/ListItemProjects.vue';
 import { PARAMETERS } from '@/config';
 
 const DATA_URI = 'data:image/webp;base64,UklGRtIAAABXRUJQVlA4IMYAAAAQBgCdASpAAEAAPtFiqk8oJaQiKhmYAQAaCUAaJwMhgE0Egcz7SLgL81LexQmy7gWzXQxWPSd8w6AA';

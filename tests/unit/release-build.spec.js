@@ -12,4 +12,12 @@ describe('release build scripts', () => {
         expect(nativeProd).toMatch(/VITE_DEBUG=(\s|$)/);
         expect(nativeProd).toMatch(/VITE_BYPASS_UNIQUENESS=(\s|$)/);
     });
+
+    it('builds the PWA release bundle with the debug flags cleared', () => {
+        const pwaProd = packageJson.scripts['pwa:prod'];
+
+        expect(packageJson.scripts['pwa:deploy']).toContain('pwa:prod');
+        expect(pwaProd).toMatch(/VITE_DEBUG=(\s|$)/);
+        expect(pwaProd).toMatch(/VITE_BYPASS_UNIQUENESS=(\s|$)/);
+    });
 });

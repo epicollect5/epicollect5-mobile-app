@@ -1,114 +1,34 @@
 <template>
-	<ion-card
-		class="question-card"
-		:class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
-	>
-		<ion-card-header class="question-label force-no-padding">
-			<ion-card-title>
-				<question-label-action
-					:key="state.answer.answer"
-					:disabled="!isFileAvailable"
-					action="media"
-					:questionText="state.question"
-					:answer="state.answer.answer"
-					@on-label-button-click="openPopover"
-				></question-label-action>
-			</ion-card-title>
-		</ion-card-header>
-		<ion-card-content
-			class="ion-text-center"
-			:class="{ 'ion-margin': isGroupInput }"
-		>
-			<dropzone
-				:filestate="state.pwaFileState"
-				:filename="state.answer.answer"
-				:fileError="state.fileError"
-				:key="state.answer.answer"
-				v-if="isPWA"
-				:type="state.inputDetails.type"
-				:inputRef="state.inputDetails.ref"
-				:uuid="entryUuid"
-				@file-loaded="onFileLoadedPWA"
-				@file-dropped="onFileDroppedPWA"
-				@file-error="onFileErrorPWA"
-			></dropzone>
+	<media-pwa
+		v-if="isPWA"
+		:parentState="state"
+		:entryUuid="entryUuid"
+		:isGroupInput="isGroupInput"
+	></media-pwa>
 
-			<grid-question-narrow v-if="!isPWA">
-				<template #content>
-					<ion-button
-						class="question-action-button ion-text-nowrap"
-						color="secondary"
-						expand="block"
-						@click="record()"
-					>
-						<ion-icon
-							slot="start"
-							:icon="mic"
-						></ion-icon>
-						{{ labels.record }}
-					</ion-button>
-				</template>
-			</grid-question-narrow>
-
-			<grid-question-narrow
-				v-if="!isPWA"
-				class="ion-margin-top"
-			>
-				<template #content>
-					<ion-button
-						:disabled="!isFileAvailable"
-						class="question-action-button ion-text-nowrap"
-						color="secondary"
-						expand="block"
-						@click="play()"
-					>
-						<ion-icon
-							slot="start"
-							:icon="playSharp"
-						></ion-icon>
-						{{ labels.play }}
-					</ion-button>
-				</template>
-			</grid-question-narrow>
-		</ion-card-content>
-	</ion-card>
+	<audio-native
+		v-else
+		:parentState="state"
+		:entryUuid="entryUuid"
+		:isGroupInput="isGroupInput"
+	></audio-native>
 </template>
 
 <script>
 import { onMounted } from 'vue';
-import { modalController } from '@ionic/vue';
 import { STRINGS } from '@/config/strings.js';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import { mic, playSharp } from 'ionicons/icons';
 import { reactive, computed } from '@vue/reactivity';
 import { inject } from 'vue';
-import ModalAudioPlay from '@/components/modals/ModalAudioPlay';
-import ModalAudioRecord from '@/components/modals/ModalAudioRecord';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow';
-import { popoverMediaHandler } from '@/use/questions/popover-media-handler';
-import QuestionLabelAction from '@/components/QuestionLabelAction';
-import Dropzone from '@/components/Dropzone';
-import { notificationService } from '@/services/notification-service';
-import { utilsService } from '@/services/utilities/utils-service';
-import { rollbarService } from '@/services/utilities/rollbar-service';
+import MediaPwa from '@/components/platform/MediaPwa';
+import AudioNative from '@/components/platform/AudioNative';
 import { questionCommonService } from '@/services/entry/question-common-service';
-
-//shared pending-open guard across all QuestionAudio instances: claimed
-//synchronously before modal creation (play) or after mic permission is
-//granted (top of _doRecord), released on failure/dismissal. Kept separate
-//from rootStore.isAudioModalActive, which stays navigation-only (false
-//during permission). Claimed after permission, not before, because the OS
-//permission dialog blocks WebView taps, so no overlapping tap can land
-//mid-permission; claiming earlier would strand the guard when the plugin
-//never calls back (no dialog, UI still live).
-let pendingAudioOpen = false;
 
 export default {
 	components: {
-		GridQuestionNarrow,
-		QuestionLabelAction,
-		Dropzone
+		MediaPwa,
+		AudioNative
 	},
 	props: {
 		inputRef: {
@@ -159,24 +79,6 @@ export default {
 		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
 		const computedScope = {
-			hasError: computed(() => {
-				return utilsService.hasQuestionError(state);
-			}),
-			errorMessage: computed(() => {
-				if (Object.keys(state.error.errors).length > 0) {
-					return state.error?.errors[state.currentInputRef]?.message;
-				} else {
-					return '';
-				}
-			}),
-			isFileAvailable: computed(() => {
-				const mediaFile = media[entryUuid][state.inputDetails.ref];
-
-				if (rootStore.isPWA) {
-					return mediaFile.filenamePWA.cached !== '' || mediaFile.filenamePWA.stored !== '';
-				}
-				return mediaFile.cached !== '' || mediaFile.stored !== '';
-			}),
 			isPWA: computed(() => {
 				return rootStore.isPWA;
 			})
@@ -188,269 +90,29 @@ export default {
 			context.emit('question-mounted');
 		});
 
-		const scope = {
-			modalPlayAudio: {},
-			modalAudioRecord: {}
-		};
-
-		//leading-edge tap guard shared by record() and play(): per-component
-		//setup state, so it dies on unmount and never strands a new entry.
-		//Rollback fails open (see isDoubleTap), unlike a claimed-until-released flag
-		let lastAudioTap = 0;
-
-		const projectRef = entriesAddScope.entryService.entry.projectRef;
-		const media = entriesAddScope.entryService.entry.media;
 		// Check whether we want to index the media object using the main entry uuid, or branch entry uuid
 		const entryUuid = !entriesAddState.questionParams.isBranch
 			? entriesAddScope.entryService.entry.entryUuid //use entry_uuid
 			: entriesAddScope.branchEntryService.entry.
-				entryUuid;//use branch entry_uuid 
+				entryUuid;//use branch entry_uuid
 
+		const media = entriesAddScope.entryService.entry.media;
+
+		//ensure the media slot for this input exists; the PWA file fields are
+		//added by MediaPwa, native only needs the base slot
 		media[entryUuid] = media[entryUuid] || {};
-
-		//get saved media details if any
 		if (!Object.prototype.hasOwnProperty.call(media[entryUuid], state.inputDetails.ref)) {
 			media[entryUuid][state.inputDetails.ref] = {};
 			media[entryUuid][state.inputDetails.ref].cached = '';
 			media[entryUuid][state.inputDetails.ref].stored = '';
 			media[entryUuid][state.inputDetails.ref].type = state.inputDetails.type;
-
-			if (rootStore.isPWA) {
-				media[entryUuid][state.inputDetails.ref].filenamePWA = {};
-				media[entryUuid][state.inputDetails.ref].filenamePWA.cached = '';
-				media[entryUuid][state.inputDetails.ref].filenamePWA.stored = '';
-			}
-		} else {
-			if (rootStore.isPWA) {
-				//load preview in dropzone
-				//show cached or stored image if any, Cached image will win over stored one
-				if (media[entryUuid][state.inputDetails.ref].filenamePWA.cached !== '') {
-					state.answer.answer = media[entryUuid][state.inputDetails.ref].filenamePWA.cached;
-					state.pwaFileState = PARAMETERS.PWA_FILE_STATE.CACHED;
-				} else {
-					if (media[entryUuid][state.inputDetails.ref].filenamePWA.stored !== '') {
-						state.answer.answer = media[entryUuid][state.inputDetails.ref].filenamePWA.stored;
-						state.pwaFileState = PARAMETERS.PWA_FILE_STATE.STORED;
-					}
-				}
-			}
-		}
-
-		const methods = {
-			async openPopover(e) {
-				const mediaFile = media[entryUuid][state.inputDetails.ref];
-				if (rootStore.isPWA) {
-					if (mediaFile.filenamePWA.cached === '' && mediaFile.filenamePWA.stored === '') {
-						return false;
-					}
-				} else {
-					if (mediaFile.cached === '' && mediaFile.stored === '') {
-						return false;
-					}
-				}
-				popoverMediaHandler({
-					media,
-					entryUuid,
-					state,
-					e,
-					mediaType: PARAMETERS.QUESTION_TYPES.AUDIO
-				});
-			},
-		record() {
-			//leading-edge debounce (shared with play) plus a read-only
-			//overlay check: a second tap inside the window, or any tap
-			//while an audio open is pending or an overlay is up, is dropped.
-			//imp: pendingAudioOpen is claimed after mic permission is granted
-			//(top of _doRecord), not here. The OS permission dialog blocks
-			//WebView taps, so no overlapping tap can land mid-permission;
-			//claiming earlier would strand the guard when the plugin never
-			//calls back (no dialog, UI still live). isAudioModalActive stays
-			//navigation-only (false during permission).
-			if (pendingAudioOpen
-				|| rootStore.isAudioModalActive
-				|| utilsService.isDoubleTap(lastAudioTap, PARAMETERS.DELAY_LONG)) {
-				return;
-			}
-				lastAudioTap = Date.now();
-				if (rootStore.device.platform !== PARAMETERS.WEB) {
-					if (rootStore.device.platform === PARAMETERS.ANDROID) {
-						//android permission
-						console.log(cordova.plugins);
-						cordova.plugins.diagnostic.requestRuntimePermission(
-							(status) => {
-								if (status === cordova.plugins.diagnostic.permissionStatus.GRANTED) {
-									console.log('Permission granted');
-									_doRecord().catch(_onRecordOpenError);
-								} else {
-									//warn user the permission is required
-									notificationService.showAlert(labels.missing_permission);
-								}
-							},
-							function (error) {
-								console.error('The following error occurred: ' + error);
-								rollbarService.criticalWithContext('audioRecord permission failed', error);
-								notificationService.showAlert(error);
-							},
-							cordova.plugins.diagnostic.permission.RECORD_AUDIO
-						);
-					} else {
-						//ios permission if needed
-						window.cordova.plugins.diagnostic.requestMicrophoneAuthorization(
-							function (status) {
-								if (status === 'authorized' || status === 1) {
-									console.log('Permission granted');
-									_doRecord().catch(_onRecordOpenError);
-								} else {
-									//warn user the permission is required
-									notificationService.showAlert(labels.missing_permission);
-								}
-							},
-							function (error) {
-								console.error(error);
-								rollbarService.criticalWithContext('audioRecord permission failed', error);
-								notificationService.showAlert(error);
-							}
-						);
-					}
-				}
-			},
-		async play() {
-			//same debounce as record(): both actions share one window,
-			//so play cannot stack a second player on top of an in-flight
-			//record or play either. The pending guard is claimed synchronously
-			//here, before the first await, so taps from any instance are dropped.
-			if (pendingAudioOpen
-				|| rootStore.isAudioModalActive
-				|| utilsService.isDoubleTap(lastAudioTap, PARAMETERS.DELAY_LONG)) {
-				return;
-			}
-			lastAudioTap = Date.now();
-			pendingAudioOpen = true;
-			try {
-				scope.ModalAudioPlay = await modalController.create({
-						cssClass: 'modal-audio-play',
-						component: ModalAudioPlay,
-						showBackdrop: true,
-						backdropDismiss: false,
-						componentProps: {
-							projectRef,
-							inputRef: state.inputDetails.ref,
-							entryUuid,
-							media
-						}
-					});
-
-					//the overlay gate is claimed only once it is actually being presented, and
-					//released only once the user has closed the modal: present() resolves as
-					//soon as the overlay is on screen and playback keeps running after it,
-					//and a rejected present() must not strand the gate
-					const dismissed = scope.ModalAudioPlay.onDidDismiss();
-					rootStore.isAudioModalActive = true;
-					try {
-						await scope.ModalAudioPlay.present();
-						await dismissed;
-					} finally {
-						rootStore.isAudioModalActive = false;
-					}
-			} catch (error) {
-				//the player could not be presented: surface it, a failed
-				//open must never be silent (same as photo/video)
-				console.log('Audio play failed: ' + error);
-				rollbarService.criticalWithContext('audioPlay open failed', error);
-				notificationService.showAlert(error.message || labels.unknown_error);
-			} finally {
-				pendingAudioOpen = false;
-			}
-		},
-			onFileLoadedPWA(filename) {
-				state.answer.answer = filename;
-			},
-			onFileDroppedPWA(filename) {
-				//if a file is dropped, we have a cached file to show
-				//(cached takes priority on stored, if any)
-				media[entryUuid][state.inputDetails.ref].filenamePWA.cached = filename;
-				state.pwaFileState = PARAMETERS.PWA_FILE_STATE.CACHED;
-				state.answer.answer = filename;
-			},
-			onFileErrorPWA(error) {
-				state.fileError = error;
-			}
-		};
-
-		//the recorder modal is opened fire-and-forget from the permission
-		//callback: surface a failed open instead of an unhandled rejection
-		//(same as photo/video, same as play() above)
-		function _onRecordOpenError(error) {
-			console.log('Audio record failed: ' + error);
-			rollbarService.criticalWithContext('audioRecord open failed', error);
-			notificationService.showAlert((error && error.message) || labels.unknown_error);
-		}
-
-		async function _doRecord() {
-			//second granted callback racing an in-flight open is dropped here:
-			//the OS dialog blocks WebView taps mid-permission, so this only
-			//covers the granted fast path and programmatic double-invocation
-			if (pendingAudioOpen || rootStore.isAudioModalActive) {
-				return;
-			}
-			//claimed synchronously before the first await, released below on
-			//every path (failure, dismissal); isAudioModalActive stays
-			//navigation-only and is claimed only once presenting
-			pendingAudioOpen = true;
-			try {
-				scope.modalAudioRecord = await modalController.create({
-					cssClass: 'modal-audio-record',
-					component: ModalAudioRecord,
-					showBackdrop: true,
-					backdropDismiss: false,
-					componentProps: {
-						inputRef: state.inputDetails.ref,
-						entryUuid,
-						media
-					}
-				});
-
-				//settle on dismissal, not presentation: the overlay gate stays
-				//claimed while the recorder is open, so back-button navigation
-				//cannot leave the question mid-recording
-				const dismissed = scope.modalAudioRecord.onDidDismiss().then((response) => {
-					console.log('filename is: ', response.data);
-					const filename = response.data;
-					//a dismissal carrying no filename (no recording made) must leave the
-					//answer and the media reference untouched: writing an undefined here
-					//would point the entry at a file that does not exist and break the
-					//save with FileError 1
-					if (filename) {
-						state.answer.answer = filename;
-						media[entryUuid][state.inputDetails.ref].cached = filename;
-					}
-				});
-				rootStore.isAudioModalActive = true;
-				try {
-					await scope.modalAudioRecord.present();
-					await dismissed;
-				} finally {
-					rootStore.isAudioModalActive = false;
-				}
-			} finally {
-				pendingAudioOpen = false;
-			}
 		}
 
 		return {
-			labels,
 			state,
 			entryUuid,
-
-			...computedScope,
-			...methods,
-			...props,
-			//icons
-			mic,
-			playSharp
+			...computedScope
 		};
 	}
 };
 </script>
-
-<style src="@/theme/components/questions/QuestionAudio.scss" lang="scss"></style>

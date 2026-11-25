@@ -78,7 +78,7 @@ describe('saveBlobToTempDir', () => {
                 success();
             },
             remove(success) {
-                virtualFs.delete(virtualFs.values ? Array.from(virtualFs).find(n => n.endsWith('.bak')) : '');
+                virtualFs.delete(virtualFs.values ? Array.from(virtualFs).find((n) => n.endsWith('.bak')) : '');
                 success();
             }
         };

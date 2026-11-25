@@ -83,7 +83,7 @@ import { reactive } from '@vue/reactivity';
 import { STRINGS } from '@/config/strings';
 import { PARAMETERS } from '@/config';
 import { useRootStore } from '@/stores/root-store';
-import HeaderModal from '@/components/HeaderModal.vue';
+import HeaderModal from '@/components/modals/HeaderModal.vue';
 import { notificationService } from '@/services/notification-service';
 import { webService } from '@/services/web-service';
 import { utilsService } from '@/services/utilities/utils-service';

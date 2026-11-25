@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { h } from 'vue';
 import { shallowMount, flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
 import { PARAMETERS } from '@/config';
@@ -149,6 +150,18 @@ function mockListData() {
     });
 }
 
+//base-layout is registered globally in main.js, not imported: in tests it
+//must resolve to a component or the page render throws. The pump tests
+//assert on vm state, so an empty stub is enough (a render function, because
+//string templates need the runtime compiler this build does not ship)
+const BaseLayoutStub = { render: () => null };
+
+const mountEntries = () => shallowMount(Entries, {
+    global: {
+        components: { 'base-layout': BaseLayoutStub }
+    }
+});
+
 describe('Entries page pump', () => {
 
     beforeEach(() => {
@@ -164,7 +177,7 @@ describe('Entries page pump', () => {
     });
 
     it('loads the list on mount', async () => {
-        const wrapper = shallowMount(Entries);
+        const wrapper = mountEntries();
         await flushPromises();
         await flushPromises();
         expect(fetchEntries).toHaveBeenCalledTimes(1);
@@ -173,7 +186,7 @@ describe('Entries page pump', () => {
     });
 
     it('child-form back navigates and reloads the parent', async () => {
-        const wrapper = shallowMount(Entries);
+        const wrapper = mountEntries();
         await flushPromises();
         await flushPromises();
         expect(wrapper.vm.state.isFetching).toBe(false);
@@ -201,7 +214,7 @@ describe('Entries page pump', () => {
 
     it('reports failed loads to rollbar', async () => {
         fetchEntries.mockRejectedValueOnce(new Error('db gone'));
-        shallowMount(Entries);
+        mountEntries();
         await flushPromises();
         await flushPromises();
         expect(rollbarMock.criticalWithContext).toHaveBeenCalledWith('Entries list load failed', expect.any(Error));
@@ -217,7 +230,7 @@ describe('Entries page pump', () => {
         });
         updateLocalProject.mockResolvedValueOnce(true);
 
-        shallowMount(Entries);
+        mountEntries();
         await flushPromises();
         await flushPromises();
         await flushPromises();

@@ -238,6 +238,8 @@ You must follow these rules strictly. If you generate code that violates these, 
 - **Braces**: ALWAYS wrap `if`/`else`/`for`/`while` bodies in `{}`, even single statements (`'curly': ['error', 'all']`).
 - **Quotes**: Use SINGLE quotes for strings (`'quotes': ['error', 'single']`).
 - **Commas**: NEVER use trailing commas (`'comma-dangle': [1, 'never']`).
+- **Object literals**: in a **multi-line** object literal, keep ONE property or method per line. Never put two properties on the same line, and never merge a method onto the previous closing brace (`    }, async showAlert(message, header) {` must be `    },` then `    async showAlert(message, header) {` on its own line). Inline objects stay as they are (`{a: 1, b: 2}`, `{type: 'image/jpeg'}`) — the rule only fires once an object spans lines (`'local/object-one-property-per-line': 'error'`, defined in `eslint.config.js` next to the other rules).
+  - *Why*: a tool that reformats a file collapses multi-line literals and merges method separators, so a change to four methods arrives as a several-hundred-line diff and the actual change can no longer be reviewed. Nothing else catches this shape — no formatter is configured, and the stock `object-property-newline` rule would flag 143 pre-existing single-line objects across `src/`. The rule is local for that reason, and its behaviour (both the collapsed-property and the merged-method case, plus the inline-object allowance) is pinned by `tests/unit/eslint-rules/object-one-property-per-line.spec.js`.
 - **Variables**: Prefer `const` over `let`, and NEVER use `var`.
 - **Vue Components**:
   - Disable multi-word component name checks.

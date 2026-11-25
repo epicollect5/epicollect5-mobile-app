@@ -144,11 +144,19 @@
     }
     .chip-numeric {
         padding: 0 16px;
+        //ion-chip renders cursor:pointer, hover/pressed tints and an md-mode
+        //ripple on its host, but only the icons and the input are interactive
+        pointer-events: none;
+        cursor: default;
         .chip-numeric--icon-left {
             margin-right: 16px;
+            cursor: pointer;
+            pointer-events: auto;
         }
         .chip-numeric--icon-right {
             margin-left: 16px;
+            cursor: pointer;
+            pointer-events: auto;
         }
         input {
             padding: 12px;
@@ -156,6 +164,7 @@
             border-bottom: none;
             border-left: 1px solid var(--ion-color-medium-tint);
             border-right: 1px solid var(--ion-color-medium-tint);
+            pointer-events: auto;
             &.has-error {
                 border: 1px solid var(--ion-color-danger) !important;
                 padding: 10px !important;

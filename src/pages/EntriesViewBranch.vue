@@ -107,7 +107,7 @@ import {projectModel} from '@/models/project-model.js';
 import {branchEntryModel} from '@/models/branch-entry-model.js';
 import {useRouter, useRoute} from 'vue-router';
 import {watch, reactive} from 'vue';
-import ListAnswers from '@/components/ListAnswers';
+import ListAnswers from '@/components/lists/ListAnswers.vue';
 import {useBackButton} from '@ionic/vue';
 import {notificationService} from '@/services/notification-service';
 import {utilsService} from '@/services/utilities/utils-service';

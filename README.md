@@ -36,7 +36,6 @@ Create a `.env.local` file based on `.env-example.local`:
 
 - **`VITE_GOOGLE_CLIENT_ID_WEB`** - Google OAuth client ID for web authentication
 - **`VITE_GOOGLE_SIGNIN_SCOPE`** - OAuth scopes for Google Sign-In
-- **`VITE_MAPBOX_API_TOKEN`** - API token for Mapbox integration
 - **`VITE_ESRI_API_TOKEN`** - API token for ESRI/ArcGIS integration
 
 ### Build Mode Variables
@@ -53,13 +52,17 @@ Create a `.env.local` file based on `.env-example.local`:
   - Set to empty string `""` to disable (production builds)
   - Note: Environment variables are cast to strings, so use `1` or empty value
 
-- **`VITE_PWA_DEVELOPMENT_SERVER`** - Local development server URL for PWA debugging (e.g., `http://localhost/`)
-
 - **`VITE_BYPASS_UNIQUENESS`** - Bypass uniqueness validation checks for testing
   - Set to `1` to bypass
   - Set to empty string for production
 
-- **`VITE_DEPLOY`** - Deployment configuration (optional)
+- **`VITE_DEPLOY_PWA`** - Absolute path of the server repo location the PWA is
+  deployed to (used by `pwa:deploy` and the `pwa:browser` dev loop)
+
+The full set of environment variables is in `.env-example.local`. Those baked in
+at build time include `VITE_ROLLBAR_POST_TOKEN` (required by the prod builds),
+`VITE_CARTO_API_KEY`, `VITE_ESRI_API_TOKEN` and the `VITE_GOOGLE_*` sign-in keys;
+`ROLLBAR_WRITE_TOKEN` is used only by the sourcemap uploads.
 
 ## Build Scripts
 
@@ -98,22 +101,31 @@ Create a `.env.local` file based on `.env-example.local`:
 
 ### PWA (Progressive Web App)
 
-- **`npm run pwa:browser`** - Run PWA locally in development mode
+- **`npm run pwa:browser`** - Run the PWA with hot reload for debugging
   - Sets `VITE_MODE=PWA` and `VITE_DEBUG=1`
-  - Runs on `http://localhost:1234`
-  - Use format: `http://localhost:1234/{project-slug}/add-entry` to add an entry
+  - Starts the vite dev server on `http://localhost:1234` and writes the hot
+    file into the deployed PWA location (`VITE_DEPLOY_PWA`, the server repo
+    `public/pwa/` directory)
+  - Open the real Laravel page while logged in: `http://localhost/~user/epicollect5-server/public/project/{project-slug}/add-entry`
+    - the page loads the dev bundle from the dev server (hot reload on save)
+    - same origin as production: session, CSRF and the `/api/internal` endpoints
+      behave exactly like the deployed app, private projects included
+  - Stop the dev server (Ctrl-C) to remove the hot file: the page falls back
+    to the built bundle. A `pwa:deploy` run also wipes it.
 
 - **`npm run pwa:prod`** - Build PWA for production
   - Sets `VITE_MODE=PWA`
   - Disables debug mode and uniqueness bypass
   - Runs tests before building (`prepwa:prod`)
-  - Generates bundle analysis report
 
-- **`npm run pwa:debug`** - Build PWA with debug features enabled
+- **`npm run pwa:deploy`** - Build for production and copy into the server
+  repo location (`VITE_DEPLOY_PWA`)
+
+- **`npm run pwa:debug`** - Build PWA unminified (debug features in builds only)
 
 ### Testing
 
-- **`npm run test:unit`** - Run unit tests with Vue CLI
+- **`npm run test:unit`** - Run unit tests with Vitest
 - **`npm run vitest`** - Run tests with Vitest
 - **`npm run vitest-ui`** - Run Vitest with UI
 - **`npm run britest`** - Run browser tests with Chrome
@@ -131,15 +143,17 @@ Create a `.env.local` file based on `.env-example.local`:
 The build process is configured in `vite.config.js` and behaves differently based on `VITE_MODE`:
 
 ### WEBVIEW Mode (Native Apps)
+- Writes to `dist/native/` (the PWA build writes to `dist/pwa/`, so both coexist)
+- Stable, unhashed filenames for self-managed versioning: `app.js`, `vendor-capacitor.js`, `vendor-common.js`, `vendor-ionic.js`
 - Generates source maps for debugging
-- Splits code into optimized chunks (app, vendor-capacitor, vendor-vue, vendor-ionic, vendor-common)
 - Optimized for native mobile performance
 
 ### PWA Mode
-- Limits chunks to 5 for optimal web performance
-- Removes console logs and debugger statements in production
-- Generates bundle analysis report (when `VITE_DEBUG` is not `1`)
-- Ignores test-related dependencies in production builds
+- Writes to `dist/pwa/` and emits `.vite/manifest.json`, which the server shell reads
+- Content-hashed filenames (`app-<hash>.js`, `vendor-vue-<hash>.js`, ...), resolved through the manifest so the shell can cache-bust without a query string
+- Chunks: `app`, `vendor-capacitor`, `vendor-common`, `vendor-ionic`, `vendor-vue`, `vendor-pcre2`
+- Removes `console.log` and `console.warn` in production (keeps `console.error`)
+- Alias-stubs the demo fake-answer and word-list modules out of the bundle
 
 ## Configuration
  - iOS needs a xcconfig file with the REVERSED_CLIENT_ID for Google Sign In.

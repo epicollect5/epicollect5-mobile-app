@@ -11,6 +11,8 @@ vi.mock('@/stores/root-store', () => ({
 vi.mock('@/models/project-model.js', () => ({
     projectModel: {
         getProjectRef: vi.fn(() => 'project-ref'),
+        getSlug: vi.fn(() => 'test-slug'),
+        getLastUpdated: vi.fn(() => 'v1'),
         getExtraForm: vi.fn(() => ({})),
         getExtraInputs: vi.fn(() => ({})),
         getFormIndex: vi.fn(() => 0),
@@ -29,13 +31,40 @@ vi.mock('@/models/form-model.js', () => ({
 
 vi.mock('@capacitor/core', () => ({
     Capacitor: {
-        isNativePlatform: vi.fn(() => false)
+        isNativePlatform: vi.fn(() => false),
+        DEBUG: false
     }
 }));
 
 vi.mock('@/services/entry/entry-common-service', () => ({
     entryCommonService: {
         setEntryTitle: vi.fn()
+    }
+}));
+
+vi.mock('@/services/entry/media-service', () => ({
+    mediaService: {
+        saveMedia: vi.fn().mockResolvedValue()
+    }
+}));
+
+vi.mock('@/services/utilities/utils-service', () => ({
+    utilsService: {
+        getISODateTime: vi.fn(() => '2024-01-01T00:00:00.000Z'),
+        arrayGroupBy: vi.fn(() => ({})),
+        uuid: vi.fn(() => 'mock-uuid')
+    }
+}));
+
+vi.mock('@/services/web-service', () => ({
+    webService: {
+        uploadEntryPWA: vi.fn()
+    }
+}));
+
+vi.mock('@/services/utilities/json-transformer-service', () => ({
+    JSONTransformerService: {
+        makeJsonEntry: vi.fn(() => ({}))
     }
 }));
 
@@ -58,12 +87,6 @@ vi.mock('@/services/database/database-insert-service', () => ({
         insertUniqueAnswers: vi.fn().mockResolvedValue(),
         moveBranchEntries: vi.fn().mockResolvedValue(),
         moveUniqueAnswers: vi.fn().mockResolvedValue()
-    }
-}));
-
-vi.mock('@/services/entry/media-service', () => ({
-    mediaService: {
-        saveMedia: vi.fn().mockResolvedValue()
     }
 }));
 
@@ -247,5 +270,67 @@ describe('entryService.setUpNew', () => {
         entryService.setUpNew('form-ref', '', '');
 
         expect(staleStore.queueFilesToDelete).toEqual([]);
+    });
+});
+
+describe('entryService.saveEntryPWA', () => {
+    const serverResponse = {
+        data: {
+            data: {code: 'ec5_237', title: 'Entry successfully uploaded.'}
+        }
+    };
+
+    function seedHierarchyEntry() {
+        entryService.entry = {
+            entryUuid: 'entry-uuid',
+            parentEntryUuid: '',
+            formRef: 'form-ref',
+            parentFormRef: '',
+            answers: {},
+            title: 'title'
+        };
+    }
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        seedHierarchyEntry();
+    });
+
+    it('resolves the server response when queued branches upload cleanly', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        const { webService } = await import('@/services/web-service');
+        webService.uploadEntryPWA.mockImplementation((slug, payload) => {
+            //the queued local branches are uploaded first (array payload),
+            //the hierarchy entry itself last
+            return Promise.resolve(Array.isArray(payload) ? {} : serverResponse);
+        });
+        useRootStore.mockReturnValue({
+            queueBranchUploadErrorsPWA: {},
+            queueGlobalUploadErrorsPWA: [],
+            queueTempBranchEntriesPWA: {
+                'branch-ref': [{id: 'branch-uuid-1'}, {id: 'branch-uuid-2'}]
+            }
+        });
+
+        const response = await entryService.saveEntryPWA();
+
+        //the caller reads response.data.data.title for the success toast: a
+        //bare resolve() throws there and misreports the success as a failure
+        expect(response).toBe(serverResponse);
+    });
+
+    it('resolves the server response when there are no queued branches', async () => {
+        const { useRootStore } = await import('@/stores/root-store');
+        const { webService } = await import('@/services/web-service');
+        webService.uploadEntryPWA.mockResolvedValue(serverResponse);
+        useRootStore.mockReturnValue({
+            queueBranchUploadErrorsPWA: {},
+            queueGlobalUploadErrorsPWA: [],
+            queueTempBranchEntriesPWA: {}
+        });
+
+        const response = await entryService.saveEntryPWA();
+
+        expect(response).toBe(serverResponse);
     });
 });

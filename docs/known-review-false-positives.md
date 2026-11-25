@@ -49,3 +49,51 @@ Findings that look like defects but are by design. The review workflow (`docs/wo
   Reported as: "This compares serialized attributes on plain custom elements, so both SVG icon objects stringify identically and the assertion fails instead of verifying the icons differ. Compare the component's `pickerIcon` values or stub `ion-icon` and inspect its prop."
 
   Why it is by design: `ionicons/icons` exports each icon as a full SVG data-URI **string** (`typeof timeOutline === 'string'`, e.g. `data:image/svg+xml;utf8,<svg …>`), not an object. The `:icon` binding therefore renders a distinct `icon` attribute per picker type, so `expect(timeIcon.attributes('icon')).not.toBe(pickerIcon.attributes('icon'))` compares two genuinely different values — it passes today and still fails if both picker types rendered the same icon, which is exactly what it guards.
+
+- **Keyboard focus can reach Exit and Next under the upload wait overlay** (`src/components/globals/WaitOverlay.vue`, `waitOverlayStore.isUploading`)
+
+  Reported as: "the overlay blocks pointer events but not tab focus, so a keyboard user can activate Exit and confirm Quit during an upload; the branch question then unmounts and the app-wide blocker is never dismissed."
+
+  Why it is accepted as-is: the app has no keyboard-driven actions — the only key listeners in `src/` are the two `@keyup` handlers on the latitude and longitude inputs in `src/components/platform/LocationPwa.vue` — and every supported target is a touch surface, so tab focus does not reach the toolbar in normal use. Leaving an entry mid-upload is the user's own choice behind a confirm dialog (`quitEntry()` asks `are_you_sure` first), and it discards unsaved answers by design: a reload clears the overlay with everything else, exactly as abandoning any unsaved form mid-write does. Guarding `quitEntry()` was rejected because it would couple the exit path to upload state for a condition the UI cannot be driven into by touch.
+
+- **CARTO light/dark tiles still load from the old `cartodb-basemaps…fastly.net` host** (`src/config/index.js`, `CARTO_LIGHT_TILES_PROVIDER` / `CARTO_DARK_TILES_PROVIDER`)
+
+  Reported as: "CARTO returns 403 for keyed requests on the old fastly host and has not served keyless raster tiles since 25 September 2026, so both basemap URLs must move to `{s}.basemaps.cartocdn.com` or the light and dark maps render blank."
+
+  Why it is not a defect: checked live on 19 November 2026 — the old host returns 200 for both a keyed and an unkeyed tile, and `a.basemaps.cartocdn.com` returns a byte-identical tile (same md5), so the old host simply ignores the `?key=` parameter instead of rejecting it, and both basemap styles load. The key is sent because CARTO gates raster tiles on a key for newer accounts; if that gate ever reaches the old host the fix is a host swap, and the way to settle this is a live tile request, never a reading of the config.
+
+- **`hasMediaFiles` reads one nesting level too deep and throws** (`src/services/entry/save-entry-pwa.js`, `hasMediaFiles`)
+
+  Reported as: "`entry.media[inputRef]` is `{filenamePWA: {...}}`, so `Object.values(inputMedia)` yields the bucket itself, `mediaFile.filenamePWA` is undefined and `.cached` throws before the progress dialog opens."
+
+  Why it is correct: `entry.media` is keyed uuid → inputRef → `{filenamePWA: {cached, stored}}`. `mediaService.getEntryStoredMediaPWA()` seeds that bucket for every media input of the form, unanswered ones included (`media-service.js:176-200`), and `MediaPwa.vue:82` seeds it too for slots it creates. The two `Object.values` loops therefore walk uuid → inputRef and land on `{filenamePWA}`, whose `cached` is always a string, so the `!== ''` test never sees `undefined`. Branch entries are built by the same function (`branch-entry-service.js:86`).
+
+- **The new branch lists lose the original infinite-scroll event** (`src/components/questions/QuestionBranch.vue`, `loadEntriesChunk`)
+
+  Reported as: "the `branch-pwa`/`branch-native` children re-emit a payload, so the parent's `ev.target.complete()` and `ev.target.disabled` throw."
+
+  Why it is correct: both children pass the original `IonInfiniteScrollCustomEvent` through unchanged — `BranchPwa.vue:198` and `BranchNative.vue:148` are both `context.emit('load-entries-chunk', ev)` — and the parent completes and disables on `ev.target` (`QuestionBranch.vue:376,379`). Nothing re-wraps the payload.
+
+- **Existing media is no longer restored into `answer.answer`** (`src/components/platform/*`, question wrappers)
+
+  Reported as: "QuestionPhoto/QuestionVideo/QuestionAudio now only create the empty media slot, so editing an entry that has media leaves the answer empty: a required-question check fails or the saved entry loses the media reference."
+
+  Why it is correct: the platform components restore at setup — `PhotoNative.vue:135` and `VideoNative.vue:116` (cached wins over stored, as before the split) — and the PWA card restores in `MediaPwa.vue:89-92`. Native never restored from the media slot at setup before the split either: the answer arrives with the entry's persisted answers, and for audio the component only writes it when a recording lands (`AudioNative.vue:299`), with `isFileAvailable` and the popover reading the live media slot rather than the answer.
+
+- **`import.meta.env.VITE_APP_VERSION` is undefined, so PWA reports carry no `code_version`** (`vite.config.js`, `define`)
+
+  Reported as: "`rollbar-service` reads `import.meta.env.VITE_APP_VERSION` for PWA payloads; if nothing defines it, release grouping and source-map matching break for PWA items."
+
+  Why it is correct: `vite.config.js:26-28` defines it for both builds — `'import.meta.env.VITE_APP_VERSION': JSON.stringify(APP_VERSION)` — so the value present in the bundle is the package version the build was made from.
+
+- **The removed Mapbox/Stamen basemap constants leave dangling consumers** (`src/config/index.js`)
+
+  Reported as: "the Mapbox and Stamen tile and attribution constants were deleted, so a surviving consumer, or a persisted basemap choice, resolves to `undefined` and that basemap renders blank or throws."
+
+  Why it is correct: no consumer was ever written against them. The tile layers are built from the ESRI, OpenTopoMap, CARTO and OSM constants that remain, and a search of `src/` and `tests/` for the removed names finds nothing. There is also no stored basemap selector to migrate: `grep` for `basemap` in `src/` returns only the constant definitions and their comments, so no persisted choice can resolve to a removed constant.
+
+- **Failed deploys remove working files before copying the replacement** (`scripts/deploy-pwa.js`, `deploy()` wipe-then-copy)
+
+  Reported as: "`deploy()` deletes the working deployment before copying its replacement. If copying fails because of permissions, disk space, or an interrupted process, the server has no working bundle or local rollback. The PWA stays offline until someone repairs or repeats the deployment."
+
+  Why it is accepted as-is: this script is run locally by the developer, not in an automated production deployment. If the copy fails, the operator can simply re-run the deploy; the temporary loss of the target contents is an acceptable operational risk in that workflow, so a staged-copy/switch is unnecessary complexity here.

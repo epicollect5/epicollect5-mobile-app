@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import ListItemProjects from '@/components/ListItemProjects';
+import ListItemProjects from '@/components/lists/ListItemProjects.vue';
 import { chevronBackOutline } from 'ionicons/icons';
 import { reactive, readonly } from '@vue/reactivity';
 import { PARAMETERS } from '@/config';

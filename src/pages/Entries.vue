@@ -56,7 +56,7 @@
 
       <!-- fake entries toolbar -->
       <ion-toolbar
-          v-if="state.isDebug && !state.isFetching"
+          v-if="showFakeEntriesToolbar"
           color="tertiary"
           class="animate__animated animate__fadeIn ion-no-margin ion-no-padding ion-text-center"
       >
@@ -152,7 +152,7 @@ import {
   chevronBackOutline,
   ellipsisVertical
 } from 'ionicons/icons';
-import {reactive} from '@vue/reactivity';
+import {computed, reactive} from '@vue/reactivity';
 import {PARAMETERS} from '@/config';
 import {projectModel} from '@/models/project-model.js';
 import {formModel} from '@/models/form-model.js';
@@ -163,8 +163,8 @@ import {databaseSelectService} from '@/services/database/database-select-service
 import {addFakeEntries} from '@/use/entries/add-fake-entries';
 import {format} from 'date-fns';
 import {fetchEntries} from '@/use/entries/fetch-entries.js';
-import ListEntries from '@/components/ListEntries.vue';
-import ToolbarFormName from '@/components/ToolbarFormName.vue';
+import ListEntries from '@/components/lists/ListEntries.vue';
+import ToolbarFormName from '@/components/toolbars/ToolbarFormName.vue';
 import {provide} from 'vue';
 import {useBackButton} from '@ionic/vue';
 import {notificationService} from '@/services/notification-service';
@@ -203,6 +203,7 @@ export default {
       branchMediaUuids: [],
       filters: {...PARAMETERS.FILTERS_DEFAULT},
       isDebug: PARAMETERS.DEBUG,
+      isPWA: rootStore.isPWA,
       isAddingFakeEntries: false,
       projectRef: ''
     });
@@ -510,7 +511,13 @@ export default {
       methods.goBack();
     });
 
-    const computedScope = {};
+    const computedScope = {
+      //debug fake-data toolbar: native debug builds only, and never while the
+      //list is fetching
+      showFakeEntriesToolbar: computed(() => {
+        return state.isDebug && !state.isPWA && !state.isFetching;
+      })
+    };
 
     return {
       labels,

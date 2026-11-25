@@ -467,12 +467,24 @@ export const utilsService = {
         return new Promise((resolve) => {
             (async function () {
                 const rootStore = useRootStore();
-                if (rootStore.device.platform === PARAMETERS.WEB) {
+                //the PWA runs in the browser: navigator.onLine is the
+                //connectivity signal there, same as plain web. Only native
+                //builds go through the Capacitor Network plugin
+                if (rootStore.device.platform === PARAMETERS.WEB
+                    || rootStore.device.platform === PARAMETERS.PWA) {
                     resolve(window.navigator.onLine);
                 } else {
-                    const networkState = await Network.getStatus();
-                    console.log('Network connection type: ', networkState.connectionType);
-                    resolve(networkState.connected);
+                    try {
+                        const networkState = await Network.getStatus();
+                        console.log('Network connection type: ', networkState.connectionType);
+                        resolve(networkState.connected);
+                    } catch (error) {
+                        //a failing status check must not hang callers
+                        //(handleWebError awaits this): fall back to the
+                        //browser signal instead of leaving the promise pending
+                        console.log('Network status check failed: ' + error);
+                        resolve(window.navigator.onLine);
+                    }
                 }
             }());
         });
@@ -831,6 +843,76 @@ export const utilsService = {
 
         return pathnameParts.join('/');
     },
+    //imp: PWA-only: hide the trailing /branch segment after entering a local
+    //branch, so the address bar stays on the hierarchy entry and a refresh
+    //boots the hierarchy instead of a 404 (branch state lives in
+    //rootStore.routeParams, not the URL). Entering the branch route via
+    //router.replace({name}) drops the query and always lands on add-entry,
+    //so restore the pathname segment and the query from the route we
+    //navigated from: a refresh during an edit must boot edit mode again and
+    //keep the uuid/branch params the boot reads from the query string
+    rewriteBranchUrl(fallbackQuery, fallbackPath) {
+        const url = new URL(window.location.href);
+        const rewritten = url.pathname.replace(/\/branch\/?$/, '');
+        if (rewritten === url.pathname) {
+            return;
+        }
+        //the branch route path is always .../add-entry/branch: when the
+        //navigation came from an edit, the fallback path restores the
+        //edit-entry segment the boot reads to restore edit mode
+        //direct load of a /branch url: there is no in-app navigation, so the
+        //fallback is the router start location ('/'), not the hierarchy entry
+        //url. Cosmetic only: the boot never ran on that path (notFound), so
+        //the bar sits on an already-dead page
+        url.pathname = fallbackPath || rewritten;
+        if (!url.search && fallbackQuery && Object.keys(fallbackQuery).length > 0) {
+            url.search = new URLSearchParams(fallbackQuery).toString();
+        }
+        window.history.replaceState(window.history.state, '', url.toString());
+    },
+    //PWA Dropzone: vue3-dropzone reports size rejections as raw byte counts
+    //(e.g. "File is larger than 5000000 bytes"). Scope each rejection to the
+    //failed check, derived from PARAMETERS so the limits cannot drift
+    getDropzoneRejectionMessage(rejection, type, fallbackMessage) {
+        const mediaType = typeof type === 'string' ? type.toUpperCase() : '';
+        if (rejection?.code === 'file-too-large') {
+            const maxSize = PARAMETERS.PWA_UPLOAD_MAX_SIZE[mediaType];
+            if (maxSize) {
+                return 'max file size ' + this.formatBytes(maxSize);
+            }
+        }
+        if (rejection?.code === 'file-invalid-type') {
+            const mimetypes = PARAMETERS.PWA_MIMETYPES[mediaType];
+            if (mimetypes) {
+                return this.getDropzoneExtensionsLabel(mimetypes) + ' only';
+            }
+        }
+        return rejection?.message ?? fallbackMessage;
+    },
+    getDropzoneExtensionsLabel(mimetypes) {
+        const extensions = [];
+        mimetypes.forEach((mimetype) => {
+            const extension = String(mimetype).split('/')[1].replace('jpeg', 'jpg');
+            if (extension && extensions.indexOf(extension) === -1) {
+                extensions.push(extension);
+            }
+        });
+        if (extensions.length > 1) {
+            return extensions.slice(0, -1).join(', ') + ' or ' + extensions[extensions.length - 1];
+        }
+        return extensions.join('');
+    },
+    formatBytes(bytes) {
+        if (bytes >= 1000000) {
+            const mb = bytes / 1000000;
+            return (Number.isInteger(mb) ? mb : mb.toFixed(1)) + ' MB';
+        }
+        if (bytes >= 1000) {
+            const kb = bytes / 1000;
+            return (Number.isInteger(kb) ? kb : kb.toFixed(1)) + ' KB';
+        }
+        return bytes + ' bytes';
+    },
     isValidDecimalDegreesString(str) {
         const coords = this.extractCoordinates(str);
         if (coords === null) {
@@ -839,9 +921,39 @@ export const utilsService = {
         return utilsService.isValidLatitude(coords.latitude) && utilsService.isValidLongitude(coords.longitude);
     },
 
-    extractCoordinates(input) {
-        const regex = /^([-+]?\d*[.,]?\d+),\s*([-+]?\d*[.,]?\d+)$/;
+    //Apple Maps copies coords as decimal degrees with cardinal directions,
+    //i.e. "45.4642° N, 9.1900° E" (decimal commas in some locales):
+    //convert them to signed "lat, long" decimal degrees before matching
+    normaliseCardinalCoordinates(input) {
+        if (typeof input !== 'string') {
+            return input;
+        }
+        const regex = /^\s*([-+]?\d+(?:[.,]\d+)?)\s*°?\s*([NSEWnsew])\s*,\s*([-+]?\d+(?:[.,]\d+)?)\s*°?\s*([NSEWnsew])\s*$/;
         const match = input.match(regex);
+        if (!match) {
+            return input;
+        }
+
+        //first cardinal must be N/S (latitude), second E/W (longitude)
+        const latCardinal = match[2].toUpperCase();
+        const longCardinal = match[4].toUpperCase();
+        if (!['N', 'S'].includes(latCardinal) || !['E', 'W'].includes(longCardinal)) {
+            return input;
+        }
+
+        //S/W mean negative coords; abs() guards against double-signing "-45.46° S"
+        const latitude = parseFloat(match[1].replace(',', '.'));
+        const longitude = parseFloat(match[3].replace(',', '.'));
+        const latSign = latCardinal === 'S' ? -1 : 1;
+        const longSign = longCardinal === 'W' ? -1 : 1;
+
+        return Math.abs(latitude) * latSign + ', ' + Math.abs(longitude) * longSign;
+    },
+
+    extractCoordinates(input) {
+        const normalisedInput = this.normaliseCardinalCoordinates(input);
+        const regex = /^([-+]?\d*[.,]?\d+),\s*([-+]?\d*[.,]?\d+)$/;
+        const match = normalisedInput.match(regex);
 
         // Check if there are more than three commas or exactly two commas
         //would be impossible to detect which one is lat, which one is long

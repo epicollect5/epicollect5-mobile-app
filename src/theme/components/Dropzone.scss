@@ -1,0 +1,38 @@
+@use '@/theme/mixins' as *;
+
+.dropzone {
+    @include dropzone-base;
+}
+
+.dropzone-active {
+    @include dropzone-active-base;
+}
+
+.dropzone-preview {
+    @include dropzone-preview-base;
+}
+
+//photo previews stack in the middle third of a 3 cols grid: the preview is
+//33% of the container width instead of stretching full size. Photo only:
+//audio and video previews stay full width. The img carries the same framed
+//style as the native thumbnail (question-photo-thumbnail-base mixin): square,
+//padded and bordered, with width driven by the grid instead of the native
+//fixed 200px
+.question-photo-thumbnail--third {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    > * {
+        grid-row: 1;
+        grid-column: 2;
+    }
+
+    > img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        padding: 10px;
+        border: 1px solid var(--ion-color-light-shade);
+        background-color: var(--app-surface);
+        object-fit: cover;
+    }
+}

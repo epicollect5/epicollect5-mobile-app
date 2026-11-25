@@ -1,4 +1,10 @@
 
+//carto basemaps are key-gated: the key is baked at build time from
+//VITE_CARTO_API_KEY (.env.local); without it tile requests are rejected
+const CARTO_API_KEY_PARAM = import.meta.env.VITE_CARTO_API_KEY
+    ? '?key=' + import.meta.env.VITE_CARTO_API_KEY
+    : '';
+
 export const PARAMETERS = {
     APP_NAME: 'Epicollect5',
     DB_NAME: 'epicollect5.db',
@@ -6,6 +12,7 @@ export const PARAMETERS = {
     COMMUNITY_SUPPORT_URL: 'https://community.epicollect.net',
     PRODUCTION_SERVER_URL: 'https://five.epicollect.net',
     ADD_PROJECTS_DOCS_URL: 'https://docs.epicollect.net/mobile-application/add-projects',
+    EDIT_BRANCH_ENTRIES_DOCS_URL: 'https://docs.epicollect.net/web-application/adding-data#add-or-edit-branch-entries',
     UPLOAD_MEDIA_DOCS_URL: 'https://docs.epicollect.net/mobile-application/upload-entries#uploading-media-files',
     DOWNLOAD_ENTRIES_DOCS_URL: 'https://docs.epicollect.net/mobile-application/download-entries',
     UPDATE_PROJECT_DOCS_URL: 'https://docs.epicollect.net/mobile-application/updating-a-project-mobile',
@@ -20,6 +27,7 @@ export const PARAMETERS = {
     DEBUG: import.meta.env.VITE_DEBUG,
     IS_LOCALHOST: import.meta.env.PROD ? 0 : 1, //for debugging outside of Laravel(production), it is set to 1
     BYPASS_UNIQUENESS: import.meta.env.VITE_BYPASS_UNIQUENESS,
+    ROLLBAR_CONSENT_PWA: import.meta.env.VITE_ROLLBAR_CONSENT_PWA,
     // url production
     DEFAULT_SERVER_URL: 'https://five.epicollect.net',
     //DEFAULT_SERVER_URL: 'http://localhost/~mirko/epicollect5-server/public',
@@ -93,28 +101,17 @@ export const PARAMETERS = {
             ACCOUNT_DELETION: '/profile/account-deletion-request',
             PWA: {
                 ROOT: '/api/internal',
-                ROOT_DEBUG: '/api/pwa',
                 UPLOAD: '/web-upload/', //same as bulk upload from dataviewer
-                UPLOAD_DEBUG: '/upload-debug/',//for debugging
                 PROJECT: '/project/',
-                PROJECT_DEBUG: '/project-debug/',
                 ENTRIES: '/entries/',
-                ENTRIES_DEBUG: '/entries-debug/',
                 MEDIA: '/media/',
-                MEDIA_DEBUG: '/media-debug/',
-                UPLOAD_FILE: '/upload-file/',
-                UPLOAD_FILE_DEBUG: '/upload-file-debug/',//for debugging
+                UPLOAD_FILE: '/web-upload-file/',
                 TEMP_MEDIA: '/temp-media/',
-                TEMP_MEDIA_DEBUG: '/temp-media-debug/',
                 TEMP_MEDIA_DELETE: '/temp-media-delete/',
-                TEMP_MEDIA_DELETE_DEBUG: '/temp-media-delete-debug/',
                 UNIQUE_ANSWER: '/unique-answer/',
-                UNIQUE_ANSWER_DEBUG: '/unique-answer-debug/',//for debugging
                 DATA_VIEWER: '/data',
                 OPENCAGE: '/proxies/opencage/',
-                OPENCAGE_DEBUG: '/proxies/opencage-debug/',
-                ANSWERS: '/answers/',
-                ANSWERS_DEBUG: '/answers-debug/'
+                ANSWERS: '/answers/'
             }
         },
         PARAMS: {
@@ -374,20 +371,21 @@ export const PARAMETERS = {
         SYSTEM: 'system'
     },
     PWA_MIMETYPES: {
-        PHOTO: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'],
+        PHOTO: ['image/jpeg', 'image/jpg', 'image/png'],
+        //imp: audio-only tracks in an mp4 container are typed video/mp4 by browsers, accept both
         AUDIO: ['audio/mp4', 'audio/wav', 'video/mp4'],
         VIDEO: ['video/mp4']
     },
     //bytes
     PWA_UPLOAD_MAX_SIZE: {
-        PHOTO: 10000000, // 10MB
-        AUDIO: 100000000,// 100MB,
-        VIDEO: 500000000 //500MB
+        PHOTO: 5000000, // 5MB
+        AUDIO: 10000000,// 10MB
+        VIDEO: 25000000 //25MB
     },
     PWA_FILE_ACCEPTED_FORMATS: {
-        PHOTO: 'jpg or png only, max file size 10 MB, max resolution 4096 x 4096px',
-        AUDIO: 'mp4 or wav only, max file size 100 MB',
-        VIDEO: 'mp4 only, max file size 500 MB'
+        PHOTO: 'jpg or png only, max file size 5 MB, max resolution 4096 x 4096px',
+        AUDIO: 'mp4 or wav only, max file size 10 MB',
+        VIDEO: 'mp4 only, max file size 25 MB'
     },
     PWA_ADD_ENTRY: 'add-entry',
     PWA_EDIT_ENTRY: 'edit-entry',
@@ -399,24 +397,29 @@ export const PARAMETERS = {
     },
     PWA_MAX_LATLONG_LENGTH: 10,
     PWA_LANGUAGE_FILES_ENDPOINT: '/pwa/assets/ec5-status-codes/',
+    //error reporting consent (PWA): cookie-consent semantics — a stored answer
+    //gates reporting; without one, nothing is reported until the user answers
+    //the consent toast, and only clearing the browser data asks again
+    PWA_ERROR_REPORTING_CONSENT: {
+        STORAGE_KEY: 'epicollect5-rollbar-consent',
+        GRANTED: 'granted',
+        DECLINED: 'declined'
+    },
 
     //ESRI satellite -> https://wiki.openstreetmap.org/wiki/Esri#Legal_permissions
     ESRI_TILES_PROVIDER_SATELLITE: 'https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=' + import.meta.env.VITE_ESRI_API_TOKEN,
     //https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9
     ESRI_TILES_PROVIDER_ATTRIBUTION: 'Powered by Esri | Esri, Maxar, Earthstar Geographics, and the GIS User Community',
 
-    //Mapbox  imagery https://docs.mapbox.com/api/maps/styles/
-    MAPBOX_TILES_PROVIDER_OUTDOOR: 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/{z}/{x}/{y}?access_token=' + import.meta.env.VITE_MAPBOX_API_TOKEN,
-    //https://docs.mapbox.com/help/getting-started/attribution/
-    MAPBOX_TILES_ATTRIBUTION: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
+    //OpenTopoMap https://opentopomap.org/
+    OPENTOPO_TILES_PROVIDER: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    //https://opentopomap.org/about
+    OPENTOPO_TILES_ATTRIBUTION: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
 
-
-    //high contrast maps http://maps.stamen.com
-    STAMEN_HIGH_CONTRAST_TILES_PROVIDER: 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.png',
-    STAMEN_TILES_ATTRIBUTION: 'Map tiles by <a href="https://stamen.com">Stamen Design</a>, under <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="https://openstreetmap.org">OpenStreetMap</a>, under <a href="https://www.openstreetmap.org/copyright">ODbL</a>.',
 
     //carto https://carto.com/basemaps/
-    CARTO_LIGHT_TILES_PROVIDER: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
+    CARTO_LIGHT_TILES_PROVIDER: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png' + CARTO_API_KEY_PARAM,
+    CARTO_DARK_TILES_PROVIDER: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png' + CARTO_API_KEY_PARAM,
     CARTO_TILES_ATTRIBUTION: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>',
 
     //OSM tiles

@@ -1,0 +1,172 @@
+<template>
+	<ion-card class="login-default">
+		<ion-card-content class="ion-no-padding">
+			<ion-grid>
+				<ion-row v-if="isGoogleAuthEnabled || isDebug">
+					<ion-col>
+						<div class="ion-text-center">
+							<sign-in-with-google-button
+								:label="labels.sign_in_with_google"
+								@signin="performLoginGoogle()"
+							 />
+						</div>
+					</ion-col>
+				</ion-row>
+				<ion-row v-if="isAppleAuthEnabled || isDebug">
+					<ion-col>
+						<div class="ion-text-center">
+							<sign-in-with-apple-button
+								:label="labels.sign_in_with_apple"
+								@signin="performLoginApple()"
+							 />
+						</div>
+					</ion-col>
+				</ion-row>
+				<ion-row v-if="(isPasswordlessAuthEnabled && (isAppleAuthEnabled || isGoogleAuthEnabled)) || isDebug">
+					<ion-col>
+						<div class="hr-divider-wrapper">
+							<span class="hr-divider">{{ labels.or }}</span>
+						</div>
+					</ion-col>
+				</ion-row>
+				<ion-row v-if="isPasswordlessAuthEnabled || isDebug">
+					<ion-col>
+						<div class="ion-text-center">
+							<ion-button
+								class="email-login-btn ion-text-nowrap"
+								mode="md"
+								fill="outline"
+								size="default"
+								color="dark"
+								@click="openModalPasswordlessSend()"
+							>
+								<ion-icon
+									slot="start"
+									:icon="mailOutline"
+								></ion-icon>
+								&nbsp;
+								{{ labels.login_with_email }}
+							</ion-button>
+						</div>
+					</ion-col>
+				</ion-row>
+			</ion-grid>
+		</ion-card-content>
+	</ion-card>
+</template>
+
+<script>
+import { reactive, computed } from '@vue/reactivity';
+import { mailOutline } from 'ionicons/icons';
+import { STRINGS } from '@/config/strings.js';
+import { useRootStore } from '@/stores/root-store.js';
+import { modalController } from '@ionic/vue';
+import { PARAMETERS } from '@/config/index.js';
+import ModalPasswordlessSend from '@/components/modals/ModalPasswordlessSend.vue';
+import SignInWithGoogleButton from '@/components/auth/SignInWithGoogleButton.vue';
+import SignInWithAppleButton from '@/components/auth/SignInWithAppleButton.vue';
+import { authGoogleService } from '@/services/auth/auth-google-service.js';
+import { authAppleService } from '@/services/auth/auth-apple-service.js';
+import { modalsHandlerService } from '@/services/modals/modals-handler-service.js';
+
+export default {
+	components: { SignInWithGoogleButton, SignInWithAppleButton },
+	props: {
+		authMethods: {
+			type: Array,
+			required: true
+		},
+		authIds: {
+			type: Object,
+			required: true
+		}
+	},
+	setup(props) {
+		const rootStore = useRootStore();
+		const language = rootStore.language;
+		const labels = STRINGS[language].labels;
+		const state = reactive({
+			account: {
+				email: '',
+				provider: null,
+				code: null
+			},
+			showAppleSignIn: false
+		});
+
+		//show Apple sign in only on iOS 13+
+		if (rootStore.device.platform === PARAMETERS.IOS) {
+			if (parseInt(rootStore.device.osVersion) >= 13) {
+				state.showAppleSignIn = true;
+			} else {
+				state.showAppleSignIn = false;
+			}
+		} else {
+			state.showAppleSignIn = false;
+		}
+
+		const methods = {
+			dismiss() {
+				modalController.dismiss();
+			},
+			async openModalPasswordlessSend() {
+				modalsHandlerService.passwordlessSend = await modalController.create({
+					cssClass: 'modal-passwordless-send',
+					component: ModalPasswordlessSend,
+					showBackdrop: true,
+					backdropDismiss: false,
+					componentProps: {}
+				});
+
+				modalsHandlerService.passwordlessSend.onDidDismiss().then((response) => {
+					console.log('is ModalPasswordlessSend', response.data);
+				});
+
+				return modalsHandlerService.passwordlessSend.present();
+			},
+			/**
+			 * Send user to native google sign in page
+			 * Afterwards, we retrieve the access_code, submit it to our server
+			 * Exchanging it for an access_token and returning a jwt
+			 */
+			async performLoginGoogle() {
+				const { authIds } = props;
+				authGoogleService.authGoogleUser(authIds);
+			},
+			async performLoginApple() {
+				authAppleService.authAppleUser();
+			}
+		};
+
+		const computedScope = {
+			isDebug: computed(() => {
+				return PARAMETERS.DEBUG;
+			}),
+			isAppleAuthEnabled: computed(() => {
+				return props.authMethods.includes(PARAMETERS.PROVIDERS.APPLE) && state.showAppleSignIn;
+			}),
+			isGoogleAuthEnabled: computed(() => {
+				if (rootStore.hasGoogleServices) {
+					return props.authMethods.includes(PARAMETERS.PROVIDERS.GOOGLE);
+				} else {
+					return false;
+				}
+			}),
+			isPasswordlessAuthEnabled: computed(() => {
+				return props.authMethods.includes(PARAMETERS.PROVIDERS.PASSWORDLESS);
+			})
+		};
+
+		return {
+			labels,
+			state,
+			...computedScope,
+			...methods,
+			//icons
+			mailOutline
+		};
+	}
+};
+</script>
+
+<style src="@/theme/components/auth/CardLoginDefault.scss" lang="scss"></style>

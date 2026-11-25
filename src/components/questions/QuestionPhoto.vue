@@ -1,509 +1,118 @@
-<!--suppress JSUnusedGlobalSymbols -->
 <template>
-  <ion-card
-      class="question-card"
-      :class="{ 'animate__animated animate__fadeIn': !isGroupInput }"
-  >
-    <ion-card-header class="question-label force-no-padding">
-      <ion-card-title>
-        <question-label-action
-            :key="state.answer.answer"
-            :disabled="!isFileAvailable"
-            action="media"
-            :questionText="state.question"
-            :answer="state.answer.answer"
-            @on-label-button-click="openPopover"
-        ></question-label-action>
-      </ion-card-title>
-    </ion-card-header>
-    <ion-card-content
-        class="ion-text-center"
-        :class="{ 'ion-margin': isGroupInput }"
-    >
+	<media-pwa
+		v-if="isPWA"
+		:parentState="state"
+		:entryUuid="entryUuid"
+		:isGroupInput="isGroupInput"
+	></media-pwa>
 
-      <dropzone
-          :filestate="state.pwaFileState"
-          :filename="state.answer.answer"
-          :key="state.answer.answer"
-          v-if="isPWA"
-          :type="state.inputDetails.type"
-          :inputRef="state.inputDetails.ref"
-          :uuid="entryUuid"
-          :fileError="state.fileError"
-          @file-loaded="onFileLoadedPWA"
-          @file-dropped="onFileDroppedPWA"
-          @file-error="onFileErrorPWA"
-          @photo-clicked="openViewerPWA"
-      ></dropzone>
-
-      <grid-question-narrow v-if="!isPWA">
-        <template #content>
-          <ion-button
-              class="question-action-button ion-text-nowrap"
-              color="secondary"
-              expand="block"
-              @click="takePicture('camera')"
-          >
-            <ion-icon
-                slot="start"
-                :icon="camera"
-            ></ion-icon>
-            {{ labels.take }}
-          </ion-button>
-        </template>
-      </grid-question-narrow>
-
-      <grid-question-narrow v-if="!isPWA">
-        <template #content>
-          <ion-button
-              class="question-action-button ion-margin-top ion-text-nowrap"
-              color="secondary"
-              expand="block"
-              @click="takePicture('gallery')"
-          >
-            <ion-icon
-                slot="start"
-                :icon="images"
-            ></ion-icon>
-            {{ labels.pick }}
-          </ion-button>
-        </template>
-      </grid-question-narrow>
-
-      <!-- Photo thumbnail -->
-      <div
-          v-if="state.imageSource !== ''"
-          class="question-photo-thumbnail animate__animated animate__fadeIn ion-margin-top"
-      >
-        <img
-            :src="state.imageSource"
-            @click="openViewer()"
-            @load="onImageLoad()"
-            :alt="state.question"/>
-      </div>
-
-    </ion-card-content>
-  </ion-card>
+	<photo-native
+		v-else
+		:parentState="state"
+		:entryUuid="entryUuid"
+		:isGroupInput="isGroupInput"
+	></photo-native>
 </template>
 
 <script>
-import {popoverMediaHandler} from '@/use/questions/popover-media-handler';
-import {modalController} from '@ionic/vue';
-import {STRINGS} from '@/config/strings.js';
-import {PARAMETERS} from '@/config';
-import {useRootStore} from '@/stores/root-store';
-import {camera, images} from 'ionicons/icons';
-import {inject, reactive, computed, onMounted} from 'vue';
-import {Capacitor} from '@capacitor/core';
-import ModalPhoto from '@/components/modals/ModalPhoto.vue';
-import ModalDraw from '@/components/modals/ModalDraw.vue';
-import {photoTake} from '@/use/questions/photo-take';
-import {saveBlobToTempDir} from '@/services/filesystem/save-blob-to-temp-service';
-import GridQuestionNarrow from '@/components/GridQuestionNarrow.vue';
-import QuestionLabelAction from '@/components/QuestionLabelAction.vue';
-import Dropzone from '@/components/Dropzone.vue';
-import {notificationService} from '@/services/notification-service';
-import {utilsService} from '@/services/utilities/utils-service';
-import {questionCommonService} from '@/services/entry/question-common-service';
-import {rollbarService} from '@/services/utilities/rollbar-service';
+import { onMounted } from 'vue';
+import { STRINGS } from '@/config/strings.js';
+import { PARAMETERS } from '@/config';
+import { useRootStore } from '@/stores/root-store';
+import { reactive, computed } from '@vue/reactivity';
+import { inject } from 'vue';
+import MediaPwa from '@/components/platform/MediaPwa';
+import PhotoNative from '@/components/platform/PhotoNative';
+import { questionCommonService } from '@/services/entry/question-common-service';
 
 export default {
-  components: {
-    GridQuestionNarrow,
-    QuestionLabelAction,
-    Dropzone
-  },
-  props: {
-    inputRef: {
-      type: String,
-      required: true
-    },
-    type: {
-      type: String,
-      required: true
-    },
-    isGroupInput: {
-      type: Boolean,
-      required: true
-    }
-  },
-  emits: ['question-mounted'],
-  setup(props, context) {
-    const rootStore = useRootStore();
-    const language = rootStore.language;
-    const labels = STRINGS[language].labels;
-    const questionType = props.type.toUpperCase();
-    const entriesAddState = inject('entriesAddState');
-    const entriesAddScope = rootStore.entriesAddScope;
+	components: {
+		MediaPwa,
+		PhotoNative
+	},
+	props: {
+		inputRef: {
+			type: String,
+			required: true
+		},
+		type: {
+			type: String,
+			required: true
+		},
+		isGroupInput: {
+			type: Boolean,
+			required: true
+		}
+	},
+	emits: ['question-mounted'],
+	setup(props, context) {
+		const rootStore = useRootStore();
+		const language = rootStore.language;
+		const labels = STRINGS[language].labels;
+		const questionType = props.type.toUpperCase();
+		const entriesAddState = inject('entriesAddState');
+		const entriesAddScope = rootStore.entriesAddScope;
+		const state = reactive({
+			inputDetails: {},
+			currentInputRef: null,
+			error: {
+				errors: []
+			},
+			required: false,
+			question: '',
+			pattern: null,
+			answer: {
+				answer: '',
+				was_jumped: false
+			},
+			confirmAnswer: {
+				verify: false,
+				answer: ''
+			},
+			imageSource: '',
+			fileSource: '',
+			pwaFileState: PARAMETERS.PWA_FILE_STATE.CACHED,
+			fileError: labels.unknown_error
+		});
 
-    const state = reactive({
-      inputDetails: {},
-      currentInputRef: null,
-      error: {
-        errors: []
-      },
-      required: false,
-      question: '',
-      pattern: null,
-      answer: {
-        answer: '',
-        was_jumped: false
-      },
-      confirmAnswer: {
-        verify: false,
-        answer: ''
-      },
-      imageSource: '',
-      fileSource: '',
-      pwaFileState: PARAMETERS.PWA_FILE_STATE.CACHED,
-      fileError: labels.unknown_error
-    });
+		//set up question
+		questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
 
-    //set up question
-    questionCommonService.setUpInputParams(state, props.inputRef, entriesAddState);
+		const computedScope = {
+			isPWA: computed(() => {
+				return rootStore.isPWA;
+			})
+		};
 
-    onMounted(async () => {
-      console.log('Component Question is mounted, type ->', questionType);
-      //emit event to entriesAddState
-      context.emit('question-mounted');
-    });
+		onMounted(() => {
+			console.log('Component Question is mounted, type ->', questionType);
+			//emit event to entriesAddState
+			context.emit('question-mounted');
+		});
 
-    const tempDir = rootStore.tempDir;
-    const persistentDir = rootStore.persistentDir;
-    let filename = '';
-    const project_ref = entriesAddScope.entryService.entry.projectRef;
-    const media = entriesAddScope.entryService.entry.media;
+		// Check whether we want to index the media object using the main entry uuid, or branch entry uuid
+		const entryUuid = !entriesAddState.questionParams.isBranch
+			? entriesAddScope.entryService.entry.entryUuid //use entry_uuid
+			: entriesAddScope.branchEntryService.entry.
+				entryUuid;//use branch entry_uuid
 
-    // Check whether we want to index the media object using the main entry uuid or branch entry uuid
-    const entryUuid = !entriesAddState.questionParams.isBranch
-        ? entriesAddScope.entryService.entry.entryUuid //use entry_uuid
-        : entriesAddScope.branchEntryService.entry.entryUuid;//use branch entry_uuid
+		const media = entriesAddScope.entryService.entry.media;
 
-    media[entryUuid] = media[entryUuid] || {};
+		//ensure the media slot for this input exists; the PWA file fields are
+		//added by MediaPwa, native only needs the base slot
+		media[entryUuid] = media[entryUuid] || {};
+		if (!Object.prototype.hasOwnProperty.call(media[entryUuid], state.inputDetails.ref)) {
+			media[entryUuid][state.inputDetails.ref] = {};
+			media[entryUuid][state.inputDetails.ref].cached = '';
+			media[entryUuid][state.inputDetails.ref].stored = '';
+			media[entryUuid][state.inputDetails.ref].type = state.inputDetails.type;
+		}
 
-    //get saved media details if any
-    if (!Object.prototype.hasOwnProperty.call(media[entryUuid], state.inputDetails.ref)) {
-      media[entryUuid][state.inputDetails.ref] = {};
-      media[entryUuid][state.inputDetails.ref].cached = '';
-      media[entryUuid][state.inputDetails.ref].stored = '';
-      media[entryUuid][state.inputDetails.ref].type = state.inputDetails.type;
-
-      if (rootStore.isPWA) {
-        media[entryUuid][state.inputDetails.ref].filenamePWA = {};
-        media[entryUuid][state.inputDetails.ref].filenamePWA.cached = '';
-        media[entryUuid][state.inputDetails.ref].filenamePWA.stored = '';
-      }
-    } else {
-      if (rootStore.isPWA) {
-        //load preview in dropzone
-        //show cached or stored image if any, Cached image will win over stored one
-        if (media[entryUuid][state.inputDetails.ref].filenamePWA.cached !== '') {
-          filename = media[entryUuid][state.inputDetails.ref].filenamePWA.cached;
-          state.pwaFileState = PARAMETERS.PWA_FILE_STATE.CACHED;
-        } else {
-          if (media[entryUuid][state.inputDetails.ref].filenamePWA.stored !== '') {
-            filename = media[entryUuid][state.inputDetails.ref].filenamePWA.stored;
-            state.pwaFileState = PARAMETERS.PWA_FILE_STATE.STORED;
-          }
-        }
-      } else {
-        //show cached or stored image if any, Cached image will win over stored one
-        if (media[entryUuid][state.inputDetails.ref].cached !== '') {
-          filename = media[entryUuid][state.inputDetails.ref].cached;
-          _loadImageOnView(tempDir + filename);
-        } else {
-          if (media[entryUuid][state.inputDetails.ref].stored !== '') {
-            filename = media[entryUuid][state.inputDetails.ref].stored;
-            _loadImageOnView(persistentDir + PARAMETERS.PHOTO_DIR + project_ref + '/' + filename);
-          }
-        }
-      }
-    }
-
-    state.answer.answer = filename;
-
-    function _loadImageOnView(source) {
-      const timestamp = utilsService.generateTimestamp();
-      state.fileSource = source;
-      //fix for WKWebView and Android 11+ as well
-      source = Capacitor.convertFileSrc(source);
-      //use a timestamp to refresh image
-      state.imageSource = source + '?t=' + timestamp;
-    }
-
-    const methods = {
-      async openPopover(e) {
-        const mediaFile = media[entryUuid][state.inputDetails.ref];
-
-        if (rootStore.isPWA) {
-          if (mediaFile.filenamePWA.cached === '' && mediaFile.filenamePWA.stored === '') {
-            return false;
-          }
-        } else {
-          if (mediaFile.cached === '' && mediaFile.stored === '') {
-            return false;
-          }
-        }
-        try {
-          await popoverMediaHandler({
-            media,
-            entryUuid,
-            state, e,
-            mediaType: PARAMETERS.QUESTION_TYPES.PHOTO,
-            //the media popover gains a Draw entry on top of share/delete;
-            //it dismisses with the DRAW action and the pad opens from here
-            onAction: (action) => {
-              if (action === PARAMETERS.ACTIONS.DRAW) {
-                return methods.openDrawPad();
-              }
-            }
-          });
-        } catch (error) {
-          console.error('popoverMediaHandler failed', error);
-        }
-      },
-      async openDrawPad() {
-        if ([PARAMETERS.WEB, PARAMETERS.PWA].includes(rootStore.device.platform) || rootStore.isPWA) {
-          return;
-        }
-
-        //imp: claim the workflow lock before the first await: two overlapping
-        //opens would otherwise both pass the guard while the first image
-        //fetch is pending, opening two pads that save over the same file.
-        //Released on every failure path below and after the save settles
-        //(see onDidDismiss finally); a second open sharing the .tmp/.bak
-        //staging files with an in-flight save would lose a drawing or break
-        //the iOS restore
-        if (rootStore.isDrawModalActive) {
-          return;
-        }
-        rootStore.isDrawModalActive = true;
-
-        let existingDataURL = '';
-        let imageLoadFailed = false;
-        const mediaFile = media[entryUuid][state.inputDetails.ref];
-        if (mediaFile.cached !== '') {
-          try {
-            const source = Capacitor.convertFileSrc(tempDir + mediaFile.cached);
-            const response = await fetch(source);
-            const blob = await response.blob();
-            existingDataURL = await new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result);
-              reader.onerror = () => reject(reader.error);
-              reader.readAsDataURL(blob);
-            });
-          } catch (error) {
-            console.warn('Failed to load existing drawing for editing', error);
-            rollbarService.critical(error);
-            imageLoadFailed = true;
-          }
-        } else if (mediaFile.stored !== '') {
-          try {
-            const source = Capacitor.convertFileSrc(
-                persistentDir + PARAMETERS.PHOTO_DIR + project_ref + '/' + mediaFile.stored
-            );
-            const response = await fetch(source);
-            const blob = await response.blob();
-            existingDataURL = await new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result);
-              reader.onerror = () => reject(reader.error);
-              reader.readAsDataURL(blob);
-            });
-          } catch (error) {
-            console.warn('Failed to load stored photo for drawing', error);
-            rollbarService.critical(error);
-            imageLoadFailed = true;
-          }
-        }
-
-        //do not open a blank canvas: the user would unknowingly replace the
-        //original photo with a drawing on white when saving
-        if (imageLoadFailed) {
-          rootStore.isDrawModalActive = false;
-          return;
-        }
-
-        let drawModal;
-        try {
-          drawModal = await modalController.create({
-            component: ModalDraw,
-            cssClass: 'modal-draw',
-            showBackdrop: true,
-            backdropDismiss: false,
-            componentProps: {existingDataURL}
-          });
-        } catch (error) {
-          rootStore.isDrawModalActive = false;
-          throw error;
-        }
-
-        //imp: onDidDismiss runs in the background; the single finally below
-        //is the only place that releases the lock, so any throw between the
-        //dataURL check and the save try/catch (e.g. generateMediaFilename) is
-        //covered and reported, and the lock never gets stuck
-        drawModal.onDidDismiss().then(async (response) => {
-            try {
-                if (!response || !response.data || !response.data.dataURL) {
-                    return;
-                }
-                const dataURL = response.data.dataURL;
-
-                //shared pick-rules with photo-take: reuse cached on retake,
-                //stored on edit, generate only for a brand-new file
-                const newFilename = utilsService.resolvePhotoFilename(mediaFile, entryUuid);
-
-                const prevCached = mediaFile.cached;
-                const prevAnswer = state.answer.answer;
-
-                try {
-                    const blob = utilsService.b64toBlob(dataURL, 'image/jpeg');
-                    await saveBlobToTempDir({blob, filename: newFilename});
-                    mediaFile.cached = newFilename;
-                    state.answer.answer = newFilename;
-                    _loadImageOnView(tempDir + newFilename);
-                } catch (error) {
-                    console.error('Failed to save drawing to temp dir', error);
-                    rollbarService.critical(error);
-                    //imp: the service could not restore the original; its
-                    //bytes live at <newFilename>.bak. Point the answer at
-                    //that copy so the attachment remains available
-                    if (error && error.code === 'RECOVERABLE_BACKUP' && error.recoverableFilename) {
-                        mediaFile.cached = error.recoverableFilename;
-                        state.answer.answer = error.recoverableFilename;
-                        _loadImageOnView(tempDir + error.recoverableFilename);
-                    } else {
-                        mediaFile.cached = prevCached;
-                        state.answer.answer = prevAnswer;
-                    }
-                    await notificationService.showAlert(
-                        labels.unknown_error,
-                        labels.error
-                    );
-                }
-            } catch (error) {
-                //imp: any throw outside the save try/catch (filename
-                //generation, media writes, etc.) is caught here so it never
-                //becomes an unhandled rejection and the lock still releases
-                console.error('onDidDismiss handler failed', error);
-                rollbarService.critical(error);
-            } finally {
-                //imp: release the workflow lock on every dismissal path, so
-                //a reopen cannot share the .tmp/.bak files with this save
-                rootStore.isDrawModalActive = false;
-            }
-        });
-
-        try {
-          return await drawModal.present();
-        } catch (error) {
-          rootStore.isDrawModalActive = false;
-          rollbarService.critical(error);
-          throw error;
-        }
-      },
-      async takePicture(action) {
-        if (rootStore.device.platform !== PARAMETERS.WEB) {
-          try {
-            await photoTake({media, entryUuid, state, filename, action});
-          } catch (error) {
-            //photoTake rethrows modal presentation failures after unguarding
-            //the back handler: surface them so a failed open is never silent
-            console.log('photoTake failed: ' + error);
-            await notificationService.showAlert(error.message || labels.unknown_error);
-          }
-        }
-      },
-      //open viewer to see image with zoom capabilities
-      async openViewer() {
-
-        try {
-          const componentProps = {
-            imageSource: state.imageSource,
-            fileSource: state.fileSource,
-            isPWA: false
-          };
-
-          const modal = await modalController.create({
-            component: ModalPhoto,
-            cssClass: 'modal-photo',
-            componentProps
-          });
-          return await modal.present();
-        }
-        catch (error) {
-          console.error('openViewer failed', error);
-        }
-      },
-      async openViewerPWA(fileURL) {
-        try {
-          const componentProps = {
-            imageSource: fileURL,
-            fileSource: fileURL,
-            isPWA: true
-          };
-          const modal = await modalController.create({
-            component: ModalPhoto,
-            cssClass: 'modal-photo',
-            componentProps
-          });
-          return await modal.present();
-        }
-        catch (error) {
-          console.error('openViewerPWA failed', error);
-        }
-      },
-      onImageLoad() {
-        notificationService.hideProgressDialog();
-      },
-      onImageError(error) {
-        console.log(error);
-        console.log('Image failed!');
-        notificationService.hideProgressDialog();
-      },
-      onFileLoadedPWA(filename) {
-        state.answer.answer = filename;
-      },
-      onFileDroppedPWA(filename) {
-        //if a file is dropped, we have a cached file to show
-        //(cached takes priority on stored, if any)
-        media[entryUuid][state.inputDetails.ref].filenamePWA.cached = filename;
-        state.pwaFileState = PARAMETERS.PWA_FILE_STATE.CACHED;
-        state.answer.answer = filename;
-      },
-      onFileErrorPWA(error) {
-        state.fileError = error;
-      }
-    };
-
-    const computedScope = {
-      isFileAvailable: computed(() => {
-        const mediaFile = media[entryUuid][state.inputDetails.ref];
-
-        if (rootStore.isPWA) {
-          return mediaFile.filenamePWA.cached !== '' || mediaFile.filenamePWA.stored !== '';
-        }
-        return mediaFile.cached !== '' || mediaFile.stored !== '';
-      }),
-      isPWA: computed(() => {
-        return rootStore.isPWA;
-      })
-    };
-
-    return {
-      labels,
-      state,
-      entryUuid,
-      ...methods,
-      ...props,
-      ...computedScope,
-      //icons
-      camera,
-      images
-    };
-  }
+		return {
+			state,
+			entryUuid,
+			...computedScope
+		};
+	}
 };
 </script>
-
-<style src="@/theme/components/questions/QuestionPhoto.scss" lang="scss" scoped></style>

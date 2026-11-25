@@ -26,7 +26,6 @@ import { PARAMETERS } from '@/config';
 export const answerValidateService = {
 
     errors: {},
-    inputRef: '',
 
     /**
      * Validate answer against input details
@@ -64,16 +63,12 @@ export const answerValidateService = {
         const confirmAnswer = params.confirmAnswer?.answer;
 
         return new Promise((resolve, reject) => {
-            self.isUnique(entry, params.input_details, answer).then(async function (response) {
 
-                self.inputRef = params.input_details.ref;
+            const runChecks = async function () {
 
-                if (!response) {
-                    // Assign error for non-uniqueness
-                    self.errors[self.inputRef] = ['ec5_22'];
-                    reject();
-                    return;
-                }
+                // Local checks run first, so the uniqueness check, which performs
+                // a server request on PWA, is only reached when the answer is valid
+                // locally. Uniqueness is always the last check, consistent with native
 
                 // If we have a confirmation field, check
                 if (params.input_details.verify) {
@@ -113,12 +108,28 @@ export const answerValidateService = {
                     return;
                 }
 
-                resolve();
+                // Check uniqueness last: on PWA it performs a server request
+                const response = await self.isUnique(entry, params.input_details, answer);
+                if (!response) {
+                    // Assign error for non-uniqueness against this call's own
+                    // input: a group's child checks run concurrently with the
+                    // group check, so shared state would be overwritten before
+                    // the awaited uniqueness response arrives
+                    self.errors[params.input_details.ref] = ['ec5_22'];
+                    reject();
+                    return;
+                }
 
-            }, function (error) {
-                // If we hit here, probably had db access issues
-                reject(error);
-            }).catch(reject);
+                resolve();
+            };
+
+            // Run the checks in a microtask, the timing the pre-refactor flow had
+            // via isUnique().then(): a group question validates its inputs and the
+            // main input through concurrent validate() calls that each reset the
+            // shared errors object. A check run synchronously here would be wiped
+            // by the next sibling's reset before the rejection is read, leaving the
+            // user stuck on the question with no visible error.
+            Promise.resolve().then(runChecks).catch(reject);
         });
 
     },
@@ -143,6 +154,7 @@ export const answerValidateService = {
      */
     isUnique (entry, inputDetails, answer) {
 
+        const self = this;
         const rootStore = useRootStore();
         let checkUnique = true;
 
@@ -176,7 +188,7 @@ export const answerValidateService = {
                     let tempAnswerFound = false;
                     //bypass uniqueness check for debugging locally
                     if (PARAMETERS.BYPASS_UNIQUENESS && PARAMETERS.IS_LOCALHOST) {
-                        notificationService.showToast('bypassed uniqueness check!', 0, 'top');
+                        notificationService.showToast('bypassed uniqueness check!', 0, 'bottom');
                         resolve(true);
                     }
                     else {
@@ -216,9 +228,16 @@ export const answerValidateService = {
                                     resolve(false);
                                 }
                             }, (error) => {
+                                const errorCode = error.data?.errors[0]?.code;
                                 //ec5_22 answer NOT unique
-                                if (error.data?.errors[0]?.code === 'ec5_22') {
+                                if (errorCode === 'ec5_22') {
                                     resolve(false);
+                                }
+                                else if (errorCode === 'ec5_202') {
+                                    //project locked: the server cannot validate the answer,
+                                    //surface the locked message on the question, not an unknown error
+                                    self.errors[inputDetails.ref] = ['ec5_202'];
+                                    reject();
                                 }
                                 else {
                                     console.log(error);

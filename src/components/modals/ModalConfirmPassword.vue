@@ -77,7 +77,7 @@ import { STRINGS } from '@/config/strings';
 import { useRootStore } from '@/stores/root-store';
 import { readonly } from 'vue';
 import { loginLocal } from '@/use/auth/login-local';
-import HeaderModal from '@/components/HeaderModal.vue';
+import HeaderModal from '@/components/modals/HeaderModal.vue';
 
 export default {
 	components: {

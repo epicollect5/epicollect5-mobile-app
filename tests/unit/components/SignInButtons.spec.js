@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
-import SignInWithGoogleButton from '@/components/SignInWithGoogleButton.vue';
-import SignInWithAppleButton from '@/components/SignInWithAppleButton.vue';
-import CardLoginDefault from '@/components/CardLoginDefault.vue';
+import SignInWithGoogleButton from '@/components/auth/SignInWithGoogleButton.vue';
+import SignInWithAppleButton from '@/components/auth/SignInWithAppleButton.vue';
+import CardLoginDefault from '@/components/auth/CardLoginDefault.vue';
 import { useRootStore } from '@/stores/root-store';
 import { authGoogleService } from '@/services/auth/auth-google-service';
 import { authAppleService } from '@/services/auth/auth-apple-service';

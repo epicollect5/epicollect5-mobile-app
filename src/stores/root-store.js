@@ -16,6 +16,9 @@ export const useRootStore = defineStore('RootStore', {
             theme: PARAMETERS.DEFAULT_THEME,
             //by default, we collect WebView errors in production
             collectErrors: true,
+            //PWA only: no stored error reporting consent yet, so the consent
+            //toast must ask before anything is reported
+            showErrorReportingConsentPWA: false,
             inAppCamera: false,
             inAppCameraVideo: false,
             //keep the screen on while an upload or download is in progress (opt-in)

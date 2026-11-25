@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useRootStore } from '@/stores/root-store';
 import { modalController } from '@ionic/vue';
 import QuestionBranch from '@/components/questions/QuestionBranch.vue';
+import QuestionLabelAction from '@/components/QuestionLabelAction';
 import { branchEntriesFilterService } from '@/services/entry/branch-entries-filter-service';
 import { fetchBranchEntries } from '@/use/entries/fetch-branch-entries';
 import { PARAMETERS } from '@/config';
@@ -181,22 +182,23 @@ describe('QuestionBranch branch filter guard', () => {
                         isSavingEntry: false,
                         questionParams: { currentInputRef: 'input-ref' }
                     }
-                }
+                },
+                //keep the real action mounted so the disabled binding can be
+                //read as a prop (like the factory above)
+                stubs: { QuestionLabelAction: false }
             }
         });
         await flushPromises();
         await flushPromises();
-        const action = wrapper.find('question-label-action');
-        expect(action.exists()).toBe(true);
-        //shallowMount keeps the original tag: read the bound props off
-        //the vnode to verify the template wiring
-        expect(action.element.__vnode.props.disabled).toBe(false);
+        const action = () => wrapper.findComponent(QuestionLabelAction);
+        expect(action().exists()).toBe(true);
+        expect(action().props('disabled')).toBe(false);
         wrapper.vm.state.isFetching = true;
         await wrapper.vm.$nextTick();
-        expect(wrapper.find('question-label-action').element.__vnode.props.disabled).toBe(true);
+        expect(action().props('disabled')).toBe(true);
         wrapper.vm.state.isFetching = false;
         wrapper.vm.state.countNoFilters = 0;
         await wrapper.vm.$nextTick();
-        expect(wrapper.find('question-label-action').element.__vnode.props.disabled).toBe(true);
+        expect(action().props('disabled')).toBe(true);
     });
 });
