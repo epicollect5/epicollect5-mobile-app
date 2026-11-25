@@ -155,6 +155,24 @@ describe('LocationPwa', () => {
         wrapper.unmount();
     });
 
+    it('leaves the accuracy alone when only one coordinate is cleared', async () => {
+        const wrapper = mountWith({latitude: '51.500000', longitude: '-0.120000', accuracy: 3});
+
+        //place the marker through the same path the Update Location button uses
+        wrapper.vm.updateLocation(false);
+        await wrapper.vm.$nextTick();
+        expect(leaflet.markerFn).toHaveBeenCalled();
+
+        wrapper.vm.onLatValueChange({target: {value: ''}});
+        await wrapper.vm.$nextTick();
+
+        //one coordinate cleared is not a new point and not an empty pair: the
+        //accuracy is left untouched and the marker stays
+        expect(wrapper.vm.parentState.answer.answer).toEqual({latitude: '', longitude: '-0.120000', accuracy: 3});
+        expect(leaflet.map.removeLayer).not.toHaveBeenCalled();
+        wrapper.unmount();
+    });
+
     it('drops the marker and the answer when both coordinates are cleared', async () => {
         const wrapper = mountWith({latitude: '51.500000', longitude: '-0.120000', accuracy: 3});
 
@@ -231,6 +249,27 @@ describe('LocationPwa', () => {
             accuracy: PARAMETERS.GEOLOCATION_DEFAULT_ACCURACY
         });
         expect(waitOverlayStore.isBlocking).toBe(false);
+        wrapper.unmount();
+    });
+
+    it('dismisses the wait overlay even when the geocode fails', async () => {
+        //the request rejects (an offline device, a server error): the finally
+        //block must still release the blocker and the dialog, or the overlay
+        //pins the screen for the rest of the session
+        webService.geocodeAddressPWA.mockRejectedValueOnce(new Error('geocode failed'));
+        const {notificationService} = await import('@/services/notification-service');
+        const waitOverlayStore = useWaitOverlayStore();
+        const wrapper = mountWith();
+        wrapper.vm.state.address = 'London';
+
+        await wrapper.vm.geocodeAddress();
+        await flushPromises();
+
+        expect(notificationService.showAlert).toHaveBeenCalled();
+        expect(waitOverlayStore.isBlocking).toBe(false);
+        expect(notificationService.hideProgressDialog).toHaveBeenCalled();
+        //a failed request writes nothing
+        expect(wrapper.vm.parentState.answer.answer).toEqual({latitude: '', longitude: '', accuracy: ''});
         wrapper.unmount();
     });
 

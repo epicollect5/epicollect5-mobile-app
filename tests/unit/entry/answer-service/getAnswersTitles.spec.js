@@ -2,6 +2,7 @@ import { utilsService } from '@/services/utilities/utils-service';
 import { PARAMETERS } from '@/config';
 import { setActivePinia, createPinia } from 'pinia';
 import { answerService } from '@/services/entry/answer-service';
+import { entryCommonService } from '@/services/entry/entry-common-service';
 import { useRootStore } from '@/stores/root-store';
 import { vi } from 'vitest';
 
@@ -435,5 +436,18 @@ describe('getAnswersTitles', () => {
     //form is no longer in project_extra.forms and the caller passes undefined
     it('returns no titles when the form inputs are missing', () => {
         expect(answerService.getAnswersTitles({}, undefined, {}, {}, null)).toEqual([]);
+    });
+
+    //the destroyed-model guard also covers the branch shape: getExtraForm
+    //returns {} so form.branch is missing when setEntryTitle resolves titles
+    it('titles a branch entry with its uuid when the form is destroyed', () => {
+        const entry = {
+            entryUuid: 'some-uuid',
+            ownerInputRef: 'owner-ref',
+            answers: {},
+            title: ''
+        };
+        entryCommonService.setEntryTitle({}, {}, entry, true);
+        expect(entry.title).toBe('some-uuid');
     });
 });
