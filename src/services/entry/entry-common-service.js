@@ -143,7 +143,8 @@ export const entryCommonService = {
             titles = answerService.getAnswersTitles(entry, form.inputs, form.group, inputs);
         } else {
             // Branch
-            titles = answerService.getAnswersTitles(entry, form.branch[entry.ownerInputRef], form.group, inputs);
+            const branchInputs = form.branch?.[entry.ownerInputRef] || [];
+            titles = answerService.getAnswersTitles(entry, branchInputs, form.group, inputs);
         }
         // If no title, use uuid
         if (titles.length === 0) {
