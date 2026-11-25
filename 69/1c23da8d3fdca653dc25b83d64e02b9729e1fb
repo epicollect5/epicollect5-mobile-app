@@ -1,0 +1,18 @@
+tests/unit/components/platform/LocationPwa.spec.js
+  h_2231ff2aa93473 158-175,255-275
+tests/unit/entry/answer-service/getAnswersTitles.spec.js
+  h_2231ff2aa93473 5,440-452
+tests/unit/pwa-chunking.spec.js
+  h_2231ff2aa93473 1-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "691c23da8d3fdca653dc25b83d64e02b9729e1fb",
+  "prompts": {},
+  "humans": {
+    "h_2231ff2aa93473": {
+      "author": "Mirko <mirko.menegazzo@gmail.com>"
+    }
+  }
+}
