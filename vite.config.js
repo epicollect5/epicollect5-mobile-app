@@ -98,13 +98,27 @@ export default defineConfig(({ mode, command }) => {
                                 //stylesheets under @ionic/vue/css (the lookahead):
                                 //those must stay in app.css, see the app group
                                 { name: 'vendor-ionic', test: /[\\/]node_modules[\\/]@ionic[\\/](?!vue[\\/]css[\\/])/, priority: 30 },
-                                //vite's preload helper is a virtual module imported
-                                //by any chunk with dynamic imports; ModalPhoto (and
-                                //the swiper it pulls in) loads on demand - both join
-                                //vendor-common so neither drags a cycle out of it.
-                                //@ionic/vue/css is excluded so it falls through to the
-                                //app group below
-                                { name: 'vendor-common', test: /([\\/]node_modules[\\/](?!@ionic[\\/]vue[\\/]css[\\/])|vite[\\/]preload-helper|ModalPhoto\.vue)/, priority: 10 },
+                                //ModalPhoto (and the swiper it pulls in) loads on
+                                //demand via defineAsyncComponent: it matches no
+                                //group, so Rolldown emits it as its own async
+                                //chunk fetched on first photo-modal open.
+                                //Parking it in vendor-common would make it eager,
+                                //since the entry chunk statically imports that.
+                                //swiper is imported only by the async ModalPhoto, so
+                                //it is excluded here and rides in ModalPhoto's
+                                //async chunk instead of the eager vendor-common.
+                                //vite's preload helper is a virtual module
+                                //(\0vite/preload-helper.js) imported by any chunk
+                                //with dynamic imports, and the oxc runtime
+                                //helpers (\0@oxc-project+runtime/...) are virtual
+                                //too: without an explicit branch Rolldown parks
+                                //the shared ones in the pcre2 chunk and the eager
+                                //vendor-common chunk statically imports them
+                                //back, dragging the WASM engine into every load.
+                                //Both virtual branches join vendor-common here
+                                //instead. @ionic/vue/css is excluded so it falls
+                                //through to the app group below
+                                { name: 'vendor-common', test: /(vite[\\/]preload-helper|oxc-project\+runtime|[\\/]node_modules[\\/](?!@ionic[\\/]vue[\\/]css[\\/]|swiper[\\/]))/, priority: 10 },
                                 //Ionic's global stylesheets and the app code share app.css:
                                 //theme/variables.css sets the brand :root override after
                                 //Ionic's own defaults in the same file, so the brand purple
@@ -112,9 +126,11 @@ export default defineConfig(({ mode, command }) => {
                                 //<link> and the server shell emits stylesheets in manifest
                                 //order (app.css before vendor-ionic.css), letting Ionic's
                                 //default --ion-color-primary (#0054e9) override the brand.
-                                //ModalPhoto.vue is kept out (vendor-common above): it is
-                                //async loaded and must not land in the eager app chunk
-                                { name: 'app', test: /([\\/]src[\\/]|node_modules[\\/]@ionic[\\/]vue[\\/]css[\\/])/, priority: 1 }
+                                //ModalPhoto.vue is excluded: it loads on demand via
+                                //defineAsyncComponent, and excluding it lets
+                                //Rolldown emit it (with swiper, also unmatched)
+                                //as its own async chunk instead of eager app code
+                                { name: 'app', test: /([\\/]src[\\/](?!components[\\/]modals[\\/]ModalPhoto\.vue)|node_modules[\\/]@ionic[\\/]vue[\\/]css[\\/])/, priority: 1 }
                             ]
                         }
                     } : {
